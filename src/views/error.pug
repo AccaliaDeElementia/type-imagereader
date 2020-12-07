@@ -1,0 +1,10 @@
+extends _layout
+
+block content
+  div An Unexpected Error Occurred
+  if error && error.code
+    h3= error.code
+  if error && error.message
+    h4= error.message
+  if error && error.stack
+    h4= error.stack

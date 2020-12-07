@@ -1,0 +1,17 @@
+html
+  - const theTitle = data ? data.name : title
+  head
+    meta(name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=8.0,width=device-width,user-scalable=yes")
+    title= theTitle
+    link(rel='stylesheet', href='/stylesheets/bootstrapDarkly.min.css', integrity='sha384-PHgqJ8w8+cu8NYbxFuyTsw1BpMfJPSjzLKQ3L+12n2Bm6U5k2C3YHJU/RcpoDdyZ')
+    link(rel='stylesheet', href='/stylesheets/bootstrap-toggle.2.2.2.min.css', integrity='sha384-yBEPaZw444dClEfen526Q6x4nwuzGO6PreKpbRVSLFCci3oYGE5DnD1pNsubCxYW')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src='/scripts/jquery-3.6.0.min.js', integrity='sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK')
+    script(src='/scripts/popper-1.16.1.min.js', integrity='sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN')
+    script(src='/scripts/bootstrap-4.6.0.min.js', integrity='sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF')
+    script(src='/scripts/bootstrap-toggle.2.2.2.min.js', integrity='sha384-cd07Jx5KAMCf7qM+DveFKIzHXeCSYUrai+VWCPIXbYL7JraHMFL/IXaCKbLtsxyB')
+  body
+    nav.navbar.navbar-expand-lg.fixed-top.navbar-dark.bg-dark      
+      a.navbar-brand(href='/')= theTitle
+      block navigation
+    block content
