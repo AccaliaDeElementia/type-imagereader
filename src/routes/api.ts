@@ -102,6 +102,7 @@ const getPictures = async (path: string, knex:Knex) => {
     .where({
       folder: path
     })
+    .orderBy('sortKey')
   return pictures.map(pic => {
     pic.name = basename(pic.path)
     pic.path = toURI(pic.path)
@@ -330,6 +331,10 @@ export async function getRouter () {
 
   router.get('/', handleErrors(async (_, res) => {
     res.json({ title: 'API' })
+  }))
+
+  router.get('/healthcheck', handleErrors(async (_, res) => {
+    res.status(200).send('OK')
   }))
 
   router.get('/listing/*', handleErrors(async (req, res) => {
