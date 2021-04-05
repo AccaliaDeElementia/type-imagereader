@@ -1,5 +1,9 @@
 'use sanity'
+const debug = require('debug')
+
 import Knex = require('knex')
+
+const logger = debug('type-imagereader:persistance')
 
 const initialize = async (): Promise<Knex> => {
   const environment = process.env.DB_CLIENT || 'sqlite3'
@@ -11,6 +15,7 @@ const initialize = async (): Promise<Knex> => {
       connection.connection[key] = value
     }
   })
+  logger(connection)
   const knex = require('knex')(connection)
   await knex.migrate.latest()
   return knex

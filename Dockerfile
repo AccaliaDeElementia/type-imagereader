@@ -33,6 +33,7 @@ ENV DB_CLIENT="postgresql" \
 
 VOLUME /data
 WORKDIR /app/dist
+
 CMD ["/usr/local/bin/node", "/app/dist/index.js"]
 
 HEALTHCHECK CMD curl -f http://localhost:3030/api/healthcheck >/dev/null
