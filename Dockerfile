@@ -32,7 +32,7 @@ ENV DB_CLIENT="postgresql" \
     DB_FILENAME="docker_database.sqlite3" 
 
 VOLUME /data
-
+WORKDIR /app/dist
 CMD ["/usr/local/bin/node", "/app/dist/index.js"]
 
 HEALTHCHECK CMD curl -f http://localhost:3030/api/healthcheck >/dev/null
