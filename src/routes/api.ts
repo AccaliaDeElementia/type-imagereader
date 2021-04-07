@@ -4,6 +4,7 @@ import { Router, Request, Response, RequestHandler } from 'express'
 
 import { normalize, basename, dirname, sep } from 'path'
 
+import { updateSeenPictures } from '../utils/syncfolders'
 import persistance from '../utils/persistance'
 import Knex = require('knex')
 
@@ -209,6 +210,7 @@ const markRead = async (knex: Knex, path: string, seenValue = true) => {
     await knex('folders').update({ current: null }).where('path', 'like', `${path}%`)
     await knex('folders').update({ current: null }).where({ path })
   }
+  await updateSeenPictures(knex)
 }
 
 const addBookmark = async (knex: Knex, path: string) => {

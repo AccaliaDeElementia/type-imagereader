@@ -134,7 +134,7 @@ interface Folder {
   seenCount: number
 }
 
-const updateSeen = async (knex: Knex) => {
+export async function updateSeenPictures (knex: Knex) {
   const logger = debug(`${logPrefix}:updateSeen`)
   logger('Updating Seen Counts')
   const folderInfos = await knex('pictures')
@@ -183,7 +183,7 @@ const synchronize = async () => {
     await findItems(knex)
     await syncPictures(knex)
     await syncFolders(knex)
-    await updateSeen(knex)
+    await updateSeenPictures(knex)
   } catch (e) {
     logger('Folder Synchronization Failed')
     logger(e, e.stack)
