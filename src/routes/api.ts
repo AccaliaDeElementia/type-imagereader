@@ -20,76 +20,44 @@ const toURI = (str: string|null) => {
   return `${str}`.split('/').map(part => encodeURIComponent(part)).join('/')
 }
 
-interface ChildFolder {
-  name: string,
-  path: string|null,
-  cover: string|null,
-  totalCount: number,
-  totalSeen: number
-}
-
 const getChildren = async (path:string, knex:Knex) => {
-  const folderInfoSubQuery = knex('pictures')
-    .select('folder')
-    .count('* as totalCount')
-    .sum({ totalSeen: knex.raw('CASE WHEN seen THEN 1 ELSE 0 END') })
-    .min('sortKey as firstImage')
-    .groupBy('folder')
-    .where('folder', 'like', `${path}%`)
-    .as('folderInfos')
-  const folderInfos = await knex('pictures')
+  const data = await knex.with('firsts',
+    (qb) => qb
+      .select('pictures.folder')
+      .min({
+        sortKey: 'pictures.sortKey'
+      })
+      .from('pictures')
+      .join('folders', 'pictures.folder', '=', 'folders.path')
+      .where({
+        'folders.folder': path
+      })
+      .groupBy('pictures.folder')
+  )
     .select(
-      'pictures.folder as folder',
-      'pictures.path as firstImage',
-      'folderInfos.totalCount as totalCount',
-      'folderInfos.totalSeen as totalSeen',
+      'folders.path',
       'folders.current',
-      'folders.sortKey')
-    .join(folderInfoSubQuery, function () {
-      this.on('folderInfos.firstImage', '=', 'pictures.sortKey')
-        .andOn('folderInfos.folder', '=', 'pictures.folder')
-    })
-    .leftJoin('folders', 'pictures.folder', '=', 'folders.path')
-    .orderBy('folders.sortKey')
-  const lookup: { [name: string]: ChildFolder } = {}
-  folderInfos.forEach(info => {
-    const name: string = info.folder.substring(path.length).split('/')[0]
-    const child = lookup[name] || {
-      name,
-      path: null,
-      cover: null,
-      totalCount: 0,
-      totalSeen: 0
-    }
-    child.totalCount += +info.totalCount
-    child.totalSeen += +info.totalSeen
-    if (`${path}${name}/` === info.folder) {
-      child.cover = info.current || info.firstImage
-    }
-    lookup[name] = child
-  })
-
-  const children = await knex('folders')
-    .select(
-      'path',
-      'current'
+      'folders.totalCount',
+      'folders.seenCount',
+      'pictures.path AS first'
     )
+    .from('folders')
+    .leftJoin('firsts', 'firsts.folder', '=', 'folders.path')
+    .leftJoin('pictures',
+      (jc) => jc.on('pictures.folder', 'firsts.folder')
+        .andOn('pictures.sortKey', 'firsts.sortKey'))
     .where({
-      folder: path
+      'folders.folder': path
     })
-    .orderBy('sortKey')
-  return children.map(child => {
-    const name = child.path.substring(path.length).split('/')[0]
-    const item = lookup[name] || {
-      name,
-      path: null,
-      cover: null,
-      totalCount: 0,
-      totalSeen: 0
+    .orderBy('folders.sortKey')
+  return data.map(i => {
+    return {
+      name: basename(i.path.substring(path.length)),
+      path: i.path,
+      cover: i.current || i.first,
+      totalCount: i.totalCount,
+      totalSeen: i.seenCount
     }
-    item.path = toURI(child.path)
-    item.cover = toURI(child.current ? child.current : item.cover)
-    return item
   })
 }
 
@@ -119,6 +87,7 @@ const getFolder = async (path: string, sortKey: string|null, knex: Knex, directi
       'folders.current',
       'pictures.path as first',
       'folders.sortKey')
+    .limit(1)
   switch (direction) {
     case 'this':
       query = query.where({
@@ -210,6 +179,26 @@ const listing = async (path: string, knex: Knex, res: Response) => {
 
 const setLatest = async (knex: Knex, path: string) => {
   const folder = dirname(path) + sep
+  const picture = await knex('pictures').select('seen').where({ path })
+  if (!picture || !picture.length) {
+    return
+  } else if (!picture[0].seen) {
+    const parts = `${folder}`.split('/')
+    while (parts.length > 1) {
+      parts.pop()
+      const minipath = `${parts.join('/')}/`
+      const counter = await knex('folders').select('seenCount').where({
+        path: minipath
+      })
+      if (counter && counter.length) {
+        await knex('folders').update({
+          seenCount: +counter[0].seenCount + 1
+        }).where({
+          path: minipath
+        })
+      }
+    }
+  }
   await knex('folders').update({ current: path }).where({ path: folder })
   await knex('pictures').update({ seen: true }).where({ path })
 }
