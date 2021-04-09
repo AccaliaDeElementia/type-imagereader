@@ -132,7 +132,7 @@
     }
 
     Images.first = () => changeImage(true, () => { index = 0 })
-    Images.previous = () => changeImage(true, () => (window.localStorage.ShowUnseenOnly === 'true' ? Images.previousUnseen : Images.previousImage)())
+    Images.previous = () => (window.localStorage.ShowUnseenOnly === 'true' ? Images.previousUnseen : Images.previousImage)()
     Images.previousImage = () => changeImage(index > 0, () => index--)
     Images.previousUnseen = () => changeImage(pics.some(e => !e.seen), () => {
       index = pics.reduce((acc, pic, i) => !pic.seen && i < index ? Math.max(acc, i) : acc, -1)
@@ -140,7 +140,7 @@
         index = pics.reduce((acc, pic, i) => !pic.seen ? Math.max(acc, i) : acc, -1)
       }
     })
-    Images.next = () => changeImage(true, () => (window.localStorage.ShowUnseenOnly === 'true' ? Images.nextUnseen : Images.nextImage)())
+    Images.next = () => (window.localStorage.ShowUnseenOnly === 'true' ? Images.nextUnseen : Images.nextImage)()
     Images.nextUnseen = () => changeImage(pics.some((e) => !e.seen), () => {
       index = pics.reduce((acc, pic, i) => !pic.seen && i > index ? Math.min(acc, i) : acc, Infinity)
       if (!isFinite(index)) {
