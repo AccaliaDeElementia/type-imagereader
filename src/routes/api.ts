@@ -54,8 +54,8 @@ const getChildren = async (path:string, knex:Knex) => {
   return data.map(i => {
     return {
       name: basename(i.path.substring(path.length)),
-      path: i.path,
-      cover: i.current || i.first,
+      path: toURI(i.path),
+      cover: toURI(i.current || i.first),
       totalCount: i.totalCount,
       totalSeen: i.seenCount
     }
