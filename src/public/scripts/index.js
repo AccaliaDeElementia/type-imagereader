@@ -14,15 +14,25 @@
       nextImage: () => Images.nextImage(),
       next: () => Images.next(),
       last: () => Images.last(),
-      parentFolder: () => { window.location = `/show${picturereaderdata.parent}` },
+      parentFolder: () => {
+        if (picturereaderdata.parent) {
+          window.location = `/show${picturereaderdata.parent}`
+        } else {
+          $('#mainImage').trigger('error')
+        }
+      },
       previousFolder: () => {
         if (picturereaderdata.prev && picturereaderdata.prev.path) {
           window.location = `/show${picturereaderdata.prev.path}`
+        } else {
+          $('#mainImage').trigger('error')
         }
       },
       nextFolder: () => {
         if (picturereaderdata.next && picturereaderdata.next.path) {
           window.location = `/show${picturereaderdata.next.path}`
+        } else {
+          $('#mainImage').trigger('error')
         }
       },
       viewFullSize: () => Images.open(),
@@ -35,7 +45,10 @@
       },
       markAllSeen: () => $.post('/api/mark/read', { path: picturereaderdata.path }, () => window.location.reload()),
       markAllUnseen: () => $.post('/api/mark/unread', { path: picturereaderdata.path }, () => window.location.reload()),
-      bookmark: () => Images.addBookmark()
+      bookmark: () => Images.addBookmark(),
+      slideshow: () => {
+        window.location.pathname = `/slideshow${picturereaderdata.path}`
+      }
     }
     $('.action-block .action-button').click(function () {
       const func = $(this).data('action')
@@ -51,7 +64,7 @@
       $('#pictures-tab').tab('show')
     }
 
-    if (!picturereaderdata.pictures.length || picturereaderdata.pictures.every(pic => pic.seen)) {
+    if (!picturereaderdata.pictures.count || picturereaderdata.pictures.pages.flat().every(pic => pic.seen)) {
       $('#mainMenu').show()
     } else {
       $('#mainImage img').show()
@@ -66,7 +79,7 @@
     MainMenu.visible = () => $('#mainMenu').is(':visible')
     MainMenu.show = () => $('#mainMenu').show()
     MainMenu.hide = () => {
-      if (!picturereaderdata.pictures.length) {
+      if (!picturereaderdata.pictures.count) {
         return
       }
       $('#mainMenu').hide()
@@ -91,7 +104,7 @@
     let after = () => {
       after = MainMenu.hide
     }
-    const pics = picturereaderdata.pictures
+    const pics = picturereaderdata.pictures.pages.flat()
     let index = 0
     pics.forEach((f, i) => {
       if (f.path === picturereaderdata.cover) {
@@ -103,10 +116,19 @@
         return
       }
       $('#loadingScreen').show()
+      if ($('#pictures-nav')) {
+        const page = Math.floor(index / $('#pictures-nav').data('pagesize')) + 1
+        $('#pictures-nav .page-item').removeClass('active')
+        $(`#pictures-nav .page-item[data-page=${page}]`).addClass('active')
+        $('#pictures .page').hide()
+        $(`#pictures .page[data-page=${page}]`).show()
+      } else {
+        $('#pictures .page').show()
+      }
       pic.seen = true
       $('title, nav .title').text(picturereaderdata.name)
       $('.status-bar .center, .description-title .title').text(pic.name)
-      $('.status-bar .left').text(`(${index + 1}/${picturereaderdata.pictures.length})`)
+      $('.status-bar .left').text(`(${index + 1}/${picturereaderdata.pictures.count})`)
       $.post('/api/navigate/latest', { path: pic.path })
       $('#mainImage img').attr('src', `/images/full${pic.path}`).data('path', pic.path).data('index', index)
       after()
@@ -155,6 +177,27 @@
 
     $('#pictures .card.picture').click(function () {
       changeImage(true, () => { index = +$(this).data('index') })
+    })
+
+    $('#pictures-nav .page-item').click(function () {
+      const current = $('#pictures-nav .page-item.active').data('page')
+      const pages = $('#pictures-nav').data('pages')
+      let page = $(this).data('page')
+      if (page === 'next') {
+        page = current < pages ? current + 1 : null
+      } else if (page === 'prev') {
+        page = current > 1 ? current - 1 : null
+      } else {
+        page = +page
+      }
+      if (!page || Number.isNaN(page)) {
+        $('#mainImage').trigger('error')
+        return
+      }
+      $('#pictures-nav .page-item').removeClass('active')
+      $(`#pictures-nav .page-item[data-page=${page}]`).addClass('active')
+      $('#pictures .page').hide()
+      $(`#pictures .page[data-page=${page}]`).show()
     })
   }
   Images()

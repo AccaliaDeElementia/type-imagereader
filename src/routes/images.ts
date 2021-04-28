@@ -1,10 +1,14 @@
 'use sanity'
 
-import { Router, Response } from 'express'
+import { Application, Router, Response } from 'express'
+import { Server as WebSocketServer } from 'socket.io'
+import { Server } from 'http'
 import { normalize, join, extname } from 'path'
 import { readFile } from 'fs/promises'
 
 import Sharp from 'sharp'
+
+import { BAD_REQUEST, NOT_FOUND, FORBIDDEN } from 'http-status-codes'
 
 const allowedExtensions = /^(jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
@@ -38,7 +42,7 @@ const readImage = async (path: string) => {
   if (normalize(path) !== path) {
     return ImageData.fromError(
       'ENOTRAVERSE',
-      403,
+      FORBIDDEN,
       'Directory Traversal is not Allowed!',
       path
     )
@@ -47,7 +51,7 @@ const readImage = async (path: string) => {
   if (!allowedExtensions.test(ext)) {
     return ImageData.fromError(
       'ENOTIMAGE',
-      400,
+      BAD_REQUEST,
       'Requested Path is Not An Image!',
       path
     )
@@ -58,7 +62,7 @@ const readImage = async (path: string) => {
   } catch (e) {
     return ImageData.fromError(
       'ENOTFOUND',
-      404,
+      NOT_FOUND,
       'Requested Path Not Found!',
       path
     )
@@ -106,7 +110,7 @@ const sendImage = async (image: ImageData, res: Response) => {
 }
 
 // Export the base-router
-export async function getRouter () {
+export async function getRouter (_: Application, __: Server, ___: WebSocketServer) {
   // Init router and path
   const router = Router()
 

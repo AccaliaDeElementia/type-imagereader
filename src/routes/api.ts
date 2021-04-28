@@ -1,10 +1,12 @@
 'use sanity'
 
-import { Router, Request, Response, RequestHandler } from 'express'
+import { Application, Router, Request, Response, RequestHandler } from 'express'
+import { Server as WebSocketServer } from 'socket.io'
+import { Server } from 'http'
+import { NOT_FOUND, FORBIDDEN, INTERNAL_SERVER_ERROR, OK } from 'http-status-codes'
 
 import { normalize, basename, dirname, sep } from 'path'
 
-import { updateSeenPictures } from '../utils/syncfolders'
 import persistance from '../utils/persistance'
 import Knex = require('knex')
 
@@ -63,7 +65,7 @@ const getChildren = async (path:string, knex:Knex) => {
 }
 
 const getPictures = async (path: string, knex:Knex) => {
-  const pictures = await knex('pictures')
+  const pictures = (await knex('pictures')
     .select(
       'path',
       'seen'
@@ -72,11 +74,24 @@ const getPictures = async (path: string, knex:Knex) => {
       folder: path
     })
     .orderBy('sortKey')
-  return pictures.map(pic => {
+  ).map((pic, index) => {
     pic.name = basename(pic.path)
     pic.path = toURI(pic.path)
+    pic.index = index
     return pic
   })
+  const pageSize = 10
+  const pages = []
+  const totalPages = pictures.length > 0 ? 1 + Math.floor(pictures.length / pageSize) : 0
+  for (let i = 0; i < totalPages; i++) {
+    pages.push(pictures.slice(i * pageSize, (i + 1) * pageSize))
+  }
+  return {
+    count: pictures.length,
+    pageSize,
+    totalPages,
+    pages
+  }
 }
 
 const getFolder = async (path: string, sortKey: string|null, knex: Knex, direction = 'this') => {
@@ -166,7 +181,7 @@ export async function getListing (path: string, knex: Knex) {
 const listing = async (path: string, knex: Knex, res: Response) => {
   const folder = await getListing(path, knex)
   if (!folder) {
-    res.status(404).json({
+    res.status(NOT_FOUND).json({
       error: {
         code: 'ENOTFOUND',
         message: 'Directory Not Found!',
@@ -178,39 +193,53 @@ const listing = async (path: string, knex: Knex, res: Response) => {
   res.json(folder)
 }
 
-const setLatest = async (knex: Knex, path: string) => {
+const parents = (path: string): string[] => {
+  const folders = []
+  let parent = path
+  while (parent && parent !== '/') {
+    parent = dirname(parent)
+    folders.push(`${parent}${parent !== '/' ? '/' : ''}`)
+  }
+  return folders
+}
+
+export async function setLatest (knex: Knex, path: string) {
   const folder = dirname(path) + sep
   const picture = await knex('pictures').select('seen').where({ path })
   if (!picture || !picture.length) {
     return
   } else if (!picture[0].seen) {
-    const parts = `${folder}`.split('/')
-    while (parts.length > 1) {
-      parts.pop()
-      const minipath = `${parts.join('/')}/`
-      const counter = await knex('folders').select('seenCount').where({
-        path: minipath
-      })
-      if (counter && counter.length) {
-        await knex('folders').update({
-          seenCount: +counter[0].seenCount + 1
-        }).where({
-          path: minipath
-        })
-      }
-    }
+    await knex('folders')
+      .increment('seenCount', 1)
+      .whereIn('path', parents(path))
   }
   await knex('folders').update({ current: path }).where({ path: folder })
   await knex('pictures').update({ seen: true }).where({ path })
+  return toURI(folder)
 }
 
 const markRead = async (knex: Knex, path: string, seenValue = true) => {
-  await knex('pictures').update({ seen: seenValue }).where('folder', 'like', `${path}%`)
+  const adjustment = +(await knex('pictures')
+    .count('path as adjustments')
+    .where('seen', '<>', seenValue)
+    .andWhere('folder', 'like', `${path}%`))[0].adjustments
+  await knex('pictures')
+    .update({ seen: seenValue })
+    .where('folder', 'like', `${path}%`)
+  await knex('folders')
+    .increment('seenCount', seenValue ? adjustment : -adjustment)
+    .whereIn('path', parents(path))
   if (!seenValue) {
-    await knex('folders').update({ current: null }).where('path', 'like', `${path}%`)
-    await knex('folders').update({ current: null }).where({ path })
+    await knex('folders')
+      .update({ current: null, seenCount: 0 })
+      .where('path', 'like', `${path}%`)
+      .orWhere({ path })
+  } else {
+    await knex('folders')
+      .update({ current: null, seenCount: knex.raw('"totalCount"') })
+      .where('path', 'like', `${path}%`)
+      .orWhere({ path })
   }
-  await updateSeenPictures(knex)
 }
 
 const addBookmark = async (knex: Knex, path: string) => {
@@ -281,7 +310,7 @@ export async function getBookmarks (knex: Knex, path: string) {
 }
 
 // Export the base-router
-export async function getRouter () {
+export async function getRouter (_: Application, __: Server, ___: WebSocketServer) {
   const knex = await persistance.initialize()
   // Init router and path
   const router = Router()
@@ -294,7 +323,7 @@ export async function getRouter () {
     } catch (e) {
       logger(`Error rendering: ${req.originalUrl}`, req.body)
       logger(e)
-      res.status(500).json({
+      res.status(INTERNAL_SERVER_ERROR).json({
         error: {
           code: 'EINTERNALERROR',
           message: 'Internal Server Error'
@@ -308,7 +337,7 @@ export async function getRouter () {
       path = fromURI(path)
     }
     if (normalize(path) !== path) {
-      res.status(400).json({
+      res.status(FORBIDDEN).json({
         error: {
           code: 'ENOTRAVERSE',
           message: 'Directory Traversal is not Allowed!',
@@ -325,7 +354,7 @@ export async function getRouter () {
   }))
 
   router.get('/healthcheck', handleErrors(async (_, res) => {
-    res.status(200).send('OK')
+    res.status(OK).send('OK')
   }))
 
   router.get('/listing/*', handleErrors(async (req, res) => {
@@ -344,7 +373,7 @@ export async function getRouter () {
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await setLatest(knex, path)
-      res.status(200).end()
+      res.status(OK).end()
     }
   }))
 
@@ -352,7 +381,7 @@ export async function getRouter () {
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await markRead(knex, path, true)
-      res.status(200).end()
+      res.status(OK).end()
     }
   }))
 
@@ -360,7 +389,7 @@ export async function getRouter () {
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await markRead(knex, path, false)
-      res.status(200).end()
+      res.status(OK).end()
     }
   }))
 
@@ -383,7 +412,7 @@ export async function getRouter () {
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await addBookmark(knex, path)
-      res.status(200).end()
+      res.status(OK).end()
     }
   }))
 
@@ -391,7 +420,7 @@ export async function getRouter () {
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await removeBookmark(knex, path)
-      res.status(200).end()
+      res.status(OK).end()
     }
   }))
 

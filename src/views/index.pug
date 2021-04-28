@@ -76,6 +76,9 @@ block content
                   name: 'Parent Folder',
                   image: 'folder'
                 }, {
+                  name: 'Slideshow',
+                  image: 'slideshow'
+                }, {
                   name: 'Mark All Unseen',
                   image: 'check_box_outline_blank'
                 }
@@ -128,15 +131,29 @@ block content
         div.tab-pane.action-block#pictures(role="tabpanel")
           +actionSection
           h3 Pictures
+          if data.pictures.totalPages > 1
+            nav#pictures-nav(aria-label='Pictures' data-pagesize=data.pictures.pageSize data-pages=data.pictures.totalPages)
+              ul.pagination.d-flexd.flex-wrap
+                li.page-item(data-page='prev')
+                  a.page-link(href='#' aria-label='Previous')
+                    span(aria-hidden='true') &laquo;
+                each _, i in data.pictures.pages
+                  li.page-item(data-page=(i + 1))
+                    a.page-link.active(href='#')= (i + 1)
+                li.page-item(data-page='next')
+                  a.page-link(href='#' aria-label='Next')
+                    span(aria-hidden='true') &raquo;
           div.d-fled.flex-wrap.justify-content-center.w-100
-            each picture, index in data.pictures
-              div(class=`card d-inline-block m-2 picture ${picture.seen ? 'text-success' : 'text-primary'}`, data-index=index)
-                img.card-img-top(src=`/images/preview${picture.path}` alt=picture.name)
-                div.card-body
-                  h5.card-title
-                    span 
-                      i.material-icons photo
-                    span= picture.name
+            each pictures, page in data.pictures.pages
+              div.page(data-page=(page + 1) style="display: none;")
+                each picture, index in pictures
+                  div(class=`card d-inline-block m-2 picture ${picture.seen ? 'text-success' : 'text-primary'}` data-index=index)
+                    img.card-img-top(src=`/images/preview${picture.path}` alt=picture.name)
+                    div.card-body
+                      h5.card-title
+                        span 
+                          i.material-icons photo
+                        span= picture.name
         div.tab-pane.action-block#bookmarks(role="tabpanel")
           +actionSection
           mixin bookmarkCard(mark)

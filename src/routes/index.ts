@@ -1,4 +1,7 @@
-import { Router, Request, Response, RequestHandler } from 'express'
+import { Application, Router, Request, Response, RequestHandler } from 'express'
+import { Server as WebSocketServer } from 'socket.io'
+import { Server } from 'http'
+import { NOT_FOUND, FORBIDDEN, INTERNAL_SERVER_ERROR } from 'http-status-codes'
 
 import { normalize } from 'path'
 
@@ -14,9 +17,9 @@ export function handleErrors (prefix: string, action: (req: Request, res: Respon
       await action(req, res)
     } catch (e) {
       logger(`Error rendering: ${req.originalUrl}`, e, e.stack)
-      res.status(500).render('error', {
+      res.status(INTERNAL_SERVER_ERROR).render('error', {
         title: 'ERROR',
-        code: 'EINTERNALERROR',
+        code: 'E_INTERNAL_ERROR',
         message: e.message || 'Internal Server Error',
         stack: e.stack
       })
@@ -25,7 +28,7 @@ export function handleErrors (prefix: string, action: (req: Request, res: Respon
 }
 
 // Export the base-router
-export async function getRouter () {
+export async function getRouter (_: Application, __: Server, ___: WebSocketServer) {
   // Init router and path
   const router = Router()
 
@@ -34,19 +37,19 @@ export async function getRouter () {
   const rootRoute = async (req: Request, res: Response) => {
     const folder = '/' + (req.params[0] || '')
     if (normalize(folder) !== folder) {
-      res.status(400).json({
+      res.status(FORBIDDEN).render('error', {
         error: {
-          code: 'ENOTRAVERSE',
-          message: 'Directory Traversal is not Allowed!',
-          path: folder
+          title: 'ERROR',
+          code: 'E_NO_TRAVERSE',
+          message: 'Directory Traversal is not Allowed!'
         }
       })
     }
     const data = await getListing(folder, knex)
     if (!data) {
-      res.status(500).render('error', {
+      res.status(NOT_FOUND).render('error', {
         title: 'ERROR',
-        code: 'ENOTFOUND',
+        code: 'E_NOT_FOUND',
         message: 'Not Found'
       })
       return
