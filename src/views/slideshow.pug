@@ -1,0 +1,26 @@
+html
+  head
+    meta(name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=8.0,width=device-width,user-scalable=yes")
+    title= title
+    link(rel='stylesheet', href='/stylesheets/slideshow.css')
+    script(src='/scripts/jquery-3.6.0.min.js', integrity='sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK')
+    script(src='/socket.io/socket.io.js')
+  body
+    img.topImage(src=`/images/full${image}`)
+    img.bottomImage(src=`/images/full${image}`)
+    div.text.datetime
+      div.time
+      div.date
+    div.text.weather(style='display: none')
+      div.temp
+      div.desc
+        span.desctext
+        img.icon
+    div.text.localweather(style='display: none')
+      div.temp
+      div.desc
+        span.desctext
+        img.icon
+    script.
+      const SlideshowRoom = '!{folder}'
+    script(src='/scripts/slideshow.js')
