@@ -133,7 +133,7 @@ block content
           h3 Pictures
           if data.pictures.totalPages > 1
             nav#pictures-nav(aria-label='Pictures' data-pagesize=data.pictures.pageSize data-pages=data.pictures.totalPages)
-              ul.pagination.d-flexd.flex-wrap
+              ul.pagination.d-flexd.flex-wrap.justify-content-center
                 li.page-item(data-page='prev')
                   a.page-link(href='#' aria-label='Previous')
                     span(aria-hidden='true') &laquo;
@@ -148,7 +148,7 @@ block content
               div.page(data-page=(page + 1) style="display: none;")
                 each picture, index in pictures
                   div(class=`card d-inline-block m-2 picture ${picture.seen ? 'text-success' : 'text-primary'}` data-index=index)
-                    img.card-img-top(src=`/images/preview${picture.path}` alt=picture.name)
+                    img.card-img-top(data-src=`/images/preview${picture.path}` alt=picture.name)
                     div.card-body
                       h5.card-title
                         span 

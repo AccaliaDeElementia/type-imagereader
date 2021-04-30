@@ -122,6 +122,12 @@
         $(`#pictures-nav .page-item[data-page=${page}]`).addClass('active')
         $('#pictures .page').hide()
         $(`#pictures .page[data-page=${page}]`).show()
+        $(`#pictures .page[data-page=${page}] img`).each(function () {
+          const src = $(this).data('src')
+          if (src && $(this).attr('src') !== src) {
+            $(this).attr('src', src)
+          }
+        })
       } else {
         $('#pictures .page').show()
       }
@@ -198,6 +204,12 @@
       $(`#pictures-nav .page-item[data-page=${page}]`).addClass('active')
       $('#pictures .page').hide()
       $(`#pictures .page[data-page=${page}]`).show()
+      $(`#pictures .page[data-page=${page}] img`).each(function () {
+        const src = $(this).data('src')
+        if (src && $(this).attr('src') !== src) {
+          $(this).attr('src', src)
+        }
+      })
     })
   }
   Images()

@@ -80,7 +80,7 @@ const getPictures = async (path: string, knex:Knex) => {
     pic.index = index
     return pic
   })
-  const pageSize = 10
+  const pageSize = 32
   const pages = []
   const totalPages = pictures.length > 0 ? 1 + Math.floor(pictures.length / pageSize) : 0
   for (let i = 0; i < totalPages; i++) {
