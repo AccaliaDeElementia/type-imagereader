@@ -116,7 +116,7 @@
         return
       }
       $('#loadingScreen').show()
-      if ($('#pictures-nav')) {
+      if ($('#pictures-nav').length) {
         const page = Math.floor(index / $('#pictures-nav').data('pagesize')) + 1
         $('#pictures-nav .page-item').removeClass('active')
         $(`#pictures-nav .page-item[data-page=${page}]`).addClass('active')
@@ -130,6 +130,12 @@
         })
       } else {
         $('#pictures .page').show()
+        $('#pictures .page img').each(function () {
+          const src = $(this).data('src')
+          if (src && $(this).attr('src') !== src) {
+            $(this).attr('src', src)
+          }
+        })
       }
       pic.seen = true
       $('title, nav .title').text(picturereaderdata.name)
