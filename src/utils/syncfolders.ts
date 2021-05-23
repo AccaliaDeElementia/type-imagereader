@@ -134,7 +134,7 @@ interface Folder {
   seenCount: number
 }
 
-export async function updateSeenPictures (knex: Knex) {
+const updateSeenPictures = async (knex: Knex) => {
   const logger = debug(`${logPrefix}:updateSeen`)
   logger('Updating Seen Counts')
   const folderInfos = await knex('pictures')
