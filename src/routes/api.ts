@@ -37,18 +37,25 @@ const getChildren = async (path:string, knex:Knex) => {
       })
       .groupBy('pictures.folder')
   )
+    .with('firstImages',
+      qb => qb
+        .select('firsts.folder')
+        .min('pictures.path as path')
+        .from('firsts')
+        .leftJoin('pictures',
+          (jc) => jc.on('pictures.folder', 'firsts.folder')
+            .andOn('pictures.sortKey', 'firsts.sortKey'))
+        .groupBy('firsts.folder')
+    )
     .select(
       'folders.path',
       'folders.current',
       'folders.totalCount',
       'folders.seenCount',
-      'pictures.path AS first'
+      'firstImages.path as first'
     )
     .from('folders')
-    .leftJoin('firsts', 'firsts.folder', '=', 'folders.path')
-    .leftJoin('pictures',
-      (jc) => jc.on('pictures.folder', 'firsts.folder')
-        .andOn('pictures.sortKey', 'firsts.sortKey'))
+    .leftJoin('firstImages', 'firstImages.folder', '=', 'folders.path')
     .where({
       'folders.folder': path
     })
