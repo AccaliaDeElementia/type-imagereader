@@ -146,8 +146,8 @@ block content
           div.d-fled.flex-wrap.justify-content-center.w-100
             each pictures, page in data.pictures.pages
               div.page(data-page=(page + 1) style="display: none;")
-                each picture, index in pictures
-                  div(class=`card d-inline-block m-2 picture ${picture.seen ? 'text-success' : 'text-primary'}` data-index=index)
+                each picture in pictures
+                  div(class=`card d-inline-block m-2 picture ${picture.seen ? 'text-success' : 'text-primary'}` data-index=picture.index)
                     img.card-img-top(data-src=`/images/preview${picture.path}` alt=picture.name)
                     div.card-body
                       h5.card-title
