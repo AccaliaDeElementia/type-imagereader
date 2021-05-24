@@ -243,7 +243,7 @@ const markRead = async (knex: Knex, path: string, seenValue = true) => {
       .orWhere({ path })
   } else {
     await knex('folders')
-      .update({ current: null, seenCount: knex.raw('"totalCount"') })
+      .update({ seenCount: knex.raw('"totalCount"') })
       .where('path', 'like', `${path}%`)
       .orWhere({ path })
   }
