@@ -80,7 +80,7 @@ const getPictures = async (path: string, knex:Knex) => {
     .where({
       folder: path
     })
-    .orderBy('sortKey')
+    .orderBy('sortKey', 'path')
   ).map((pic, index) => {
     pic.name = basename(pic.path)
     pic.path = toURI(pic.path)
