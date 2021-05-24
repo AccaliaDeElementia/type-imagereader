@@ -62,12 +62,11 @@
   function MainMenu () {
     if (!picturereaderdata.children.length) {
       $('#pictures-tab').tab('show')
+      $('#mainImage img').show()
     }
 
     if (!picturereaderdata.pictures.count || picturereaderdata.pictures.pages.flat().every(pic => pic.seen)) {
       $('#mainMenu').show()
-    } else {
-      $('#mainImage img').show()
     }
 
     $('input[name=ShowUnseenOnly]').change(() => {
