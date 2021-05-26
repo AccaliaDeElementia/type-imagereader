@@ -1,6 +1,6 @@
 'use sanity'
 
-import Knex = require('knex')
+import { knex, Knex } from 'knex'
 
 const initialize = async (): Promise<Knex> => {
   const environment = process.env.DB_CLIENT || 'sqlite3'
@@ -12,9 +12,9 @@ const initialize = async (): Promise<Knex> => {
       connection.connection[key] = value
     }
   })
-  const knex = require('knex')(connection)
-  await knex.migrate.latest()
-  return knex
+  const knexInstance = knex(connection)
+  await knexInstance.migrate.latest()
+  return knexInstance
 }
 
 const initializer = initialize()

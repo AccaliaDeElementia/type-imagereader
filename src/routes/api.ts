@@ -8,7 +8,7 @@ import { NOT_FOUND, FORBIDDEN, INTERNAL_SERVER_ERROR, OK } from 'http-status-cod
 import { normalize, basename, dirname, sep } from 'path'
 
 import persistance from '../utils/persistance'
-import Knex = require('knex')
+import { Knex } from 'knex'
 
 const debug = require('debug')
 

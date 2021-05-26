@@ -7,13 +7,17 @@ import { normalize, dirname } from 'path'
 
 import persistance from '../utils/persistance'
 import { setLatest } from './api'
-import Knex = require('knex')
+import { Knex } from 'knex'
 
 interface SlideshowRoom {
   countdown: number,
   index: number,
   path: string,
   images: string[]
+}
+
+interface ImageWithPath {
+  path: string
 }
 
 const rooms: {[name: string]: SlideshowRoom} = {}
@@ -28,7 +32,7 @@ const getImages = async (knex:Knex, path: string, count: number): Promise<string
     .orderBy('seen')
     .orderByRaw('RANDOM()')
     .limit(count))
-    .map(img => img.path)
+    .map((img: ImageWithPath) => img.path)
 }
 
 const getRoom = async (knex: Knex, io: WebSocketServer, roomName: string) => {

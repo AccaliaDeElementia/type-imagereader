@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Application, Router, Response } from 'express'
+import { Application, Router, Request, Response, RequestHandler } from 'express'
 import { Server as WebSocketServer } from 'socket.io'
 import { Server } from 'http'
 import { normalize, join, extname } from 'path'
@@ -8,7 +8,9 @@ import { readFile } from 'fs/promises'
 
 import Sharp from 'sharp'
 
-import { BAD_REQUEST, NOT_FOUND, FORBIDDEN } from 'http-status-codes'
+import { BAD_REQUEST, NOT_FOUND, FORBIDDEN, INTERNAL_SERVER_ERROR } from 'http-status-codes'
+
+import debug from 'debug'
 
 const allowedExtensions = /^(jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
@@ -114,17 +116,34 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   // Init router and path
   const router = Router()
 
-  router.get('/full/*', async (req, res) => {
+  const logger = debug('type-imagereader:images')
+
+  const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler => async (req: Request, res: Response) => {
+    try {
+      await action(req, res)
+    } catch (e) {
+      logger(`Error rendering: ${req.originalUrl}`, req.body)
+      logger(e)
+      res.status(INTERNAL_SERVER_ERROR).json({
+        error: {
+          code: 'EINTERNALERROR',
+          message: 'Internal Server Error'
+        }
+      })
+    }
+  }
+
+  router.get('/full/*', handleErrors(async (req, res) => {
     const filename = `/${req.params[0] || ''}`
     const image = await readImage(filename)
     await sendImage(image, res)
-  })
+  }))
 
-  router.get('/preview/*', async (req, res) => {
+  router.get('/preview/*', handleErrors(async (req, res) => {
     const filename = `/${req.params[0] || ''}`
     const image = await readImage(filename)
     await resizePreview(image)
     await sendImage(image, res)
-  })
+  }))
   return router
 }

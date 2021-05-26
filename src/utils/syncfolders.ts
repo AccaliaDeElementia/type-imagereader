@@ -4,9 +4,9 @@ import persistance from './persistance'
 import fsWalker from './fswalker'
 import wordsToNumbers from 'words-to-numbers'
 import posix from 'path'
-import Knex from 'knex'
+import { Knex } from 'knex'
 
-const debug = require('debug')
+import debug from 'debug'
 const logPrefix = 'type-imagereader:syncfolders'
 
 const padLength = 20
@@ -80,7 +80,7 @@ const syncPictures = async (knex:Knex) => {
     })
   logger(`Added ${insertedpics[0] || insertedpics.rowCount} new pictures`)
   const deletedpics = await knex('pictures')
-    .whereNotExists(function () {
+    .whereNotExists(function (this: Knex.QueryBuilder) {
       this.select('*')
         .from('syncitems')
         .whereRaw('syncitems.path = pictures.path')
@@ -88,7 +88,7 @@ const syncPictures = async (knex:Knex) => {
     .delete()
   logger(`Removed ${deletedpics} missing pictures`)
   const removedBookmarks = await knex('bookmarks')
-    .whereNotExists(function () {
+    .whereNotExists(function (this: Knex.QueryBuilder) {
       this.select('*')
         .from('pictures')
         .whereRaw('pictures.path = bookmarks.path')
@@ -110,7 +110,7 @@ const syncFolders = async (knex:Knex) => {
     })
   logger(`Added ${folders[0] || folders.rowCount} new folders`)
   const deletedfolders = await knex('folders')
-    .whereNotExists(function () {
+    .whereNotExists(function (this: Knex.QueryBuilder) {
       this.select('*')
         .from('syncitems')
         .whereRaw('syncitems.path = folders.path')
@@ -119,7 +119,7 @@ const syncFolders = async (knex:Knex) => {
   logger(`Removed ${deletedfolders} missing folders`)
   const removedCoverImages = await knex('folders')
     .update({ current: '' })
-    .whereNotExists(function () {
+    .whereNotExists(function (this: Knex.QueryBuilder) {
       this.select('*')
         .from('pictures')
         .whereRaw('pictures.path = folders.current')
