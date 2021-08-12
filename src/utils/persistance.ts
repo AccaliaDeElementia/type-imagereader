@@ -1,6 +1,7 @@
 'use sanity'
 
-import { knex, Knex } from 'knex'
+import * as Knex from 'knex'
+const knex = require('knex')
 
 const initialize = async (): Promise<Knex> => {
   const environment = process.env.DB_CLIENT || 'sqlite3'

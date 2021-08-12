@@ -1,3 +1,5 @@
+'use sanity'
+
 import { Application, Router, Request, Response } from 'express'
 import { Server as WebSocketServer } from 'socket.io'
 import { Server } from 'http'
@@ -7,7 +9,8 @@ import { normalize, dirname } from 'path'
 
 import persistance from '../utils/persistance'
 import { setLatest } from './api'
-import { Knex } from 'knex'
+
+import * as Knex from 'knex'
 
 interface SlideshowRoom {
   countdown: number,

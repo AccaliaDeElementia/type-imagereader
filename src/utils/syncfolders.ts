@@ -4,7 +4,7 @@ import persistance from './persistance'
 import fsWalker from './fswalker'
 import wordsToNumbers from 'words-to-numbers'
 import posix from 'path'
-import { Knex } from 'knex'
+import * as Knex from 'knex'
 
 import debug from 'debug'
 const logPrefix = 'type-imagereader:syncfolders'

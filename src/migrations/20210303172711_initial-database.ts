@@ -1,4 +1,6 @@
-import { Knex } from 'knex'
+'use sanity'
+
+import * as Knex from 'knex'
 
 export async function up (knex: Knex): Promise<void> {
   return knex.schema.createTable('pictures', (table) => {
