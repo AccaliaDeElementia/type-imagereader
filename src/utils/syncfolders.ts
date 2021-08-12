@@ -80,7 +80,7 @@ const syncPictures = async (knex:Knex) => {
     })
   logger(`Added ${insertedpics[0] || insertedpics.rowCount} new pictures`)
   const deletedpics = await knex('pictures')
-    .whereNotExists(function (this: Knex.QueryBuilder) {
+    .whereNotExists(function () {
       this.select('*')
         .from('syncitems')
         .whereRaw('syncitems.path = pictures.path')
