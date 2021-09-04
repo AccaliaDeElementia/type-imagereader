@@ -29,7 +29,9 @@ ENV DB_CLIENT="postgresql" \
     DB_DATABASE="postgresql" \
     DB_USER="postgresql" \
     DB_PASSWORD="please let me in" \
-    DB_FILENAME="docker_database.sqlite3" 
+    DB_FILENAME="docker_database.sqlite3" \
+    OPENWEATHER_APPID=''\
+    OPENWEATHER_LOCATION='London,UK'
 
 VOLUME /data
 WORKDIR /app/dist
