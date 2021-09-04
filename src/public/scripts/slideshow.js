@@ -1,14 +1,14 @@
-/* global io, SlideshowRoom, location */
+/* global io, SlideshowRoom, location, XMLHttpRequest */
 (function () {
-  const timeRefresh = 1000
-  // const weatherRefresh = 10 * 60 * 1000
+  const timeRefresh = 100
+  const weatherRefresh = 0.5 * 60 * 1000
 
   const socket = io()
   socket.on('connect', () => {
     socket.emit('join-slideshow', SlideshowRoom)
   })
   socket.on('new-image', (path) => {
-    for (const elem of document.querySelectorAll('img')) {
+    for (const elem of document.querySelectorAll('img.mainImage')) {
       elem.src = `/images/full${path}`
     }
   })
@@ -24,6 +24,51 @@
   setInterval(() => {
     updateTime()
   }, timeRefresh)
+
+  const fetchDisplayWeather = (node, url) => {
+    const request = new XMLHttpRequest()
+    request.open('GET', url, true)
+    request.onload = () => {
+      if (request.status >= 200 && request.status < 400) {
+        const weather = JSON.parse(request.responseText)
+        const fmt = (d, suffix = '') => {
+          if (d === undefined || d === null) {
+            return ''
+          } else if (typeof d === 'number') {
+            return `${d.toFixed(1)}${suffix}`
+          } else {
+            return `${d}${suffix}`
+          }
+        }
+        const show = (field, text) => {
+          if (!text) {
+            field.style.display = 'none'
+            return
+          }
+          field.style.display = 'flex'
+        }
+        show(node, weather.temp)
+        node.querySelector('.temp').innerHTML = fmt(weather.temp, '&deg;C')
+        show(node.querySelector('.desc'), weather.description)
+        node.querySelector('.desctext').innerHTML = fmt(weather.description)
+        node.querySelector('.icon').src = `https://openweathermap.org/img/w/${fmt(weather.icon)}.png`
+      } else {
+        node.style.display = 'none'
+      }
+    }
+    request.onerror = () => {
+      node.style.display = 'none'
+    }
+    request.send()
+  }
+
+  const getWeather = () => {
+    fetchDisplayWeather(document.querySelector('.weather'), '/weather')
+    fetchDisplayWeather(document.querySelector('.localweather'), 'http://localhost:8080/')
+  }
+  setInterval(getWeather, weatherRefresh)
+  getWeather()
+
 
   function MouseFingers () {
     const initialScale = window.visualViewport ? window.visualViewport.scale : 1

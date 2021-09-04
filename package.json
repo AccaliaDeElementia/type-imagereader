@@ -11,7 +11,7 @@
     "lint": "eslint . --ext .ts",
     "start": "cd ./dist && node .; cd ..",
     "pretest": "npm run build",
-    "test": "node ./dist/test.js",
+    "test": "cd ./src && ts-node .; cd ..",
     "knex": "knex --knexfile src/knexfile.ts",
     "predev": "npm run build",
     "dev": "npm start"

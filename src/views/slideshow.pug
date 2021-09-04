@@ -6,8 +6,8 @@ html
     script(src='/scripts/jquery-3.6.0.min.js', integrity='sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK')
     script(src='/socket.io/socket.io.js')
   body
-    img.topImage(src=`/images/full${image}`)
-    img.bottomImage(src=`/images/full${image}`)
+    img.mainImage.topImage(src=`/images/full${image}`)
+    img.mainImage.bottomImage(src=`/images/full${image}`)
     div.text.datetime
       div.time
       div.date

@@ -12,6 +12,9 @@ import { setLatest } from './api'
 
 import * as Knex from 'knex'
 
+import debug from 'debug'
+const logger = debug('type-imagereader:routes:slideshow')
+
 interface SlideshowRoom {
   countdown: number,
   index: number,
@@ -55,37 +58,42 @@ const getRoom = async (knex: Knex, io: WebSocketServer, roomName: string) => {
 }
 
 const changeImage = async (knex: Knex, io: WebSocketServer, room: SlideshowRoom, offset: number = 1) => {
-  room.index += offset
-  if (room.index < 0) {
-    const images = await getImages(knex, room.path, lookbehindSize)
-    room.images = images.concat(room.images.slice(0, lookaheadSize))
-    room.index = images.length - 1
-  } else if (room.index >= room.images.length) {
-    const images = await getImages(knex, room.path, lookbehindSize)
-    room.images = room.images.slice(-lookbehindSize).concat(images)
-    room.index = lookbehindSize
-  }
-  room.countdown = countdownDuration
-  const image: string = room.images[room.index]
-  const picture = await knex('pictures')
-    .select('seen')
-    .where({
-      seen: false,
-      path: image
-    })
-  if (picture && picture.length) {
-    const folders = []
-    let path = image
-    while (path && path !== '/') {
-      path = dirname(path)
-      folders.push(`${path}${path !== '/' ? '/' : ''}`)
+  try {
+    room.index += offset
+    if (room.index < 0) {
+      const images = await getImages(knex, room.path, lookbehindSize)
+      room.images = images.concat(room.images.slice(0, lookaheadSize))
+      room.index = images.length - 1
+    } else if (room.index >= room.images.length) {
+      const images = await getImages(knex, room.path, lookbehindSize)
+      room.images = room.images.slice(-lookbehindSize).concat(images)
+      room.index = lookbehindSize
     }
-    await knex('folders')
-      .increment('seenCount', 1)
-      .whereIn('path', folders)
-    await knex('pictures').update({ seen: true }).where({ path: image })
+    room.countdown = countdownDuration
+    const image: string = room.images[room.index]
+    const picture = await knex('pictures')
+      .select('seen')
+      .where({
+        seen: false,
+        path: image
+      })
+    if (picture && picture.length) {
+      const folders = []
+      let path = image
+      while (path && path !== '/') {
+        path = dirname(path)
+        folders.push(`${path}${path !== '/' ? '/' : ''}`)
+      }
+      await knex('folders')
+        .increment('seenCount', 1)
+        .whereIn('path', folders)
+      await knex('pictures').update({ seen: true }).where({ path: image })
+    }
+    io.to(room.path).emit('new-image', image.split('/').map((part: string) => encodeURIComponent(part)).join('/'))
+  } catch (e) {
+    io.to(room.path).emit('error-selecting-image')
+    logger('error changing image', e.message, e.stack)
   }
-  io.to(room.path).emit('new-image', image.split('/').map((part: string) => encodeURIComponent(part)).join('/'))
 }
 
 export async function getRouter (_: Application, __: Server, io: WebSocketServer) {

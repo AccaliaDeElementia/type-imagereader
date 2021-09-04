@@ -12,6 +12,7 @@ import { getRouter as getApiRouter } from './routes/api'
 import { getRouter as getImagesRouter } from './routes/images'
 import { getRouter as getRootRouter } from './routes/index'
 import { getRouter as getSlideshowRouter } from './routes/slideshow'
+import { getRouter as getWeatherRouter } from './routes/weather'
 
 import sassMiddleware from 'node-sass-middleware'
 
@@ -38,6 +39,7 @@ export default async function start (port: number) {
   app.use('/api', await getApiRouter(app, server, websockets))
   app.use('/images', await getImagesRouter(app, server, websockets))
   app.use('/slideshow', await getSlideshowRouter(app, server, websockets))
+  app.use('/weather', await getWeatherRouter(app, server, websockets))
 
   app.use((err: Error, _: Request, res: Response, __: NextFunction) => {
     console.log(res)
