@@ -69,7 +69,6 @@
   setInterval(getWeather, weatherRefresh)
   getWeather()
 
-
   function MouseFingers () {
     const initialScale = window.visualViewport ? window.visualViewport.scale : 1
     document.querySelector('body').onclick = event => {
@@ -83,9 +82,13 @@
       } else if (x > pageWidth * 2 / 3) {
         socket.emit('next-image')
       } else {
-        socket.emit('goto-image', (folder) => {
-          location.pathname = `/show${folder}`
-        })
+        if (new URLSearchParams(window.location.search).has('kiosk')) {
+          socket.emit('next-image')
+        } else {
+          socket.emit('goto-image', (folder) => {
+            location.pathname = `/show${folder}`
+          })
+        }
       }
     }
   }
