@@ -15,6 +15,8 @@ interface WeatherResults {
   humidity: number|undefined
   description: string|undefined
   icon: string|undefined
+  sunrise: number|undefined
+  sunset: number|undefined
 }
 
 interface OpenWeatherData {
@@ -28,7 +30,11 @@ interface OpenWeatherData {
       main: string
       icon: string
     }
-  ]
+  ],
+  sys: {
+    sunrise: number
+    sunset: number
+  }
 }
 
 const getWeather = ():Promise<OpenWeatherData> => new Promise((resolve, reject) => {
@@ -57,7 +63,9 @@ const weather:WeatherResults = {
   pressure: undefined,
   humidity: undefined,
   description: undefined,
-  icon: undefined
+  icon: undefined,
+  sunrise: undefined,
+  sunset: undefined
 }
 const updateWeather = () => getWeather()
   .then(data => {
@@ -68,6 +76,8 @@ const updateWeather = () => getWeather()
     }
     weather.description = (data.weather[0] || {}).main
     weather.icon = (data.weather[0] || {}).icon
+    weather.sunrise = 1000 * data.sys.sunrise
+    weather.sunset = 1000 * data.sys.sunset
     return weather
   }, () => {
     weather.temp = undefined
@@ -75,6 +85,8 @@ const updateWeather = () => getWeather()
     weather.humidity = undefined
     weather.description = undefined
     weather.icon = undefined
+    weather.sunrise = undefined
+    weather.sunset = undefined
     return weather
   })
 

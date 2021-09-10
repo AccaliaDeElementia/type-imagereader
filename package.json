@@ -14,7 +14,7 @@
     "test": "cd ./src && ts-node .; cd ..",
     "knex": "knex --knexfile src/knexfile.ts",
     "predev": "npm run build",
-    "dev": "npm start"
+    "dev": "cd ./src && ts-node .; cd .."
   },
   "repository": {
     "type": "git",

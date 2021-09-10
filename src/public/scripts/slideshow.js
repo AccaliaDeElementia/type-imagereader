@@ -2,6 +2,10 @@
 (function () {
   const timeRefresh = 100
   const weatherRefresh = 0.5 * 60 * 1000
+  let sunrise = null
+  let sunset = null
+  const fadein = 30 * 60 * 100
+  const maxOpacity = 50
 
   const socket = io()
   socket.on('connect', () => {
@@ -19,13 +23,23 @@
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     document.querySelector('.time').innerHTML = `${('00' + now.getHours()).slice(-2)}:${('00' + now.getMinutes()).slice(-2)}`
     document.querySelector('.date').innerHTML = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`
+    if (!(new URLSearchParams(window.location.search).has('kiosk'))) {
+      return
+    }
+    let offset = 0
+    if (now < sunrise) {
+      offset = sunrise - now
+    } else if (now > sunset) {
+      offset = now - sunset
+    }
+    document.querySelector('.overlay').style.opacity = `${Math.min(maxOpacity * (offset / fadein), maxOpacity)}%`
   }
   updateTime()
   setInterval(() => {
     updateTime()
   }, timeRefresh)
 
-  const fetchDisplayWeather = (node, url) => {
+  const fetchDisplayWeather = (node, url, callback = () => 0) => {
     const request = new XMLHttpRequest()
     request.open('GET', url, true)
     request.onload = () => {
@@ -52,8 +66,10 @@
         show(node.querySelector('.desc'), weather.description)
         node.querySelector('.desctext').innerHTML = fmt(weather.description)
         node.querySelector('.icon').src = `https://openweathermap.org/img/w/${fmt(weather.icon)}.png`
+        callback(null, weather)
       } else {
         node.style.display = 'none'
+        callback(new Error('No Weather!'), null)
       }
     }
     request.onerror = () => {
@@ -63,7 +79,21 @@
   }
 
   const getWeather = () => {
-    fetchDisplayWeather(document.querySelector('.weather'), '/weather')
+    fetchDisplayWeather(document.querySelector('.weather'), '/weather', (err, weather) => {
+      if (!err) {
+        sunrise = weather.sunrise
+        sunset = weather.sunset
+      } else {
+        const today = new Date()
+        today.setMilliseconds(0)
+        today.setSeconds(0)
+        today.setMinutes(0)
+        today.setHours(6)
+        sunrise = today.getTime()
+        today.setHours(21)
+        sunset = today.getTime()
+      }
+    })
     fetchDisplayWeather(document.querySelector('.localweather'), 'http://localhost:8080/')
   }
   setInterval(getWeather, weatherRefresh)
