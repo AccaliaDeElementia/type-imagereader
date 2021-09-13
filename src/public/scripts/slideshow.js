@@ -5,7 +5,7 @@
   let sunrise = null
   let sunset = null
   const fadein = 30 * 60 * 100
-  const maxOpacity = 50
+  const maxOpacity = 0.75 // in percent.
 
   const socket = io()
   socket.on('connect', () => {
@@ -32,7 +32,7 @@
     } else if (now > sunset) {
       offset = now - sunset
     }
-    document.querySelector('.overlay').style.opacity = `${Math.min(maxOpacity * (offset / fadein), maxOpacity)}%`
+    document.querySelector('.overlay').style.opacity = `${Math.min(maxOpacity * (offset / fadein), maxOpacity)}`
   }
   updateTime()
   setInterval(() => {
