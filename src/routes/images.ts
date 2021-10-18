@@ -92,6 +92,31 @@ const resizePreview = async (image: ImageData) => {
   }
 }
 
+const resizeKiosk = async (image: ImageData) => {
+  if (image.code !== null) {
+    return // Image already has an error
+  }
+  try {
+    let sharp = Sharp(image.data, { animated: true })
+    const metadata = await sharp.metadata()
+    sharp = sharp.rotate()
+    if (metadata.pages === undefined || metadata.pages === 1) {
+      // Resizing Animated gifs/webp not yet supported well :'(
+      sharp = sharp.resize({
+        width: 1280,
+        height: 720,
+        fit: Sharp.fit.inside,
+        withoutEnlargement: true
+      })
+    }
+    image.data = await sharp
+      .webp()
+      .toBuffer()
+    image.extension = 'webp'
+  } catch (e) {
+  }
+}
+
 const sendImage = async (image: ImageData, res: Response) => {
   const aMonth = 1000 * 60 * 60 * 24 * 30
   if (image.code != null) {
@@ -145,5 +170,13 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     await resizePreview(image)
     await sendImage(image, res)
   }))
+
+  router.get('/kiosk/*', handleErrors(async (req, res) => {
+    const filename = `/${req.params[0] || ''}`
+    const image = await readImage(filename)
+    await resizeKiosk(image)
+    await sendImage(image, res)
+  }))
+
   return router
 }

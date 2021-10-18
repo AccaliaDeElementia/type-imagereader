@@ -6,8 +6,9 @@ html
     script(src='/scripts/jquery-3.6.0.min.js', integrity='sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK')
     script(src='/socket.io/socket.io.js')
   body
-    img.mainImage.topImage(src=`/images/full${image}`)
-    img.mainImage.bottomImage(src=`/images/full${image}`)
+    img.mainImage.topImage(src=`/images/kiosk${image}`)
+    img.mainImage.bottomImage.blur(src=`/images/kiosk${image}`)
+    img.mainImage.bottomImage(src=`/images/kiosk${image}`)
     div.text.datetime
       div.time
       div.date
@@ -21,7 +22,11 @@ html
       div.desc
         span.desctext
         img.icon
-    div.overlay
+    div.overlay.hide
+    div.pixel.top-left.hide
+    div.pixel.top-right.hide
+    div.pixel.bottom-left.hide
+    div.pixel.bottom-right.hide
     script.
       const SlideshowRoom = '!{folder}'
     script(src='/scripts/slideshow.js')

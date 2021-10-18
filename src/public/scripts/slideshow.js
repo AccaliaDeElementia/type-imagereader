@@ -7,13 +7,21 @@
   const fadein = 30 * 60 * 100
   const maxOpacity = 0.75 // in percent.
 
+  const kioskMode = new URLSearchParams(window.location.search).has('kiosk')
+
+  if (kioskMode) {
+    for (const elem of document.querySelectorAll('.overlay.hide, .pixel.hide')) {
+      elem.classList.remove('hide')
+    }
+  }
+
   const socket = io()
   socket.on('connect', () => {
     socket.emit('join-slideshow', SlideshowRoom)
   })
   socket.on('new-image', (path) => {
     for (const elem of document.querySelectorAll('img.mainImage')) {
-      elem.src = `/images/full${path}`
+      elem.src = `/images/kiosk${path}`
     }
   })
 
@@ -23,7 +31,7 @@
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     document.querySelector('.time').innerHTML = `${('00' + now.getHours()).slice(-2)}:${('00' + now.getMinutes()).slice(-2)}`
     document.querySelector('.date').innerHTML = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`
-    if (!(new URLSearchParams(window.location.search).has('kiosk'))) {
+    if (!kioskMode) {
       return
     }
     let offset = 0
