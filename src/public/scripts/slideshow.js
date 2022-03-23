@@ -124,7 +124,7 @@
           socket.emit('next-image')
         } else {
           socket.emit('goto-image', (folder) => {
-            location.pathname = `/show${folder}`
+            location.assign(`/show${folder}?noMenu`)
           })
         }
       }

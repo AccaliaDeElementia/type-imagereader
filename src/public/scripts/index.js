@@ -65,9 +65,10 @@
       $('#mainImage img').show()
     }
 
-    if (!picturereaderdata.pictures.count || picturereaderdata.pictures.pages.flat().every(pic => pic.seen)) {
+    if (!picturereaderdata.pictures.count || (!/noMenu/.test(window.location.search) && picturereaderdata.pictures.pages.flat().every(pic => pic.seen))) {
       $('#mainMenu').show()
     }
+    window.history.replaceState(null, '', `${window.location.origin}/${window.location.pathname}`)
 
     $('input[name=ShowUnseenOnly]').change(() => {
       window.localStorage.ShowUnseenOnly = $('input[name=ShowUnseenOnly]').prop('checked')
@@ -222,7 +223,7 @@
   function Bookmarks () {
     Bookmarks.add = (path) => $.post('/api/bookmarks/add', { path }, () => window.location.reload())
     Bookmarks.remove = (path) => $.post('/api/bookmarks/remove', { path }, () => window.location.reload())
-    Bookmarks.go = (path, folder) => $.post('/api/navigate/latest', { path }, window.location.assign(`/show${folder}`))
+    Bookmarks.go = (path, folder) => $.post('/api/navigate/latest', { path }, window.location.assign(`/show${folder}?noMenu`))
     $('.bookmark .btn.remove').click((e) => Bookmarks.remove($(e.target).data('path')))
     $('.bookmark').click((e) => Bookmarks.go($(e.currentTarget).data('path'), $(e.currentTarget).data('folder')))
   }
