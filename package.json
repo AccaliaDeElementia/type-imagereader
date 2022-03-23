@@ -13,8 +13,8 @@
     "pretest": "npm run build",
     "test": "cd ./src && ts-node .; cd ..",
     "knex": "knex --knexfile src/knexfile.ts",
-    "predev": "npm run build",
-    "dev": "npm run start"
+    "predev": "npm run lint",
+    "dev": "cd ./src && DEBUG=type-imagereader:* ts-node ."
   },
   "repository": {
     "type": "git",
