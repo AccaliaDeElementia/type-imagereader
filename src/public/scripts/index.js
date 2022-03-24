@@ -68,7 +68,7 @@
     if (!picturereaderdata.pictures.count || (!/noMenu/.test(window.location.search) && picturereaderdata.pictures.pages.flat().every(pic => pic.seen))) {
       $('#mainMenu').show()
     }
-    window.history.replaceState(null, '', `${window.location.origin}/${window.location.pathname}`)
+    window.history.replaceState(null, '', `${window.location.origin}${window.location.pathname}`)
 
     $('input[name=ShowUnseenOnly]').change(() => {
       window.localStorage.ShowUnseenOnly = $('input[name=ShowUnseenOnly]').prop('checked')
