@@ -104,6 +104,10 @@
     let after = () => {
       after = MainMenu.hide
     }
+    $('#mainImage img').on('error', () => {
+      $('#loadingScreen').hide()
+      $('#mainImage').trigger('error')
+    })
     const pics = picturereaderdata.pictures.pages.flat()
     let index = 0
     pics.forEach((f, i) => {
