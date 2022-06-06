@@ -211,6 +211,7 @@
       pic.seen = true
       Pages.updateActive()
       index = pic.index
+      loadingScreen.style.display = null
       mainImage.src = `/images/full${pic.path}`
       mainImage.setAttribute('data-path', pic.path)
       postJSON('/api/navigate/latest', { path: pic.path })
