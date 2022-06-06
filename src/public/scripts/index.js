@@ -217,7 +217,7 @@
       postJSON('/api/navigate/latest', { path: pic.path })
       selectElement('.status-bar .center').innerText = pic.name
       selectElement('.status-bar .left').innerText = `(${(index + 1).toLocaleString()}/${picturereaderdata.pictures.count.toLocaleString()})`
-      selectElement('.status-bar .right').innerText = `(${Math.floor(100 * (index + 1) / picturereaderdata.pictures.count).toLocaleString()}%)`
+      selectElement('.status-bar .right').innerText = `(${(Math.floor(1000 * (index + 1) / picturereaderdata.pictures.count) / 10).toLocaleString()}%)`
     }
 
     mainImage.addEventListener('load', () => {
