@@ -16,12 +16,18 @@ export function handleErrors (prefix: string, action: (req: Request, res: Respon
     try {
       await action(req, res)
     } catch (e) {
-      logger(`Error rendering: ${req.originalUrl}`, e, e.stack)
+      let stack = ''
+      let message = 'Internal Server Error'
+      if (e instanceof Error) {
+        stack = e.stack || stack
+        message = e.message || message
+      }
+      logger(`Error rendering: ${req.originalUrl}`, e, stack)
       res.status(INTERNAL_SERVER_ERROR).render('error', {
         title: 'ERROR',
         code: 'E_INTERNAL_ERROR',
-        message: e.message || 'Internal Server Error',
-        stack: e.stack
+        message: message || 'Internal Server Error',
+        stack: stack
       })
     }
   }
