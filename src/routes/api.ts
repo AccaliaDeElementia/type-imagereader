@@ -3,12 +3,12 @@
 import { Application, Router, Request, Response, RequestHandler } from 'express'
 import { Server as WebSocketServer } from 'socket.io'
 import { Server } from 'http'
-import { NOT_FOUND, FORBIDDEN, INTERNAL_SERVER_ERROR, OK } from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { normalize, basename, dirname, sep } from 'path'
 
 import persistance from '../utils/persistance'
-import * as Knex from 'knex'
+import { Knex } from 'knex'
 
 const debug = require('debug')
 
@@ -188,7 +188,7 @@ export async function getListing (path: string, knex: Knex) {
 const listing = async (path: string, knex: Knex, res: Response) => {
   const folder = await getListing(path, knex)
   if (!folder) {
-    res.status(NOT_FOUND).json({
+    res.status(StatusCodes.NOT_FOUND).json({
       error: {
         code: 'ENOTFOUND',
         message: 'Directory Not Found!',
@@ -330,7 +330,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     } catch (e) {
       logger(`Error rendering: ${req.originalUrl}`, req.body)
       logger(e)
-      res.status(INTERNAL_SERVER_ERROR).json({
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {
           code: 'EINTERNALERROR',
           message: 'Internal Server Error'
@@ -344,7 +344,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
       path = fromURI(path)
     }
     if (normalize(path) !== path) {
-      res.status(FORBIDDEN).json({
+      res.status(StatusCodes.FORBIDDEN).json({
         error: {
           code: 'ENOTRAVERSE',
           message: 'Directory Traversal is not Allowed!',
@@ -361,7 +361,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }))
 
   router.get('/healthcheck', handleErrors(async (_, res) => {
-    res.status(OK).send('OK')
+    res.status(StatusCodes.OK).send('OK')
   }))
 
   router.get('/listing/*', handleErrors(async (req, res) => {
@@ -380,7 +380,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await setLatest(knex, path)
-      res.status(OK).end()
+      res.status(StatusCodes.OK).end()
     }
   }))
 
@@ -388,7 +388,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await markRead(knex, path, true)
-      res.status(OK).end()
+      res.status(StatusCodes.OK).end()
     }
   }))
 
@@ -396,7 +396,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await markRead(knex, path, false)
-      res.status(OK).end()
+      res.status(StatusCodes.OK).end()
     }
   }))
 
@@ -419,7 +419,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await addBookmark(knex, path)
-      res.status(OK).end()
+      res.status(StatusCodes.OK).end()
     }
   }))
 
@@ -427,7 +427,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     const path = parsePath(req.body.path, res)
     if (path !== null) {
       await removeBookmark(knex, path)
-      res.status(OK).end()
+      res.status(StatusCodes.OK).end()
     }
   }))
 

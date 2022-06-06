@@ -10,7 +10,7 @@ import { normalize, dirname } from 'path'
 import persistance from '../utils/persistance'
 import { setLatest } from './api'
 
-import * as Knex from 'knex'
+import { Knex } from 'knex'
 
 import debug from 'debug'
 const logger = debug('type-imagereader:routes:slideshow')
@@ -91,8 +91,12 @@ const changeImage = async (knex: Knex, io: WebSocketServer, room: SlideshowRoom,
     }
     io.to(room.path).emit('new-image', image.split('/').map((part: string) => encodeURIComponent(part)).join('/'))
   } catch (e) {
+    logger('error changing image')
     io.to(room.path).emit('error-selecting-image')
-    logger('error changing image', e.message, e.stack)
+    logger(e)
+    if (e instanceof Error) {
+      logger(e.message, e.stack)
+    }
   }
 }
 

@@ -389,7 +389,9 @@
     }
     const menuActions = {
       ARROWUP: MainMenu.hide,
-      ARROWDOWN: MainMenu.hide
+      ARROWDOWN: MainMenu.hide,
+      ARROWLEFT: MainMenu.hide,
+      ARROWRIGHT: MainMenu.hide
     }
     const executeKey = key => {
       if (MainMenu.isVisible()) {

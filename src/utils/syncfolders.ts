@@ -4,7 +4,7 @@ import persistance from './persistance'
 import fsWalker from './fswalker'
 import wordsToNumbers from 'words-to-numbers'
 import posix from 'path'
-import * as Knex from 'knex'
+import { Knex } from 'knex'
 
 import debug from 'debug'
 const logPrefix = 'type-imagereader:syncfolders'
@@ -52,7 +52,7 @@ const findItems = async (knex: Knex) => {
           folder += posix.sep
         }
         return {
-          folder: folder,
+          folder,
           path: item.path + (!item.isFile ? posix.sep : ''),
           isFile: item.isFile,
           sortKey: toSortKey(posix.basename(item.path))
@@ -149,7 +149,7 @@ const updateSeenPictures = async (knex: Knex) => {
       return
     }
     const folder = folders[path] || {
-      path: path,
+      path,
       totalCount: 0,
       seenCount: 0
     }
@@ -186,8 +186,12 @@ const synchronize = async () => {
     await updateSeenPictures(knex)
   } catch (e) {
     logger('Folder Synchronization Failed')
-    logger(e, e.stack)
+    logger(e)
+    if (e instanceof Error) {
+      logger(e.stack)
+    }
   }
+
   // await knex.destroy()
   logger('Folder Synchronization Complete')
 }

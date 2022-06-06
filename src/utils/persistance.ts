@@ -1,6 +1,6 @@
 'use sanity'
 
-import * as Knex from 'knex'
+import { Knex } from 'knex'
 const knex = require('knex')
 
 const initialize = async (): Promise<Knex> => {
