@@ -72,7 +72,7 @@ const getChildren = async (path:string, knex:Knex) => {
 }
 
 const getPictures = async (path: string, knex:Knex) => {
-  const pictures = (await knex('pictures')
+  return (await knex('pictures')
     .select(
       'path',
       'seen'
@@ -87,18 +87,6 @@ const getPictures = async (path: string, knex:Knex) => {
     pic.index = index
     return pic
   })
-  const pageSize = 32
-  const pages = []
-  const totalPages = pictures.length > 0 ? 1 + Math.floor(pictures.length / pageSize) : 0
-  for (let i = 0; i < totalPages; i++) {
-    pages.push(pictures.slice(i * pageSize, (i + 1) * pageSize))
-  }
-  return {
-    count: pictures.length,
-    pageSize,
-    totalPages,
-    pages
-  }
 }
 
 const getFolder = async (path: string, sortKey: string|null, knex: Knex, direction = 'this') => {
@@ -172,6 +160,7 @@ export async function getListing (path: string, knex: Knex) {
   }
   const children = await getChildren(path, knex)
   const pictures = await getPictures(path, knex)
+  const bookmarks = await getBookmarks(knex)
   return {
     name: folder.name,
     path: folder.path,
@@ -181,7 +170,8 @@ export async function getListing (path: string, knex: Knex) {
     next,
     prev,
     children,
-    pictures
+    pictures,
+    bookmarks
   }
 }
 
@@ -270,8 +260,8 @@ const removeBookmark = async (knex: Knex, path: string) => {
   }
 }
 
-export async function getBookmarks (knex: Knex, path: string) {
-  const marks = await knex('bookmarks')
+export async function getBookmarks (knex: Knex) {
+  const results = await knex('bookmarks')
     .select(
       'pictures.path',
       'pictures.folder'
@@ -279,41 +269,10 @@ export async function getBookmarks (knex: Knex, path: string) {
     .join('pictures', 'pictures.path', 'bookmarks.path')
     .join('folders', 'folders.path', 'pictures.folder')
     .orderBy(['folders.sortKey', 'pictures.sortKey'])
-
-  const current = []
-  const children = []
-  const others = []
-  for (const mark of marks) {
-    mark.name = basename(mark.path)
-    if (mark.folder === path) {
-      current.push(mark)
-    } else if (mark.folder.indexOf(path) === 0) {
-      const folder = mark.folder.slice(path.length)
-      if (!children.length || children[children.length - 1].folder !== folder) {
-        children.push({
-          folder,
-          marks: [mark]
-        })
-      } else {
-        children[children.length - 1].marks.push(mark)
-      }
-    } else {
-      const folder = mark.folder
-      if (!others.length || others[others.length - 1].folder !== folder) {
-        others.push({
-          folder,
-          marks: [mark]
-        })
-      } else {
-        others[others.length - 1].marks.push(mark)
-      }
-    }
+  for (const mark of results) {
+    mark.folder = toURI(mark.folder)
   }
-  return {
-    current,
-    children,
-    others
-  }
+  return results
 }
 
 // Export the base-router
@@ -400,19 +359,12 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     }
   }))
 
-  router.get('/bookmarks/*', handleErrors(async (req, res) => {
-    const folder = parsePath(
-      `/${req.params[0] || ''}${req.params[0].length && req.params[0][req.params[0].length - 1] !== '/' ? '/' : ''}`,
-      res,
-      false
-    )
-    if (folder !== null) {
-      res.json(await getBookmarks(knex, folder))
-    }
+  router.get('/bookmarks/*', handleErrors(async (_, res) => {
+    res.json(await getBookmarks(knex))
   }))
 
-  router.get('/bookmarks/', handleErrors(async (__, res) => {
-    res.json(await getBookmarks(knex, '/'))
+  router.get('/bookmarks/', handleErrors(async (_, res) => {
+    res.json(await getBookmarks(knex))
   }))
 
   router.post('/bookmarks/add', handleErrors(async (req, res) => {

@@ -2,9 +2,9 @@ extends _layout
 
 block content
   div An Unexpected Error Occurred
-  if error && error.code
-    h3= error.code
-  if error && error.message
-    h4= error.message
-  if error && error.stack
-    h4= error.stack
+  if code
+    h3= code
+  if message
+    h4= message
+  if stack
+    h5= stack

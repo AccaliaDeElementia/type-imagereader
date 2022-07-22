@@ -5,9 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'path'
 
-import persistance from '../utils/persistance'
-import { getListing, getBookmarks } from './api'
-
 const debug = require('debug')
 
 export function handleErrors (prefix: string, action: (req: Request, res: Response) => Promise<void>): RequestHandler {
@@ -38,8 +35,6 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   // Init router and path
   const router = Router()
 
-  const knex = await persistance.initialize()
-
   const rootRoute = async (req: Request, res: Response) => {
     const folder = '/' + (req.params[0] || '')
     if (normalize(folder) !== folder) {
@@ -51,22 +46,11 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
         }
       })
     }
-    const data = await getListing(folder, knex)
-    if (!data) {
-      res.status(StatusCodes.NOT_FOUND).render('error', {
-        title: 'ERROR',
-        code: 'E_NOT_FOUND',
-        message: 'Not Found'
-      })
-      return
-    }
-    const bookmarks = await getBookmarks(knex, folder)
-    res.render('index', {
-      data,
-      bookmarks
-    })
+    res.render('browser')
   }
-  router.get('/', rootRoute)
+  router.get('/', (_: Request, res: Response) => {
+    res.redirect(StatusCodes.MOVED_TEMPORARILY, '/show')
+  })
   router.get('/show', rootRoute)
   router.get('/show/*', rootRoute)
 

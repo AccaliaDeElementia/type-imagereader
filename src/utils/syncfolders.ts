@@ -143,11 +143,17 @@ const updateSeenPictures = async (knex: Knex) => {
     .sum({ totalSeen: knex.raw('CASE WHEN seen THEN 1 ELSE 0 END') })
     .groupBy('folder')
   logger(`Found ${folderInfos.length} Folders to Update`)
+  const rawFolders = await knex('folders')
+    .select('path')
   const folders: { [name: string]: Folder } = {}
-  const doFolder = (path: string, info: { [k: string]: string | number; } & { totalSeen?: any; }) => {
-    if (path === '/') {
-      return
+  for (const folder of rawFolders) {
+    folders[folder.path] = {
+      path: folder.path,
+      totalCount: 0,
+      seenCount: 0
     }
+  }
+  const doFolder = (path: string, info: { [k: string]: string | number; } & { totalSeen?: any; }) => {
     const folder = folders[path] || {
       path,
       totalCount: 0,
@@ -164,15 +170,24 @@ const updateSeenPictures = async (knex: Knex) => {
       doFolder(`${parts.join('/')}/`, info)
     }
   }
+  // root folder gets double counted so correct that... (why is it double counted?)
+  folders['/'].totalCount /= 2
+  folders['/'].seenCount /= 2
+
   const resultFolders = Object.values(folders)
   logger(`Calculated ${resultFolders.length} Folders Seen Counts`)
-  for (const aChunk of chunk(Object.values(folders))) {
+  for (const aChunk of chunk(resultFolders)) {
     await knex('folders')
       .insert(aChunk)
       .onConflict('path')
       .merge()
   }
   logger(`Updated ${resultFolders.length} Folders Seen Counts`)
+
+  const deletedfolders = await knex('folders')
+    .where('totalCount', '=', 0)
+    .delete()
+  logger(`Removed ${deletedfolders} empty folders`)
 }
 
 const synchronize = async () => {
