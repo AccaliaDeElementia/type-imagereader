@@ -4,6 +4,7 @@ import path from 'path'
 import helmet from 'helmet'
 
 import express, { Request, Response, NextFunction } from 'express'
+import favicon from 'serve-favicon'
 import StatusCodes from 'http-status-codes'
 import 'express-async-errors'
 import { Server as WebSocketServer } from 'socket.io'
@@ -26,6 +27,7 @@ export default async function start (port: number) {
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
   app.use(cookieParser())
+  app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')))
 
   if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'))
