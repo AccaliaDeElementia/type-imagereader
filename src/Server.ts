@@ -10,6 +10,7 @@ import 'express-async-errors'
 import { Server as WebSocketServer } from 'socket.io'
 
 import { getRouter as getApiRouter } from './routes/api'
+import { getRouter as getBundleRouter } from './routes/bundles'
 import { getRouter as getImagesRouter } from './routes/images'
 import { getRouter as getRootRouter } from './routes/index'
 import { getRouter as getSlideshowRouter } from './routes/slideshow'
@@ -38,6 +39,7 @@ export default async function start (port: number) {
   }
 
   app.use('/', await getRootRouter(app, server, websockets))
+  app.use('/bundles', await getBundleRouter(app, server, websockets))
   app.use('/api', await getApiRouter(app, server, websockets))
   app.use('/images', await getImagesRouter(app, server, websockets))
   app.use('/slideshow', await getSlideshowRouter(app, server, websockets))
