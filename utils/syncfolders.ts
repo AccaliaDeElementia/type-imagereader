@@ -146,6 +146,11 @@ const updateSeenPictures = async (knex: Knex) => {
   const rawFolders = await knex('folders')
     .select('path')
   const folders: { [name: string]: Folder } = {}
+  folders['/'] = {
+    path: '/',
+    totalCount: 0,
+    seenCount: 0
+  }
   for (const folder of rawFolders) {
     folders[folder.path] = {
       path: folder.path,
@@ -154,12 +159,15 @@ const updateSeenPictures = async (knex: Knex) => {
     }
   }
   const doFolder = (path: string, info: { [k: string]: string | number; } & { totalSeen?: any; }) => {
+    if (info === undefined) {
+      return
+    }
     const folder = folders[path] || {
       path,
       totalCount: 0,
       seenCount: 0
     }
-    folder.totalCount += +info.totalCount || 0
+    folder.totalCount += +(info.totalCount || 0)
     folder.seenCount += +info.totalSeen || 0
     folders[path] = folder
   }

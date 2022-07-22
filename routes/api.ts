@@ -200,7 +200,10 @@ const parents = (path: string): string[] => {
   return folders
 }
 
-export async function setLatest (knex: Knex, path: string) {
+export async function setLatest (knex: Knex, path: string | undefined) {
+  if (!path) {
+    return '/'
+  }
   const folder = dirname(path) + sep
   const picture = await knex('pictures').select('seen').where({ path })
   if (!picture || !picture.length) {
@@ -216,16 +219,19 @@ export async function setLatest (knex: Knex, path: string) {
 }
 
 const markRead = async (knex: Knex, path: string, seenValue = true) => {
-  const adjustment = +(await knex('pictures')
+  const rawAdjustments = await knex('pictures')
     .count('path as adjustments')
     .where('seen', '<>', seenValue)
-    .andWhere('folder', 'like', `${path}%`))[0].adjustments
-  await knex('pictures')
-    .update({ seen: seenValue })
-    .where('folder', 'like', `${path}%`)
-  await knex('folders')
-    .increment('seenCount', seenValue ? adjustment : -adjustment)
-    .whereIn('path', parents(path))
+    .andWhere('folder', 'like', `${path}%`)
+  if (rawAdjustments && rawAdjustments[0] && rawAdjustments[0].adjustments) {
+    const adjustment = +(rawAdjustments[0].adjustments)
+    await knex('pictures')
+      .update({ seen: seenValue })
+      .where('folder', 'like', `${path}%`)
+    await knex('folders')
+      .increment('seenCount', seenValue ? adjustment : -adjustment)
+      .whereIn('path', parents(path))
+  }
   if (!seenValue) {
     await knex('folders')
       .update({ current: null, seenCount: 0 })
@@ -324,8 +330,9 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }))
 
   router.get('/listing/*', handleErrors(async (req, res) => {
+    const rawPath = req.params[0] || ''
     const folder = parsePath(
-      `/${req.params[0] || ''}${req.params[0].length && req.params[0][req.params[0].length - 1] !== '/' ? '/' : ''}`,
+      `/${rawPath}${rawPath.length && rawPath[rawPath.length - 1] !== '/' ? '/' : ''}`,
       res,
       false
     )

@@ -2,16 +2,13 @@
   "name": "type-imagereader",
   "version": "1.0.0",
   "description": "A typscript powered web based image and comic reader pulling from local files",
-  "main": "index.js",
   "scripts": {
-    "preclean": "npm run lint",
-    "clean": "ts-node build.ts",
-    "prebuild": "npm run clean",
+    "prebuild": "npm run lint",
     "build": "tsc --build tsconfig.json",
     "lint": "eslint . --ext .ts,.js",
-    "start": "cd ./dist && node .; cd ..",
+    "start": "ts-node .",
     "pretest": "npm run build",
-    "test": "cd ./src && ts-node .; cd ..",
+    "test": "ts-node .",
     "knex": "knex --knexfile src/knexfile.ts",
     "predev": "npm run lint",
     "dev": "cd ./src && DEBUG=type-imagereader:* ts-node ."
@@ -40,7 +37,6 @@
     "helmet": "^5.1.0",
     "http-status-codes": "^2.2.0",
     "jet-logger": "^1.1.5",
-    "join-io": "^5.0.0",
     "knex": "^2.1.0",
     "minify-stream": "^2.1.0",
     "morgan": "^1.10.0",
@@ -52,7 +48,10 @@
     "serve-favicon": "^2.5.0",
     "sharp": "^0.30.6",
     "socket.io": "^4.5.1",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.0.0",
     "tsify": "^5.0.4",
+    "typescript": "^4.7.4",
     "words-to-numbers": "^1.5.1"
   },
   "devDependencies": {
@@ -77,11 +76,6 @@
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "find": "^0.3.0",
-    "fs-extra": "^10.1.0",
-    "ts-node": "^10.8.1",
-    "tsconfig-paths": "^4.0.0",
-    "typescript": "^4.7.4"
+    "eslint-plugin-promise": "^6.0.0"
   }
 }

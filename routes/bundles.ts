@@ -94,7 +94,9 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
       handleError(err)
       bundles[path] = Promise.reject(handleError(err))
     }
-    bundles[path].catch(() => 0) // Ignore errors they were logged above and will be retrieved later?
+    if (bundles[path] !== undefined) {
+      // bundles[path].catch(() => 0) // Ignore errors they were logged above and will be retrieved later?
+    }
   }
 
   const watchDir = async (path: string) => {

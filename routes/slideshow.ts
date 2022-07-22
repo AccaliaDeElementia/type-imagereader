@@ -70,7 +70,10 @@ const changeImage = async (knex: Knex, io: WebSocketServer, room: SlideshowRoom,
       room.index = lookbehindSize
     }
     room.countdown = countdownDuration
-    const image: string = room.images[room.index]
+    const image: string | undefined = room.images[room.index]
+    if (!image) {
+      return
+    }
     const picture = await knex('pictures')
       .select('seen')
       .where({
@@ -140,13 +143,17 @@ export async function getRouter (_: Application, __: Server, io: WebSocketServer
       socket.emit('new-image', room.images[room.index])
     })
     socket.on('prev-image', () => {
-      if (socketRoom && rooms[socketRoom]) {
-        changeImage(knex, io, rooms[socketRoom], -1)
+      if (!socketRoom) return
+      const room = rooms[socketRoom]
+      if (room) {
+        changeImage(knex, io, room, -1)
       }
     })
     socket.on('next-image', () => {
-      if (socketRoom && rooms[socketRoom]) {
-        changeImage(knex, io, rooms[socketRoom], 1)
+      if (!socketRoom) return
+      const room = rooms[socketRoom]
+      if (room) {
+        changeImage(knex, io, room, 1)
       }
     })
     socket.on('goto-image', async (callback) => {
