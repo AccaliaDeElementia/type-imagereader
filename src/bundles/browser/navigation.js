@@ -73,15 +73,6 @@ pubsub.subscribe('action.execute', 'Slideshow', () => {
   window.location.pathname = `/slideshow${data.path}`
 })
 
-const doIfNoMenu = action => {
-  return () => {
-    if (mainMenu.classList.contains('hidden')) {
-      pubsub.publish('action.execute', action)
-    } else {
-      pubsub.publish('action.execute', 'HideMenu')
-    }
-  }
-}
-pubsub.subscribe('action.keypress', '<Ctrl>ArrowUp', ()=> pubsub.publish('action.execute', 'ParentFolder'))
-pubsub.subscribe('action.keypress', '<Ctrl>ArrowLeft', ()=> pubsub.publish('action.execute', 'PreviousFolder'))
-pubsub.subscribe('action.keypress', '<Ctrl>ArrowRight', ()=> pubsub.publish('action.execute', 'NextFolder'))
+pubsub.subscribe('action.keypress', '<Ctrl>ArrowUp', () => pubsub.publish('action.execute', 'ParentFolder'))
+pubsub.subscribe('action.keypress', '<Ctrl>ArrowLeft', () => pubsub.publish('action.execute', 'PreviousFolder'))
+pubsub.subscribe('action.keypress', '<Ctrl>ArrowRight', () => pubsub.publish('action.execute', 'NextFolder'))

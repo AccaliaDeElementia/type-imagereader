@@ -68,7 +68,7 @@ const doBookmarks = data => {
 }
 pubsub.subscribe('navigate.data', doBookmarks)
 
-const refreshBookmarks = () => net.getJSON('/api/bookmarks').then(bookmarks =>  doBookmarks({ bookmarks }))
+const refreshBookmarks = () => net.getJSON('/api/bookmarks').then(bookmarks => doBookmarks({ bookmarks }))
 
 pubsub.subscribe('bookmarks.load', refreshBookmarks)
 pubsub.subscribe('bookmarks.add', path => net.postJSON('/api/bookmarks/add', { path }).then(refreshBookmarks))
