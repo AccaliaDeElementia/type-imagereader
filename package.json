@@ -8,10 +8,10 @@
     "lint": "eslint . --ext .ts,.js",
     "start": "ts-node .",
     "pretest": "npm run build",
-    "test": "ts-node .",
+    "test": "DEBUG=type-imagereader:* ts-node .",
     "knex": "knex --knexfile src/knexfile.ts",
-    "predev": "npm run lint",
-    "dev": "cd ./src && DEBUG=type-imagereader:* ts-node ."
+    "predev": "npm run build",
+    "dev": "DEBUG=type-imagereader:* SKIP_SYNC=1 ts-node ."
   },
   "repository": {
     "type": "git",
