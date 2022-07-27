@@ -2,7 +2,7 @@ import { Application, Router, Request, Response, RequestHandler } from 'express'
 import { Server as WebSocketServer } from 'socket.io'
 import { Server } from 'http'
 import { request as WebRequest } from 'https'
-import { INTERNAL_SERVER_ERROR, OK } from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 const debug = require('debug')
 
@@ -102,7 +102,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     } catch (e) {
       logger(`Error rendering: ${req.originalUrl}`, req.body)
       logger(e)
-      res.status(INTERNAL_SERVER_ERROR).json({
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {
           code: 'EINTERNALERROR',
           message: 'Internal Server Error'
@@ -112,7 +112,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }
 
   router.get('/', handleErrors(async (_, res) => {
-    res.status(OK).json(weather)
+    res.status(StatusCodes.OK).json(weather)
   }))
 
   setInterval(updateWeather, 10 * 60 * 1000)

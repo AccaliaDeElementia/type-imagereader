@@ -3,8 +3,6 @@ html
     meta(name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=8.0,width=device-width,user-scalable=yes")
     title= title
     link(rel='stylesheet', href='/stylesheets/slideshow.css')
-    script(src='/scripts/jquery-3.6.0.min.js', integrity='sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK')
-    script(src='/socket.io/socket.io.js')
   body
     img.mainImage.topImage(src=`/images/kiosk${image}`)
     img.mainImage.bottomImage.blur(src=`/images/kiosk${image}`)
@@ -27,6 +25,4 @@ html
     div.pixel.top-right.hide
     div.pixel.bottom-left.hide
     div.pixel.bottom-right.hide
-    script.
-      const SlideshowRoom = '!{folder}'
-    script(src='/scripts/slideshow.js')
+    script(src='/bundles/slideshow')

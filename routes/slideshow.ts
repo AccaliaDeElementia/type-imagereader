@@ -94,9 +94,8 @@ const changeImage = async (knex: Knex, io: WebSocketServer, room: SlideshowRoom,
     }
     io.to(room.path).emit('new-image', image.split('/').map((part: string) => encodeURIComponent(part)).join('/'))
   } catch (e) {
-    logger('error changing image')
+    logger('error changing image', e)
     io.to(room.path).emit('error-selecting-image')
-    logger(e)
     if (e instanceof Error) {
       logger(e.message, e.stack)
     }
