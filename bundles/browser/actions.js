@@ -43,11 +43,11 @@ const actionGroups = {
         name: 'Previous Folder',
         image: 'first_page'
       }, {
-        name: 'Parent Folder',
-        image: 'folder'
-      }, {
         name: 'View Full Size',
         image: 'open_in_new'
+      }, {
+        name: 'Parent Folder',
+        image: 'folder'
       }, {
         name: 'Bookmark',
         image: 'bookmarks'
