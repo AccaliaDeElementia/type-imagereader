@@ -4,6 +4,7 @@ LABEL maintainer="docker@elementia.me"
 
 ENV DEBIAN_FRONTEND noninteractive
 
+
 WORKDIR /app
 ADD . /app
 
@@ -34,8 +35,8 @@ ENV DB_CLIENT="postgresql" \
     OPENWEATHER_LOCATION='London,UK'
 
 VOLUME /data
-WORKDIR /app/dist
+WORKDIR /app
 
-CMD ["/usr/local/bin/node", "/app/dist/index.js"]
+CMD ["/usr/local/bin/npm", "start"]
 
 HEALTHCHECK CMD curl -f http://localhost:3030/api/healthcheck >/dev/null
