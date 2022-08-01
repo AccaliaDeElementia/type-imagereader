@@ -1,6 +1,6 @@
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
-import path from 'path'
+import { join } from 'path'
 import helmet from 'helmet'
 
 import express, { Request, Response, NextFunction } from 'express'
@@ -16,7 +16,7 @@ import { getRouter as getRootRouter } from './routes/index'
 import { getRouter as getSlideshowRouter } from './routes/slideshow'
 import { getRouter as getWeatherRouter } from './routes/weather'
 
-import sassMiddleware from 'node-sass-middleware'
+import sassMiddleware from './utils/dart-sass-middleware'
 
 export default async function start (port: number) {
   const app = express()
@@ -28,7 +28,7 @@ export default async function start (port: number) {
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
   app.use(cookieParser())
-  app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')))
+  app.use(favicon(join(__dirname, 'public', 'images', 'favicon.ico')))
 
   if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'))
@@ -52,23 +52,17 @@ export default async function start (port: number) {
     })
   })
 
-  app.set('views', path.join(__dirname, 'views'))
+  app.set('views', join(__dirname, 'views'))
   app.set('view engine', 'pug')
-  app.use(sassMiddleware({
-    src: path.join(__dirname, 'public'),
-    dest: path.join(__dirname, 'public'),
-    indentedSyntax: true,
-    outputStyle: 'compressed',
-    sourceMap: true
-  }))
+
+  app.use(sassMiddleware({ mountPath: join(__dirname, '/public'), watchdir: '/stylesheets' }))
+
   app.get('/*', (_, res, next) => {
     res.set('X-Clacks-Overhead', 'GNU Terry Pratchett')
     next()
   })
-  const viewsDir = path.join(__dirname, 'views')
-  app.set('views', viewsDir)
-  const staticDir = path.join(__dirname, 'public')
-  app.use(express.static(staticDir))
+
+  app.use(express.static(join(__dirname, 'public')))
 
   return { app, server }
 }
