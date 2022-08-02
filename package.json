@@ -27,7 +27,7 @@
     "brfs": "^2.0.2",
     "browserify": "^17.0.0",
     "command-line-args": "^5.2.1",
-    "common-shakeify": "^0.6.2",
+    "common-shakeify": "^1.1.1",
     "cookie-parser": "^1.4.6",
     "debug": "^4.3.4",
     "dotenv": "^16.0.1",
