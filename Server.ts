@@ -15,7 +15,7 @@ import { getRouter as getRootRouter } from './routes/index'
 import { getRouter as getSlideshowRouter } from './routes/slideshow'
 import { getRouter as getWeatherRouter } from './routes/weather'
 
-import sassMiddleware from './utils/dart-sass-middleware'
+import sassMiddleware from './utils/sass-middleware'
 import browserifyMiddleware from './utils/browserify-middleware'
 
 export default async function start (port: number) {
