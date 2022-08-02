@@ -13,7 +13,9 @@ mainImage.addEventListener('load', () => {
   pubsub.publish('loading.hide')
 })
 mainImage.addEventListener('error', () => {
-  pubsub.publish('error', `Main Image Failed to Load: ${currentImage.path}`)
+  if (mainImage.getAttribute('src') !== '') {
+    pubsub.publish('error', `Main Image Failed to Load: ${currentImage ? currentImage.path : undefined}`)
+  }
 })
 
 const loadImage = () => {
