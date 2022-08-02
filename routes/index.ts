@@ -46,7 +46,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
         }
       })
     }
-    res.render('browser')
+    res.render('app')
   }
   router.get('/', (_: Request, res: Response) => {
     res.redirect(StatusCodes.MOVED_TEMPORARILY, '/show')
