@@ -7,7 +7,7 @@ import { join, normalize } from 'path'
 import { readdir, watch, access } from 'fs/promises'
 
 import browserify from 'browserify'
-import minifyStream from 'minify-stream'
+import { minify } from 'terser'
 
 import { getDebouncer } from './debounce'
 
@@ -18,11 +18,11 @@ const debouncer = getDebouncer()
 
 const isCompileableExtension = /\.[jt]s$/
 
-const browserified: { [key: string]: Promise<Buffer|null> } = {}
+const browserified: { [key: string]: Promise<string|null> } = {}
 
-const compileAsync = (path: string): Promise<Buffer|null> =>
+const compileAsync = (path: string): Promise<string|null> =>
   access(path)
-    .then((): Promise<Buffer> => new Promise((resolve, reject) => {
+    .then((): Promise<string> => new Promise((resolve, reject) => {
       const browser = browserify()
       browser.plugin('tsify')
       browser.plugin('common-shakeify', {
@@ -30,27 +30,17 @@ const compileAsync = (path: string): Promise<Buffer|null> =>
       })
       browser.transform('brfs')
       browser.add(path)
-      const bundle = browser.bundle()
-
-      const minifier = minifyStream({
-        compress: {
-          ecma: 2024,
-          passes: 2
-        },
-        sourceMap: false
-      })
-      minifier.on('error', (e: any) => reject(e))
-      bundle.on('error', (e: any) => reject(e))
-      const minified = bundle.pipe(minifier)
-      bundle.on('end', async () => {
-        const chunks = []
-        for await (const chunk of minified) {
-          chunks.push(chunk)
+      browser.bundle((err, source) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(source.toString())
         }
-        resolve(Buffer.concat(chunks))
       })
     }))
-    .catch((err: any): Promise<Buffer|null> => new Promise((resolve, reject) => {
+    .then(src => minify(src))
+    .then(minified => minified.code || null)
+    .catch((err: any): Promise<string|null> => new Promise((resolve, reject) => {
       if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
         return resolve(null)
       }
