@@ -73,7 +73,7 @@ const watchFolder = async (basePath: string, path: string) => {
     logger(`Watching ${path} for stylesheets`)
     const watcher = watch(join(basePath, path), { persistent: false })
     for await (const event of watcher) {
-      if (!/\.s[ca]ss$/.test(event.filename)) continue
+      if (!sassExtension.test(event.filename)) continue
       const sassFile = join(path, event.filename)
       debouncer(sassFile, async () => {
         logger(`${sassFile} needs recompiling, ${event.eventType}`)
