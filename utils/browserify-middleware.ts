@@ -122,20 +122,32 @@ const watchFolder = async (basePath: string, mountPath: string, isFolder: boolea
         await compileAndCache(basePath, scriptFile)
       })
     }
-  } catch (err) {
-    logger(`Watcher for ${mountPath} exited unexpectedly`, err)
+  } catch (err: any) {
+    if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
+      logger(`${mountPath} does not exist to watch`, err.message)
+    } else {
+      logger(`Watcher for ${mountPath} exited unexpectedly`, err)
+    }
   }
 }
 
 const precompileScripts = async (basePath: string, watchDirs: string[]) => {
   for (const dir of watchDirs) {
-    for (const dirinfo of await readdir(join(basePath, dir), { withFileTypes: true })) {
-      const target = join(dir, dirinfo.name)
-      if (isCompileableExtension.test(dirinfo.name) || dirinfo.isDirectory()) {
-        compileAndCache(basePath, target)
+    try {
+      for (const dirinfo of await readdir(join(basePath, dir), { withFileTypes: true })) {
+        const target = join(dir, dirinfo.name)
+        if (isCompileableExtension.test(dirinfo.name) || dirinfo.isDirectory()) {
+          compileAndCache(basePath, target)
+        }
+        if (dirinfo.isDirectory()) {
+          watchFolder(basePath, target, true)
+        }
       }
-      if (dirinfo.isDirectory()) {
-        watchFolder(basePath, target, true)
+    } catch (err: any) {
+      if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
+        logger(`${dir} does not exist to precompile scripts`, err.message)
+      } else {
+        logger('Unexpected Error whule precompiling scripts', err)
       }
     }
   }
