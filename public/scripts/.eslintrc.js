@@ -1,7 +1,9 @@
+/* globals module */
 module.exports = {
   env: {
     es2022: true,
-    node: true
+    node: false,
+    browser: true
   },
   extends: [
     'standard'

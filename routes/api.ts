@@ -275,9 +275,6 @@ export async function getBookmarks (knex: Knex) {
     .join('pictures', 'pictures.path', 'bookmarks.path')
     .join('folders', 'folders.path', 'pictures.folder')
     .orderBy(['folders.sortKey', 'pictures.sortKey'])
-  for (const mark of results) {
-    mark.folder = toURI(mark.folder)
-  }
   return results
 }
 
