@@ -55,7 +55,7 @@ Subscribe('Navigate:Load', (path: string | NoMenuPath): void => {
   if (typeof path === 'string' || path instanceof String) {
     current = { path: path as string }
   } else {
-    current = path 
+    current = path
   }
   loadData()
 })
