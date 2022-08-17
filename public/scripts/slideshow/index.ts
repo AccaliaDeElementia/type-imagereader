@@ -1,11 +1,18 @@
-// use sanity
+'use sanity'
 
-import './sockets'
+import { WebSockets } from './sockets'
 
 import TimeUpdater from './time'
 import OverlayUpdater from './overlay'
 import { WeatherUpdater, LocalWeatherUpdater } from './weather'
-import { StartCycling, AddUpdater } from './updater'
+import { CyclicManager } from './updater'
 
-AddUpdater(TimeUpdater, OverlayUpdater, WeatherUpdater, LocalWeatherUpdater)
-StartCycling(100)
+// This is code that can't be easily tested automatically
+// ...yet.
+// istanbul ignore next
+CyclicManager.Add(TimeUpdater, OverlayUpdater, WeatherUpdater, LocalWeatherUpdater)
+// istanbul ignore next
+CyclicManager.Start(100)
+
+// istanbul ignore next
+WebSockets.connect()

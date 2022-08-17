@@ -1,18 +1,21 @@
-// use sanity
-
-/* global HTMLElement */
+'use sanity'
 
 import { CyclicUpdater } from './updater'
 import { GetAlmanac } from './weather'
 
-const fadein: number = 30 * 60 * 100
+const fadein: number = 30 * 60 * 1000
 const maxOpacity: number = 0.75 // in percent.
 
-const kioskMode = new URLSearchParams(window.location.search).has('kiosk')
-const overlay = document.querySelector('.overlay') as HTMLElement
+const updateOverlay = async () => {
+  const kioskMode = new URLSearchParams(window.location.search).has('kiosk')
+  const overlay = document.querySelector('.overlay') as HTMLElement|null
 
-const updateOverlay = () => {
   if (!kioskMode) return
+  overlay?.classList.remove('hide')
+
+  for (const elem of document.querySelectorAll('.pixel')) {
+    elem.classList.remove('hide')
+  }
   const times = GetAlmanac()
   const now = Date.now()
   let offset = 0
@@ -21,18 +24,8 @@ const updateOverlay = () => {
   } else if (now > times.sunset) {
     offset = now - times.sunset
   }
-  if (overlay) {
-    overlay.style.opacity = `${Math.min(maxOpacity * (offset / fadein), maxOpacity)}`
-  }
+  overlay?.style.setProperty('opacity', `${Math.min(maxOpacity * (offset / fadein), maxOpacity)}`)
   return Promise.resolve()
-}
-
-if (kioskMode && overlay) {
-  overlay.classList.remove('hide')
-
-  for (const elem of document.querySelectorAll('.pixel')) {
-    elem.classList.remove('hide')
-  }
 }
 
 export default CyclicUpdater.create(updateOverlay, 100)

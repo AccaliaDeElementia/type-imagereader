@@ -18,6 +18,8 @@ import { getRouter as getWeatherRouter } from './routes/weather'
 import sassMiddleware from './utils/sass-middleware'
 import browserifyMiddleware from './utils/browserify-middleware'
 
+import { Debouncer } from './utils/debounce'
+
 export default async function start (port: number) {
   const app = express()
   const server = app.listen(port, () => {})
@@ -69,6 +71,8 @@ export default async function start (port: number) {
   })
 
   app.use(express.static(join(__dirname, 'public')))
+
+  Debouncer.startTimers()
 
   return { app, server }
 }

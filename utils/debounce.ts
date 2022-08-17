@@ -1,10 +1,6 @@
 'use sanity'
-
 import debug from 'debug'
 const logger = debug('type-imagereader:debounce')
-
-const debounceTime = 50
-const debounceCounter = 2
 
 interface DebounceCallback {
   (): Promise<void>
@@ -16,32 +12,69 @@ interface DebounceCounter {
   counter: number
 }
 
-let counters: DebounceCounter[] = []
-export const getDebouncer = () => {
-  const prefix = `${Math.random()}`
-  return (key: string, callback: DebounceCallback) => {
-    const debounceKey = `${prefix}${key}`
-    const counter = counters.filter(c => c.key === debounceKey)[0]
+export class Debouncer {
+  protected cycleCount: number
+  protected counters: DebounceCounter[] = []
+
+  protected constructor (timeoutMs: number = 100) {
+    this.cycleCount = Math.max(Math.ceil(timeoutMs / Debouncer.interval), 1)
+  }
+
+  debounce (key: string, callback: DebounceCallback): void {
+    const counter = this.counters.filter(c => c.key === key)[0]
     if (counter) {
-      counter.counter = debounceCounter
+      counter.counter = this.cycleCount
       counter.callback = callback
     } else {
-      counters.push({
-        key: debounceKey,
-        counter: debounceCounter,
-        callback
+      this.counters.push({
+        key,
+        callback,
+        counter: this.cycleCount
       })
     }
   }
-}
 
-setInterval(() => {
-  const countersDue = counters.filter(counter => counter.counter <= 0)
-  counters = counters.filter(counter => counter.counter > 0)
-  counters.forEach(counter => {
-    counter.counter -= 1
-  })
-  countersDue.forEach(counter => counter.callback()
-    .catch(err => logger(`DebounceCallback for ${counter.key} failed`, err))
-  )
-}, debounceTime)
+  protected static debouncers: any[] = []
+  protected static timer?: ReturnType<typeof setInterval>
+  protected static interval: number = 100
+
+  protected static getDebouncers (): Debouncer[] {
+    return this.debouncers as Debouncer[]
+  }
+
+  public static startTimers (): void {
+    if (!this.timer) {
+      this.timer = setInterval(() => this.doCycle(), this.interval)
+    }
+  }
+
+  public static stopTimers (): void {
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = undefined
+    }
+  }
+
+  protected static doCycle (): void {
+    this.getDebouncers().forEach(debouncer => {
+      const callbacksDue = debouncer.counters
+        .filter(counter => counter.counter === 0)
+      debouncer.counters = debouncer.counters.filter(counter => counter.counter > 0)
+      debouncer.counters.forEach(counter => {
+        counter.counter--
+      })
+      callbacksDue.forEach(({ key, callback }) => callback()
+        .catch(err => logger(`DebounceCallback for ${key} failed`, err)))
+    })
+  }
+
+  public static create (timeoutMs: number = 100): Debouncer {
+    const result = new Debouncer(timeoutMs)
+    this.debouncers.push(result)
+    return result
+  }
+
+  public static remove (debouncer: Debouncer): void {
+    this.debouncers = this.debouncers.filter(bouncer => bouncer !== debouncer)
+  }
+}

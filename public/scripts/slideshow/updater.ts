@@ -1,14 +1,18 @@
-// use sanity
+'use sanity'
 
+interface UpdateFn {
+  (): Promise<any>
+}
 export class CyclicUpdater {
-  private countdown: number = -1
-  private failCount: number = 0
-  private maxFails: number = 10
+  protected countdown: number = -1
+  protected failCount: number = 0
+  protected maxFails: number = 10
   period: number = 60 * 1000
-  updateFn: Function = () => console.log('Cyclic Updater Called with No Updater')
-  constructor (updateFn: Function, period: number) {
-    this.updateFn = updateFn
-    this.period = period
+  updateFn: UpdateFn = async () => Promise.reject(new Error('Cyclic Updater Called with No Updater'))
+
+  constructor (updateFn?: UpdateFn, period?: number) {
+    this.updateFn = updateFn || this.updateFn
+    this.period = period || this.period
   }
 
   async trigger (elapsed: number) {
@@ -20,24 +24,36 @@ export class CyclicUpdater {
         this.countdown = this.period
         this.failCount = 0
       } catch (e) {
-        console.error('CyclicUpdater update resulted in error:', e)
+        window.console.error('CyclicUpdater update resulted in error:', e)
         this.failCount = Math.min(this.maxFails, this.failCount + 1)
         this.countdown = Math.pow(2, this.failCount) * this.period
       }
     }
   }
 
-  static create (updateFn: Function, period: number) {
+  static create (updateFn: UpdateFn, period: number) {
     return new CyclicUpdater(updateFn, period)
   }
 }
 
-const updaters: CyclicUpdater[] = []
+export class CyclicManager {
+  protected static updaters: CyclicUpdater[] = []
+  protected static timer: any // It's a timer...
+  static Add (...updaters: CyclicUpdater[]) {
+    this.updaters.push(...updaters)
+  }
 
-export const AddUpdater = (...newUpdaters: CyclicUpdater[]) => {
-  newUpdaters.forEach(updater => updaters.push(updater))
-}
+  static Start (interval: number) {
+    this.timer = setInterval(
+      () => this.updaters.forEach(updater => updater.trigger(interval)),
+      interval
+    )
+  }
 
-export const StartCycling = (interval: number = 100) => {
-  return setInterval(() => updaters.forEach(updater => updater.trigger(interval)), interval)
+  static Stop () {
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = undefined
+    }
+  }
 }

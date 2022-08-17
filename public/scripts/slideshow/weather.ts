@@ -1,10 +1,8 @@
-// use sanity
-
-/* global HTMLElement */
+'use sanity'
 
 import { CyclicUpdater } from './updater'
 
-interface WeatherResults {
+export interface WeatherResults {
   temp: number|undefined
   pressure: number|undefined
   humidity: number|undefined
@@ -14,54 +12,31 @@ interface WeatherResults {
   sunset: number|undefined
 }
 
-const toWeather = (data: any): WeatherResults => {
-  return {
-    temp: data.temp as number,
-    pressure: data.pressure as number,
-    humidity: data.humidity as number,
-    description: data.description as string,
-    icon: data.icon as string,
-    sunrise: data.sunrise as number,
-    sunset: data.sunset as number
-  }
-}
-
 const fetchWeather = (uri: string): Promise<WeatherResults> => fetch(uri)
-  .then(result => result.json())
-  .then(toWeather)
+  .then(result => result.json() as Promise<WeatherResults>)
 
-const formatData = (d: any, suffix = '') => {
-  if (d === undefined || d === null) {
-    return ''
-  } else if (typeof d === 'number') {
-    return `${d.toFixed(1)}${suffix}`
-  } else {
-    return `${d}${suffix}`
+const formatData = (data: any, suffix = ''): Text => {
+  let text = ''
+  if (typeof data === 'number') {
+    text = `${data.toFixed(1)}${suffix}`
+  } else if (data) {
+    text = `${data}${suffix}`
   }
+  return document.createTextNode(text)
 }
 
 const showWeather = (base: HTMLElement | null, weather: WeatherResults): WeatherResults => {
   if (!base) return weather
-  base.style.display = weather.temp !== undefined ? 'flex' : 'none'
-  const tempElem = base.querySelector('.temp')
-  if (tempElem) {
-    tempElem.innerHTML = formatData(weather.temp, '&deg;C')
-  }
+  base.style.setProperty('display', weather.temp !== undefined ? 'flex' : 'none')
+  base.querySelector('.temp')?.replaceChildren(formatData(weather.temp, '°C'))
   const description = base.querySelector('.desc') as HTMLElement
-  if (description) {
-    description.style.display = weather.description !== undefined ? 'flex' : 'none'
-    const descriptText = base.querySelector('.desctext')
-    if (descriptText) {
-      descriptText.innerHTML = formatData(weather.description)
-    }
-    const iconElem = base.querySelector('.icon') as HTMLElement
-    if (iconElem) {
-      iconElem.style.display = weather.icon ? 'inline-block' : 'none'
-      const src = `https://openweathermap.org/img/w/${weather.icon}.png`
-      if (iconElem.getAttribute('src') !== src) {
-        iconElem.setAttribute('src', src)
-      }
-    }
+  description?.style.setProperty('display', weather.description !== undefined ? 'flex' : 'none')
+  base.querySelector('.desctext')?.replaceChildren(formatData(weather.description))
+  const icon = base.querySelector('.icon') as HTMLElement
+  icon?.style.setProperty('display', weather.icon ? 'inline-block' : 'none')
+  const src = `https://openweathermap.org/img/w/${weather.icon}.png`
+  if (icon?.getAttribute('src') !== src) {
+    icon?.setAttribute('src', src)
   }
   return weather
 }
@@ -80,7 +55,8 @@ export const GetAlmanac = (): SunTimes => almanac
 
 export const LocalWeatherUpdater = CyclicUpdater.create(() =>
   fetchWeather('http://localhost:8080/')
-    .then(weather => showWeather(document.querySelector('.localweather'), weather)), 1000)
+    .then(weather => showWeather(document.querySelector('.localweather'), weather))
+, 1000)
 
 export const WeatherUpdater = CyclicUpdater.create(() =>
   fetchWeather('/weather')
@@ -89,17 +65,19 @@ export const WeatherUpdater = CyclicUpdater.create(() =>
       const today = new Date()
       today.setMilliseconds(0)
       today.setSeconds(0)
-      today.setMinutes(0)
       if (weather.sunrise) {
         almanac.sunrise = weather.sunrise
       } else {
         today.setHours(6)
+        today.setMinutes(15)
         almanac.sunrise = today.getTime()
       }
       if (weather.sunset) {
         almanac.sunset = weather.sunset
       } else {
         today.setHours(21)
+        today.setMinutes(0)
         almanac.sunset = today.getTime()
       }
-    }), 60 * 1000)
+    })
+, 60 * 1000)

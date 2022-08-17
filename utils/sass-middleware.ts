@@ -7,12 +7,12 @@ import { readdir, watch, access } from 'fs/promises'
 
 import sass from 'sass'
 
-import { getDebouncer } from './debounce'
+import { Debouncer } from './debounce'
 
 import debug from 'debug'
 const logger = debug('type-imagereader:sass-middleware')
 
-const debouncer = getDebouncer()
+const debouncer = Debouncer.create()
 
 interface sourceMap {
   version: number
@@ -75,7 +75,7 @@ const watchFolder = async (basePath: string, path: string) => {
     for await (const event of watcher) {
       if (!sassExtension.test(event.filename)) continue
       const sassFile = join(path, event.filename)
-      debouncer(sassFile, async () => {
+      debouncer.debounce(sassFile, async () => {
         logger(`${sassFile} needs recompiling, ${event.eventType}`)
         await compileAndSave(basePath, sassFile)
       })

@@ -9,12 +9,12 @@ import { readdir, watch, access } from 'fs/promises'
 import browserify from 'browserify'
 import { minify } from 'terser'
 
-import { getDebouncer } from './debounce'
+import { Debouncer } from './debounce'
 
 import debug from 'debug'
 const logger = debug('type-imagereader:browserify-middleware')
 
-const debouncer = getDebouncer()
+const debouncer = Debouncer.create()
 
 const isCompileableExtension = /\.[jt]s$/
 
@@ -117,7 +117,7 @@ const watchFolder = async (basePath: string, mountPath: string, isFolder: boolea
     const watcher = watch(join(basePath, mountPath), { persistent: false })
     for await (const event of watcher) {
       const scriptFile = isFolder ? mountPath : join(mountPath, event.filename)
-      debouncer(scriptFile, async () => {
+      debouncer.debounce(scriptFile, async () => {
         logger(`${scriptFile} needs recompiling. ${event.eventType}`)
         await compileAndCache(basePath, scriptFile)
       })
