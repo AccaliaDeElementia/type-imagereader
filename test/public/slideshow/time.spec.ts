@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { suite, test, timeout, slow } from '@testdeck/mocha'
+import { suite, test } from '@testdeck/mocha'
 import * as sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -17,7 +17,7 @@ html
     div.date
 `
 
-@suite(timeout(1000), slow(100))
+@suite
 export class SlideshowTimeTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document

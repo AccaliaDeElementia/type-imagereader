@@ -2,7 +2,7 @@
 
 import { expect, use as ChaiUse } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { suite, test, timeout, slow } from '@testdeck/mocha'
+import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
 
 import { JSDOM, VirtualConsole } from 'jsdom'
@@ -17,7 +17,7 @@ html
   body
 `
 
-@suite(timeout(1000), slow(100))
+@suite
 export class SlideshowUpdaterTests extends CyclicUpdater {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
@@ -179,7 +179,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 }
 
-@suite(timeout(1000), slow(100))
+@suite
 export class SlideshowCyclicManagerTests extends CyclicManager {
   clock: sinon.SinonFakeTimers
   constructor () {
