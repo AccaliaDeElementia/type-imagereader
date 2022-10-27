@@ -1,0 +1,248 @@
+'use sanity'
+import { expect } from 'chai'
+import { suite, test } from '@testdeck/mocha'
+import * as sinon from 'sinon'
+
+import { JSDOM } from 'jsdom'
+import { render } from 'pug'
+
+import { PubSub } from '../../../public/scripts/app/pubsub'
+import { Tabs } from '../../../public/scripts/app/tabs'
+
+const markup = `
+html
+  body
+  div
+    div.tab-list
+      ul
+        li
+          a(href="#tabActions") Actions
+        li
+          a(href="#tabFolders") Folders
+        li.active
+          a(href="#tabImages") Images
+        li
+          a(href="#tabBookmarks") Bookmarks
+    div.tab-content
+      div#tabActions
+      div#tabFolders
+      div#tabImages
+      div#tabBookmarks
+`
+
+class TestTabs extends Tabs {
+  public static get Tabs () {
+    return Tabs.tabs
+  }
+
+  public static get TabNames () {
+    return Tabs.tabNames
+  }
+
+  public static Reset () {
+    Tabs.tabs = []
+    Tabs.tabNames = []
+  }
+}
+
+@suite
+export class AppTabsTests extends PubSub {
+  consoleError: sinon.SinonStub
+  existingWindow: Window & typeof globalThis
+  existingDocument: Document
+  dom: JSDOM
+  actionsScroll: sinon.SinonStub
+  foldersScroll: sinon.SinonStub
+  imagesScroll: sinon.SinonStub
+  bookmarksScroll: sinon.SinonStub
+  tabSelectedSpy: sinon.SinonStub
+  constructor () {
+    super()
+    this.existingWindow = global.window
+    this.existingDocument = global.document
+    this.dom = new JSDOM('', {})
+    this.consoleError = sinon.stub()
+    this.actionsScroll = sinon.stub()
+    this.foldersScroll = sinon.stub()
+    this.imagesScroll = sinon.stub()
+    this.bookmarksScroll = sinon.stub()
+    this.tabSelectedSpy = sinon.stub()
+  }
+
+  before (): void {
+    this.dom = new JSDOM(render(markup), {
+      url: 'http://127.0.0.1:2999'
+    })
+    this.existingWindow = global.window
+    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    this.existingDocument = global.document
+    global.document = this.dom.window.document
+    this.consoleError = sinon.stub(global.window.console, 'error')
+    const actions = this.dom.window.document.getElementById('tabActions')
+    if (actions) {
+      actions.scroll = this.actionsScroll
+    }
+    const folders = this.dom.window.document.getElementById('tabFolders')
+    if (folders) {
+      folders.scroll = this.foldersScroll
+    }
+    const images = this.dom.window.document.getElementById('tabImages')
+    if (images) {
+      images.scroll = this.imagesScroll
+    }
+    const bookmarks = this.dom.window.document.getElementById('tabBookmarks')
+    if (bookmarks) {
+      bookmarks.scroll = this.bookmarksScroll
+    }
+    PubSub.subscribers = {}
+    PubSub.deferred = []
+    PubSub.Subscribe('Tab:Selected', this.tabSelectedSpy)
+    TestTabs.Reset()
+    Tabs.Init()
+    this.tabSelectedSpy.reset()
+    this.actionsScroll.reset()
+  }
+
+  after (): void {
+    global.window = this.existingWindow
+    global.document = this.existingDocument
+  }
+
+  @test
+  'Init(): All tabs discovered' () {
+    TestTabs.Reset()
+    expect(TestTabs.Tabs).to.have.length(0)
+    expect(TestTabs.TabNames).to.have.length(0)
+    Tabs.Init()
+    expect(TestTabs.Tabs).to.have.length(4)
+    expect(TestTabs.TabNames).to.have.length(4)
+  }
+
+  @test
+  'Init(): Subscribes to Tab:Select event' () {
+    expect(PubSub.subscribers['TAB:SELECT']).to.have.length(1)
+  }
+
+  @test
+  'Init(): Tab:Select fires SelectTab' () {
+    const spy = sinon.stub(Tabs, 'SelectTab')
+    try {
+      spy.returns(undefined)
+      PubSub.Publish('Tab:Select', 'FOOBAR')
+      expect(spy.calledWith('FOOBAR')).to.equal(true)
+    } finally {
+      spy.restore()
+    }
+  }
+
+  @test
+  'Init(): Registers click events for tabs which fire SelectTab' () {
+    const spy = sinon.stub(Tabs, 'SelectTab')
+    try {
+      spy.returns(undefined)
+      for (const link of this.dom.window.document.querySelectorAll('.tab-list a')) {
+        const event = new this.dom.window.MouseEvent('click')
+        link.parentElement?.dispatchEvent(event)
+        const href = link.getAttribute('href')
+        expect(href).to.not.equal(undefined)
+        expect(spy.calledWith(href || undefined)).to.equal(true)
+      }
+    } finally {
+      spy.restore()
+    }
+  }
+
+  @test
+  'Init(): Click event handler defaults to empty string on null href' () {
+    const spy = sinon.stub(Tabs, 'SelectTab')
+    try {
+      spy.returns(undefined)
+      const link = this.dom.window.document.querySelector('a[href="#tabActions"]') as HTMLElement
+      link.removeAttribute('href')
+      const event = new this.dom.window.MouseEvent('click')
+      link.parentElement?.dispatchEvent(event)
+      expect(link.getAttribute('href')).to.equal(null)
+      expect(spy.calledWith('')).to.equal(true)
+    } finally {
+      spy.restore()
+    }
+  }
+
+  @test
+  'SelectTab() publishes selectedTab' () {
+    Tabs.SelectTab('#tabImages')
+    expect(this.tabSelectedSpy.calledWith('#tabImages')).to.equal(true)
+  }
+
+  @test
+  'SelectTab() adds missing `#tab` prefix to href' () {
+    Tabs.SelectTab('Images')
+    expect(this.tabSelectedSpy.calledWith('#tabImages')).to.equal(true)
+  }
+
+  @test
+  'SelectTab() is case insensitive' () {
+    Tabs.SelectTab('#TABIMAGES')
+    expect(this.tabSelectedSpy.calledWith('#tabImages')).to.equal(true)
+  }
+
+  @test
+  'SelectTab() defaults to first tab when selecting non existant tab' () {
+    Tabs.SelectTab('#TABDOESNOTEXIST')
+    expect(this.tabSelectedSpy.calledWith(TestTabs.TabNames[0])).to.equal(true)
+  }
+
+  @test
+  'SelectTab() sets active css class on selected Tab' () {
+    Tabs.SelectTab(TestTabs.TabNames[2])
+    expect(TestTabs.Tabs[2]?.parentElement?.classList.contains('active')).to.equal(true)
+  }
+
+  @test
+  'SelectTab() removes active css class on non selected tab' () {
+    TestTabs.Tabs[2]?.parentElement?.classList.add('active')
+    Tabs.SelectTab(TestTabs.TabNames[1])
+    expect(TestTabs.Tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
+  }
+
+  @test
+  'SelectTab() removes active css class null href tab' () {
+    TestTabs.Tabs[2]?.parentElement?.classList.add('active')
+    TestTabs.Tabs[2]?.removeAttribute('href')
+    Tabs.SelectTab(TestTabs.TabNames[2])
+    expect(TestTabs.Tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
+  }
+
+  @test
+  'SelectTab() displays contected content on tab select' () {
+    Tabs.SelectTab(TestTabs.TabNames[1])
+    expect(this.dom.window.document.querySelector<HTMLElement>(TestTabs.Tabs[1]?.getAttribute('href') || '')?.style.getPropertyValue('display')).to.equal('block')
+  }
+
+  @test
+  'SelectTab() scrolls contnet into view on tab select' () {
+    Tabs.SelectTab('Folders')
+    expect(this.foldersScroll.calledWith({
+      top: 0,
+      behavior: 'smooth'
+    })).to.equal(true)
+  }
+
+  @test
+  'SelectTab Handles no tabs gracefully' () {
+    TestTabs.Reset()
+    Tabs.SelectTab('Images')
+    expect(true, 'Should not have thrown on previous line').to.equal(true)
+
+    Tabs.SelectTab()
+    expect(true, 'Should not have thrown on previous line').to.equal(true)
+  }
+
+  @test
+  'SelectTab() hides other tab content on tab select' () {
+    const content = this.dom.window.document.querySelector<HTMLElement>(TestTabs.Tabs[1]?.getAttribute('href') || '')
+    content?.style.setProperty('display', 'block')
+    Tabs.SelectTab(TestTabs.TabNames[3])
+    expect(content?.style.getPropertyValue('display')).to.equal('none')
+  }
+}

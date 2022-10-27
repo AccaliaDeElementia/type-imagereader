@@ -3,9 +3,9 @@
 import { expect, use as ChaiUse } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { JSDOM, VirtualConsole } from 'jsdom'
+import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { CyclicManager, CyclicUpdater } from '../../../public/scripts/slideshow/updater'
@@ -22,17 +22,13 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
-  console: VirtualConsole
   clock: sinon.SinonFakeTimers
-  updateSpy: Sinon.SinonStub
+  updateSpy: sinon.SinonStub
   constructor () {
     super()
     this.existingWindow = global.window
     this.existingDocument = global.document
-    this.console = new VirtualConsole()
-    this.dom = new JSDOM('', {
-      virtualConsole: this.console
-    })
+    this.dom = new JSDOM('', {})
 
     this.clock = sinon.useFakeTimers({
       shouldClearNativeTimers: false
@@ -106,7 +102,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
     this.countdown = -1000
     this.updateSpy.rejects('MUY MALO!')
 
-    const consoleSpy = Sinon.stub(
+    const consoleSpy = sinon.stub(
       global.window.console,
       'error'
     )
@@ -130,7 +126,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
     this.failCount = 4
     this.updateSpy.rejects('MUY MALO!')
 
-    const consoleSpy = Sinon.stub(
+    const consoleSpy = sinon.stub(
       global.window.console,
       'error'
     )
@@ -154,7 +150,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
     this.failCount = 40
     this.updateSpy.rejects('MUY MALO!')
 
-    const consoleSpy = Sinon.stub(
+    const consoleSpy = sinon.stub(
       global.window.console,
       'error'
     )

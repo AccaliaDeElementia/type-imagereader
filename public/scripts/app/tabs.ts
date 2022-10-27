@@ -2,46 +2,55 @@
 
 import { Subscribe, Publish } from './pubsub'
 
-const tabs: Element[] = Array.from(document.querySelectorAll('.tab-list a'))
-const tabNames: string[] = tabs.map(tab => tab.getAttribute('href'))
-  .filter(name => name !== null) as string[]
+export class Tabs {
+  protected static tabs: HTMLElement[] = []
+  protected static tabNames: string[] = []
 
-const selectTab = (href?: string): void => {
-  if (href && href[0] !== '#') {
-    href = `#tab${href}`
-  }
-  if (!href || !tabNames.some(name => name === href)) {
-    href = tabNames[0] || ''
-  }
-  const lowerHref = href.toLowerCase()
-  for (const tab of tabs) {
-    let tabHref = tab.getAttribute('href')
-    if (tabHref === null) continue
-    const content: HTMLElement = document.querySelector(tabHref) as HTMLElement
-    if (!content) continue
-    tabHref = tabHref.toLowerCase()
-    if (tabHref === lowerHref) {
-      tab.parentElement?.classList.add('active')
-      content.style.display = 'block'
-      content.scroll({
-        top: 0,
-        behavior: 'smooth'
+  public static Init (): void {
+    this.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
+    this.tabNames = this.tabs.map(tab => tab.getAttribute('href'))
+      .filter(name => name !== null) as string[]
+
+    for (const tab of this.tabs) {
+      tab.parentElement?.addEventListener('click', evt => {
+        this.SelectTab(tab.getAttribute('href') || '')
+        evt.preventDefault()
+        return false
       })
-    } else {
-      tab.parentElement?.classList.remove('active')
-      content.style.display = 'none'
     }
+
+    Subscribe('Tab:Select', (name) => this.SelectTab(name))
+    this.SelectTab()
   }
-  Publish('Tab:Selected', href)
-}
 
-for (const tab of tabs) {
-  tab.parentElement?.addEventListener('click', evt => {
-    selectTab(tab.getAttribute('href') || '')
-    evt.preventDefault()
-    return false
-  })
+  static SelectTab (href?: string): void {
+    if (href && href[0] !== '#') {
+      href = `#tab${href}`
+    }
+    const lowerHref = href?.toLowerCase()
+    if (!href || !this.tabNames.some(name => name.toLowerCase() === lowerHref)) {
+      href = this.tabNames[0] || ''
+    }
+    for (const tab of this.tabs) {
+      const tabHref = tab.getAttribute('href')
+      if (tabHref === null) {
+        tab.parentElement?.classList.remove('active')
+        continue
+      }
+      const content = document.querySelector<HTMLElement>(tabHref)
+      if (tabHref.toLowerCase() === lowerHref) {
+        href = tabHref
+        tab.parentElement?.classList.add('active')
+        content?.style.setProperty('display', 'block')
+        content?.scroll({
+          top: 0,
+          behavior: 'smooth'
+        })
+      } else {
+        tab.parentElement?.classList.remove('active')
+        content?.style.setProperty('display', 'none')
+      }
+    }
+    Publish('Tab:Selected', href)
+  }
 }
-
-Subscribe('Tab:Select', selectTab)
-selectTab()

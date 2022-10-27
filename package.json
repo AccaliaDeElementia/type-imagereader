@@ -9,7 +9,7 @@
     "start": "ts-node .",
     "pretest": "npm run build",
     "test": "nyc mocha",
-    "knex": "knex --knexfile src/knexfile.ts",
+    "knex": "knex --knexfile knexfile.ts",
     "predev": "npm run build",
     "dev": "DEBUG=type-imagereader:* SKIP_SYNC=1 ts-node ."
   },
@@ -103,10 +103,12 @@
       ".tsx"
     ],
     "include": [
-      "**/*.ts"
+      "**/*.ts",
+      "utils/*.ts"
     ],
     "exclude": [
-      "**/*.spec.ts"
+      "**/*.spec.ts",
+      "knexfile.ts"
     ],
     "reporter": [
       "lcov",
