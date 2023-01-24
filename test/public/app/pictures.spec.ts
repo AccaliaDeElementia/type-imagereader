@@ -7,9 +7,10 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { Net } from '../../../public/scripts/app/net'
-import { PubSub, Subscribe } from '../../../public/scripts/app/pubsub'
+import { Publish, PubSub, Subscribe } from '../../../public/scripts/app/pubsub'
 import { NavigateTo, PageSelector, Picture, Pictures } from '../../../public/scripts/app/pictures'
 import { Loading } from '../../../public/scripts/app/loading'
+import { Navigation } from '../../../public/scripts/app/navigation'
 
 const markup = `
 html
@@ -47,6 +48,10 @@ html
       nav.pages
         ul.pagination
 `
+
+interface TestVisualViewport {
+  scale: number
+}
 
 class TestPics extends Pictures {
   public static get pictures (): Picture[] {
@@ -124,6 +129,8 @@ abstract class BaseAppPicturesTests extends PubSub {
   document: Document
   dom: JSDOM
   tabSelectedSpy: sinon.SinonStub
+  visualViewport: TestVisualViewport | undefined
+
   constructor () {
     super()
     this.existingWindow = global.window
@@ -131,6 +138,7 @@ abstract class BaseAppPicturesTests extends PubSub {
     this.document = global.document
     this.dom = new JSDOM('', {})
     this.tabSelectedSpy = sinon.stub()
+    this.visualViewport = undefined
   }
 
   before (): void {
@@ -142,6 +150,10 @@ abstract class BaseAppPicturesTests extends PubSub {
     global.window = (this.dom.window as unknown) as Window & typeof globalThis
     this.existingDocument = global.document
     global.document = this.dom.window.document
+
+    // @ts-ignore
+    this.dom.window.visualViewport = this.visualViewport
+
     PubSub.subscribers = {}
     PubSub.deferred = []
     PubSub.Subscribe('Tab:Selected', this.tabSelectedSpy)
@@ -473,6 +485,18 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
 @suite
 export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
+  changePictureSpy: Sinon.SinonStub = Sinon.stub()
+
+  before () {
+    super.before()
+    this.changePictureSpy = sinon.stub(Pictures, 'ChangePicture')
+  }
+
+  after () {
+    this.changePictureSpy.restore()
+    super.after()
+  }
+
   @test
   'returns a HTMLElement' () {
     const card = Pictures.MakePictureCard({
@@ -553,7 +577,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
     const card = Pictures.MakePictureCard(pic)
     const event = new this.dom.window.MouseEvent('click')
     card.dispatchEvent(event)
-    expect(TestPics.current).to.equal(pic)
+    expect(this.changePictureSpy.calledOnceWithExactly(pic)).to.equal(true)
   }
 
   @test
@@ -582,16 +606,12 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       path: '/foo/bar/baz.jpg',
       seen: false
     }
-    let executed = false
-    PubSub.Subscribe('Pictures:Load', () => {
-      executed = true
-    })
     PubSub.Subscribe('Menu:Hide', () => 0)
     expect(TestPics.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
     const event = new this.dom.window.MouseEvent('click')
     card.dispatchEvent(event)
-    expect(executed).to.equal(true)
+    expect(this.changePictureSpy.called).to.equal(true)
   }
 }
 
@@ -683,7 +703,7 @@ export class AppPicturesMakePaginatorItemTests extends BaseAppPicturesTests {
 export class AppPicturesMakePaginatorTests extends BaseAppPicturesTests {
   makeItemSpy: Sinon.SinonStub = sinon.stub()
   currentPageSpy: Sinon.SinonStub = sinon.stub()
-  pages: {[index: string]: PageSelector} = {}
+  pages: { [index: string]: PageSelector } = {}
   before (): void {
     super.before()
     this.makeItemSpy = sinon.stub(Pictures, 'MakePaginatorItem')
@@ -780,7 +800,7 @@ export class AppPicturesMakePaginatorTests extends BaseAppPicturesTests {
 export class AppPicturesMakeTabTests extends BaseAppPicturesTests {
   makePicturesPageSpy: Sinon.SinonStub = sinon.stub()
   makePaginatorSpy: Sinon.SinonStub = sinon.stub()
-  tab: HTMLElement|null = null
+  tab: HTMLElement | null = null
   before (): void {
     super.before()
     this.makePicturesPageSpy = sinon.stub(Pictures, 'MakePicturesPage')
@@ -797,7 +817,7 @@ export class AppPicturesMakeTabTests extends BaseAppPicturesTests {
       return retval
     })
     TestPics.pictures = Array.from({ length: 32 })
-      .map((_:unknown, i: number): Picture => {
+      .map((_: unknown, i: number): Picture => {
         return {
           path: `/some/path/${i}.png`,
           name: `${i}.png`,
@@ -858,14 +878,14 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   selectPageSpy: Sinon.SinonStub = sinon.stub()
   loadingShowSpy: Sinon.SinonStub = sinon.stub()
   loadingErrorSpy: Sinon.SinonStub = sinon.stub()
-  bottomLeftText: HTMLElement|null = null
-  bottomCenterText: HTMLElement|null = null
-  bottomRightText: HTMLElement|null = null
+  bottomLeftText: HTMLElement | null = null
+  bottomCenterText: HTMLElement | null = null
+  bottomRightText: HTMLElement | null = null
 
   before (): void {
     super.before()
     TestPics.pictures = Array.from({ length: this.totalCount })
-      .map((_:unknown, i: number): Picture => {
+      .map((_: unknown, i: number): Picture => {
         return {
           path: `/some/path/${i}.png`,
           name: `${i}.png`,
@@ -1602,7 +1622,7 @@ export class AppPicturesGetSetShowUnreadOnly extends BaseAppPicturesTests {
 }
 
 @suite
-export class AppPicturesUpdateUnreadSelectoSlider extends BaseAppPicturesTests {
+export class AppPicturesUpdateUnreadSelectorSlider extends BaseAppPicturesTests {
   @test
   'it should remove unread class when not reading unread only' () {
     this.dom.window.localStorage.ShowUnseenOnly = 'false'
@@ -1641,5 +1661,574 @@ export class AppPicturesUpdateUnreadSelectoSlider extends BaseAppPicturesTests {
     expect(element?.classList.contains('all')).to.equal(true)
     TestPics.UpdateUnreadSelectorSlider()
     expect(element?.classList.contains('all')).to.equal(false)
+  }
+}
+
+@suite
+export class AppPicturesInitUnreadSelectorSlider extends BaseAppPicturesTests {
+  UpdateUnreadSelectorSliderSpy: Sinon.SinonStub = sinon.stub()
+  GetShowUnreadOnly: Sinon.SinonStub = sinon.stub()
+  ShowUnreadOnlyValue: boolean = false
+  SliderDiv: HTMLDivElement | null = null
+
+  before () {
+    super.before()
+    this.dom.window.localStorage.ShowUnseenOnly = 'false'
+    this.UpdateUnreadSelectorSliderSpy = sinon.stub(Pictures, 'UpdateUnreadSelectorSlider')
+    this.GetShowUnreadOnly = sinon.stub(Pictures, 'ShowUnreadOnly')
+    this.GetShowUnreadOnly.get(() => this.ShowUnreadOnlyValue)
+    this.SliderDiv = this.dom.window.document.querySelector('.selectUnreadAll')
+  }
+
+  after () {
+    this.UpdateUnreadSelectorSliderSpy.restore()
+    this.GetShowUnreadOnly.restore()
+    super.after()
+  }
+
+  @test
+  'it should call UpdateUnreasSelectoreSlider on intitial call' () {
+    Pictures.InitUnreadSelectorSlider()
+    expect(this.UpdateUnreadSelectorSliderSpy.called).to.equal(true)
+  }
+
+  @test
+  'it should respond to click by calling UpdateUnreadSelectorSlider' () {
+    Pictures.InitUnreadSelectorSlider()
+    this.UpdateUnreadSelectorSliderSpy.reset()
+    expect(this.UpdateUnreadSelectorSliderSpy.called).to.equal(false)
+    const event = new this.dom.window.MouseEvent('click')
+    this.SliderDiv?.dispatchEvent(event)
+    expect(this.UpdateUnreadSelectorSliderSpy.called).to.equal(true)
+  }
+
+  @test
+  'it should activate unread mode when in readall mode' () {
+    this.dom.window.localStorage.ShowUnseenOnly = 'false'
+    Pictures.InitUnreadSelectorSlider()
+    this.UpdateUnreadSelectorSliderSpy.reset()
+    expect(this.UpdateUnreadSelectorSliderSpy.called).to.equal(false)
+    const event = new this.dom.window.MouseEvent('click')
+    this.SliderDiv?.dispatchEvent(event)
+    expect(this.UpdateUnreadSelectorSliderSpy.called).to.equal(true)
+    expect(this.dom.window.localStorage.ShowUnseenOnly).to.equal('true')
+  }
+
+  @test
+  'it should activate readall mode when in unread mode' () {
+    this.ShowUnreadOnlyValue = true
+    Pictures.InitUnreadSelectorSlider()
+    const event = new this.dom.window.MouseEvent('click')
+    this.SliderDiv?.dispatchEvent(event)
+    expect(this.dom.window.localStorage.ShowUnseenOnly).to.equal('false')
+  }
+}
+
+@suite
+export class AppPicturesInitActions extends BaseAppPicturesTests {
+  GetIsMenuActive: Sinon.SinonStub = sinon.stub()
+  GetShowUnreadOnly: Sinon.SinonStub = sinon.stub()
+  StubChangePicture: Sinon.SinonStub = sinon.stub()
+  StubWindowOpen: Sinon.SinonStub = sinon.stub()
+  StubPostJson: Sinon.SinonStub = sinon.stub()
+  ShowUnreadOnlyValue: boolean = false
+  IsMenuActiveValue: boolean = false
+
+  before () {
+    super.before()
+    this.dom.window.localStorage.ShowUnseenOnly = 'false'
+    this.GetIsMenuActive = sinon.stub(Navigation, 'IsMenuActive')
+    this.GetIsMenuActive.get(() => this.IsMenuActiveValue)
+    this.GetShowUnreadOnly = sinon.stub(Pictures, 'ShowUnreadOnly')
+    this.GetShowUnreadOnly.get(() => this.ShowUnreadOnlyValue)
+    this.StubChangePicture = sinon.stub(Pictures, 'ChangePicture')
+    this.StubWindowOpen = sinon.stub(this.dom.window, 'open')
+    this.StubPostJson = sinon.stub(Net, 'PostJSON')
+    this.StubPostJson.resolves()
+    TestPics.pictures = Array(21).fill(null).map((_, i) => {
+      return {
+        name: `${i}.jpg`,
+        path: `/${i}.jpg`,
+        seen: i >= 5 && i < 15,
+        index: i
+      }
+    })
+    TestPics.current = TestPics.pictures[10] || null
+  }
+
+  after () {
+    this.GetIsMenuActive.restore()
+    this.GetShowUnreadOnly.restore()
+    this.StubChangePicture.restore()
+    this.StubWindowOpen.restore()
+    this.StubPostJson.restore()
+    super.after()
+  }
+
+  @test
+  'it should subscribe to ArrowUp' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:KEYPRESS:ARROWUP')
+  }
+
+  @test
+  'it should publish ShowMenu for ArrowUp when menu is not active' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:ShowMenu', spy)
+    expect(spy.called).to.equal(false)
+    Publish('Action:Keypress:ArrowUp')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should not publish HideMenu for ArrowUp when no pictures' () {
+    const spy = sinon.stub()
+    TestPics.pictures = []
+    TestPics.current = null
+    Subscribe('Action:Execute:HideMenu', spy)
+    expect(spy.called).to.equal(false)
+    this.IsMenuActiveValue = true
+    Publish('Action:Keypress:ArrowUp')
+    expect(spy.called).to.equal(false)
+  }
+
+  @test
+  'it should publish HideMenu for ArrowUp when menu is active' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:HideMenu', spy)
+    expect(spy.called).to.equal(false)
+    this.IsMenuActiveValue = true
+    Publish('Action:Keypress:ArrowLeft')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should subscribe to ArrowRight' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:KEYPRESS:ARROWRIGHT')
+  }
+
+  @test
+  'it should publish Next for ArrowRight when menu is not active' () {
+    const spy = sinon.stub()
+    PubSub.subscribers['ACTION:EXECUTE:NEXT'] = []
+    Subscribe('Action:Execute:Next', spy)
+    expect(spy.called).to.equal(false)
+    Publish('Action:Keypress:ArrowRight')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should not publish HideMenu for ArrowRight when no pictures' () {
+    const spy = sinon.stub()
+    TestPics.pictures = []
+    TestPics.current = null
+    Subscribe('Action:Execute:HideMenu', spy)
+    expect(spy.called).to.equal(false)
+    this.IsMenuActiveValue = true
+    Publish('Action:Keypress:Arrowright')
+    expect(spy.called).to.equal(false)
+  }
+
+  @test
+  'it should publish HideMenu for ArrowRight when menu is active' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:HideMenu', spy)
+    expect(spy.called).to.equal(false)
+    this.IsMenuActiveValue = true
+    Publish('Action:Keypress:ArrowRight')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should subscribe to ArrowLeft' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:KEYPRESS:ARROWLEFT')
+  }
+
+  @test
+  'it should publish Previous for ArrowLeft when menu is not active' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:Previous', spy)
+    expect(spy.called).to.equal(false)
+    Publish('Action:Keypress:ArrowLeft')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should not publish HideMenu for ArrowLeft when no pictures' () {
+    const spy = sinon.stub()
+    TestPics.pictures = []
+    TestPics.current = null
+    Subscribe('Action:Execute:HideMenu', spy)
+    expect(spy.called).to.equal(false)
+    this.IsMenuActiveValue = true
+    Publish('Action:Keypress:ArrowLeft')
+    expect(spy.called).to.equal(false)
+  }
+
+  @test
+  'it should publish HideMenu for ArrowLeft when menu is active' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:HideMenu', spy)
+    expect(spy.called).to.equal(false)
+    this.IsMenuActiveValue = true
+    Publish('Action:Keypress:ArrowLeft')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should subscribe to ArrowDown' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:KEYPRESS:ARROWDOWN')
+  }
+
+  @test
+  'it should publish ShowMenu for ArrowDown when menu is not active' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:ShowMenu', spy)
+    expect(spy.called).to.equal(false)
+    Publish('Action:Keypress:ArrowDown')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should not publish HideMenu for ArrowDown when no pictures' () {
+    const spy = sinon.stub()
+    TestPics.pictures = []
+    TestPics.current = null
+    Subscribe('Action:Execute:HideMenu', spy)
+    expect(spy.called).to.equal(false)
+    this.IsMenuActiveValue = true
+    Publish('Action:Keypress:ArrowDown')
+    expect(spy.called).to.equal(false)
+  }
+
+  @test
+  'it should publish HideMenu for ArrowDown when menu is active' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:HideMenu', spy)
+    expect(spy.called).to.equal(false)
+    this.IsMenuActiveValue = true
+    Publish('Action:Keypress:ArrowLeft')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should subscribe to Execute:Previous' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:PREVIOUS')
+  }
+
+  @test
+  'it should execute PreviousUnseen when ShowUnreadOnly is true' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:PreviousUnseen', spy)
+    expect(spy.called).to.equal(false)
+    this.ShowUnreadOnlyValue = true
+    Publish('Action:Execute:Previous')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should execute PreviousImage when ShowUnreadOnly is false' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:PreviousImage', spy)
+    expect(spy.called).to.equal(false)
+    this.ShowUnreadOnlyValue = false
+    Publish('Action:Execute:Previous')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should subscribe to Execute:PreviousImage' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:PREVIOUSIMAGE')
+  }
+
+  @test
+  'it should subscribe to Execute:PreviousUnseen' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:PREVIOUSUNSEEN')
+  }
+
+  @test
+  'it should subscribe to Execute:Next' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:NEXT')
+  }
+
+  @test
+  'it should execute NextUnseen when ShowUnreadOnly is true' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:NextUnseen', spy)
+    expect(spy.called).to.equal(false)
+    this.ShowUnreadOnlyValue = true
+    Publish('Action:Execute:Next')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should execute NextImage when ShowUnreadOnly is false' () {
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:NextImage', spy)
+    expect(spy.called).to.equal(false)
+    this.ShowUnreadOnlyValue = false
+    Publish('Action:Execute:Next')
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should subscribe to Execute:NextImage' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:NEXTIMAGE')
+  }
+
+  @test
+  'it should subscribe to Execute:NextUnseen' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:NEXTUNSEEN')
+  }
+
+  @test
+  'it should subscribe to Execute:ViewFullSize' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:VIEWFULLSIZE')
+  }
+
+  @test
+  'it should open image when executing view full size' () {
+    expect(this.StubWindowOpen.called).to.equal(false)
+    TestPics.current = {
+      path: '/Foo/Bar/Baz.jpg',
+      name: 'Baz.jpg',
+      seen: true
+    }
+    Publish('Action:Execute:ViewFullSize')
+    expect(this.StubWindowOpen.calledWith('/images/full/Foo/Bar/Baz.jpg')).to.equal(true)
+  }
+
+  @test
+  'it should subscribe to Execute:Bookmark' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:BOOKMARK')
+  }
+
+  @test
+  async 'it should post bookmarks add for Execute:Bookmark' () {
+    const spy = sinon.stub()
+    Subscribe('Bookmarks:Load', spy)
+    TestPics.current = {
+      path: '/Foo/Bar/Baz.jpg',
+      name: 'Baz.jpg',
+      seen: true
+    }
+    Publish('Action:Execute:Bookmark')
+    // let the callback finish
+    await new Promise(resolve => {
+      setTimeout(resolve, 5)
+    })
+    expect(this.StubPostJson.called).to.equal(true)
+    expect(this.StubPostJson.firstCall.args[0]).to.equal('/api/bookmarks/add')
+  }
+
+  @test
+  async 'it should post expected payload for Execute:Bookmark' () {
+    const spy = sinon.stub()
+    Subscribe('Bookmarks:Load', spy)
+    TestPics.current = {
+      path: '/Foo/Bar/Baz.jpg',
+      name: 'Baz.jpg',
+      seen: true
+    }
+    Publish('Action:Execute:Bookmark')
+    // let the callback finish
+    await new Promise(resolve => {
+      setTimeout(resolve, 10)
+    })
+    expect(this.StubPostJson.called).to.equal(true)
+    expect(this.StubPostJson.firstCall.args[1]).to.deep.equal({
+      path: '/Foo/Bar/Baz.jpg'
+    })
+  }
+
+  @test
+  async 'it should publish Bookmarks:load after Execute:Bookmark' () {
+    const spy = sinon.stub()
+    Subscribe('Bookmarks:Load', spy)
+    TestPics.current = {
+      path: '/Foo/Bar/Baz.jpg',
+      name: 'Baz.jpg',
+      seen: true
+    }
+    expect(spy.called).to.equal(false)
+    Publish('Action:Execute:Bookmark')
+    // let the callback finish
+    await new Promise(resolve => {
+      setTimeout(resolve, 10)
+    })
+    expect(spy.called).to.equal(true)
+  }
+}
+
+@suite
+export class AppPicturesInitMouse extends BaseAppPicturesTests {
+  boundingRect = {
+    x: 0,
+    y: 0,
+    width: 1024,
+    height: 768,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  }
+
+  myVisualViewport: TestVisualViewport = {
+    scale: 1
+  }
+
+  MainImageBoundingStub: sinon.SinonStub = sinon.stub()
+  ClickTarget: HTMLElement | null = null
+
+  before () {
+    this.myVisualViewport = {
+      scale: 1
+    }
+    this.visualViewport = this.myVisualViewport
+    super.before()
+    if (TestPics.mainImage != null && TestPics.mainImage.parentElement != null) {
+      this.MainImageBoundingStub = sinon.stub(TestPics.mainImage.parentElement, 'getBoundingClientRect')
+      this.MainImageBoundingStub.returns(this.boundingRect)
+    }
+    this.ClickTarget = TestPics.mainImage?.parentElement || null
+    PubSub.subscribers['LOADING:ERROR'] = [() => 0]
+  }
+
+  after (): void {
+    this.MainImageBoundingStub.restore()
+    super.after()
+  }
+
+  @test
+  'it should ignore click with zero width image area' () {
+    const evt = new this.dom.window.MouseEvent('click')
+    const spy = sinon.stub()
+    this.boundingRect.width = 0
+    Subscribe('Ignored Mouse Click', spy)
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should ignore click with null width image bounding rect' () {
+    const evt = new this.dom.window.MouseEvent('click')
+    const spy = sinon.stub()
+    this.MainImageBoundingStub.returns(null)
+    Subscribe('Ignored Mouse Click', spy)
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should navigate previous for left area click' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: this.boundingRect.width / 4,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:Previous', spy)
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should navigate previous for left area click with decreased visualViewport scale' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: this.boundingRect.width / 4,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:Previous', spy)
+    this.myVisualViewport.scale /= 2
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should ignore left area click with increased visualViewport scale' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: this.boundingRect.width / 4,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    Subscribe('Ignored Mouse Click', spy)
+    this.myVisualViewport.scale *= 2
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should show menu for center area click' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: this.boundingRect.width / 2,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:ShowMenu', spy)
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should show menu for center area click with decreased visualViewport scale' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: this.boundingRect.width / 2,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    this.myVisualViewport.scale /= 2
+    Subscribe('Action:Execute:ShowMenu', spy)
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should ignore center area click with increased visualViewport scale' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: this.boundingRect.width / 2,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    this.myVisualViewport.scale *= 2
+    Subscribe('Ignored Mouse Click', spy)
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should navigate next for right area click' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: 3 * this.boundingRect.width / 4,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:Next', spy)
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should navigate next for right area click with decreased visualViewport scale' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: 3 * this.boundingRect.width / 4,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    Subscribe('Action:Execute:Next', spy)
+    this.myVisualViewport.scale /= 2
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should ignore right area click with increased visualViewport scale' () {
+    const evt = new this.dom.window.MouseEvent('click', {
+      clientX: 3 * this.boundingRect.width / 4,
+      clientY: this.boundingRect.height / 2
+    })
+    const spy = sinon.stub()
+    Subscribe('Ignored Mouse Click', spy)
+    this.myVisualViewport.scale *= 2
+    this.ClickTarget?.dispatchEvent(evt)
+    expect(spy.called).to.equal(true)
   }
 }

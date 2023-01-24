@@ -78,7 +78,7 @@ export class Pictures {
     this.mainImage?.setAttribute('src', '')
   }
 
-  protected static InitActions () {
+  public static InitActions () {
     const doIfNoMenu = (action: string) => {
       return () => {
         if (!Navigation.IsMenuActive) {
@@ -106,7 +106,7 @@ export class Pictures {
       Publish(`Action:Execute:${actualEvent}`)
     })
     Subscribe('Action:Execute:PreviousImage', () => changeTo(NavigateTo.Previous))
-    Subscribe('Action.Execute:PreviousUnseen', () => changeTo(NavigateTo.PreviousUnread))
+    Subscribe('Action:Execute:PreviousUnseen', () => changeTo(NavigateTo.PreviousUnread))
     Subscribe('Action:Execute:NextImage', () => changeTo(NavigateTo.Next))
     Subscribe('Action:Execute:NextUnseen', () => changeTo(NavigateTo.NextUnread))
 
@@ -126,6 +126,10 @@ export class Pictures {
         return
       }
       const target = this.mainImage?.parentElement?.getBoundingClientRect() || { left: 0, width: 0 }
+      if (target.width === 0) {
+        Publish('Ignored Mouse Click', evt)
+        return
+      }
       const x = evt.clientX - target.left
       if (x < target.width / 3) {
         Publish('Action:Execute:Previous')
@@ -180,8 +184,7 @@ export class Pictures {
     }
     card.querySelector('h5')?.replaceChildren(picture.name)
     card.addEventListener('click', () => {
-      this.current = picture
-      Publish('Pictures:Load')
+      Pictures.ChangePicture(picture)
       Publish('Menu:Hide')
     })
     return card
@@ -328,7 +331,7 @@ export class Pictures {
     return this.pictures[index]
   }
 
-  protected static ChangePicture (pic: Picture | undefined): void {
+  public static ChangePicture (pic: Picture | undefined): void {
     if (Loading.IsLoading) {
       return
     }
@@ -341,7 +344,7 @@ export class Pictures {
     }
   }
 
-  protected static get ShowUnreadOnly (): boolean {
+  public static get ShowUnreadOnly (): boolean {
     return window.localStorage.ShowUnseenOnly === 'true'
   }
 
@@ -349,7 +352,7 @@ export class Pictures {
     window.localStorage.ShowUnseenOnly = `${value}`
   }
 
-  protected static UpdateUnreadSelectorSlider (): void {
+  public static UpdateUnreadSelectorSlider (): void {
     const element = document.querySelector('.selectUnreadAll > div')
     if (this.ShowUnreadOnly) {
       element?.classList.add('unread')
@@ -360,7 +363,7 @@ export class Pictures {
     }
   }
 
-  protected static InitUnreadSelectorSlider () {
+  public static InitUnreadSelectorSlider () {
     this.UpdateUnreadSelectorSlider()
 
     document.querySelector('.selectUnreadAll')?.addEventListener('click', evt => {

@@ -3,7 +3,7 @@
 import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
 
-interface Data {
+export interface Data {
   path: string
   noMenu?: boolean
   name?: string
@@ -23,7 +23,7 @@ export class Navigation {
     return [
       window.location.protocol,
       '//',
-      window.location.host,
+      window.location.hostname,
       window.location.port.length ? `:${window.location.port}` : '',
       window.location.pathname.split('/').slice(0, 2).join('/')
     ].join('')
@@ -38,15 +38,28 @@ export class Navigation {
     return !mainMenu?.classList.contains('hidden')
   }
 
+  public static get IsSuppressMenu (): boolean {
+    return new URLSearchParams(window.location.search).has('noMenu')
+  }
+
   protected static current: Data = {
     path: ''
+  }
+
+  public static NavigateTo (path: string|undefined, action: string):void {
+    if (!path) {
+      Publish('Loading:Error', `Action ${action} has no target`)
+      return
+    }
+    this.current = { path }
+    this.LoadData()
   }
 
   public static Init () {
     this.current.path = this.FolderPath
     this.LoadData()
     Subscribe('Navigate:Load', (path: string | NoMenuPath): void => {
-      if (typeof path === 'string' || path instanceof String) {
+      if (typeof path === 'string') {
         this.current = { path: path as string }
       } else {
         this.current = path
@@ -60,7 +73,8 @@ export class Navigation {
       this.LoadData(true)
     })
 
-    Subscribe('Navigate:Data', (data: any):void => console.log(data))
+    Subscribe('Navigate:Data', (data: any):void => window.console.log(data))
+
     const mainMenu = document.querySelector('#mainMenu')
     Subscribe('Menu:Show', () => mainMenu?.classList.remove('hidden'))
     Subscribe('Menu:Hide', () => mainMenu?.classList.add('hidden'))
@@ -69,29 +83,24 @@ export class Navigation {
         Publish('Menu:Hide')
       }
     })
+
     document.querySelector('.menuButton')?.addEventListener('click', () => {
       Publish('Menu:Show')
     })
 
-    const doNavigate = (path: string|undefined, action: string) => {
-      if (!path) {
-        Publish('Loading:Error', `Action ${action} has no target`)
-        return
-      }
-      this.current = { path }
-      this.LoadData()
-    }
-    Subscribe('Action:Execute:PreviousFolder', () => doNavigate(this.current.prev?.path, 'PreviousFolder'))
-    Subscribe('Action:Execute:NextFolder', () => doNavigate(this.current.next?.path, 'NextFolder'))
-    Subscribe('Action:Execute:ParentFolder', () => doNavigate(this.current.parent, 'ParentFolder'))
+    Subscribe('Action:Execute:PreviousFolder', () => this.NavigateTo(this.current.prev?.path, 'PreviousFolder'))
+    Subscribe('Action:Execute:NextFolder', () => this.NavigateTo(this.current.next?.path, 'NextFolder'))
+    Subscribe('Action:Execute:ParentFolder', () => this.NavigateTo(this.current.parent, 'ParentFolder'))
     Subscribe('Action:Execute:ShowMenu', () => Publish('Menu:Show'))
     Subscribe('Action:Execute:HideMenu', () => Publish('Menu:Hide'))
     Subscribe('Action:Execute:MarkAllSeen', () =>
-      Net.PostJSON('/api/mark/read', { path: this.current.path }).finally(() => this.LoadData(true)))
+      Net.PostJSON('/api/mark/read', { path: this.current.path })
+        .finally(() => this.LoadData(true)))
     Subscribe('Action:Execute:MarkAllUnseen', () =>
-      Net.PostJSON('/api/mark/unread', { path: this.current.path }).finally(() => this.LoadData(true)))
+      Net.PostJSON('/api/mark/unread', { path: this.current.path })
+        .finally(() => this.LoadData(true)))
     Subscribe('Action:Execute:Slideshow', () => {
-      window.location.pathname = `/slideshow${this.current.path}`
+      window.location.assign(`/slideshow${this.current.path}`)
     })
     Subscribe('Action:Execute:FullScreen', () => {
       if (!document.fullscreenElement) {
@@ -110,9 +119,8 @@ export class Navigation {
   public static async LoadData (noHistory: boolean = false): Promise<void> {
     try {
       Publish('Loading:Show')
-      const noMenu = this.current.noMenu
       this.current = await Net.GetJSON<Data>(`/api/listing${this.current.path}`)
-      this.current.noMenu = noMenu
+      this.current.noMenu = this.IsSuppressMenu
       for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
         element.innerHTML = this.current.name || this.current.path
       }
