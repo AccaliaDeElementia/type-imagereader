@@ -18,13 +18,13 @@ interface ButtonGroups {
 }
 
 export class Actions {
-  protected static setInnerTextMaybe (node: HTMLElement | null, text: string): void {
+  static setInnerTextMaybe (node: HTMLElement | null, text: string): void {
     if (node) {
       node.innerText = text
     }
   }
 
-  protected static createButtons (buttons: ButtonDefinition[]): HTMLElement {
+  static createButtons (buttons: ButtonDefinition[]): HTMLElement {
     const result = document.createElement('div')
     result.classList.add('actions')
     for (const { name, image } of buttons) {
