@@ -2,19 +2,48 @@
 
 import { Publish, Subscribe } from './pubsub'
 
-interface Folder {
+export interface Folder {
   name: string
   path: string
   cover: string|null
   totalSeen: number
   totalCount: number
 }
-interface Data {
+export interface Data {
   children?: Folder[]
   pictures?: any[]
 }
 
 export class Folders {
+  static FolderCard: DocumentFragment|null = null
+
+  public static BuildCard (folder: Folder): HTMLElement|null {
+    const card = (this.FolderCard?.cloneNode(true) as HTMLElement).firstElementChild as HTMLElement
+    if (!card) {
+      return null
+    }
+    if (folder.cover) {
+      card.querySelector('i')?.remove()
+      card.style.backgroundImage = `url("/images/preview${folder.cover}")`
+    }
+    if (folder.totalSeen >= folder.totalCount) {
+      card.classList.add('seen')
+    }
+
+    const txtSeen = folder.totalSeen.toLocaleString()
+    const txtCount = folder.totalCount.toLocaleString()
+    const percentSeen = 100 * folder.totalSeen / folder.totalCount
+
+    const header = card.querySelector('h5')
+    if (header) header.innerText = folder.name
+    const progress = card.querySelector<HTMLDivElement>('div.text')
+    if (progress) progress.innerText = `${txtSeen}/${txtCount}`
+    const slider = card.querySelector<HTMLDivElement>('div.slider')
+    if (slider) slider.style.width = `${percentSeen.toFixed(2)}%`
+    card.addEventListener('click', () => Publish('Navigate:Load', folder.path))
+    return card
+  }
+
   public static BuildFolders (data: Data): void {
     for (const folder of document.querySelectorAll('#tabFolders .folders')) {
       folder.remove()
@@ -32,34 +61,16 @@ export class Folders {
     container.classList.add('folders')
     document.querySelector('#tabFolders')?.appendChild(container)
 
-    const folderCard: DocumentFragment = (document.querySelector('#FolderCard') as HTMLTemplateElement).content
     for (const folder of data.children) {
-      const card = (folderCard.cloneNode(true) as HTMLElement).firstElementChild as HTMLElement
+      const card = this.BuildCard(folder)
       if (!card) continue
-      if (folder.cover) {
-        card.querySelector('i')?.remove()
-        card.style.backgroundImage = `url("/images/preview${folder.cover}")`
-      }
-      if (folder.totalSeen >= folder.totalCount) {
-        card.classList.add('seen')
-      }
-
-      const txtSeen = folder.totalSeen.toLocaleString()
-      const txtCount = folder.totalCount.toLocaleString()
-      const txtPercent = `${100 * folder.totalSeen / folder.totalCount}%`
-
-      const header = card.querySelector('h5')
-      if (header) header.innerText = folder.name
-      const progress = card.querySelector('div.text') as HTMLDivElement
-      if (progress) progress.innerText = `${txtSeen}/${txtCount}`
-      const slider = card.querySelector('div.slider') as HTMLDivElement
-      if (slider) slider.style.width = txtPercent
-      card.addEventListener('click', () => Publish('Navigate:Load', folder.path))
       container.appendChild(card)
     }
   }
 
   public static Init () {
+    this.FolderCard = (document.querySelector('#FolderCard') as HTMLTemplateElement).content
+
     Subscribe('Navigate:Data', this.BuildFolders)
   }
 }
