@@ -71,6 +71,6 @@ export class Folders {
   public static Init () {
     this.FolderCard = (document.querySelector('#FolderCard') as HTMLTemplateElement).content
 
-    Subscribe('Navigate:Data', this.BuildFolders)
+    Subscribe('Navigate:Data', (data) => this.BuildFolders(data))
   }
 }

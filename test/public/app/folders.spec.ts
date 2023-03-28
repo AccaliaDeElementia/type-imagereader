@@ -86,8 +86,18 @@ export class FoldersInitTests extends BaseFolderTests {
   'it should subscribe to Navigate:Data' () {
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.equal(undefined)
     Folders.Init()
+    expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
+  }
 
-    expect(PubSub.subscribers['NAVIGATE:DATA']).to.deep.equal([this.BuildFoldersSpy])
+  @test
+  'it should build folders on Navigate:Data' () {
+    expect(PubSub.subscribers['NAVIGATE:DATA']).to.equal(undefined)
+    Folders.Init()
+    const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
+    assert(subscriberfn !== undefined)
+    expect(this.BuildFoldersSpy.called).to.equal(false)
+    subscriberfn('this is my test data')
+    expect(this.BuildFoldersSpy.calledWith('this is my test data')).to.equal(true)
   }
 }
 
