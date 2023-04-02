@@ -520,6 +520,24 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
+  'it should subscribe to "Navigate:Reload"' () {
+    Navigation.Init()
+    expect(PubSub.subscribers).to.have.any.keys('NAVIGATE:RELOAD')
+    expect(PubSub.subscribers['NAVIGATE:RELOAD']).to.have.length(1)
+  }
+
+  @test
+  'Navigate:Reload handler should call LoadData with defaults' () {
+    Navigation.Init()
+    this.LoadDataStub.resetHistory()
+    const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    handler('a string')
+    expect(this.LoadDataStub.callCount).to.equal(1)
+    expect(this.LoadDataStub.firstCall.args).to.deep.equal([])
+  }
+
+  @test
   'it should register popstate listener that sets current when triggered' () {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com/show/quux'

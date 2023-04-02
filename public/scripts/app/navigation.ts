@@ -66,6 +66,7 @@ export class Navigation {
       }
       this.LoadData()
     })
+    Subscribe('Navigate:Reload', () => this.LoadData())
     window.addEventListener('popstate', () => {
       this.current = {
         path: this.FolderPath

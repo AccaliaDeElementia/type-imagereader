@@ -24,7 +24,8 @@ export interface Picture {
 }
 
 export interface DataWithPictures {
-  pictures?: Picture[]
+  pictures?: Picture[],
+  modCount?: number,
   cover?: string
   noMenu?: boolean
 }
@@ -36,6 +37,7 @@ export interface PageSelector {
 export class Pictures {
   protected static pictures: Picture[]
   protected static current: Picture | null
+  protected static modCount: number = -1
   protected static mainImage: HTMLImageElement | null
   protected static imageCard: Element | null
   protected static pageSize: number = 32
@@ -242,7 +244,11 @@ export class Pictures {
     try {
       this.current.seen = true
       this.current.element?.classList.add('seen')
-      await Net.PostJSON('/api/navigate/latest', { path: this.current.path })
+      this.modCount = await Net.PostJSON<number>('/api/navigate/latest', { path: this.current.path, modCount: this.modCount })
+      if (this.modCount === undefined || this.modCount < 0) {
+        Publish('Navigate:Reload')
+        return
+      }
       this.mainImage?.setAttribute('src', '/images/full' + this.current.path)
       const index = this.current.index || 0
       const displayTotal = this.pictures.length.toLocaleString()
@@ -273,7 +279,7 @@ export class Pictures {
     document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
 
     this.pictures = data.pictures
-
+    this.modCount = data.modCount || -1
     this.pictures.forEach((pic, i) => {
       pic.index = i
     })

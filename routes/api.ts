@@ -10,7 +10,19 @@ import { normalize, basename, dirname, sep } from 'path'
 import persistance from '../utils/persistance'
 import { Knex } from 'knex'
 
-const debug = require('debug')
+import debug from 'debug'
+
+let modCount: number = Date.now()
+
+const validateModcount = (incomingModCount: number): boolean => modCount === incomingModCount
+
+const incrementModCount = (): number => {
+  if (modCount >= Number.MAX_SAFE_INTEGER - 1) {
+    modCount = 0
+  }
+  modCount++
+  return modCount
+}
 
 const fromURI = (str: string) => {
   return `${str}`.split('/').map(part => decodeURIComponent(part)).join('/')
@@ -171,7 +183,8 @@ export async function getListing (path: string, knex: Knex) {
     prev,
     children,
     pictures,
-    bookmarks
+    bookmarks,
+    modCount
   }
 }
 
@@ -340,11 +353,15 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   router.get('/listing', handleErrors(async (_, res) => await listing('/', knex, res)))
 
   router.post('/navigate/latest', handleErrors(async (req, res) => {
+    const incomingModCount = +req.body.modCount
+    let response = -1
     const path = parsePath(req.body.path, res)
-    if (path !== null) {
+    if (validateModcount(incomingModCount) && path !== null) {
+      incrementModCount()
+      response = modCount
       await setLatest(knex, path)
-      res.status(StatusCodes.OK).end()
     }
+    res.status(StatusCodes.OK).send(`${response}`)
   }))
 
   router.post('/mark/read', handleErrors(async (req, res) => {
