@@ -26,7 +26,7 @@ interface DirEntryItem {
   isFile: boolean
 }
 
-const findItems = async (knex: Knex) => {
+const findItems = async (knex: Knex): Promise<number> => {
   const logger = debug(`${logPrefix}:findItems`)
   await knex('syncitems').del()
   await knex('syncitems').insert({
@@ -65,6 +65,7 @@ const findItems = async (knex: Knex) => {
     counter = (counter + 1) % 100
   })
   logger(`Found all ${dirs} dirs and ${files} files`)
+  return files
 }
 
 const syncPictures = async (knex:Knex) => {
@@ -203,7 +204,10 @@ const synchronize = async () => {
   logger('Folder Synchronization Begins')
   const knex = await persistance.initialize()
   try {
-    await findItems(knex)
+    const foundPics = await findItems(knex)
+    if (foundPics < 1) {
+      throw new Error('Found Zero images, refusing to process empty base folder')
+    }
     await syncPictures(knex)
     await syncFolders(knex)
     await updateSeenPictures(knex)
