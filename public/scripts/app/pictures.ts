@@ -156,7 +156,9 @@ export class Pictures {
 
   public static SelectPage (index: number) {
     const links = document.querySelectorAll('.pagination .page-item')
-    if (links.length < 2 || index < 1 || index >= links.length - 1) {
+    if (links.length === 0) {
+      return
+    } else if (index < 1 || index >= links.length - 1) {
       Publish('Loading:Error', 'Invalid Page Index Selected')
       return
     }

@@ -422,13 +422,15 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
   }
 
   @test
-  'Publishes error when called on no pages' () {
+  'ignores call when called on no pages' () {
     const publishSpy = sinon.stub()
     Subscribe('Loading:Error', publishSpy)
     this.document.querySelector('.pagination')
       ?.replaceChildren(this.document.createElement('div'))
     Pictures.SelectPage(0)
-    expect(publishSpy.calledWithExactly('Invalid Page Index Selected', 'LOADING:ERROR')).to.equal(true)
+    Pictures.SelectPage(-1)
+    Pictures.SelectPage(1e9)
+    expect(publishSpy.called).to.equal(false)
   }
 
   @test
