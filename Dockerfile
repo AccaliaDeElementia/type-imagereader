@@ -21,6 +21,7 @@ RUN mkdir /data \
 
 USER node
 RUN /usr/local/bin/npm install
+RUN /usr/local/bin/npm test
 RUN /usr/local/bin/npm run build
 
 EXPOSE 3000/tcp
