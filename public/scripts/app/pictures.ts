@@ -37,7 +37,7 @@ export interface PageSelector {
 export class Pictures {
   protected static pictures: Picture[]
   protected static current: Picture | null
-  protected static modCount: number = -1
+  public static modCount: number = -1
   protected static mainImage: HTMLImageElement | null
   protected static imageCard: Element | null
   protected static pageSize: number = 32
@@ -93,6 +93,8 @@ export class Pictures {
     Subscribe('Action:Keypress:ArrowUp', doIfNoMenu('ShowMenu'))
     Subscribe('Action:Keypress:ArrowRight', doIfNoMenu('Next'))
     Subscribe('Action:Keypress:ArrowLeft', doIfNoMenu('Previous'))
+    Subscribe('Action:Gamepad:Right', doIfNoMenu('Next'))
+    Subscribe('Action:GamePad:Left', doIfNoMenu('Previous'))
     Subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ShowMenu'))
 
     const changeTo = (direction: NavigateTo) => {

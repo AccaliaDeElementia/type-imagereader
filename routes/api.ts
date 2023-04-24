@@ -356,7 +356,9 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     const incomingModCount = +req.body.modCount
     let response = -1
     const path = parsePath(req.body.path, res)
-    if (validateModcount(incomingModCount) && path !== null) {
+    if (incomingModCount === -1 && path !== null) {
+      await setLatest(knex, path)
+    } else if (validateModcount(incomingModCount) && path !== null) {
       incrementModCount()
       response = modCount
       await setLatest(knex, path)
