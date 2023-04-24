@@ -20,7 +20,7 @@ const handleClick = (event: MouseEvent, socket: WebSocket, initialScale: number)
     return
   }
   const pageWidth = window.innerWidth
-  const x = event.screenX
+  const x = event.clientX
   if (x < pageWidth / 3) {
     socket.emit('prev-image')
   } else if (x > pageWidth * 2 / 3) {

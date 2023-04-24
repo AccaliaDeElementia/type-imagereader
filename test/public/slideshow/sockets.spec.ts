@@ -229,8 +229,8 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'click handler - previous image active region navigates' () {
     const event = new global.window.MouseEvent('click', {
-      screenX: global.window.innerWidth * (1 / 6),
-      screenY: global.window.innerHeight / 2
+      clientX: global.window.innerWidth * (1 / 6),
+      clientY: global.window.innerHeight / 2
     })
     await this.connectSocket(socket =>
       new Promise<void>(resolve => {
@@ -243,8 +243,8 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'click handler - next image active region navigates' () {
     const event = new global.window.MouseEvent('click', {
-      screenX: global.window.innerWidth * (5 / 6),
-      screenY: global.window.innerHeight / 2
+      clientX: global.window.innerWidth * (5 / 6),
+      clientY: global.window.innerHeight / 2
     })
     await this.connectSocket(socket =>
       new Promise<void>(resolve => {
@@ -257,8 +257,8 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'click handler - navigate to image active region navigates' () {
     const event = new global.window.MouseEvent('click', {
-      screenX: global.window.innerWidth / 2,
-      screenY: global.window.innerHeight / 2
+      clientX: global.window.innerWidth / 2,
+      clientY: global.window.innerHeight / 2
     })
     const folder = `/${Math.random}`
     const assignStub = sinon.stub()
@@ -291,8 +291,8 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'click handler - Kiosk mode changes navigate image active region to next-image' () {
     const event = new global.window.MouseEvent('click', {
-      screenX: global.window.innerWidth / 2,
-      screenY: global.window.innerHeight / 2
+      clientX: global.window.innerWidth / 2,
+      clientY: global.window.innerHeight / 2
     })
     this.dom.reconfigure({
       url: 'http://127.0.0.1:2999/slideshow?kiosk'
@@ -309,8 +309,8 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'click handler - Zoomed Viewport ignores previous image activation' () {
     const event = new global.window.MouseEvent('click', {
-      screenX: global.window.innerWidth * (1 / 6),
-      screenY: global.window.innerHeight / 2
+      clientX: global.window.innerWidth * (1 / 6),
+      clientY: global.window.innerHeight / 2
     })
     await this.connectSocket(socket =>
       new Promise<void>(resolve => {
@@ -326,8 +326,8 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'click handler - Zoomed Viewport ignores navigate image activation' () {
     const event = new global.window.MouseEvent('click', {
-      screenX: global.window.innerWidth / 2,
-      screenY: global.window.innerHeight / 2
+      clientX: global.window.innerWidth / 2,
+      clientY: global.window.innerHeight / 2
     })
     await this.connectSocket(socket =>
       new Promise<void>(resolve => {
@@ -343,8 +343,8 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'click handler - Zoomed Viewport ignores next image activation' () {
     const event = new global.window.MouseEvent('click', {
-      screenX: global.window.innerWidth * (5 / 6),
-      screenY: global.window.innerHeight / 2
+      clientX: global.window.innerWidth * (5 / 6),
+      clientY: global.window.innerHeight / 2
     })
     global.window.visualViewport = {
       scale: 1
