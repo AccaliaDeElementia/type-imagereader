@@ -1130,6 +1130,42 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
+
+  @test
+  'it should subscribe to "Action:Gamepad:Down"' () {
+    Navigation.Init()
+    expect(PubSub.subscribers).to.have.any.keys('ACTION:GAMEPAD:DOWN')
+    expect(PubSub.subscribers['ACTION:GAMEPAD:DOWN']).to.have.length(1)
+  }
+
+  @test
+  'Action:GamePad:Down shoud publish Action:Execute:PreviousFolder' () {
+    Navigation.Init()
+    const spy = sinon.stub()
+    PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER'] = [spy]
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:DOWN']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    handler(undefined)
+    expect(spy.callCount).to.equal(1)
+  }
+
+  @test
+  'it should subscribe to "Action:GamePad:Up"' () {
+    Navigation.Init()
+    expect(PubSub.subscribers).to.have.any.keys('ACTION:GAMEPAD:UP')
+    expect(PubSub.subscribers['ACTION:GAMEPAD:UP']).to.have.length(1)
+  }
+
+  @test
+  'Action:GamePad:Up shoud publish Action:Execute:NextFolder' () {
+    Navigation.Init()
+    const spy = sinon.stub()
+    PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER'] = [spy]
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:UP']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    handler(undefined)
+    expect(spy.callCount).to.equal(1)
+  }
 }
 
 @suite

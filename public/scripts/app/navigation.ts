@@ -115,6 +115,8 @@ export class Navigation {
     Subscribe('Action:Keypress:<Ctrl>ArrowUp', () => Publish('Action:Execute:ParentFolder'))
     Subscribe('Action:Keypress:<Ctrl>ArrowLeft', () => Publish('Action:Execute:PreviousFolder'))
     Subscribe('Action:Keypress:<Ctrl>ArrowRight', () => Publish('Action:Execute:NextFolder'))
+    Subscribe('Action:Gamepad:Down', () => Publish('Action:Execute:PreviousFolder'))
+    Subscribe('Action:Gamepad:Up', () => Publish('Action:Execute:NextFolder'))
   }
 
   public static async LoadData (noHistory: boolean = false): Promise<void> {
