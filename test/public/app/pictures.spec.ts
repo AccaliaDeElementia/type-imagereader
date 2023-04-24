@@ -2098,6 +2098,47 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
     expect(spy.called).to.equal(true)
     expect(spy.firstCall.args[0]).to.equal('/Foo/Bar/Baz.jpg')
   }
+
+  @test
+  'it should subscribe to Gamepad:B' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:GAMEPAD:B')
+  }
+
+  @test
+  async 'it should post bookmarks add for Gamepad:B' () {
+    const spy = sinon.stub()
+    Subscribe('Bookmarks:Add', spy)
+    TestPics.current = {
+      path: '/Foo/Bar/Baz.jpg',
+      name: 'Baz.jpg',
+      seen: true
+    }
+    Publish('Action:Gamepad:B')
+    // let the callback finish
+    await new Promise(resolve => {
+      setTimeout(resolve, 5)
+    })
+    expect(this.StubPostJson.called).to.equal(false)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  async 'it should post expected payload for Gamepad:B' () {
+    const spy = sinon.stub()
+    Subscribe('Bookmarks:Add', spy)
+    TestPics.current = {
+      path: '/Foo/Bar/Baz.jpg',
+      name: 'Baz.jpg',
+      seen: true
+    }
+    Publish('Action:Gamepad:B')
+    // let the callback finish
+    await new Promise(resolve => {
+      setTimeout(resolve, 10)
+    })
+    expect(spy.called).to.equal(true)
+    expect(spy.firstCall.args[0]).to.equal('/Foo/Bar/Baz.jpg')
+  }
 }
 
 @suite

@@ -55,6 +55,11 @@ export class AppLoadingTests extends PubSub {
   }
 
   @test
+  'Loading subscribes to Loading:Success' () {
+    expect(PubSub.subscribers['LOADING:SUCCESS']).to.have.length(1)
+  }
+
+  @test
   'Loading subscribes to Loading:Hide' () {
     expect(PubSub.subscribers['LOADING:HIDE']).to.have.length(1)
   }
@@ -140,6 +145,47 @@ export class AppLoadingTests extends PubSub {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.setProperty('background-color', '#FFFFFF')
     PubSub.Publish('Loading:Error')
+    PubSub.deferred.forEach(fn => fn.method())
+    expect(navbar?.style.getPropertyValue('background-color')).to.equal('')
+  }
+
+  @test
+  'Publishing Loading:Success removes css transition style on navbar' () {
+    const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
+    navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
+    PubSub.Publish('Loading:Success')
+    expect(navbar?.style.getPropertyValue('transition')).to.equal('')
+  }
+
+  @test
+  'Publishing Loading:Success sets soothing green background navbar' () {
+    const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
+    navbar?.style.removeProperty('background-color')
+    PubSub.Publish('Loading:Success')
+    expect(navbar?.style.getPropertyValue('background-color')).to.equal('rgb(0, 170, 0)')
+  }
+
+  @test
+  'Publishing Loading:Success sets a deferred function' () {
+    expect(PubSub.deferred).to.have.length(0)
+    PubSub.Publish('Loading:Success')
+    expect(PubSub.deferred).to.have.length(1)
+  }
+
+  @test
+  'Publishing Loading:Success defers transition definition' () {
+    const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
+    navbar?.style.removeProperty('transition')
+    PubSub.Publish('Loading:Success')
+    PubSub.deferred.forEach(fn => fn.method())
+    expect(navbar?.style.getPropertyValue('transition')).to.equal('background-color 2s ease-in-out')
+  }
+
+  @test
+  'Publishing Loading:Success deferres background-color change' () {
+    const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
+    navbar?.style.setProperty('background-color', '#FFFFFF')
+    PubSub.Publish('Loading:Success')
     PubSub.deferred.forEach(fn => fn.method())
     expect(navbar?.style.getPropertyValue('background-color')).to.equal('')
   }
