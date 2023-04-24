@@ -14,7 +14,6 @@ interface DataWithBookmarks {
 interface BookMarkFolder {
   name: string
   element: HTMLElement
-  setOpen: (openState: boolean) => void
 }
 
 export class Bookmarks {
@@ -35,25 +34,19 @@ export class Bookmarks {
       }
       folder = {
         name: bookmark.folder,
-        element,
-        setOpen: (openState) => {
-          if (openState) {
-            element.setAttribute('open', '')
-          } else {
-            element.removeAttribute('open')
-          }
-        }
+        element
       }
       element.setAttribute('data-folderPath', bookmark.folder)
       const title = element.querySelector<HTMLElement>('.title')
       if (title) title.innerText = decodeURI(bookmark.folder)
       title?.addEventListener('click', () => {
         for (const otherFolder of this.BookmarkFolders) {
-          otherFolder.setOpen(false)
+          otherFolder.element.removeAttribute('open')
         }
-        folder?.setOpen(true)
       })
-      folder.setOpen(bookmark.folder === openPath)
+      if (bookmark.folder === openPath) {
+        element.setAttribute('open', '')
+      }
       this.BookmarkFolders.push(folder)
     }
     return folder.element
@@ -75,7 +68,10 @@ export class Bookmarks {
       event.stopPropagation()
     })
     card.addEventListener('click', event => {
-      Net.PostJSON('/api/navigate/latest', { path: bookmark.path })
+      Net.PostJSON('/api/navigate/latest', {
+        path: bookmark.path,
+        modCount: -1
+      })
         .then(() => Publish('Navigate:Load', {
           path: bookmark.folder,
           noMenu: true

@@ -349,7 +349,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     PubSub.Subscribe('Bookmarks:Remove', spy)
 
     this.PostJSONSpy.reset()
-    let waiter: Promise<void>|null = null
+    let waiter: Promise<void> | null = null
     this.PostJSONSpy.callsFake(() => {
       waiter = new Promise((resolve) => resolve())
       return waiter
@@ -361,7 +361,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     await waiter
 
     expect(this.PostJSONSpy.calledWith('/api/navigate/latest')).to.equal(true)
-    expect(this.PostJSONSpy.firstCall.args[1]).to.deep.equal({ path: '/path/to/foo/folder/foo' })
+    expect(this.PostJSONSpy.firstCall.args[1]).to.deep.equal({ path: '/path/to/foo/folder/foo', modCount: -1 })
   }
 
   @test
@@ -375,7 +375,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     PubSub.Subscribe('Bookmarks:Remove', spy)
 
     this.PostJSONSpy.reset()
-    let waiter: Promise<void>|null = null
+    let waiter: Promise<void> | null = null
     this.PostJSONSpy.callsFake(() => {
       waiter = new Promise((resolve) => resolve())
       return waiter
@@ -438,8 +438,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
     const element = this.dom.window.document.createElement('div')
     Bookmarks.BookmarkFolders.push({
       name: '/foo/bar/baz',
-      element,
-      setOpen: (_:boolean) => {}
+      element
     })
     const result = Bookmarks.GetFolder('', {
       path: '/foo/bar/baz/quux.png',
@@ -526,41 +525,30 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
     })
     const folder = TestBookmarks.BookmarkFolders[0]
     assert(folder, 'must have folder to be valid test')
-    const spy = sinon.stub(folder, 'setOpen')
     const title = result?.querySelector<HTMLElement>('.title')
     assert(title, 'must get a result to issue event to')
     const evt = new this.dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
-    expect(spy.calledWith(true)).to.equal(true)
+    expect(folder.element.hasAttribute('open')).to.equal(true)
   }
 
   @test
   'it should have on click handler to close others' () {
-    const otherSpies = []
     for (let i = 1; i <= 50; i++) {
       Bookmarks.GetFolder('/foo', {
         path: `/bar${i}/baz${i}.png`,
         folder: `/bar${i}`
       })
     }
-    for (let i = 0; i < TestBookmarks.BookmarkFolders.length; i++) {
-      const folder = TestBookmarks.BookmarkFolders[i]
-      assert(folder, 'folders can\'t be null')
-      if (i !== 25) {
-        otherSpies.push(sinon.stub(folder, 'setOpen'))
-      }
-    }
     const folder = TestBookmarks.BookmarkFolders[25]
     assert(folder, 'must have folder to be valid test')
-    const spy = sinon.stub(folder, 'setOpen')
     const title = folder.element.querySelector<HTMLElement>('.title')
     assert(title, 'must get a result to issue event to')
     const evt = new this.dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
-    for (const otherSpy of otherSpies) {
-      expect(otherSpy.calledWith(false)).to.equal(true)
+    for (let i = 0; i < TestBookmarks.BookmarkFolders.length; i++) {
+      expect(TestBookmarks.BookmarkFolders[i]?.element.hasAttribute('open')).to.equal(i === 25)
     }
-    expect(spy.calledWith(true)).to.equal(true)
   }
 }
 
@@ -805,23 +793,19 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
       Bookmarks.BookmarkFolders = [
         {
           name: 'Z',
-          element: this.document.createElement('details'),
-          setOpen: (_) => {}
+          element: this.document.createElement('details')
         },
         {
           name: 'M',
-          element: this.document.createElement('details'),
-          setOpen: (_) => {}
+          element: this.document.createElement('details')
         },
         {
           name: 'A',
-          element: this.document.createElement('details'),
-          setOpen: (_) => {}
+          element: this.document.createElement('details')
         },
         {
           name: 'M',
-          element: this.document.createElement('details'),
-          setOpen: (_) => {}
+          element: this.document.createElement('details')
         }
       ]
     })
@@ -847,8 +831,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
       for (let i = 1; i <= 100; i++) {
         Bookmarks.BookmarkFolders.push({
           name: 'Z' + (101 - i),
-          element: this.document.createElement('details'),
-          setOpen: (_) => {}
+          element: this.document.createElement('details')
         })
       }
     })
