@@ -122,10 +122,12 @@ export class Bookmarks {
 
     Subscribe('Bookmarks:Add', (path: string): Promise<void> =>
       Net.PostJSON('/api/bookmarks/add', { path })
-        .then(() => Publish('Bookmarks:Load')))
+        .then(() => Publish('Bookmarks:Load'))
+        .then(() => Publish('Loading:Success')))
 
     Subscribe('Bookmarks:Remove', (path: string): Promise<void> =>
       Net.PostJSON('/api/bookmarks/remove', { path })
-        .then(() => Publish('Bookmarks:Load')))
+        .then(() => Publish('Bookmarks:Load'))
+        .then(() => Publish('Loading:Success')))
   }
 }

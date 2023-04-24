@@ -2066,7 +2066,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   @test
   async 'it should post bookmarks add for Execute:Bookmark' () {
     const spy = sinon.stub()
-    Subscribe('Bookmarks:Load', spy)
+    Subscribe('Bookmarks:Add', spy)
     TestPics.current = {
       path: '/Foo/Bar/Baz.jpg',
       name: 'Baz.jpg',
@@ -2077,46 +2077,26 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
     await new Promise(resolve => {
       setTimeout(resolve, 5)
     })
-    expect(this.StubPostJson.called).to.equal(true)
-    expect(this.StubPostJson.firstCall.args[0]).to.equal('/api/bookmarks/add')
+    expect(this.StubPostJson.called).to.equal(false)
+    expect(spy.called).to.equal(true)
   }
 
   @test
   async 'it should post expected payload for Execute:Bookmark' () {
     const spy = sinon.stub()
-    Subscribe('Bookmarks:Load', spy)
+    Subscribe('Bookmarks:Add', spy)
     TestPics.current = {
       path: '/Foo/Bar/Baz.jpg',
       name: 'Baz.jpg',
       seen: true
     }
-    Publish('Action:Execute:Bookmark')
-    // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 10)
-    })
-    expect(this.StubPostJson.called).to.equal(true)
-    expect(this.StubPostJson.firstCall.args[1]).to.deep.equal({
-      path: '/Foo/Bar/Baz.jpg'
-    })
-  }
-
-  @test
-  async 'it should publish Bookmarks:load after Execute:Bookmark' () {
-    const spy = sinon.stub()
-    Subscribe('Bookmarks:Load', spy)
-    TestPics.current = {
-      path: '/Foo/Bar/Baz.jpg',
-      name: 'Baz.jpg',
-      seen: true
-    }
-    expect(spy.called).to.equal(false)
     Publish('Action:Execute:Bookmark')
     // let the callback finish
     await new Promise(resolve => {
       setTimeout(resolve, 10)
     })
     expect(spy.called).to.equal(true)
+    expect(spy.firstCall.args[0]).to.equal('/Foo/Bar/Baz.jpg')
   }
 }
 

@@ -22,6 +22,15 @@ export class Loading {
       }, 100)
       Publish('Loading:Hide')
     })
+    Subscribe('Loading:Success', () => {
+      console.log('success!')
+      this.navbar?.style.removeProperty('transition')
+      this.navbar?.style.setProperty('background-color', '#00AA00')
+      Defer(() => {
+        this.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
+        this.navbar?.style.removeProperty('background-color')
+      }, 100)
+    })
     Subscribe('Loading:Hide', () => this.overlay?.style.setProperty('display', 'none'))
     Subscribe('Loading:Show', () => this.overlay?.style.setProperty('display', 'block'))
   }

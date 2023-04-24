@@ -116,10 +116,8 @@ export class Pictures {
 
     Subscribe('Action:Execute:ViewFullSize', () =>
       window.open(`/images/full${this.current?.path}`))
-    Subscribe('Action:Execute:Bookmark', () =>
-      Net.PostJSON('/api/bookmarks/add', { path: this.current?.path }).then(() =>
-        Publish('Bookmarks:Load')
-      ))
+    Subscribe('Action:Execute:Bookmark', () => Publish('Bookmarks:Add', this.current?.path))
+    Subscribe('Action:Gamepad:B', () => Publish('Bookmarks:Add', this.current?.path))
   }
 
   protected static InitMouse () {
