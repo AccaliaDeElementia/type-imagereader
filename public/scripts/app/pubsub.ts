@@ -13,11 +13,16 @@ interface DeferredMethod {
   delayCycles: number
 }
 
+interface IntervalMethod {
+  intervalCycles: number
+}
+
 export class PubSub {
   protected static subscribers: {[key: string]: SubscriberFunction[]} = {}
   protected static deferred: DeferredMethod[] = []
+  protected static intervals: {[key: string]: (DeferredMethod & IntervalMethod)} = {}
   protected static timer: any // it's NodeJS.Timer or number depending on browser or tests
-  protected static cycleTime: number = 100
+  protected static cycleTime: number = 10
   static Subscribe (topic: string, subscriber: SubscriberFunction): void {
     topic = topic.toUpperCase()
     const subs = this.subscribers[topic]
@@ -55,17 +60,40 @@ export class PubSub {
     })
   }
 
+  static AddInterval (name: string, method: VoidMethod, delayMs: number): void {
+    this.intervals[name] = {
+      method,
+      intervalCycles: Math.max(Math.ceil(delayMs / this.cycleTime), 1),
+      delayCycles: 0
+    }
+  }
+
+  static RemoveInterval (name: string) {
+    delete this.intervals[name]
+  }
+
+  static ExecuteInterval (): void {
+    this.deferred
+      .filter(delay => delay.delayCycles <= 0)
+      .forEach(delay => delay.method())
+    Object.values(this.intervals)
+      .forEach(delay => {
+        if (delay.delayCycles <= 0) {
+          delay.delayCycles = delay.intervalCycles
+          delay.method()
+        } else {
+          delay.delayCycles--
+        }
+      })
+    this.deferred = this.deferred
+      .filter(method => method.delayCycles > 0).map(method => {
+        method.delayCycles--
+        return method
+      })
+  }
+
   static StartDeferred (): void {
-    this.timer = setInterval((): void => {
-      this.deferred
-        .filter(delay => delay.delayCycles <= 0)
-        .forEach(delay => delay.method())
-      this.deferred = this.deferred
-        .filter(method => method.delayCycles > 0).map(method => {
-          method.delayCycles--
-          return method
-        })
-    }, this.cycleTime)
+    this.timer = setInterval((): void => this.ExecuteInterval(), this.cycleTime)
   }
 
   static StopDeferred (): void {
@@ -79,3 +107,5 @@ export class PubSub {
 export const Subscribe = PubSub.Subscribe.bind(PubSub)
 export const Publish = PubSub.Publish.bind(PubSub)
 export const Defer = PubSub.Defer.bind(PubSub)
+export const AddInterval = PubSub.AddInterval.bind(PubSub)
+export const RemoveInterval = PubSub.RemoveInterval.bind(PubSub)
