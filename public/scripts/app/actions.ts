@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Subscribe, Publish } from './pubsub'
+import { Subscribe, Publish, AddInterval } from './pubsub'
 
 interface NavigateData {
   children?: number[]
@@ -183,6 +183,50 @@ export class Actions {
     }
   }
 
+  protected static lastStatus = {
+    Xaxis: 0,
+    Yaxis: 0,
+    A: false,
+    B: false,
+    X: false,
+    Y: false
+  }
+
+  public static ReadGamepad (): void {
+    for (const pad of navigator.getGamepads() || []) {
+      if (!pad) continue
+      const Xaxis = pad.axes[0] || 0
+      const Yaxis = pad.axes[1] || 0
+      const A = pad.buttons[1]?.pressed || false
+      const B = pad.buttons[0]?.pressed || false
+      const X = pad.buttons[3]?.pressed || false
+      const Y = pad.buttons[2]?.pressed || false
+      if (Xaxis < -0.5 && this.lastStatus.Xaxis >= -0.5) {
+        Publish('Action:Gamepad:Left')
+      } else if (Xaxis > 0.5 && this.lastStatus.Xaxis <= 0.5) {
+        Publish('Action:Gamepad:Right')
+      }
+      if (Yaxis < -0.5 && this.lastStatus.Yaxis >= -0.5) {
+        Publish('Action:Gamepad:Up')
+      } else if (Yaxis > 0 && this.lastStatus.Yaxis <= 0.5) {
+        Publish('Action:Gamepad:Down')
+      }
+      if (A && !this.lastStatus.A) {
+        Publish('Action:Gamepad:A')
+      }
+      if (B && !this.lastStatus.B) {
+        Publish('Action:Gamepad:B')
+      }
+      if (X && !this.lastStatus.X) {
+        Publish('Action:Gamepad:X')
+      }
+      if (Y && !this.lastStatus.Y) {
+        Publish('Action:Gamepad:Y')
+      }
+      this.lastStatus = { Xaxis, Yaxis, A, B, X, Y }
+    }
+  }
+
   public static Init () {
     this.BuildActions()
 
@@ -199,5 +243,6 @@ export class Actions {
         event.key.toUpperCase()
       Publish(`Action:Keypress:${key}`, key)
     })
+    window.addEventListener('gamepadconnected', () => AddInterval('ReadGamepad', () => this.ReadGamepad(), 20))
   }
 }
