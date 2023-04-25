@@ -780,6 +780,133 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
+  'it should subscribe to "Action:Gamepad:Y"' () {
+    Navigation.Init()
+    expect(PubSub.subscribers).to.have.any.keys('ACTION:GAMEPAD:Y')
+    expect(PubSub.subscribers['ACTION:GAMEPAD:Y']).to.have.length(1)
+  }
+
+  @test
+  'Action:Gamepad:Y handler should NavigateTo parentFolder' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:Y']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.parent = '/foo/bar/baz'
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'ParentFolder')).to.equal(true)
+  }
+
+  @test
+  'Action:Gamepad:Y handler should NavigateTo undefined parentFolder when node missing' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:Y']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.parent = undefined
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith(undefined, 'ParentFolder')).to.equal(true)
+  }
+
+  @test
+  'it should subscribe to "Action:Gamepad:A"' () {
+    Navigation.Init()
+    expect(PubSub.subscribers).to.have.any.keys('ACTION:GAMEPAD:A')
+    expect(PubSub.subscribers['ACTION:GAMEPAD:A']).to.have.length(1)
+  }
+
+  @test
+  'Action:Gamepad:A handler should NavigateTo First Unfinished' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.children = [
+      {
+        name: 'baz',
+        path: '/foo/bar/baz',
+        totalCount: 100,
+        totalSeen: 50
+      }, {
+        name: 'quux',
+        path: '/foo/bar/quux',
+        totalCount: 100,
+        totalSeen: 50
+      }
+    ]
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'FirstUnfinished')).to.equal(true)
+  }
+
+  @test
+  'Action:Gamepad:A handler should NavigateTo First Unfinished with some finished' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.children = [
+      {
+        name: 'quux',
+        path: '/foo/bar/quux',
+        totalCount: 100,
+        totalSeen: 100
+      }, {
+        name: 'baz',
+        path: '/foo/bar/baz',
+        totalCount: 100,
+        totalSeen: 50
+      }
+    ]
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'FirstUnfinished')).to.equal(true)
+  }
+
+  @test
+  'Action:Gamepad:A handler should NavigateTo First Unfinished with all finished' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.children = [
+      {
+        name: 'quux',
+        path: '/foo/bar/quux',
+        totalCount: 100,
+        totalSeen: 100
+      }, {
+        name: 'baz',
+        path: '/foo/bar/baz',
+        totalCount: 100,
+        totalSeen: 100
+      }
+    ]
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith(undefined, 'FirstUnfinished')).to.equal(true)
+  }
+
+  @test
+  'Action:Gamepad:A handler should NavigateTo First Unfinished with no children' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.children = []
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith(undefined, 'FirstUnfinished')).to.equal(true)
+  }
+
+  @test
+  'Action:Gamepad:A handler should NavigateTo First Unfinished with undefined children' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.children = undefined
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith(undefined, 'FirstUnfinished')).to.equal(true)
+  }
+
+  @test
   'it should subscribe to "Action:Execute:ShowMenu"' () {
     Navigation.Init()
     expect(PubSub.subscribers).to.have.any.keys('ACTION:EXECUTE:SHOWMENU')

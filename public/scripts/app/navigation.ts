@@ -3,6 +3,13 @@
 import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
 
+export interface ChildFolder {
+  name: string
+  path: string
+  totalCount: number
+  totalSeen: number
+}
+
 export interface Data {
   path: string
   noMenu?: boolean
@@ -11,6 +18,7 @@ export interface Data {
   next?: Data
   prev?: Data
   pictures?: object[]
+  children?: ChildFolder[]
 }
 
 interface NoMenuPath {
@@ -92,6 +100,11 @@ export class Navigation {
     Subscribe('Action:Execute:PreviousFolder', () => this.NavigateTo(this.current.prev?.path, 'PreviousFolder'))
     Subscribe('Action:Execute:NextFolder', () => this.NavigateTo(this.current.next?.path, 'NextFolder'))
     Subscribe('Action:Execute:ParentFolder', () => this.NavigateTo(this.current.parent, 'ParentFolder'))
+    Subscribe('Action:Gamepad:Y', () => this.NavigateTo(this.current.parent, 'ParentFolder'))
+    Subscribe('Action:Gamepad:A', () => {
+      const target = this.current.children?.filter(child => child.totalSeen < child.totalCount)[0]
+      this.NavigateTo(target?.path, 'FirstUnfinished')
+    })
     Subscribe('Action:Execute:ShowMenu', () => Publish('Menu:Show'))
     Subscribe('Action:Execute:HideMenu', () => Publish('Menu:Hide'))
     Subscribe('Action:Execute:MarkAllSeen', () =>
