@@ -84,6 +84,7 @@ const watchFolder = async (basePath: string, path: string) => {
     logger(`Watcher for ${path} exited unexpectedly`, err)
   }
 }
+
 const precompileFolder = async (basePath: string, path: string) => {
   for (const dirinfo of await readdir(join(basePath, path), { withFileTypes: true })) {
     if (sassExtension.test(dirinfo.name)) {
