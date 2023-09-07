@@ -208,6 +208,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should use PostJSON when adding Bookmarks' () {
     Bookmarks.Init()
+    const successSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', successSpy)
     const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction
     assert(handler, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
@@ -220,6 +222,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should use Publish Bookmarks:Load when adding Bookmarks' () {
     Bookmarks.Init()
+    const successSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', successSpy)
     const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction
     assert(handler, 'Handler must be found to have valid test')
     const spy = sinon.stub()
@@ -238,6 +242,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should use PostJSON when removing Bookmarks' () {
     Bookmarks.Init()
+    const successSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', successSpy)
     const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction
     assert(handler, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
@@ -250,6 +256,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should use Publish Bookmarks:Load when removing Bookmarks' () {
     Bookmarks.Init()
+    const successSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', successSpy)
     const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction
     assert(handler, 'Handler must be found to have valid test')
     const spy = sinon.stub()
