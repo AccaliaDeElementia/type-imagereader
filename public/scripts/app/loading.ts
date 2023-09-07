@@ -23,7 +23,6 @@ export class Loading {
       Publish('Loading:Hide')
     })
     Subscribe('Loading:Success', () => {
-      console.log('success!')
       this.navbar?.style.removeProperty('transition')
       this.navbar?.style.setProperty('background-color', '#00AA00')
       Defer(() => {
