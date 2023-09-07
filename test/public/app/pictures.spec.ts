@@ -492,6 +492,23 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
     Pictures.SelectPage(this.nextPage)
     expect(this.nextPageElement?.classList.contains('hidden')).to.equal(false)
   }
+
+  @test
+  'Publishes notification that page has been selected' () {
+    const spy = sinon.stub()
+    PubSub.Subscribe('Pictures:SelectPage', spy)
+    Pictures.SelectPage(this.nextPage)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'Does not publishes notification that page has been selected on error' () {
+    const spy = sinon.stub()
+    PubSub.Subscribe('Pictures:SelectPage', spy)
+    Subscribe('Loading:Error', sinon.stub())
+    Pictures.SelectPage(this.totalpages + 1)
+    expect(spy.called).to.equal(false)
+  }
 }
 
 @suite
@@ -537,9 +554,8 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       seen: false
     }
     const card = Pictures.MakePictureCard(pic)
-    expect(card.style.backgroundImage).to.equal(
-      `url(/images/preview${pic.path})` // N.B. JSDom has a peculiarity with quotemarks so test ignores them when reading property back
-    )
+    expect(card.getAttribute('data-backgroundImage'))
+      .to.equal(`url("/images/preview${pic.path}")`)
   }
 
   @test
@@ -872,6 +888,67 @@ export class AppPicturesMakeTabTests extends BaseAppPicturesTests {
     Pictures.MakeTab()
     expect(this.makePaginatorSpy.callCount).to.equal(1)
     expect(this.tab?.querySelector('.paginator')).to.equal(null)
+  }
+}
+
+@suite
+export class AppPicturesLoadCurrentPageImagesTests extends BaseAppPicturesTests {
+  tab: HTMLElement | null = null
+  before (): void {
+    super.before()
+    TestPics.pictures = Array.from({ length: 32 })
+      .map((_: unknown, i: number): Picture => {
+        return {
+          path: `/some/path/${i}.png`,
+          name: `${i}.png`,
+          seen: false
+        }
+      })
+    Pictures.MakeTab()
+    this.tab = this.dom.window.document.querySelector('#tabImages')
+  }
+
+  after (): void {
+    super.after()
+  }
+
+  @test
+  'it should add background image to active page(s)' () {
+    const cards = Array.prototype.slice.apply(this.tab?.querySelectorAll('.page:not(.hidden) .card'))
+    expect(cards).to.have.length(32)
+    for (const card of cards) {
+      expect(card.style.backgroundImage).to.equal('')
+    }
+    Pictures.LoadCurrentPageImages()
+    for (const card of cards) {
+      expect(card.style.backgroundImage).to.not.equal('')
+    }
+  }
+
+  @test
+  'it should not add background image to card with blank data attribute' () {
+    const cards = Array.prototype.slice.apply(this.tab?.querySelectorAll('.page:not(.hidden) .card'))
+    expect(cards).to.have.length(32)
+    for (const card of cards) {
+      card.setAttribute('data-backgroundImage', '')
+    }
+    Pictures.LoadCurrentPageImages()
+    for (const card of cards) {
+      expect(card.style.backgroundImage).to.equal('')
+    }
+  }
+
+  @test
+  'it should not add background image to card missing data attribute' () {
+    const cards = Array.prototype.slice.apply(this.tab?.querySelectorAll('.page:not(.hidden) .card'))
+    expect(cards).to.have.length(32)
+    for (const card of cards) {
+      card.removeAttribute('data-backgroundImage')
+    }
+    Pictures.LoadCurrentPageImages()
+    for (const card of cards) {
+      expect(card.style.backgroundImage).to.equal('')
+    }
   }
 }
 

@@ -118,6 +118,8 @@ export class Pictures {
       window.open(`/images/full${this.current?.path}`))
     Subscribe('Action:Execute:Bookmark', () => Publish('Bookmarks:Add', this.current?.path))
     Subscribe('Action:Gamepad:B', () => Publish('Bookmarks:Add', this.current?.path))
+
+    Subscribe('Pictures:SelectPage', () => this.LoadCurrentPageImages())
   }
 
   protected static InitMouse () {
@@ -177,12 +179,22 @@ export class Pictures {
         element.classList.add('hidden')
       }
     })
+    Publish('Pictures:SelectPage', `New Page ${index} Selected`)
+  }
+
+  public static LoadCurrentPageImages (): void {
+    for (const card of document.querySelectorAll<HTMLElement>('#tabImages .page:not(.hidden) .card')) {
+      const style = card.getAttribute('data-backgroundImage')
+      if (style) {
+        card.style.backgroundImage = style
+      }
+    }
   }
 
   public static MakePictureCard (picture: Picture): HTMLElement {
     const card = this.imageCard?.cloneNode(true) as HTMLElement
     picture.element = card
-    card.style.backgroundImage = `url("/images/preview${picture.path}")`
+    card.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}")`)
     if (picture.seen) {
       card.classList.add('seen')
     }
