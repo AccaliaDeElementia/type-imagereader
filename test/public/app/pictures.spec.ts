@@ -98,7 +98,7 @@ class TestPics extends Pictures {
     Pictures.modCount = value
   }
 
-  static Reset () {
+  public static Reset () {
     Pictures.pictures = []
     Pictures.current = null
     Pictures.imageCard = null
@@ -2074,13 +2074,39 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   }
 
   @test
+  'it should subscribe to Execute:First' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:FIRST')
+  }
+
+  @test
+  'it should Load First picture on to Execute:First' () {
+    Publish('Action:Execute:First')
+    expect(this.StubChangePicture.called).to.equal(true)
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[0])
+  }
+
+  @test
   'it should subscribe to Execute:PreviousImage' () {
     expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:PREVIOUSIMAGE')
   }
 
   @test
+  'it should Load First picture on to Execute:PreviousImage' () {
+    Publish('Action:Execute:PreviousImage')
+    expect(this.StubChangePicture.called).to.equal(true)
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[9])
+  }
+
+  @test
   'it should subscribe to Execute:PreviousUnseen' () {
     expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:PREVIOUSUNSEEN')
+  }
+
+  @test
+  'it should Load First picture on to Execute:PreviousUnseen' () {
+    Publish('Action:Execute:PreviousUnseen')
+    expect(this.StubChangePicture.called).to.equal(true)
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[4])
   }
 
   @test
@@ -2114,8 +2140,34 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   }
 
   @test
+  'it should Load First picture on to Execute:NextImage' () {
+    Publish('Action:Execute:NextImage')
+    expect(this.StubChangePicture.called).to.equal(true)
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[11])
+  }
+
+  @test
   'it should subscribe to Execute:NextUnseen' () {
     expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:NEXTUNSEEN')
+  }
+
+  @test
+  'it should Load First picture on to Execute:NextUnseen' () {
+    Publish('Action:Execute:NextUnseen')
+    expect(this.StubChangePicture.called).to.equal(true)
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[15])
+  }
+
+  @test
+  'it should subscribe to Execute:Last' () {
+    expect(PubSub.subscribers).to.contain.keys('ACTION:EXECUTE:LAST')
+  }
+
+  @test
+  'it should Load First picture on to Execute:Last' () {
+    Publish('Action:Execute:Last')
+    expect(this.StubChangePicture.called).to.equal(true)
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[20])
   }
 
   @test

@@ -109,10 +109,12 @@ export class Pictures {
       const actualEvent = this.ShowUnreadOnly ? 'NextUnseen' : 'NextImage'
       Publish(`Action:Execute:${actualEvent}`)
     })
+    Subscribe('Action:Execute:First', () => changeTo(NavigateTo.First))
     Subscribe('Action:Execute:PreviousImage', () => changeTo(NavigateTo.Previous))
     Subscribe('Action:Execute:PreviousUnseen', () => changeTo(NavigateTo.PreviousUnread))
     Subscribe('Action:Execute:NextImage', () => changeTo(NavigateTo.Next))
     Subscribe('Action:Execute:NextUnseen', () => changeTo(NavigateTo.NextUnread))
+    Subscribe('Action:Execute:Last', () => changeTo(NavigateTo.Last))
 
     Subscribe('Action:Execute:ViewFullSize', () =>
       window.open(`/images/full${this.current?.path}`))
@@ -221,7 +223,10 @@ export class Pictures {
     const pageItem = (document.querySelector('#PaginatorItem') as HTMLTemplateElement).content
     const item = (pageItem.cloneNode(true) as HTMLElement).firstElementChild as HTMLElement
     item.querySelector('span')?.replaceChildren(document.createTextNode(label))
-    item.addEventListener('click', () => this.SelectPage(selector()))
+    item.addEventListener('click', (e: Event) => {
+      this.SelectPage(selector())
+      e.preventDefault()
+    })
     return item
   }
 
