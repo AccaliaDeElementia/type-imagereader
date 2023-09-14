@@ -18,8 +18,11 @@ const initialize = async (): Promise<Knex> => {
   return knexInstance
 }
 
-const initializer = initialize()
+let initializer: Promise<Knex> | undefined
 
 export default {
-  initialize: () => initializer
+  initialize: () => {
+    initializer = initializer || initialize()
+    return initializer
+  }
 }
