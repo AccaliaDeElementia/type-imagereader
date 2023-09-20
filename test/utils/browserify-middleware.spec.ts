@@ -966,7 +966,6 @@ export class BrowserifyMiddlewareTests {
     this.SendScriptStub?.rejects('SOMETHING BAD')
     await result(this.FakeRequest, this.FakeResponse, spy)
     expect(spy.called).to.equal(false)
-    console.log(this.StubResponse.render.firstCall.args)
     expect(this.StubResponse.status.called).to.equal(true)
     expect(this.StubResponse.status.calledWith(StatusCodes.INTERNAL_SERVER_ERROR)).to.equal(true)
     expect(this.StubResponse.render.calledWith(
