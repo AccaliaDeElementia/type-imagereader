@@ -4,6 +4,7 @@ import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
 
 import express, { Express } from 'express'
+import morgan from 'morgan'
 import { Server as HttpServer } from 'http'
 import { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
@@ -223,18 +224,22 @@ export class ServerConfigureLoggingAndErrorsTests {
     json: sinon.stub().returnsThis()
   }
 
+  MorganOrig: typeof morgan = morgan
   MorganStub?: Sinon.SinonStub
   HelmetStub?: Sinon.SinonStub
 
   before () {
-    this.MorganStub = sinon.stub(Imports, 'morgan')
+    // Save and replace as stubbing causes unwanted deprication warning due to how the stub replaces part of morgan
+    this.MorganOrig = Imports.morgan
+    this.MorganStub = sinon.stub()
+    Imports.morgan = this.MorganStub as unknown as typeof morgan
     this.HelmetStub = sinon.stub(Imports, 'helmet')
     delete process.env.NODE_ENV
   }
 
   after () {
     this.HelmetStub?.restore()
-    this.MorganStub?.restore()
+    Imports.morgan = this.MorganOrig
   }
 
   @test
