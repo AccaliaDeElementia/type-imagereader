@@ -1,13 +1,7 @@
 import { Application, Router, Request, Response, RequestHandler } from 'express'
 import { Server as WebSocketServer } from 'socket.io'
 import { Server } from 'http'
-import { request as WebRequest } from 'https'
 import { StatusCodes } from 'http-status-codes'
-
-const debug = require('debug')
-
-const appid = process.env.OPENWEATHER_APPID
-const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION || 'London, UK')
 
 interface WeatherResults {
   temp: number|undefined
@@ -19,92 +13,95 @@ interface WeatherResults {
   sunset: number|undefined
 }
 
-interface OpenWeatherData {
+export interface OpenWeatherData {
   main: {
     temp: number
     pressure: number
     humidity: number
   }
-  weather: [
-    {
-      main: string
-      icon: string
-    }
-  ],
+  weather: {
+    main: string
+    icon: string
+  }[]
   sys: {
     sunrise: number
     sunset: number
   }
 }
 
-const getWeather = ():Promise<OpenWeatherData> => new Promise((resolve, reject) => {
-  if (!appid) {
-    return reject(new Error('no Openweather AppId Defined'))
+export class Imports {
+  public static get appId (): string {
+    return process.env.OPENWEATHER_APPID || ''
   }
-  let data = ''
-  const req = WebRequest(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appid}`, (res) => {
-    res.on('data', (d) => {
-      data += d
-    })
-    res.on('end', () => {
-      resolve(JSON.parse(data))
-    })
-  })
 
-  req.on('error', (e) => {
-    console.error(e)
-    reject(e)
-  })
-  req.end()
-})
+  public static get location (): string {
+    return encodeURIComponent(process.env.OPENWEATHER_LOCATION || '')
+  }
 
-const weather:WeatherResults = {
-  temp: undefined,
-  pressure: undefined,
-  humidity: undefined,
-  description: undefined,
-  icon: undefined,
-  sunrise: undefined,
-  sunset: undefined
+  public static setInterval = setInterval
+  public static fetch = fetch
+  public static Router = Router
 }
-const updateWeather = () => getWeather()
-  .then(data => {
-    if (data && data.main) {
-      weather.temp = data.main.temp - 273.15
-      weather.pressure = data.main.pressure
-      weather.humidity = data.main.humidity
+
+export class Functions {
+  public static weather: WeatherResults = {
+    temp: undefined,
+    pressure: undefined,
+    humidity: undefined,
+    description: undefined,
+    icon: undefined,
+    sunrise: undefined,
+    sunset: undefined
+  }
+
+  public static async GetWeather (): Promise<OpenWeatherData> {
+    if (!Imports.appId) {
+      throw new Error('no OpewnWeather AppId Defined!')
     }
-    weather.description = (data.weather[0] || {}).main
-    weather.icon = (data.weather[0] || {}).icon
-    weather.sunrise = 1000 * data.sys.sunrise
-    weather.sunset = 1000 * data.sys.sunset
+    if (!Imports.location) {
+      throw new Error('no OpewnWeather Location Defined!')
+    }
+    const response = await Imports.fetch(`https://api.openweathermap.org/data/2.5/weather?q=${Imports.location}&appid=${Imports.appId}`)
+    return await response.json()
+  }
+
+  public static async UpdateWeather (): Promise<WeatherResults> {
+    const weather = Functions.weather
+    try {
+      const data = await Functions.GetWeather()
+      if (data && data.main) {
+        weather.temp = data.main.temp - 273.15
+        weather.pressure = data.main.pressure
+        weather.humidity = data.main.humidity
+      }
+      weather.description = (data.weather[0] || {}).main
+      weather.icon = (data.weather[0] || {}).icon
+      weather.sunrise = 1000 * data.sys.sunrise
+      weather.sunset = 1000 * data.sys.sunset
+    } catch (_) {
+      weather.temp = undefined
+      weather.pressure = undefined
+      weather.humidity = undefined
+      weather.description = undefined
+      weather.icon = undefined
+      weather.sunrise = undefined
+      weather.sunset = undefined
+    }
     return weather
-  }, () => {
-    weather.temp = undefined
-    weather.pressure = undefined
-    weather.humidity = undefined
-    weather.description = undefined
-    weather.icon = undefined
-    weather.sunrise = undefined
-    weather.sunset = undefined
-    return weather
-  })
+  }
+}
 
 // Export the base-router
 export async function getRouter (_: Application, __: Server, ___: WebSocketServer) {
-  const router = Router()
-
-  const logger = debug('type-imagereader:api')
+  const router = Imports.Router()
 
   const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler => async (req: Request, res: Response) => {
     try {
       await action(req, res)
     } catch (e) {
-      logger(`Error rendering: ${req.originalUrl}`, req.body)
-      logger(e)
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {
-          code: 'EINTERNALERROR',
+          code: 'E_INTERNAL_ERROR',
           message: 'Internal Server Error'
         }
       })
@@ -112,11 +109,11 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }
 
   router.get('/', handleErrors(async (_, res) => {
-    res.status(StatusCodes.OK).json(weather)
+    res.status(StatusCodes.OK).json(Functions.weather)
   }))
 
-  setInterval(updateWeather, 10 * 60 * 1000)
-  updateWeather()
+  Imports.setInterval(Functions.UpdateWeather, 10 * 60 * 1000)
+  Functions.UpdateWeather()
 
   return router
 }
