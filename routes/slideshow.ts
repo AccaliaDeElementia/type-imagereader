@@ -29,7 +29,7 @@ interface ImageWithPath {
 const rooms: {[name: string]: SlideshowRoom} = {}
 const countdownDuration = 60
 const lookaheadSize = 10
-const lookbehindSize = 10
+const lookbehindSize = 120
 
 const getImages = async (knex:Knex, path: string, count: number): Promise<string[]> => {
   return (await knex('pictures')
