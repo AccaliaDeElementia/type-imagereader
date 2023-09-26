@@ -789,10 +789,186 @@ export class SyncFoldersSyncMissingCoverImagesTests {
 }
 
 @suite
+export class SyncFoldersSyncFolderFirstImagesTests {
+  LoggerStub: Sinon.SinonStub = sinon.stub()
+  LoggerFake = this.LoggerStub as unknown as Debugger
+
+  InnerQueryBuilder = {
+    select: sinon.stub().returnsThis(),
+    min: sinon.stub().returnsThis(),
+    from: sinon.stub().returnsThis(),
+    groupBy: sinon.stub().returnsThis()
+  }
+
+  QueryBuilder = {
+    with: sinon.stub().returnsThis(),
+    select: sinon.stub().returnsThis(),
+    min: sinon.stub().returnsThis(),
+    from: sinon.stub().returnsThis(),
+    join: sinon.stub().returnsThis(),
+    groupBy: sinon.stub().returnsThis(),
+    orderBy: sinon.stub().resolves([])
+  }
+
+  QueryBuilderStub = sinon.stub().returns(this.QueryBuilder)
+
+  KnexInstanceStub = {
+    insert: sinon.stub().returnsThis(),
+    onConflict: sinon.stub().returnsThis(),
+    merge: sinon.stub().resolves(0)
+  }
+
+  KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
+  KnexFnFake = this.KnexFnStub as unknown as Knex
+
+  ChunkStub?:Sinon.SinonStub
+
+  before () {
+    this.KnexFnFake.queryBuilder = this.QueryBuilderStub
+    this.ChunkStub = sinon.stub(Functions, 'Chunk').returns([])
+  }
+
+  after () {
+    this.ChunkStub?.restore()
+  }
+
+  @test
+  async 'it should select from querybuilder for update' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.QueryBuilderStub.callCount).to.equal(1)
+    expect(this.QueryBuilderStub.firstCall.args).to.have.lengthOf(0)
+  }
+
+  @test
+  async 'it should create CTE for inner select of primary sort keys' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.QueryBuilder.with.callCount).to.equal(1)
+    expect(this.QueryBuilder.with.firstCall.args).to.have.lengthOf(2)
+    expect(this.QueryBuilder.with.firstCall.args[0]).to.equal('firsts')
+  }
+
+  @test
+  async 'it should select folder name in CTE' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
+    expect(this.InnerQueryBuilder.select.callCount).to.equal(1)
+    expect(this.InnerQueryBuilder.select.firstCall.args).to.have.lengthOf(1)
+    expect(this.InnerQueryBuilder.select.firstCall.args[0]).to.equal('pictures.folder')
+  }
+
+  @test
+  async 'it should select minimum sortKey in CTE' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
+    expect(this.InnerQueryBuilder.min.callCount).to.equal(1)
+    expect(this.InnerQueryBuilder.min.firstCall.args).to.have.lengthOf(1)
+    expect(this.InnerQueryBuilder.min.firstCall.args[0]).to.equal('pictures.sortKey as sortKey')
+  }
+
+  @test
+  async 'it should select from pictures table in CTE' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
+    expect(this.InnerQueryBuilder.from.callCount).to.equal(1)
+    expect(this.InnerQueryBuilder.from.firstCall.args).to.have.lengthOf(1)
+    expect(this.InnerQueryBuilder.from.firstCall.args[0]).to.equal('pictures')
+  }
+
+  @test
+  async 'it should group by foldername in CTE' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
+    expect(this.InnerQueryBuilder.groupBy.callCount).to.equal(1)
+    expect(this.InnerQueryBuilder.groupBy.firstCall.args).to.have.lengthOf(1)
+    expect(this.InnerQueryBuilder.groupBy.firstCall.args[0]).to.equal('pictures.folder')
+  }
+
+  @test
+  async 'it should select folder path for update' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.QueryBuilder.select.callCount).to.equal(1)
+    expect(this.QueryBuilder.select.firstCall.args).to.have.lengthOf(1)
+    expect(this.QueryBuilder.select.firstCall.args[0]).to.equal('pictures.folder as path')
+  }
+
+  @test
+  async 'it should minimum picture path for update' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.QueryBuilder.min.callCount).to.equal(1)
+    expect(this.QueryBuilder.min.firstCall.args).to.have.lengthOf(1)
+    expect(this.QueryBuilder.min.firstCall.args[0]).to.equal('pictures.path as firstPicture')
+  }
+
+  @test
+  async 'it should select from firsts CTE' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.QueryBuilder.from.callCount).to.equal(1)
+    expect(this.QueryBuilder.from.firstCall.args).to.have.lengthOf(1)
+    expect(this.QueryBuilder.from.firstCall.args[0]).to.equal('firsts')
+  }
+
+  @test
+  async 'it should join pictures table to CTE' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.QueryBuilder.join.callCount).to.equal(1)
+    expect(this.QueryBuilder.join.firstCall.args).to.have.lengthOf(2)
+    expect(this.QueryBuilder.join.firstCall.args[0]).to.equal('pictures')
+    expect(this.QueryBuilder.join.firstCall.args[1]).to.deep.equal({
+      'firsts.folder': 'pictures.folder',
+      'firsts.sortKey': 'pictures.sortKey'
+    })
+  }
+
+  @test
+  async 'it should group by foldername to prevent duplicates when first picture has non unique sortkey' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.QueryBuilder.groupBy.callCount).to.equal(1)
+    expect(this.QueryBuilder.groupBy.firstCall.args).to.have.lengthOf(1)
+    expect(this.QueryBuilder.groupBy.firstCall.args[0]).to.equal('pictures.folder')
+  }
+
+  @test
+  async 'it should order by foldername and full path' () {
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.QueryBuilder.orderBy.callCount).to.equal(1)
+    expect(this.QueryBuilder.orderBy.firstCall.args).to.have.lengthOf(2)
+    expect(this.QueryBuilder.orderBy.firstCall.args[0]).to.equal('pictures.folder')
+    expect(this.QueryBuilder.orderBy.firstCall.args[1]).to.equal('pictures.path')
+  }
+
+  @test
+  async 'it should chunk results for batched update' () {
+    const results = { toUpdate: Math.random() }
+    this.QueryBuilder.orderBy.resolves(results)
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.ChunkStub?.callCount).to.equal(1)
+    expect(this.ChunkStub?.firstCall.args).to.have.lengthOf(1)
+    expect(this.ChunkStub?.firstCall.args[0]).to.equal(results)
+  }
+
+  @test
+  async 'it should update folders for each chunk' () {
+    const chunk = { chunk: Math.random() }
+    this.ChunkStub?.returns([chunk])
+    await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
+    expect(this.KnexFnStub.callCount).to.equal(1)
+    expect(this.KnexFnStub.firstCall.args).to.deep.equal(['folders'])
+    expect(this.KnexInstanceStub.insert.callCount).to.equal(1)
+    expect(this.KnexInstanceStub.insert.firstCall.args).to.have.lengthOf(1)
+    expect(this.KnexInstanceStub.insert.firstCall.args[0]).to.equal(chunk)
+    expect(this.KnexInstanceStub.onConflict.callCount).to.equal(1)
+    expect(this.KnexInstanceStub.onConflict.firstCall.args).to.deep.equal(['path'])
+    expect(this.KnexInstanceStub.merge.callCount).to.equal(1)
+    expect(this.KnexInstanceStub.merge.firstCall.args).to.have.lengthOf(0)
+  }
+}
+
+@suite
 export class SyncFoldersSyncAllFoldersTests {
   SyncNewFoldersStub?: Sinon.SinonStub
   SyncRemovedFoldersStub?: Sinon.SinonStub
   SyncMissingCoverImagesStub?: Sinon.SinonStub
+  SyncFolderFirstImagesStub?:Sinon.SinonStub
   LoggerStub = sinon.stub()
   DebugStub?: Sinon.SinonStub
 
@@ -803,6 +979,7 @@ export class SyncFoldersSyncAllFoldersTests {
     this.SyncNewFoldersStub = sinon.stub(Functions, 'SyncNewFolders').resolves()
     this.SyncRemovedFoldersStub = sinon.stub(Functions, 'SyncRemovedFolders').resolves()
     this.SyncMissingCoverImagesStub = sinon.stub(Functions, 'SyncMissingCoverImages').resolves()
+    this.SyncFolderFirstImagesStub = sinon.stub(Functions, 'SyncFolderFirstImages').resolves()
   }
 
   after () {
@@ -810,6 +987,7 @@ export class SyncFoldersSyncAllFoldersTests {
     this.SyncNewFoldersStub?.restore()
     this.SyncRemovedFoldersStub?.restore()
     this.SyncMissingCoverImagesStub?.restore()
+    this.SyncFolderFirstImagesStub?.restore()
   }
 
   @test
@@ -843,6 +1021,13 @@ export class SyncFoldersSyncAllFoldersTests {
     await Functions.SyncAllFolders(this.KnexFake)
     expect(this.SyncMissingCoverImagesStub?.callCount).to.equal(1)
     expect(this.SyncMissingCoverImagesStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
+  }
+
+  @test
+  async 'it should call SyncFolderFirstImages' () {
+    await Functions.SyncAllFolders(this.KnexFake)
+    expect(this.SyncFolderFirstImagesStub?.callCount).to.equal(1)
+    expect(this.SyncFolderFirstImagesStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
   }
 }
 

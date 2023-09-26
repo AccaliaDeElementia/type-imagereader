@@ -45,7 +45,7 @@ export class Functions {
       .replace(/(\d+)/g, num => num.length >= Functions.padLength ? num : `${zeroes}${num}`.slice(-Functions.padLength))
   }
 
-  public static Chunk<T> (arr: T[], size = 200): T[][] {
+  public static Chunk<T> (arr: T[], size = 1000): T[][] {
     const res = []
     for (let i = 0; i < arr.length; i += size) {
       res.push(arr.slice(i, i + size))
@@ -186,11 +186,39 @@ export class Functions {
     logger(`Removed ${removedCoverImages} missing cover images`)
   }
 
+  public static async SyncFolderFirstImages (logger: Debugger, knex: Knex): Promise<void> {
+    const toUpdate = await knex.queryBuilder()
+      .with('firsts',
+        qb => qb
+          .select('pictures.folder')
+          .min('pictures.sortKey as sortKey')
+          .from('pictures')
+          .groupBy('pictures.folder')
+      )
+      .select('pictures.folder as path')
+      .min('pictures.path as firstPicture')
+      .from('firsts')
+      .join('pictures', {
+        'firsts.folder': 'pictures.folder',
+        'firsts.sortKey': 'pictures.sortKey'
+      })
+      .groupBy('pictures.folder')
+      .orderBy('pictures.folder', 'pictures.path')
+    for (const aChunk of Functions.Chunk(toUpdate)) {
+      await knex('folders')
+        .insert(aChunk)
+        .onConflict('path')
+        .merge()
+    }
+    logger(`Updated ${toUpdate.length} folder first-item images`)
+  }
+
   public static async SyncAllFolders (knex: Knex): Promise<void> {
     const logger = Imports.debug(`${Imports.logPrefix}:syncFolders`)
     await Functions.SyncNewFolders(logger, knex)
     await Functions.SyncRemovedFolders(logger, knex)
     await Functions.SyncMissingCoverImages(logger, knex)
+    await Functions.SyncFolderFirstImages(logger, knex)
   }
 
   public static async GetAllFolderInfos (knex: Knex): Promise<{ [name: string]: FolderInfo }> {
