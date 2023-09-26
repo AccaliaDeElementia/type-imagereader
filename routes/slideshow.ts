@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Application, Router, Request, Response } from 'express'
-import { Server as WebSocketServer } from 'socket.io'
+import { Server as WebSocketServer, Socket } from 'socket.io'
 import { Server } from 'http'
 import { StatusCodes } from 'http-status-codes'
 
@@ -12,98 +12,138 @@ import { setLatest } from './api'
 
 import { Knex } from 'knex'
 
-import debug from 'debug'
-const logger = debug('type-imagereader:routes:slideshow')
-
 interface SlideshowRoom {
   countdown: number,
   index: number,
   path: string,
-  images: string[]
+  images: string[],
+  uriSafeImage: string|undefined
 }
 
 interface ImageWithPath {
   path: string
 }
 
-const rooms: {[name: string]: SlideshowRoom} = {}
-const countdownDuration = 60
-const lookaheadSize = 10
-const lookbehindSize = 120
-
-const getImages = async (knex:Knex, path: string, count: number): Promise<string[]> => {
-  return (await knex('pictures')
-    .select('path')
-    .where('path', 'like', `${path}%`)
-    .orderBy('seen')
-    .orderByRaw('RANDOM()')
-    .limit(count))
-    .map((img: ImageWithPath) => img.path)
+export class Config {
+  public static rooms: {[name: string]: SlideshowRoom} = {}
+  public static countdownDuration = 60
+  public static memorySize = 100
 }
 
-const getRoom = async (knex: Knex, io: WebSocketServer, roomName: string) => {
-  let room = rooms[roomName]
-  if (!room) {
-    const images = await getImages(knex, roomName, lookaheadSize + lookbehindSize)
-    room = {
-      countdown: countdownDuration,
-      path: roomName,
-      images,
-      index: images.length > lookbehindSize ? lookbehindSize : Math.floor(images.length / 2)
-    }
-    rooms[roomName] = room
-    await changeImage(knex, io, room, 0)
+export class Imports {
+  public static setLatest = setLatest
+  public static setInterval = setInterval
+  public static Router = Router
+}
+
+export class Functions {
+  public static async GetImages (knex: Knex, path: string, count: number): Promise<string[]> {
+    return (await knex('pictures')
+      .select('path')
+      .where('path', 'like', `${path}%`)
+      .orderBy('seen')
+      .orderByRaw('RANDOM()')
+      .limit(count))
+      .map((img: ImageWithPath) => img.path)
   }
-  return room
-}
 
-const changeImage = async (knex: Knex, io: WebSocketServer, room: SlideshowRoom, offset: number = 1) => {
-  try {
-    room.index += offset
-    if (room.index < 0) {
-      const images = await getImages(knex, room.path, lookbehindSize)
-      room.images = images.concat(room.images.slice(0, lookaheadSize))
-      room.index = images.length - 1
-    } else if (room.index >= room.images.length) {
-      const images = await getImages(knex, room.path, lookbehindSize)
-      room.images = room.images.slice(-lookbehindSize).concat(images)
-      room.index = lookbehindSize
-    }
-    room.countdown = countdownDuration
-    const image: string | undefined = room.images[room.index]
-    if (!image) {
+  public static async MarkImageRead (knex: Knex, image: string): Promise<void> {
+    const picture = await knex('pictures').select('seen').where({
+      seen: false,
+      path: image
+    })
+    if (!picture || !picture.length) {
       return
     }
-    const picture = await knex('pictures')
-      .select('seen')
-      .where({
-        seen: false,
-        path: image
-      })
-    if (picture && picture.length) {
-      const folders = []
-      let path = image
-      while (path && path !== '/') {
-        path = dirname(path)
-        folders.push(`${path}${path !== '/' ? '/' : ''}`)
+    const folders = []
+    let path = image
+    while (path && path !== '/') {
+      path = dirname(path)
+      folders.push(`${path}${path !== '/' ? '/' : ''}`)
+    }
+    await knex('folders').increment('seenCount', 1).whereIn('path', folders)
+    await knex('pictures').update({ seen: true }).where({ path: image })
+  }
+
+  public static async GetRoomAndIncrementImage (knex: Knex, name: string, increment: number = 0): Promise<SlideshowRoom> {
+    let room = Config.rooms[name]
+    if (!room) {
+      room = {
+        countdown: Config.countdownDuration,
+        path: name,
+        images: await Functions.GetImages(knex, name, Config.memorySize * 2),
+        index: Config.memorySize - 1 - increment,
+        uriSafeImage: undefined
       }
-      await knex('folders')
-        .increment('seenCount', 1)
-        .whereIn('path', folders)
-      await knex('pictures').update({ seen: true }).where({ path: image })
+      Config.rooms[name] = room
     }
-    io.to(room.path).emit('new-image', image.split('/').map((part: string) => encodeURIComponent(part)).join('/'))
-  } catch (e) {
-    logger('error changing image', e)
-    io.to(room.path).emit('error-selecting-image')
-    if (e instanceof Error) {
-      logger(e.message, e.stack)
+    room.index += increment
+    if (room.index < 0) {
+      room.images = (await Functions.GetImages(knex, name, Config.memorySize))
+        .concat(room.images.slice(0, Config.memorySize))
+      room.index = Config.memorySize - 1
+    } else if (room.index >= room.images.length) {
+      room.images = room.images.slice(-Config.memorySize)
+        .concat(await Functions.GetImages(knex, name, Config.memorySize))
+      room.index = Config.memorySize
     }
+    room.uriSafeImage = room.images[room.index]
+      ?.split('/')
+      .map((part: string) => encodeURIComponent(part)).join('/')
+    return room
+  }
+
+  public static async TickCountdown (knex: Knex, io: WebSocketServer) {
+    for (const room of Object.values(Config.rooms)) {
+      room.countdown--
+      if (room.countdown <= -60 * Config.countdownDuration) {
+        delete Config.rooms[room.path]
+        continue
+      }
+      const sockets = io.of('/').adapter.rooms.get(room.path)
+      if (!sockets || sockets.size < 1) {
+        continue
+      }
+      if (room.countdown <= 0) {
+        room.countdown = Config.countdownDuration
+        await Functions.GetRoomAndIncrementImage(knex, room.path, 1)
+        io.to(room.path).emit('new-image', room.uriSafeImage)
+      }
+    }
+  }
+
+  public static HandleSocket (knex: Knex, io: WebSocketServer, socket: Socket): void {
+    let socketRoom : (string | null) = null
+    socket.on('join-slideshow', async (roomName: string) => {
+      socketRoom = roomName
+      socket.join(roomName)
+      const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom)
+      socket.emit('new-image', room.uriSafeImage)
+    })
+    socket.on('prev-image', async () => {
+      if (!socketRoom) return
+      const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom, -1)
+      io.to(room.path).emit('new-image', room.uriSafeImage)
+    })
+    socket.on('next-image', async () => {
+      if (!socketRoom) return
+      const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom, 1)
+      io.to(room.path).emit('new-image', room.uriSafeImage)
+    })
+    socket.on('goto-image', async (callback) => {
+      if (!socketRoom) {
+        callback(null)
+        return
+      }
+      const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom)
+      const folder = await Imports.setLatest(knex, room.images[room.index])
+      callback(folder)
+    })
   }
 }
 
 export async function getRouter (_: Application, __: Server, io: WebSocketServer) {
-  const router = Router()
+  const router = Imports.Router()
   const knex = await persistance.initialize()
 
   const rootRoute = async (req: Request, res: Response) => {
@@ -114,8 +154,9 @@ export async function getRouter (_: Application, __: Server, io: WebSocketServer
         code: 'E_NO_TRAVERSE',
         message: 'Directory Traversal is not Allowed!'
       })
+      return
     }
-    const room = await getRoom(knex, io, folder)
+    const room = await Functions.GetRoomAndIncrementImage(knex, folder)
     if (!room || !room.images.length) {
       res.status(StatusCodes.NOT_FOUND).render('error', {
         title: 'ERROR',
@@ -127,52 +168,14 @@ export async function getRouter (_: Application, __: Server, io: WebSocketServer
     res.render('slideshow', {
       title: folder,
       folder,
-      image: room.images[room.index]
+      image: room.uriSafeImage
     })
   }
   router.get('/', rootRoute)
   router.get('/*', rootRoute)
 
-  io.on('connection', (socket) => {
-    let socketRoom : (string | null) = null
-    socket.on('join-slideshow', async (roomName: string) => {
-      socketRoom = roomName
-      socket.join(roomName)
-      const room = await getRoom(knex, io, socketRoom)
-      socket.emit('new-image', room.images[room.index])
-    })
-    socket.on('prev-image', () => {
-      if (!socketRoom) return
-      const room = rooms[socketRoom]
-      if (room) {
-        changeImage(knex, io, room, -1)
-      }
-    })
-    socket.on('next-image', () => {
-      if (!socketRoom) return
-      const room = rooms[socketRoom]
-      if (room) {
-        changeImage(knex, io, room, 1)
-      }
-    })
-    socket.on('goto-image', async (callback) => {
-      if (!socketRoom) return
-      const room = await getRoom(knex, io, socketRoom)
-      const folder = await setLatest(knex, room.images[room.index])
-      callback(folder)
-    })
-  })
-  setInterval(() => {
-    Object.values(rooms).forEach(room => {
-      room.countdown--
-      const sockets = io.of('/').adapter.rooms.get(room.path)
-      if (sockets && sockets.size && room.countdown <= 0) {
-        changeImage(knex, io, room, 1)
-      } else if (room.countdown <= -5 * countdownDuration) {
-        delete rooms[room.path]
-      }
-    })
-  }, 1000)
+  io.on('connection', (socket) => Functions.HandleSocket(knex, io, socket))
+  Imports.setInterval(async () => await Functions.TickCountdown(knex, io), 1000)
 
   return router
 }
