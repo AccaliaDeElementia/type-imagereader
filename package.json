@@ -11,7 +11,7 @@
     "test": "nyc mocha",
     "knex": "knex --knexfile knexfile.ts",
     "predev": "npm run build",
-    "dev": "DEBUG=type-imagereader:* SKIP_SYNC=1 ts-node ."
+    "dev": "DEBUG='type-imagereader:*' SKIP_SYNC=1 ts-node ."
   },
   "repository": {
     "type": "git",
