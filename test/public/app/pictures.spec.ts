@@ -422,7 +422,7 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
   }
 
   @test
-  'ignores call when called on no pages' () {
+  'it does not publish error when called on no pages' () {
     const publishSpy = sinon.stub()
     Subscribe('Loading:Error', publishSpy)
     this.document.querySelector('.pagination')
@@ -431,6 +431,19 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
     Pictures.SelectPage(-1)
     Pictures.SelectPage(1e9)
     expect(publishSpy.called).to.equal(false)
+  }
+
+  @test
+  'it publishes select of default page when called on no pages' () {
+    const publishSpy = sinon.stub()
+    Subscribe('Pictures:SelectPage', publishSpy)
+    this.document.querySelector('.pagination')
+      ?.replaceChildren(this.document.createElement('div'))
+    Pictures.SelectPage(0)
+    expect(publishSpy.callCount).to.equal(1)
+    expect(publishSpy.firstCall.args).to.have.lengthOf(2)
+    expect(publishSpy.firstCall.args[0]).to.equal('Default Page Selected')
+    expect(publishSpy.firstCall.args[1]).to.equal('PICTURES:SELECTPAGE')
   }
 
   @test
