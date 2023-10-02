@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import { normalize, dirname } from 'path'
 
 import persistance from '../utils/persistance'
-import { Functions as api } from './api'
+import { Functions as api } from './apiFunctions'
 
 import { Knex } from 'knex'
 

@@ -14,7 +14,7 @@ import { Knex } from 'knex'
 import persistance from '../../utils/persistance'
 */
 
-import { Functions, ModCount, UriSafePath } from '../../routes/api'
+import { Functions, ModCount, UriSafePath } from '../../routes/apiFunctions'
 import assert from 'assert'
 
 @suite
