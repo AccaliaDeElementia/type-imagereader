@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import { normalize, dirname } from 'path'
 
 import persistance from '../utils/persistance'
-import { setLatest } from './api'
+import { Functions as api } from './api'
 
 import { Knex } from 'knex'
 
@@ -31,7 +31,7 @@ export class Config {
 }
 
 export class Imports {
-  public static setLatest = setLatest
+  public static setLatest = api.SetLatestPicture
   public static setInterval = setInterval
   public static Router = Router
 }
@@ -136,7 +136,12 @@ export class Functions {
         return
       }
       const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom)
-      const folder = await Imports.setLatest(knex, room.images[room.index])
+      const picture = room.images[room.index]
+      if (!picture) {
+        callback(null)
+        return
+      }
+      const folder = await Imports.setLatest(knex, picture)
       callback(folder)
     })
   }

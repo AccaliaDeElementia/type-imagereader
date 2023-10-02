@@ -4,11 +4,18 @@ import { Publish, Subscribe } from './pubsub'
 import { Net } from './net'
 
 export interface Bookmark {
+  name: string
   path: string
   folder: string
 }
-interface DataWithBookmarks {
+
+interface BookmarkFolder {
+  name: string,
   bookmarks: Bookmark[]
+}
+
+interface DataWithBookmarks {
+  bookmarks: BookmarkFolder[]
 }
 
 interface BookMarkFolder {
@@ -17,8 +24,6 @@ interface BookMarkFolder {
 }
 
 export class Bookmarks {
-  protected static bookmarks: Bookmark[] = []
-
   protected static bookmarkCard: DocumentFragment | undefined = undefined
   protected static bookmarkFolder: DocumentFragment | undefined = undefined
   protected static bookmarksTab: HTMLElement | null = null
@@ -82,8 +87,6 @@ export class Bookmarks {
   }
 
   public static buildBookmarks (data: DataWithBookmarks): void {
-    this.bookmarks = data.bookmarks
-
     if (!this.bookmarksTab || !this.bookmarkCard || !this.bookmarkFolder) return
 
     const openPath = this.bookmarksTab.querySelector('details[open]')?.getAttribute('data-folderPath') || ''
@@ -93,16 +96,19 @@ export class Bookmarks {
     }
 
     this.BookmarkFolders = []
-    for (const bookmark of this.bookmarks) {
-      const folder = this.GetFolder(openPath, bookmark)
-      if (!folder) {
-        continue
+    // TODO: REbuild this to take advantage of the new structure instead of just massaging it into old style
+    for (const folder of data.bookmarks) {
+      for (const bookmark of folder.bookmarks) {
+        const folderNode = this.GetFolder(openPath, bookmark)
+        if (!folderNode) {
+          continue
+        }
+        const card = this.BuildBookmark(bookmark)
+        if (!card) {
+          continue
+        }
+        folderNode.appendChild(card)
       }
-      const card = this.BuildBookmark(bookmark)
-      if (!card) {
-        continue
-      }
-      folder.appendChild(card)
     }
     this.BookmarkFolders.sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0)
     for (const folder of this.BookmarkFolders) {
@@ -117,7 +123,7 @@ export class Bookmarks {
 
     Subscribe('Navigate:Data', (data) => this.buildBookmarks(data))
 
-    Subscribe('Bookmarks:Load', (): Promise<void> => Net.GetJSON<Bookmark[]>('/api/bookmarks')
+    Subscribe('Bookmarks:Load', (): Promise<void> => Net.GetJSON<BookmarkFolder[]>('/api/bookmarks')
       .then(bookmarks => this.buildBookmarks({ bookmarks })))
 
     Subscribe('Bookmarks:Add', (path: string): Promise<void> =>

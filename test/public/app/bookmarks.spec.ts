@@ -9,7 +9,7 @@ import { render } from 'pug'
 
 import { Net } from '../../../public/scripts/app/net'
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import { Bookmarks, Bookmark } from '../../../public/scripts/app/bookmarks'
+import { Bookmarks } from '../../../public/scripts/app/bookmarks'
 import assert from 'assert'
 
 const markup = `
@@ -57,10 +57,6 @@ class TestBookmarks extends Bookmarks {
 
   public static set bookmarksTab (folder: HTMLElement | null) {
     Bookmarks.bookmarksTab = folder
-  }
-
-  public static get bookmarks (): Bookmark[] {
-    return Bookmarks.bookmarks
   }
 }
 
@@ -294,6 +290,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   'it should return null if card template is missing' () {
     TestBookmarks.bookmarkCard = undefined
     const result = Bookmarks.BuildBookmark({
+      name: '',
       path: 'foo',
       folder: 'bar'
     })
@@ -303,6 +300,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   @test
   'it should return HTMLElement if card template exist' () {
     const result = Bookmarks.BuildBookmark({
+      name: '',
       path: 'foo',
       folder: 'bar'
     })
@@ -312,6 +310,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   @test
   'it should set title in result card' () {
     const result = Bookmarks.BuildBookmark({
+      name: '',
       path: 'foo',
       folder: 'bar'
     })
@@ -322,6 +321,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   @test
   'it should strip leading folder path from title in result card' () {
     const result = Bookmarks.BuildBookmark({
+      name: '',
       path: '/path/to/foo/folder/foo',
       folder: 'bar'
     })
@@ -332,6 +332,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   @test
   'it should publish Bookmarks:Remove on button click' () {
     const result = Bookmarks.BuildBookmark({
+      name: '',
       path: '/path/to/foo/folder/foo',
       folder: 'bar'
     })
@@ -349,6 +350,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   @test
   async 'it should navigate latest on bookmark click' () {
     const result = Bookmarks.BuildBookmark({
+      name: '',
       path: '/path/to/foo/folder/foo',
       folder: 'bar'
     })
@@ -375,6 +377,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   @test
   async 'it should navigate load on bookmark click' () {
     const result = Bookmarks.BuildBookmark({
+      name: '',
       path: '/path/to/foo/folder/foo',
       folder: '/path/to/foo/folder'
     })
@@ -421,6 +424,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   @test
   'it should return an HTMLElement' () {
     const result = Bookmarks.GetFolder('', {
+      name: '',
       path: '/foo/bar.jpg',
       folder: '/foo'
     })
@@ -431,6 +435,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   'it should add folder to folder list on creation' () {
     expect(Bookmarks.BookmarkFolders).to.have.length(0)
     const result = Bookmarks.GetFolder('', {
+      name: '',
       path: '/foo/bar.jpg',
       folder: '/foo'
     })
@@ -449,6 +454,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
       element
     })
     const result = Bookmarks.GetFolder('', {
+      name: '',
       path: '/foo/bar/baz/quux.png',
       folder: '/foo/bar/baz'
     })
@@ -460,6 +466,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
     TestBookmarks.bookmarkFolder = undefined
 
     const result = Bookmarks.GetFolder('', {
+      name: '',
       path: '/foo/bar/baz/quux.png',
       folder: '/foo/bar/baz'
     })
@@ -469,6 +476,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   @test
   'it should set data attribute for folderPath' () {
     const result = Bookmarks.GetFolder('', {
+      name: '',
       path: '/foo/bar/baz/quux.png',
       folder: '/foo/bar/baz'
     })
@@ -479,6 +487,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   @test
   'it should set title' () {
     const result = Bookmarks.GetFolder('', {
+      name: '',
       path: '/foo/bar/baz/quux.png',
       folder: '/foo/bar/baz'
     })
@@ -489,6 +498,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   @test
   'it should uridecode title' () {
     const result = Bookmarks.GetFolder('', {
+      name: '',
       path: '',
       folder: '%7C'
     })
@@ -500,6 +510,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   'it should not create title if element is missing from template' () {
     TestBookmarks.bookmarkFolder?.querySelector('.title')?.remove()
     const result = Bookmarks.GetFolder('', {
+      name: '',
       path: '',
       folder: '%7C'
     })
@@ -510,6 +521,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   @test
   'it should add the open attribute with matching path' () {
     const result = Bookmarks.GetFolder('/bar', {
+      name: '',
       path: '/bar/baz.png',
       folder: '/bar'
     })
@@ -519,6 +531,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   @test
   'it should not add the open attribute with non matching path' () {
     const result = Bookmarks.GetFolder('/foo', {
+      name: '',
       path: '/bar/baz.png',
       folder: '/bar'
     })
@@ -528,6 +541,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   @test
   'it should have on click handler to open self' () {
     const result = Bookmarks.GetFolder('/foo', {
+      name: '',
       path: '/bar/baz.png',
       folder: '/bar'
     })
@@ -544,6 +558,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   'it should have on click handler to close others' () {
     for (let i = 1; i <= 50; i++) {
       Bookmarks.GetFolder('/foo', {
+        name: '',
         path: `/bar${i}/baz${i}.png`,
         folder: `/bar${i}`
       })
@@ -585,8 +600,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -601,8 +620,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -617,8 +640,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -629,26 +656,16 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should store data internally for future reference' () {
-    const data = {
-      bookmarks: [
-        {
-          path: '/foo/bar.png',
-          folder: '/foo'
-        }
-      ]
-    }
-    Bookmarks.buildBookmarks(data)
-    expect(TestBookmarks.bookmarks).to.equal(data.bookmarks)
-  }
-
-  @test
   'it should use the empty string when no open details exist' () {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -661,8 +678,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -678,8 +699,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -696,8 +721,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -718,13 +747,17 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
     Bookmarks.buildBookmarks(data)
-    expect(this.GetFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
+    expect(this.GetFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0]?.bookmarks[0])
   }
 
   @test
@@ -732,13 +765,17 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
     Bookmarks.buildBookmarks(data)
-    expect(this.GetFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
+    expect(this.GetFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0]?.bookmarks[0])
     expect(this.BuildBookmarkSpy.called).to.equal(false)
   }
 
@@ -747,16 +784,20 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
     const folder = this.document.createElement('details')
     this.GetFolderSpy.returns(folder)
     Bookmarks.buildBookmarks(data)
-    expect(this.GetFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
-    expect(this.BuildBookmarkSpy.calledWith(data.bookmarks[0])).to.equal(true)
+    expect(this.GetFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0]?.bookmarks[0])
+    expect(this.BuildBookmarkSpy.calledWith(data.bookmarks[0]?.bookmarks[0])).to.equal(true)
   }
 
   @test
@@ -764,8 +805,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -781,8 +826,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const data = {
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     }
@@ -820,8 +869,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     Bookmarks.buildBookmarks({
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     })
@@ -848,8 +901,12 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     Bookmarks.buildBookmarks({
       bookmarks: [
         {
-          path: '/foo/bar.png',
-          folder: '/foo'
+          name: '',
+          bookmarks: [{
+            name: '',
+            path: '/foo/bar.png',
+            folder: '/foo'
+          }]
         }
       ]
     })
