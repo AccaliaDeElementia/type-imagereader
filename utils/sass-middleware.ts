@@ -88,6 +88,7 @@ export class Functions {
       Functions.logger(`Watching ${path} for stylesheets`)
       const watcher = Imports.watch(join(basePath, path), { persistent: false })
       for await (const event of watcher) {
+        if (!event.filename) continue
         if (!sassExtension.test(event.filename) || /(^|\/)\./.test(event.filename)) continue
         const sassFile = join(path, event.filename)
         Functions.debouncer.debounce(sassFile, async () => {

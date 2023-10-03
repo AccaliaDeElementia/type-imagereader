@@ -120,6 +120,7 @@ export class Functions {
       Functions.logger(`Watching ${mountPath} for Scripts`)
       const watcher = Imports.watch(join(basePath, mountPath), { persistent: false })
       for await (const event of watcher) {
+        if (!event.filename) continue
         const scriptFile = isFolder ? mountPath : join(mountPath, event.filename)
         Functions.debouncer.debounce(scriptFile, async () => {
           Functions.logger(`${scriptFile} needs recompiling. ${event.eventType}`)

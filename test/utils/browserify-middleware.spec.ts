@@ -600,6 +600,16 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
+  async 'it should ignore event without filename' () {
+    this.WatchStub?.returns([{
+      filename: null,
+      eventType: 'change'
+    }])
+    await Functions.WatchFolder('/foo', '/bar', false)
+    expect(this.DebounceStub?.callCount).to.equal(0)
+  }
+
+  @test
   async 'it should debounce non folder event on iteration' () {
     this.WatchStub?.returns([{
       filename: '/baz',

@@ -381,6 +381,13 @@ export class SassMiddlewareWatchFolderTests {
   }
 
   @test
+  async 'it should ignore ecent without filename' () {
+    this.WatchStub?.returns([{ filename: null }])
+    await Functions.WatchFolder('/foo', '/bar')
+    expect(this.DebouncerStub?.called).to.equal(false)
+  }
+
+  @test
   async 'it should ignore dotfiles to compile' () {
     this.WatchStub?.returns([{ filename: '.file.sass' }, { filename: '/.file.sass' }, { filename: '/quux/.bar/file.sass' }])
     await Functions.WatchFolder('/foo', '/bar')

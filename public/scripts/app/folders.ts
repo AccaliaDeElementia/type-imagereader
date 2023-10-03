@@ -18,7 +18,7 @@ export class Folders {
   static FolderCard: DocumentFragment|null = null
 
   public static BuildCard (folder: Folder): HTMLElement|null {
-    const card = (this.FolderCard?.cloneNode(true) as HTMLElement).firstElementChild as HTMLElement
+    const card = (this.FolderCard?.cloneNode(true) as HTMLElement)?.firstElementChild as HTMLElement
     if (!card) {
       return null
     }
