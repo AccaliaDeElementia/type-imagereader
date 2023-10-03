@@ -1083,8 +1083,8 @@ export class ApiGetBookmarksTests {
     expect(this.KnexInstance.orderBy.callCount).to.equal(1)
     expect(this.KnexInstance.orderBy.firstCall.args).to.have.lengthOf(1)
     expect(this.KnexInstance.orderBy.firstCall.args[0]).to.deep.equal([
-      'folders.sortKey',
       'folders.path',
+      'folders.sortKey',
       'pictures.sortKey',
       'pictures.path'
     ])
@@ -1107,6 +1107,7 @@ export class ApiGetBookmarksTests {
     const expected = [
       {
         name: '/foo/a bar/',
+        path: '/foo/a%20bar/',
         bookmarks: [
           {
             name: 'a quux.png',
@@ -1120,6 +1121,7 @@ export class ApiGetBookmarksTests {
         ]
       }, {
         name: '/foo/a baz/',
+        path: '/foo/a%20baz/',
         bookmarks: [
           {
             name: 'a quux.png',

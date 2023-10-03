@@ -294,14 +294,17 @@ body
         background-color: #00bc8c
 
 #tabBookmarks
-  details
+  div.folder
     margin: 0.5rem
     padding: .5rem
     border: #666 solid 1px
     border-radius: 0.25rem
-    summary
+    .title
       font-weight: bold
       cursor: pointer 
+  div.folder.closed
+    .card
+      display: none
   .card
     position: relative
     button

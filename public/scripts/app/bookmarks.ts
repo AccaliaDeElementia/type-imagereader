@@ -11,10 +11,12 @@ export interface Bookmark {
 
 interface BookmarkFolder {
   name: string,
+  path: string,
   bookmarks: Bookmark[]
 }
 
 interface DataWithBookmarks {
+  path: string,
   bookmarks: BookmarkFolder[]
 }
 
@@ -30,27 +32,28 @@ export class Bookmarks {
 
   public static BookmarkFolders: BookMarkFolder[] = []
 
-  public static GetFolder (openPath: string, bookmark: Bookmark): HTMLElement | null {
-    let folder = this.BookmarkFolders.filter(e => e.name === bookmark.folder)[0]
+  public static GetFolder (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null {
+    let folder = this.BookmarkFolders.filter(e => e.name === bookmarkFolder.path)[0]
     if (!folder) {
       const element = (Bookmarks.bookmarkFolder?.cloneNode(true) as HTMLElement | null)?.firstElementChild as HTMLElement | null
       if (!element) {
         return null
       }
       folder = {
-        name: bookmark.folder,
+        name: bookmarkFolder.name,
         element
       }
-      element.setAttribute('data-folderPath', bookmark.folder)
+      element.setAttribute('data-folderPath', bookmarkFolder.path)
       const title = element.querySelector<HTMLElement>('.title')
-      if (title) title.innerText = decodeURI(bookmark.folder)
-      title?.addEventListener('click', () => {
+      if (title) title.innerText = decodeURI(bookmarkFolder.name)
+      title?.addEventListener('click', (e) => {
         for (const otherFolder of this.BookmarkFolders) {
-          otherFolder.element.removeAttribute('open')
+          otherFolder.element.classList.add('closed')
         }
+        (e.target as HTMLElement).parentElement?.classList.remove('closed')
       })
-      if (bookmark.folder === openPath) {
-        element.setAttribute('open', '')
+      if (bookmarkFolder.path === openPath) {
+        element.classList.remove('closed')
       }
       this.BookmarkFolders.push(folder)
     }
@@ -89,20 +92,20 @@ export class Bookmarks {
   public static buildBookmarks (data: DataWithBookmarks): void {
     if (!this.bookmarksTab || !this.bookmarkCard || !this.bookmarkFolder) return
 
-    const openPath = this.bookmarksTab.querySelector('details[open]')?.getAttribute('data-folderPath') || ''
+    const openPath = this.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') || data.path
 
-    for (const existing of this.bookmarksTab.querySelectorAll('details')) {
+    for (const existing of this.bookmarksTab.querySelectorAll('div.folder')) {
       existing.remove()
     }
 
     this.BookmarkFolders = []
     // TODO: REbuild this to take advantage of the new structure instead of just massaging it into old style
     for (const folder of data.bookmarks) {
+      const folderNode = this.GetFolder(openPath, folder)
+      if (!folderNode) {
+        continue
+      }
       for (const bookmark of folder.bookmarks) {
-        const folderNode = this.GetFolder(openPath, bookmark)
-        if (!folderNode) {
-          continue
-        }
         const card = this.BuildBookmark(bookmark)
         if (!card) {
           continue
@@ -124,7 +127,7 @@ export class Bookmarks {
     Subscribe('Navigate:Data', (data) => this.buildBookmarks(data))
 
     Subscribe('Bookmarks:Load', (): Promise<void> => Net.GetJSON<BookmarkFolder[]>('/api/bookmarks')
-      .then(bookmarks => this.buildBookmarks({ bookmarks })))
+      .then(bookmarks => this.buildBookmarks({ path: '', bookmarks })))
 
     Subscribe('Bookmarks:Add', (path: string): Promise<void> =>
       Net.PostJSON('/api/bookmarks/add', { path })

@@ -12,6 +12,7 @@ export interface Bookmark {
 
 export interface BookmarkFolder {
   name: string,
+  path: string,
   bookmarks: Bookmark[]
 }
 
@@ -201,13 +202,14 @@ export class Functions {
       .join('pictures', 'pictures.path', 'bookmarks.path')
       .join('folders', 'folders.path', 'pictures.folder')
       .orderBy([
-        'folders.sortKey',
         'folders.path',
+        'folders.sortKey',
         'pictures.sortKey',
         'pictures.path'
       ])
     let folder: BookmarkFolder = {
       name: '',
+      path: '',
       bookmarks: []
     }
     const results = []
@@ -216,6 +218,7 @@ export class Functions {
         results.push(folder)
         folder = {
           name: bookmark.folder,
+          path: UriSafePath.encode(bookmark.folder),
           bookmarks: []
         }
       }
