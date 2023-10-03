@@ -8,34 +8,23 @@ import { StatusCodes } from 'http-status-codes'
 import { normalize } from 'path'
 
 import persistance from '../utils/persistance'
-import { Knex } from 'knex'
 
 import { ModCount, UriSafePath, Functions } from './apiFunctions'
 
 import debug from 'debug'
 
-const listing = async (path: string, knex: Knex, res: Response) => {
-  const folder = await Functions.GetListing(knex, path)
-  if (!folder) {
-    res.status(StatusCodes.NOT_FOUND).json({
-      error: {
-        code: 'ENOTFOUND',
-        message: 'Directory Not Found!',
-        path
-      }
-    })
-    return
-  }
-  res.json(folder)
+export class Imports {
+  public static Router = Router
+  public static debug = debug
 }
 
 // Export the base-router
 export async function getRouter (_: Application, __: Server, ___: WebSocketServer) {
   const knex = await persistance.initialize()
   // Init router and path
-  const router = Router()
+  const router = Imports.Router()
 
-  const logger = debug('type-imagereader:api')
+  const logger = Imports.debug('type-imagereader:api')
 
   const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler => async (req: Request, res: Response) => {
     try {
@@ -45,90 +34,100 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
       logger(e)
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: {
-          code: 'EINTERNALERROR',
+          code: 'E_INTERNAL_ERROR',
           message: 'Internal Server Error'
         }
       })
     }
   }
 
-  const parsePath = (path: string, res: Response, decodeURI = true) => {
-    if (decodeURI) {
-      path = UriSafePath.decode(path)
-    }
+  const parsePath = (path: string, res: Response) => {
     if (normalize(path) !== path) {
       res.status(StatusCodes.FORBIDDEN).json({
         error: {
-          code: 'ENOTRAVERSE',
+          code: 'E_NO_TRAVERSE',
           message: 'Directory Traversal is not Allowed!',
           path
         }
       })
       return null
     }
-    return path
+    return normalize('/' + path)
   }
 
   router.get('/', handleErrors(async (_, res) => {
-    res.json({ title: 'API' })
+    res.status(StatusCodes.OK).json({ title: 'API' })
   }))
 
   router.get('/healthcheck', handleErrors(async (_, res) => {
     res.status(StatusCodes.OK).send('OK')
   }))
 
-  router.get('/listing/*', handleErrors(async (req, res) => {
-    const rawPath = req.params[0] || ''
-    const folder = parsePath(
-      `/${rawPath}${rawPath.length && rawPath[rawPath.length - 1] !== '/' ? '/' : ''}`,
-      res,
-      false
-    )
-    if (folder !== null) {
-      await listing(folder, knex, res)
+  const listing = handleErrors(async (req, res) => {
+    const path = parsePath(req.params[0] || '/', res)
+    if (path === null) { return }
+    const folder = await Functions.GetListing(knex, normalize(path + '/'))
+    if (!folder) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        error: {
+          code: 'E_NOT_FOUND',
+          message: 'Directory Not Found!',
+          path
+        }
+      })
+      return
     }
-  }))
-  router.get('/listing', handleErrors(async (_, res) => await listing('/', knex, res)))
+    res.status(StatusCodes.OK).json(folder)
+  })
+
+  router.get('/listing/*', listing)
+  router.get('/listing', listing)
 
   router.post('/navigate/latest', handleErrors(async (req, res) => {
     const incomingModCount = +req.body.modCount
     let response = -1
-    const path = parsePath(req.body.path, res)
-    if (incomingModCount === -1 && path !== null) {
+    const path = parsePath(UriSafePath.decode(req.body.path), res)
+    if (!path) {
+      return
+    }
+    if (incomingModCount === -1) {
       await Functions.SetLatestPicture(knex, path)
-    } else if (ModCount.Validate(incomingModCount) && path !== null) {
+    } else if (ModCount.Validate(incomingModCount)) {
       response = ModCount.Increment()
       await Functions.SetLatestPicture(knex, path)
+    } else {
+      res.status(StatusCodes.BAD_REQUEST).send(`${ModCount.Get()}`)
+      return
     }
     res.status(StatusCodes.OK).send(`${response}`)
   }))
 
   router.post('/mark/read', handleErrors(async (req, res) => {
-    const path = parsePath(req.body.path, res)
+    const path = parsePath(UriSafePath.decode(req.body.path), res)
     if (path !== null) {
-      await Functions.MarkFolderRead(knex, path)
+      await Functions.MarkFolderRead(knex, normalize(path + '/'))
       res.status(StatusCodes.OK).end()
     }
   }))
 
   router.post('/mark/unread', handleErrors(async (req, res) => {
-    const path = parsePath(req.body.path, res)
+    const path = parsePath(UriSafePath.decode(req.body.path), res)
     if (path !== null) {
-      await Functions.MarkFolderUnread(knex, path)
+      await Functions.MarkFolderUnread(knex, normalize(path + '/'))
       res.status(StatusCodes.OK).end()
     }
   }))
 
-  router.get('/bookmarks/*', handleErrors(async (_, res) => {
+  const getBookmarks = handleErrors(async (_, res) => {
     res.json(await Functions.GetBookmarks(knex))
-  }))
+  })
 
-  router.get('/bookmarks/', handleErrors(async (_, res) => {
-    res.json(await Functions.GetBookmarks(knex))
-  }))
+  router.get('/bookmarks/*', getBookmarks)
+
+  router.get('/bookmarks', getBookmarks)
 
   router.post('/bookmarks/add', handleErrors(async (req, res) => {
-    const path = parsePath(req.body.path, res)
+    const path = parsePath(UriSafePath.decode(req.body.path), res)
     if (path !== null) {
       await Functions.AddBookmark(knex, path)
       res.status(StatusCodes.OK).end()
@@ -136,7 +135,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }))
 
   router.post('/bookmarks/remove', handleErrors(async (req, res) => {
-    const path = parsePath(req.body.path, res)
+    const path = parsePath(UriSafePath.decode(req.body.path), res)
     if (path !== null) {
       await Functions.RemoveBookmark(knex, path)
       res.status(StatusCodes.OK).end()
