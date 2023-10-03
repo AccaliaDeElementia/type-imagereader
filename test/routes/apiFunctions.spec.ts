@@ -3,16 +3,7 @@ import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
 
-/*
-import { Application, Router } from 'express'
-import { Server } from 'http'
-import { Server as WebSocketServer, Socket } from 'socket.io'
-import { StatusCodes } from 'http-status-codes'
-*/
 import { Knex } from 'knex'
-/*
-import persistance from '../../utils/persistance'
-*/
 
 import { Functions, ModCount, UriSafePath } from '../../routes/apiFunctions'
 import assert from 'assert'

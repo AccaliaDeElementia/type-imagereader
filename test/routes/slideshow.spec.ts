@@ -12,9 +12,7 @@ import { Knex } from 'knex'
 import { getRouter, Config, Functions, Imports } from '../../routes/slideshow'
 import persistance from '../../utils/persistance'
 
-function assert (condition: unknown, msg?: string): asserts condition {
-  if (!condition) throw new Error(msg || 'Assertion failure!')
-}
+import assert from 'assert'
 
 @suite
 export class SlideshowGetImagesTests {
@@ -786,6 +784,41 @@ export class SlideshowHandleSocketTests {
     await fn(callback)
     expect(callback.callCount).to.equal(1)
     expect(callback.firstCall.args).to.deep.equal([expected])
+  }
+
+  @test
+  async 'on(goto-image) it should resolve null on missing image' () {
+    Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
+    const roomname = `/testRoom/${Math.random()}`
+    await this.joinSlideshow(roomname)
+    const fn = this.SocketStub.on.getCalls()
+      .filter(call => call.args[0] === 'goto-image')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+    const callback = sinon.stub()
+    const room = { images: [], index: 0 }
+    this.GetRoomStub?.resolves(room)
+    await fn(callback)
+    expect(callback.callCount).to.equal(1)
+    expect(callback.firstCall.args).to.deep.equal([null])
+  }
+
+  @test
+  async 'on(goto-image) it should not set latest image on missing image' () {
+    Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
+    const roomname = `/testRoom/${Math.random()}`
+    await this.joinSlideshow(roomname)
+    const fn = this.SocketStub.on.getCalls()
+      .filter(call => call.args[0] === 'goto-image')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+    const callback = sinon.stub()
+    const room = { images: [], index: 0 }
+    this.GetRoomStub?.resolves(room)
+    await fn(callback)
+    expect(this.SetLatestStub?.callCount).to.equal(0)
   }
 }
 
