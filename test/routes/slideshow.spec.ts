@@ -264,6 +264,14 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
+  async 'it should set uriSafeImage to blank if there are no pictures' () {
+    this.StockImages = []
+    this.GetImagesStub?.resolves([])
+    const room = await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
+    expect(room.uriSafeImage).to.equal('')
+  }
+
+  @test
   async 'it should rotate memory backwards when reversing off the end of history' () {
     const first = Array(200).fill(undefined).map((_, i) => `/image${i + 200}.png`)
     const second = Array(100).fill(undefined).map((_, i) => `/image${i}.png`)
@@ -281,6 +289,34 @@ export class SlideshowGetRoomAndIncrementImageTests {
     expect(room.images).to.have.lengthOf(200)
     expect(room.images.slice(0, 100)).to.deep.equal(second)
     expect(room.images.slice(-100)).to.deep.equal(first.slice(0, 100))
+  }
+
+  @test
+  async 'it should rotate memory backwards when reversing off the end of history with small folder' () {
+    const first = Array(20).fill(undefined).map((_, i) => `/image${i + 200}.png`)
+    const second = Array(30).fill(undefined).map((_, i) => `/image${i}.png`)
+    const room = {
+      countdown: 50,
+      images: first,
+      path: '/path/',
+      index: 10,
+      uriSafeImage: undefined
+    }
+    Config.rooms['/path/'] = room
+    this.GetImagesStub?.onFirstCall().resolves(second)
+    Config.memorySize = 100
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/')
+    expect(room.index).to.equal(10)
+    expect(this.GetImagesStub?.callCount).to.equal(0)
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/', -10)
+    expect(this.GetImagesStub?.callCount).to.equal(0)
+    expect(room.index).to.equal(0)
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/', -1)
+    expect(this.GetImagesStub?.callCount).to.equal(1)
+    expect(room.index).to.equal(29)
+    expect(room.images).to.have.lengthOf(50)
+    expect(room.images.slice(0, 30)).to.deep.equal(second)
+    expect(room.images.slice(-20)).to.deep.equal(first)
   }
 
   @test

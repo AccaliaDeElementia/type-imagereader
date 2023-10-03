@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import { normalize, dirname } from 'path'
 
 import persistance from '../utils/persistance'
-import { Functions as api } from './apiFunctions'
+import { UriSafePath, Functions as api } from './apiFunctions'
 
 import { Knex } from 'knex'
 
@@ -79,17 +79,16 @@ export class Functions {
     }
     room.index += increment
     if (room.index < 0) {
-      room.images = (await Functions.GetImages(knex, name, Config.memorySize))
-        .concat(room.images.slice(0, Config.memorySize))
-      room.index = Config.memorySize - 1
+      const after = room.images.slice(0, Config.memorySize)
+      room.images = await Functions.GetImages(knex, name, Config.memorySize)
+      room.index = room.images.length - 1
+      room.images = room.images.concat(after)
     } else if (room.index >= room.images.length) {
       room.images = room.images.slice(-Config.memorySize)
-        .concat(await Functions.GetImages(knex, name, Config.memorySize))
-      room.index = Config.memorySize
+      room.index = room.images.length
+      room.images = room.images.concat(await Functions.GetImages(knex, name, Config.memorySize))
     }
-    room.uriSafeImage = room.images[room.index]
-      ?.split('/')
-      .map((part: string) => encodeURIComponent(part)).join('/')
+    room.uriSafeImage = UriSafePath.encode(room.images[room.index] || '')
     return room
   }
 
