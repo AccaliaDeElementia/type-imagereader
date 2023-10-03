@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { suite, test, slow } from '@testdeck/mocha'
-import * as sinon from 'sinon'
+import Sinon, * as sinon from 'sinon'
 
 import { Server as WebSocketServer, Socket } from 'socket.io'
 import { DefaultEventsMap } from 'socket.io/dist/typed-events'
@@ -261,31 +261,21 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2
     })
     const folder = `/${Math.random}`
-    const assignStub = sinon.stub()
+    let assignStub: Sinon.SinonStub = sinon.stub()
 
-    const newLocation = Object.defineProperties(
-      {},
-      {
-        ...Object.getOwnPropertyDescriptors(this.dom.window.location),
-        assign: {
-          configurable: true,
-          value: assignStub
-        }
-      }
-    )
-    // @ts-ignore
-    delete this.dom.window.location
-    // @ts-ignore
-    this.dom.window.location = newLocation
-
-    await this.connectSocket(socket =>
-      new Promise<void>(resolve => {
-        global.document.body.dispatchEvent(event)
-        socket.on('goto-image', (fn) => fn(folder))
-        socket.on('notify-done', resolve)
+    try {
+      await this.connectSocket(socket => {
+        assignStub = sinon.stub(WebSockets, 'LocationAssign')
+        return new Promise<void>(resolve => {
+          global.document.body.dispatchEvent(event)
+          socket.on('goto-image', (fn) => fn(folder))
+          socket.on('notify-done', resolve)
+        })
       })
-    )
-    expect(assignStub.calledOnceWithExactly(`/show${folder}?noMenu`)).to.equal(true)
+      expect(assignStub?.calledOnceWithExactly(`/show${folder}?noMenu`)).to.equal(true)
+    } finally {
+      assignStub?.restore()
+    }
   }
 
   @test

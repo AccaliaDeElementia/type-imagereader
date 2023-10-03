@@ -30,7 +30,7 @@ const handleClick = (event: MouseEvent, socket: WebSocket, initialScale: number)
       socket.emit('next-image')
     } else {
       socket.emit('goto-image', (folder: string) => {
-        window.location.assign(`/show${folder}?noMenu`)
+        WebSockets.LocationAssign?.call(window.location, `/show${folder}?noMenu`)
         socket.emit('notify-done')
       })
     }
@@ -56,7 +56,9 @@ const doNewImage = (path: string): void => {
 
 export class WebSockets {
   protected static socket: WebSocket
+  public static LocationAssign?: (url: string|URL) => void
   static connect (): void {
+    WebSockets.LocationAssign = window.location.assign
     this.socket = io(new URL(window.location.href).origin)
     const room = decodeURI(window.location.pathname.replace(/^\/[^/]+/, '') || '/')
     this.socket.on('connect', () => {

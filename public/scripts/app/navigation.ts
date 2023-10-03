@@ -41,6 +41,8 @@ export class Navigation {
     return window.location.pathname.replace(/^\/[^/]+/, '') || '/'
   }
 
+  public static LocationAssign?: (url: string|URL) => void
+
   public static get IsMenuActive (): boolean {
     const mainMenu = document.querySelector('#mainMenu')
     return !mainMenu?.classList.contains('hidden')
@@ -64,6 +66,7 @@ export class Navigation {
   }
 
   public static Init () {
+    this.LocationAssign = window.location.assign
     this.current.path = this.FolderPath
     this.LoadData()
     Subscribe('Navigate:Load', (path: string | NoMenuPath): void => {
@@ -114,7 +117,7 @@ export class Navigation {
       Net.PostJSON('/api/mark/unread', { path: this.current.path })
         .finally(() => this.LoadData(true)))
     Subscribe('Action:Execute:Slideshow', () => {
-      window.location.assign(`/slideshow${this.current.path}`)
+      Navigation.LocationAssign?.call(window.location, `/slideshow${this.current.path}`)
     })
     Subscribe('Action:Execute:FullScreen', () => {
       if (!document.fullscreenElement) {

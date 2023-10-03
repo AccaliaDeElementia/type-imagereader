@@ -1081,26 +1081,14 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const path = '/foo/bar/baz/' + Math.random()
     TestNavigation.current.path = path
 
-    const assignStub = sinon.stub()
-
-    const newLocation = Object.defineProperties(
-      {},
-      {
-        ...Object.getOwnPropertyDescriptors(this.dom.window.location),
-        assign: {
-          configurable: true,
-          value: assignStub
-        }
-      }
-    )
-    // @ts-ignore
-    delete this.dom.window.location
-    // @ts-ignore
-    this.dom.window.location = newLocation
-
-    expect(assignStub.called).to.equal(false)
-    handler(undefined)
-    expect(assignStub.calledWith('/slideshow' + path)).to.equal(true)
+    const assignStub = sinon.stub(Navigation, 'LocationAssign')
+    try {
+      expect(assignStub.called).to.equal(false)
+      handler(undefined)
+      expect(assignStub.calledWith('/slideshow' + path)).to.equal(true)
+    } finally {
+      assignStub.restore()
+    }
   }
 
   @test
