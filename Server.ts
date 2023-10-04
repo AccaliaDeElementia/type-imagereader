@@ -1,3 +1,5 @@
+'use sanity'
+
 import _cookieParser from 'cookie-parser'
 import _morgan from 'morgan'
 import { join } from 'path'

@@ -1,4 +1,5 @@
 'use sanity'
+
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import * as sinon from 'sinon'

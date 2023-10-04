@@ -1,3 +1,5 @@
+'use sanity'
+
 module.exports = {
   development: {
     client: 'postgresql',

@@ -1,3 +1,5 @@
+'use sanity'
+
 import { Application, Router, Request, Response, RequestHandler } from 'express'
 import { Server as WebSocketServer } from 'socket.io'
 import { Server } from 'http'

@@ -1,4 +1,5 @@
 'use sanity'
+
 import debug from 'debug'
 const logger = debug('type-imagereader:debounce')
 

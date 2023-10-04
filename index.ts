@@ -1,4 +1,5 @@
 'use sanity'
+
 import synchronize from './utils/syncfolders'
 import start from './Server'
 
