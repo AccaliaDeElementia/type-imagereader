@@ -24,7 +24,7 @@ RUN /usr/local/bin/npm install
 RUN /usr/local/bin/npm test
 RUN /usr/local/bin/npm run build
 
-EXPOSE 3000/tcp
+EXPOSE 3030/tcp
 
 ENV DB_CLIENT="postgresql" \
     DB_HOST="postgresql" \
@@ -40,4 +40,4 @@ WORKDIR /app
 
 CMD ["/usr/local/bin/npm", "start"]
 
-HEALTHCHECK CMD curl -f http://localhost:3030/api/healthcheck >/dev/null
+HEALTHCHECK --interval=5m --timeout=3s CMD curl -f http://localhost:3030/api/healthcheck
