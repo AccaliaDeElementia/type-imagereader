@@ -704,13 +704,13 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should return current modcount when validate fails' () {
+  async 'it should return invalid when validate fails' () {
     this.ValidateModcountStub?.returns(false)
     this.GetModcountStub?.returns(69_420)
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.send.callCount).to.equal(1)
-    expect(this.ResponseStub.send.firstCall.args).to.deep.equal(['69420'])
+    expect(this.ResponseStub.send.firstCall.args).to.deep.equal(['-1'])
   }
 
   @test

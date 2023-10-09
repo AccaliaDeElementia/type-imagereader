@@ -96,7 +96,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
       response = ModCount.Increment()
       await Functions.SetLatestPicture(knex, path)
     } else {
-      res.status(StatusCodes.BAD_REQUEST).send(`${ModCount.Get()}`)
+      res.status(StatusCodes.BAD_REQUEST).send('-1')
       return
     }
     res.status(StatusCodes.OK).send(`${response}`)
