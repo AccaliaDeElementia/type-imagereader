@@ -183,16 +183,19 @@ export class SlideshowGetRoomAndIncrementImageTests {
   StockImages = Array(Config.memorySize * 2).fill(undefined).map((_, i) => `/image${i}.png`)
   KnexFake = { knex: Math.random() } as unknown as Knex
   GetImagesStub?: Sinon.SinonStub
+  MarkImageReadStub?: Sinon.SinonStub
 
   before () {
     Config.rooms = {}
     Config.countdownDuration = 60
     Config.memorySize = 100
     this.GetImagesStub = sinon.stub(Functions, 'GetImages').resolves(this.StockImages)
+    this.MarkImageReadStub = sinon.stub(Functions, 'MarkImageRead').resolves()
   }
 
   after () {
     this.GetImagesStub?.restore()
+    this.MarkImageReadStub?.restore()
     Config.countdownDuration = 60
     Config.memorySize = 100
   }
@@ -358,6 +361,23 @@ export class SlideshowGetRoomAndIncrementImageTests {
     expect(room.images).to.have.lengthOf(200)
     expect(room.images.slice(0, 100)).to.deep.equal(first.slice(-100))
     expect(room.images.slice(-100)).to.deep.equal(second)
+  }
+
+  @test
+  async 'it should call to MarkImageRead if there are pictures on fetch' () {
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
+    expect(this.MarkImageReadStub?.callCount).to.equal(1)
+    expect(this.MarkImageReadStub?.firstCall.args).to.have.lengthOf(2)
+    expect(this.MarkImageReadStub?.firstCall.args[0]).to.equal(this.KnexFake)
+    expect(this.MarkImageReadStub?.firstCall.args[1]).to.equal('/image99.png')
+  }
+
+  @test
+  async 'it should omit call to MarkImageRead if there are no pictures' () {
+    this.StockImages = []
+    this.GetImagesStub?.resolves([])
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
+    expect(this.MarkImageReadStub?.callCount).to.equal(0)
   }
 }
 

@@ -88,6 +88,10 @@ export class Functions {
       room.index = room.images.length
       room.images = room.images.concat(await Functions.GetImages(knex, name, Config.memorySize))
     }
+    const image = room.images[room.index]
+    if (image) {
+      await Functions.MarkImageRead(knex, image)
+    }
     room.uriSafeImage = UriSafePath.encode(room.images[room.index] || '')
     return room
   }
