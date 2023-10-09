@@ -1,5 +1,6 @@
 'use sanity'
 
+import { Pictures } from './pictures'
 import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
 
@@ -16,7 +17,9 @@ export interface Data {
   name?: string
   parent?: string
   next?: Data
+  nextUnread?: Data
   prev?: Data
+  prevUnread?: Data
   pictures?: object[]
   children?: ChildFolder[]
 }
@@ -100,8 +103,14 @@ export class Navigation {
       Publish('Menu:Show')
     })
 
-    Subscribe('Action:Execute:PreviousFolder', () => this.NavigateTo(this.current.prev?.path, 'PreviousFolder'))
-    Subscribe('Action:Execute:NextFolder', () => this.NavigateTo(this.current.next?.path, 'NextFolder'))
+    Subscribe('Action:Execute:PreviousFolder', () => {
+      const prev = Pictures.ShowUnreadOnly ? this.current.prevUnread : this.current.prev
+      this.NavigateTo(prev?.path, 'PreviousFolder')
+    })
+    Subscribe('Action:Execute:NextFolder', () => {
+      const next = Pictures.ShowUnreadOnly ? this.current.nextUnread : this.current.next
+      this.NavigateTo(next?.path, 'NextFolder')
+    })
     Subscribe('Action:Execute:ParentFolder', () => this.NavigateTo(this.current.parent, 'ParentFolder'))
     Subscribe('Action:Gamepad:Y', () => this.NavigateTo(this.current.parent, 'ParentFolder'))
     Subscribe('Action:Gamepad:A', () => {

@@ -11,6 +11,7 @@ import { PubSub } from '../../../public/scripts/app/pubsub'
 import { Navigation, Data } from '../../../public/scripts/app/navigation'
 import { Net } from '../../../public/scripts/app/net'
 import assert from 'assert'
+import { Pictures } from '../../../public/scripts/app/pictures'
 
 const markup = `
 html
@@ -412,6 +413,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   PostJSONStub: sinon.SinonStub = sinon.stub()
   RequestFullscreenStub: sinon.SinonStub = sinon.stub()
   ExitFullscreenStub: sinon.SinonStub = sinon.stub()
+  ShowUnreadOnlyGetStub: sinon.SinonStub = sinon.stub()
 
   before () {
     super.before()
@@ -421,6 +423,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     this.NavigateToStub = sinon.stub(Navigation, 'NavigateTo')
     this.PostJSONStub = sinon.stub(Net, 'PostJSON')
     this.PostJSONStub.resolves({})
+    this.ShowUnreadOnlyGetStub = sinon.stub(Pictures, 'ShowUnreadOnly').get(() => false)
     this.RequestFullscreenStub = sinon.stub()
     this.RequestFullscreenStub.resolves()
     this.dom.window.document.body.requestFullscreen = this.RequestFullscreenStub
@@ -433,6 +436,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   after () {
+    this.ShowUnreadOnlyGetStub.restore()
     this.PostJSONStub.restore()
     this.NavigateToStub.restore()
     this.LoadDataStub.restore()
@@ -697,7 +701,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:PreviousFolder handler should NavigateTo previousFolder' () {
+  'Action:Execute:PreviousFolder handler should NavigateTo previousFolder with ShowUnreadOnly unset' () {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -710,11 +714,43 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:PreviousFolder handler should NavigateTo undefined previousFolder when node missing' () {
+  'Action:Execute:PreviousFolder handler should NavigateTo previousUnreadFolder with ShowUnreadOnly set' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.prevUnread = {
+      path: '/foo/bar/baz'
+    }
+    this.ShowUnreadOnlyGetStub.get(() => true)
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'PreviousFolder')).to.equal(true)
+  }
+
+  @test
+  'Action:Execute:PreviousFolder handler should NavigateTo undefined previousFolder when node missing and with ShowUnreadOnly unset' () {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     TestNavigation.current.prev = undefined
+    TestNavigation.current.prevUnread = {
+      path: '/foo/bar/baz'
+    }
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith(undefined, 'PreviousFolder')).to.equal(true)
+  }
+
+  @test
+  'Action:Execute:PreviousFolder handler should NavigateTo undefined previousFolder when node missing and with ShowUnreadOnly set' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.prev = {
+      path: '/foo/bar/baz'
+    }
+    TestNavigation.current.prevUnread = undefined
+    this.ShowUnreadOnlyGetStub.get(() => true)
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'PreviousFolder')).to.equal(true)
@@ -728,7 +764,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:NextFolder handler should NavigateTo nextFolder' () {
+  'Action:Execute:NextFolder handler should NavigateTo nextFolder with ShowUnreadOnly unset' () {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -741,11 +777,43 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:NextFolder handler should NavigateTo undefined nextFolder when node missing' () {
+  'Action:Execute:NextFolder handler should NavigateTo nextFolder with ShowUnreadOnly set' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.nextUnread = {
+      path: '/foo/bar/baz'
+    }
+    this.ShowUnreadOnlyGetStub.get(() => true)
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'NextFolder')).to.equal(true)
+  }
+
+  @test
+  'Action:Execute:NextFolder handler should NavigateTo undefined nextFolder when node missing and with ShowUnreadOnly unset' () {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     TestNavigation.current.next = undefined
+    TestNavigation.current.nextUnread = {
+      path: '/foo/bar/baz'
+    }
+    handler(undefined)
+    expect(this.NavigateToStub.callCount).to.equal(1)
+    expect(this.NavigateToStub.calledWith(undefined, 'NextFolder')).to.equal(true)
+  }
+
+  @test
+  'Action:Execute:NextFolder handler should NavigateTo undefined nextFolder when node missing and with ShowUnreadOnly set' () {
+    Navigation.Init()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    TestNavigation.current.next = {
+      path: '/foo/bar/baz'
+    }
+    TestNavigation.current.nextUnread = undefined
+    this.ShowUnreadOnlyGetStub.get(() => true)
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'NextFolder')).to.equal(true)
