@@ -309,23 +309,23 @@ export class ImagesResizePreviewTests {
   }
 
   @test
-  async 'it should error when sharp throws' () {
+  async 'it should ignore error when sharp throws' () {
     const img = new ImageData()
     this.SharpStub?.throws(new Error('OOPS'))
     await Functions.ResizePreview(img)
-    expect(img.code).to.equal('E_INTERNAL_ERROR')
+    expect(img.code).to.equal(null)
     expect(img.statusCode).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
-    expect(img.message).to.equal('Image Rescale Error')
+    expect(img.message).to.equal(null)
   }
 
   @test
-  async 'it should error when sharp reejects' () {
+  async 'it should ignore error when sharp reejects' () {
     const img = new ImageData()
     this.SharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
     await Functions.ResizePreview(img)
-    expect(img.code).to.equal('E_INTERNAL_ERROR')
+    expect(img.code).to.equal(null)
     expect(img.statusCode).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
-    expect(img.message).to.equal('Image Rescale Error')
+    expect(img.message).to.equal(null)
   }
 }
 
@@ -448,23 +448,23 @@ export class ImagesResizeKioskTests {
   }
 
   @test
-  async 'it should error when sharp throws' () {
+  async 'it ignore error when sharp throws' () {
     const img = new ImageData()
     this.SharpStub?.throws(new Error('OOPS'))
     await Functions.ResizeKiosk(img)
-    expect(img.code).to.equal('E_INTERNAL_ERROR')
+    expect(img.code).to.equal(null)
     expect(img.statusCode).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
-    expect(img.message).to.equal('Image Rescale Error')
+    expect(img.message).to.equal(null)
   }
 
   @test
-  async 'it should error when sharp reejects' () {
+  async 'it should ignore sharp reejection' () {
     const img = new ImageData()
     this.SharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
     await Functions.ResizeKiosk(img)
-    expect(img.code).to.equal('E_INTERNAL_ERROR')
+    expect(img.code).to.equal(null)
     expect(img.statusCode).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
-    expect(img.message).to.equal('Image Rescale Error')
+    expect(img.message).to.equal(null)
   }
 }
 

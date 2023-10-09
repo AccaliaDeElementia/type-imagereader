@@ -96,9 +96,7 @@ export class Functions {
         .toBuffer()
       image.extension = 'png'
     } catch (e) {
-      image.code = 'E_INTERNAL_ERROR'
-      image.statusCode = StatusCodes.INTERNAL_SERVER_ERROR
-      image.message = 'Image Rescale Error'
+      // Do nothing.... we tried
     }
   }
 
@@ -124,9 +122,7 @@ export class Functions {
         .toBuffer()
       image.extension = 'webp'
     } catch (e) {
-      image.code = 'E_INTERNAL_ERROR'
-      image.statusCode = StatusCodes.INTERNAL_SERVER_ERROR
-      image.message = 'Image Rescale Error'
+      // Do nothing.... we tried
     }
   }
 
