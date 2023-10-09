@@ -131,31 +131,30 @@ export class Functions {
     }
   }
 
-  public static async GetDirectionFolder (knex: Knex, path: string, sortKey: string, direction: 'asc'|'desc'): Promise<Folder|null> {
+  public static async GetDirectionFolder (knex: Knex, path: string, sortKey: string, direction: 'asc'|'desc', type: 'all' | 'unread'): Promise<Folder|null> {
     const comparer = direction === 'asc' ? '>' : '<'
     const folderpath = normalize(dirname(path) + sep)
-    const folder = (await knex.union([
-      knex('folders')
+    const doSelect = (filter: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Knex.QueryBuilder => {
+      let query = knex('folders')
         .select(
           'path',
           'current',
           'firstPicture'
         )
         .where('folder', '=', folderpath)
+      if (type === 'unread') {
+        query = query.andWhere('totalCount', '>', knex.raw('"seenCount"'))
+      }
+      return filter(query).limit(1)
+    }
+    const folder = (await knex.union([
+      doSelect(query => query
         .andWhere('sortKey', '=', sortKey)
         .andWhere('path', comparer, path)
-        .orderBy('path', direction)
-        .limit(1),
-      knex('folders')
-        .select(
-          'path',
-          'current',
-          'firstPicture'
-        )
-        .where('folder', '=', folderpath)
+        .orderBy('path', direction)),
+      doSelect(query => query
         .andWhere('sortKey', comparer, sortKey)
-        .orderBy('sortKey', direction)
-        .limit(1)
+        .orderBy('sortKey', direction))
     ], true))[0]
     if (!folder) {
       return null
@@ -168,11 +167,11 @@ export class Functions {
   }
 
   public static async GetPreviousFolder (knex: Knex, path: string, sortKey: string): Promise<Folder|null> {
-    return Functions.GetDirectionFolder(knex, path, sortKey, 'desc')
+    return Functions.GetDirectionFolder(knex, path, sortKey, 'desc', 'all')
   }
 
   public static async GetNextFolder (knex: Knex, path: string, sortKey: string): Promise<Folder|null> {
-    return Functions.GetDirectionFolder(knex, path, sortKey, 'asc')
+    return Functions.GetDirectionFolder(knex, path, sortKey, 'asc', 'all')
   }
 
   public static async GetPictures (knex: Knex, path: string): Promise<Picture[]> {
@@ -239,7 +238,9 @@ export class Functions {
       return null
     }
     const next = await Functions.GetNextFolder(knex, path, folder.sortKey)
+    const nextUnread = await Functions.GetDirectionFolder(knex, path, folder.sortKey, 'asc', 'unread')
     const prev = await Functions.GetPreviousFolder(knex, path, folder.sortKey)
+    const prevUnread = await Functions.GetDirectionFolder(knex, path, folder.sortKey, 'desc', 'unread')
     const children = await Functions.GetChildFolders(knex, path)
     const pictures = await Functions.GetPictures(knex, path)
     const bookmarks = await Functions.GetBookmarks(knex)
@@ -249,7 +250,9 @@ export class Functions {
       parent: folder.folder,
       cover: folder.cover,
       next,
+      nextUnread,
       prev,
+      prevUnread,
       children,
       pictures,
       bookmarks,
