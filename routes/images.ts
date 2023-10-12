@@ -105,19 +105,14 @@ export class Functions {
       return // Image already has an error
     }
     try {
-      let sharp = Imports.Sharp(image.data, { animated: true })
-      const metadata = await sharp.metadata()
-      sharp = sharp.rotate()
-      if (metadata.pages === undefined || metadata.pages <= 1) {
-        // Resizing Animated gifs/webp not yet supported well :'(
-        sharp = sharp.resize({
+      image.data = await Imports.Sharp(image.data, { animated: true })
+        .rotate()
+        .resize({
           width: 1280,
           height: 720,
           fit: Sharp.fit.inside,
           withoutEnlargement: true
         })
-      }
-      image.data = await sharp
         .webp()
         .toBuffer()
       image.extension = 'webp'

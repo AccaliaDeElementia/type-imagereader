@@ -332,7 +332,6 @@ export class ImagesResizePreviewTests {
 @suite
 export class ImagesResizeKioskTests {
   SharpInstanceStub = {
-    metadata: sinon.stub().resolves({}),
     rotate: sinon.stub().returnsThis(),
     resize: sinon.stub().returnsThis(),
     webp: sinon.stub().returnsThis(),
@@ -371,14 +370,6 @@ export class ImagesResizeKioskTests {
   }
 
   @test
-  async 'it should retrieve metadata' () {
-    const img = new ImageData()
-    await Functions.ResizeKiosk(img)
-    expect(this.SharpInstanceStub.metadata.callCount).to.equal(1)
-    expect(this.SharpInstanceStub.metadata.firstCall.args).to.have.lengthOf(0)
-  }
-
-  @test
   async 'it should convert to webp' () {
     const img = new ImageData()
     img.extension = 'fake extension'
@@ -400,34 +391,6 @@ export class ImagesResizeKioskTests {
   }
 
   @test
-  async 'it should resize when metadata pages is missing' () {
-    this.SharpInstanceStub.metadata.resolves({})
-    await Functions.ResizeKiosk(new ImageData())
-    expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
-  }
-
-  @test
-  async 'it should resize when metadata pages is undefined' () {
-    this.SharpInstanceStub.metadata.resolves({ pages: undefined })
-    await Functions.ResizeKiosk(new ImageData())
-    expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
-  }
-
-  @test
-  async 'it should resize when metadata pages is zero' () {
-    this.SharpInstanceStub.metadata.resolves({ pages: 0 })
-    await Functions.ResizeKiosk(new ImageData())
-    expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
-  }
-
-  @test
-  async 'it should resize when metadata pages is one' () {
-    this.SharpInstanceStub.metadata.resolves({ pages: 1 })
-    await Functions.ResizeKiosk(new ImageData())
-    expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
-  }
-
-  @test
   async 'it should resize with expected parameters' () {
     await Functions.ResizeKiosk(new ImageData())
     expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
@@ -438,13 +401,6 @@ export class ImagesResizeKioskTests {
     expect(args.height).to.equal(720)
     expect(args.fit).to.equal(SharpType.fit.inside)
     expect(args.withoutEnlargement).to.equal(true)
-  }
-
-  @test
-  async 'it should not resize when metadata pages is over 1' () {
-    this.SharpInstanceStub.metadata.resolves({ pages: 2 })
-    await Functions.ResizeKiosk(new ImageData())
-    expect(this.SharpInstanceStub.resize.callCount).to.equal(0)
   }
 
   @test
