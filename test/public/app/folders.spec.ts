@@ -368,7 +368,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
       totalCount: 100,
       totalSeen: 0
     })
-    expect(result?.style.backgroundImage).to.equal('url(/images/preview/path/foo/cover.png)')
+    expect(result?.style.backgroundImage).to.equal('url(/images/preview/path/foo/cover.png-image.webp)')
   }
 
   @test

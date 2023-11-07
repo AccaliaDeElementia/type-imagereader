@@ -79,37 +79,16 @@ export class Functions {
     }
   }
 
-  public static async ResizePreview (image: ImageData): Promise<void> {
+  public static async RescaleImage (image: ImageData, width: number, height: number, animated: boolean = true): Promise<void> {
     if (image.code !== null) {
       return // Image already has an error
     }
     try {
-      image.data = await Imports.Sharp(image.data)
+      image.data = await Imports.Sharp(image.data, { animated })
         .rotate()
         .resize({
-          width: 240,
-          height: 320,
-          fit: Sharp.fit.inside,
-          withoutEnlargement: true
-        })
-        .png()
-        .toBuffer()
-      image.extension = 'png'
-    } catch (e) {
-      // Do nothing.... we tried
-    }
-  }
-
-  public static async ResizeKiosk (image: ImageData): Promise<void> {
-    if (image.code !== null) {
-      return // Image already has an error
-    }
-    try {
-      image.data = await Imports.Sharp(image.data, { animated: true })
-        .rotate()
-        .resize({
-          width: 1280,
-          height: 720,
+          width,
+          height,
           fit: Sharp.fit.inside,
           withoutEnlargement: true
         })
@@ -169,17 +148,24 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     await Functions.SendImage(image, res)
   }))
 
-  router.get('/preview/*', handleErrors(async (req, res) => {
+  router.get('/scaled/:x/:y/*-image.webp', handleErrors(async (req, res) => {
     const filename = `/${req.params[0] || ''}`
     const image = await Functions.ReadImage(filename)
-    await Functions.ResizePreview(image)
+    await Functions.RescaleImage(image, +(req.params.x || 0), +(req.params.y || 0))
     await Functions.SendImage(image, res)
   }))
 
-  router.get('/kiosk/*', handleErrors(async (req, res) => {
+  router.get('/preview/*-image.webp', handleErrors(async (req, res) => {
     const filename = `/${req.params[0] || ''}`
     const image = await Functions.ReadImage(filename)
-    await Functions.ResizeKiosk(image)
+    await Functions.RescaleImage(image, 240, 320, false)
+    await Functions.SendImage(image, res)
+  }))
+
+  router.get('/kiosk/*-image.webp', handleErrors(async (req, res) => {
+    const filename = `/${req.params[0] || ''}`
+    const image = await Functions.ReadImage(filename)
+    await Functions.RescaleImage(image, 1280, 720)
     await Functions.SendImage(image, res)
   }))
 

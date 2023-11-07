@@ -45,12 +45,12 @@ const doNewImage = (path: string): void => {
     }
     const img = document.querySelector('img.topImage')
     img?.classList.remove('hide')
-    img?.setAttribute('src', `/images/kiosk${path}`)
+    img?.setAttribute('src', `/images/kiosk${path}-image.webp`)
     return
   }
   for (const elem of document.querySelectorAll('img.mainImage')) {
     elem.classList.remove('hide')
-    elem.setAttribute('src', `/images/kiosk${path}`)
+    elem.setAttribute('src', `/images/kiosk${path}-image.webp`)
   }
 }
 

@@ -24,7 +24,7 @@ export class Folders {
     }
     if (folder.cover) {
       card.querySelector('i')?.remove()
-      card.style.backgroundImage = `url("/images/preview${folder.cover}")`
+      card.style.backgroundImage = `url("/images/preview${folder.cover}-image.webp")`
     }
     if (folder.totalSeen >= folder.totalCount) {
       card.classList.add('seen')

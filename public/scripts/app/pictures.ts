@@ -197,7 +197,7 @@ export class Pictures {
   public static MakePictureCard (picture: Picture): HTMLElement {
     const card = this.imageCard?.cloneNode(true) as HTMLElement
     picture.element = card
-    card.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}")`)
+    card.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
     if (picture.seen) {
       card.classList.add('seen')
     }
@@ -269,7 +269,8 @@ export class Pictures {
         Publish('Navigate:Reload')
         return
       }
-      this.mainImage?.setAttribute('src', '/images/full' + this.current.path)
+      // this.mainImage?.setAttribute('src', '/images/full' + this.current.path)
+      this.mainImage?.setAttribute('src', '/images/scaled/' + this.mainImage?.width + '/' + this.mainImage?.height + this.current.path + '-image.webp')
       const index = this.current.index || 0
       const displayTotal = this.pictures.length.toLocaleString()
       const displayIndex = (index + 1).toLocaleString()

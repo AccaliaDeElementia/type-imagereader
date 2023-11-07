@@ -1,6 +1,6 @@
 'use sanity'
 
-import { normalize, basename, dirname, sep } from 'path'
+import { normalize, basename, dirname, extname, sep } from 'path'
 
 import { Knex } from 'knex'
 
@@ -184,7 +184,7 @@ export class Functions {
       .orderBy('sortKey', 'path')
     ).map((pic, index) => {
       return {
-        name: basename(pic.path),
+        name: basename(pic.path, extname(pic.path)),
         path: UriSafePath.encode(pic.path),
         index,
         seen: !!pic.seen

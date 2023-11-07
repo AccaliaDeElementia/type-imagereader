@@ -106,7 +106,7 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'emits join-slideshow on connection with laoded path' (): Promise<void> {
     let connectedRoom: string | undefined
-    const expectedPath = `/${Math.random}`
+    const expectedPath = `/${Math.random()}`
     this.dom.reconfigure({
       url: 'http://127.0.0.1:2999/slideshow' + expectedPath
     })
@@ -176,7 +176,7 @@ export class SlideshowSocketsTests extends WebSockets {
     )
 
     for (const img of this.dom.window.document.querySelectorAll('img')) {
-      expect(img.getAttribute('src')).to.equal(`/images/kiosk${imagePath}`)
+      expect(img.getAttribute('src')).to.equal(`/images/kiosk${imagePath}-image.webp`)
     }
   }
 
@@ -199,7 +199,7 @@ export class SlideshowSocketsTests extends WebSockets {
       expect(img.getAttribute('src')).to.equal(null)
     }
     for (const img of this.dom.window.document.querySelectorAll('img.topImage')) {
-      expect(img.getAttribute('src')).to.equal(`/images/kiosk${imagePath}`)
+      expect(img.getAttribute('src')).to.equal(`/images/kiosk${imagePath}-image.webp`)
     }
   }
 
@@ -222,7 +222,7 @@ export class SlideshowSocketsTests extends WebSockets {
       expect(img.getAttribute('src')).to.equal(null)
     }
     for (const img of this.dom.window.document.querySelectorAll('img.topImage')) {
-      expect(img.getAttribute('src')).to.equal(`/images/kiosk${imagePath}`)
+      expect(img.getAttribute('src')).to.equal(`/images/kiosk${imagePath}-image.webp`)
     }
   }
 

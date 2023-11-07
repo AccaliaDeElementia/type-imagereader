@@ -219,118 +219,7 @@ export class ImagesReadImageTests {
 }
 
 @suite
-export class ImagesResizePreviewTests {
-  SharpInstanceStub = {
-    rotate: sinon.stub().returnsThis(),
-    resize: sinon.stub().returnsThis(),
-    png: sinon.stub().returnsThis(),
-    toBuffer: sinon.stub().resolves()
-  }
-
-  SharpStub?: Sinon.SinonStub
-
-  before () {
-    this.SharpStub = sinon.stub(Imports, 'Sharp').returns(this.SharpInstanceStub as unknown as Sharp)
-  }
-
-  after () {
-    this.SharpStub?.restore()
-  }
-
-  @test
-  async 'it should abort when error already detected' () {
-    const img = new ImageData()
-    img.code = 'FOO'
-    await Functions.ResizePreview(img)
-    expect(this.SharpStub?.callCount).to.equal(0)
-  }
-
-  @test
-  async 'it should parse Sharp data' () {
-    const data = Buffer.from(`{ image: ${Math.random()} }`)
-    const img = new ImageData()
-    img.data = data
-    await Functions.ResizePreview(img)
-    assert(this.SharpStub)
-    expect(this.SharpStub.callCount).to.equal(1)
-    expect(this.SharpStub.firstCall.args).to.have.lengthOf(1)
-    expect(this.SharpStub.firstCall.args[0]).to.equal(data)
-  }
-
-  @test
-  async 'it should apply metadata rotation' () {
-    const img = new ImageData()
-    await Functions.ResizePreview(img)
-    assert(this.SharpStub)
-    expect(this.SharpInstanceStub.rotate.callCount).to.equal(1)
-    expect(this.SharpInstanceStub.rotate.firstCall.args).to.have.lengthOf(0)
-    expect(this.SharpInstanceStub.rotate.calledAfter(this.SharpStub)).to.equal(true)
-  }
-
-  @test
-  async 'it should resize with excpected attributes' () {
-    const img = new ImageData()
-    await Functions.ResizePreview(img)
-    expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
-    expect(this.SharpInstanceStub.resize.firstCall.args).to.have.lengthOf(1)
-    expect(this.SharpInstanceStub.resize.firstCall.args[0]).to.have.all.keys('width', 'height', 'fit', 'withoutEnlargement')
-    expect(this.SharpInstanceStub.resize.calledAfter(this.SharpInstanceStub.rotate)).to.equal(true)
-  }
-
-  @test
-  async 'it should resize with excpected parameters' () {
-    const img = new ImageData()
-    await Functions.ResizePreview(img)
-    expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
-    const args = this.SharpInstanceStub.resize.firstCall.args[0]
-    assert(args)
-    expect(args.width).to.equal(240)
-    expect(args.height).to.equal(320)
-    expect(args.fit).to.equal(SharpType.fit.inside)
-    expect(args.withoutEnlargement).to.equal(true)
-  }
-
-  @test
-  async 'it should convert to png' () {
-    const img = new ImageData()
-    await Functions.ResizePreview(img)
-    expect(this.SharpInstanceStub.png.callCount).to.equal(1)
-    expect(this.SharpInstanceStub.png.firstCall.args).to.have.lengthOf(0)
-    expect(this.SharpInstanceStub.png.calledAfter(this.SharpInstanceStub.resize)).to.equal(true)
-  }
-
-  @test
-  async 'it should output as buffer' () {
-    const img = new ImageData()
-    await Functions.ResizePreview(img)
-    expect(this.SharpInstanceStub.toBuffer.callCount).to.equal(1)
-    expect(this.SharpInstanceStub.toBuffer.firstCall.args).to.have.lengthOf(0)
-    expect(this.SharpInstanceStub.toBuffer.calledAfter(this.SharpInstanceStub.png)).to.equal(true)
-  }
-
-  @test
-  async 'it should ignore error when sharp throws' () {
-    const img = new ImageData()
-    this.SharpStub?.throws(new Error('OOPS'))
-    await Functions.ResizePreview(img)
-    expect(img.code).to.equal(null)
-    expect(img.statusCode).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
-    expect(img.message).to.equal(null)
-  }
-
-  @test
-  async 'it should ignore error when sharp reejects' () {
-    const img = new ImageData()
-    this.SharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
-    await Functions.ResizePreview(img)
-    expect(img.code).to.equal(null)
-    expect(img.statusCode).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
-    expect(img.message).to.equal(null)
-  }
-}
-
-@suite
-export class ImagesResizeKioskTests {
+export class ImagesRescaleImageTests {
   SharpInstanceStub = {
     rotate: sinon.stub().returnsThis(),
     resize: sinon.stub().returnsThis(),
@@ -352,7 +241,7 @@ export class ImagesResizeKioskTests {
   async 'it should abort when error already detected' () {
     const img = new ImageData()
     img.code = 'FOO'
-    await Functions.ResizeKiosk(img)
+    await Functions.RescaleImage(img, 1280, 720)
     expect(this.SharpStub?.callCount).to.equal(0)
   }
 
@@ -361,7 +250,7 @@ export class ImagesResizeKioskTests {
     const data = Buffer.from(`{ image: ${Math.random()} }`)
     const img = new ImageData()
     img.data = data
-    await Functions.ResizeKiosk(img)
+    await Functions.RescaleImage(img, 1280, 720)
     assert(this.SharpStub)
     expect(this.SharpStub.callCount).to.equal(1)
     expect(this.SharpStub.firstCall.args).to.have.lengthOf(2)
@@ -370,10 +259,46 @@ export class ImagesResizeKioskTests {
   }
 
   @test
+  async 'it should default to handling animated images' () {
+    const data = Buffer.from(`{ image: ${Math.random()} }`)
+    const img = new ImageData()
+    img.data = data
+    await Functions.RescaleImage(img, 1280, 720)
+    assert(this.SharpStub)
+    expect(this.SharpStub.callCount).to.equal(1)
+    expect(this.SharpStub.firstCall.args).to.have.lengthOf(2)
+    expect(this.SharpStub.firstCall.args[1]).to.deep.equal({ animated: true })
+  }
+
+  @test
+  async 'it should request animated images explicitly' () {
+    const data = Buffer.from(`{ image: ${Math.random()} }`)
+    const img = new ImageData()
+    img.data = data
+    await Functions.RescaleImage(img, 1280, 720, true)
+    assert(this.SharpStub)
+    expect(this.SharpStub.callCount).to.equal(1)
+    expect(this.SharpStub.firstCall.args).to.have.lengthOf(2)
+    expect(this.SharpStub.firstCall.args[1]).to.deep.equal({ animated: true })
+  }
+
+  @test
+  async 'it should decline animated images explicitly' () {
+    const data = Buffer.from(`{ image: ${Math.random()} }`)
+    const img = new ImageData()
+    img.data = data
+    await Functions.RescaleImage(img, 1280, 720, false)
+    assert(this.SharpStub)
+    expect(this.SharpStub.callCount).to.equal(1)
+    expect(this.SharpStub.firstCall.args).to.have.lengthOf(2)
+    expect(this.SharpStub.firstCall.args[1]).to.deep.equal({ animated: false })
+  }
+
+  @test
   async 'it should convert to webp' () {
     const img = new ImageData()
     img.extension = 'fake extension'
-    await Functions.ResizeKiosk(img)
+    await Functions.RescaleImage(img, 1280, 720)
     expect(this.SharpInstanceStub.webp.callCount).to.equal(1)
     expect(this.SharpInstanceStub.webp.firstCall.args).to.have.lengthOf(0)
     expect(img.extension).to.equal('webp')
@@ -384,7 +309,7 @@ export class ImagesResizeKioskTests {
     const img = new ImageData()
     const data = Buffer.from(`{ image: ${Math.random()} }`)
     this.SharpInstanceStub.toBuffer.resolves(data)
-    await Functions.ResizeKiosk(img)
+    await Functions.RescaleImage(img, 1280, 720)
     expect(this.SharpInstanceStub.toBuffer.callCount).to.equal(1)
     expect(this.SharpInstanceStub.toBuffer.firstCall.args).to.have.lengthOf(0)
     expect(img.data).to.equal(data)
@@ -392,7 +317,7 @@ export class ImagesResizeKioskTests {
 
   @test
   async 'it should resize with expected parameters' () {
-    await Functions.ResizeKiosk(new ImageData())
+    await Functions.RescaleImage(new ImageData(), 1280, 720)
     expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
     expect(this.SharpInstanceStub.resize.firstCall.args).to.have.lengthOf(1)
     const args = this.SharpInstanceStub.resize.firstCall.args[0]
@@ -407,7 +332,7 @@ export class ImagesResizeKioskTests {
   async 'it ignore error when sharp throws' () {
     const img = new ImageData()
     this.SharpStub?.throws(new Error('OOPS'))
-    await Functions.ResizeKiosk(img)
+    await Functions.RescaleImage(img, 1280, 720)
     expect(img.code).to.equal(null)
     expect(img.statusCode).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
     expect(img.message).to.equal(null)
@@ -417,7 +342,7 @@ export class ImagesResizeKioskTests {
   async 'it should ignore sharp reejection' () {
     const img = new ImageData()
     this.SharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
-    await Functions.ResizeKiosk(img)
+    await Functions.RescaleImage(img, 1280, 720)
     expect(img.code).to.equal(null)
     expect(img.statusCode).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
     expect(img.message).to.equal(null)
@@ -523,7 +448,11 @@ export class ImagesGetRouterTests {
   }
 
   RequestStub = {
-    params: [] as string[],
+    params: {
+      0: '',
+      x: '',
+      y: ''
+    },
     body: '',
     originalUrl: ''
   }
@@ -538,16 +467,14 @@ export class ImagesGetRouterTests {
 
   RouterStub?: Sinon.SinonStub
   ReadImageStub?: Sinon.SinonStub
-  ResizePreviewStub?: Sinon.SinonStub
-  ResizeKioskStub?: Sinon.SinonStub
+  RescaleImageStub?: Sinon.SinonStub
   SendImageStub?: Sinon.SinonStub
 
   before () {
     this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
     this.RouterStub = sinon.stub(Imports, 'Router').returns(this.RouterFake as unknown as Router)
     this.ReadImageStub = sinon.stub(Functions, 'ReadImage').resolves()
-    this.ResizePreviewStub = sinon.stub(Functions, 'ResizePreview').resolves()
-    this.ResizeKioskStub = sinon.stub(Functions, 'ResizeKiosk').resolves()
+    this.RescaleImageStub = sinon.stub(Functions, 'RescaleImage').resolves()
     this.SendImageStub = sinon.stub(Functions, 'SendImage').resolves()
   }
 
@@ -555,8 +482,7 @@ export class ImagesGetRouterTests {
     this.DebugStub?.restore()
     this.RouterStub?.restore()
     this.ReadImageStub?.restore()
-    this.ResizePreviewStub?.restore()
-    this.ResizeKioskStub?.restore()
+    this.RescaleImageStub?.restore()
     this.SendImageStub?.restore()
   }
 
@@ -577,21 +503,33 @@ export class ImagesGetRouterTests {
   }
 
   @test
+  async 'it should register routes' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    expect(this.RouterFake.get.callCount).to.equal(4)
+  }
+
+  @test
   async 'it should register full image route' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/full/*')).to.equal(true)
   }
 
   @test
+  async 'it should register scaled image route' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    expect(this.RouterFake.get.calledWith('/scaled/:x/:y/*-image.webp')).to.equal(true)
+  }
+
+  @test
   async 'it should register preview image route' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    expect(this.RouterFake.get.calledWith('/preview/*')).to.equal(true)
+    expect(this.RouterFake.get.calledWith('/preview/*-image.webp')).to.equal(true)
   }
 
   @test
   async 'it should register kiosk image route' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    expect(this.RouterFake.get.calledWith('/kiosk/*')).to.equal(true)
+    expect(this.RouterFake.get.calledWith('/kiosk/*-image.webp')).to.equal(true)
   }
 
   @test
@@ -603,7 +541,7 @@ export class ImagesGetRouterTests {
     assert(fn)
     expect(fn).to.be.a('function')
 
-    this.RequestStub.params = ['foo/bar.png']
+    this.RequestStub.params[0] = 'foo/bar.png'
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
@@ -622,7 +560,7 @@ export class ImagesGetRouterTests {
     assert(fn)
     expect(fn).to.be.a('function')
 
-    this.RequestStub.params = []
+    this.RequestStub.params[0] = ''
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
@@ -649,8 +587,7 @@ export class ImagesGetRouterTests {
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
     expect(this.LoggerStub.callCount).to.equal(0)
-    expect(this.ResizeKioskStub?.callCount).to.equal(0)
-    expect(this.ResizePreviewStub?.callCount).to.equal(0)
+    expect(this.RescaleImageStub?.callCount).to.equal(0)
     expect(this.SendImageStub?.callCount).to.equal(1)
     expect(this.SendImageStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.SendImageStub?.firstCall.args[0]).to.equal(img)
@@ -673,8 +610,129 @@ export class ImagesGetRouterTests {
     this.RequestStub.body = 'REQUEST BODY'
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.ResizeKioskStub?.callCount).to.equal(0)
-    expect(this.ResizePreviewStub?.callCount).to.equal(0)
+    expect(this.RescaleImageStub?.callCount).to.equal(0)
+    expect(this.SendImageStub?.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([500])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'EINTERNALERROR',
+        message: 'Internal Server Error'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(2)
+    expect(this.LoggerStub.firstCall.args).to.deep.equal(['Error rendering: /full/image.png', 'REQUEST BODY'])
+    expect(this.LoggerStub.secondCall.args).to.have.lengthOf(1)
+    expect(this.LoggerStub.secondCall.args[0]).to.equal(err)
+  }
+
+  @test
+  async 'ScaledImage - it should get filename from full image request' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:x/:y/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    this.RequestStub.params[0] = 'foo/bar.png'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(this.ResponseStub.status.callCount).to.equal(0)
+    expect(this.ResponseStub.json.callCount).to.equal(0)
+    expect(this.LoggerStub.callCount).to.equal(0)
+    expect(this.ReadImageStub?.callCount).to.equal(1)
+    expect(this.ReadImageStub?.firstCall.args).to.deep.equal(['/foo/bar.png'])
+  }
+
+  @test
+  async 'ScaledImage - it should get default filename from full image request' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:x/:y/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    this.RequestStub.params[0] = ''
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(this.ResponseStub.status.callCount).to.equal(0)
+    expect(this.ResponseStub.json.callCount).to.equal(0)
+    expect(this.LoggerStub.callCount).to.equal(0)
+    expect(this.ReadImageStub?.callCount).to.equal(1)
+    expect(this.ReadImageStub?.firstCall.args).to.deep.equal(['/'])
+  }
+
+  @test
+  async 'ScaledImage - it should rescale image after reading' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:x/:y/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const img = new ImageData()
+    this.ReadImageStub?.resolves(img)
+
+    this.RequestStub.params.x = '1024'
+    this.RequestStub.params.y = '768'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(this.ResponseStub.status.callCount).to.equal(0)
+    expect(this.ResponseStub.json.callCount).to.equal(0)
+    expect(this.LoggerStub.callCount).to.equal(0)
+    expect(this.RescaleImageStub?.callCount).to.equal(1)
+    expect(this.RescaleImageStub?.callCount).to.equal(1)
+    expect(this.RescaleImageStub?.firstCall.args).to.have.lengthOf(3)
+    expect(this.RescaleImageStub?.firstCall.args[0]).to.equal(img)
+    expect(this.RescaleImageStub?.firstCall.args[1]).to.equal(1024)
+    expect(this.RescaleImageStub?.firstCall.args[2]).to.equal(768)
+  }
+
+  @test
+  async 'ScaledImage - it should send image after scaling' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:x/:y/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const img = new ImageData()
+    this.ReadImageStub?.resolves(img)
+
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(this.ResponseStub.status.callCount).to.equal(0)
+    expect(this.ResponseStub.json.callCount).to.equal(0)
+    expect(this.LoggerStub.callCount).to.equal(0)
+    expect(this.RescaleImageStub?.callCount).to.equal(1)
+    expect(this.SendImageStub?.callCount).to.equal(1)
+    expect(this.SendImageStub?.firstCall.args).to.have.lengthOf(2)
+    expect(this.SendImageStub?.firstCall.args[0]).to.equal(img)
+    expect(this.SendImageStub?.firstCall.args[1]).to.equal(this.ResponseStub)
+  }
+
+  @test
+  async 'ScaledImage - it should handle error' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/full/*')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const err = new Error('SOME ERROR')
+    this.ReadImageStub?.rejects(err)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.body = 'REQUEST BODY'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(this.RescaleImageStub?.callCount).to.equal(0)
     expect(this.SendImageStub?.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.deep.equal([500])
@@ -695,12 +753,12 @@ export class ImagesGetRouterTests {
   async 'PreviewImage - it should get filename from full image request' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/preview/*')
+      .filter(call => call.args[0] === '/preview/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
-    this.RequestStub.params = ['foo/bar.png']
+    this.RequestStub.params[0] = 'foo/bar.png'
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
@@ -714,12 +772,12 @@ export class ImagesGetRouterTests {
   async 'PreviewImage - it should get default filename from full image request' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/preview/*')
+      .filter(call => call.args[0] === '/preview/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
-    this.RequestStub.params = []
+    this.RequestStub.params[0] = ''
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(this.ReadImageStub?.callCount).to.equal(1)
@@ -730,9 +788,9 @@ export class ImagesGetRouterTests {
   async 'PreviewImage - it should get resize image for preview' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/preview/*')
+      .filter(call => call.args[0] === '/preview/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -740,19 +798,21 @@ export class ImagesGetRouterTests {
 
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.ResizeKioskStub?.callCount).to.equal(0)
-    expect(this.ResizePreviewStub?.callCount).to.equal(1)
-    expect(this.ResizePreviewStub?.firstCall.args).to.have.lengthOf(1)
-    expect(this.ResizePreviewStub?.firstCall.args[0]).to.equal(img)
+    expect(this.RescaleImageStub?.callCount).to.equal(1)
+    expect(this.RescaleImageStub?.firstCall.args).to.have.lengthOf(4)
+    expect(this.RescaleImageStub?.firstCall.args[0]).to.equal(img)
+    expect(this.RescaleImageStub?.firstCall.args[1]).to.equal(240)
+    expect(this.RescaleImageStub?.firstCall.args[2]).to.equal(320)
+    expect(this.RescaleImageStub?.firstCall.args[3]).to.equal(false)
   }
 
   @test
   async 'PreviewImage - it should get send image directly from reading' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/preview/*')
+      .filter(call => call.args[0] === '/preview/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -770,9 +830,9 @@ export class ImagesGetRouterTests {
   async 'PreviewImage - it should not reject on success' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/preview/*')
+      .filter(call => call.args[0] === '/preview/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -789,9 +849,9 @@ export class ImagesGetRouterTests {
   async 'PreviewImage - it should handle error' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/preview/*')
+      .filter(call => call.args[0] === '/preview/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const err = new Error('SOME ERROR')
@@ -801,8 +861,7 @@ export class ImagesGetRouterTests {
     this.RequestStub.body = 'REQUEST BODY'
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.ResizeKioskStub?.callCount).to.equal(0)
-    expect(this.ResizePreviewStub?.callCount).to.equal(0)
+    expect(this.RescaleImageStub?.callCount).to.equal(0)
     expect(this.SendImageStub?.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.deep.equal([500])
@@ -823,12 +882,12 @@ export class ImagesGetRouterTests {
   async 'KioskImage - it should get filename from kiosk image request' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/kiosk/*')
+      .filter(call => call.args[0] === '/kiosk/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
-    this.RequestStub.params = ['foo/bar.png']
+    this.RequestStub.params[0] = 'foo/bar.png'
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(this.ReadImageStub?.callCount).to.equal(1)
@@ -839,12 +898,12 @@ export class ImagesGetRouterTests {
   async 'KioskImage - it should get default filename from full image request' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/kiosk/*')
+      .filter(call => call.args[0] === '/kiosk/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
-    this.RequestStub.params = []
+    this.RequestStub.params[0] = ''
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(this.ReadImageStub?.callCount).to.equal(1)
@@ -855,9 +914,9 @@ export class ImagesGetRouterTests {
   async 'KioskImage - it should get resize image for kiosk image' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/kiosk/*')
+      .filter(call => call.args[0] === '/kiosk/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -865,18 +924,20 @@ export class ImagesGetRouterTests {
 
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.ResizeKioskStub?.callCount).to.equal(1)
-    expect(this.ResizeKioskStub?.firstCall.args).to.have.lengthOf(1)
-    expect(this.ResizeKioskStub?.firstCall.args[0]).to.equal(img)
+    expect(this.RescaleImageStub?.callCount).to.equal(1)
+    expect(this.RescaleImageStub?.firstCall.args).to.have.lengthOf(3)
+    expect(this.RescaleImageStub?.firstCall.args[0]).to.equal(img)
+    expect(this.RescaleImageStub?.firstCall.args[1]).to.equal(1280)
+    expect(this.RescaleImageStub?.firstCall.args[2]).to.equal(720)
   }
 
   @test
   async 'KioskImage - it should get send image' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/kiosk/*')
+      .filter(call => call.args[0] === '/kiosk/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -884,8 +945,7 @@ export class ImagesGetRouterTests {
 
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.ResizeKioskStub?.callCount).to.equal(1)
-    expect(this.ResizePreviewStub?.callCount).to.equal(0)
+    expect(this.RescaleImageStub?.callCount).to.equal(1)
     expect(this.SendImageStub?.callCount).to.equal(1)
     expect(this.SendImageStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.SendImageStub?.firstCall.args[0]).to.equal(img)
@@ -896,9 +956,9 @@ export class ImagesGetRouterTests {
   async 'KioskImage - it should not reject for non error' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/kiosk/*')
+      .filter(call => call.args[0] === '/kiosk/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -915,9 +975,9 @@ export class ImagesGetRouterTests {
   async 'KioskImage - it should handle error' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/kiosk/*')
+      .filter(call => call.args[0] === '/kiosk/*-image.webp')
       .map(call => call.args[1])[0]
-    assert(fn)
+    assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const err = new Error('SOME ERROR')
@@ -927,8 +987,7 @@ export class ImagesGetRouterTests {
     this.RequestStub.body = 'REQUEST BODY'
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.ResizeKioskStub?.callCount).to.equal(0)
-    expect(this.ResizePreviewStub?.callCount).to.equal(0)
+    expect(this.RescaleImageStub?.callCount).to.equal(0)
     expect(this.SendImageStub?.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.deep.equal([500])

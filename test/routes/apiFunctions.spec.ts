@@ -364,7 +364,7 @@ export class ApiGetChildPicturesTests {
     }
     this.KnexInstance.orderBy.resolves([data])
     const result = await Functions.GetPictures(this.KnexFake, '/foo/bar/')
-    expect(result[0]?.name).to.equal('baz.png')
+    expect(result[0]?.name).to.equal('baz')
   }
 
   @test
@@ -374,7 +374,7 @@ export class ApiGetChildPicturesTests {
     }
     this.KnexInstance.orderBy.resolves([data])
     const result = await Functions.GetPictures(this.KnexFake, '/foo/bar/')
-    expect(result[0]?.name).to.equal('<baz>.png')
+    expect(result[0]?.name).to.equal('<baz>')
   }
 
   @test

@@ -12,6 +12,7 @@ import { Publish, PubSub, Subscribe } from '../../../public/scripts/app/pubsub'
 import { NavigateTo, PageSelector, Picture, Pictures } from '../../../public/scripts/app/pictures'
 import { Loading } from '../../../public/scripts/app/loading'
 import { Navigation } from '../../../public/scripts/app/navigation'
+import assert from 'assert'
 
 const markup = `
 html
@@ -569,7 +570,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
     }
     const card = Pictures.MakePictureCard(pic)
     expect(card.getAttribute('data-backgroundImage'))
-      .to.equal(`url("/images/preview${pic.path}")`)
+      .to.equal(`url("/images/preview${pic.path}-image.webp")`)
   }
 
   @test
@@ -1065,7 +1066,25 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   async 'it should set src on image' () {
     expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
     await Pictures.LoadImage()
-    expect(TestPics.mainImage?.getAttribute('src')).to.equal('/images/full/some/path/1250.png')
+    expect(TestPics.mainImage?.getAttribute('src')).to.equal('/images/scaled/0/0/some/path/1250.png-image.webp')
+  }
+
+  @test
+  async 'it should set src height on image' () {
+    expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
+    assert(TestPics.mainImage)
+    TestPics.mainImage.height = 512
+    await Pictures.LoadImage()
+    expect(TestPics.mainImage?.getAttribute('src')).to.equal('/images/scaled/0/512/some/path/1250.png-image.webp')
+  }
+
+  @test
+  async 'it should set src width on image' () {
+    expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
+    assert(TestPics.mainImage)
+    TestPics.mainImage.width = 1024
+    await Pictures.LoadImage()
+    expect(TestPics.mainImage?.getAttribute('src')).to.equal('/images/scaled/1024/0/some/path/1250.png-image.webp')
   }
 
   @test
