@@ -320,6 +320,17 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
+  'it should set background image to bookmark in result card' () {
+    const result = Bookmarks.BuildBookmark({
+      name: '',
+      path: '/foo/bar.png',
+      folder: 'bar'
+    })
+    const style = result?.style.backgroundImage
+    expect(style).to.equal('url(/images/preview/foo/bar.png-image.webp)')
+  }
+
+  @test
   'it should strip leading folder path from title in result card' () {
     const result = Bookmarks.BuildBookmark({
       name: '',
