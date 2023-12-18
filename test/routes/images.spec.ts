@@ -11,10 +11,177 @@ import { Server } from 'http'
 import { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 
-import { getRouter, ImageData, Imports, Functions } from '../../routes/images'
+import { getRouter, ImageData, ImageCache, Imports, Functions, CacheStorage } from '../../routes/images'
 
 function assert (condition: unknown, msg?: string): asserts condition {
   if (!condition) throw new Error(msg || 'Assertion failure!')
+}
+
+@suite
+export class ImageCacheTests {
+  before () {
+    ImageCache.cacheSize = 5
+  }
+
+  @test
+  'it should save cache creator fn on construct' () {
+    const spy = sinon.stub().resolves('true')
+    const cache = new ImageCache(spy)
+    expect(cache.cacheFunction).to.equal(spy)
+  }
+
+  @test
+  'it should construct with empty item cache' () {
+    const spy = sinon.stub().resolves('true')
+    const cache = new ImageCache(spy)
+    expect(cache.items).to.have.lengthOf(0)
+  }
+
+  @test
+  'it should fetch existing item from cache' () {
+    const spy = sinon.stub().resolves('true')
+    const cache = new ImageCache(spy)
+    const expected = Promise.resolve(null)
+    cache.items[0] = {
+      path: '/foo.png',
+      width: 5,
+      height: 5,
+      image: expected as unknown as Promise<ImageData>
+    }
+    expect(cache.fetch('/foo.png', 5, 5)).to.equal(expected)
+  }
+
+  @test
+  'it should fetch existing item from cache when bigger' () {
+    const spy = sinon.stub().resolves('true')
+    const cache = new ImageCache(spy)
+    const expected = Promise.resolve(null)
+    cache.items[0] = {
+      path: '/foo.png',
+      width: 50,
+      height: 50,
+      image: expected as unknown as Promise<ImageData>
+    }
+    expect(cache.fetch('/foo.png', 5, 5)).to.equal(expected)
+  }
+
+  @test
+  'it should not create cache item when one is found' () {
+    const spy = sinon.stub().resolves('true')
+    const cache = new ImageCache(spy)
+    const expected = Promise.resolve(null)
+    cache.items[0] = {
+      path: '/foo.png',
+      width: 5,
+      height: 5,
+      image: expected as unknown as Promise<ImageData>
+    }
+    cache.fetch('/foo.png', 5, 5)
+    expect(spy.called).to.equal(false)
+  }
+
+  @test
+  'it should not create cache item when bigger one is found' () {
+    const spy = sinon.stub().resolves('true')
+    const cache = new ImageCache(spy)
+    const expected = Promise.resolve(null)
+    cache.items[0] = {
+      path: '/foo.png',
+      width: 50,
+      height: 50,
+      image: expected as unknown as Promise<ImageData>
+    }
+    cache.fetch('/foo.png', 5, 5)
+    expect(spy.called).to.equal(false)
+  }
+
+  @test
+  'it should refresh recency of item in cache' () {
+    const spy = sinon.stub().resolves('true')
+    const cache = new ImageCache(spy)
+    for (let i = 0; i < 10; i++) {
+      cache.items[i] = {
+        path: '/bar.png',
+        width: i,
+        height: i,
+        image: null as unknown as Promise<ImageData>
+      }
+    }
+    const expected = {
+      path: '/foo.png',
+      width: 5,
+      height: 5,
+      image: Promise.resolve(null) as unknown as Promise<ImageData>
+    }
+    cache.items[10] = expected
+    cache.fetch('/foo.png', 5, 5)
+    expect(cache.items[0]).to.equal(expected)
+    for (let i = 1; i <= 10; i++) {
+      expect(cache.items[i]?.width).to.equal(i - 1)
+    }
+  }
+
+  @test
+  'it should create new cache item when not found' () {
+    const expected = Promise.resolve(null)
+    const spy = sinon.stub().returns(expected)
+    const cache = new ImageCache(spy)
+    expect(cache.fetch('/foo.png', 5, 5)).to.equal(expected)
+    expect(spy.called).to.equal(true)
+  }
+
+  @test
+  'it should create cache item with expected parameters' () {
+    const path = '/foo.png' + Math.random()
+    const width = Math.random() * 1000
+    const height = Math.random() * 1000
+    const image = Promise.resolve(null)
+    const spy = sinon.stub().returns(image)
+    const cache = new ImageCache(spy)
+    cache.fetch(path, width, height)
+    expect(spy.callCount).to.equal(1)
+    expect(spy.firstCall.args).to.have.lengthOf(3)
+    expect(spy.firstCall.args).to.deep.equal(
+      [path, width, height]
+    )
+  }
+
+  @test
+  'it should insert new cache item at front' () {
+    const path = '/foo.png' + Math.random()
+    const width = Math.random() * 1000
+    const height = Math.random() * 1000
+    const image = Promise.resolve(null)
+    const spy = sinon.stub().returns(image)
+    const cache = new ImageCache(spy)
+    cache.fetch(path, width, height)
+    assert(cache.items[0])
+    expect(cache.items[0].path).to.equal(path)
+    expect(cache.items[0].width).to.equal(width)
+    expect(cache.items[0].height).to.equal(height)
+    expect(cache.items[0].image).to.equal(image)
+  }
+
+  @test
+  'it should prune excessive cache items when no cache item matches' () {
+    const spy = sinon.stub().resolves('true')
+    const cache = new ImageCache(spy)
+    ImageCache.cacheSize = 5
+    for (let i = 0; i < 10; i++) {
+      cache.items[i] = {
+        path: '/bar.png',
+        width: i,
+        height: i,
+        image: null as unknown as Promise<ImageData>
+      }
+    }
+    cache.fetch('/foo.png', 5, 5)
+    expect(cache.items).have.lengthOf(5)
+    for (let i = 1; i < 5; i++) {
+      expect(cache.items[i]?.height).to.equal(i - 1)
+      expect(cache.items[i]?.width).to.equal(i - 1)
+    }
+  }
 }
 
 @suite
@@ -350,6 +517,61 @@ export class ImagesRescaleImageTests {
 }
 
 @suite
+export class ImagesReadAndRescaleImageTests {
+  readImageStub = sinon.stub()
+  rescaleImageStub = sinon.stub()
+
+  before () {
+    this.readImageStub = sinon.stub(Functions, 'ReadImage').resolves()
+    this.rescaleImageStub = sinon.stub(Functions, 'RescaleImage').resolves()
+  }
+
+  after () {
+    this.rescaleImageStub.restore()
+    this.readImageStub.restore()
+  }
+
+  @test
+  async 'it should read image as requested' () {
+    await Functions.ReadAndRescaleImage('/foo.png', 999, 999)
+    expect(this.readImageStub.callCount).to.equal(1)
+    expect(this.readImageStub.firstCall.args).to.deep.equal(['/foo.png'])
+  }
+
+  @test
+  async 'it should rescale image as read' () {
+    const img = Math.random()
+    this.readImageStub.resolves(img)
+    const width = Math.random()
+    const height = Math.random()
+    await Functions.ReadAndRescaleImage('/foo.png', width, height, true)
+    expect(this.rescaleImageStub.callCount).to.equal(1)
+    expect(this.rescaleImageStub.firstCall.args).to.deep.equal([img, width, height, true])
+  }
+
+  @test
+  async 'it should default enable animated image support' () {
+    await Functions.ReadAndRescaleImage('/foo.png', 99, 99)
+    expect(this.rescaleImageStub.callCount).to.equal(1)
+    expect(this.rescaleImageStub.firstCall.args[3]).to.equal(true)
+  }
+
+  @test
+  async 'it should enable animated image support explicitly' () {
+    await Functions.ReadAndRescaleImage('/foo.png', 99, 99, true)
+    expect(this.rescaleImageStub.callCount).to.equal(1)
+    expect(this.rescaleImageStub.firstCall.args[3]).to.equal(true)
+  }
+
+  @test
+  async 'it should disable animated image support explicitly' () {
+    await Functions.ReadAndRescaleImage('/foo.png', 99, 99, false)
+    expect(this.rescaleImageStub.callCount).to.equal(1)
+    expect(this.rescaleImageStub.firstCall.args[3]).to.equal(false)
+  }
+}
+
+@suite
 export class ImagesSendImageTests {
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -438,6 +660,27 @@ export class ImagesSendImageTests {
 }
 
 @suite
+export class ImagesDefaultCacheStubTests {
+  @test
+  async 'default Kiosk Cache should report error' () {
+    const image = await CacheStorage.kioskCache.fetch('/foo.png', 1280, 800)
+    expect(image.code).to.equal('INTERNAL_SERVER_ERROR')
+    expect(image.statusCode).to.equal(500)
+    expect(image.message).to.equal('CACHE_NOT_INITIALIZED')
+    expect(image.path).to.equal('/foo.png')
+  }
+
+  @test
+  async 'default scaled Cache should report error' () {
+    const image = await CacheStorage.scaledCache.fetch('/foo.png', 1280, 800)
+    expect(image.code).to.equal('INTERNAL_SERVER_ERROR')
+    expect(image.statusCode).to.equal(500)
+    expect(image.message).to.equal('CACHE_NOT_INITIALIZED')
+    expect(image.path).to.equal('/foo.png')
+  }
+}
+
+@suite
 export class ImagesGetRouterTests {
   ApplicationFake = {} as unknown as Application
   ServerFake = {} as unknown as Server
@@ -450,8 +693,8 @@ export class ImagesGetRouterTests {
   RequestStub = {
     params: {
       0: '',
-      x: '',
-      y: ''
+      width: '1000',
+      height: '1000'
     },
     body: '',
     originalUrl: ''
@@ -503,6 +746,24 @@ export class ImagesGetRouterTests {
   }
 
   @test
+  async 'it should create kiosk image cache' () {
+    CacheStorage.kioskCache = null as unknown as ImageCache
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    assert(CacheStorage.kioskCache)
+    expect(CacheStorage.kioskCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
+    expect(CacheStorage.kioskCache.items).to.have.lengthOf(0)
+  }
+
+  @test
+  async 'it should create scaled image cache' () {
+    CacheStorage.scaledCache = null as unknown as ImageCache
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    assert(CacheStorage.scaledCache)
+    expect(CacheStorage.scaledCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
+    expect(CacheStorage.scaledCache.items).to.have.lengthOf(0)
+  }
+
+  @test
   async 'it should register routes' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.callCount).to.equal(4)
@@ -517,7 +778,7 @@ export class ImagesGetRouterTests {
   @test
   async 'it should register scaled image route' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    expect(this.RouterFake.get.calledWith('/scaled/:x/:y/*-image.webp')).to.equal(true)
+    expect(this.RouterFake.get.calledWith('/scaled/:width/:height/*-image.webp')).to.equal(true)
   }
 
   @test
@@ -631,10 +892,14 @@ export class ImagesGetRouterTests {
   async 'ScaledImage - it should get filename from full image request' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/scaled/:x/:y/*-image.webp')
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
       .map(call => call.args[1])[0]
     assert(fn)
     expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
 
     this.RequestStub.params[0] = 'foo/bar.png'
     await fn(this.RequestStub, this.ResponseStub)
@@ -642,18 +907,22 @@ export class ImagesGetRouterTests {
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
     expect(this.LoggerStub.callCount).to.equal(0)
-    expect(this.ReadImageStub?.callCount).to.equal(1)
-    expect(this.ReadImageStub?.firstCall.args).to.deep.equal(['/foo/bar.png'])
+    expect(spy.callCount).to.equal(1)
+    expect(spy.firstCall.args[0]).to.deep.equal('/foo/bar.png')
   }
 
   @test
   async 'ScaledImage - it should get default filename from full image request' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/scaled/:x/:y/*-image.webp')
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
       .map(call => call.args[1])[0]
     assert(fn)
     expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
 
     this.RequestStub.params[0] = ''
     await fn(this.RequestStub, this.ResponseStub)
@@ -661,55 +930,54 @@ export class ImagesGetRouterTests {
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
     expect(this.LoggerStub.callCount).to.equal(0)
-    expect(this.ReadImageStub?.callCount).to.equal(1)
-    expect(this.ReadImageStub?.firstCall.args).to.deep.equal(['/'])
+    expect(spy.callCount).to.equal(1)
+    expect(spy.firstCall.args[0]).to.deep.equal('/')
   }
 
   @test
   async 'ScaledImage - it should rescale image after reading' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/scaled/:x/:y/*-image.webp')
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
       .map(call => call.args[1])[0]
     assert(fn)
     expect(fn).to.be.a('function')
 
-    const img = new ImageData()
-    this.ReadImageStub?.resolves(img)
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
 
-    this.RequestStub.params.x = '1024'
-    this.RequestStub.params.y = '768'
+    this.RequestStub.params.width = '1024'
+    this.RequestStub.params.height = '768'
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
     expect(this.LoggerStub.callCount).to.equal(0)
-    expect(this.RescaleImageStub?.callCount).to.equal(1)
-    expect(this.RescaleImageStub?.callCount).to.equal(1)
-    expect(this.RescaleImageStub?.firstCall.args).to.have.lengthOf(3)
-    expect(this.RescaleImageStub?.firstCall.args[0]).to.equal(img)
-    expect(this.RescaleImageStub?.firstCall.args[1]).to.equal(1024)
-    expect(this.RescaleImageStub?.firstCall.args[2]).to.equal(768)
+    expect(spy.callCount).to.equal(1)
+    expect(spy.firstCall.args).to.have.lengthOf(3)
+    expect(spy.firstCall.args[1]).to.equal(1024)
+    expect(spy.firstCall.args[2]).to.equal(768)
   }
 
   @test
   async 'ScaledImage - it should send image after scaling' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/scaled/:x/:y/*-image.webp')
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
       .map(call => call.args[1])[0]
     assert(fn)
     expect(fn).to.be.a('function')
 
-    const img = new ImageData()
-    this.ReadImageStub?.resolves(img)
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
 
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
     expect(this.LoggerStub.callCount).to.equal(0)
-    expect(this.RescaleImageStub?.callCount).to.equal(1)
     expect(this.SendImageStub?.callCount).to.equal(1)
     expect(this.SendImageStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.SendImageStub?.firstCall.args[0]).to.equal(img)
@@ -717,16 +985,437 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it should handle error' () {
+  async 'ScaledImage - it reject missing width parameter' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/full/*')
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
       .map(call => call.args[1])[0]
     assert(fn)
     expect(fn).to.be.a('function')
 
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.width = undefined as unknown as string
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'width parameter must be provided'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject empty width parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.width = ''
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'width parameter must be provided'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject non-number width parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.width = 'fish'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'width parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject decimal width parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.width = '3.14159'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'width parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject negative width parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.width = '-100'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'width parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject zero width parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.width = '0'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'width parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject zero prefixed width parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.width = '0999'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'width parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject missing height parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.height = undefined as unknown as string
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'height parameter must be provided'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject empty height parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.height = ''
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'height parameter must be provided'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject non-number height parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.height = 'fish'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'height parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject decimal height parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.height = '3.14159'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'height parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject negative height parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.height = '-100'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'height parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject zero height parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.height = '0'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'height parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it reject zero prefixed height parameter' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
+    this.RequestStub.originalUrl = '/full/image.png'
+    this.RequestStub.params.height = '0999'
+    await fn(this.RequestStub, this.ResponseStub)
+
+    expect(spy.callCount).to.equal(0)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
+      error: {
+        code: 'E_BAD_REQUEST',
+        message: 'height parameter must be positive integer'
+      }
+    }])
+    expect(this.LoggerStub.callCount).to.equal(0)
+  }
+
+  @test
+  async 'ScaledImage - it should handle error' () {
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    const fn = this.RouterFake.get.getCalls()
+      .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+
+    const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
     const err = new Error('SOME ERROR')
-    this.ReadImageStub?.rejects(err)
+    spy.rejects(err)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.body = 'REQUEST BODY'
@@ -887,11 +1576,18 @@ export class ImagesGetRouterTests {
     assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
+    const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
     this.RequestStub.params[0] = 'foo/bar.png'
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.ReadImageStub?.callCount).to.equal(1)
-    expect(this.ReadImageStub?.firstCall.args).to.deep.equal(['/foo/bar.png'])
+    expect(this.ResponseStub.status.callCount).to.equal(0)
+    expect(this.ResponseStub.json.callCount).to.equal(0)
+    expect(this.LoggerStub.callCount).to.equal(0)
+    expect(spy.callCount).to.equal(1)
+    expect(spy.firstCall.args[0]).to.equal('/foo/bar.png')
   }
 
   @test
@@ -903,15 +1599,19 @@ export class ImagesGetRouterTests {
     assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
+    const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
+
     this.RequestStub.params[0] = ''
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.ReadImageStub?.callCount).to.equal(1)
-    expect(this.ReadImageStub?.firstCall.args).to.deep.equal(['/'])
+    expect(spy.callCount).to.equal(1)
+    expect(spy.firstCall.args[0]).to.deep.equal('/')
   }
 
   @test
-  async 'KioskImage - it should get resize image for kiosk image' () {
+  async 'KioskImage - it should resize image to static size for kiosk image' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
@@ -919,16 +1619,16 @@ export class ImagesGetRouterTests {
     assert(fn, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
-    const img = new ImageData()
-    this.ReadImageStub?.resolves(img)
+    const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
+    const img = { image: Math.random() } as unknown as ImageData
+    spy.resolves(img)
 
     await fn(this.RequestStub, this.ResponseStub)
 
-    expect(this.RescaleImageStub?.callCount).to.equal(1)
-    expect(this.RescaleImageStub?.firstCall.args).to.have.lengthOf(3)
-    expect(this.RescaleImageStub?.firstCall.args[0]).to.equal(img)
-    expect(this.RescaleImageStub?.firstCall.args[1]).to.equal(1280)
-    expect(this.RescaleImageStub?.firstCall.args[2]).to.equal(720)
+    expect(spy.callCount).to.equal(1)
+    expect(spy.firstCall.args).to.have.lengthOf(3)
+    expect(spy.firstCall.args[1]).to.equal(1280)
+    expect(spy.firstCall.args[2]).to.equal(720)
   }
 
   @test
