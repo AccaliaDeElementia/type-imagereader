@@ -41,12 +41,16 @@ export class Pictures {
   protected static mainImage: HTMLImageElement | null
   protected static imageCard: Element | null
   protected static pageSize: number = 32
+  protected static nextLoader: Promise<void> = Promise.resolve()
+  protected static nextPending: boolean = true
 
   protected static initialScale: number = -1
 
   public static Init () {
     this.pictures = []
     this.current = null
+    this.nextLoader = Promise.resolve()
+    this.nextPending = true
 
     this.ResetMarkup()
 
@@ -260,7 +264,9 @@ export class Pictures {
 
   public static async LoadImage (): Promise<void> {
     if (!this.current) return
-    Publish('Loading:Show')
+    if (this.nextPending) {
+      Publish('Loading:Show')
+    }
     try {
       this.current.seen = true
       this.current.element?.classList.add('seen')
@@ -269,8 +275,10 @@ export class Pictures {
         Publish('Navigate:Reload')
         return
       }
+      const makeURI = (img: Picture): string => '/images/scaled/' + this.mainImage?.width + '/' + this.mainImage?.height + img.path + '-image.webp'
+      await this.nextLoader
       // this.mainImage?.setAttribute('src', '/images/full' + this.current.path)
-      this.mainImage?.setAttribute('src', '/images/scaled/' + this.mainImage?.width + '/' + this.mainImage?.height + this.current.path + '-image.webp')
+      this.mainImage?.setAttribute('src', makeURI(this.current))
       const index = this.current.index || 0
       const displayTotal = this.pictures.length.toLocaleString()
       const displayIndex = (index + 1).toLocaleString()
@@ -282,6 +290,18 @@ export class Pictures {
       document.querySelector('.statusBar.bottom .right')
         ?.replaceChildren(document.createTextNode(`(${displayPercent}%)`))
       this.SelectPage(this.current.page || 1)
+      const next = this.GetPicture(this.ShowUnreadOnly ? NavigateTo.NextUnread : NavigateTo.Next)
+      if (!next) {
+        this.nextPending = false
+        this.nextLoader = Promise.resolve()
+      } else {
+        this.nextPending = true
+        this.nextLoader = fetch(makeURI(next)).then(() => {
+          this.nextPending = false
+        }, () => {
+          this.nextPending = false
+        })
+      }
     } catch (err) {
       Publish('Loading:Error', err)
     }
@@ -323,7 +343,7 @@ export class Pictures {
     this.LoadImage()
   }
 
-  protected static GetPicture (navi: NavigateTo): Picture | undefined {
+  public static GetPicture (navi: NavigateTo): Picture | undefined {
     let index = -1
     let idx: number | undefined
     const current = this.current?.index

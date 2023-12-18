@@ -55,6 +55,10 @@ interface TestVisualViewport {
   scale: number
 }
 
+const Delay = (ms: number = 10): Promise<void> => new Promise((resolve) => {
+  setTimeout(resolve, ms)
+})
+
 class TestPics extends Pictures {
   public static get pictures (): Picture[] {
     return Pictures.pictures
@@ -100,6 +104,22 @@ class TestPics extends Pictures {
     Pictures.modCount = value
   }
 
+  public static get nextPending (): boolean {
+    return Pictures.nextPending
+  }
+
+  public static set nextPending (value: boolean) {
+    Pictures.nextPending = value
+  }
+
+  public static get nextLoader (): Promise<void> {
+    return Pictures.nextLoader
+  }
+
+  public static set nextLoader (value: Promise<void>) {
+    Pictures.nextLoader = value
+  }
+
   public static Reset () {
     Pictures.pictures = []
     Pictures.current = null
@@ -107,6 +127,8 @@ class TestPics extends Pictures {
     Pictures.mainImage = null
     Pictures.pageSize = 32
     Pictures.modCount = -1
+    Pictures.nextPending = true
+    Pictures.nextLoader = Promise.resolve()
   }
 
   public static ResetMarkup () {
@@ -979,8 +1001,10 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   element: HTMLElement | null = null
   postJSONSpy: Sinon.SinonStub = sinon.stub()
   selectPageSpy: Sinon.SinonStub = sinon.stub()
+  getPictureSpy: sinon.SinonStub = sinon.stub()
   loadingShowSpy: Sinon.SinonStub = sinon.stub()
   loadingErrorSpy: Sinon.SinonStub = sinon.stub()
+  fetchStub: sinon.SinonStub = sinon.stub()
   bottomLeftText: HTMLElement | null = null
   bottomCenterText: HTMLElement | null = null
   bottomRightText: HTMLElement | null = null
@@ -1008,6 +1032,8 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
     this.current.index = 1250
     this.postJSONSpy = sinon.stub(Net, 'PostJSON')
     this.postJSONSpy.resolves(50)
+    this.fetchStub = sinon.stub(global, 'fetch').resolves()
+    this.getPictureSpy = sinon.stub(Pictures, 'GetPicture').returns(undefined)
     this.selectPageSpy = sinon.stub(Pictures, 'SelectPage')
     Subscribe('Loading:Show', this.loadingShowSpy)
     Subscribe('Loading:Error', this.loadingErrorSpy)
@@ -1020,6 +1046,8 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   after (): void {
     this.postJSONSpy.restore()
     this.selectPageSpy.restore()
+    this.getPictureSpy.restore()
+    this.fetchStub.restore()
     super.after()
   }
 
@@ -1031,9 +1059,28 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   }
 
   @test
-  async 'it should publish Loading:Show' () {
+  async 'it should not await next loader when image is null' () {
+    TestPics.current = null
+    let awaited = false
+    TestPics.nextLoader = Delay(10).then(() => {
+      awaited = true
+    })
+    await Pictures.LoadImage()
+    expect(awaited).to.equal(false)
+  }
+
+  @test
+  async 'it should publish Loading:Show when next is pending' () {
+    TestPics.nextPending = true
     await Pictures.LoadImage()
     expect(this.loadingShowSpy.called).to.equal(true)
+  }
+
+  @test
+  async 'it should not publish Loading:Show when next is not pending' () {
+    TestPics.nextPending = false
+    await Pictures.LoadImage()
+    expect(this.loadingShowSpy.called).to.equal(false)
   }
 
   @test
@@ -1060,6 +1107,16 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
       path: '/some/path/1250.png',
       modCount: 50
     })
+  }
+
+  @test
+  async 'it should await next loader when loading image' () {
+    let awaited = false
+    TestPics.nextLoader = Delay(10).then(() => {
+      awaited = true
+    })
+    await Pictures.LoadImage()
+    expect(awaited).to.equal(true)
   }
 
   @test
@@ -1163,6 +1220,28 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   }
 
   @test
+  async 'it should not await next loader navigate returns undefined modcount' () {
+    this.postJSONSpy.resolves()
+    let awaited = false
+    TestPics.nextLoader = Delay(10).then(() => {
+      awaited = true
+    })
+    await Pictures.LoadImage()
+    expect(awaited).to.equal(false)
+  }
+
+  @test
+  async 'it should not await next loader navigate returns negative modcount' () {
+    this.postJSONSpy.resolves(-1)
+    let awaited = false
+    TestPics.nextLoader = Delay(10).then(() => {
+      awaited = true
+    })
+    await Pictures.LoadImage()
+    expect(awaited).to.equal(false)
+  }
+
+  @test
   async 'it should not reload when navigate replies with positive modcount' () {
     this.postJSONSpy.resolves(42)
     const spy = sinon.stub()
@@ -1186,6 +1265,78 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
       modCount: expected
     })
     expect(spy.called).to.equal(false)
+  }
+
+  @test
+  async 'it should get next picture when ShowUnreadOnly is not set' () {
+    TestPics.ShowUnreadOnly = false
+    await Pictures.LoadImage()
+    expect(this.getPictureSpy.callCount).to.equal(1)
+    expect(this.getPictureSpy.firstCall.args).to.deep.equal([NavigateTo.Next])
+  }
+
+  @test
+  async 'it should get next unread picture when ShowUnreadOnly is set' () {
+    TestPics.ShowUnreadOnly = true
+    await Pictures.LoadImage()
+    expect(this.getPictureSpy.callCount).to.equal(1)
+    expect(this.getPictureSpy.firstCall.args).to.deep.equal([NavigateTo.NextUnread])
+  }
+
+  @test
+  async 'it should not set next pending to false when there is no next image' () {
+    TestPics.nextPending = true
+    this.getPictureSpy.resolves(undefined)
+    await Pictures.LoadImage()
+    expect(TestPics.nextPending).to.equal(false)
+  }
+
+  @test
+  async 'it should request expected next URI' () {
+    TestPics.nextPending = false
+    this.getPictureSpy.returns({ path: '/foo.png' })
+    assert(TestPics.mainImage)
+    TestPics.mainImage.width = 1000
+    TestPics.mainImage.height = 900
+    await Pictures.LoadImage()
+    expect(this.fetchStub.callCount).to.equal(1)
+    expect(this.fetchStub.firstCall.args).to.have.lengthOf(1)
+    expect(this.fetchStub.firstCall.args[0]).to.equal('/images/scaled/1000/900/foo.png-image.webp')
+  }
+
+  @test
+  async 'it should set next pending to false when there is next image' () {
+    TestPics.nextPending = false
+    this.getPictureSpy.resolves({ path: 'foo.png' })
+    const delay = Delay(1)
+    this.fetchStub.resolves(delay)
+    await Pictures.LoadImage()
+    expect(TestPics.nextPending).to.equal(true)
+    await delay
+  }
+
+  @test
+  async 'it should clear next pending when next fetch resolves' () {
+    TestPics.nextPending = false
+    this.getPictureSpy.resolves({ path: 'foo.png' })
+    const delay = Delay(1)
+    this.fetchStub.resolves(delay)
+    await Pictures.LoadImage()
+    expect(TestPics.nextPending).to.equal(true)
+    await delay
+    expect(TestPics.nextPending).to.equal(false)
+  }
+
+  @test
+  async 'it should clear next pending when next fetch rejects' () {
+    TestPics.nextPending = false
+    this.getPictureSpy.resolves({ path: 'foo.png' })
+    const delay = Delay(1).then(() => Promise.reject(new Error('WAARIO!')))
+    this.fetchStub.resolves(delay)
+    await Pictures.LoadImage()
+    expect(TestPics.nextPending).to.equal(true)
+    await delay.catch(() => {})
+    expect(TestPics.nextPending).to.equal(false)
   }
 }
 
