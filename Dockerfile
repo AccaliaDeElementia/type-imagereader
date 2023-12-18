@@ -13,11 +13,6 @@ RUN mkdir /data \
   chown -R node:node /app \
   && \
   chown -R node:node /data
-#  TODO do i need this for webp anymore?
-#  && \
-#  apt-get update \
-#  && \
-#  apt-get install -y webp
 
 USER node
 RUN /usr/local/bin/npm install
