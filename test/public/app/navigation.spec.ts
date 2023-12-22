@@ -849,45 +849,16 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'it should subscribe to "Action:Gamepad:Y"' () {
+  'it should subscribe to "Action:Execute:FirstUnfinished"' () {
     Navigation.Init()
-    expect(PubSub.subscribers).to.have.any.keys('ACTION:GAMEPAD:Y')
-    expect(PubSub.subscribers['ACTION:GAMEPAD:Y']).to.have.length(1)
+    expect(PubSub.subscribers).to.have.any.keys('ACTION:EXECUTE:FIRSTUNFINISHED')
+    expect(PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']).to.have.length(1)
   }
 
   @test
-  'Action:Gamepad:Y handler should NavigateTo parentFolder' () {
+  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished' () {
     Navigation.Init()
-    const handler = PubSub.subscribers['ACTION:GAMEPAD:Y']?.pop()
-    assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.parent = '/foo/bar/baz'
-    handler(undefined)
-    expect(this.NavigateToStub.callCount).to.equal(1)
-    expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'ParentFolder')).to.equal(true)
-  }
-
-  @test
-  'Action:Gamepad:Y handler should NavigateTo undefined parentFolder when node missing' () {
-    Navigation.Init()
-    const handler = PubSub.subscribers['ACTION:GAMEPAD:Y']?.pop()
-    assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.parent = undefined
-    handler(undefined)
-    expect(this.NavigateToStub.callCount).to.equal(1)
-    expect(this.NavigateToStub.calledWith(undefined, 'ParentFolder')).to.equal(true)
-  }
-
-  @test
-  'it should subscribe to "Action:Gamepad:A"' () {
-    Navigation.Init()
-    expect(PubSub.subscribers).to.have.any.keys('ACTION:GAMEPAD:A')
-    expect(PubSub.subscribers['ACTION:GAMEPAD:A']).to.have.length(1)
-  }
-
-  @test
-  'Action:Gamepad:A handler should NavigateTo First Unfinished' () {
-    Navigation.Init()
-    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     TestNavigation.current.children = [
       {
@@ -908,9 +879,9 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Gamepad:A handler should NavigateTo First Unfinished with some finished' () {
+  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with some finished' () {
     Navigation.Init()
-    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     TestNavigation.current.children = [
       {
@@ -931,9 +902,9 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Gamepad:A handler should NavigateTo First Unfinished with all finished' () {
+  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with all finished' () {
     Navigation.Init()
-    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     TestNavigation.current.children = [
       {
@@ -954,9 +925,9 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Gamepad:A handler should NavigateTo First Unfinished with no children' () {
+  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with no children' () {
     Navigation.Init()
-    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     TestNavigation.current.children = []
     handler(undefined)
@@ -965,9 +936,9 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Gamepad:A handler should NavigateTo First Unfinished with undefined children' () {
+  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with undefined children' () {
     Navigation.Init()
-    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
+    const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     TestNavigation.current.children = undefined
     handler(undefined)
@@ -1280,6 +1251,24 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
+  'it should subscribe to "Action:Keypress:<Ctrl>ArrowDown"' () {
+    Navigation.Init()
+    expect(PubSub.subscribers).to.have.any.keys('ACTION:KEYPRESS:<CTRL>ARROWDOWN')
+    expect(PubSub.subscribers['ACTION:KEYPRESS:<CTRL>ARROWDOWN']).to.have.length(1)
+  }
+
+  @test
+  'Action:Keypress:<Ctrl>ArrowDown shoud publish Action:Execute:FirstUnfinished' () {
+    Navigation.Init()
+    const spy = sinon.stub()
+    PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED'] = [spy]
+    const handler = PubSub.subscribers['ACTION:KEYPRESS:<CTRL>ARROWDOWN']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    handler(undefined)
+    expect(spy.callCount).to.equal(1)
+  }
+
+  @test
   'it should subscribe to "Action:Keypress:<Ctrl>ArrowLeft"' () {
     Navigation.Init()
     expect(PubSub.subscribers).to.have.any.keys('ACTION:KEYPRESS:<CTRL>ARROWLEFT')
@@ -1346,6 +1335,42 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const spy = sinon.stub()
     PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER'] = [spy]
     const handler = PubSub.subscribers['ACTION:GAMEPAD:UP']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    handler(undefined)
+    expect(spy.callCount).to.equal(1)
+  }
+
+  @test
+  'it should subscribe to "Action:GamePad:Y"' () {
+    Navigation.Init()
+    expect(PubSub.subscribers).to.have.any.keys('ACTION:GAMEPAD:Y')
+    expect(PubSub.subscribers['ACTION:GAMEPAD:Y']).to.have.length(1)
+  }
+
+  @test
+  'Action:GamePad:Y shoud publish Action:Execute:ParentFolder' () {
+    Navigation.Init()
+    const spy = sinon.stub()
+    PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER'] = [spy]
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:Y']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    handler(undefined)
+    expect(spy.callCount).to.equal(1)
+  }
+
+  @test
+  'it should subscribe to "Action:GamePad:A"' () {
+    Navigation.Init()
+    expect(PubSub.subscribers).to.have.any.keys('ACTION:GAMEPAD:A')
+    expect(PubSub.subscribers['ACTION:GAMEPAD:A']).to.have.length(1)
+  }
+
+  @test
+  'Action:GamePad:A shoud publish Action:Execute:FirstUnfinished' () {
+    Navigation.Init()
+    const spy = sinon.stub()
+    PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED'] = [spy]
+    const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     handler(undefined)
     expect(spy.callCount).to.equal(1)

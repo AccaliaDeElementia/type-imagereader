@@ -112,8 +112,7 @@ export class Navigation {
       this.NavigateTo(next?.path, 'NextFolder')
     })
     Subscribe('Action:Execute:ParentFolder', () => this.NavigateTo(this.current.parent, 'ParentFolder'))
-    Subscribe('Action:Gamepad:Y', () => this.NavigateTo(this.current.parent, 'ParentFolder'))
-    Subscribe('Action:Gamepad:A', () => {
+    Subscribe('Action:Execute:FirstUnfinished', () => {
       const target = this.current.children?.filter(child => child.totalSeen < child.totalCount)[0]
       this.NavigateTo(target?.path, 'FirstUnfinished')
     })
@@ -138,10 +137,13 @@ export class Navigation {
     })
 
     Subscribe('Action:Keypress:<Ctrl>ArrowUp', () => Publish('Action:Execute:ParentFolder'))
+    Subscribe('Action:Keypress:<Ctrl>ArrowDown', () => Publish('Action:Execute:FirstUnfinished'))
     Subscribe('Action:Keypress:<Ctrl>ArrowLeft', () => Publish('Action:Execute:PreviousFolder'))
     Subscribe('Action:Keypress:<Ctrl>ArrowRight', () => Publish('Action:Execute:NextFolder'))
     Subscribe('Action:Gamepad:Down', () => Publish('Action:Execute:PreviousFolder'))
     Subscribe('Action:Gamepad:Up', () => Publish('Action:Execute:NextFolder'))
+    Subscribe('Action:Gamepad:Y', () => Publish('Action:Execute:ParentFolder'))
+    Subscribe('Action:Gamepad:A', () => Publish('Action:Execute:FirstUnfinished'))
   }
 
   public static async LoadData (noHistory: boolean = false): Promise<void> {
