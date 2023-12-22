@@ -56,13 +56,26 @@ const doNewImage = (path: string): void => {
 
 export class WebSockets {
   protected static socket: WebSocket
-  public static LocationAssign?: (url: string|URL) => void
+  protected static launchId: unknown = undefined
+  public static LocationAssign?: (url: string | URL) => void
+  public static LocationReload?: () => void
   static connect (): void {
+    WebSockets.launchId = undefined
     WebSockets.LocationAssign = window.location.assign
+    WebSockets.LocationReload = window.location.reload
     this.socket = io(new URL(window.location.href).origin)
     const room = decodeURI(window.location.pathname.replace(/^\/[^/]+/, '') || '/')
     this.socket.on('connect', () => {
       this.socket.emit('join-slideshow', room)
+      this.socket.emit('get-launchId', (launchId: unknown) => {
+        if (WebSockets.launchId === undefined) {
+          WebSockets.launchId = launchId
+        } else if (launchId !== WebSockets.launchId) {
+          WebSockets.launchId = launchId
+          WebSockets.LocationReload?.call(window.location)
+        }
+        this.socket.emit('notify-done')
+      })
     })
     this.socket.on('new-image', (path: string) => {
       doNewImage(path)

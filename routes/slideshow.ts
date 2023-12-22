@@ -28,6 +28,7 @@ export class Config {
   public static rooms: {[name: string]: SlideshowRoom} = {}
   public static countdownDuration = 60
   public static memorySize = 100
+  public static launchId = -1
 }
 
 export class Imports {
@@ -117,6 +118,8 @@ export class Functions {
 
   public static HandleSocket (knex: Knex, io: WebSocketServer, socket: Socket): void {
     let socketRoom : (string | null) = null
+
+    socket.on('get-launchId', (callback) => callback(Config.launchId))
     socket.on('join-slideshow', async (roomName: string) => {
       socketRoom = roomName
       socket.join(roomName)
@@ -153,6 +156,10 @@ export class Functions {
 export async function getRouter (_: Application, __: Server, io: WebSocketServer) {
   const router = Imports.Router()
   const knex = await persistance.initialize()
+
+  Config.launchId = Date.now()
+
+  router.get('/launchId', (_, res) => res.json({ launchId: Config.launchId }))
 
   const rootRoute = async (req: Request, res: Response) => {
     const folder = '/' + (req.params[0] || '')

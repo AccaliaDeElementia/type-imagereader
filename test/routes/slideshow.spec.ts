@@ -594,7 +594,30 @@ export class SlideshowHandleSocketTests {
   @test
   'it should register four event listeners' () {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
-    expect(this.SocketStub.on.callCount).to.equal(4)
+    expect(this.SocketStub.on.callCount).to.equal(5)
+  }
+
+  @test
+  'it should register `get-launchId` event listeners' () {
+    Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
+    expect(this.SocketStub.on.calledWith('get-launchId')).to.equal(true)
+  }
+
+  @test
+  async 'on(get-launchId) it should reply with current launchId' () {
+    Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
+    const fn = this.SocketStub.on.getCalls()
+      .filter(call => call.args[0] === 'get-launchId')
+      .map(call => call.args[1])[0]
+    assert(fn)
+    expect(fn).to.be.a('function')
+    const expected = Math.random() * 1000000
+    Config.launchId = expected
+    const spy = sinon.stub()
+    await fn(spy)
+    expect(spy.callCount).to.equal(1)
+    expect(spy.firstCall.args).to.have.lengthOf(1)
+    expect(spy.firstCall.args[0]).to.equal(expected)
   }
 
   @test
@@ -905,7 +928,8 @@ export class SlideshowGetRouterTests {
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
-    render: sinon.stub().returnsThis()
+    render: sinon.stub().returnsThis(),
+    json: sinon.stub().returnsThis()
   }
 
   RouterStub?: Sinon.SinonStub
@@ -934,9 +958,44 @@ export class SlideshowGetRouterTests {
   }
 
   @test
+  async 'it should set launch Id' () {
+    const expected = Math.ceil(Math.random() * 1e10)
+    const clock = sinon.useFakeTimers(expected)
+    try {
+      await getRouter(this.AppFake, this.ServerFake, this.IoFake)
+      expect(Config.launchId).to.equal(expected)
+    } finally {
+      clock.restore()
+    }
+  }
+
+  @test
   async 'it should resolve to router' () {
     const router = await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(router).to.equal(this.AppRouterStub)
+  }
+
+  @test
+  async 'it should listen to route /launchId' () {
+    await getRouter(this.AppFake, this.ServerFake, this.IoFake)
+    expect(this.AppRouterStub.get.calledWith('/launchId')).to.equal(true)
+  }
+
+  @test
+  async 'it should reply to /launchId with the launch id' () {
+    const expected = Math.random()
+    await getRouter(this.AppFake, this.ServerFake, this.IoFake)
+    const handler = this.AppRouterStub.get.getCalls()
+      .filter(call => call.args[0] === '/launchId')
+      .map(call => call.args[1])[0]
+    Config.launchId = expected
+    assert(handler)
+    await handler(this.RequestStub, this.ResponseStub)
+    expect(this.ResponseStub.status.callCount).to.equal(0)
+    expect(this.ResponseStub.render.callCount).to.equal(0)
+    expect(this.ResponseStub.json.callCount).to.equal(1)
+    expect(this.ResponseStub.json.firstCall.args).to.have.lengthOf(1)
+    expect(this.ResponseStub.json.firstCall.args[0]).to.deep.equal({ launchId: expected })
   }
 
   @test

@@ -78,6 +78,39 @@ export class SlideshowSocketsTests extends WebSockets {
   }
 
   @test
+  async 'it should reset launchId' () {
+    WebSockets.launchId = 8472
+    await this.connectSocket(socket =>
+      new Promise<void>(resolve => {
+        socket.on('join-slideshow', () => resolve())
+      })
+    )
+    expect(WebSockets.launchId).to.equal(undefined)
+  }
+
+  @test
+  async 'it should reset LocationAssign' () {
+    WebSockets.LocationAssign = undefined
+    await this.connectSocket(socket =>
+      new Promise<void>(resolve => {
+        socket.on('join-slideshow', () => resolve())
+      })
+    )
+    expect(WebSockets.LocationAssign).to.equal(this.dom.window.location.assign)
+  }
+
+  @test
+  async 'it should reset LocationReload' () {
+    WebSockets.LocationReload = undefined
+    await this.connectSocket(socket =>
+      new Promise<void>(resolve => {
+        socket.on('join-slideshow', () => resolve())
+      })
+    )
+    expect(WebSockets.LocationReload).to.equal(this.dom.window.location.reload)
+  }
+
+  @test
   async 'emits join-slideshow on connection' (): Promise<void> {
     await this.connectSocket(socket =>
       new Promise<void>(resolve => {
@@ -119,6 +152,70 @@ export class SlideshowSocketsTests extends WebSockets {
       })
     )
     expect(connectedRoom).to.equal(expectedPath)
+  }
+
+  @test
+  async 'emits get-launchId on connection' (): Promise<void> {
+    const spy = sinon.stub()
+    await this.connectSocket(socket =>
+      new Promise<void>(resolve => {
+        socket.on('get-launchId', () => {
+          spy()
+          resolve()
+        })
+      })
+    )
+    expect(spy.callCount).to.equal(1)
+  }
+
+  @test
+  async 'get-launchId sets launch Id when starting' (): Promise<void> {
+    await this.connectSocket(socket =>
+      new Promise<void>(resolve => {
+        WebSockets.launchId = undefined
+        socket.on('get-launchId', (fn) => fn(3))
+        socket.on('notify-done', () => resolve())
+      })
+    )
+    expect(WebSockets.launchId).to.equal(3)
+  }
+
+  @test
+  async 'get-launchId no-ops when launchId matches' (): Promise<void> {
+    let spy: Sinon.SinonStub | undefined
+    try {
+      await this.connectSocket(socket =>
+        new Promise<void>(resolve => {
+          WebSockets.launchId = 7
+          spy = sinon.stub(WebSockets, 'LocationReload')
+          socket.on('get-launchId', (fn) => fn(7))
+          socket.on('notify-done', () => resolve())
+        })
+      )
+      expect(WebSockets.launchId).to.equal(7)
+      expect(spy?.callCount).to.equal(0)
+    } finally {
+      spy?.restore()
+    }
+  }
+
+  @test
+  async 'get-launchId reloads page when launchId mismatches' (): Promise<void> {
+    let spy: Sinon.SinonStub | undefined
+    try {
+      await this.connectSocket(socket =>
+        new Promise<void>(resolve => {
+          WebSockets.launchId = 7
+          spy = sinon.stub(WebSockets, 'LocationReload')
+          socket.on('get-launchId', (fn) => fn(42))
+          socket.on('notify-done', () => resolve())
+        })
+      )
+      expect(WebSockets.launchId).to.equal(42)
+      expect(spy?.callCount).to.equal(1)
+    } finally {
+      spy?.restore()
+    }
   }
 
   @test
