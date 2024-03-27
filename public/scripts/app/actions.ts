@@ -208,7 +208,7 @@ export class Actions {
       }
       if (Yaxis < -0.5 && this.lastStatus.Yaxis >= -0.5) {
         Publish('Action:Gamepad:Up')
-      } else if (Yaxis > 0 && this.lastStatus.Yaxis <= 0.5) {
+      } else if (Yaxis > 0.5 && this.lastStatus.Yaxis <= 0.5) {
         Publish('Action:Gamepad:Down')
       }
       if (A && !this.lastStatus.A) {

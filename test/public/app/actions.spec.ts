@@ -296,6 +296,22 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
+  'it should not publish Action:Gamepad:Left for tiny left activation of gamepad' () {
+    this.testGamePad.axes = [-0.0001]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Xaxis).to.equal(-0.0001)
+  }
+
+  @test
+  'it should not publish Action:Gamepad:Left for moderate but not enough left activation of gamepad' () {
+    this.testGamePad.axes = [-0.4999]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Xaxis).to.equal(-0.4999)
+  }
+
+  @test
   'it should publish Action:Gamepad:Left for minimumleft activation of gamepad' () {
     this.testGamePad.axes = [-0.500000001]
     Actions.ReadGamepad()
@@ -329,6 +345,22 @@ export class AppActionsReadGamepad extends BaseActionsTests {
     expect(this.actionGamepadListener.callCount).to.equal(1)
     expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:RIGHT')).to.equal(true)
     expect(TestActions.lastStatus.Xaxis).to.equal(1)
+  }
+
+  @test
+  'it should not publish Action:Gamepad:Right for tiny right activation of gamepad' () {
+    this.testGamePad.axes = [0.0001]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Xaxis).to.equal(0.0001)
+  }
+
+  @test
+  'it should not publish Action:Gamepad:Right for motderate but not enough right activation of gamepad' () {
+    this.testGamePad.axes = [0.4999]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Xaxis).to.equal(0.4999)
   }
 
   @test
@@ -368,6 +400,22 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
+  'it should not publish Action:Gamepad:Up for tiny up activation of gamepad' () {
+    this.testGamePad.axes = [0, -0.0001]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Yaxis).to.equal(-0.0001)
+  }
+
+  @test
+  'it should not publish Action:Gamepad:Up for moderate but not enough up activation of gamepad' () {
+    this.testGamePad.axes = [0, -0.4999]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Yaxis).to.equal(-0.4999)
+  }
+
+  @test
   'it should publish Action:Gamepad:Up for minimum up activation of gamepad' () {
     this.testGamePad.axes = [0, -0.500000001]
     Actions.ReadGamepad()
@@ -401,6 +449,22 @@ export class AppActionsReadGamepad extends BaseActionsTests {
     expect(this.actionGamepadListener.callCount).to.equal(1)
     expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:DOWN')).to.equal(true)
     expect(TestActions.lastStatus.Yaxis).to.equal(1)
+  }
+
+  @test
+  'it should not publish Action:Gamepad:Down for tiny down activation of gamepad' () {
+    this.testGamePad.axes = [0.0001]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Xaxis).to.equal(0.0001)
+  }
+
+  @test
+  'it should not publish Action:Gamepad:Down for moderate but not enough down activation of gamepad' () {
+    this.testGamePad.axes = [0.4999]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Xaxis).to.equal(0.4999)
   }
 
   @test
