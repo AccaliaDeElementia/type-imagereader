@@ -25,12 +25,16 @@ html
           h5 placeholder
 `
 type GamePadStatus = {
-  Xaxis: number,
-  Yaxis: number,
-  A: boolean,
-  B: boolean,
-  X: boolean,
-  Y: boolean
+    A: boolean
+    B: boolean
+    X: boolean
+    Y: boolean
+    L: boolean
+    R: boolean
+    Left: boolean
+    Right: boolean
+    Up: boolean
+    Down: boolean
 }
 
 class TestActions extends Actions {
@@ -236,6 +240,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
 
   getTestGamepads: sinon.SinonStub = sinon.stub()
   actionGamepadListener: sinon.SinonStub = sinon.stub()
+  documentHidden = false
 
   before () {
     super.before()
@@ -243,13 +248,21 @@ export class AppActionsReadGamepad extends BaseActionsTests {
     global.navigator = this.dom.window.navigator
     this.getTestGamepads = sinon.stub()
     this.dom.window.navigator.getGamepads = this.getTestGamepads
+    Object.defineProperty(this.dom.window.document, 'hidden', {
+      configurable: true,
+      get: () => this.documentHidden
+    })
     this.getTestGamepads.returns([this.testGamePad])
-    TestActions.lastStatus.Xaxis = 0
-    TestActions.lastStatus.Yaxis = 0
+    TestActions.lastStatus.Left = false
+    TestActions.lastStatus.Right = false
+    TestActions.lastStatus.Up = false
+    TestActions.lastStatus.Down = false
     TestActions.lastStatus.A = false
     TestActions.lastStatus.B = false
     TestActions.lastStatus.X = false
     TestActions.lastStatus.Y = false
+    TestActions.lastStatus.L = false
+    TestActions.lastStatus.R = false
     this.actionGamepadListener = sinon.stub()
     PubSub.Subscribe('Action:Gamepad', this.actionGamepadListener)
   }
@@ -287,315 +300,318 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should publish Action:Gamepad:Left for left activation of gamepad' () {
+  'it should not flag Left for left activation of gamepad on hidden page' () {
+    this.documentHidden = true
     this.testGamePad.axes = [-1]
     Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:LEFT')).to.equal(true)
-    expect(TestActions.lastStatus.Xaxis).to.equal(-1)
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Left).to.equal(false)
   }
 
   @test
-  'it should not publish Action:Gamepad:Left for tiny left activation of gamepad' () {
+  'it should flag Left for left activation of gamepad' () {
+    this.testGamePad.axes = [-1]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Left).to.equal(true)
+  }
+
+  @test
+  'it should not flag Left for tiny left activation of gamepad' () {
     this.testGamePad.axes = [-0.0001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(TestActions.lastStatus.Xaxis).to.equal(-0.0001)
+    expect(TestActions.lastStatus.Left).to.equal(false)
   }
 
   @test
-  'it should not publish Action:Gamepad:Left for moderate but not enough left activation of gamepad' () {
+  'it should not flag Left for moderate but not enough left activation of gamepad' () {
     this.testGamePad.axes = [-0.4999]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(TestActions.lastStatus.Xaxis).to.equal(-0.4999)
+    expect(TestActions.lastStatus.Left).to.equal(false)
   }
 
   @test
-  'it should publish Action:Gamepad:Left for minimumleft activation of gamepad' () {
+  'it should flag Left for minimumleft activation of gamepad' () {
     this.testGamePad.axes = [-0.500000001]
     Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:LEFT')).to.equal(true)
-    expect(TestActions.lastStatus.Xaxis).to.equal(-0.500000001)
-  }
-
-  @test
-  'it should debounce left activation of gamepad' () {
-    TestActions.lastStatus.Xaxis = -1
-    this.testGamePad.axes = [-1]
-    Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:LEFT')).to.equal(false)
+    expect(TestActions.lastStatus.Left).to.equal(true)
   }
 
   @test
-  'it should fuzzy debounce left activation of gamepad' () {
-    TestActions.lastStatus.Xaxis = -1
-    this.testGamePad.axes = [-0.500001]
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:LEFT')).to.equal(false)
-  }
-
-  @test
-  'it should publish Action:Gamepad:Right for right activation of gamepad' () {
+  'it should flag Right for right activation of gamepad' () {
     this.testGamePad.axes = [1]
     Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:RIGHT')).to.equal(true)
-    expect(TestActions.lastStatus.Xaxis).to.equal(1)
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Right).to.equal(true)
   }
 
   @test
-  'it should not publish Action:Gamepad:Right for tiny right activation of gamepad' () {
+  'it should not flag Right for tiny right activation of gamepad' () {
     this.testGamePad.axes = [0.0001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(TestActions.lastStatus.Xaxis).to.equal(0.0001)
+    expect(TestActions.lastStatus.Right).to.equal(false)
   }
 
   @test
-  'it should not publish Action:Gamepad:Right for motderate but not enough right activation of gamepad' () {
+  'it should not flag Right for moderate but not enough right activation of gamepad' () {
     this.testGamePad.axes = [0.4999]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(TestActions.lastStatus.Xaxis).to.equal(0.4999)
+    expect(TestActions.lastStatus.Right).to.equal(false)
   }
 
   @test
-  'it should publish Action:Gamepad:Right for minimum right activation of gamepad' () {
+  'it should flag Right for minimum right activation of gamepad' () {
     this.testGamePad.axes = [0.500000001]
     Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:RIGHT')).to.equal(true)
-    expect(TestActions.lastStatus.Xaxis).to.equal(0.500000001)
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Right).to.equal(true)
   }
 
   @test
-  'it should debounce right activation of gamepad' () {
-    TestActions.lastStatus.Xaxis = 1
-    this.testGamePad.axes = [1]
+  'it should flag Down for down activation of gamepad' () {
+    this.testGamePad.axes = [0, 1]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:RIGHT')).to.equal(false)
+    expect(TestActions.lastStatus.Down).to.equal(true)
   }
 
   @test
-  'it should fuzzy debounce right activation of gamepad' () {
-    TestActions.lastStatus.Xaxis = 1
-    this.testGamePad.axes = [0.50001]
+  'it should not flag Down for tiny down activation of gamepad' () {
+    this.testGamePad.axes = [0, 0.0001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:RIGHT')).to.equal(false)
+    expect(TestActions.lastStatus.Down).to.equal(false)
   }
 
   @test
-  'it should publish Action:Gamepad:Up for up activation of gamepad' () {
+  'it should not flag Down for moderate but not enough down activation of gamepad' () {
+    this.testGamePad.axes = [0, 0.4999]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Down).to.equal(false)
+  }
+
+  @test
+  'it should flag Down for minimum down activation of gamepad' () {
+    this.testGamePad.axes = [0, 0.500000001]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Down).to.equal(true)
+  }
+
+  @test
+  'it should flag Up for up activation of gamepad' () {
     this.testGamePad.axes = [0, -1]
     Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:UP')).to.equal(true)
-    expect(TestActions.lastStatus.Yaxis).to.equal(-1)
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Up).to.equal(true)
   }
 
   @test
-  'it should not publish Action:Gamepad:Up for tiny up activation of gamepad' () {
+  'it should not flag Up for tiny up activation of gamepad' () {
     this.testGamePad.axes = [0, -0.0001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(TestActions.lastStatus.Yaxis).to.equal(-0.0001)
+    expect(TestActions.lastStatus.Up).to.equal(false)
   }
 
   @test
-  'it should not publish Action:Gamepad:Up for moderate but not enough up activation of gamepad' () {
+  'it should not flag Up for moderate but not enough up activation of gamepad' () {
     this.testGamePad.axes = [0, -0.4999]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(TestActions.lastStatus.Yaxis).to.equal(-0.4999)
+    expect(TestActions.lastStatus.Up).to.equal(false)
   }
 
   @test
-  'it should publish Action:Gamepad:Up for minimum up activation of gamepad' () {
+  'it should flag Up for minimum up activation of gamepad' () {
     this.testGamePad.axes = [0, -0.500000001]
     Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:UP')).to.equal(true)
-    expect(TestActions.lastStatus.Yaxis).to.equal(-0.500000001)
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Up).to.equal(true)
   }
 
   @test
-  'it should debounce up activation of gamepad' () {
-    TestActions.lastStatus.Yaxis = -1
-    this.testGamePad.axes = [0, -1]
+  'it should not flag button for button activation of gamepad on hidden page' () {
+    this.documentHidden = true
+    this.testGamePad.buttons[1] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:UP')).to.equal(false)
+    expect(TestActions.lastStatus.A).to.equal(false)
   }
 
   @test
-  'it should fuzzy debounce up activation of gamepad' () {
-    TestActions.lastStatus.Yaxis = -1
-    this.testGamePad.axes = [0, -0.50001]
+  'it should flag A button for button activation of gamepad' () {
+    this.testGamePad.buttons[1] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:UP')).to.equal(false)
-  }
-
-  @test
-  'it should publish Action:Gamepad:Down for down activation of gamepad' () {
-    this.testGamePad.axes = [0, 1]
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:DOWN')).to.equal(true)
-    expect(TestActions.lastStatus.Yaxis).to.equal(1)
-  }
-
-  @test
-  'it should not publish Action:Gamepad:Down for tiny down activation of gamepad' () {
-    this.testGamePad.axes = [0.0001]
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(TestActions.lastStatus.Xaxis).to.equal(0.0001)
-  }
-
-  @test
-  'it should not publish Action:Gamepad:Down for moderate but not enough down activation of gamepad' () {
-    this.testGamePad.axes = [0.4999]
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(TestActions.lastStatus.Xaxis).to.equal(0.4999)
-  }
-
-  @test
-  'it should publish Action:Gamepad:Down for minimumleft activation of gamepad' () {
-    this.testGamePad.axes = [0, 0.500000001]
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:DOWN')).to.equal(true)
-    expect(TestActions.lastStatus.Yaxis).to.equal(0.500000001)
-  }
-
-  @test
-  'it should debounce down activation of gamepad' () {
-    TestActions.lastStatus.Yaxis = 1
-    this.testGamePad.axes = [0, 1]
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:DOWN')).to.equal(false)
-  }
-
-  @test
-  'it should fuzzy debounce down activation of gamepad' () {
-    TestActions.lastStatus.Yaxis = 1
-    this.testGamePad.axes = [0, 0.50001]
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:DOWN')).to.equal(false)
-  }
-
-  @test
-  'it should publish Action:Gamepad:A for A button' () {
-    this.testGamePad.buttons[1] = {
-      pressed: true,
-      touched: false,
-      value: 1
-    }
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:A')).to.equal(true)
     expect(TestActions.lastStatus.A).to.equal(true)
   }
 
   @test
-  'it should debounce A button' () {
-    TestActions.lastStatus.A = true
-    this.testGamePad.buttons[1] = {
-      pressed: true,
-      touched: false,
-      value: 1
-    }
+  'it should flag B button for button activation of gamepad' () {
+    this.testGamePad.buttons[0] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:A')).to.equal(false)
-  }
-
-  @test
-  'it should publish Action:Gamepad:B for B button' () {
-    this.testGamePad.buttons[0] = {
-      pressed: true,
-      touched: false,
-      value: 1
-    }
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:B')).to.equal(true)
     expect(TestActions.lastStatus.B).to.equal(true)
   }
 
   @test
-  'it should debounce B button' () {
-    TestActions.lastStatus.B = true
-    this.testGamePad.buttons[0] = {
-      pressed: true,
-      touched: false,
-      value: 1
-    }
+  'it should flag X button for button activation of gamepad' () {
+    this.testGamePad.buttons[3] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:B')).to.equal(false)
-  }
-
-  @test
-  'it should publish Action:Gamepad:X for X button' () {
-    this.testGamePad.buttons[3] = {
-      pressed: true,
-      touched: false,
-      value: 1
-    }
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:X')).to.equal(true)
     expect(TestActions.lastStatus.X).to.equal(true)
   }
 
   @test
-  'it should debounce X button' () {
-    TestActions.lastStatus.A = true
-    this.testGamePad.buttons[1] = {
-      pressed: true,
-      touched: false,
-      value: 1
-    }
+  'it should flag Y button for button activation of gamepad' () {
+    this.testGamePad.buttons[2] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:X')).to.equal(false)
-  }
-
-  @test
-  'it should publish Action:Gamepad:Y for Y button' () {
-    this.testGamePad.buttons[2] = {
-      pressed: true,
-      touched: false,
-      value: 1
-    }
-    Actions.ReadGamepad()
-    expect(this.actionGamepadListener.callCount).to.equal(1)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:Y')).to.equal(true)
     expect(TestActions.lastStatus.Y).to.equal(true)
   }
 
   @test
-  'it should debounce Y button' () {
-    TestActions.lastStatus.A = true
-    this.testGamePad.buttons[1] = {
-      pressed: true,
-      touched: false,
-      value: 1
-    }
+  'it should flag L button for button activation of gamepad' () {
+    this.testGamePad.buttons[4] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
-    expect(this.actionGamepadListener.calledWith(undefined, 'ACTION:GAMEPAD:Y')).to.equal(false)
+    expect(TestActions.lastStatus.L).to.equal(true)
+  }
+
+  @test
+  'it should flag R button for button activation of gamepad' () {
+    this.testGamePad.buttons[5] = { pressed: true, value: 1, touched: true }
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.R).to.equal(true)
+  }
+
+  @test
+  'it should flag multiple buttons for multiple button activation of gamepad' () {
+    this.testGamePad.buttons[5] = { pressed: true, value: 1, touched: true }
+    this.testGamePad.buttons[2] = { pressed: true, value: 1, touched: true }
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.R).to.equal(true)
+    expect(TestActions.lastStatus.Y).to.equal(true)
+  }
+
+  @test
+  'it should not send game pad action on null controller input when no flags set' () {
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+  }
+
+  @test
+  'it should clear Right flag on null controller input when no flags set' () {
+    TestActions.lastStatus.Right = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.Right).to.equal(false)
+  }
+
+  @test
+  'it should clear Left flag on null controller input when no flags set' () {
+    TestActions.lastStatus.Left = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.Right).to.equal(false)
+  }
+
+  @test
+  'it should clear Up flag on null controller input when no flags set' () {
+    TestActions.lastStatus.Up = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.Up).to.equal(false)
+  }
+
+  @test
+  'it should clear Down flag on null controller input when no flags set' () {
+    TestActions.lastStatus.Down = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.Down).to.equal(false)
+  }
+
+  @test
+  'it should clear A flag on null controller input when no flags set' () {
+    TestActions.lastStatus.A = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.A).to.equal(false)
+  }
+
+  @test
+  'it should clear B flag on null controller input when no flags set' () {
+    TestActions.lastStatus.B = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.B).to.equal(false)
+  }
+
+  @test
+  'it should clear X flag on null controller input when no flags set' () {
+    TestActions.lastStatus.X = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.X).to.equal(false)
+  }
+
+  @test
+  'it should clear Y flag on null controller input when no flags set' () {
+    TestActions.lastStatus.Y = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.Y).to.equal(false)
+  }
+
+  @test
+  'it should clear L flag on null controller input when no flags set' () {
+    TestActions.lastStatus.L = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.L).to.equal(false)
+  }
+
+  @test
+  'it should clear R flag on null controller input when no flags set' () {
+    TestActions.lastStatus.R = true
+    Actions.ReadGamepad()
+    expect(TestActions.lastStatus.R).to.equal(false)
+  }
+
+  @test
+  'it should send single button pad action on null controller input when one flag set' () {
+    TestActions.lastStatus.Left = true
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(1)
+    expect(this.actionGamepadListener.lastCall.args[0]).to.equal(undefined)
+    expect(this.actionGamepadListener.lastCall.args[1]).to.equal('ACTION:GAMEPAD:LEFT')
+    TestActions.lastStatus.Left = false
+    TestActions.lastStatus.L = true
+    this.actionGamepadListener.resetHistory()
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(1)
+    expect(this.actionGamepadListener.lastCall.args[0]).to.equal(undefined)
+    expect(this.actionGamepadListener.lastCall.args[1]).to.equal('ACTION:GAMEPAD:L')
+  }
+
+  @test
+  'it should not send button pad action on null controller input when document hidden' () {
+    this.documentHidden = true
+    TestActions.lastStatus.Left = true
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+  }
+
+  @test
+  'it should send multiple button pad action on null controller input when many flag set' () {
+    TestActions.lastStatus.Left = true
+    TestActions.lastStatus.A = true
+    this.actionGamepadListener.resetHistory()
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(1)
+    expect(this.actionGamepadListener.lastCall.args[0]).to.equal(undefined)
+    expect(this.actionGamepadListener.lastCall.args[1]).to.equal('ACTION:GAMEPAD:ALEFT')
   }
 }
 

@@ -184,46 +184,63 @@ export class Actions {
   }
 
   protected static lastStatus = {
-    Xaxis: 0,
-    Yaxis: 0,
     A: false,
     B: false,
     X: false,
-    Y: false
+    Y: false,
+    L: false,
+    R: false,
+    Left: false,
+    Right: false,
+    Up: false,
+    Down: false
   }
 
   public static ReadGamepad (): void {
+    if (document.hidden) return
     for (const pad of navigator.getGamepads() || []) {
       if (!pad) continue
       const Xaxis = pad.axes[0] || 0
       const Yaxis = pad.axes[1] || 0
-      const A = pad.buttons[1]?.pressed || false
-      const B = pad.buttons[0]?.pressed || false
-      const X = pad.buttons[3]?.pressed || false
-      const Y = pad.buttons[2]?.pressed || false
-      if (Xaxis < -0.5 && this.lastStatus.Xaxis >= -0.5) {
-        Publish('Action:Gamepad:Left')
-      } else if (Xaxis > 0.5 && this.lastStatus.Xaxis <= 0.5) {
-        Publish('Action:Gamepad:Right')
+      const status = {
+        A: pad.buttons[1]?.pressed || false,
+        B: pad.buttons[0]?.pressed || false,
+        X: pad.buttons[3]?.pressed || false,
+        Y: pad.buttons[2]?.pressed || false,
+        L: pad.buttons[4]?.pressed || false,
+        R: pad.buttons[5]?.pressed || false,
+        Left: Xaxis < -0.5,
+        Right: Xaxis > 0.5,
+        Up: Yaxis < -0.5,
+        Down: Yaxis > 0.5
       }
-      if (Yaxis < -0.5 && this.lastStatus.Yaxis >= -0.5) {
-        Publish('Action:Gamepad:Up')
-      } else if (Yaxis > 0.5 && this.lastStatus.Yaxis <= 0.5) {
-        Publish('Action:Gamepad:Down')
+      const pressing = Object.values(status).reduce((a, b) => a || b, false)
+      const pressed = Object.values(this.lastStatus).reduce((a, b) => a || b, false)
+      if (pressing) {
+        this.lastStatus.A ||= status.A
+        this.lastStatus.B ||= status.B
+        this.lastStatus.X ||= status.X
+        this.lastStatus.Y ||= status.Y
+        this.lastStatus.L ||= status.L
+        this.lastStatus.R ||= status.R
+        this.lastStatus.Left ||= status.Left
+        this.lastStatus.Right ||= status.Right
+        this.lastStatus.Up ||= status.Up
+        this.lastStatus.Down ||= status.Down
+      } else if (pressed) {
+        const buttons = Object.entries(this.lastStatus).filter(([_, val]) => val).map(([key, _]) => key).join('')
+        this.lastStatus.A = false
+        this.lastStatus.B = false
+        this.lastStatus.X = false
+        this.lastStatus.Y = false
+        this.lastStatus.L = false
+        this.lastStatus.R = false
+        this.lastStatus.Left = false
+        this.lastStatus.Right = false
+        this.lastStatus.Up = false
+        this.lastStatus.Down = false
+        Publish(`Action:Gamepad:${buttons}`)
       }
-      if (A && !this.lastStatus.A) {
-        Publish('Action:Gamepad:A')
-      }
-      if (B && !this.lastStatus.B) {
-        Publish('Action:Gamepad:B')
-      }
-      if (X && !this.lastStatus.X) {
-        Publish('Action:Gamepad:X')
-      }
-      if (Y && !this.lastStatus.Y) {
-        Publish('Action:Gamepad:Y')
-      }
-      this.lastStatus = { Xaxis, Yaxis, A, B, X, Y }
     }
   }
 
