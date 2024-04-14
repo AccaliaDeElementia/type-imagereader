@@ -4,7 +4,7 @@ import { CyclicUpdater } from './updater'
 import { GetAlmanac } from './weather'
 
 const fadein: number = 30 * 60 * 1000
-const maxOpacity: number = 0.75 // in percent.
+const maxOpacity: number = 0.95 // in percent.
 
 const updateOverlay = async () => {
   const kioskMode = new URLSearchParams(window.location.search).has('kiosk')

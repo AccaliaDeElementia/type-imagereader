@@ -121,7 +121,7 @@ export class SlideshowWeatherTests {
     // Test begins
     await OverlayUpdater.updateFn()
     const overlay = this.dom.window.document.querySelector('.overlay') as HTMLElement
-    expect(overlay.style.getPropertyValue('opacity')).to.equal('0.75')
+    expect(overlay.style.getPropertyValue('opacity')).to.equal('0.95')
   }
 
   @test
@@ -138,12 +138,12 @@ export class SlideshowWeatherTests {
     // Test begins
     await OverlayUpdater.updateFn()
     const overlay = this.dom.window.document.querySelector('.overlay') as HTMLElement
-    expect(overlay.style.getPropertyValue('opacity')).to.equal('0.75')
+    expect(overlay.style.getPropertyValue('opacity')).to.equal('0.95')
     for (let i = 1; i <= 30; i++) {
       const offset = (30 - i) / 30
       this.clock.tick(60 * 1000)
       await OverlayUpdater.updateFn()
-      expect(overlay.style.getPropertyValue('opacity')).to.equal(`${0.75 * offset}`)
+      expect(overlay.style.getPropertyValue('opacity')).to.equal(`${0.95 * offset}`)
     }
   }
 
@@ -183,7 +183,7 @@ export class SlideshowWeatherTests {
       const offset = i / 30
       this.clock.tick(60 * 1000)
       await OverlayUpdater.updateFn()
-      expect(overlay.style.getPropertyValue('opacity')).to.equal(`${0.75 * offset}`)
+      expect(overlay.style.getPropertyValue('opacity')).to.equal(`${0.95 * offset}`)
     }
   }
 
@@ -201,6 +201,6 @@ export class SlideshowWeatherTests {
     // Test begins
     await OverlayUpdater.updateFn()
     const overlay = this.dom.window.document.querySelector('.overlay') as HTMLElement
-    expect(overlay.style.getPropertyValue('opacity')).to.equal('0.75')
+    expect(overlay.style.getPropertyValue('opacity')).to.equal('0.95')
   }
 }
