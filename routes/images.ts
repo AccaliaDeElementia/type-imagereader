@@ -242,7 +242,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
 
   router.get('/kiosk/*-image.webp', handleErrors(async (req, res) => {
     const filename = `/${req.params[0] || ''}`
-    const image = await CacheStorage.kioskCache.fetch(filename, 1280, 720)
+    const image = await CacheStorage.kioskCache.fetch(filename, 1280, 800)
     Functions.SendImage(image, res)
   }))
 

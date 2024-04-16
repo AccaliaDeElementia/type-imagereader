@@ -1628,7 +1628,7 @@ export class ImagesGetRouterTests {
     expect(spy.callCount).to.equal(1)
     expect(spy.firstCall.args).to.have.lengthOf(3)
     expect(spy.firstCall.args[1]).to.equal(1280)
-    expect(spy.firstCall.args[2]).to.equal(720)
+    expect(spy.firstCall.args[2]).to.equal(800)
   }
 
   @test
