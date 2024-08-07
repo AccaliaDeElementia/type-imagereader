@@ -500,7 +500,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/styles.txt'
+    this.StubRequest.path = '/styles.txt'
     await sass(this.FakeRequest, this.FakeResponse, spy)
     expect(spy.called).to.equal(true)
   }
@@ -512,7 +512,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/.styles.css'
+    this.StubRequest.path = '/.styles.css'
     await sass(this.FakeRequest, this.FakeResponse, spy)
     expect(spy.called).to.equal(true)
   }
@@ -524,7 +524,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/../styles.css.map'
+    this.StubRequest.path = '/../styles.css.map'
     await sass(this.FakeRequest, this.FakeResponse, spy)
     expect(spy.called).to.equal(false)
     expect(this.StubResponse.status.calledWith(StatusCodes.FORBIDDEN)).to.equal(true)
@@ -539,7 +539,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/styles.css.map'
+    this.StubRequest.path = '/styles.css.map'
     await sass(this.FakeRequest, this.FakeResponse, spy)
     expect(spy.called).to.equal(false)
     expect(this.StubResponse.status.calledWith(StatusCodes.NOT_FOUND)).to.equal(true)
@@ -554,7 +554,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/styles.css.map'
+    this.StubRequest.path = '/styles.css.map'
     await sass(this.FakeRequest, this.FakeResponse, spy)
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/styles.sass')).to.equal(true)
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/styles.scss')).to.equal(false)
@@ -567,7 +567,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/styles.css.map'
+    this.StubRequest.path = '/styles.css.map'
     this.CompileAndCacheStub?.onFirstCall().resolves(false)
     await sass(this.FakeRequest, this.FakeResponse, spy)
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/styles.sass')).to.equal(true)
@@ -581,7 +581,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/styles.css.map'
+    this.StubRequest.path = '/styles.css.map'
     const map = {
       version: 0,
       file: '/style.css',
@@ -606,7 +606,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/styles.css'
+    this.StubRequest.path = '/styles.css'
     const map = {
       version: 0,
       file: '/style.css',
@@ -631,7 +631,7 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     const spy = sinon.stub()
-    this.FakeRequest.path = '/styles.css'
+    this.StubRequest.path = '/styles.css'
     Functions.cache['/styles.css'] = Promise.reject(new Error('FOO IS BAR!'))
     await sass(this.FakeRequest, this.FakeResponse, spy)
     expect(this.StubResponse.status.calledWith(StatusCodes.INTERNAL_SERVER_ERROR)).to.equal(true)
