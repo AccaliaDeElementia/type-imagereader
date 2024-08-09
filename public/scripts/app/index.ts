@@ -7,9 +7,11 @@ import { Folders } from './folders'
 import { Pictures } from './pictures'
 import { Bookmarks } from './bookmarks'
 import { Navigation } from './navigation'
+import { WakeLock } from './wakelock'
 import { PubSub } from './pubsub'
 
 Loading.Init()
+WakeLock.Init()
 Actions.Init()
 Tabs.Init()
 Folders.Init()

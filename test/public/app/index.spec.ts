@@ -5,6 +5,7 @@ import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
 
 import { Loading } from '../../../public/scripts/app/loading'
+import { WakeLock } from '../../../public/scripts/app/wakelock'
 import { Actions } from '../../../public/scripts/app/actions'
 import { Tabs } from '../../../public/scripts/app/tabs'
 import { Folders } from '../../../public/scripts/app/folders'
@@ -23,6 +24,7 @@ export class AppIndexTests {
   bookmarksInitSpy: Sinon.SinonStub = sinon.stub()
   navigationInitSpy: Sinon.SinonStub = sinon.stub()
   pubsubDeferredSpy: Sinon.SinonStub = sinon.stub()
+  wakeLockInitSpy: Sinon.SinonStub = sinon.stub()
 
   before () {
     this.loadingInitSpy = sinon.stub(Loading, 'Init')
@@ -33,6 +35,7 @@ export class AppIndexTests {
     this.bookmarksInitSpy = sinon.stub(Bookmarks, 'Init')
     this.navigationInitSpy = sinon.stub(Navigation, 'Init')
     this.pubsubDeferredSpy = sinon.stub(PubSub, 'StartDeferred')
+    this.wakeLockInitSpy = sinon.stub(WakeLock, 'Init')
   }
 
   after () {
@@ -44,6 +47,7 @@ export class AppIndexTests {
     this.bookmarksInitSpy.restore()
     this.navigationInitSpy.restore()
     this.pubsubDeferredSpy.restore()
+    this.wakeLockInitSpy.restore()
   }
 
   @test
@@ -57,5 +61,6 @@ export class AppIndexTests {
     expect(this.bookmarksInitSpy.called, 'Bookmarks.Init() should be called').to.equal(true)
     expect(this.navigationInitSpy.called, 'Navigatin.Init() should be called').to.equal(true)
     expect(this.pubsubDeferredSpy.called, 'PubSub.StartDeferred() should be called').to.equal(true)
+    expect(this.wakeLockInitSpy.called, 'WaleLock.Init()  should be called').to.equal(true)
   }
 }
