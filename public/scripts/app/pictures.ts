@@ -306,6 +306,7 @@ export class Pictures {
           this.nextPending = false
         })
       }
+      Publish('Picture:LoadNew')
     } catch (err) {
       Publish('Loading:Error', err)
     }

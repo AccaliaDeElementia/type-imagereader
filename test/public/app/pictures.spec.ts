@@ -1004,6 +1004,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   getPictureSpy: sinon.SinonStub = sinon.stub()
   loadingShowSpy: Sinon.SinonStub = sinon.stub()
   loadingErrorSpy: Sinon.SinonStub = sinon.stub()
+  loadNewSpy: Sinon.SinonStub = sinon.stub()
   fetchStub: sinon.SinonStub = sinon.stub()
   bottomLeftText: HTMLElement | null = null
   bottomCenterText: HTMLElement | null = null
@@ -1037,6 +1038,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
     this.selectPageSpy = sinon.stub(Pictures, 'SelectPage')
     Subscribe('Loading:Show', this.loadingShowSpy)
     Subscribe('Loading:Error', this.loadingErrorSpy)
+    Subscribe('Picture:LoadNew', this.loadNewSpy)
 
     this.bottomCenterText = this.dom.window.document.querySelector('.statusBar.bottom .center')
     this.bottomLeftText = this.dom.window.document.querySelector('.statusBar.bottom .left')
@@ -1337,6 +1339,26 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
     expect(TestPics.nextPending).to.equal(true)
     await delay.catch(() => {})
     expect(TestPics.nextPending).to.equal(false)
+  }
+
+  @test
+  async 'it should publish Picture:LoadNew on success' () {
+    await Pictures.LoadImage()
+    expect(this.loadNewSpy.callCount).to.equal(1)
+  }
+
+  @test
+  async 'it should not publish Picture:LoadNew on error' () {
+    this.postJSONSpy.rejects('nope')
+    await Pictures.LoadImage()
+    expect(this.loadNewSpy.callCount).to.equal(0)
+  }
+
+  @test
+  async 'it should not publish Picture:LoadNew on navigate:reload' () {
+    this.postJSONSpy.resolves(undefined)
+    await Pictures.LoadImage()
+    expect(this.loadNewSpy.callCount).to.equal(0)
   }
 }
 
