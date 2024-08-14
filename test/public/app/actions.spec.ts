@@ -454,7 +454,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
 
   @test
   'it should flag A button for button activation of gamepad' () {
-    this.testGamePad.buttons[1] = { pressed: true, value: 1, touched: true }
+    this.testGamePad.buttons[0] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
     expect(TestActions.lastStatus.A).to.equal(true)
@@ -462,7 +462,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
 
   @test
   'it should flag B button for button activation of gamepad' () {
-    this.testGamePad.buttons[0] = { pressed: true, value: 1, touched: true }
+    this.testGamePad.buttons[1] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
     expect(TestActions.lastStatus.B).to.equal(true)

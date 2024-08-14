@@ -203,8 +203,8 @@ export class Actions {
       const Xaxis = pad.axes[0] || 0
       const Yaxis = pad.axes[1] || 0
       const status = {
-        A: pad.buttons[1]?.pressed || false,
-        B: pad.buttons[0]?.pressed || false,
+        A: pad.buttons[0]?.pressed || false,
+        B: pad.buttons[1]?.pressed || false,
         X: pad.buttons[3]?.pressed || false,
         Y: pad.buttons[2]?.pressed || false,
         L: pad.buttons[4]?.pressed || false,
