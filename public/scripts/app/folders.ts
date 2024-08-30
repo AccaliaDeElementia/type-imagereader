@@ -49,13 +49,13 @@ export class Folders {
       folder.remove()
     }
     if (!data.children || !data.children?.length) {
-      document.querySelector('a[href="#tabFolders"]')?.parentElement?.classList.add('hidden')
+      document.querySelector('a[href="#tabFolders')?.parentElement?.classList.add('hidden')
       return
     }
     if (!data.pictures || !data.pictures?.length) {
       Publish('Tab:Select', 'Folders')
     }
-    document.querySelector('a[href="#tabFolders"]')?.parentElement?.classList.remove('hidden')
+    document.querySelector('a[href="#tabFolders')?.parentElement?.classList.remove('hidden')
 
     const container: HTMLElement = document.createElement('div')
     container.classList.add('folders')
