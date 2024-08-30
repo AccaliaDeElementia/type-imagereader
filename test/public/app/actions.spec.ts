@@ -245,10 +245,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   before () {
     super.before()
     this.existingNavigator = global.navigator
-    Object.defineProperty(global, 'navigator', {
-      configurable: true,
-      get: () => this.dom.window.navigator
-    })
+    global.navigator = this.dom.window.navigator
     this.getTestGamepads = sinon.stub()
     this.dom.window.navigator.getGamepads = this.getTestGamepads
     Object.defineProperty(this.dom.window.document, 'hidden', {
@@ -271,11 +268,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   after () {
-    Object.defineProperty(global, 'navigator', {
-      configurable: true,
-      get: () => this.existingNavigator
-    })
-    // global.navigator = this.existingNavigator
+    global.navigator = this.existingNavigator
     super.after()
   }
 
