@@ -4,17 +4,54 @@ import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import * as sinon from 'sinon'
 
+import { JSDOM } from 'jsdom'
+import { render } from 'pug'
+
 import { PubSub } from '../../../public/scripts/app/pubsub'
 import { WakeLock, WakeLockSentinel } from '../../../public/scripts/app/wakelock'
 import assert from 'assert'
 
+const markup = `
+html
+  body
+`
+
+class BaseTests extends PubSub {
+  existingWindow: Window & typeof globalThis
+  existingDocument: Document
+  dom: JSDOM
+  constructor () {
+    super()
+    this.existingWindow = global.window
+    this.existingDocument = global.document
+    this.dom = new JSDOM('', {})
+  }
+
+  before (): void {
+    this.dom = new JSDOM(render(markup), {
+      url: 'http://127.0.0.1:2999'
+    })
+    this.existingWindow = global.window
+    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    this.existingDocument = global.document
+    global.document = this.dom.window.document
+    PubSub.subscribers = {}
+    PubSub.intervals = {}
+    PubSub.deferred = []
+  }
+
+  after (): void {
+    global.window = this.existingWindow
+    global.document = this.existingDocument
+  }
+}
+
 @suite
-export class WakeLockInitTests extends PubSub {
+export class WakeLockInitTests extends BaseTests {
   takeLockSpy: sinon.SinonStub = sinon.stub()
   releaseLockSpy: sinon.SinonStub = sinon.stub()
   before () {
-    PubSub.subscribers = {}
-    PubSub.intervals = {}
+    super.before()
     this.takeLockSpy = sinon.stub(WakeLock, 'TakeLock')
     this.releaseLockSpy = sinon.stub(WakeLock, 'ReleaseLock')
   }
@@ -22,6 +59,7 @@ export class WakeLockInitTests extends PubSub {
   after () {
     this.takeLockSpy.restore()
     this.releaseLockSpy.restore()
+    super.after()
   }
 
   @test
@@ -65,7 +103,8 @@ export class WakeLockInitTests extends PubSub {
 }
 
 @suite
-export class WakeLockTakeLockTests extends PubSub {
+export class WakeLockTakeLockTests extends BaseTests {
+  existingNavigator: Navigator = global.navigator
   clock: sinon.SinonFakeTimers | undefined
   wakelockRequest: sinon.SinonStub = sinon.stub()
   sentinel: WakeLockSentinel = {
@@ -74,6 +113,7 @@ export class WakeLockTakeLockTests extends PubSub {
   }
 
   before () {
+    super.before()
     this.clock = sinon.useFakeTimers()
     WakeLock.sentinel = null
     WakeLock.timeout = 0
@@ -83,8 +123,10 @@ export class WakeLockTakeLockTests extends PubSub {
     }
     this.wakelockRequest = sinon.stub()
     this.wakelockRequest.resolves(this.sentinel)
+    this.existingNavigator = global.navigator
+    global.navigator = this.dom.window.navigator
     assert(undefined === navigator.wakeLock, 'expect env not to support wakelock for testing')
-    Object.defineProperty(navigator, 'wakeLock', {
+    Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
       get: () => {
         return {
@@ -95,11 +137,13 @@ export class WakeLockTakeLockTests extends PubSub {
   }
 
   after () {
-    Object.defineProperty(navigator, 'wakeLock', {
+    Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
       get: () => undefined
     })
+    global.navigator = this.existingNavigator
     this.clock?.restore()
+    super.after()
   }
 
   @test
