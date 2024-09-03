@@ -1009,6 +1009,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   bottomLeftText: HTMLElement | null = null
   bottomCenterText: HTMLElement | null = null
   bottomRightText: HTMLElement | null = null
+  reloadSpy: Sinon.SinonSpy = sinon.spy()
 
   before (): void {
     super.before()
@@ -1036,9 +1037,11 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
     this.fetchStub = sinon.stub(global, 'fetch').resolves()
     this.getPictureSpy = sinon.stub(Pictures, 'GetPicture').returns(undefined)
     this.selectPageSpy = sinon.stub(Pictures, 'SelectPage')
+    this.reloadSpy = sinon.spy()
     Subscribe('Loading:Show', this.loadingShowSpy)
     Subscribe('Loading:Error', this.loadingErrorSpy)
     Subscribe('Picture:LoadNew', this.loadNewSpy)
+    Subscribe('Navigate:Reload', this.reloadSpy)
 
     this.bottomCenterText = this.dom.window.document.querySelector('.statusBar.bottom .center')
     this.bottomLeftText = this.dom.window.document.querySelector('.statusBar.bottom .left')
@@ -1202,10 +1205,8 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   @test
   async 'it should reload when navigate replies with undefined modcount' () {
     this.postJSONSpy.resolves(undefined)
-    const spy = sinon.stub()
-    PubSub.Subscribe('Navigate:Reload', spy)
     await Pictures.LoadImage()
-    expect(spy.called).to.equal(true)
+    expect(this.reloadSpy.called).to.equal(true)
     expect(this.loadingErrorSpy.called).to.equal(false)
     expect(this.selectPageSpy.called).to.equal(false)
   }
@@ -1213,10 +1214,8 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   @test
   async 'it should reload when navigate replies with negative modcount' () {
     this.postJSONSpy.resolves(-1)
-    const spy = sinon.stub()
-    PubSub.Subscribe('Navigate:Reload', spy)
     await Pictures.LoadImage()
-    expect(spy.called).to.equal(true)
+    expect(this.reloadSpy.called).to.equal(true)
     expect(this.loadingErrorSpy.called).to.equal(false)
     expect(this.selectPageSpy.called).to.equal(false)
   }
@@ -1246,10 +1245,8 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   @test
   async 'it should not reload when navigate replies with positive modcount' () {
     this.postJSONSpy.resolves(42)
-    const spy = sinon.stub()
-    PubSub.Subscribe('Navigate:Reload', spy)
     await Pictures.LoadImage()
-    expect(spy.called).to.equal(false)
+    expect(this.reloadSpy.called).to.equal(false)
     expect(this.loadingErrorSpy.called).to.equal(false)
     expect(this.selectPageSpy.called).to.equal(true)
   }
@@ -1258,15 +1255,13 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   async 'it should pass retrieved modcount to next call to navigate/latest' () {
     const expected = Math.random() * 100000
     this.postJSONSpy.resolves(expected)
-    const spy = sinon.stub()
-    PubSub.Subscribe('Navigate:Reload', spy)
     await Pictures.LoadImage()
     await Pictures.LoadImage()
     expect(this.postJSONSpy.secondCall.args[1]).to.deep.equal({
       path: '/some/path/1250.png',
       modCount: expected
     })
-    expect(spy.called).to.equal(false)
+    expect(this.reloadSpy.called).to.equal(false)
   }
 
   @test
