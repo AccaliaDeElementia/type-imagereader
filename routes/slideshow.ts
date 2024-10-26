@@ -122,7 +122,7 @@ export class Functions {
     socket.on('get-launchId', (callback) => callback(Config.launchId))
     socket.on('join-slideshow', async (roomName: string) => {
       socketRoom = roomName
-      socket.join(roomName)
+      await socket.join(roomName)
       const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom)
       socket.emit('new-image', room.uriSafeImage)
     })

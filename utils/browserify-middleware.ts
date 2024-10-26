@@ -145,13 +145,13 @@ export class Functions {
           }
           const target = join(dir, dirinfo.name)
           if (isCompileableExtension.test(dirinfo.name) || dirinfo.isDirectory()) {
-            Functions.CompileAndCache(basePath, target)
+            Functions.CompileAndCache(basePath, target).catch(() => {})
           }
           if (dirinfo.isDirectory()) {
-            Functions.WatchFolder(basePath, target, true)
+            Functions.WatchFolder(basePath, target, true).catch(() => {})
           }
         }
-        Functions.WatchFolder(basePath, dir, false)
+        Functions.WatchFolder(basePath, dir, false).catch(() => {})
       } catch (err: any) {
         if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
           Functions.logger(`${dir} does not exist to precompile scripts`, err.message)
@@ -170,7 +170,7 @@ export interface Options {
 
 export default (options: Options) => {
   if (options.watchPaths && options.watchPaths.length) {
-    Functions.WatchAllFolders(options.basePath, options.watchPaths)
+    Functions.WatchAllFolders(options.basePath, options.watchPaths).catch(() => {})
   }
   return async (req: Request, res: Response, next: NextFunction) => {
     if (req.method.toLowerCase() !== 'get' || !req.path.match(isCompileableExtension)) {

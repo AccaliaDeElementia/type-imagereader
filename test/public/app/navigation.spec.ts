@@ -461,10 +461,29 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
+  'it should tolerate LoadData rejecting' () {
+    this.LoadDataStub.rejects(new Error('FOO!'))
+    expect(PubSub.subscribers).to.not.have.any.keys('NAVIGATE:LOAD')
+    Navigation.Init()
+    expect(this.LoadDataStub.callCount).to.equal(1)
+    expect(PubSub.subscribers).to.have.any.keys('NAVIGATE:LOAD')
+  }
+
+  @test
   'it should subscribe to "Navigate:Load"' () {
     Navigation.Init()
     expect(PubSub.subscribers).to.have.any.keys('NAVIGATE:LOAD')
     expect(PubSub.subscribers['NAVIGATE:LOAD']).to.have.length(1)
+  }
+
+  @test
+  'Navigate:Load handler should tolerate LoadData rejecting' () {
+    Navigation.Init()
+    this.LoadDataStub.resetHistory()
+    this.LoadDataStub.rejects(new Event('FOO!'))
+    const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    expect(() => handler('a string')).to.not.throw()
   }
 
   @test
@@ -532,6 +551,16 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
+  'Navigate:Reload handler should tolerate LoadData rejecting' () {
+    Navigation.Init()
+    this.LoadDataStub.resetHistory()
+    this.LoadDataStub.rejects(new Event('FOO!'))
+    const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
+    assert(handler !== undefined, 'handler must have a value')
+    expect(() => handler('a string')).to.not.throw()
+  }
+
+  @test
   'Navigate:Reload handler should call LoadData with defaults' () {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
@@ -557,6 +586,16 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(TestNavigation.current).to.deep.equal({
       path: '/quux'
     })
+  }
+
+  @test
+  'it should register popstate listener that tolerates LoadData rejecting' () {
+    Navigation.Init()
+    this.LoadDataStub.resetHistory()
+    this.LoadDataStub.rejects(new Event('FOO!'))
+    const popStateEvent = new this.dom.window.PopStateEvent('popstate', { state: {} })
+    this.dom.window.dispatchEvent(popStateEvent)
+    expect(this.LoadDataStub.callCount).to.equal(1)
   }
 
   @test
@@ -1384,7 +1423,7 @@ export class AppNavigatorNavigateTo extends BaseNavigationTests {
 
   before () {
     super.before()
-    this.LoadDataStub = sinon.stub(Navigation, 'LoadData')
+    this.LoadDataStub = sinon.stub(Navigation, 'LoadData').resolves(undefined)
     this.LoadingErrorStub = sinon.stub()
     PubSub.subscribers['LOADING:ERROR'] = [this.LoadingErrorStub]
   }
@@ -1406,6 +1445,15 @@ export class AppNavigatorNavigateTo extends BaseNavigationTests {
     Navigation.NavigateTo('', 'TestCase')
     expect(this.LoadDataStub.called).to.equal(false)
     expect(this.LoadingErrorStub.calledWith('Action TestCase has no target')).to.equal(true)
+  }
+
+  @test
+  'it should tolerate LoadData rejecting' () {
+    const path = '/foo/bar/baz/' + Math.random()
+    TestNavigation.current.path = '/'
+    this.LoadDataStub.rejects(new Error('FOO!'))
+    Navigation.NavigateTo(path, 'TestCase')
+    expect(TestNavigation.current.path).to.equal(path)
   }
 
   @test

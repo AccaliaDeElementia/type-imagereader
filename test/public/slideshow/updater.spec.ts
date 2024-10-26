@@ -171,7 +171,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   @test
   async 'Default Updater rejects when triggered' () {
     const sadness = new CyclicUpdater()
-    expect(sadness.updateFn()).to.eventually.be.rejectedWith('Cyclic Updater Called with No Updater')
+    await expect(sadness.updateFn()).to.eventually.be.rejectedWith('Cyclic Updater Called with No Updater')
   }
 }
 

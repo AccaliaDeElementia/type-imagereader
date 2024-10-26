@@ -8,14 +8,20 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    sourceType: 'module'
+    sourceType: 'module',
+    project: true,
+    tsconfigRootDir: __dirname, // or import.meta.dirname for ESM
   },
   plugins: [
     '@typescript-eslint'
   ],
+
   rules: {
+    "@typescript-eslint/no-floating-promises": "error"
   },
   ignorePatterns: [
-    '**/*.min.js'
+    '**/*.min.js',
+    '.eslintrc.js',
+    'coverage/**'
   ]
 }

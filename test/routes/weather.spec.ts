@@ -366,6 +366,15 @@ export class WeatherRouterTests {
   }
 
   @test
+  async 'it should tolerate update weather rejecting on initial call' () {
+    const awaiter = new Promise<void>(resolve => resolve())
+    this.UpdateWeatherStub?.rejects(new Error('FOO!'))
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    await awaiter
+    expect(this.UpdateWeatherStub?.callCount).to.equal(1)
+  }
+
+  @test
   async 'it should update weather immediately' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.UpdateWeatherStub?.callCount).to.equal(1)
@@ -406,7 +415,7 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should send errpr for error in / route' () {
+  async 'it should send error for error in / route' () {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.firstCall.args[1]
     if (!fn) {

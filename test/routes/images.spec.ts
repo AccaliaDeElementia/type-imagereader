@@ -66,7 +66,7 @@ export class ImageCacheTests {
   }
 
   @test
-  'it should not create cache item when one is found' () {
+  async 'it should not create cache item when one is found' () {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     const expected = Promise.resolve(null)
@@ -76,12 +76,12 @@ export class ImageCacheTests {
       height: 5,
       image: expected as unknown as Promise<ImageData>
     }
-    cache.fetch('/foo.png', 5, 5)
+    await cache.fetch('/foo.png', 5, 5)
     expect(spy.called).to.equal(false)
   }
 
   @test
-  'it should not create cache item when bigger one is found' () {
+  async 'it should not create cache item when bigger one is found' () {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     const expected = Promise.resolve(null)
@@ -91,12 +91,12 @@ export class ImageCacheTests {
       height: 50,
       image: expected as unknown as Promise<ImageData>
     }
-    cache.fetch('/foo.png', 5, 5)
+    await cache.fetch('/foo.png', 5, 5)
     expect(spy.called).to.equal(false)
   }
 
   @test
-  'it should refresh recency of item in cache' () {
+  async 'it should refresh recency of item in cache' () {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     for (let i = 0; i < 10; i++) {
@@ -114,7 +114,7 @@ export class ImageCacheTests {
       image: Promise.resolve(null) as unknown as Promise<ImageData>
     }
     cache.items[10] = expected
-    cache.fetch('/foo.png', 5, 5)
+    await cache.fetch('/foo.png', 5, 5)
     expect(cache.items[0]).to.equal(expected)
     for (let i = 1; i <= 10; i++) {
       expect(cache.items[i]?.width).to.equal(i - 1)
@@ -131,14 +131,14 @@ export class ImageCacheTests {
   }
 
   @test
-  'it should create cache item with expected parameters' () {
+  async 'it should create cache item with expected parameters' () {
     const path = '/foo.png' + Math.random()
     const width = Math.random() * 1000
     const height = Math.random() * 1000
     const image = Promise.resolve(null)
     const spy = sinon.stub().returns(image)
     const cache = new ImageCache(spy)
-    cache.fetch(path, width, height)
+    await cache.fetch(path, width, height)
     expect(spy.callCount).to.equal(1)
     expect(spy.firstCall.args).to.have.lengthOf(3)
     expect(spy.firstCall.args).to.deep.equal(
@@ -147,14 +147,14 @@ export class ImageCacheTests {
   }
 
   @test
-  'it should insert new cache item at front' () {
+  async 'it should insert new cache item at front' () {
     const path = '/foo.png' + Math.random()
     const width = Math.random() * 1000
     const height = Math.random() * 1000
     const image = Promise.resolve(null)
     const spy = sinon.stub().returns(image)
     const cache = new ImageCache(spy)
-    cache.fetch(path, width, height)
+    await cache.fetch(path, width, height)
     assert(cache.items[0])
     expect(cache.items[0].path).to.equal(path)
     expect(cache.items[0].width).to.equal(width)
@@ -163,7 +163,7 @@ export class ImageCacheTests {
   }
 
   @test
-  'it should prune excessive cache items when no cache item matches' () {
+  async 'it should prune excessive cache items when no cache item matches' () {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     ImageCache.cacheSize = 5
@@ -175,7 +175,7 @@ export class ImageCacheTests {
         image: null as unknown as Promise<ImageData>
       }
     }
-    cache.fetch('/foo.png', 5, 5)
+    await cache.fetch('/foo.png', 5, 5)
     expect(cache.items).have.lengthOf(5)
     for (let i = 1; i < 5; i++) {
       expect(cache.items[i]?.height).to.equal(i - 1)

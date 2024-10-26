@@ -14,8 +14,8 @@ export class ImageReaderTests {
   before () {
     delete process.env.PORT
     delete process.env.SKIP_SYNC
-    this.StartServer = sinon.stub(ImageReader, 'StartServer')
-    this.Synchronize = sinon.stub(ImageReader, 'Synchronize')
+    this.StartServer = sinon.stub(ImageReader, 'StartServer').resolves(undefined)
+    this.Synchronize = sinon.stub(ImageReader, 'Synchronize').resolves(undefined)
     this.Synchronize.resolves()
     this.Clock = sinon.useFakeTimers()
   }
@@ -26,6 +26,18 @@ export class ImageReaderTests {
     this.StartServer?.restore()
     this.Synchronize?.restore()
     this.Clock?.restore()
+  }
+
+  @test
+  async 'it should reject when StartServer throws' () {
+    this.StartServer?.throws(new Error('FOO'))
+    await expect(ImageReader.Run()).to.eventually.be.rejectedWith(Error)
+  }
+
+  @test
+  async 'it should reject when StartServer rejects' () {
+    this.StartServer?.rejects(new Error('FOO'))
+    await expect(ImageReader.Run()).to.eventually.be.rejectedWith(Error)
   }
 
   @test
@@ -147,5 +159,21 @@ export class ImageReaderTests {
     ImageReader.SyncRunning = true
     this.Clock?.tick(101)
     expect(this.Synchronize?.called).to.equal(false)
+  }
+
+  @test
+  async 'it should reset sync running if Synchronization throws' () {
+    this.Synchronize?.throws(new Error('FOO!'))
+    ImageReader.SyncInterval = 100
+    await ImageReader.Run()
+    expect(ImageReader.SyncRunning).to.equal(false)
+  }
+
+  @test
+  async 'it should reset sync running if Synchronization rejects' () {
+    this.Synchronize?.rejects(new Error('FOO!'))
+    ImageReader.SyncInterval = 100
+    await ImageReader.Run()
+    expect(ImageReader.SyncRunning).to.equal(false)
   }
 }

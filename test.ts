@@ -6,4 +6,4 @@ fsWalker('/data', (items: {path: string, isFile: boolean}[], _: Number) => {
     console.log(dir.path)
   })
   return Promise.resolve()
-}).then(() => console.log('done!'))
+}).then(() => console.log('done!'), (err) => console.error('whoops!', err))

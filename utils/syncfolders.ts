@@ -111,7 +111,7 @@ export class Functions {
   public static async SyncNewPictures (logger: Debugger, knex:Knex): Promise<void> {
     const insertedpics: any = await knex.from(knex.raw('?? (??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey']))
       .insert(function (this: Knex) {
-        this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey']).from('syncitems')
+        return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey']).from('syncitems')
           .leftJoin('pictures', 'pictures.path', 'syncitems.path')
           .andWhere({
             'syncitems.isFile': true,
@@ -124,7 +124,7 @@ export class Functions {
   public static async SyncRemovedPictures (logger: Debugger, knex:Knex): Promise<void> {
     const deletedpics = await knex('pictures')
       .whereNotExists(function () {
-        this.select('*')
+        return this.select('*')
           .from('syncitems')
           .whereRaw('syncitems.path = pictures.path')
       })
@@ -135,7 +135,7 @@ export class Functions {
   public static async SyncRemovedBookmarks (logger: Debugger, knex: Knex): Promise<void> {
     const removedBookmarks = await knex('bookmarks')
       .whereNotExists(function (this: Knex.QueryBuilder) {
-        this.select('*')
+        return this.select('*')
           .from('pictures')
           .whereRaw('pictures.path = bookmarks.path')
       })
@@ -153,7 +153,7 @@ export class Functions {
   public static async SyncNewFolders (logger: Debugger, knex: Knex): Promise<void> {
     const folders: any = await knex.from(knex.raw('?? (??, ??, ??)', ['folders', 'folder', 'path', 'sortKey']))
       .insert(function (this: Knex) {
-        this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey']).from('syncitems')
+        return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey']).from('syncitems')
           .leftJoin('folders', 'folders.path', 'syncitems.path')
           .andWhere({
             'syncitems.isFile': false,
@@ -166,7 +166,7 @@ export class Functions {
   public static async SyncRemovedFolders (logger: Debugger, knex: Knex): Promise<void> {
     const deletedfolders = await knex('folders')
       .whereNotExists(function (this: Knex.QueryBuilder) {
-        this.select('*')
+        return this.select('*')
           .from('syncitems')
           .whereRaw('syncitems.path = folders.path')
       })
@@ -177,7 +177,7 @@ export class Functions {
   public static async SyncMissingCoverImages (logger: Debugger, knex: Knex): Promise<void> {
     const removedCoverImages = await knex('folders')
       .whereNotExists(function (this: Knex.QueryBuilder) {
-        this.select('*')
+        return this.select('*')
           .from('pictures')
           .whereRaw('pictures.path = folders.current')
       })

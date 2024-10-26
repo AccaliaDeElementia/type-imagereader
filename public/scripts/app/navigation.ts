@@ -65,27 +65,27 @@ export class Navigation {
       return
     }
     this.current = { path }
-    this.LoadData()
+    this.LoadData().catch(() => {})
   }
 
   public static Init () {
     this.LocationAssign = window.location.assign
     this.current.path = this.FolderPath
-    this.LoadData()
+    this.LoadData().catch(() => {})
     Subscribe('Navigate:Load', (path: string | NoMenuPath): void => {
       if (typeof path === 'string') {
         this.current = { path: path as string }
       } else {
         this.current = path
       }
-      this.LoadData()
+      this.LoadData().catch(() => {})
     })
-    Subscribe('Navigate:Reload', () => this.LoadData())
+    Subscribe('Navigate:Reload', () => this.LoadData().catch(() => {}))
     window.addEventListener('popstate', () => {
       this.current = {
         path: this.FolderPath
       }
-      this.LoadData(true)
+      this.LoadData(true).catch(() => {})
     })
 
     Subscribe('Navigate:Data', (data: any):void => window.console.log(data))

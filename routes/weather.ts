@@ -115,7 +115,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }))
 
   Imports.setInterval(Functions.UpdateWeather, 10 * 60 * 1000)
-  Functions.UpdateWeather()
+  Functions.UpdateWeather().catch(() => {})
 
   return router
 }

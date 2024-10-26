@@ -664,8 +664,8 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
 
   before () {
     this.ReaddirStub = sinon.stub(Imports, 'readdir').resolves([])
-    this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache')
-    this.WatchFolderStub = sinon.stub(Functions, 'WatchFolder')
+    this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache').resolves(undefined)
+    this.WatchFolderStub = sinon.stub(Functions, 'WatchFolder').resolves(undefined)
     this.LoggerStub = sinon.stub(Functions, 'logger')
   }
 
@@ -801,6 +801,28 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
     expect(this.ReaddirStub?.calledWith('/foo/bar', { withFileTypes: true })).to.equal(true)
     expect(this.ReaddirStub?.calledWith('/foo/baz', { withFileTypes: true })).to.equal(true)
   }
+
+  @test
+  async 'it should continue processing when CompileAndCache rejects' () {
+    this.ReaddirStub?.resolves([{
+      name: 'application.ts',
+      isDirectory: () => false
+    }])
+    this.CompileAndCacheStub?.rejects(new Error('FOO!'))
+    await Functions.WatchAllFolders('/foo', ['/bar', '/baz'])
+    expect(this.LoggerStub?.called).to.equal(false)
+  }
+
+  @test
+  async 'it should continue processing when WatchFolder rejects' () {
+    this.ReaddirStub?.resolves([{
+      name: 'application',
+      isDirectory: () => true
+    }])
+    this.WatchFolderStub?.rejects(new Error('FOO!'))
+    await Functions.WatchAllFolders('/foo', ['/bar', '/baz'])
+    expect(this.LoggerStub?.called).to.equal(false)
+  }
 }
 
 @suite
@@ -822,7 +844,7 @@ export class BrowserifyMiddlewareTests {
   SendScriptStub?: Sinon.SinonStub
 
   before () {
-    this.WatchAllFoldersStub = sinon.stub(Functions, 'WatchAllFolders')
+    this.WatchAllFoldersStub = sinon.stub(Functions, 'WatchAllFolders').resolves(undefined)
     this.SendScriptStub = sinon.stub(Functions, 'SendScript')
   }
 
@@ -862,6 +884,18 @@ export class BrowserifyMiddlewareTests {
       basePath: '/foo',
       watchPaths: ['/bar', '/baz']
     })
+    expect(this.WatchAllFoldersStub?.calledWith('/foo', ['/bar', '/baz'])).to.equal(true)
+  }
+
+  @test
+  async 'it should tolerate WatchAllFolders rejecting' () {
+    const awaiter = new Promise<boolean>(resolve => resolve(true))
+    this.WatchAllFoldersStub?.callsFake(() => awaiter.then(() => Promise.reject(new Error('FOO!'))))
+    browserifyMiddleware({
+      basePath: '/foo',
+      watchPaths: ['/bar', '/baz']
+    })
+    await awaiter
     expect(this.WatchAllFoldersStub?.calledWith('/foo', ['/bar', '/baz'])).to.equal(true)
   }
 

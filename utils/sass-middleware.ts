@@ -80,7 +80,7 @@ export class Functions {
     for (const dirinfo of await Imports.readdir(join(basePath, path), { withFileTypes: true })) {
       if (sassExtension.test(dirinfo.name) && !/(^|\/)\./.test(dirinfo.name)) {
         const sassFile = join(path, dirinfo.name)
-        Functions.CompileAndCache(basePath, sassFile)
+        Functions.CompileAndCache(basePath, sassFile).catch(() => {})
       }
     }
   }
@@ -110,8 +110,8 @@ export interface Options {
 }
 
 export default ({ mountPath, watchdir }: Options) => {
-  Functions.WatchFolder(mountPath, watchdir)
-  Functions.CompileFolder(mountPath, watchdir)
+  Functions.WatchFolder(mountPath, watchdir).catch(() => {})
+  Functions.CompileFolder(mountPath, watchdir).catch(() => {})
 
   return async (req: Request, res: Response, next: NextFunction) => {
     // ignore all requests that are not GET or don't have .css in them

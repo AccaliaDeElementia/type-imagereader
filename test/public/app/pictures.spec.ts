@@ -1368,7 +1368,7 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
   before (): void {
     super.before()
     this.makeTabSpy = sinon.stub(Pictures, 'MakeTab')
-    this.loadImageSpy = sinon.stub(Pictures, 'LoadImage')
+    this.loadImageSpy = sinon.stub(Pictures, 'LoadImage').resolves(undefined)
     Subscribe('Menu:Show', this.menuShowSpy)
     Subscribe('Menu:Hide', this.menuHideSpy)
     Subscribe('Tab:Select', this.tabSelectSpy)
@@ -1387,6 +1387,17 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
     this.makeTabSpy.restore()
     this.loadImageSpy.restore()
     super.after()
+  }
+
+  @test
+  async 'it should tolerate LoadImage rejecting' () {
+    const awaiter = new Promise<void>(resolve => resolve())
+    this.loadImageSpy.rejects(new Error('FOO!'))
+    Pictures.LoadData({
+      pictures: this.pictures
+    })
+    await awaiter
+    expect(this.loadImageSpy.called).to.equal(true)
   }
 
   @test
@@ -1618,7 +1629,7 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
   before (): void {
     super.before()
     this.makeTabSpy = sinon.stub(Pictures, 'MakeTab')
-    this.loadImageSpy = sinon.stub(Pictures, 'LoadImage')
+    this.loadImageSpy = sinon.stub(Pictures, 'LoadImage').resolves(undefined)
     Subscribe('Menu:Show', this.menuShowSpy)
     Subscribe('Menu:Hide', this.menuHideSpy)
     Subscribe('Tab:Select', this.tabSelectSpy)
@@ -1877,7 +1888,7 @@ export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
     this.isLoadingSpy = sinon.stub(Loading, 'IsLoading')
     this.isLoadingSpy.get(() => this.isLoading)
     this.isLoading = false
-    this.loadImageSpy = sinon.stub(Pictures, 'LoadImage')
+    this.loadImageSpy = sinon.stub(Pictures, 'LoadImage').resolves(undefined)
     Subscribe('Menu:Hide', this.menuHideSpy)
     Subscribe('Loading:Error', this.loadingErrorSpy)
   }
@@ -1911,6 +1922,15 @@ export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
   'it should trigger full image load when changing to a valid image' () {
     TestPics.ChangePicture(this.picture)
     expect(TestPics.current).to.equal(this.picture)
+    expect(this.loadImageSpy.called).to.equal(true)
+    expect(this.menuHideSpy.called).to.equal(true)
+    expect(this.loadingErrorSpy.called).to.equal(false)
+  }
+
+  @test
+  'it should tolerate LoadImage rejecting' () {
+    this.loadImageSpy.rejects(new Error('FOO!'))
+    TestPics.ChangePicture(this.picture)
     expect(this.loadImageSpy.called).to.equal(true)
     expect(this.menuHideSpy.called).to.equal(true)
     expect(this.loadingErrorSpy.called).to.equal(false)

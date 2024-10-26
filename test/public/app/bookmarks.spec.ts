@@ -367,9 +367,6 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
       folder: 'bar'
     })
 
-    const spy = sinon.stub()
-    PubSub.Subscribe('Bookmarks:Remove', spy)
-
     this.PostJSONSpy.reset()
     let waiter: Promise<void> | null = null
     this.PostJSONSpy.callsFake(() => {
@@ -394,9 +391,6 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
       folder: '/path/to/foo/folder'
     })
 
-    const spy = sinon.stub()
-    PubSub.Subscribe('Bookmarks:Remove', spy)
-
     this.PostJSONSpy.reset()
     let waiter: Promise<void> | null = null
     this.PostJSONSpy.callsFake(() => {
@@ -415,6 +409,32 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
       path: '/path/to/foo/folder',
       noMenu: true
     })
+  }
+
+  @test
+  async 'it should not Navigate:Load when PostJSON rejects on bookmark click' () {
+    const result = Bookmarks.BuildBookmark({
+      name: '',
+      path: '/path/to/foo/folder/foo',
+      folder: '/path/to/foo/folder'
+    })
+
+    const spy = sinon.stub()
+    PubSub.Subscribe('Navigate:Load', spy)
+
+    this.PostJSONSpy.reset()
+    let waiter: Promise<void> | null = null
+    this.PostJSONSpy.callsFake(() => {
+      waiter = new Promise(resolve => resolve())
+      return waiter.then(() => Promise.reject(new Error('FOO!')))
+    })
+
+    const evt = new this.dom.window.MouseEvent('click')
+    result?.dispatchEvent(evt)
+
+    await waiter
+
+    expect(spy.called).to.equal(false)
   }
 }
 

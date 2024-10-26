@@ -345,7 +345,7 @@ export class Pictures {
       Publish('Menu:Hide')
     }
 
-    this.LoadImage()
+    this.LoadImage().catch(() => {})
   }
 
   public static GetPicture (navi: NavigateTo): Picture | undefined {
@@ -389,7 +389,7 @@ export class Pictures {
     }
     if (pic) {
       this.current = pic
-      this.LoadImage()
+      this.LoadImage().catch(() => {})
       Publish('Menu:Hide')
     } else {
       Publish('Loading:Error', 'Change Picture called with No Picture to change to')

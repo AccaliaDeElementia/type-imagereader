@@ -289,7 +289,7 @@ export class SassMiddlewareCompileFolderTests {
 
   before () {
     this.ReaddirStub = sinon.stub(Imports, 'readdir').resolves([])
-    this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache')
+    this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache').resolves(undefined)
   }
 
   after () {
@@ -329,6 +329,16 @@ export class SassMiddlewareCompileFolderTests {
     this.ReaddirStub?.resolves([{ name: 'styles.scss' }])
     await Functions.CompileFolder('/foo', '/bar')
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/bar/styles.scss')).to.equal(true)
+  }
+
+  @test
+  async 'it should tolerate CompileAndCache rejecting' () {
+    const awaiter = new Promise<boolean>(resolve => resolve(true))
+    this.CompileAndCacheStub?.callsFake(() => awaiter.then(() => Promise.reject(new ErrorEvent('FOO'))))
+    this.ReaddirStub?.resolves([{ name: 'styles.scss' }, { name: 'styles2.scss' }])
+    await Functions.CompileFolder('/foo', '/bar')
+    await awaiter
+    expect(this.CompileAndCacheStub?.callCount).to.equal(2)
   }
 }
 
@@ -444,8 +454,8 @@ export class SassMiddlewareTests {
 
   before () {
     this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache').resolves(true)
-    this.CompileFolderStub = sinon.stub(Functions, 'CompileFolder')
-    this.WatchFolderStub = sinon.stub(Functions, 'WatchFolder')
+    this.CompileFolderStub = sinon.stub(Functions, 'CompileFolder').resolves(undefined)
+    this.WatchFolderStub = sinon.stub(Functions, 'WatchFolder').resolves(undefined)
   }
 
   after () {
@@ -461,6 +471,30 @@ export class SassMiddlewareTests {
       watchdir: '/bar'
     })
     expect(this.WatchFolderStub?.calledWith('/foo', '/bar')).to.equal(true)
+  }
+
+  @test
+  async 'it should tolerate WatchFolder rejecting' () {
+    const awaiter = new Promise<boolean>(resolve => resolve(true))
+    this.WatchFolderStub?.callsFake(() => awaiter.then(() => Promise.reject(new ErrorEvent('FOO'))))
+    sassMiddleware({
+      mountPath: '/foo',
+      watchdir: '/bar'
+    })
+    await awaiter
+    expect(this.WatchFolderStub?.calledWith('/foo', '/bar')).to.equal(true)
+  }
+
+  @test
+  async 'it should toplerate CompileFolder rejecting' () {
+    const awaiter = new Promise<boolean>(resolve => resolve(true))
+    this.CompileFolderStub?.callsFake(() => awaiter.then(() => Promise.reject(new ErrorEvent('FOO'))))
+    sassMiddleware({
+      mountPath: '/foo',
+      watchdir: '/bar'
+    })
+    await awaiter
+    expect(this.CompileFolderStub?.calledWith('/foo', '/bar')).to.equal(true)
   }
 
   @test

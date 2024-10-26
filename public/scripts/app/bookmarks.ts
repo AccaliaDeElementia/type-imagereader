@@ -83,7 +83,7 @@ export class Bookmarks {
         .then(() => Publish('Navigate:Load', {
           path: bookmark.folder,
           noMenu: true
-        }))
+        }), () => {})
       event.stopPropagation()
     })
     return card

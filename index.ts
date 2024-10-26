@@ -20,7 +20,7 @@ export class ImageReader {
     if (port < 0 || port > 65535) {
       throw new Error(`Port ${port} is out of range. Valid ports must be between 0 and 65535.`)
     }
-    this.StartServer(port)
+    await this.StartServer(port)
 
     if (!process.env.SKIP_SYNC) {
       const doSync = async () => {
@@ -28,10 +28,13 @@ export class ImageReader {
           return
         }
         this.SyncRunning = true
-        await this.Synchronize()
-        this.SyncRunning = false
+        try {
+          await this.Synchronize()
+        } finally {
+          this.SyncRunning = false
+        }
       }
-      doSync()
+      doSync().catch(() => {})
       this.Interval = setInterval(doSync, this.SyncInterval)
     }
   }
@@ -39,5 +42,5 @@ export class ImageReader {
 
 /* istanbul ignore if */
 if (require.main === module) {
-  ImageReader.Run()
+  ImageReader.Run().catch(() => {})
 }
