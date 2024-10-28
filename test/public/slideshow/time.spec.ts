@@ -48,15 +48,15 @@ export class SlideshowTimeTests {
   }
 
   @test
-  async 'updateTime fires every 0.1 seconds' () {
+  async 'updateTime fires every 0.1 seconds' (): Promise<void> {
     expect(TimeUpdater.period).to.equal(100)
   }
 
   @test
-  async 'updateTime sets time field in 24 hour format' () {
+  async 'updateTime sets time field in 24 hour format' (): Promise<void> {
     const now = new Date('1969-07-20T20:17:00.000Z')
     const time = this.dom.window.document.querySelector('.time')
-    const matrix: [number, number, string][] = [
+    const matrix: Array<[number, number, string]> = [
       [1, 5, '01:05'],
       [1, 32, '01:32'],
       [11, 5, '11:05'],
@@ -77,10 +77,10 @@ export class SlideshowTimeTests {
   }
 
   @test
-  async 'updateTime sets date field' () {
+  async 'updateTime sets date field' (): Promise<void> {
     const now = new Date('1969-07-20T20:17:00.000Z')
     const dateElem = this.dom.window.document.querySelector('.date')
-    const matrix: [number, number, string][] = [
+    const matrix: Array<[number, number, string]> = [
       [0, 1, 'Wednesday, January 1'],
       [1, 2, 'Sunday, February 2'],
       [2, 3, 'Monday, March 3'],

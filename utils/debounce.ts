@@ -3,9 +3,7 @@
 import debug from 'debug'
 const logger = debug('type-imagereader:debounce')
 
-interface DebounceCallback {
-  (): Promise<void>
-}
+type DebounceCallback = () => Promise<void>
 
 interface DebounceCounter {
   key: string
@@ -23,7 +21,7 @@ export class Debouncer {
 
   debounce (key: string, callback: DebounceCallback): void {
     const counter = this.counters.filter(c => c.key === key)[0]
-    if (counter) {
+    if (counter != null) {
       counter.counter = this.cycleCount
       counter.callback = callback
     } else {
@@ -44,13 +42,15 @@ export class Debouncer {
   }
 
   public static startTimers (): void {
-    if (!this.timer) {
-      this.timer = setInterval(() => this.doCycle(), this.interval)
+    if (this.timer === undefined) {
+      this.timer = setInterval(() => {
+        this.doCycle()
+      }, this.interval)
     }
   }
 
   public static stopTimers (): void {
-    if (this.timer) {
+    if (this.timer !== undefined) {
       clearInterval(this.timer)
       this.timer = undefined
     }
@@ -64,8 +64,12 @@ export class Debouncer {
       debouncer.counters.forEach(counter => {
         counter.counter--
       })
-      callbacksDue.forEach(({ key, callback }) => callback()
-        .catch(err => logger(`DebounceCallback for ${key} failed`, err)))
+      callbacksDue.forEach(({ key, callback }) => {
+        callback()
+          .catch(err => {
+            logger(`DebounceCallback for ${key} failed`, err)
+          })
+      })
     })
   }
 

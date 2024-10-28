@@ -1,21 +1,19 @@
 'use sanity'
 
-interface UpdateFn {
-  (): Promise<any>
-}
+type UpdateFn = () => Promise<any>
 export class CyclicUpdater {
   protected countdown: number = -1
   protected failCount: number = 0
   protected maxFails: number = 10
   period: number = 60 * 1000
-  updateFn: UpdateFn = async () => Promise.reject(new Error('Cyclic Updater Called with No Updater'))
+  updateFn: UpdateFn = async () => await Promise.reject(new Error('Cyclic Updater Called with No Updater'))
 
   constructor (updateFn?: UpdateFn, period?: number) {
-    this.updateFn = updateFn || this.updateFn
-    this.period = period || this.period
+    this.updateFn = updateFn ?? this.updateFn
+    this.period = period ?? this.period
   }
 
-  async trigger (elapsed: number) {
+  async trigger (elapsed: number): Promise<void> {
     this.countdown -= elapsed
     if (this.countdown <= 0) {
       this.countdown = Infinity
@@ -31,7 +29,7 @@ export class CyclicUpdater {
     }
   }
 
-  static create (updateFn: UpdateFn, period: number) {
+  static create (updateFn: UpdateFn, period: number): CyclicUpdater {
     return new CyclicUpdater(updateFn, period)
   }
 }
@@ -39,20 +37,20 @@ export class CyclicUpdater {
 export class CyclicManager {
   protected static updaters: CyclicUpdater[] = []
   protected static timer: any // It's a timer...
-  static Add (...updaters: CyclicUpdater[]) {
+  static Add (...updaters: CyclicUpdater[]): void {
     this.updaters.push(...updaters)
   }
 
-  static Start (interval: number) {
+  static Start (interval: number): void {
     this.timer = setInterval(
-      () => this.updaters.forEach(updater => updater.trigger(interval)),
+      () => { this.updaters.forEach(updater => { updater.trigger(interval).catch(() => {}) }) },
       interval
     )
   }
 
-  static Stop () {
-    if (this.timer) {
-      clearInterval(this.timer)
+  static Stop (): void {
+    if (this.timer != null) {
+      clearInterval(this.timer as number)
       this.timer = undefined
     }
   }

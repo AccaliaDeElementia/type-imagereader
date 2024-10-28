@@ -1,9 +1,9 @@
 'use sanity'
 
-import { Knex } from 'knex'
+import { type Knex } from 'knex'
 
 export async function up (knex: Knex): Promise<void> {
-  return knex.schema.createTable('pictures', (table) => {
+  await knex.schema.createTable('pictures', (table) => {
     table.increments('id').primary()
     table.string('folder', 8192)
     table.string('path', 8192)
@@ -34,7 +34,7 @@ export async function up (knex: Knex): Promise<void> {
 }
 
 export async function down (knex: Knex): Promise<void> {
-  return knex.schema.dropTable('bookmarks')
+  await knex.schema.dropTable('bookmarks')
     .then(() => knex.schema.dropTable('folders'))
     .then(() => knex.schema.dropTable('pictures'))
     .then(() => knex.schema.dropTable('syncitems'))

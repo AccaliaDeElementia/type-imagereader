@@ -1,8 +1,9 @@
 'use sanity'
 
-import { Application, Router, Request, Response } from 'express'
-import { Server as WebSocketServer, Socket } from 'socket.io'
-import { Server } from 'http'
+import { Router } from 'express'
+import type { Application, Request, Response } from 'express'
+import type { Server as WebSocketServer, Socket } from 'socket.io'
+import type { Server } from 'http'
 import { StatusCodes } from 'http-status-codes'
 
 import { normalize, dirname } from 'path'
@@ -10,14 +11,14 @@ import { normalize, dirname } from 'path'
 import persistance from '../utils/persistance'
 import { UriSafePath, Functions as api } from './apiFunctions'
 
-import { Knex } from 'knex'
+import type { Knex } from 'knex'
 
 interface SlideshowRoom {
-  countdown: number,
-  index: number,
-  path: string,
-  images: string[],
-  uriSafeImage: string|undefined
+  countdown: number
+  index: number
+  path: string
+  images: string[]
+  uriSafeImage: string | undefined
 }
 
 interface ImageWithPath {
@@ -25,14 +26,14 @@ interface ImageWithPath {
 }
 
 export class Config {
-  public static rooms: {[name: string]: SlideshowRoom} = {}
+  public static rooms: { [name: string]: SlideshowRoom } = {}
   public static countdownDuration = 60
   public static memorySize = 100
   public static launchId = -1
 }
 
 export class Imports {
-  public static setLatest = api.SetLatestPicture
+  public static setLatest = async (knex: Knex, path: string): Promise< string | null> => await api.SetLatestPicture(knex, path)
   public static setInterval = setInterval
   public static Router = Router
 }
@@ -53,12 +54,12 @@ export class Functions {
       seen: false,
       path: image
     })
-    if (!picture || !picture.length) {
+    if (picture == null || picture.length <= 0) {
       return
     }
     const folders = []
     let path = image
-    while (path && path !== '/') {
+    while (path != null && path !== '/') {
       path = dirname(path)
       folders.push(`${path}${path !== '/' ? '/' : ''}`)
     }
@@ -68,7 +69,7 @@ export class Functions {
 
   public static async GetRoomAndIncrementImage (knex: Knex, name: string, increment: number = 0): Promise<SlideshowRoom> {
     let room = Config.rooms[name]
-    if (!room) {
+    if (room == null) {
       room = {
         countdown: Config.countdownDuration,
         path: name,
@@ -90,22 +91,23 @@ export class Functions {
       room.images = room.images.concat(await Functions.GetImages(knex, name, Config.memorySize))
     }
     const image = room.images[room.index]
-    if (image) {
+    if (image != null) {
       await Functions.MarkImageRead(knex, image)
     }
-    room.uriSafeImage = UriSafePath.encode(room.images[room.index] || '')
+    room.uriSafeImage = UriSafePath.encode(room.images[room.index] ?? '')
     return room
   }
 
-  public static async TickCountdown (knex: Knex, io: WebSocketServer) {
+  public static async TickCountdown (knex: Knex, io: WebSocketServer): Promise<void> {
     for (const room of Object.values(Config.rooms)) {
       room.countdown--
       if (room.countdown <= -60 * Config.countdownDuration) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete Config.rooms[room.path]
         continue
       }
       const sockets = io.of('/').adapter.rooms.get(room.path)
-      if (!sockets || sockets.size < 1) {
+      if ((sockets?.size ?? 0) < 1) {
         continue
       }
       if (room.countdown <= 0) {
@@ -127,23 +129,23 @@ export class Functions {
       socket.emit('new-image', room.uriSafeImage)
     })
     socket.on('prev-image', async () => {
-      if (!socketRoom) return
+      if (socketRoom == null) return
       const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom, -1)
       io.to(room.path).emit('new-image', room.uriSafeImage)
     })
     socket.on('next-image', async () => {
-      if (!socketRoom) return
+      if (socketRoom == null) return
       const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom, 1)
       io.to(room.path).emit('new-image', room.uriSafeImage)
     })
     socket.on('goto-image', async (callback) => {
-      if (!socketRoom) {
+      if (socketRoom == null) {
         callback(null)
         return
       }
       const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom)
       const picture = room.images[room.index]
-      if (!picture) {
+      if (picture == null) {
         callback(null)
         return
       }
@@ -151,18 +153,9 @@ export class Functions {
       callback(folder)
     })
   }
-}
 
-export async function getRouter (_: Application, __: Server, io: WebSocketServer) {
-  const router = Imports.Router()
-  const knex = await persistance.initialize()
-
-  Config.launchId = Date.now()
-
-  router.get('/launchId', (_, res) => res.json({ launchId: Config.launchId }))
-
-  const rootRoute = async (req: Request, res: Response) => {
-    const folder = '/' + (req.params[0] || '')
+  public static async RootRoute (knex: Knex, req: Request, res: Response): Promise<void> {
+    const folder = '/' + (req.params[0] ?? '')
     if (normalize(folder) !== folder) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
         title: 'ERROR',
@@ -171,26 +164,45 @@ export async function getRouter (_: Application, __: Server, io: WebSocketServer
       })
       return
     }
-    const room = await Functions.GetRoomAndIncrementImage(knex, folder)
-    if (!room || !room.images.length) {
-      res.status(StatusCodes.NOT_FOUND).render('error', {
-        title: 'ERROR',
-        code: 'E_NOT_FOUND',
-        message: 'Not Found'
+    await Functions.GetRoomAndIncrementImage(knex, folder)
+      .then(room => {
+        if (room?.images == null || room?.images.length < 1) {
+          res.status(StatusCodes.NOT_FOUND).render('error', {
+            title: 'ERROR',
+            code: 'E_NOT_FOUND',
+            message: 'Not Found'
+          })
+          return
+        }
+        res.render('slideshow', {
+          title: folder,
+          folder,
+          image: room.uriSafeImage
+        })
+      }, err => {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).render('error', {
+          title: 'ERROR',
+          code: 'INTERNAL_SERVER_ERROR',
+          message: err
+        })
       })
-      return
-    }
-    res.render('slideshow', {
-      title: folder,
-      folder,
-      image: room.uriSafeImage
-    })
   }
-  router.get('/', rootRoute)
-  router.get('/*', rootRoute)
+}
 
-  io.on('connection', (socket) => Functions.HandleSocket(knex, io, socket))
-  Imports.setInterval(async () => await Functions.TickCountdown(knex, io), 1000)
+export async function getRouter (_: Application, __: Server, io: WebSocketServer): Promise<Router> {
+  const router = Imports.Router()
+  const knex = await persistance.initialize()
+
+  Config.launchId = Date.now()
+
+  router.get('/launchId', (_, res) => res.json({ launchId: Config.launchId }))
+
+  const handler = (req: Request, res: Response): void => { Functions.RootRoute(knex, req, res).catch(() => {}) }
+  router.get('/', handler)
+  router.get('/*', handler)
+
+  io.on('connection', (socket) => { Functions.HandleSocket(knex, io, socket) })
+  Imports.setInterval(() => { Functions.TickCountdown(knex, io).catch(() => {}) }, 1000)
 
   return router
 }

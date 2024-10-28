@@ -4,38 +4,38 @@ import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
 
-import { Knex } from 'knex'
+import type { Knex } from 'knex'
 import persistence from '../../utils/persistance'
 
 import synchronize, { Functions, Imports } from '../../utils/syncfolders'
-import { Debugger } from 'debug'
+import type { Debugger } from 'debug'
 
 @suite
 export class SyncFoldersToSortKeyTests {
   @test
-  'it should return key unchanged with no replacers' () {
+  'it should return key unchanged with no replacers' (): void {
     expect(Functions.ToSortKey('this key')).to.equal('this key')
   }
 
   @test
-  'it should return key lowercased with no replacers' () {
+  'it should return key lowercased with no replacers' (): void {
     expect(Functions.ToSortKey('THIS KEY')).to.equal('this key')
   }
 
   @test
-  'it should replace number words with numbers' () {
+  'it should replace number words with numbers' (): void {
     Functions.padLength = 2
     expect(Functions.ToSortKey('FIFTY')).to.equal('50')
   }
 
   @test
-  'it should pad numbers to length' () {
+  'it should pad numbers to length' (): void {
     Functions.padLength = 5
     expect(Functions.ToSortKey('50')).to.equal('00050')
   }
 
   @test
-  'it should not shrink numbers longer than padding' () {
+  'it should not shrink numbers longer than padding' (): void {
     Functions.padLength = 5
     expect(Functions.ToSortKey('0123456789')).to.equal('0123456789')
   }
@@ -44,18 +44,18 @@ export class SyncFoldersToSortKeyTests {
 @suite
 export class SyncFoldersChunkTests {
   @test
-  'it should not split chunk of smaller entries' () {
+  'it should not split chunk of smaller entries' (): void {
     expect(Functions.Chunk([0, 1, 2, 3, 4, 5], 10)).to.deep.equal([[0, 1, 2, 3, 4, 5]])
   }
 
   @test
-  'it should split chunk of larger entries' () {
+  'it should split chunk of larger entries' (): void {
     expect(Functions.Chunk(['a', 'b', 'c', 'd', 'e', 'f', 'g'], 5)).to
       .deep.equal([['a', 'b', 'c', 'd', 'e'], ['f', 'g']])
   }
 
   @test
-  'it shhould handle empty input' () {
+  'it shhould handle empty input' (): void {
     expect(Functions.Chunk([], 10)).to.deep.equal([])
   }
 }
@@ -63,7 +63,7 @@ export class SyncFoldersChunkTests {
 @suite
 export class SyncFoldersChunkSyncItemsForInsert {
   @test
-  'it should count files in input' () {
+  'it should count files in input' (): void {
     const items = [
       { path: '/foo', isFile: false },
       { path: '/bar', isFile: false },
@@ -79,7 +79,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should count dirs in input' () {
+  'it should count dirs in input' (): void {
     const items = [
       { path: '/foo', isFile: false },
       { path: '/bar', isFile: false },
@@ -95,7 +95,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set dirname for root folder item' () {
+  'it should set dirname for root folder item' (): void {
     const items = [
       { path: '/foo', isFile: false }
     ]
@@ -104,7 +104,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set dirname for non root folder item' () {
+  'it should set dirname for non root folder item' (): void {
     const items = [
       { path: '/foo/bar', isFile: false }
     ]
@@ -113,7 +113,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set path for root folder folder' () {
+  'it should set path for root folder folder' (): void {
     const items = [
       { path: '/foo', isFile: false }
     ]
@@ -122,7 +122,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set path for root folder file' () {
+  'it should set path for root folder file' (): void {
     const items = [
       { path: '/foo.bmp', isFile: true }
     ]
@@ -131,7 +131,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set path for non root folder folder' () {
+  'it should set path for non root folder folder' (): void {
     const items = [
       { path: '/foo/bar', isFile: false }
     ]
@@ -140,7 +140,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set path for non root folder file' () {
+  'it should set path for non root folder file' (): void {
     const items = [
       { path: '/foo/bar.jpg', isFile: true }
     ]
@@ -149,7 +149,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set isFile for file' () {
+  'it should set isFile for file' (): void {
     const items = [
       { path: '/foo/bar.jpg', isFile: true }
     ]
@@ -158,7 +158,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set isFile for folder' () {
+  'it should set isFile for folder' (): void {
     const items = [
       { path: '/foo/bar', isFile: false }
     ]
@@ -167,7 +167,7 @@ export class SyncFoldersChunkSyncItemsForInsert {
   }
 
   @test
-  'it should set sort key' () {
+  'it should set sort key' (): void {
     const items = [
       { path: '/foo/bar', isFile: false }
     ]
@@ -185,13 +185,14 @@ export class SyncFoldersFindSyncItemsTests {
 
   KnexInstanceStub = {
     del: sinon.stub().resolves(),
-    insert: sinon.stub().resolves()
+    insert: sinon.stub().resolves(),
+    catch: sinon.stub()
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
-  before () {
+  before (): void {
     this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
     this.FsWalkerStub = sinon.stub(Imports, 'fsWalker').resolves()
     this.ChunkSyncItemsForInsertStub = sinon.stub(Functions, 'ChunkSyncItemsForInsert').returns({
@@ -201,25 +202,25 @@ export class SyncFoldersFindSyncItemsTests {
     })
   }
 
-  after () {
+  after (): void {
     this.DebugStub?.restore()
     this.FsWalkerStub?.restore()
     this.ChunkSyncItemsForInsertStub?.restore()
   }
 
   @test
-  async 'it should create prefixed logger' () {
+  async 'it should create prefixed logger' (): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     expect(this.DebugStub?.callCount).to.equal(1)
     const name = this.DebugStub?.firstCall.args[0]
     expect(name).to.be.a('string')
-      .and.satisfy((msg:string) => msg.startsWith(Imports.logPrefix + ':'))
+      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'))
     expect(name).to.be.a('string')
-      .and.satisfy((msg:string) => msg.endsWith(':findItems'))
+      .and.satisfy((msg: string) => msg.endsWith(':findItems'))
   }
 
   @test
-  async 'it should delete all syncItems' () {
+  async 'it should delete all syncItems' (): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(2)
     expect(this.KnexFnStub.firstCall.calledWith('syncitems')).to.equal(true)
@@ -229,7 +230,7 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   @test
-  async 'it should insert root folder into syncitems' () {
+  async 'it should insert root folder into syncitems' (): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(2)
     expect(this.KnexFnStub.firstCall.calledWith('syncitems')).to.equal(true)
@@ -244,14 +245,14 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   @test
-  async 'it should walk filesystem starting at /data' () {
+  async 'it should walk filesystem starting at /data' (): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     expect(this.FsWalkerStub?.callCount).to.equal(1)
     expect(this.FsWalkerStub?.calledWith('/data')).to.equal(true)
   }
 
   @test
-  async 'it should chunk items for insert into syncitems' () {
+  async 'it should chunk items for insert into syncitems' (): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     const callback = this.FsWalkerStub?.firstCall.args[1]
     const items = [{ path: '/foo', isFile: false }]
@@ -260,7 +261,7 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   @test
-  async 'it should insert chunked items for insert into syncitems' () {
+  async 'it should insert chunked items for insert into syncitems' (): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     const callback = this.FsWalkerStub?.firstCall.args[1]
     const items = [{ path: '/foo', isFile: false }]
@@ -279,7 +280,7 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   @test
-  async 'it should log status on first loop' () {
+  async 'it should log status on first loop' (): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     const callback = this.FsWalkerStub?.firstCall.args[1]
     const items = [{ path: '/foo', isFile: false }]
@@ -293,7 +294,7 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   @test
-  async 'it should log status on 101st loop' () {
+  async 'it should log status on 101st loop' (): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     this.LoggerStub.resetHistory()
     const callback = this.FsWalkerStub?.firstCall.args[1]
@@ -312,7 +313,7 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   @test
-  async 'it should count all files in loop' () {
+  async 'it should count all files in loop' (): Promise<void> {
     this.FsWalkerStub?.callsFake(async (_, callback) => {
       const items = [{ path: '/foo', isFile: false }]
       for (let i = 1; i <= 100; i++) {
@@ -329,7 +330,7 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   @test
-  async 'it should count all dirs in loop' () {
+  async 'it should count all dirs in loop' (): Promise<void> {
     this.FsWalkerStub?.callsFake(async (_, callback) => {
       const items = [{ path: '/foo', isFile: false }]
       for (let i = 1; i <= 100; i++) {
@@ -346,7 +347,7 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   @test
-  async 'it should return count of files' () {
+  async 'it should return count of files' (): Promise<void> {
     this.FsWalkerStub?.callsFake(async (_, callback) => {
       const items = [{ path: '/foo', isFile: false }]
       for (let i = 1; i <= 100; i++) {
@@ -372,19 +373,21 @@ export class SyncFoldersSyncNewPicturesTests {
     select: sinon.stub().returnsThis(),
     from: sinon.stub().returnsThis(),
     leftJoin: sinon.stub().returnsThis(),
-    andWhere: sinon.stub().returnsThis()
+    andWhere: sinon.stub().returnsThis(),
+    catch: sinon.stub()
   }
 
   KnexInstanceStub = {
     raw: sinon.stub(),
     from: sinon.stub().returnsThis(),
-    insert: sinon.stub().resolves([0])
+    insert: sinon.stub().resolves([0]),
+    catch: sinon.stub()
   }
 
   KnexFnFake = this.KnexInstanceStub as unknown as Knex
 
   @test
-  async 'it should select raw from pictures table' () {
+  async 'it should select raw from pictures table' (): Promise<void> {
     const rawQuery = { a: 'flapjacks for breakfast' }
     this.KnexInstanceStub.raw.returns(rawQuery)
     await Functions.SyncNewPictures(this.LoggerFake, this.KnexFnFake)
@@ -396,7 +399,7 @@ export class SyncFoldersSyncNewPicturesTests {
   }
 
   @test
-  async 'it should log results with sqlite return style' () {
+  async 'it should log results with sqlite return style' (): Promise<void> {
     this.KnexInstanceStub.insert.resolves([65536])
     await Functions.SyncNewPictures(this.LoggerFake, this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -404,7 +407,7 @@ export class SyncFoldersSyncNewPicturesTests {
   }
 
   @test
-  async 'it should log results with postgresql return style' () {
+  async 'it should log results with postgresql return style' (): Promise<void> {
     this.KnexInstanceStub.insert.resolves({ rowCount: 256 })
     await Functions.SyncNewPictures(this.LoggerFake, this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -412,7 +415,7 @@ export class SyncFoldersSyncNewPicturesTests {
   }
 
   @test
-  async 'it should construct nested select within insert call' () {
+  async 'it should construct nested select within insert call' (): Promise<void> {
     await Functions.SyncNewPictures(this.LoggerFake, this.KnexFnFake)
     const fn = this.KnexInstanceStub.insert.firstCall.args[0]
     fn.apply(this.KnexInnerInstanceStub)
@@ -442,19 +445,21 @@ export class SyncFoldersSyncRemovedPicturesTests {
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
     from: sinon.stub().returnsThis(),
-    whereRaw: sinon.stub().returnsThis()
+    whereRaw: sinon.stub().returnsThis(),
+    catch: sinon.stub()
   }
 
   KnexInstanceStub = {
     whereNotExists: sinon.stub().returnsThis(),
-    delete: sinon.stub().resolves(0)
+    delete: sinon.stub().resolves(0),
+    catch: sinon.stub()
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
   @test
-  async 'it should remove records from pictures table' () {
+  async 'it should remove records from pictures table' (): Promise<void> {
     await Functions.SyncRemovedPictures(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(1)
     expect(this.KnexFnStub.calledWith('pictures')).to.equal(true)
@@ -465,7 +470,7 @@ export class SyncFoldersSyncRemovedPicturesTests {
   }
 
   @test
-  async 'it should log removed records counts' () {
+  async 'it should log removed records counts' (): Promise<void> {
     this.KnexInstanceStub.delete.returns(1023)
     await Functions.SyncRemovedPictures(this.LoggerFake, this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -473,7 +478,7 @@ export class SyncFoldersSyncRemovedPicturesTests {
   }
 
   @test
-  async 'it should construct inner query to detect removed images' () {
+  async 'it should construct inner query to detect removed images' (): Promise<void> {
     await Functions.SyncRemovedPictures(this.LoggerFake, this.KnexFnFake)
     const fn = this.KnexInstanceStub.whereNotExists.firstCall.args[0]
     fn.apply(this.KnexInnerInstanceStub)
@@ -496,19 +501,21 @@ export class SyncFoldersSyncRemovedBookmarksTests {
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
     from: sinon.stub().returnsThis(),
-    whereRaw: sinon.stub().returnsThis()
+    whereRaw: sinon.stub().returnsThis(),
+    catch: sinon.stub()
   }
 
   KnexInstanceStub = {
     whereNotExists: sinon.stub().returnsThis(),
-    delete: sinon.stub().resolves(0)
+    delete: sinon.stub().resolves(0),
+    catch: sinon.stub()
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
   @test
-  async 'it should remove records from pictures table' () {
+  async 'it should remove records from pictures table' (): Promise<void> {
     await Functions.SyncRemovedBookmarks(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(1)
     expect(this.KnexFnStub.calledWith('bookmarks')).to.equal(true)
@@ -519,7 +526,7 @@ export class SyncFoldersSyncRemovedBookmarksTests {
   }
 
   @test
-  async 'it should log removed records counts' () {
+  async 'it should log removed records counts' (): Promise<void> {
     this.KnexInstanceStub.delete.returns(42)
     await Functions.SyncRemovedBookmarks(this.LoggerFake, this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -527,7 +534,7 @@ export class SyncFoldersSyncRemovedBookmarksTests {
   }
 
   @test
-  async 'it should construct inner query to detect removed images' () {
+  async 'it should construct inner query to detect removed images' (): Promise<void> {
     await Functions.SyncRemovedBookmarks(this.LoggerFake, this.KnexFnFake)
     const fn = this.KnexInstanceStub.whereNotExists.firstCall.args[0]
     fn.apply(this.KnexInnerInstanceStub)
@@ -552,14 +559,14 @@ export class SyncFoldersSyncAllPicturesTests {
 
   KnexFake = { id: Math.random() } as unknown as Knex
 
-  before () {
+  before (): void {
     this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
     this.SyncNewPicturesStub = sinon.stub(Functions, 'SyncNewPictures').resolves()
     this.SyncRemovedPicturesStub = sinon.stub(Functions, 'SyncRemovedPictures').resolves()
     this.SyncRemovedBookmarksStub = sinon.stub(Functions, 'SyncRemovedBookmarks').resolves()
   }
 
-  after () {
+  after (): void {
     this.DebugStub?.restore()
     this.SyncNewPicturesStub?.restore()
     this.SyncRemovedPicturesStub?.restore()
@@ -567,33 +574,33 @@ export class SyncFoldersSyncAllPicturesTests {
   }
 
   @test
-  async 'it should construct prefixed logger' () {
+  async 'it should construct prefixed logger' (): Promise<void> {
     await Functions.SyncAllPictures(this.KnexFake)
     expect(this.DebugStub?.callCount).to.equal(1)
     expect(this.DebugStub?.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg:string) => msg.startsWith(Imports.logPrefix + ':'),
+      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'),
         'Logger should be prefixed')
-      .and.satisfy((msg:string) => msg.endsWith(':syncPictures'),
+      .and.satisfy((msg: string) => msg.endsWith(':syncPictures'),
         'Logger should be suffixed with `syncPictures`')
   }
 
   @test
-  async 'it should call SyncNewPictures' () {
+  async 'it should call SyncNewPictures' (): Promise<void> {
     await Functions.SyncAllPictures(this.KnexFake)
     expect(this.SyncNewPicturesStub?.callCount).to.equal(1)
     expect(this.SyncNewPicturesStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
   }
 
   @test
-  async 'it should call SyncRemovedPictures' () {
+  async 'it should call SyncRemovedPictures' (): Promise<void> {
     await Functions.SyncAllPictures(this.KnexFake)
     expect(this.SyncRemovedPicturesStub?.callCount).to.equal(1)
     expect(this.SyncRemovedPicturesStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
   }
 
   @test
-  async 'it should call SyncRemovedBookmarks' () {
+  async 'it should call SyncRemovedBookmarks' (): Promise<void> {
     await Functions.SyncAllPictures(this.KnexFake)
     expect(this.SyncRemovedBookmarksStub?.callCount).to.equal(1)
     expect(this.SyncRemovedBookmarksStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
@@ -609,19 +616,21 @@ export class SyncFoldersSyncNewFoldersTests {
     select: sinon.stub().returnsThis(),
     from: sinon.stub().returnsThis(),
     leftJoin: sinon.stub().returnsThis(),
-    andWhere: sinon.stub().returnsThis()
+    andWhere: sinon.stub().returnsThis(),
+    catch: sinon.stub()
   }
 
   KnexInstanceStub = {
     raw: sinon.stub(),
     from: sinon.stub().returnsThis(),
-    insert: sinon.stub().resolves([0])
+    insert: sinon.stub().resolves([0]),
+    catch: sinon.stub()
   }
 
   KnexFnFake = this.KnexInstanceStub as unknown as Knex
 
   @test
-  async 'it should select raw from folders table' () {
+  async 'it should select raw from folders table' (): Promise<void> {
     const rawQuery = { a: 'flapjacks for breakfast' }
     this.KnexInstanceStub.raw.returns(rawQuery)
     await Functions.SyncNewFolders(this.LoggerFake, this.KnexFnFake)
@@ -633,7 +642,7 @@ export class SyncFoldersSyncNewFoldersTests {
   }
 
   @test
-  async 'it should log results with sqlite return style' () {
+  async 'it should log results with sqlite return style' (): Promise<void> {
     this.KnexInstanceStub.insert.resolves([65536])
     await Functions.SyncNewFolders(this.LoggerFake, this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -641,7 +650,7 @@ export class SyncFoldersSyncNewFoldersTests {
   }
 
   @test
-  async 'it should log results with postgresql return style' () {
+  async 'it should log results with postgresql return style' (): Promise<void> {
     this.KnexInstanceStub.insert.resolves({ rowCount: 256 })
     await Functions.SyncNewFolders(this.LoggerFake, this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -649,7 +658,7 @@ export class SyncFoldersSyncNewFoldersTests {
   }
 
   @test
-  async 'it should construct nested select within insert call' () {
+  async 'it should construct nested select within insert call' (): Promise<void> {
     await Functions.SyncNewFolders(this.LoggerFake, this.KnexFnFake)
     const fn = this.KnexInstanceStub.insert.firstCall.args[0]
     fn.apply(this.KnexInnerInstanceStub)
@@ -679,19 +688,21 @@ export class SyncFoldersSyncRemovedFoldersTests {
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
     from: sinon.stub().returnsThis(),
-    whereRaw: sinon.stub().returnsThis()
+    whereRaw: sinon.stub().returnsThis(),
+    catch: sinon.stub()
   }
 
   KnexInstanceStub = {
     whereNotExists: sinon.stub().returnsThis(),
-    delete: sinon.stub().resolves(0)
+    delete: sinon.stub().resolves(0),
+    catch: sinon.stub()
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
   @test
-  async 'it should remove records from folders table' () {
+  async 'it should remove records from folders table' (): Promise<void> {
     await Functions.SyncRemovedFolders(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(1)
     expect(this.KnexFnStub.calledWith('folders')).to.equal(true)
@@ -702,7 +713,7 @@ export class SyncFoldersSyncRemovedFoldersTests {
   }
 
   @test
-  async 'it should log removed records counts' () {
+  async 'it should log removed records counts' (): Promise<void> {
     this.KnexInstanceStub.delete.returns(1023)
     await Functions.SyncRemovedFolders(this.LoggerFake, this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -710,7 +721,7 @@ export class SyncFoldersSyncRemovedFoldersTests {
   }
 
   @test
-  async 'it should construct inner query to detect removed folders' () {
+  async 'it should construct inner query to detect removed folders' (): Promise<void> {
     await Functions.SyncRemovedFolders(this.LoggerFake, this.KnexFnFake)
     const fn = this.KnexInstanceStub.whereNotExists.firstCall.args[0]
     fn.apply(this.KnexInnerInstanceStub)
@@ -733,34 +744,36 @@ export class SyncFoldersSyncMissingCoverImagesTests {
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
     from: sinon.stub().returnsThis(),
-    whereRaw: sinon.stub().returnsThis()
+    whereRaw: sinon.stub().returnsThis(),
+    catch: sinon.stub()
   }
 
   KnexInstanceStub = {
     whereNotExists: sinon.stub().returnsThis(),
     whereRaw: sinon.stub().returnsThis(),
-    update: sinon.stub().resolves(0)
+    update: sinon.stub().resolves(0),
+    catch: sinon.stub()
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
   @test
-  async 'it should operate on folders table' () {
+  async 'it should operate on folders table' (): Promise<void> {
     await Functions.SyncMissingCoverImages(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(1)
     expect(this.KnexFnStub.firstCall.args).to.deep.equal(['folders'])
   }
 
   @test
-  async 'it should issue an update clearing current image for selected rows' () {
+  async 'it should issue an update clearing current image for selected rows' (): Promise<void> {
     await Functions.SyncMissingCoverImages(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexInstanceStub.update.callCount).to.equal(1)
     expect(this.KnexInstanceStub.update.firstCall.args).to.deep.equal([{ current: '' }])
   }
 
   @test
-  async 'it should only select folders where cover image doesn\'t exist in the pictures table' () {
+  async 'it should only select folders where cover image doesn\'t exist in the pictures table' (): Promise<void> {
     await Functions.SyncMissingCoverImages(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexInstanceStub.whereNotExists.callCount).to.equal(1)
     const fn = this.KnexInstanceStub.whereNotExists.firstCall.args[0]
@@ -774,14 +787,14 @@ export class SyncFoldersSyncMissingCoverImagesTests {
   }
 
   @test
-  async 'it should only operate on folders that have a cover image set' () {
+  async 'it should only operate on folders that have a cover image set' (): Promise<void> {
     await Functions.SyncMissingCoverImages(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexInstanceStub.whereRaw.callCount).to.equal(1)
     expect(this.KnexInstanceStub.whereRaw.firstCall.args).to.deep.equal(['folders.current <> \'\''])
   }
 
   @test
-  async 'it should log number of updated records' () {
+  async 'it should log number of updated records' (): Promise<void> {
     this.KnexInstanceStub.update.resolves(99)
     await Functions.SyncMissingCoverImages(this.LoggerFake, this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -822,26 +835,26 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
-  ChunkStub?:Sinon.SinonStub
+  ChunkStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.KnexFnFake.queryBuilder = this.QueryBuilderStub
     this.ChunkStub = sinon.stub(Functions, 'Chunk').returns([])
   }
 
-  after () {
+  after (): void {
     this.ChunkStub?.restore()
   }
 
   @test
-  async 'it should select from querybuilder for update' () {
+  async 'it should select from querybuilder for update' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     expect(this.QueryBuilderStub.callCount).to.equal(1)
     expect(this.QueryBuilderStub.firstCall.args).to.have.lengthOf(0)
   }
 
   @test
-  async 'it should create CTE for inner select of primary sort keys' () {
+  async 'it should create CTE for inner select of primary sort keys' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     expect(this.QueryBuilder.with.callCount).to.equal(1)
     expect(this.QueryBuilder.with.firstCall.args).to.have.lengthOf(2)
@@ -849,7 +862,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should select folder name in CTE' () {
+  async 'it should select folder name in CTE' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.select.callCount).to.equal(1)
@@ -858,7 +871,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should select minimum sortKey in CTE' () {
+  async 'it should select minimum sortKey in CTE' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.min.callCount).to.equal(1)
@@ -867,7 +880,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should select from pictures table in CTE' () {
+  async 'it should select from pictures table in CTE' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.from.callCount).to.equal(1)
@@ -876,7 +889,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should group by foldername in CTE' () {
+  async 'it should group by foldername in CTE' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.groupBy.callCount).to.equal(1)
@@ -885,7 +898,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should select folder path for update' () {
+  async 'it should select folder path for update' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     expect(this.QueryBuilder.select.callCount).to.equal(1)
     expect(this.QueryBuilder.select.firstCall.args).to.have.lengthOf(1)
@@ -893,7 +906,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should minimum picture path for update' () {
+  async 'it should minimum picture path for update' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     expect(this.QueryBuilder.min.callCount).to.equal(1)
     expect(this.QueryBuilder.min.firstCall.args).to.have.lengthOf(1)
@@ -901,7 +914,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should select from firsts CTE' () {
+  async 'it should select from firsts CTE' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     expect(this.QueryBuilder.from.callCount).to.equal(1)
     expect(this.QueryBuilder.from.firstCall.args).to.have.lengthOf(1)
@@ -909,7 +922,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should join pictures table to CTE' () {
+  async 'it should join pictures table to CTE' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     expect(this.QueryBuilder.join.callCount).to.equal(1)
     expect(this.QueryBuilder.join.firstCall.args).to.have.lengthOf(2)
@@ -921,7 +934,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should group by foldername to prevent duplicates when first picture has non unique sortkey' () {
+  async 'it should group by foldername to prevent duplicates when first picture has non unique sortkey' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     expect(this.QueryBuilder.groupBy.callCount).to.equal(1)
     expect(this.QueryBuilder.groupBy.firstCall.args).to.have.lengthOf(1)
@@ -929,7 +942,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should order by foldername and full path' () {
+  async 'it should order by foldername and full path' (): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
     expect(this.QueryBuilder.orderBy.callCount).to.equal(1)
     expect(this.QueryBuilder.orderBy.firstCall.args).to.have.lengthOf(2)
@@ -938,7 +951,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should chunk results for batched update' () {
+  async 'it should chunk results for batched update' (): Promise<void> {
     const results = { toUpdate: Math.random() }
     this.QueryBuilder.orderBy.resolves(results)
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
@@ -948,7 +961,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   @test
-  async 'it should update folders for each chunk' () {
+  async 'it should update folders for each chunk' (): Promise<void> {
     const chunk = { chunk: Math.random() }
     this.ChunkStub?.returns([chunk])
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
@@ -969,13 +982,13 @@ export class SyncFoldersSyncAllFoldersTests {
   SyncNewFoldersStub?: Sinon.SinonStub
   SyncRemovedFoldersStub?: Sinon.SinonStub
   SyncMissingCoverImagesStub?: Sinon.SinonStub
-  SyncFolderFirstImagesStub?:Sinon.SinonStub
+  SyncFolderFirstImagesStub?: Sinon.SinonStub
   LoggerStub = sinon.stub()
   DebugStub?: Sinon.SinonStub
 
   KnexFake = { id: Math.random() } as unknown as Knex
 
-  before () {
+  before (): void {
     this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
     this.SyncNewFoldersStub = sinon.stub(Functions, 'SyncNewFolders').resolves()
     this.SyncRemovedFoldersStub = sinon.stub(Functions, 'SyncRemovedFolders').resolves()
@@ -983,7 +996,7 @@ export class SyncFoldersSyncAllFoldersTests {
     this.SyncFolderFirstImagesStub = sinon.stub(Functions, 'SyncFolderFirstImages').resolves()
   }
 
-  after () {
+  after (): void {
     this.DebugStub?.restore()
     this.SyncNewFoldersStub?.restore()
     this.SyncRemovedFoldersStub?.restore()
@@ -992,40 +1005,40 @@ export class SyncFoldersSyncAllFoldersTests {
   }
 
   @test
-  async 'it should construct prefixed logger' () {
+  async 'it should construct prefixed logger' (): Promise<void> {
     await Functions.SyncAllFolders(this.KnexFake)
     expect(this.DebugStub?.callCount).to.equal(1)
     expect(this.DebugStub?.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg:string) => msg.startsWith(Imports.logPrefix + ':'),
+      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'),
         'Logger should be prefixed')
-      .and.satisfy((msg:string) => msg.endsWith(':syncFolders'),
+      .and.satisfy((msg: string) => msg.endsWith(':syncFolders'),
         'Logger should be suffixed with `syncPictures`')
   }
 
   @test
-  async 'it should call SyncNewPictures' () {
+  async 'it should call SyncNewPictures' (): Promise<void> {
     await Functions.SyncAllFolders(this.KnexFake)
     expect(this.SyncNewFoldersStub?.callCount).to.equal(1)
     expect(this.SyncNewFoldersStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
   }
 
   @test
-  async 'it should call SyncRemovedPictures' () {
+  async 'it should call SyncRemovedPictures' (): Promise<void> {
     await Functions.SyncAllFolders(this.KnexFake)
     expect(this.SyncRemovedFoldersStub?.callCount).to.equal(1)
     expect(this.SyncRemovedFoldersStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
   }
 
   @test
-  async 'it should call SyncRemovedBookmarks' () {
+  async 'it should call SyncRemovedBookmarks' (): Promise<void> {
     await Functions.SyncAllFolders(this.KnexFake)
     expect(this.SyncMissingCoverImagesStub?.callCount).to.equal(1)
     expect(this.SyncMissingCoverImagesStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
   }
 
   @test
-  async 'it should call SyncFolderFirstImages' () {
+  async 'it should call SyncFolderFirstImages' (): Promise<void> {
     await Functions.SyncAllFolders(this.KnexFake)
     expect(this.SyncFolderFirstImagesStub?.callCount).to.equal(1)
     expect(this.SyncFolderFirstImagesStub?.firstCall.args).to.deep.equal([this.LoggerStub, this.KnexFake])
@@ -1042,7 +1055,7 @@ export class SyncFoldersGetAllFolderInfosTests {
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
   @test
-  async 'it should select all paths from folders table' () {
+  async 'it should select all paths from folders table' (): Promise<void> {
     await Functions.GetAllFolderInfos(this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(1)
     expect(this.KnexFnStub.firstCall.args).to.deep.equal(['folders'])
@@ -1051,13 +1064,13 @@ export class SyncFoldersGetAllFolderInfosTests {
   }
 
   @test
-  async 'it should resolve to empty array for blank db' () {
+  async 'it should resolve to empty array for blank db' (): Promise<void> {
     const result = await Functions.GetAllFolderInfos(this.KnexFnFake)
     expect(result).to.deep.equal({})
   }
 
   @test
-  async 'it should add path to result for each folder' () {
+  async 'it should add path to result for each folder' (): Promise<void> {
     const folders = ['/', '/foo', '/foo/bar', '/baz', '/quux/is/beast']
     this.KnexInstanceStub.select.resolves(folders.map(path => {
       return { path }
@@ -1086,39 +1099,39 @@ export class SyncFoldersGetFolderInfosWithPictures {
   KnexFnStub: Sinon.SinonStub & { raw?: Sinon.SinonStub } = sinon.stub().returns(this.KnexStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
-  before () {
+  before (): void {
     this.KnexFnStub.raw = sinon.stub()
   }
 
   @test
-  async 'it should handle empty results gracefully' () {
+  async 'it should handle empty results gracefully' (): Promise<void> {
     const result = await Functions.GetFolderInfosWithPictures(this.KnexFnFake)
     expect(result).to.deep.equal([])
   }
 
   @test
-  async 'it should start knex query from pictures' () {
+  async 'it should start knex query from pictures' (): Promise<void> {
     await Functions.GetFolderInfosWithPictures(this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(1)
     expect(this.KnexFnStub.firstCall.args).to.deep.equal(['pictures'])
   }
 
   @test
-  async 'it should select folder field from pictures' () {
+  async 'it should select folder field from pictures' (): Promise<void> {
     await Functions.GetFolderInfosWithPictures(this.KnexFnFake)
     expect(this.KnexStub.select.callCount).to.equal(1)
     expect(this.KnexStub.select.firstCall.args).to.deep.equal(['folder as path'])
   }
 
   @test
-  async 'it should count star from pictures' () {
+  async 'it should count star from pictures' (): Promise<void> {
     await Functions.GetFolderInfosWithPictures(this.KnexFnFake)
     expect(this.KnexStub.count.callCount).to.equal(1)
     expect(this.KnexStub.count.firstCall.args).to.deep.equal(['* as totalCount'])
   }
 
   @test
-  async 'it should sum of read from pictures' () {
+  async 'it should sum of read from pictures' (): Promise<void> {
     const rawQuery = { random: Math.random() }
     this.KnexFnStub.raw?.returns(rawQuery)
     await Functions.GetFolderInfosWithPictures(this.KnexFnFake)
@@ -1132,18 +1145,18 @@ export class SyncFoldersGetFolderInfosWithPictures {
 @suite
 export class SyncFoldersCalculateFolderInfosTests {
   @test
-  'it should handle empty input map gracefully' () {
+  'it should handle empty input map gracefully' (): void {
     expect(Functions.CalculateFolderInfos({}, [])).to.deep.equal([])
   }
 
   @test
-  'it should handle empty input map with input list gracefully' () {
+  'it should handle empty input map with input list gracefully' (): void {
     const folders = [{ path: '/', totalCount: 5, seenCount: 0 }]
     expect(Functions.CalculateFolderInfos({}, folders)).to.deep.equal([{ path: '/', totalCount: 5, seenCount: 0 }])
   }
 
   @test
-  'it should handle empty input list gracefully' () {
+  'it should handle empty input list gracefully' (): void {
     const allFolders = {
       '/': { path: '/', totalCount: 5, seenCount: 0 }
     }
@@ -1151,7 +1164,7 @@ export class SyncFoldersCalculateFolderInfosTests {
   }
 
   @test
-  'it should calculate correctly' () {
+  'it should calculate correctly' (): void {
     const allFolders = {
       '/': { path: '/', totalCount: 0, seenCount: 0 },
       '/foo/': { path: '/foo/', totalCount: 0, seenCount: 0 },
@@ -1179,7 +1192,7 @@ export class SyncFoldersCalculateFolderInfosTests {
   }
 
   @test
-  'it should add missing parent folders correctly' () {
+  'it should add missing parent folders correctly' (): void {
     const allFolders = {
       '/': { path: '/', totalCount: 0, seenCount: 0 }
     }
@@ -1214,7 +1227,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   KnexFnStub = sinon.stub().returns(this.KnexStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
-  before () {
+  before (): void {
     this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
     this.GetFolderInfosWithPicturesStub = sinon.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
     this.GetAllFolderInfosStub = sinon.stub(Functions, 'GetAllFolderInfos').resolves({})
@@ -1222,7 +1235,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
     this.ChunkStub = sinon.stub(Functions, 'Chunk').returns([])
   }
 
-  after () {
+  after (): void {
     this.DebugStub?.restore()
     this.GetFolderInfosWithPicturesStub?.restore()
     this.GetAllFolderInfosStub?.restore()
@@ -1231,19 +1244,19 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   }
 
   @test
-  async 'it should construct prefixed logger' () {
+  async 'it should construct prefixed logger' (): Promise<void> {
     await Functions.UpdateFolderPictureCounts(this.KnexFnFake)
     expect(this.DebugStub?.callCount).to.equal(1)
     expect(this.DebugStub?.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg:string) => msg.startsWith(Imports.logPrefix + ':'),
+      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'),
         'Logger should be prefixed')
-      .and.satisfy((msg:string) => msg.endsWith(':updateSeen'),
+      .and.satisfy((msg: string) => msg.endsWith(':updateSeen'),
         'Logger should be suffixed with `updateSeen`')
   }
 
   @test
-  async 'it should use knex to get folders with pictures counts' () {
+  async 'it should use knex to get folders with pictures counts' (): Promise<void> {
     await Functions.UpdateFolderPictureCounts(this.KnexFnFake)
     expect(this.GetFolderInfosWithPicturesStub?.callCount).to.equal(1)
     expect(this.GetFolderInfosWithPicturesStub?.firstCall.args).to.have.lengthOf(1)
@@ -1251,7 +1264,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   }
 
   @test
-  async 'it should use knex to all folders in the db' () {
+  async 'it should use knex to all folders in the db' (): Promise<void> {
     await Functions.UpdateFolderPictureCounts(this.KnexFnFake)
     expect(this.GetAllFolderInfosStub?.callCount).to.equal(1)
     expect(this.GetAllFolderInfosStub?.firstCall.args).to.have.lengthOf(1)
@@ -1259,7 +1272,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   }
 
   @test
-  async 'it should calculate folder infos using results from both' () {
+  async 'it should calculate folder infos using results from both' (): Promise<void> {
     const pictureFolders = [{ path: 'Test Path', totalCount: 0, seenCount: 0 }]
     this.GetFolderInfosWithPicturesStub?.resolves(pictureFolders)
     const allFolders = {
@@ -1274,7 +1287,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   }
 
   @test
-  async 'it should chunk the results of calculation' () {
+  async 'it should chunk the results of calculation' (): Promise<void> {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]
     this.CalculateFolderInfosStub?.returns(results)
     await Functions.UpdateFolderPictureCounts(this.KnexFnFake)
@@ -1284,7 +1297,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   }
 
   @test
-  async 'it should insert results with conflict resolution' () {
+  async 'it should insert results with conflict resolution' (): Promise<void> {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
     this.ChunkStub?.returns(records)
     await Functions.UpdateFolderPictureCounts(this.KnexFnFake)
@@ -1301,7 +1314,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   }
 
   @test
-  async 'it should loop on insert for each chunk' () {
+  async 'it should loop on insert for each chunk' (): Promise<void> {
     const records = [
       [{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }],
       [{ path: 'OTHER PATH', totalCount: 420, seenCount: 64 }],
@@ -1319,7 +1332,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   }
 
   @test
-  async 'it should log status' () {
+  async 'it should log status' (): Promise<void> {
     const pictureFolders = [
       { path: 'Test Path', totalCount: 0, seenCount: 0 },
       { path: 'Path under test', totalCount: 0, seenCount: 0 }
@@ -1358,28 +1371,28 @@ export class SyncFoldersPruneEmptyFoldersTests {
   KnexFnStub = sinon.stub().returns(this.KnexStub)
   KnexFnFake = this.KnexFnStub as unknown as Knex
 
-  before () {
+  before (): void {
     this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
   }
 
-  after () {
+  after (): void {
     this.DebugStub?.restore()
   }
 
   @test
-  async 'it should construct prefixed logger' () {
+  async 'it should construct prefixed logger' (): Promise<void> {
     await Functions.PruneEmptyFolders(this.KnexFnFake)
     expect(this.DebugStub?.callCount).to.equal(1)
     expect(this.DebugStub?.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg:string) => msg.startsWith(Imports.logPrefix + ':'),
+      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'),
         'Logger should be prefixed')
-      .and.satisfy((msg:string) => msg.endsWith(':pruneEmpty'),
+      .and.satisfy((msg: string) => msg.endsWith(':pruneEmpty'),
         'Logger should be suffixed with `pruneEmpty`')
   }
 
   @test
-  async 'it should use knex to delete folders with total count=0' () {
+  async 'it should use knex to delete folders with total count=0' (): Promise<void> {
     await Functions.PruneEmptyFolders(this.KnexFnFake)
     expect(this.KnexFnStub.callCount).to.equal(1)
     expect(this.KnexFnStub.firstCall.args).to.deep.equal(['folders'])
@@ -1390,7 +1403,7 @@ export class SyncFoldersPruneEmptyFoldersTests {
   }
 
   @test
-  async 'it log removed folder count' () {
+  async 'it log removed folder count' (): Promise<void> {
     this.KnexStub.delete.resolves(42)
     await Functions.PruneEmptyFolders(this.KnexFnFake)
     expect(this.LoggerStub.callCount).to.equal(1)
@@ -1412,7 +1425,7 @@ export class SyncFoldersSynchronizeTests {
 
   KnexFnStub = sinon.stub().returnsThis()
 
-  before () {
+  before (): void {
     this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
     this.PersistenceIntitializerStub = sinon.stub(persistence, 'initialize').resolves(this.KnexFnStub as unknown as Knex)
     this.FindSyncItemsStub = sinon.stub(Functions, 'FindSyncItems').resolves(1)
@@ -1422,7 +1435,7 @@ export class SyncFoldersSynchronizeTests {
     this.PruneEmptyFoldersStub = sinon.stub(Functions, 'PruneEmptyFolders').resolves()
   }
 
-  after () {
+  after (): void {
     this.DebugStub?.restore()
     this.FindSyncItemsStub?.restore()
     this.SyncAllPicturesStub?.restore()
@@ -1433,28 +1446,28 @@ export class SyncFoldersSynchronizeTests {
   }
 
   @test
-  async 'it should create logger at start of process' () {
+  async 'it should create logger at start of process' (): Promise<void> {
     await synchronize()
     expect(this.DebugStub?.callCount).to.equal(1)
     expect(this.DebugStub?.firstCall.args[0]).to.equal(Imports.logPrefix)
   }
 
   @test
-  async 'it should log start of processing' () {
+  async 'it should log start of processing' (): Promise<void> {
     await synchronize()
     expect(this.LoggerStub.callCount).to.be.above(1)
     expect(this.LoggerStub.firstCall.args[0]).to.equal('Folder Synchronization Begins')
   }
 
   @test
-  async 'it should initialize the persistence layer' () {
+  async 'it should initialize the persistence layer' (): Promise<void> {
     await synchronize()
     expect(this.PersistenceIntitializerStub?.callCount).to.equal(1)
     expect(this.PersistenceIntitializerStub?.firstCall.args).to.deep.equal([])
   }
 
   @test
-  async 'it should find the sync items using the knex instance' () {
+  async 'it should find the sync items using the knex instance' (): Promise<void> {
     await synchronize()
     expect(this.FindSyncItemsStub?.callCount).to.equal(1)
     expect(this.FindSyncItemsStub?.firstCall.args).to.have.lengthOf(1)
@@ -1462,7 +1475,7 @@ export class SyncFoldersSynchronizeTests {
   }
 
   @test
-  async 'it should abort synchronizing when zero images found' () {
+  async 'it should abort synchronizing when zero images found' (): Promise<void> {
     this.FindSyncItemsStub?.resolves(0)
     await synchronize()
     expect(this.SyncAllPicturesStub?.callCount).to.equal(0)
@@ -1472,7 +1485,7 @@ export class SyncFoldersSynchronizeTests {
   }
 
   @test
-  async 'it should log error when aborting synchronizing with zero images found' () {
+  async 'it should log error when aborting synchronizing with zero images found' (): Promise<void> {
     this.FindSyncItemsStub?.resolves(-1)
     await synchronize()
     expect(this.LoggerStub.secondCall.args).to.have.lengthOf(2)
@@ -1482,7 +1495,7 @@ export class SyncFoldersSynchronizeTests {
   }
 
   @test
-  async 'it should log success at end of processing with success' () {
+  async 'it should log success at end of processing with success' (): Promise<void> {
     this.FindSyncItemsStub?.resolves(45)
     await synchronize()
     expect(this.LoggerStub.lastCall.args).to.have.lengthOf(1)
@@ -1490,7 +1503,7 @@ export class SyncFoldersSynchronizeTests {
   }
 
   @test
-  async 'it should log success at end of processing with error' () {
+  async 'it should log success at end of processing with error' (): Promise<void> {
     this.FindSyncItemsStub?.resolves(-1)
     await synchronize()
     expect(this.LoggerStub.lastCall.args).to.have.lengthOf(1)

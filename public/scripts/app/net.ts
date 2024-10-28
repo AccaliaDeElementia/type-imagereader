@@ -1,11 +1,11 @@
 'use sanity'
 
-const decodeResult = async <T>(response:Response): Promise<T> => {
+const decodeResult = async <T>(response: Response): Promise<T> => {
   if (response.headers.get('content-length') === '0') {
-    return {} as T
+    return {} as unknown as T
   }
   const data = await response.json()
-  if (data?.error) throw new Error(data.error)
+  if (data?.error != null) throw new Error(`${data.error}`)
   return data as T
 }
 
@@ -21,7 +21,7 @@ export class Net {
         },
         method: 'GET'
       })
-      .then(response => decodeResult<T>(response))
+      .then(async response => await decodeResult<T>(response))
   }
 
   static async PostJSON<T> (path: string, data: any): Promise<T> {
@@ -35,6 +35,6 @@ export class Net {
         method: 'POST',
         body: JSON.stringify(data)
       })
-      .then(response => decodeResult<T>(response))
+      .then(async response => await decodeResult<T>(response))
   }
 }

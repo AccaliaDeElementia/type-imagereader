@@ -2,15 +2,18 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { Application, Router } from 'express'
-import { Server } from 'http'
-import { Server as WebSocketServer, Socket } from 'socket.io'
+import type { Application, Router } from 'express'
+import type { Server } from 'http'
+import type { Server as WebSocketServer, Socket } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
-import { Knex } from 'knex'
+import type { Knex } from 'knex'
 
 import { getRouter, Config, Functions, Imports } from '../../routes/slideshow'
+
+import { Functions as apiFunctions } from '../../routes/apiFunctions'
 import persistance from '../../utils/persistance'
 
 import assert from 'assert'
@@ -29,49 +32,49 @@ export class SlideshowGetImagesTests {
   KnexFake = this.KnexStub as unknown as Knex
 
   @test
-  async 'it should select from pictures table' () {
+  async 'it should select from pictures table' (): Promise<void> {
     await Functions.GetImages(this.KnexFake, '/foo/bar/', 40)
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
   }
 
   @test
-  async 'it should select only the path column' () {
+  async 'it should select only the path column' (): Promise<void> {
     await Functions.GetImages(this.KnexFake, '/foo/bar/', 40)
     expect(this.KnexInstance.select.callCount).to.equal(1)
     expect(this.KnexInstance.select.firstCall.args).to.deep.equal(['path'])
   }
 
   @test
-  async 'it should filter to path prefix' () {
+  async 'it should filter to path prefix' (): Promise<void> {
     await Functions.GetImages(this.KnexFake, '/foo/bar/', 40)
     expect(this.KnexInstance.where.callCount).to.equal(1)
     expect(this.KnexInstance.where.firstCall.args).to.deep.equal(['path', 'like', '/foo/bar/%'])
   }
 
   @test
-  async 'it should order by seen to prioritize unseen images' () {
+  async 'it should order by seen to prioritize unseen images' (): Promise<void> {
     await Functions.GetImages(this.KnexFake, '/foo/bar/', 40)
     expect(this.KnexInstance.orderBy.callCount).to.equal(1)
     expect(this.KnexInstance.orderBy.firstCall.args).to.deep.equal(['seen'])
   }
 
   @test
-  async 'it should second order sort on RANDOM()' () {
+  async 'it should second order sort on RANDOM()' (): Promise<void> {
     await Functions.GetImages(this.KnexFake, '/foo/bar/', 40)
     expect(this.KnexInstance.orderByRaw.callCount).to.equal(1)
     expect(this.KnexInstance.orderByRaw.firstCall.args).to.deep.equal(['RANDOM()'])
   }
 
   @test
-  async 'it should limit to requested count' () {
+  async 'it should limit to requested count' (): Promise<void> {
     await Functions.GetImages(this.KnexFake, '/foo/bar/', 40)
     expect(this.KnexInstance.limit.callCount).to.equal(1)
     expect(this.KnexInstance.limit.firstCall.args).to.deep.equal([40])
   }
 
   @test
-  async 'it should extract paths from results' () {
+  async 'it should extract paths from results' (): Promise<void> {
     const input = [
       { path: '/foo/image.txt' },
       { path: '/foo/spreadhseet.png' },
@@ -112,7 +115,7 @@ export class SlidewhowMarkImageReadTests {
   KnexFake = this.KnexStub as unknown as Knex
 
   @test
-  async 'it should select from database to test if image is seen' () {
+  async 'it should select from database to test if image is seen' (): Promise<void> {
     await Functions.MarkImageRead(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
@@ -126,28 +129,28 @@ export class SlidewhowMarkImageReadTests {
   }
 
   @test
-  async 'it should abort when select resolved to nothing' () {
+  async 'it should abort when select resolved to nothing' (): Promise<void> {
     this.KnexFirstInstance.where.resolves()
     await Functions.MarkImageRead(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexStub.callCount).to.be.equal(1)
   }
 
   @test
-  async 'it should abort when select resolved to empty' () {
+  async 'it should abort when select resolved to empty' (): Promise<void> {
     this.KnexFirstInstance.where.resolves([])
     await Functions.MarkImageRead(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexStub.callCount).to.be.equal(1)
   }
 
   @test
-  async 'it should continue when select resolves to record' () {
+  async 'it should continue when select resolves to record' (): Promise<void> {
     this.KnexFirstInstance.where.resolves([{ seen: false }])
     await Functions.MarkImageRead(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexStub.callCount).to.be.greaterThan(1)
   }
 
   @test
-  async 'it should increment seen counts for all parent folders' () {
+  async 'it should increment seen counts for all parent folders' (): Promise<void> {
     this.KnexFirstInstance.where.resolves([{ seen: false }])
     await Functions.MarkImageRead(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(2)
@@ -162,7 +165,7 @@ export class SlidewhowMarkImageReadTests {
   }
 
   @test
-  async 'it should update seen status for image' () {
+  async 'it should update seen status for image' (): Promise<void> {
     this.KnexFirstInstance.where.resolves([{ seen: false }])
     await Functions.MarkImageRead(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(3)
@@ -185,7 +188,7 @@ export class SlideshowGetRoomAndIncrementImageTests {
   GetImagesStub?: Sinon.SinonStub
   MarkImageReadStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     Config.rooms = {}
     Config.countdownDuration = 60
     Config.memorySize = 100
@@ -193,7 +196,7 @@ export class SlideshowGetRoomAndIncrementImageTests {
     this.MarkImageReadStub = sinon.stub(Functions, 'MarkImageRead').resolves()
   }
 
-  after () {
+  after (): void {
     this.GetImagesStub?.restore()
     this.MarkImageReadStub?.restore()
     Config.countdownDuration = 60
@@ -201,33 +204,33 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should create a room when the room does not exist in the cache' () {
+  async 'it should create a room when the room does not exist in the cache' (): Promise<void> {
     await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
     expect(Config.rooms['/images!/']).to.not.equal(undefined)
   }
 
   @test
-  async 'it should resolve to created room' () {
+  async 'it should resolve to created room' (): Promise<void> {
     const result = await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
     expect(result).to.equal(Config.rooms['/images!/'])
   }
 
   @test
-  async 'it should set expected countdown duration on new room' () {
+  async 'it should set expected countdown duration on new room' (): Promise<void> {
     Config.countdownDuration = 69
     const room = await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
     expect(room.countdown).to.equal(69)
   }
 
   @test
-  async 'it should set expected path duration on new room' () {
+  async 'it should set expected path duration on new room' (): Promise<void> {
     const name = `/path/${Math.random()}/`
     const room = await Functions.GetRoomAndIncrementImage(this.KnexFake, name)
     expect(room.path).to.equal(name)
   }
 
   @test
-  async 'it should get seed images on new room' () {
+  async 'it should get seed images on new room' (): Promise<void> {
     Config.memorySize = 42
     const name = `/path/${Math.random()}/`
     await Functions.GetRoomAndIncrementImage(this.KnexFake, name)
@@ -239,14 +242,14 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should set default index on new room' () {
+  async 'it should set default index on new room' (): Promise<void> {
     Config.memorySize = 100
     const room = await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/')
     expect(room.index).to.equal(99)
   }
 
   @test
-  async 'it should ignore increment on new room' () {
+  async 'it should ignore increment on new room' (): Promise<void> {
     Config.memorySize = 100
     const room = await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/', -10)
     expect(room.index).to.equal(99)
@@ -255,20 +258,20 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should set uriSafeImage' () {
+  async 'it should set uriSafeImage' (): Promise<void> {
     const room = await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
     expect(room.uriSafeImage).to.equal('/image99.png')
   }
 
   @test
-  async 'it should set uriSafeImage using encodeUriComponent' () {
+  async 'it should set uriSafeImage using encodeUriComponent' (): Promise<void> {
     this.StockImages[99] = '/foo?/#bar/%image.gif'
     const room = await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
     expect(room.uriSafeImage).to.equal('/foo%3F/%23bar/%25image.gif')
   }
 
   @test
-  async 'it should set uriSafeImage to blank if there are no pictures' () {
+  async 'it should set uriSafeImage to blank if there are no pictures' (): Promise<void> {
     this.StockImages = []
     this.GetImagesStub?.resolves([])
     const room = await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
@@ -276,7 +279,7 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should rotate memory backwards when reversing off the end of history' () {
+  async 'it should rotate memory backwards when reversing off the end of history' (): Promise<void> {
     const first = Array(200).fill(undefined).map((_, i) => `/image${i + 200}.png`)
     const second = Array(100).fill(undefined).map((_, i) => `/image${i}.png`)
     this.GetImagesStub?.onFirstCall().resolves(first).onSecondCall().resolves(second)
@@ -296,7 +299,7 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should rotate memory backwards when reversing off the end of history with small folder' () {
+  async 'it should rotate memory backwards when reversing off the end of history with small folder' (): Promise<void> {
     const first = Array(20).fill(undefined).map((_, i) => `/image${i + 200}.png`)
     const second = Array(30).fill(undefined).map((_, i) => `/image${i}.png`)
     const room = {
@@ -324,7 +327,7 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should rotate memory backwards when reversing far off the end of history' () {
+  async 'it should rotate memory backwards when reversing far off the end of history' (): Promise<void> {
     const first = Array(200).fill(undefined).map((_, i) => `/image${i + 200}.png`)
     const second = Array(100).fill(undefined).map((_, i) => `/image${i}.png`)
     this.GetImagesStub?.onFirstCall().resolves(first).onSecondCall().resolves(second)
@@ -344,7 +347,7 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should rotate memory forwards when incrementing off the end of history' () {
+  async 'it should rotate memory forwards when incrementing off the end of history' (): Promise<void> {
     const first = Array(200).fill(undefined).map((_, i) => `/image${i + 200}.png`)
     const second = Array(100).fill(undefined).map((_, i) => `/image${i}.png`)
     this.GetImagesStub?.onFirstCall().resolves(first).onSecondCall().resolves(second)
@@ -364,7 +367,7 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should call to MarkImageRead if there are pictures on fetch' () {
+  async 'it should call to MarkImageRead if there are pictures on fetch' (): Promise<void> {
     await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
     expect(this.MarkImageReadStub?.callCount).to.equal(1)
     expect(this.MarkImageReadStub?.firstCall.args).to.have.lengthOf(2)
@@ -373,7 +376,7 @@ export class SlideshowGetRoomAndIncrementImageTests {
   }
 
   @test
-  async 'it should omit call to MarkImageRead if there are no pictures' () {
+  async 'it should omit call to MarkImageRead if there are no pictures' (): Promise<void> {
     this.StockImages = []
     this.GetImagesStub?.resolves([])
     await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
@@ -398,26 +401,26 @@ export class SlideshowTickCountdownTests {
 
   GetRoomStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.IoStub.adapter = this.IoStub
     this.IoStub.rooms = this.IoStub
     Config.rooms = {}
     this.GetRoomStub = sinon.stub(Functions, 'GetRoomAndIncrementImage')
   }
 
-  after () {
+  after (): void {
     this.GetRoomStub?.restore()
   }
 
   @test
-  async 'it should accept empty room list' () {
+  async 'it should accept empty room list' (): Promise<void> {
     await Functions.TickCountdown(this.KnexFake, this.IoFake)
     expect(this.IoStub.of.callCount).to.equal(0)
     expect(this.GetRoomStub?.callCount).to.equal(0)
   }
 
   @test
-  async 'it should remove expired room that has no clients' () {
+  async 'it should remove expired room that has no clients' (): Promise<void> {
     Config.rooms['/Test/Room/'] = {
       countdown: -3599,
       path: '/Test/Room/',
@@ -433,7 +436,7 @@ export class SlideshowTickCountdownTests {
   }
 
   @test
-  async 'it should only decrement room with undefined clients' () {
+  async 'it should only decrement room with undefined clients' (): Promise<void> {
     Config.rooms['/Test/Room/'] = {
       countdown: -1,
       path: '/Test/Room/',
@@ -453,7 +456,7 @@ export class SlideshowTickCountdownTests {
   }
 
   @test
-  async 'it should only decrement room with empty clients' () {
+  async 'it should only decrement room with empty clients' (): Promise<void> {
     Config.rooms['/Test/Room/'] = {
       countdown: -1,
       path: '/Test/Room/',
@@ -473,7 +476,7 @@ export class SlideshowTickCountdownTests {
   }
 
   @test
-  async 'it should only decrement unexpired room' () {
+  async 'it should only decrement unexpired room' (): Promise<void> {
     Config.rooms['/Test/Room/'] = {
       countdown: 2,
       path: '/Test/Room/',
@@ -489,7 +492,7 @@ export class SlideshowTickCountdownTests {
   }
 
   @test
-  async 'it should reset countdown for room thats expired with clients' () {
+  async 'it should reset countdown for room thats expired with clients' (): Promise<void> {
     Config.rooms['/Test/Room/'] = {
       countdown: -1,
       path: '/Test/Room/',
@@ -503,7 +506,7 @@ export class SlideshowTickCountdownTests {
   }
 
   @test
-  async 'it should increment image for room thats expired with clients' () {
+  async 'it should increment image for room thats expired with clients' (): Promise<void> {
     Config.rooms['/Test/Room/'] = {
       countdown: -1,
       path: '/Test/Room/',
@@ -521,7 +524,7 @@ export class SlideshowTickCountdownTests {
   }
 
   @test
-  async 'it should emit new image for room thats expired with clients' () {
+  async 'it should emit new image for room thats expired with clients' (): Promise<void> {
     Config.rooms['/Test/Room/'] = {
       countdown: -1,
       path: '/Test/Room/',
@@ -570,18 +573,18 @@ export class SlideshowHandleSocketTests {
     uriSafeImage: '/some/image.bmp'
   }
 
-  before () {
+  before (): void {
     Config.rooms = {}
     this.GetRoomStub = sinon.stub(Functions, 'GetRoomAndIncrementImage').resolves(this.Room)
     this.SetLatestStub = sinon.stub(Imports, 'setLatest').resolves('/test/path/some/')
   }
 
-  after () {
+  after (): void {
     this.GetRoomStub?.restore()
     this.SetLatestStub?.restore()
   }
 
-  async joinSlideshow (roomname: string) {
+  async joinSlideshow (roomname: string): Promise<void> {
     const fn = this.SocketStub.on.getCalls().filter(call => call.args[0] === 'join-slideshow').map(call => call.args[1])[0]
     assert(fn)
     expect(fn).to.be.a('function')
@@ -592,19 +595,19 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  'it should register four event listeners' () {
+  'it should register four event listeners' (): void {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     expect(this.SocketStub.on.callCount).to.equal(5)
   }
 
   @test
-  'it should register `get-launchId` event listeners' () {
+  'it should register `get-launchId` event listeners' (): void {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     expect(this.SocketStub.on.calledWith('get-launchId')).to.equal(true)
   }
 
   @test
-  async 'on(get-launchId) it should reply with current launchId' () {
+  async 'on(get-launchId) it should reply with current launchId' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'get-launchId')
@@ -621,13 +624,13 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  'it should register `join-slideshow` event listeners' () {
+  'it should register `join-slideshow` event listeners' (): void {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     expect(this.SocketStub.on.calledWith('join-slideshow')).to.equal(true)
   }
 
   @test
-  async 'on(join-slideshow) it should join socket to provided room' () {
+  async 'on(join-slideshow) it should join socket to provided room' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'join-slideshow')
@@ -641,7 +644,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(join-slideshow) it should fetch room without increment' () {
+  async 'on(join-slideshow) it should fetch room without increment' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'join-slideshow')
@@ -657,7 +660,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(join-slideshow) it emit to socket current image' () {
+  async 'on(join-slideshow) it emit to socket current image' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'join-slideshow')
@@ -673,13 +676,13 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  'it should register `prev-inage` event listeners' () {
+  'it should register `prev-inage` event listeners' (): void {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     expect(this.SocketStub.on.calledWith('prev-image')).to.equal(true)
   }
 
   @test
-  async 'on(prev-image) it should ignore call when not joined to room' () {
+  async 'on(prev-image) it should ignore call when not joined to room' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'prev-image')
@@ -693,7 +696,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(prev-image) it increment image when connected to room' () {
+  async 'on(prev-image) it increment image when connected to room' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -711,7 +714,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(prev-image) it emit new image to all clients' () {
+  async 'on(prev-image) it emit new image to all clients' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -730,13 +733,13 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  'it should register `next-image` event listeners' () {
+  'it should register `next-image` event listeners' (): void {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     expect(this.SocketStub.on.calledWith('next-image')).to.equal(true)
   }
 
   @test
-  async 'on(next-image) it should ignore call when not joined to room' () {
+  async 'on(next-image) it should ignore call when not joined to room' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'next-image')
@@ -750,7 +753,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(next-image) it increment image when connected to room' () {
+  async 'on(next-image) it increment image when connected to room' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -768,7 +771,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(next-image) it emit new image to all clients' () {
+  async 'on(next-image) it emit new image to all clients' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -787,13 +790,13 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  'it should register `goto-image` event listeners' () {
+  'it should register `goto-image` event listeners' (): void {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     expect(this.SocketStub.on.calledWith('goto-image')).to.equal(true)
   }
 
   @test
-  async 'on(goto-image) it should ignore call when not joined to room' () {
+  async 'on(goto-image) it should ignore call when not joined to room' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'goto-image')
@@ -810,7 +813,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(goto-image) it retrieves full room data' () {
+  async 'on(goto-image) it retrieves full room data' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -828,7 +831,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(goto-image) it marks current image as latest via api' () {
+  async 'on(goto-image) it marks current image as latest via api' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -849,7 +852,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(goto-image) it passes folder path to callback' () {
+  async 'on(goto-image) it passes folder path to callback' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -867,7 +870,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(goto-image) it should resolve null on missing image' () {
+  async 'on(goto-image) it should resolve null on missing image' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -885,7 +888,7 @@ export class SlideshowHandleSocketTests {
   }
 
   @test
-  async 'on(goto-image) it should not set latest image on missing image' () {
+  async 'on(goto-image) it should not set latest image on missing image' (): Promise<void> {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const roomname = `/testRoom/${Math.random()}`
     await this.joinSlideshow(roomname)
@@ -939,7 +942,7 @@ export class SlideshowGetRouterTests {
   HandleSocketStub?: Sinon.SinonStub
   TickCountdownStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.setIntervalStub = sinon.stub(Imports, 'setInterval')
     this.InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake)
     this.RouterStub = sinon.stub(Imports, 'Router').returns(this.AppRouterStub as unknown as Router)
@@ -948,7 +951,7 @@ export class SlideshowGetRouterTests {
     this.TickCountdownStub = sinon.stub(Functions, 'TickCountdown').resolves()
   }
 
-  after () {
+  after (): void {
     this.setIntervalStub?.restore()
     this.InitializeStub?.restore()
     this.RouterStub?.restore()
@@ -958,7 +961,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should set launch Id' () {
+  async 'it should set launch Id' (): Promise<void> {
     const expected = Math.ceil(Math.random() * 1e10)
     const clock = sinon.useFakeTimers(expected)
     try {
@@ -970,19 +973,19 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should resolve to router' () {
+  async 'it should resolve to router' (): Promise<void> {
     const router = await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(router).to.equal(this.AppRouterStub)
   }
 
   @test
-  async 'it should listen to route /launchId' () {
+  async 'it should listen to route /launchId' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.AppRouterStub.get.calledWith('/launchId')).to.equal(true)
   }
 
   @test
-  async 'it should reply to /launchId with the launch id' () {
+  async 'it should reply to /launchId with the launch id' (): Promise<void> {
     const expected = Math.random()
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
@@ -999,19 +1002,47 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should listen to route /' () {
+  async 'it should listen to route /' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.AppRouterStub.get.calledWith('/')).to.equal(true)
   }
 
   @test
-  async 'it should listen to route /*' () {
+  async 'it should listen to route /*' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.AppRouterStub.get.calledWith('/*')).to.equal(true)
   }
 
   @test
-  async 'it should us same handler for / and /* router' () {
+  async 'it should tolerate handler for route / rejecting' (): Promise<void> {
+    await getRouter(this.AppFake, this.ServerFake, this.IoFake)
+    expect(this.AppRouterStub.get.secondCall.args[0]).to.equal('/')
+    const fn = this.AppRouterStub.get.secondCall.args[1] as (req: Request, res: Response) => void
+    assert(fn != null)
+    const spy = sinon.stub(Functions, 'RootRoute').rejects('FOO')
+    try {
+      fn(null as unknown as Request, null as unknown as Response)
+    } finally {
+      spy.restore()
+    }
+  }
+
+  @test
+  async 'it should tolerate handler for route /* rejecting' (): Promise<void> {
+    await getRouter(this.AppFake, this.ServerFake, this.IoFake)
+    expect(this.AppRouterStub.get.thirdCall.args[0]).to.equal('/*')
+    const fn = this.AppRouterStub.get.thirdCall.args[1] as (req: Request, res: Response) => void
+    assert(fn != null)
+    const spy = sinon.stub(Functions, 'RootRoute').rejects('FOO')
+    try {
+      fn(null as unknown as Request, null as unknown as Response)
+    } finally {
+      spy.restore()
+    }
+  }
+
+  @test
+  async 'it should us same handler for / and /* router' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const fn = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1025,7 +1056,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should reject Forbidden with error on directory traversal attack' () {
+  async 'it should reject Forbidden with error on directory traversal attack' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1039,7 +1070,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should render error on directory traversal attack' () {
+  async 'it should render error on directory traversal attack' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1058,7 +1089,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should find room with default path' () {
+  async 'it should find room with default path' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1073,7 +1104,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should find room with given path' () {
+  async 'it should find room with given path' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1088,7 +1119,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should reject Not Found with error on missing folder' () {
+  async 'it should reject Not Found with error on missing folder' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1103,7 +1134,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should render error on missing folder' () {
+  async 'it should render error on missing folder' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1123,7 +1154,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should reject Not Found with error on empty folder' () {
+  async 'it should reject Not Found with error on empty folder' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1138,7 +1169,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should render error on empty folder' () {
+  async 'it should render error on empty folder' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1158,7 +1189,43 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should render slideshow on valid folder' () {
+  async 'it should reject Internal Server Error with error on room lookup' (): Promise<void> {
+    await getRouter(this.AppFake, this.ServerFake, this.IoFake)
+    const handler = this.AppRouterStub.get.getCalls()
+      .filter(call => call.args[0] === '/')
+      .map(call => call.args[1])[0]
+    assert(handler)
+    this.RequestStub.params = ['foo/bar/']
+    this.GetRoomStub?.rejects(new Error('FOO'))
+    await handler(this.RequestStub, this.ResponseStub)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.have.lengthOf(1)
+    expect(this.ResponseStub.status.firstCall.args[0]).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
+  }
+
+  @test
+  async 'it should render error on  error on room lookup' (): Promise<void> {
+    await getRouter(this.AppFake, this.ServerFake, this.IoFake)
+    const handler = this.AppRouterStub.get.getCalls()
+      .filter(call => call.args[0] === '/')
+      .map(call => call.args[1])[0]
+    assert(handler)
+    this.RequestStub.params = ['foo/bar/']
+    const msg = new Error('FOO!')
+    this.GetRoomStub?.rejects(msg)
+    await handler(this.RequestStub, this.ResponseStub)
+    expect(this.ResponseStub.render.callCount).to.equal(1)
+    expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(2)
+    expect(this.ResponseStub.render.firstCall.args[0]).to.equal('error')
+    expect(this.ResponseStub.render.firstCall.args[1]).to.deep.equal({
+      title: 'ERROR',
+      code: 'INTERNAL_SERVER_ERROR',
+      message: msg
+    })
+  }
+
+  @test
+  async 'it should render slideshow on valid folder' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -1182,7 +1249,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should handle web socket connections' () {
+  async 'it should handle web socket connections' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.IoStub.on.callCount).to.equal(1)
     expect(this.IoStub.on.firstCall.args).to.have.lengthOf(2)
@@ -1197,7 +1264,7 @@ export class SlideshowGetRouterTests {
   }
 
   @test
-  async 'it should set interval for changing images' () {
+  async 'it should set interval for changing images' (): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.setIntervalStub?.callCount).to.equal(1)
     expect(this.setIntervalStub?.firstCall.args).to.have.lengthOf(2)
@@ -1208,5 +1275,41 @@ export class SlideshowGetRouterTests {
     expect(this.TickCountdownStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.TickCountdownStub?.firstCall.args[0]).to.equal(this.KnexFake)
     expect(this.TickCountdownStub?.firstCall.args[1]).to.equal(this.IoFake)
+  }
+
+  @test
+  async 'it should tolerate TickCountdown rejecting' (): Promise<void> {
+    await getRouter(this.AppFake, this.ServerFake, this.IoFake)
+    this.TickCountdownStub?.rejects('FOO')
+    await this.setIntervalStub?.firstCall.args[0]()
+    await Promise.resolve()
+    assert(true, 'should not reject or fail because inner promise rejects')
+  }
+}
+
+@suite
+export class SlideshowImportsTests {
+  SetLatestPictureFake?: Sinon.SinonStub
+
+  before (): void {
+    this.SetLatestPictureFake = sinon.stub(apiFunctions, 'SetLatestPicture').resolves()
+  }
+
+  after (): void {
+    this.SetLatestPictureFake?.restore()
+  }
+
+  @test
+  async 'setLatest should proxy to api.SetLatestPicture' (): Promise<void> {
+    const expected = 'this is the call result'
+    this.SetLatestPictureFake?.resolves(expected)
+    const knex = { knex: 1 } as unknown as Knex
+    const path = 'this is a special path'
+    const result = await Imports.setLatest(knex, path)
+    expect(this.SetLatestPictureFake?.callCount).to.equal(1)
+    expect(this.SetLatestPictureFake?.firstCall.args).to.have.lengthOf(2)
+    expect(this.SetLatestPictureFake?.firstCall.args[0]).to.equal(knex)
+    expect(this.SetLatestPictureFake?.firstCall.args[1]).to.equal(path)
+    expect(result).to.equal(expected)
   }
 }

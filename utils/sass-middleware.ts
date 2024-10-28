@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction } from 'express'
 
 import { StatusCodes } from 'http-status-codes'
 
@@ -38,7 +38,7 @@ export class Imports {
 export class Functions {
   public static logger = debug('type-imagereader:sass-middleware')
   public static debouncer = Debouncer.create()
-  public static cache: {[key: string]: Promise<cssAndMap|null>} = {}
+  public static cache: { [key: string]: Promise<cssAndMap | null> } = {}
 
   public static async CompileCss (path: string, filename: string): Promise<cssAndMap> {
     try {
@@ -51,11 +51,11 @@ export class Functions {
       return {
         css: styles.css,
         map: {
-          version: +(styles.sourceMap?.version || 0),
+          version: +(styles.sourceMap?.version ?? 0),
           file: filename,
-          names: styles.sourceMap?.names || [],
-          sources: styles.sourceMap?.sources || [],
-          mappings: styles.sourceMap?.mappings || ''
+          names: styles.sourceMap?.names ?? [],
+          sources: styles.sourceMap?.sources ?? [],
+          mappings: styles.sourceMap?.mappings ?? ''
         }
       }
     } catch (err: any) {
@@ -76,7 +76,7 @@ export class Functions {
     }
   }
 
-  public static async CompileFolder (basePath: string, path: string) {
+  public static async CompileFolder (basePath: string, path: string): Promise<void> {
     for (const dirinfo of await Imports.readdir(join(basePath, path), { withFileTypes: true })) {
       if (sassExtension.test(dirinfo.name) && !/(^|\/)\./.test(dirinfo.name)) {
         const sassFile = join(path, dirinfo.name)
@@ -85,12 +85,12 @@ export class Functions {
     }
   }
 
-  public static async WatchFolder (basePath: string, path: string) {
+  public static async WatchFolder (basePath: string, path: string): Promise<void> {
     try {
       Functions.logger(`Watching ${path} for stylesheets`)
       const watcher = Imports.watch(join(basePath, path), { persistent: false })
       for await (const event of watcher) {
-        if (!event.filename) continue
+        if (event.filename == null) continue
         if (!sassExtension.test(event.filename) || /(^|\/)\./.test(event.filename)) continue
         const sassFile = join(path, event.filename)
         Functions.debouncer.debounce(sassFile, async () => {
@@ -109,29 +109,31 @@ export interface Options {
   watchdir: string
 }
 
-export default ({ mountPath, watchdir }: Options) => {
+export default ({ mountPath, watchdir }: Options): (req: Request, res: Response, next: NextFunction) => Promise<void> => {
   Functions.WatchFolder(mountPath, watchdir).catch(() => {})
   Functions.CompileFolder(mountPath, watchdir).catch(() => {})
 
   return async (req: Request, res: Response, next: NextFunction) => {
     // ignore all requests that are not GET or don't have .css in them
     if (req.method.toLowerCase() !== 'get' ||
-      !req.path.match(/\.css(\.map)?$/) ||
+      !/\.css(\.map)?$/.test(req.path) ||
       /(^|\/)\.[^.]/.test(req.path)) {
-      return next()
+      next()
+      return
     }
 
     if (normalize(req.path) !== req.path) {
-      return res.status(StatusCodes.FORBIDDEN).send('Directory Traversal Not Allowed!')
+      res.status(StatusCodes.FORBIDDEN).send('Directory Traversal Not Allowed!')
+      return
     }
     try {
       const path = req.path.replace(/\.map$/, '')
-      if (!Functions.cache[path]) {
+      if (Functions.cache[path] == null) {
         await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.sass')) ||
         await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.scss'))
       }
       const styles = await Functions.cache[path]
-      if (!styles) {
+      if (styles == null) {
         res.status(StatusCodes.NOT_FOUND).send('NOT FOUND')
       } else {
         if (/\.map$/.test(req.path)) {
@@ -141,7 +143,7 @@ export default ({ mountPath, watchdir }: Options) => {
         }
       }
     } catch (err: any) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message)
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message)
     }
   }
 }

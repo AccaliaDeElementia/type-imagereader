@@ -1,8 +1,8 @@
 'use sanity'
 
-import { Application, Router, Request, Response, RequestHandler } from 'express'
-import { Server as WebSocketServer } from 'socket.io'
-import { Server } from 'http'
+import { type Application, Router, type Request, type Response, type RequestHandler } from 'express'
+import { type Server as WebSocketServer } from 'socket.io'
+import { type Server } from 'http'
 import { normalize, join, extname } from 'path'
 import { readFile } from 'fs/promises'
 
@@ -16,13 +16,13 @@ const allowedExtensions = /^(jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
 export class ImageData {
   data: Buffer = Buffer.from('')
-  extension: string|null = null
-  code: string|null = null
+  extension: string | null = null
+  code: string | null = null
   statusCode: number = 500
-  message: string|null = null
+  message: string | null = null
   path: string = ''
 
-  static fromImage (data: Buffer, extension: string, path: string) {
+  static fromImage (data: Buffer, extension: string, path: string): ImageData {
     const result = new ImageData()
     result.data = data
     result.extension = extension
@@ -30,7 +30,7 @@ export class ImageData {
     return result
   }
 
-  static fromError (code: string, statusCode: number, message: string, path: string) {
+  static fromError (code: string, statusCode: number, message: string, path: string): ImageData {
     const result = new ImageData()
     result.code = code
     result.statusCode = statusCode
@@ -49,7 +49,7 @@ export class Imports {
 
 interface CacheItem {
   path: string
-  width: number,
+  width: number
   height: number
   image: Promise<ImageData>
 }
@@ -65,14 +65,14 @@ export class ImageCache {
     this.cacheFunction = cacheFn
   }
 
-  public fetch (path: string, width: number, height: number): Promise<ImageData> {
-    let [i, item] = this.items.reduce(([idx, accumulator]: [number, CacheItem|null], current, i) =>
+  public async fetch (path: string, width: number, height: number): Promise<ImageData> {
+    let [i, item] = this.items.reduce(([idx, accumulator]: [number, CacheItem | null], current, i) =>
       current.path === path && current.width >= width && current.height >= height ? [i, current] : [idx, accumulator], [-1, null]
     )
     if (i >= 0 && item !== null) {
       this.items.splice(i, 1)
       this.items.unshift(item)
-      return item?.image
+      return await item?.image
     } else {
       item = {
         path,
@@ -85,7 +85,7 @@ export class ImageCache {
       }
       this.items.unshift(item)
     }
-    return item.image
+    return await item.image
   }
 }
 
@@ -174,16 +174,18 @@ export const CacheStorage = {
 }
 
 // Export the base-router
-export async function getRouter (_: Application, __: Server, ___: WebSocketServer) {
+export async function getRouter (_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
   // Init router and path
   const router = Imports.Router()
 
   const logger = Imports.debug('type-imagereader:images')
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   CacheStorage.kioskCache = new ImageCache(Functions.ReadAndRescaleImage)
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   CacheStorage.scaledCache = new ImageCache(Functions.ReadAndRescaleImage)
 
-  const sendError = (res: Response, code: string, statusCode: StatusCodes, message: string) => {
+  const sendError = (res: Response, code: string, statusCode: StatusCodes, message: string): void => {
     res.status(statusCode).json({
       error: {
         code,
@@ -208,40 +210,40 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }
 
   router.get('/full/*', handleErrors(async (req, res) => {
-    const filename = `/${req.params[0] || ''}`
+    const filename = `/${req.params[0]}`
     const image = await Functions.ReadImage(filename)
     Functions.SendImage(image, res)
   }))
 
   router.get('/scaled/:width/:height/*-image.webp', handleErrors(async (req, res) => {
-    const filename = `/${req.params[0] || ''}`
-    if (!req.params.width) {
-      return sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be provided')
+    const filename = `/${req.params[0]}`
+    if (req.params.width == null) {
+      sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be provided'); return
     }
     const width = +req.params.width
     if (!Number.isInteger(width) || `${width}` !== req.params.width || width < 1) {
-      return sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be positive integer')
+      sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be positive integer'); return
     }
-    if (!req.params.height) {
-      return sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be provided')
+    if (req.params.height == null) {
+      sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be provided'); return
     }
     const height = +req.params.height
     if (!Number.isInteger(height) || `${height}` !== req.params.height || height < 1) {
-      return sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be positive integer')
+      sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be positive integer'); return
     }
     const image = await CacheStorage.scaledCache.fetch(filename, width, height)
     Functions.SendImage(image, res)
   }))
 
   router.get('/preview/*-image.webp', handleErrors(async (req, res) => {
-    const filename = `/${req.params[0] || ''}`
+    const filename = `/${req.params[0]}`
     const image = await Functions.ReadImage(filename)
     await Functions.RescaleImage(image, 240, 320, false)
     Functions.SendImage(image, res)
   }))
 
   router.get('/kiosk/*-image.webp', handleErrors(async (req, res) => {
-    const filename = `/${req.params[0] || ''}`
+    const filename = `/${req.params[0]}`
     const image = await CacheStorage.kioskCache.fetch(filename, 1280, 800)
     Functions.SendImage(image, res)
   }))

@@ -13,23 +13,23 @@ export class Tabs {
 
     for (const tab of this.tabs) {
       tab.parentElement?.addEventListener('click', evt => {
-        this.SelectTab(tab.getAttribute('href') || '')
+        this.SelectTab(tab.getAttribute('href') ?? '')
         evt.preventDefault()
         return false
       })
     }
 
-    Subscribe('Tab:Select', (name) => this.SelectTab(name))
+    Subscribe('Tab:Select', (name) => { this.SelectTab(`${name}`) })
     this.SelectTab()
   }
 
   static SelectTab (href?: string): void {
-    if (href && href[0] !== '#') {
+    if (href != null && href[0] !== '#') {
       href = `#tab${href}`
     }
     const lowerHref = href?.toLowerCase()
-    if (!href || !this.tabNames.some(name => name.toLowerCase() === lowerHref)) {
-      href = this.tabNames[0] || ''
+    if (href == null || !this.tabNames.some(name => name.toLowerCase() === lowerHref)) {
+      href = this.tabNames[0] ?? ''
     }
     for (const tab of this.tabs) {
       const tabHref = tab.getAttribute('href')

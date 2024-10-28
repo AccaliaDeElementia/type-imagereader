@@ -2,9 +2,10 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { Knex } from 'knex'
+import type { Knex } from 'knex'
 
 import { Functions, ModCount, UriSafePath } from '../../routes/apiFunctions'
 import assert from 'assert'
@@ -14,13 +15,13 @@ export class ApiModCountTests {
   MathFloorSpy?: Sinon.SinonSpy
   MathRandomSpy?: Sinon.SinonSpy
 
-  before () {
+  before (): void {
     this.MathFloorSpy = sinon.spy(Math, 'floor')
     this.MathRandomSpy = sinon.spy(Math, 'random')
     ApiModCountTests.ModCount.modCount = 5050
   }
 
-  after () {
+  after (): void {
     this.MathFloorSpy?.restore()
     this.MathRandomSpy?.restore()
   }
@@ -40,14 +41,14 @@ export class ApiModCountTests {
   }
 
   @test
-  'Reset() It should randomize start location' () {
+  'Reset() It should randomize start location' (): void {
     ApiModCountTests.ModCount.Reset()
     expect(this.MathRandomSpy?.callCount).to.equal(1)
     expect(this.MathRandomSpy?.firstCall.args).to.have.lengthOf(0)
   }
 
   @test
-  'Reset() It should extend start location to (0, 1e10]' () {
+  'Reset() It should extend start location to (0, 1e10]' (): void {
     ApiModCountTests.ModCount.Reset()
     const value = 1e10 * this.MathRandomSpy?.firstCall.returnValue
     expect(this.MathFloorSpy?.callCount).to.equal(1)
@@ -56,7 +57,7 @@ export class ApiModCountTests {
   }
 
   @test
-  'Reset() It should return integer value' () {
+  'Reset() It should return integer value' (): void {
     const result = ApiModCountTests.ModCount.Reset()
     const value = this.MathFloorSpy?.firstCall.returnValue
     expect(result).to.equal(value)
@@ -64,38 +65,38 @@ export class ApiModCountTests {
   }
 
   @test
-  'Get() It should return modcount value' () {
+  'Get() It should return modcount value' (): void {
     ApiModCountTests.ModCount.modCount = 69420
     expect(ModCount.Get()).to.equal(69420)
   }
 
   @test
-  'Valitate() It should return truth when modcount matches' () {
+  'Valitate() It should return truth when modcount matches' (): void {
     ApiModCountTests.ModCount.modCount = 69420
     expect(ModCount.Validate(69420)).to.equal(true)
   }
 
   @test
-  'Valitate() It should return false when modcount mismatches' () {
+  'Valitate() It should return false when modcount mismatches' (): void {
     ApiModCountTests.ModCount.modCount = 69420
     expect(ModCount.Validate(8675309)).to.equal(false)
   }
 
   @test
-  'Increment() It should increment returned modcount by one' () {
+  'Increment() It should increment returned modcount by one' (): void {
     ApiModCountTests.ModCount.modCount = 69420
     expect(ModCount.Increment()).to.equal(69421)
   }
 
   @test
-  'Increment() It should increment stored modcount by one' () {
+  'Increment() It should increment stored modcount by one' (): void {
     ApiModCountTests.ModCount.modCount = 69420
     ModCount.Increment()
     expect(ApiModCountTests.ModCount.modCount).to.equal(69421)
   }
 
   @test
-  'Increment() It should reset modcount on rollover' () {
+  'Increment() It should reset modcount on rollover' (): void {
     ApiModCountTests.ModCount.modCount = Number.MAX_SAFE_INTEGER
     expect(ModCount.Increment()).to.equal(1)
   }
@@ -104,42 +105,42 @@ export class ApiModCountTests {
 @suite
 export class ApiUriSafePathTests {
   @test
-  'decode() it should accept empty string' () {
+  'decode() it should accept empty string' (): void {
     expect(UriSafePath.decode('')).to.equal('')
   }
 
   @test
-  'decode() it should accept raw string' () {
+  'decode() it should accept raw string' (): void {
     expect(UriSafePath.decode('/foo/bar')).to.equal('/foo/bar')
   }
 
   @test
-  'decode() it should accept encoded string' () {
+  'decode() it should accept encoded string' (): void {
     expect(UriSafePath.decode('/%66%6F%6F/%62%61%72')).to.equal('/foo/bar')
   }
 
   @test
-  'encodeNullable() it should accept null string' () {
+  'encodeNullable() it should accept null string' (): void {
     expect(UriSafePath.encodeNullable(null)).to.equal(null)
   }
 
   @test
-  'encodeNullable() it should accept empty string' () {
+  'encodeNullable() it should accept empty string' (): void {
     expect(UriSafePath.encodeNullable('')).to.equal(null)
   }
 
   @test
-  'encodeNUllable() it should accept string with encoding' () {
+  'encodeNUllable() it should accept string with encoding' (): void {
     expect(UriSafePath.encodeNullable('/,foo=/<bar>')).to.equal('/%2Cfoo%3D/%3Cbar%3E')
   }
 
   @test
-  'encode() it should accept empty string' () {
+  'encode() it should accept empty string' (): void {
     expect(UriSafePath.encode('')).to.equal('')
   }
 
   @test
-  'encode() it should accept string with encoding' () {
+  'encode() it should accept string with encoding' (): void {
     expect(UriSafePath.encode('/,foo=/<bar>')).to.equal('/%2Cfoo%3D/%3Cbar%3E')
   }
 }
@@ -156,14 +157,14 @@ export class ApiGetChildFoldersTests {
   KnexFake = this.KnexStub as unknown as Knex
 
   @test
-  async 'it should select data from folders' () {
+  async 'it should select data from folders' (): Promise<void> {
     await Functions.GetChildFolders(this.KnexFake, '/foo/bar/')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['folders'])
   }
 
   @test
-  async 'it should select name from folders' () {
+  async 'it should select name from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz'
     }
@@ -175,7 +176,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select non uri safe name from folders' () {
+  async 'it should select non uri safe name from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/<baz>'
     }
@@ -187,7 +188,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select path from folders' () {
+  async 'it should select path from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz'
     }
@@ -199,7 +200,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select uri safe path from folders' () {
+  async 'it should select uri safe path from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/<baz>'
     }
@@ -211,7 +212,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select cover as current from folders' () {
+  async 'it should select cover as current from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz',
       current: '/foo/bar/baz.zip',
@@ -225,7 +226,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select uri safe cover as current from folders' () {
+  async 'it should select uri safe cover as current from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz',
       current: '/foo/bar/<baz>.zip',
@@ -239,7 +240,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select firstPicture as current from folders' () {
+  async 'it should select firstPicture as current from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz',
       current: null,
@@ -253,7 +254,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select uri safe firstPicture as current from folders' () {
+  async 'it should select uri safe firstPicture as current from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz',
       current: null,
@@ -267,7 +268,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select totalCount from folders' () {
+  async 'it should select totalCount from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz',
       totalCount: 42
@@ -280,7 +281,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should select totalSeen from folders' () {
+  async 'it should select totalSeen from folders' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz',
       seenCount: 69
@@ -293,7 +294,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should filter query by folder' () {
+  async 'it should filter query by folder' (): Promise<void> {
     await Functions.GetChildFolders(this.KnexFake, '/foo/bar/')
     expect(this.KnexInstance.where.callCount).to.equal(1)
     expect(this.KnexInstance.where.firstCall.args).to.have.lengthOf(3)
@@ -303,7 +304,7 @@ export class ApiGetChildFoldersTests {
   }
 
   @test
-  async 'it should order by sortKey' () {
+  async 'it should order by sortKey' (): Promise<void> {
     await Functions.GetChildFolders(this.KnexFake, '/foo/bar/')
     expect(this.KnexInstance.orderBy.callCount).to.equal(1)
     expect(this.KnexInstance.orderBy.firstCall.args).to.have.lengthOf(1)
@@ -323,14 +324,14 @@ export class ApiGetChildPicturesTests {
   KnexFake = this.KnexStub as unknown as Knex
 
   @test
-  async 'it should select data from pictures' () {
+  async 'it should select data from pictures' (): Promise<void> {
     await Functions.GetPictures(this.KnexFake, '/foo/bar/')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
   }
 
   @test
-  async 'it should select expected columns' () {
+  async 'it should select expected columns' (): Promise<void> {
     await Functions.GetPictures(this.KnexFake, '/foo/bar/')
     expect(this.KnexInstance.select.callCount).to.equal(1)
     expect(this.KnexInstance.select.firstCall.args).to.have.lengthOf(2)
@@ -339,7 +340,7 @@ export class ApiGetChildPicturesTests {
   }
 
   @test
-  async 'it should filter results to folder' () {
+  async 'it should filter results to folder' (): Promise<void> {
     await Functions.GetPictures(this.KnexFake, '/foo/bar/')
     expect(this.KnexInstance.where.callCount).to.equal(1)
     expect(this.KnexInstance.where.firstCall.args).to.have.lengthOf(3)
@@ -349,7 +350,7 @@ export class ApiGetChildPicturesTests {
   }
 
   @test
-  async 'it should order results by sort key then path' () {
+  async 'it should order results by sort key then path' (): Promise<void> {
     await Functions.GetPictures(this.KnexFake, '/foo/bar/')
     expect(this.KnexInstance.orderBy.callCount).to.equal(1)
     expect(this.KnexInstance.orderBy.firstCall.args).to.have.lengthOf(2)
@@ -358,7 +359,7 @@ export class ApiGetChildPicturesTests {
   }
 
   @test
-  async 'it should select name from pictures' () {
+  async 'it should select name from pictures' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz.png'
     }
@@ -368,7 +369,7 @@ export class ApiGetChildPicturesTests {
   }
 
   @test
-  async 'it should select non uri safe name from pictures' () {
+  async 'it should select non uri safe name from pictures' (): Promise<void> {
     const data = {
       path: '/foo/bar/<baz>.png'
     }
@@ -378,7 +379,7 @@ export class ApiGetChildPicturesTests {
   }
 
   @test
-  async 'it should select path from pictures' () {
+  async 'it should select path from pictures' (): Promise<void> {
     const data = {
       path: '/foo/bar/baz.png'
     }
@@ -388,7 +389,7 @@ export class ApiGetChildPicturesTests {
   }
 
   @test
-  async 'it should select uri safe path from pictures' () {
+  async 'it should select uri safe path from pictures' (): Promise<void> {
     const data = {
       path: '/foo/bar/<baz>.png'
     }
@@ -398,7 +399,7 @@ export class ApiGetChildPicturesTests {
   }
 
   @test
-  async 'it should select seen from pictures' () {
+  async 'it should select seen from pictures' (): Promise<void> {
     const data = [{
       path: '/foo/bar/baz.png',
       seen: true
@@ -413,7 +414,7 @@ export class ApiGetChildPicturesTests {
   }
 
   @test
-  async 'it should map index onto picture list' () {
+  async 'it should map index onto picture list' (): Promise<void> {
     const data = Array(100).fill({
       path: '/foo/bar/baz.png',
       seen: true
@@ -453,13 +454,13 @@ export class ApiGetDirectionFolderTests {
   RawStub = sinon.stub()
   UnionStub = sinon.stub().resolves([])
 
-  before () {
+  before (): void {
     this.KnexFake.union = this.UnionStub
     this.KnexFake.raw = this.RawStub
   }
 
   @test
-  async 'it should select from folders twice for asc' () {
+  async 'it should select from folders twice for asc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo', 'asc', 'all')
     expect(this.KnexStub.callCount).to.equal(2)
     expect(this.KnexStub.firstCall.args).to.have.lengthOf(1)
@@ -469,7 +470,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should select from folders twice for desc' () {
+  async 'it should select from folders twice for desc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo', 'desc', 'all')
     expect(this.KnexStub.callCount).to.equal(2)
     expect(this.KnexStub.firstCall.args).to.have.lengthOf(1)
@@ -479,7 +480,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should select same colums both times for asc' () {
+  async 'it should select same colums both times for asc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo', 'asc', 'all')
     expect(this.KnexFirstCall.select.callCount).to.equal(1)
     expect(this.KnexFirstCall.select.firstCall.args).to.have.lengthOf(3)
@@ -494,7 +495,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should select same colums both times for desc' () {
+  async 'it should select same colums both times for desc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo', 'desc', 'all')
     expect(this.KnexFirstCall.select.callCount).to.equal(1)
     expect(this.KnexFirstCall.select.firstCall.args).to.have.lengthOf(3)
@@ -509,7 +510,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should filter for same sort key for asc' () {
+  async 'it should filter for same sort key for asc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
     expect(this.KnexFirstCall.where.callCount).to.equal(1)
     expect(this.KnexFirstCall.andWhere.callCount).to.equal(2)
@@ -539,7 +540,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should filter for same sort key for desc' () {
+  async 'it should filter for same sort key for desc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
     expect(this.KnexFirstCall.where.callCount).to.equal(1)
     expect(this.KnexFirstCall.andWhere.callCount).to.equal(2)
@@ -569,7 +570,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should filter for only unread on same sortkey for desc' () {
+  async 'it should filter for only unread on same sortkey for desc' (): Promise<void> {
     const rawQuery = { raw: Math.random() }
     this.RawStub.returns(rawQuery)
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'unread')
@@ -591,7 +592,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should filter for different sort key for asc' () {
+  async 'it should filter for different sort key for asc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
     expect(this.KnexSecondCall.where.callCount).to.equal(1)
     expect(this.KnexSecondCall.andWhere.callCount).to.equal(1)
@@ -614,7 +615,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should filter for different sort key for desc' () {
+  async 'it should filter for different sort key for desc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
     expect(this.KnexSecondCall.where.callCount).to.equal(1)
     expect(this.KnexSecondCall.andWhere.callCount).to.equal(1)
@@ -637,7 +638,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should filter for only unread on same sortkey for asc' () {
+  async 'it should filter for only unread on same sortkey for asc' (): Promise<void> {
     const rawQuery = { raw: Math.random() }
     this.RawStub.returns(rawQuery)
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'unread')
@@ -659,63 +660,63 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should order properly for same sort key for asc' () {
+  async 'it should order properly for same sort key for asc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
     expect(this.KnexFirstCall.orderBy.callCount).to.equal(1)
     expect(this.KnexFirstCall.orderBy.firstCall.args).to.deep.equal(['path', 'asc'])
   }
 
   @test
-  async 'it should order properly for same sort key for desc' () {
+  async 'it should order properly for same sort key for desc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
     expect(this.KnexFirstCall.orderBy.callCount).to.equal(1)
     expect(this.KnexFirstCall.orderBy.firstCall.args).to.deep.equal(['path', 'desc'])
   }
 
   @test
-  async 'it should order properly for different sort key for asc' () {
+  async 'it should order properly for different sort key for asc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
     expect(this.KnexSecondCall.orderBy.callCount).to.equal(1)
     expect(this.KnexSecondCall.orderBy.firstCall.args).to.deep.equal(['sortKey', 'asc'])
   }
 
   @test
-  async 'it should order properly for different sort key for desc' () {
+  async 'it should order properly for different sort key for desc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
     expect(this.KnexSecondCall.orderBy.callCount).to.equal(1)
     expect(this.KnexSecondCall.orderBy.firstCall.args).to.deep.equal(['sortKey', 'desc'])
   }
 
   @test
-  async 'it should limit same sort key query for asc' () {
+  async 'it should limit same sort key query for asc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
     expect(this.KnexFirstCall.limit.callCount).to.equal(1)
     expect(this.KnexFirstCall.limit.firstCall.args).to.deep.equal([1])
   }
 
   @test
-  async 'it should limit same sort key query for desc' () {
+  async 'it should limit same sort key query for desc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
     expect(this.KnexFirstCall.limit.callCount).to.equal(1)
     expect(this.KnexFirstCall.limit.firstCall.args).to.deep.equal([1])
   }
 
   @test
-  async 'it should limit different sort key query for asc' () {
+  async 'it should limit different sort key query for asc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
     expect(this.KnexSecondCall.limit.callCount).to.equal(1)
     expect(this.KnexSecondCall.limit.firstCall.args).to.deep.equal([1])
   }
 
   @test
-  async 'it should limit different sort key query for desc' () {
+  async 'it should limit different sort key query for desc' (): Promise<void> {
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
     expect(this.KnexSecondCall.limit.callCount).to.equal(1)
     expect(this.KnexSecondCall.limit.firstCall.args).to.deep.equal([1])
   }
 
   @test
-  async 'it should union same sortkey and different sort key queries for asc' () {
+  async 'it should union same sortkey and different sort key queries for asc' (): Promise<void> {
     this.KnexFirstCall.limit.returns(100)
     this.KnexSecondCall.limit.returns(200)
     await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
@@ -726,14 +727,14 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should resolve null when query finds no results' () {
+  async 'it should resolve null when query finds no results' (): Promise<void> {
     this.UnionStub.resolves([])
     const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
     expect(result).to.equal(null)
   }
 
   @test
-  async 'it should resolve parsed result when query finds results' () {
+  async 'it should resolve parsed result when query finds results' (): Promise<void> {
     this.UnionStub.resolves([{
       path: '/foo/abcde0',
       current: '/foo/abcde0/image.png',
@@ -748,7 +749,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should resolve uri safe results when query finds results' () {
+  async 'it should resolve uri safe results when query finds results' (): Promise<void> {
     this.UnionStub.resolves([{
       path: '/foo/abcde<0>',
       current: '/foo/abcde<0>/image.png',
@@ -763,7 +764,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should resolve with current image as cover when set' () {
+  async 'it should resolve with current image as cover when set' (): Promise<void> {
     this.UnionStub.resolves([{
       path: '/foo/abcde0',
       current: '/foo/abcde0/image.png',
@@ -775,7 +776,7 @@ export class ApiGetDirectionFolderTests {
   }
 
   @test
-  async 'it should resolve with firstPicture as cover when current image not set' () {
+  async 'it should resolve with firstPicture as cover when current image not set' (): Promise<void> {
     this.UnionStub.resolves([{
       path: '/foo/abcde0',
       current: null,
@@ -792,46 +793,46 @@ export class ApiGetNextFolderTests {
   KnexFake = { Knex: Math.random() } as unknown as Knex
   GetDirectionFolderStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.GetDirectionFolderStub = sinon.stub(Functions, 'GetDirectionFolder').resolves()
   }
 
-  after () {
+  after (): void {
     this.GetDirectionFolderStub?.restore()
   }
 
   @test
-  async 'it should call GetDirectionFolder to do actual query' () {
+  async 'it should call GetDirectionFolder to do actual query' (): Promise<void> {
     await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
     expect(this.GetDirectionFolderStub?.callCount).to.equal(1)
   }
 
   @test
-  async 'it should call pass knex parameter to do actual query' () {
+  async 'it should call pass knex parameter to do actual query' (): Promise<void> {
     await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
     expect(this.GetDirectionFolderStub?.firstCall.args[0]).to.equal(this.KnexFake)
   }
 
   @test
-  async 'it should call pass path parameter to do actual query' () {
+  async 'it should call pass path parameter to do actual query' (): Promise<void> {
     await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
     expect(this.GetDirectionFolderStub?.firstCall.args[1]).to.equal('/foo')
   }
 
   @test
-  async 'it should call pass sortkey parameter to do actual query' () {
+  async 'it should call pass sortkey parameter to do actual query' (): Promise<void> {
     await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo90210')
     expect(this.GetDirectionFolderStub?.firstCall.args[2]).to.equal('foo90210')
   }
 
   @test
-  async 'it should call pass asc as direction parameter to do actual query' () {
+  async 'it should call pass asc as direction parameter to do actual query' (): Promise<void> {
     await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
     expect(this.GetDirectionFolderStub?.firstCall.args[3]).to.equal('asc')
   }
 
   @test
-  async 'it should resolve as result of actual query' () {
+  async 'it should resolve as result of actual query' (): Promise<void> {
     const data = { data: Math.random() }
     this.GetDirectionFolderStub?.resolves(data)
     const result = await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
@@ -844,46 +845,46 @@ export class ApiGetPreviousFolderTests {
   KnexFake = { Knex: Math.random() } as unknown as Knex
   GetDirectionFolderStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.GetDirectionFolderStub = sinon.stub(Functions, 'GetDirectionFolder').resolves()
   }
 
-  after () {
+  after (): void {
     this.GetDirectionFolderStub?.restore()
   }
 
   @test
-  async 'it should call GetDirectionFolder to do actual query' () {
+  async 'it should call GetDirectionFolder to do actual query' (): Promise<void> {
     await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo')
     expect(this.GetDirectionFolderStub?.callCount).to.equal(1)
   }
 
   @test
-  async 'it should call pass knex parameter to do actual query' () {
+  async 'it should call pass knex parameter to do actual query' (): Promise<void> {
     await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo')
     expect(this.GetDirectionFolderStub?.firstCall.args[0]).to.equal(this.KnexFake)
   }
 
   @test
-  async 'it should call pass path parameter to do actual query' () {
+  async 'it should call pass path parameter to do actual query' (): Promise<void> {
     await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo')
     expect(this.GetDirectionFolderStub?.firstCall.args[1]).to.equal('/foo')
   }
 
   @test
-  async 'it should call pass sortkey parameter to do actual query' () {
+  async 'it should call pass sortkey parameter to do actual query' (): Promise<void> {
     await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo90210')
     expect(this.GetDirectionFolderStub?.firstCall.args[2]).to.equal('foo90210')
   }
 
   @test
-  async 'it should call pass desc as direction parameter to do actual query' () {
+  async 'it should call pass desc as direction parameter to do actual query' (): Promise<void> {
     await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo')
     expect(this.GetDirectionFolderStub?.firstCall.args[3]).to.equal('desc')
   }
 
   @test
-  async 'it should resolve as result of actual query' () {
+  async 'it should resolve as result of actual query' (): Promise<void> {
     const data = { data: Math.random() }
     this.GetDirectionFolderStub?.resolves(data)
     const result = await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
@@ -903,14 +904,14 @@ export class ApiGetFolderTests {
   KnexFake = this.KnexStub as unknown as Knex
 
   @test
-  async 'it should select from folders table' () {
+  async 'it should select from folders table' (): Promise<void> {
     await Functions.GetFolder(this.KnexFake, '/foo/bar')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['folders'])
   }
 
   @test
-  async 'it should select expected columns' () {
+  async 'it should select expected columns' (): Promise<void> {
     await Functions.GetFolder(this.KnexFake, '/foo/bar')
     expect(this.KnexInstance.select.callCount).to.equal(1)
     expect(this.KnexInstance.select.firstCall.args).to.have.lengthOf(5)
@@ -922,7 +923,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should filter to only one result' () {
+  async 'it should filter to only one result' (): Promise<void> {
     await Functions.GetFolder(this.KnexFake, '/foo/bar')
     expect(this.KnexInstance.limit.callCount).to.equal(1)
     expect(this.KnexInstance.limit.firstCall.args).to.have.lengthOf(1)
@@ -930,13 +931,13 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should return null when db returns no results' () {
+  async 'it should return null when db returns no results' (): Promise<void> {
     const result = await Functions.GetFolder(this.KnexFake, '/foo/bar')
     expect(result).to.equal(null)
   }
 
   @test
-  async 'it should return result from db' () {
+  async 'it should return result from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/bar/',
       folder: '/foo/',
@@ -949,7 +950,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set name from db' () {
+  async 'it should set name from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/Rocketgirl Adventures/',
       folder: '/foo/',
@@ -962,7 +963,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set uri unsafe name from db' () {
+  async 'it should set uri unsafe name from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/<Rocketgirl Adventures>/',
       folder: '/foo/',
@@ -975,7 +976,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set path from db' () {
+  async 'it should set path from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/The_Boss/',
       folder: '/foo/',
@@ -988,7 +989,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set uri safe path from db' () {
+  async 'it should set uri safe path from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/<The Boss>/',
       folder: '/foo/',
@@ -1001,7 +1002,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set folder from db' () {
+  async 'it should set folder from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/The Boss/',
       folder: '/foo/',
@@ -1014,7 +1015,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set uri safe folder from db' () {
+  async 'it should set uri safe folder from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/<The Boss>/',
       folder: '/<foo>/',
@@ -1027,7 +1028,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set cover from current image from db' () {
+  async 'it should set cover from current image from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/The Boss/',
       folder: '/foo/',
@@ -1040,7 +1041,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set uri safe cover from current image from db' () {
+  async 'it should set uri safe cover from current image from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/<The Boss>/',
       folder: '/<foo>/',
@@ -1053,7 +1054,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set cover from first image when no current from db' () {
+  async 'it should set cover from first image when no current from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/The Boss/',
       folder: '/foo/',
@@ -1066,7 +1067,7 @@ export class ApiGetFolderTests {
   }
 
   @test
-  async 'it should set uri safe cover from first image when no current from db' () {
+  async 'it should set uri safe cover from first image when no current from db' (): Promise<void> {
     this.KnexInstance.limit.resolves([{
       path: '/foo/<The Boss>/',
       folder: '/<foo>/',
@@ -1091,14 +1092,14 @@ export class ApiGetBookmarksTests {
   KnexFake = this.KnexStub as unknown as Knex
 
   @test
-  async 'it should select results from bookmarks' () {
+  async 'it should select results from bookmarks' (): Promise<void> {
     await Functions.GetBookmarks(this.KnexFake)
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['bookmarks'])
   }
 
   @test
-  async 'it should select expected fields from bookmarks' () {
+  async 'it should select expected fields from bookmarks' (): Promise<void> {
     await Functions.GetBookmarks(this.KnexFake)
     expect(this.KnexInstance.select.callCount).to.equal(1)
     expect(this.KnexInstance.select.firstCall.args).to.have.lengthOf(2)
@@ -1107,7 +1108,7 @@ export class ApiGetBookmarksTests {
   }
 
   @test
-  async 'it should join pictures to bookmarks' () {
+  async 'it should join pictures to bookmarks' (): Promise<void> {
     await Functions.GetBookmarks(this.KnexFake)
     expect(this.KnexInstance.join.callCount).to.be.greaterThanOrEqual(1)
     const call = this.KnexInstance.join.getCalls().filter(call => call.args[0] === 'pictures')[0]
@@ -1116,7 +1117,7 @@ export class ApiGetBookmarksTests {
   }
 
   @test
-  async 'it should join folders to bookmarks' () {
+  async 'it should join folders to bookmarks' (): Promise<void> {
     await Functions.GetBookmarks(this.KnexFake)
     expect(this.KnexInstance.join.callCount).to.be.greaterThanOrEqual(1)
     const call = this.KnexInstance.join.getCalls().filter(call => call.args[0] === 'folders')[0]
@@ -1125,7 +1126,7 @@ export class ApiGetBookmarksTests {
   }
 
   @test
-  async 'it should order strictly by folder then picture including sortkey and paths' () {
+  async 'it should order strictly by folder then picture including sortkey and paths' (): Promise<void> {
     await Functions.GetBookmarks(this.KnexFake)
     expect(this.KnexInstance.orderBy.callCount).to.equal(1)
     expect(this.KnexInstance.orderBy.firstCall.args).to.have.lengthOf(1)
@@ -1138,14 +1139,14 @@ export class ApiGetBookmarksTests {
   }
 
   @test
-  async 'it should resolve to empty with no bookmarks' () {
+  async 'it should resolve to empty with no bookmarks' (): Promise<void> {
     this.KnexInstance.orderBy.resolves([])
     const bookmarks = await Functions.GetBookmarks(this.KnexFake)
     expect(bookmarks).to.deep.equal([])
   }
 
   @test
-  async 'it should resolve to results with bookmarks' () {
+  async 'it should resolve to results with bookmarks' (): Promise<void> {
     this.KnexInstance.orderBy.resolves([
       { path: '/foo/a bar/a quux.png', folder: '/foo/a bar/' },
       { path: '/foo/a bar/a quuux.png', folder: '/foo/a bar/' },
@@ -1195,7 +1196,7 @@ export class ApiGetListingTests {
 
   KnexFake = { Knex: Math.random() } as unknown as Knex
 
-  before () {
+  before (): void {
     ApiModCountTests.ModCount.modCount = 32_768
     this.GetFolderStub = sinon.stub(Functions, 'GetFolder').resolves()
     this.GetDirectionFolderStub = sinon.stub(Functions, 'GetDirectionFolder').resolves()
@@ -1206,7 +1207,7 @@ export class ApiGetListingTests {
     this.GetBookmarksStub = sinon.stub(Functions, 'GetBookmarks').resolves()
   }
 
-  after () {
+  after (): void {
     this.GetFolderStub?.restore()
     this.GetDirectionFolderStub?.restore()
     this.GetNextFolderStub?.restore()
@@ -1217,7 +1218,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetFolder()' () {
+  async 'it should call GetFolder()' (): Promise<void> {
     await Functions.GetListing(this.KnexFake, '/foo/bar/')
     expect(this.GetFolderStub?.callCount).to.equal(1)
     expect(this.GetFolderStub?.firstCall.args).to.have.lengthOf(2)
@@ -1226,14 +1227,14 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should return null when GetFolder() does not resolve to a folder' () {
+  async 'it should return null when GetFolder() does not resolve to a folder' (): Promise<void> {
     this.GetFolderStub?.resolves(null)
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
     expect(result).to.equal(null)
   }
 
   @test
-  async 'it should abort early when GetFolder() does not resolve to a folder' () {
+  async 'it should abort early when GetFolder() does not resolve to a folder' (): Promise<void> {
     this.GetFolderStub?.resolves(null)
     await Functions.GetListing(this.KnexFake, '/foo/bar/')
     expect(this.GetNextFolderStub?.callCount).to.equal(0)
@@ -1244,7 +1245,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should continue when GetFolder() resolves to a folder' () {
+  async 'it should continue when GetFolder() resolves to a folder' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -1261,7 +1262,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetNextFolder()' () {
+  async 'it should call GetNextFolder()' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/fop/bat/',
@@ -1278,7 +1279,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetPreviousFolder()' () {
+  async 'it should call GetPreviousFolder()' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -1295,7 +1296,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetChildFolders()' () {
+  async 'it should call GetChildFolders()' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -1311,7 +1312,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetPictures()' () {
+  async 'it should call GetPictures()' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -1327,7 +1328,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetBookmarks()' () {
+  async 'it should call GetBookmarks()' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -1342,7 +1343,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetDirectionFolder twice' () {
+  async 'it should call GetDirectionFolder twice' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -1355,7 +1356,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetDirectionFolder for next unread' () {
+  async 'it should call GetDirectionFolder for next unread' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -1375,7 +1376,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should call GetDirectionFolder for previous unread' () {
+  async 'it should call GetDirectionFolder for previous unread' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -1395,7 +1396,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should resolve folder data' () {
+  async 'it should resolve folder data' (): Promise<void> {
     this.GetFolderStub?.resolves({
       name: 'bar<=>',
       path: '/fop/bat/',
@@ -1412,7 +1413,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should set next from GetNextFolder()' () {
+  async 'it should set next from GetNextFolder()' (): Promise<void> {
     const data = { data: Math.random() }
     this.GetFolderStub?.resolves({})
     this.GetNextFolderStub?.resolves(data)
@@ -1422,7 +1423,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should set prev from GetPreviousFolder()' () {
+  async 'it should set prev from GetPreviousFolder()' (): Promise<void> {
     const data = { data: Math.random() }
     this.GetFolderStub?.resolves({})
     this.GetPreviousFolderStub?.resolves(data)
@@ -1432,7 +1433,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should set children from GetChildFolders()' () {
+  async 'it should set children from GetChildFolders()' (): Promise<void> {
     const data = { data: Math.random() }
     this.GetFolderStub?.resolves({})
     this.GetChildFoldersStub?.resolves(data)
@@ -1442,7 +1443,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should set next from GetPictures()' () {
+  async 'it should set next from GetPictures()' (): Promise<void> {
     const data = { data: Math.random() }
     this.GetFolderStub?.resolves({})
     this.GetPicturesStub?.resolves(data)
@@ -1452,7 +1453,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should set bookmarks from GetBookmarks()' () {
+  async 'it should set bookmarks from GetBookmarks()' (): Promise<void> {
     const data = { data: Math.random() }
     this.GetFolderStub?.resolves({})
     this.GetBookmarksStub?.resolves(data)
@@ -1462,7 +1463,7 @@ export class ApiGetListingTests {
   }
 
   @test
-  async 'it should set modcount' () {
+  async 'it should set modcount' (): Promise<void> {
     this.GetFolderStub?.resolves({})
     ApiModCountTests.ModCount.modCount = 9090
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
@@ -1474,12 +1475,12 @@ export class ApiGetListingTests {
 @suite
 export class ApiGetPictureFoldersTests {
   @test
-  'it should resolve to expected paths for root image' () {
+  'it should resolve to expected paths for root image' (): void {
     expect(Functions.GetPictureFolders('/image.png')).to.deep.equal(['/'])
   }
 
   @test
-  'it should resolve to expected paths for deep image' () {
+  'it should resolve to expected paths for deep image' (): void {
     const input = '/foo/bar/baz/quux/xyzzy/image.png'
     const expected = [
       '/foo/bar/baz/quux/xyzzy/',
@@ -1495,34 +1496,35 @@ export class ApiGetPictureFoldersTests {
 
 @suite
 export class ApiSetLatestPictureTests {
-  static KnexQueryResult: any = null
+  queryResults: any = []
 
-  static GetKnexInstance (): Knex {
+  GetKnexInstance (): Knex {
     return {
       select: sinon.stub().returnsThis(),
       increment: sinon.stub().returnsThis(),
       update: sinon.stub().returnsThis(),
       whereIn: sinon.stub().resolves([]),
-      where: sinon.stub().resolves([ApiSetLatestPictureTests.KnexQueryResult])
+      orWhere: sinon.stub().resolves([]),
+      where: sinon.stub().callsFake(async (): Promise<any> => await Promise.resolve(this.queryResults))
     } as unknown as Knex
   }
 
-  KnexStub = sinon.stub().callsFake(ApiSetLatestPictureTests.GetKnexInstance)
+  KnexStub = sinon.stub().callsFake(this.GetKnexInstance.bind(this))
 
   KnexFake = this.KnexStub as unknown as Knex
 
   GetPictureFoldersStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.GetPictureFoldersStub = sinon.stub(Functions, 'GetPictureFolders').returns([])
   }
 
-  after () {
+  after (): void {
     this.GetPictureFoldersStub?.restore()
   }
 
   @test
-  async 'it should search for picture and select seen flag' () {
+  async 'it should search for picture and select seen flag' (): Promise<void> {
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
@@ -1535,20 +1537,21 @@ export class ApiSetLatestPictureTests {
   }
 
   @test
-  async 'it should abort when picture not found' () {
+  async 'it should abort when picture not found' (): Promise<void> {
+    this.queryResults = []
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.png')
     expect(this.KnexStub.callCount).to.equal(1)
   }
 
   @test
-  async 'it should resolve to null when picture not found' () {
+  async 'it should resolve to null when picture not found' (): Promise<void> {
     const result = await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.png')
     expect(result).to.equal(null)
   }
 
   @test
-  async 'it should update current image when search for picture finds result' () {
-    ApiSetLatestPictureTests.KnexQueryResult = { seen: true }
+  async 'it should update current image when search for picture finds result' (): Promise<void> {
+    this.queryResults = [{ seen: true }]
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(2)
     expect(this.KnexStub.lastCall.args).to.deep.equal(['folders'])
@@ -1561,31 +1564,31 @@ export class ApiSetLatestPictureTests {
   }
 
   @test
-  async 'it should not increment seen counts when finding already read image' () {
-    ApiSetLatestPictureTests.KnexQueryResult = { seen: true }
+  async 'it should not increment seen counts when finding already read image' (): Promise<void> {
+    this.queryResults = [{ seen: true }]
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.equal(2)
     expect(this.GetPictureFoldersStub?.callCount).to.equal(0)
   }
 
   @test
-  async 'it should resolve to uri safe folder path when picture is found' () {
-    ApiSetLatestPictureTests.KnexQueryResult = { seen: true }
+  async 'it should resolve to uri safe folder path when picture is found' (): Promise<void> {
+    this.queryResults = [{ seen: true }]
     const result = await Functions.SetLatestPicture(this.KnexFake, '/foo/the bar/image.pdf')
     expect(result).to.equal('/foo/the%20bar/')
   }
 
   @test
-  async 'it should call GetPictureFolders to get parent folders for picture' () {
-    ApiSetLatestPictureTests.KnexQueryResult = { seen: false }
+  async 'it should call GetPictureFolders to get parent folders for picture' (): Promise<void> {
+    this.queryResults = [{ seen: false }]
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.GetPictureFoldersStub?.callCount).to.equal(1)
     expect(this.GetPictureFoldersStub?.firstCall.args).to.deep.equal(['/foo/bar/image.pdf'])
   }
 
   @test
-  async 'it should increment seenCount on parent folders when picture is unseen' () {
-    ApiSetLatestPictureTests.KnexQueryResult = { seen: false }
+  async 'it should increment seenCount on parent folders when picture is unseen' (): Promise<void> {
+    this.queryResults = [{ seen: false }]
     const folders = { folders: Math.random() }
     this.GetPictureFoldersStub?.returns(folders)
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
@@ -1603,8 +1606,8 @@ export class ApiSetLatestPictureTests {
   }
 
   @test
-  async 'it should mark picture aas seen when picture is unseen' () {
-    ApiSetLatestPictureTests.KnexQueryResult = { seen: false }
+  async 'it should mark picture aas seen when picture is unseen' (): Promise<void> {
+    this.queryResults = [{ seen: false }]
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThan(2)
     const call = this.KnexStub.getCalls().filter(call => call.args[0] === 'pictures')[1]
@@ -1619,19 +1622,21 @@ export class ApiSetLatestPictureTests {
 
 @suite
 export class ApiMarkFolderReadTests {
-  static UpdatedPicturesCount = 0
+  queryResults: any = null
+
   GetKnexInstance (): Knex {
     return {
+      select: sinon.stub().returnsThis(),
       increment: sinon.stub().returnsThis(),
       update: sinon.stub().returnsThis(),
-      where: sinon.stub().returnsThis(),
       whereIn: sinon.stub().resolves([]),
-      andWhere: sinon.stub().resolves(ApiMarkFolderReadTests.UpdatedPicturesCount),
+      where: sinon.stub().returnsThis(),
+      andWhere: sinon.stub().callsFake(async (): Promise<any> => await Promise.resolve(this.queryResults)),
       orWhere: sinon.stub().resolves([])
     } as unknown as Knex
   }
 
-  KnexStub = sinon.stub().callsFake(this.GetKnexInstance)
+  KnexStub = sinon.stub().callsFake(this.GetKnexInstance.bind(this))
 
   KnexRawStub = sinon.stub()
 
@@ -1639,18 +1644,18 @@ export class ApiMarkFolderReadTests {
 
   GetPictureFoldersStub?: Sinon.SinonStub
 
-  before () {
-    ApiMarkFolderReadTests.UpdatedPicturesCount = 0
+  before (): void {
+    this.queryResults = 0
     this.KnexFake.raw = this.KnexRawStub
     this.GetPictureFoldersStub = sinon.stub(Functions, 'GetPictureFolders').returns([])
   }
 
-  after () {
+  after (): void {
     this.GetPictureFoldersStub?.restore()
   }
 
   @test
-  async 'it should update pictures table where folder is in given hierarchy and not already read' () {
+  async 'it should update pictures table where folder is in given hierarchy and not already read' (): Promise<void> {
     await Functions.MarkFolderRead(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
@@ -1665,8 +1670,8 @@ export class ApiMarkFolderReadTests {
   }
 
   @test
-  async 'it should increment seen counts of parent folders' () {
-    ApiMarkFolderReadTests.UpdatedPicturesCount = 5050
+  async 'it should increment seen counts of parent folders' (): Promise<void> {
+    this.queryResults = 5050
     const parentPaths = { parents: Math.random() }
     this.GetPictureFoldersStub?.returns(parentPaths)
     await Functions.MarkFolderRead(this.KnexFake, '/foo/bar/baz/quux/')
@@ -1688,8 +1693,8 @@ export class ApiMarkFolderReadTests {
   }
 
   @test
-  async 'it should max seen counts of target folder and children folders' () {
-    ApiMarkFolderReadTests.UpdatedPicturesCount = 5050
+  async 'it should max seen counts of target folder and children folders' (): Promise<void> {
+    this.queryResults = 5050
     const rawParam = { knexRaw: Math.random() }
     this.KnexRawStub?.returns(rawParam)
     await Functions.MarkFolderRead(this.KnexFake, '/foo/bar/baz/quux/')
@@ -1708,35 +1713,37 @@ export class ApiMarkFolderReadTests {
 
 @suite
 export class ApiMarkFolderUnreadTests {
-  static UpdatedPicturesCount = 0
+  queryResults: any = null
+
   GetKnexInstance (): Knex {
     return {
+      select: sinon.stub().returnsThis(),
       increment: sinon.stub().returnsThis(),
       update: sinon.stub().returnsThis(),
-      where: sinon.stub().returnsThis(),
       whereIn: sinon.stub().resolves([]),
-      andWhere: sinon.stub().resolves(ApiMarkFolderUnreadTests.UpdatedPicturesCount),
+      where: sinon.stub().returnsThis(),
+      andWhere: sinon.stub().callsFake(async (): Promise<any> => await Promise.resolve(this.queryResults)),
       orWhere: sinon.stub().resolves([])
     } as unknown as Knex
   }
 
-  KnexStub = sinon.stub().callsFake(this.GetKnexInstance)
+  KnexStub = sinon.stub().callsFake(this.GetKnexInstance.bind(this))
 
   KnexFake = this.KnexStub as unknown as Knex
 
   GetPictureFoldersStub?: Sinon.SinonStub
 
-  before () {
-    ApiMarkFolderUnreadTests.UpdatedPicturesCount = 0
+  before (): void {
+    this.queryResults = 0
     this.GetPictureFoldersStub = sinon.stub(Functions, 'GetPictureFolders').returns([])
   }
 
-  after () {
+  after (): void {
     this.GetPictureFoldersStub?.restore()
   }
 
   @test
-  async 'it should update pictures table where folder is in given hierarchy and is already read' () {
+  async 'it should update pictures table where folder is in given hierarchy and is already read' (): Promise<void> {
     await Functions.MarkFolderUnread(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
@@ -1751,8 +1758,8 @@ export class ApiMarkFolderUnreadTests {
   }
 
   @test
-  async 'it should decrement seen counts of parent folders' () {
-    ApiMarkFolderUnreadTests.UpdatedPicturesCount = 5050
+  async 'it should decrement seen counts of parent folders' (): Promise<void> {
+    this.queryResults = 5050
     const parentPaths = { parents: Math.random() }
     this.GetPictureFoldersStub?.returns(parentPaths)
     await Functions.MarkFolderUnread(this.KnexFake, '/foo/bar/baz/quux/')
@@ -1774,8 +1781,8 @@ export class ApiMarkFolderUnreadTests {
   }
 
   @test
-  async 'it should reset seen counts of target folder and children folders' () {
-    ApiMarkFolderUnreadTests.UpdatedPicturesCount = 5050
+  async 'it should reset seen counts of target folder and children folders' (): Promise<void> {
+    this.queryResults = 5050
     await Functions.MarkFolderUnread(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.thirdCall.args).to.deep.equal(['folders'])
@@ -1803,21 +1810,21 @@ export class ApiAddBookmarkstests {
   KnexFake = this.KnexStub as unknown as Knex
 
   @test
-  async 'it should query on bookmarks table' () {
+  async 'it should query on bookmarks table' (): Promise<void> {
     await Functions.AddBookmark(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['bookmarks'])
   }
 
   @test
-  async 'it should insert provided path' () {
+  async 'it should insert provided path' (): Promise<void> {
     await Functions.AddBookmark(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexInstance.insert.callCount).to.equal(1)
     expect(this.KnexInstance.insert.firstCall.args).to.deep.equal([{ path: '/foo/bar/baz.png' }])
   }
 
   @test
-  async 'it should onConflict ignore the insert' () {
+  async 'it should onConflict ignore the insert' (): Promise<void> {
     await Functions.AddBookmark(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexInstance.onConflict.callCount).to.equal(1)
     expect(this.KnexInstance.onConflict.firstCall.args).to.deep.equal(['path'])
@@ -1838,21 +1845,21 @@ export class ApiRemoveBookmarkstests {
   KnexFake = this.KnexStub as unknown as Knex
 
   @test
-  async 'it should query on bookmarks table' () {
+  async 'it should query on bookmarks table' (): Promise<void> {
     await Functions.RemoveBookmark(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['bookmarks'])
   }
 
   @test
-  async 'it should filter to exactly provided path' () {
+  async 'it should filter to exactly provided path' (): Promise<void> {
     await Functions.RemoveBookmark(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexInstance.where.callCount).to.equal(1)
     expect(this.KnexInstance.where.firstCall.args).to.deep.equal([{ path: '/foo/bar/baz.png' }])
   }
 
   @test
-  async 'it should delete results' () {
+  async 'it should delete results' (): Promise<void> {
     await Functions.RemoveBookmark(this.KnexFake, '/foo/bar/baz.png')
     expect(this.KnexInstance.delete.callCount).to.equal(1)
     expect(this.KnexInstance.delete.firstCall.args).to.have.lengthOf(0)

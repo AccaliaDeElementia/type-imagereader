@@ -2,11 +2,12 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { Application, Router, Request, Response } from 'express'
-import { Server } from 'http'
-import { Server as WebSocketServer } from 'socket.io'
+import type { Application, Router, Request, Response } from 'express'
+import type { Server } from 'http'
+import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 import persistance from '../../utils/persistance'
 
@@ -14,8 +15,8 @@ import { getRouter, Imports } from '../../routes/api'
 import { Functions, ModCount } from '../../routes/apiFunctions'
 
 import assert from 'assert'
-import { Debugger } from 'debug'
-import { Knex } from 'knex'
+import type { Debugger } from 'debug'
+import type { Knex } from 'knex'
 
 @suite
 export class ApiGetRouterTests {
@@ -31,48 +32,48 @@ export class ApiGetRouterTests {
 
   MakeRouterStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.InitializeStub = sinon.stub(persistance, 'initialize').resolves()
     this.MakeRouterStub = sinon.stub(Imports, 'Router').returns(this.RouterStub as unknown as Router)
   }
 
-  after () {
+  after (): void {
     this.InitializeStub?.restore()
     this.MakeRouterStub?.restore()
   }
 
   @test
-  async 'it should resolve to created router' () {
+  async 'it should resolve to created router' (): Promise<void> {
     const result = await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(result).to.equal(this.RouterStub)
   }
 
   @test
-  async 'it should attach handler for get `/`' () {
+  async 'it should attach handler for get `/`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.get.calledWith('/')).to.equal(true)
   }
 
   @test
-  async 'it should attach handler for get `/healthcheck`' () {
+  async 'it should attach handler for get `/healthcheck`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.get.calledWith('/')).to.equal(true)
   }
 
   @test
-  async 'it should attach handler for get `/listing/*`' () {
+  async 'it should attach handler for get `/listing/*`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.get.calledWith('/listing/*')).to.equal(true)
   }
 
   @test
-  async 'it should attach handler for get `/listing`' () {
+  async 'it should attach handler for get `/listing`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.get.calledWith('/listing')).to.equal(true)
   }
 
   @test
-  async 'it should use same handler for `/listing/` and `/listing/*`' () {
+  async 'it should use same handler for `/listing/` and `/listing/*`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     const fn1 = this.RouterStub.get.getCalls().filter(call => call.args[0] === '/listing')[0]?.args[1]
     const fn2 = this.RouterStub.get.getCalls().filter(call => call.args[0] === '/listing/*')[0]?.args[1]
@@ -82,37 +83,37 @@ export class ApiGetRouterTests {
   }
 
   @test
-  async 'it should attach handler for post `/navigate/latest`' () {
+  async 'it should attach handler for post `/navigate/latest`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.post.calledWith('/navigate/latest')).to.equal(true)
   }
 
   @test
-  async 'it should attach handler for post `/mark/read`' () {
+  async 'it should attach handler for post `/mark/read`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.post.calledWith('/mark/read')).to.equal(true)
   }
 
   @test
-  async 'it should attach handler for post `/mark/unread`' () {
+  async 'it should attach handler for post `/mark/unread`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.post.calledWith('/mark/unread')).to.equal(true)
   }
 
   @test
-  async 'it should attach handler for get `/bookmarks/*`' () {
+  async 'it should attach handler for get `/bookmarks/*`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.get.calledWith('/bookmarks/*')).to.equal(true)
   }
 
   @test
-  async 'it should attach handler for get `/bookmarks/`' () {
+  async 'it should attach handler for get `/bookmarks/`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.get.calledWith('/bookmarks')).to.equal(true)
   }
 
   @test
-  async 'it should use same handler for `/bookmarks/` and `/bookmarks/*`' () {
+  async 'it should use same handler for `/bookmarks/` and `/bookmarks/*`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     const fn1 = this.RouterStub.get.getCalls().filter(call => call.args[0] === '/bookmarks')[0]?.args[1]
     const fn2 = this.RouterStub.get.getCalls().filter(call => call.args[0] === '/bookmarks/*')[0]?.args[1]
@@ -122,13 +123,13 @@ export class ApiGetRouterTests {
   }
 
   @test
-  async 'it should attach handler for post `/bookmarks/add`' () {
+  async 'it should attach handler for post `/bookmarks/add`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.post.calledWith('/bookmarks/add')).to.equal(true)
   }
 
   @test
-  async 'it should attach handler for post `/bookmarks/remove`' () {
+  async 'it should attach handler for post `/bookmarks/remove`' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
     expect(this.RouterStub.post.calledWith('/bookmarks/remove')).to.equal(true)
   }
@@ -160,7 +161,7 @@ export class ApiGetRootRouteTests {
 
   DebuggerStub?: Sinon.SinonStub
 
-  async before () {
+  async before (): Promise<void> {
     const getFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves()
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -178,12 +179,12 @@ export class ApiGetRootRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
   }
 
   @test
-  async 'it should return status OK' () {
+  async 'it should return status OK' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -191,7 +192,7 @@ export class ApiGetRootRouteTests {
   }
 
   @test
-  async 'it should return JSON data' () {
+  async 'it should return JSON data' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.json.callCount).to.equal(1)
@@ -199,7 +200,7 @@ export class ApiGetRootRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.ResponseStub.status.onFirstCall().throws(err)
     assert(this.RouteHandler)
@@ -215,7 +216,7 @@ export class ApiGetRootRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.ResponseStub.status.onFirstCall().throws(err)
     const bodyData = { Body: Math.random() }
@@ -230,7 +231,7 @@ export class ApiGetRootRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.ResponseStub.status.onFirstCall().throws(err)
     assert(this.RouteHandler)
@@ -265,7 +266,7 @@ export class ApiGetHealthcheckRouteTests {
 
   DebuggerStub?: Sinon.SinonStub
 
-  async before () {
+  async before (): Promise<void> {
     const getFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves()
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -283,12 +284,12 @@ export class ApiGetHealthcheckRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
   }
 
   @test
-  async 'it should return status OK' () {
+  async 'it should return status OK' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -296,7 +297,7 @@ export class ApiGetHealthcheckRouteTests {
   }
 
   @test
-  async 'it should return `OK`' () {
+  async 'it should return `OK`' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.send.callCount).to.equal(1)
@@ -304,7 +305,7 @@ export class ApiGetHealthcheckRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.ResponseStub.status.onFirstCall().throws(err)
     assert(this.RouteHandler)
@@ -320,7 +321,7 @@ export class ApiGetHealthcheckRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.ResponseStub.status.onFirstCall().throws(err)
     const bodyData = { Body: Math.random() }
@@ -335,7 +336,7 @@ export class ApiGetHealthcheckRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.ResponseStub.status.onFirstCall().throws(err)
     assert(this.RouteHandler)
@@ -375,7 +376,7 @@ export class ApiGetListingRouteTests {
 
   KnexFake = { Knex: Math.random() }
 
-  async before () {
+  async before (): Promise<void> {
     const getFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake as unknown as Knex)
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -394,13 +395,13 @@ export class ApiGetListingRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
     this.GetListingStub?.restore()
   }
 
   @test
-  async 'it should return status OK' () {
+  async 'it should return status OK' (): Promise<void> {
     this.GetListingStub?.resolves({})
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -409,7 +410,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should json send listing response' () {
+  async 'it should json send listing response' (): Promise<void> {
     const listing = { listing: Math.random() }
     this.GetListingStub?.resolves(listing)
     assert(this.RouteHandler)
@@ -420,7 +421,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should call GetListingStub with Knex from initialize' () {
+  async 'it should call GetListingStub with Knex from initialize' (): Promise<void> {
     this.RequestStub.params = []
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -429,7 +430,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should call GetListingStub to retrieve implicit root listing' () {
+  async 'it should call GetListingStub to retrieve implicit root listing' (): Promise<void> {
     this.RequestStub.params = []
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -438,7 +439,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should call GetListingStub to retrieve explicit root listing' () {
+  async 'it should call GetListingStub to retrieve explicit root listing' (): Promise<void> {
     this.RequestStub.params = ['/']
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -447,7 +448,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should call GetListingStub to retrieve web path listing' () {
+  async 'it should call GetListingStub to retrieve web path listing' (): Promise<void> {
     this.RequestStub.params = ['foo/a bar/baz']
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -456,7 +457,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should not retrieve listing directory traversal attempt' () {
+  async 'it should not retrieve listing directory traversal attempt' (): Promise<void> {
     this.RequestStub.params = ['/foo/../bar/']
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -464,7 +465,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should return status FORBIDDEN for directory traversal attempt' () {
+  async 'it should return status FORBIDDEN for directory traversal attempt' (): Promise<void> {
     this.RequestStub.params = ['/foo/../bar/']
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -473,7 +474,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should json error for directory traversal attempt' () {
+  async 'it should json error for directory traversal attempt' (): Promise<void> {
     this.RequestStub.params = ['/foo/../bar/']
     const err = {
       error: {
@@ -490,7 +491,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should return status NOT_FOUND for missing folder' () {
+  async 'it should return status NOT_FOUND for missing folder' (): Promise<void> {
     this.GetListingStub?.resolves(null)
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -499,7 +500,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should json error for missing folder' () {
+  async 'it should json error for missing folder' (): Promise<void> {
     const err = {
       error: {
         code: 'E_NOT_FOUND',
@@ -516,7 +517,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.GetListingStub?.rejects(err)
     assert(this.RouteHandler)
@@ -532,7 +533,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.GetListingStub?.rejects(err)
     const bodyData = { Body: Math.random() }
@@ -547,7 +548,7 @@ export class ApiGetListingRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.GetListingStub?.rejects(err)
     assert(this.RouteHandler)
@@ -592,7 +593,7 @@ export class ApiNavigateLatestRouteTests {
 
   KnexFake = { Knex: Math.random() }
 
-  async before () {
+  async before (): Promise<void> {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake as unknown as Knex)
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -614,7 +615,7 @@ export class ApiNavigateLatestRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
     this.SetLatestPictureStub?.restore()
     this.ValidateModcountStub?.restore()
@@ -623,7 +624,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should return status OK' () {
+  async 'it should return status OK' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -631,7 +632,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should return new modcount when validate passes' () {
+  async 'it should return new modcount when validate passes' (): Promise<void> {
     this.ValidateModcountStub?.returns(true)
     this.IncrementModcountStub?.returns(5050)
     assert(this.RouteHandler)
@@ -641,7 +642,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should return Status OK when validate is bypassed' () {
+  async 'it should return Status OK when validate is bypassed' (): Promise<void> {
     this.RequestStub.body.modCount = -1
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -650,7 +651,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should return invalid modcount when validate is bypassed' () {
+  async 'it should return invalid modcount when validate is bypassed' (): Promise<void> {
     this.RequestStub.body.modCount = -1
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -659,7 +660,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should call SetLatestPicture when validate is bypassed' () {
+  async 'it should call SetLatestPicture when validate is bypassed' (): Promise<void> {
     this.ValidateModcountStub?.returns(false)
     this.RequestStub.body.modCount = -1
     this.RequestStub.body.path = 'foo/bar/a%20image.png'
@@ -672,7 +673,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should ignore modcount when validate is bypassed' () {
+  async 'it should ignore modcount when validate is bypassed' (): Promise<void> {
     this.RequestStub.body.modCount = -1
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -682,7 +683,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should call SetLatestPicture when validate passes' () {
+  async 'it should call SetLatestPicture when validate passes' (): Promise<void> {
     this.ValidateModcountStub?.returns(true)
     this.RequestStub.body.path = 'foo/bar/a%20image.png'
     assert(this.RouteHandler)
@@ -694,7 +695,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should set status BAD_REQUEST when validate fails' () {
+  async 'it should set status BAD_REQUEST when validate fails' (): Promise<void> {
     this.ValidateModcountStub?.returns(false)
     this.GetModcountStub?.returns(69_420)
     assert(this.RouteHandler)
@@ -704,7 +705,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should return invalid when validate fails' () {
+  async 'it should return invalid when validate fails' (): Promise<void> {
     this.ValidateModcountStub?.returns(false)
     this.GetModcountStub?.returns(69_420)
     assert(this.RouteHandler)
@@ -714,7 +715,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should not call SetLatestPicture when validate fails' () {
+  async 'it should not call SetLatestPicture when validate fails' (): Promise<void> {
     this.ValidateModcountStub?.returns(false)
     this.RequestStub.body.path = 'foo/bar/a%20image.png'
     assert(this.RouteHandler)
@@ -723,7 +724,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should not retrieve listing directory traversal attempt' () {
+  async 'it should not retrieve listing directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -731,7 +732,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should return status FORBIDDEN for directory traversal attempt' () {
+  async 'it should return status FORBIDDEN for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -740,7 +741,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should json error for directory traversal attempt' () {
+  async 'it should json error for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     const err = {
       error: {
@@ -757,7 +758,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.SetLatestPictureStub?.rejects(err)
     assert(this.RouteHandler)
@@ -773,7 +774,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.SetLatestPictureStub?.rejects(err)
     this.RequestStub.originalUrl = '/'
@@ -786,7 +787,7 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.SetLatestPictureStub?.rejects(err)
     assert(this.RouteHandler)
@@ -827,7 +828,7 @@ export class ApiMarkReadRouteTests {
 
   KnexFake = { Knex: Math.random() }
 
-  async before () {
+  async before (): Promise<void> {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake as unknown as Knex)
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -846,13 +847,13 @@ export class ApiMarkReadRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
     this.MarkFolderReadStub?.restore()
   }
 
   @test
-  async 'it should return status OK' () {
+  async 'it should return status OK' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -862,7 +863,7 @@ export class ApiMarkReadRouteTests {
   }
 
   @test
-  async 'it should call MarkFolderRead' () {
+  async 'it should call MarkFolderRead' (): Promise<void> {
     this.RequestStub.body.path = 'foo/a%20bar/baz'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -873,7 +874,7 @@ export class ApiMarkReadRouteTests {
   }
 
   @test
-  async 'it should not retrieve listing directory traversal attempt' () {
+  async 'it should not retrieve listing directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -881,7 +882,7 @@ export class ApiMarkReadRouteTests {
   }
 
   @test
-  async 'it should return status FORBIDDEN for directory traversal attempt' () {
+  async 'it should return status FORBIDDEN for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -890,7 +891,7 @@ export class ApiMarkReadRouteTests {
   }
 
   @test
-  async 'it should json error for directory traversal attempt' () {
+  async 'it should json error for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     const err = {
       error: {
@@ -907,7 +908,7 @@ export class ApiMarkReadRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.MarkFolderReadStub?.rejects(err)
     assert(this.RouteHandler)
@@ -923,7 +924,7 @@ export class ApiMarkReadRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.MarkFolderReadStub?.rejects(err)
     this.RequestStub.originalUrl = '/'
@@ -936,7 +937,7 @@ export class ApiMarkReadRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.MarkFolderReadStub?.rejects(err)
     assert(this.RouteHandler)
@@ -977,7 +978,7 @@ export class ApiMarkUnreadRouteTests {
 
   KnexFake = { Knex: Math.random() }
 
-  async before () {
+  async before (): Promise<void> {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake as unknown as Knex)
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -996,13 +997,13 @@ export class ApiMarkUnreadRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
     this.MarkFolderUnreadStub?.restore()
   }
 
   @test
-  async 'it should return status OK' () {
+  async 'it should return status OK' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1012,7 +1013,7 @@ export class ApiMarkUnreadRouteTests {
   }
 
   @test
-  async 'it should call MarkFolderRead' () {
+  async 'it should call MarkFolderRead' (): Promise<void> {
     this.RequestStub.body.path = 'foo/a%20bar/baz'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1023,7 +1024,7 @@ export class ApiMarkUnreadRouteTests {
   }
 
   @test
-  async 'it should not retrieve listing directory traversal attempt' () {
+  async 'it should not retrieve listing directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1031,7 +1032,7 @@ export class ApiMarkUnreadRouteTests {
   }
 
   @test
-  async 'it should return status FORBIDDEN for directory traversal attempt' () {
+  async 'it should return status FORBIDDEN for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1040,7 +1041,7 @@ export class ApiMarkUnreadRouteTests {
   }
 
   @test
-  async 'it should json error for directory traversal attempt' () {
+  async 'it should json error for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar/'
     const err = {
       error: {
@@ -1057,7 +1058,7 @@ export class ApiMarkUnreadRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.MarkFolderUnreadStub?.rejects(err)
     assert(this.RouteHandler)
@@ -1073,7 +1074,7 @@ export class ApiMarkUnreadRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.MarkFolderUnreadStub?.rejects(err)
     this.RequestStub.originalUrl = '/'
@@ -1086,7 +1087,7 @@ export class ApiMarkUnreadRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.MarkFolderUnreadStub?.rejects(err)
     assert(this.RouteHandler)
@@ -1125,7 +1126,7 @@ export class ApiGetBookmarksRouteTests {
 
   KnexFake = { Knex: Math.random() }
 
-  async before () {
+  async before (): Promise<void> {
     const getFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake as unknown as Knex)
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -1144,13 +1145,13 @@ export class ApiGetBookmarksRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
     this.GetBookmarkStub?.restore()
   }
 
   @test
-  async 'it should return bookmarks' () {
+  async 'it should return bookmarks' (): Promise<void> {
     const bookmarks = { Bookmarks: Math.random() }
     this.GetBookmarkStub?.resolves(bookmarks)
     assert(this.RouteHandler)
@@ -1161,7 +1162,7 @@ export class ApiGetBookmarksRouteTests {
   }
 
   @test
-  async 'it should call GetBookmarks' () {
+  async 'it should call GetBookmarks' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.GetBookmarkStub?.callCount).to.equal(1)
@@ -1170,7 +1171,7 @@ export class ApiGetBookmarksRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.GetBookmarkStub?.rejects(err)
     assert(this.RouteHandler)
@@ -1186,7 +1187,7 @@ export class ApiGetBookmarksRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.GetBookmarkStub?.rejects(err)
     this.RequestStub.originalUrl = '/'
@@ -1199,7 +1200,7 @@ export class ApiGetBookmarksRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.GetBookmarkStub?.rejects(err)
     assert(this.RouteHandler)
@@ -1240,7 +1241,7 @@ export class ApiAddBookmarkRouteTests {
 
   KnexFake = { Knex: Math.random() }
 
-  async before () {
+  async before (): Promise<void> {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake as unknown as Knex)
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -1259,13 +1260,13 @@ export class ApiAddBookmarkRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
     this.AddBookmarkStub?.restore()
   }
 
   @test
-  async 'it should return status OK' () {
+  async 'it should return status OK' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1275,7 +1276,7 @@ export class ApiAddBookmarkRouteTests {
   }
 
   @test
-  async 'it should call MarkFolderRead' () {
+  async 'it should call MarkFolderRead' (): Promise<void> {
     this.RequestStub.body.path = 'foo/a%20bar/baz.gif'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1286,7 +1287,7 @@ export class ApiAddBookmarkRouteTests {
   }
 
   @test
-  async 'it should not retrieve listing directory traversal attempt' () {
+  async 'it should not retrieve listing directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar.gif'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1294,7 +1295,7 @@ export class ApiAddBookmarkRouteTests {
   }
 
   @test
-  async 'it should return status FORBIDDEN for directory traversal attempt' () {
+  async 'it should return status FORBIDDEN for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar.gif'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1303,7 +1304,7 @@ export class ApiAddBookmarkRouteTests {
   }
 
   @test
-  async 'it should json error for directory traversal attempt' () {
+  async 'it should json error for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar.gif'
     const err = {
       error: {
@@ -1320,7 +1321,7 @@ export class ApiAddBookmarkRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.AddBookmarkStub?.rejects(err)
     assert(this.RouteHandler)
@@ -1336,7 +1337,7 @@ export class ApiAddBookmarkRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.AddBookmarkStub?.rejects(err)
     this.RequestStub.originalUrl = '/'
@@ -1349,7 +1350,7 @@ export class ApiAddBookmarkRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.AddBookmarkStub?.rejects(err)
     assert(this.RouteHandler)
@@ -1390,7 +1391,7 @@ export class ApiRemoveBookmarkRouteTests {
 
   KnexFake = { Knex: Math.random() }
 
-  async before () {
+  async before (): Promise<void> {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake as unknown as Knex)
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns({
@@ -1409,13 +1410,13 @@ export class ApiRemoveBookmarkRouteTests {
     MakeRouterStub.restore()
   }
 
-  after () {
+  after (): void {
     this.DebuggerStub?.restore()
     this.RemoveBookmarkStub?.restore()
   }
 
   @test
-  async 'it should return status OK' () {
+  async 'it should return status OK' (): Promise<void> {
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1425,7 +1426,7 @@ export class ApiRemoveBookmarkRouteTests {
   }
 
   @test
-  async 'it should call MarkFolderRead' () {
+  async 'it should call MarkFolderRead' (): Promise<void> {
     this.RequestStub.body.path = 'foo/a%20bar/baz.gif'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1436,7 +1437,7 @@ export class ApiRemoveBookmarkRouteTests {
   }
 
   @test
-  async 'it should not retrieve listing directory traversal attempt' () {
+  async 'it should not retrieve listing directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar.gif'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1444,7 +1445,7 @@ export class ApiRemoveBookmarkRouteTests {
   }
 
   @test
-  async 'it should return status FORBIDDEN for directory traversal attempt' () {
+  async 'it should return status FORBIDDEN for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar.gif'
     assert(this.RouteHandler)
     await this.RouteHandler(this.RequestFake, this.ResponseFake)
@@ -1453,7 +1454,7 @@ export class ApiRemoveBookmarkRouteTests {
   }
 
   @test
-  async 'it should json error for directory traversal attempt' () {
+  async 'it should json error for directory traversal attempt' (): Promise<void> {
     this.RequestStub.body.path = '/foo/../bar.gif'
     const err = {
       error: {
@@ -1470,7 +1471,7 @@ export class ApiRemoveBookmarkRouteTests {
   }
 
   @test
-  async 'it should respond with error message on error' () {
+  async 'it should respond with error message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.RemoveBookmarkStub?.rejects(err)
     assert(this.RouteHandler)
@@ -1486,7 +1487,7 @@ export class ApiRemoveBookmarkRouteTests {
   }
 
   @test
-  async 'it should log message on error' () {
+  async 'it should log message on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.RemoveBookmarkStub?.rejects(err)
     this.RequestStub.originalUrl = '/'
@@ -1499,7 +1500,7 @@ export class ApiRemoveBookmarkRouteTests {
   }
 
   @test
-  async 'it should log error on error' () {
+  async 'it should log error on error' (): Promise<void> {
     const err = new Error('Evil Error!')
     this.RemoveBookmarkStub?.rejects(err)
     assert(this.RouteHandler)

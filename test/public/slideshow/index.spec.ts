@@ -17,20 +17,20 @@ export class SlideshowIndexTests {
   CyclicManagerStartStub: sinon.SinonStub = sinon.stub()
   WebSocketsConnectStub: sinon.SinonStub = sinon.stub()
 
-  before () {
+  before (): void {
     this.CyclicManagerAddStub = sinon.stub(CyclicManager, 'Add')
     this.CyclicManagerStartStub = sinon.stub(CyclicManager, 'Start')
     this.WebSocketsConnectStub = sinon.stub(WebSockets, 'connect')
   }
 
-  after () {
+  after (): void {
     this.WebSocketsConnectStub.restore()
     this.CyclicManagerStartStub.restore()
     this.CyclicManagerAddStub.restore()
   }
 
   @test
-  async 'it should init slideshow' () {
+  async 'it should init slideshow' (): Promise<void> {
     await import('../../../public/scripts/slideshow/index')
     expect(this.CyclicManagerAddStub.calledWith(TimeUpdater, OverlayUpdater, WeatherUpdater, LocalWeatherUpdater)).to.equal(true)
     expect(this.CyclicManagerStartStub.called).to.equal(true)

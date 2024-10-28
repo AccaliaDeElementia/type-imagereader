@@ -4,30 +4,31 @@ import persistance from './persistance'
 import _fsWalker from './fswalker'
 import wordsToNumbers from 'words-to-numbers'
 import posix from 'path'
-import { Knex } from 'knex'
+import type { Knex } from 'knex'
 
-import _debug, { Debugger } from 'debug'
+import _debug from 'debug'
+import type { Debugger } from 'debug'
 
 interface DirEntryItem {
-  path: string,
+  path: string
   isFile: boolean
 }
 
 interface SyncItem {
-  folder: string,
-  path: string,
-  isFile: boolean,
+  folder: string
+  path: string
+  isFile: boolean
   sortKey: string
 }
 interface SyncItemChunks {
-  files: number,
-  dirs: number,
+  files: number
+  dirs: number
   chunks: SyncItem[][]
 }
 
 interface FolderInfo {
-  path: string,
-  totalCount: number,
+  path: string
+  totalCount: number
   seenCount: number
 }
 
@@ -80,7 +81,7 @@ export class Functions {
     }
   }
 
-  public static async FindSyncItems (knex:Knex): Promise<number> {
+  public static async FindSyncItems (knex: Knex): Promise<number> {
     const logger = Imports.debug(`${Imports.logPrefix}:findItems`)
     await knex('syncitems').del()
     await knex('syncitems').insert({
@@ -92,7 +93,7 @@ export class Functions {
     let dirs = 0
     let files = 0
     let counter = 0
-    await Imports.fsWalker('/data', async (items: DirEntryItem[], pending: Number) => {
+    await Imports.fsWalker('/data', async (items: DirEntryItem[], pending: number) => {
       const { files: chunkFiles, dirs: chunkDirs, chunks } = Functions.ChunkSyncItemsForInsert(items)
       files += chunkFiles
       dirs += chunkDirs
@@ -108,7 +109,7 @@ export class Functions {
     return files
   }
 
-  public static async SyncNewPictures (logger: Debugger, knex:Knex): Promise<void> {
+  public static async SyncNewPictures (logger: Debugger, knex: Knex): Promise<void> {
     const insertedpics: any = await knex.from(knex.raw('?? (??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey']))
       .insert(function (this: Knex) {
         return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey']).from('syncitems')
@@ -118,13 +119,17 @@ export class Functions {
             'pictures.path': null
           })
       })
-    logger(`Added ${insertedpics[0] || insertedpics.rowCount} new pictures`)
+    let count: number = insertedpics.rowCount
+    if (Number.isInteger(insertedpics[0])) {
+      count = insertedpics[0]
+    }
+    logger(`Added ${count} new pictures`)
   }
 
-  public static async SyncRemovedPictures (logger: Debugger, knex:Knex): Promise<void> {
+  public static async SyncRemovedPictures (logger: Debugger, knex: Knex): Promise<void> {
     const deletedpics = await knex('pictures')
       .whereNotExists(function () {
-        return this.select('*')
+        this.select('*') // eslint-disable-line @typescript-eslint/no-floating-promises
           .from('syncitems')
           .whereRaw('syncitems.path = pictures.path')
       })
@@ -134,8 +139,8 @@ export class Functions {
 
   public static async SyncRemovedBookmarks (logger: Debugger, knex: Knex): Promise<void> {
     const removedBookmarks = await knex('bookmarks')
-      .whereNotExists(function (this: Knex.QueryBuilder) {
-        return this.select('*')
+      .whereNotExists(function () {
+        this.select('*') // eslint-disable-line @typescript-eslint/no-floating-promises
           .from('pictures')
           .whereRaw('pictures.path = bookmarks.path')
       })
@@ -143,7 +148,7 @@ export class Functions {
     logger(`Removed ${removedBookmarks} missing bookmarks`)
   }
 
-  public static async SyncAllPictures (knex:Knex): Promise<void> {
+  public static async SyncAllPictures (knex: Knex): Promise<void> {
     const logger = Imports.debug(`${Imports.logPrefix}:syncPictures`)
     await Functions.SyncNewPictures(logger, knex)
     await Functions.SyncRemovedPictures(logger, knex)
@@ -160,13 +165,17 @@ export class Functions {
             'folders.path': null
           })
       })
-    logger(`Added ${folders[0] || folders.rowCount} new folders`)
+    let count: number = folders.rowCount
+    if (Number.isInteger(folders[0]) && folders[0] > 0) {
+      count = folders[0]
+    }
+    logger(`Added ${count} new folders`)
   }
 
   public static async SyncRemovedFolders (logger: Debugger, knex: Knex): Promise<void> {
     const deletedfolders = await knex('folders')
-      .whereNotExists(function (this: Knex.QueryBuilder) {
-        return this.select('*')
+      .whereNotExists(function () {
+        this.select('*') // eslint-disable-line @typescript-eslint/no-floating-promises
           .from('syncitems')
           .whereRaw('syncitems.path = folders.path')
       })
@@ -176,8 +185,8 @@ export class Functions {
 
   public static async SyncMissingCoverImages (logger: Debugger, knex: Knex): Promise<void> {
     const removedCoverImages = await knex('folders')
-      .whereNotExists(function (this: Knex.QueryBuilder) {
-        return this.select('*')
+      .whereNotExists(function () {
+        this.select('*') // eslint-disable-line @typescript-eslint/no-floating-promises
           .from('pictures')
           .whereRaw('pictures.path = folders.current')
       })
@@ -243,14 +252,14 @@ export class Functions {
     return folderInfos
   }
 
-  public static CalculateFolderInfos (allFolders: {[key:string]: FolderInfo}, folders: FolderInfo[]): FolderInfo[] {
+  public static CalculateFolderInfos (allFolders: { [key: string]: FolderInfo }, folders: FolderInfo[]): FolderInfo[] {
     for (const folder of folders) {
       const parts = folder.path.split('/')
       while (parts.length > 1) { // don't loop all the way to zero to avoid double counting the root
         parts.pop()
         const parentPath = parts.join('/') + '/'
         let parent = allFolders[parentPath]
-        if (!parent) {
+        if (parent === null || parent === undefined) {
           parent = {
             path: parentPath,
             totalCount: 0,
@@ -292,7 +301,7 @@ export class Functions {
   }
 }
 
-const synchronize = async () => {
+const synchronize = async (): Promise<void> => {
   const logger = Imports.debug(Imports.logPrefix)
   logger('Folder Synchronization Begins')
   const knex = await persistance.initialize()

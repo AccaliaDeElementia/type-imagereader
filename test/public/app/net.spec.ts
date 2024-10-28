@@ -12,13 +12,13 @@ export class AppNetTests {
   static fetchData: sinon.SinonStub
   static fetchLengthStub: sinon.SinonStub
 
-  static before () {
+  static before (): void {
     this.fetchStub = sinon.stub(global, 'fetch')
     this.fetchLengthStub = sinon.stub()
     this.fetchData = sinon.stub()
   }
 
-  before () {
+  before (): void {
     AppNetTests.fetchStub.resolves(({
       headers: {
         get: AppNetTests.fetchLengthStub
@@ -29,31 +29,31 @@ export class AppNetTests {
     AppNetTests.fetchData.resolves({})
   }
 
-  after () {
+  after (): void {
     AppNetTests.fetchLengthStub.reset()
     AppNetTests.fetchStub.reset()
     AppNetTests.fetchData.reset()
   }
 
-  static after () {
+  static after (): void {
     this.fetchStub.restore()
   }
 
   @test
-  async 'GetJSON calls fetch with provided path' () {
+  async 'GetJSON calls fetch with provided path' (): Promise<void> {
     const path = `/Some/Test/Path/${Math.random()}`
     await Net.GetJSON(path)
     expect(AppNetTests.fetchStub.calledWith(path)).to.equal(true)
   }
 
   @test
-  async 'GetJSON calls fetch as GET request' () {
+  async 'GetJSON calls fetch as GET request' (): Promise<void> {
     await Net.GetJSON('/some/path')
     expect(AppNetTests.fetchStub.getCall(0).args[1].method).to.equal('GET')
   }
 
   @test
-  async 'GetJSON calls fetch With expected Headers' () {
+  async 'GetJSON calls fetch With expected Headers' (): Promise<void> {
     await Net.GetJSON('/some/path')
     const headers = AppNetTests.fetchStub.getCall(0).args[1].headers
     expect(headers).to.not.equal(undefined)
@@ -63,7 +63,7 @@ export class AppNetTests {
   }
 
   @test
-  async 'GetJSON returns empty object on no response' () {
+  async 'GetJSON returns empty object on no response' (): Promise<void> {
     AppNetTests.fetchLengthStub.returns('0')
     const data = await Net.GetJSON('/some/path')
     expect(data).to.deep.equal({})
@@ -71,7 +71,7 @@ export class AppNetTests {
   }
 
   @test
-  async 'GetJSON returns JSON result on non empty response' () {
+  async 'GetJSON returns JSON result on non empty response' (): Promise<void> {
     AppNetTests.fetchLengthStub.returns('45')
     const expected = {
       alpha: '1',
@@ -84,7 +84,7 @@ export class AppNetTests {
   }
 
   @test
-  async 'GetJSON rejects when JSON contains error' () {
+  async 'GetJSON rejects when JSON contains error' (): Promise<void> {
     AppNetTests.fetchLengthStub.returns('45')
     const expected = 'MUY MALO!'
     AppNetTests.fetchData.resolves({
@@ -94,14 +94,14 @@ export class AppNetTests {
   }
 
   @test
-  async 'GetJSON rejects when fetch rejects' () {
+  async 'GetJSON rejects when fetch rejects' (): Promise<void> {
     const expected = 'MUY MALO!'
     AppNetTests.fetchStub.rejects(new Error(expected))
     await expect(Net.GetJSON('/some/path')).to.eventually.be.rejectedWith(expected)
   }
 
   @test
-  async 'GetJSON rejects when json() rejects' () {
+  async 'GetJSON rejects when json() rejects' (): Promise<void> {
     const expected = 'MUY MALO!'
     AppNetTests.fetchLengthStub.returns('1')
     AppNetTests.fetchData.rejects(new Error(expected))
@@ -109,20 +109,20 @@ export class AppNetTests {
   }
 
   @test
-  async 'PostJSON calls fetch with provided path' () {
+  async 'PostJSON calls fetch with provided path' (): Promise<void> {
     const path = `/Some/Test/Path/${Math.random()}`
     await Net.PostJSON(path, {})
     expect(AppNetTests.fetchStub.calledWith(path)).to.equal(true)
   }
 
   @test
-  async 'PostJSON calls fetch as POST request' () {
+  async 'PostJSON calls fetch as POST request' (): Promise<void> {
     await Net.PostJSON('/some/path', {})
     expect(AppNetTests.fetchStub.getCall(0).args[1].method).to.equal('POST')
   }
 
   @test
-  async 'PostJSON calls fetch with expected Headers' () {
+  async 'PostJSON calls fetch with expected Headers' (): Promise<void> {
     await Net.PostJSON('/some/path', {})
     const headers = AppNetTests.fetchStub.getCall(0).args[1].headers
     expect(headers).to.not.equal(undefined)
@@ -132,7 +132,7 @@ export class AppNetTests {
   }
 
   @test
-  async 'PostJSON calls fetch with expected data' () {
+  async 'PostJSON calls fetch with expected data' (): Promise<void> {
     const matrix: any[] = [
       1,
       '',
@@ -152,7 +152,7 @@ export class AppNetTests {
   }
 
   @test
-  async 'PostJSON returns empty object on no response' () {
+  async 'PostJSON returns empty object on no response' (): Promise<void> {
     AppNetTests.fetchLengthStub.returns('0')
     const data = await Net.PostJSON('/some/path', {})
     expect(data).to.deep.equal({})
@@ -160,7 +160,7 @@ export class AppNetTests {
   }
 
   @test
-  async 'PostJSON returns JSON result on non empty response' () {
+  async 'PostJSON returns JSON result on non empty response' (): Promise<void> {
     AppNetTests.fetchLengthStub.returns('45')
     const expected = {
       alpha: '1',
@@ -173,7 +173,7 @@ export class AppNetTests {
   }
 
   @test
-  async 'PostJSON rejects when JSON contains error' () {
+  async 'PostJSON rejects when JSON contains error' (): Promise<void> {
     AppNetTests.fetchLengthStub.returns('45')
     const expected = 'MUY MALO!'
     AppNetTests.fetchData.resolves({
@@ -183,14 +183,14 @@ export class AppNetTests {
   }
 
   @test
-  async 'PostJSON rejects when fetch rejects' () {
+  async 'PostJSON rejects when fetch rejects' (): Promise<void> {
     const expected = 'MUY MALO!'
     AppNetTests.fetchStub.rejects(new Error(expected))
     await expect(Net.PostJSON('/some/path', {})).to.eventually.be.rejectedWith(expected)
   }
 
   @test
-  async 'PostJSON rejects when json() rejects' () {
+  async 'PostJSON rejects when json() rejects' (): Promise<void> {
     const expected = 'MUY MALO!'
     AppNetTests.fetchLengthStub.returns('1')
     AppNetTests.fetchData.rejects(new Error(expected))

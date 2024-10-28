@@ -2,71 +2,70 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { Debugger } from 'debug'
-import SharpType, { Sharp } from 'sharp'
-import { Application, Response, Router } from 'express'
-import { Server } from 'http'
-import { Server as WebSocketServer } from 'socket.io'
+import type { Debugger } from 'debug'
+import SharpType from 'sharp'
+import type { Sharp } from 'sharp'
+import type { Application, Response, Router } from 'express'
+import type { Server } from 'http'
+import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 
 import { getRouter, ImageData, ImageCache, Imports, Functions, CacheStorage } from '../../routes/images'
-
-function assert (condition: unknown, msg?: string): asserts condition {
-  if (!condition) throw new Error(msg || 'Assertion failure!')
-}
+import assert from 'assert'
 
 @suite
 export class ImageCacheTests {
-  before () {
+  before (): void {
     ImageCache.cacheSize = 5
   }
 
   @test
-  'it should save cache creator fn on construct' () {
+  'it should save cache creator fn on construct' (): void {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     expect(cache.cacheFunction).to.equal(spy)
   }
 
   @test
-  'it should construct with empty item cache' () {
+  'it should construct with empty item cache' (): void {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     expect(cache.items).to.have.lengthOf(0)
   }
 
   @test
-  'it should fetch existing item from cache' () {
+  async 'it should fetch existing item from cache' (): Promise<void> {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
-    const expected = Promise.resolve(null)
+    const expected = { ImageData: 71 }
     cache.items[0] = {
       path: '/foo.png',
       width: 5,
       height: 5,
       image: expected as unknown as Promise<ImageData>
     }
-    expect(cache.fetch('/foo.png', 5, 5)).to.equal(expected)
+    expect(await cache.fetch('/foo.png', 5, 5)).to.equal(expected)
   }
 
   @test
-  'it should fetch existing item from cache when bigger' () {
+  async 'it should fetch existing item from cache when bigger' (): Promise<void> {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
-    const expected = Promise.resolve(null)
+    const expected = { ImageData: 45 }
     cache.items[0] = {
       path: '/foo.png',
       width: 50,
       height: 50,
       image: expected as unknown as Promise<ImageData>
     }
-    expect(cache.fetch('/foo.png', 5, 5)).to.equal(expected)
+    expect(await cache.fetch('/foo.png', 5, 5)).to.equal(expected)
   }
 
   @test
-  async 'it should not create cache item when one is found' () {
+  async 'it should not create cache item when one is found' (): Promise<void> {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     const expected = Promise.resolve(null)
@@ -81,7 +80,7 @@ export class ImageCacheTests {
   }
 
   @test
-  async 'it should not create cache item when bigger one is found' () {
+  async 'it should not create cache item when bigger one is found' (): Promise<void> {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     const expected = Promise.resolve(null)
@@ -96,7 +95,7 @@ export class ImageCacheTests {
   }
 
   @test
-  async 'it should refresh recency of item in cache' () {
+  async 'it should refresh recency of item in cache' (): Promise<void> {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     for (let i = 0; i < 10; i++) {
@@ -122,16 +121,16 @@ export class ImageCacheTests {
   }
 
   @test
-  'it should create new cache item when not found' () {
-    const expected = Promise.resolve(null)
-    const spy = sinon.stub().returns(expected)
+  async 'it should create new cache item when not found' (): Promise<void> {
+    const expected = { Image: 55 } as unknown as ImageData
+    const spy = sinon.stub().resolves(expected)
     const cache = new ImageCache(spy)
-    expect(cache.fetch('/foo.png', 5, 5)).to.equal(expected)
+    expect(await cache.fetch('/foo.png', 5, 5)).to.equal(expected)
     expect(spy.called).to.equal(true)
   }
 
   @test
-  async 'it should create cache item with expected parameters' () {
+  async 'it should create cache item with expected parameters' (): Promise<void> {
     const path = '/foo.png' + Math.random()
     const width = Math.random() * 1000
     const height = Math.random() * 1000
@@ -147,7 +146,7 @@ export class ImageCacheTests {
   }
 
   @test
-  async 'it should insert new cache item at front' () {
+  async 'it should insert new cache item at front' (): Promise<void> {
     const path = '/foo.png' + Math.random()
     const width = Math.random() * 1000
     const height = Math.random() * 1000
@@ -163,7 +162,7 @@ export class ImageCacheTests {
   }
 
   @test
-  async 'it should prune excessive cache items when no cache item matches' () {
+  async 'it should prune excessive cache items when no cache item matches' (): Promise<void> {
     const spy = sinon.stub().resolves('true')
     const cache = new ImageCache(spy)
     ImageCache.cacheSize = 5
@@ -187,7 +186,7 @@ export class ImageCacheTests {
 @suite
 export class ImageDataTests {
   @test
-  'it should create data from buffer' () {
+  'it should create data from buffer' (): void {
     const buff = Buffer.from('SOME DATA HERE')
     const img = ImageData.fromImage(buff, 'webp', '/folder/image.webp')
     expect(img.code).to.equal(null)
@@ -199,7 +198,7 @@ export class ImageDataTests {
   }
 
   @test
-  'it should create data from error' () {
+  'it should create data from error' (): void {
     const img = ImageData.fromError('E_TESTING', 501, 'This is a test', '/folder/image.webp')
     expect(img.code).to.equal('E_TESTING')
     expect(img.statusCode).to.equal(501)
@@ -216,20 +215,20 @@ export class ImagesReadImageTests {
   FromImageStub?: Sinon.SinonStub
   ReadFileStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.FromErrorStub = sinon.stub(ImageData, 'fromError')
     this.FromImageStub = sinon.stub(ImageData, 'fromImage')
     this.ReadFileStub = sinon.stub(Imports, 'readFile').resolves()
   }
 
-  after () {
+  after (): void {
     this.FromErrorStub?.restore()
     this.FromImageStub?.restore()
     this.ReadFileStub?.restore()
   }
 
   @test
-  async 'it should reject directory traversal attempt' () {
+  async 'it should reject directory traversal attempt' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromErrorStub?.returns(img)
     const result = await Functions.ReadImage('/foo/../bar/image.png')
@@ -243,7 +242,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should reject non image file' () {
+  async 'it should reject non image file' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromErrorStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.pdf')
@@ -257,7 +256,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should reject missing image file' () {
+  async 'it should reject missing image file' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromErrorStub?.returns(img)
     this.ReadFileStub?.rejects()
@@ -272,7 +271,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should read file for valid image path' () {
+  async 'it should read file for valid image path' (): Promise<void> {
     const img = { img: Math.random() }
     const data = Buffer.from('SOME DATA HERE')
     this.FromImageStub?.returns(img)
@@ -282,7 +281,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should return found image' () {
+  async 'it should return found image' (): Promise<void> {
     const img = { img: Math.random() }
     const data = Buffer.from('SOME DATA HERE')
     this.FromImageStub?.returns(img)
@@ -297,7 +296,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .jpg' () {
+  async 'it should allow .jpg' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.jpg')
@@ -305,7 +304,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .jpeg' () {
+  async 'it should allow .jpeg' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.jpeg')
@@ -313,7 +312,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .png' () {
+  async 'it should allow .png' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.png')
@@ -321,7 +320,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .webp' () {
+  async 'it should allow .webp' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.webp')
@@ -329,7 +328,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .gif' () {
+  async 'it should allow .gif' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.gif')
@@ -337,7 +336,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .svg' () {
+  async 'it should allow .svg' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.svg')
@@ -345,7 +344,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .tif' () {
+  async 'it should allow .tif' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.tif')
@@ -353,7 +352,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .tiff' () {
+  async 'it should allow .tiff' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.tiff')
@@ -361,7 +360,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .bmp' () {
+  async 'it should allow .bmp' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.bmp')
@@ -369,7 +368,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .jfif' () {
+  async 'it should allow .jfif' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.jfif')
@@ -377,7 +376,7 @@ export class ImagesReadImageTests {
   }
 
   @test
-  async 'it should allow .jpe' () {
+  async 'it should allow .jpe' (): Promise<void> {
     const img = { img: Math.random() }
     this.FromImageStub?.returns(img)
     const result = await Functions.ReadImage('/foo/bar/image.jpe')
@@ -396,16 +395,16 @@ export class ImagesRescaleImageTests {
 
   SharpStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.SharpStub = sinon.stub(Imports, 'Sharp').returns(this.SharpInstanceStub as unknown as Sharp)
   }
 
-  after () {
+  after (): void {
     this.SharpStub?.restore()
   }
 
   @test
-  async 'it should abort when error already detected' () {
+  async 'it should abort when error already detected' (): Promise<void> {
     const img = new ImageData()
     img.code = 'FOO'
     await Functions.RescaleImage(img, 1280, 720)
@@ -413,7 +412,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it should parse Sharp data' () {
+  async 'it should parse Sharp data' (): Promise<void> {
     const data = Buffer.from(`{ image: ${Math.random()} }`)
     const img = new ImageData()
     img.data = data
@@ -426,7 +425,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it should default to handling animated images' () {
+  async 'it should default to handling animated images' (): Promise<void> {
     const data = Buffer.from(`{ image: ${Math.random()} }`)
     const img = new ImageData()
     img.data = data
@@ -438,7 +437,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it should request animated images explicitly' () {
+  async 'it should request animated images explicitly' (): Promise<void> {
     const data = Buffer.from(`{ image: ${Math.random()} }`)
     const img = new ImageData()
     img.data = data
@@ -450,7 +449,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it should decline animated images explicitly' () {
+  async 'it should decline animated images explicitly' (): Promise<void> {
     const data = Buffer.from(`{ image: ${Math.random()} }`)
     const img = new ImageData()
     img.data = data
@@ -462,7 +461,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it should convert to webp' () {
+  async 'it should convert to webp' (): Promise<void> {
     const img = new ImageData()
     img.extension = 'fake extension'
     await Functions.RescaleImage(img, 1280, 720)
@@ -472,7 +471,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it should output as buffer' () {
+  async 'it should output as buffer' (): Promise<void> {
     const img = new ImageData()
     const data = Buffer.from(`{ image: ${Math.random()} }`)
     this.SharpInstanceStub.toBuffer.resolves(data)
@@ -483,7 +482,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it should resize with expected parameters' () {
+  async 'it should resize with expected parameters' (): Promise<void> {
     await Functions.RescaleImage(new ImageData(), 1280, 720)
     expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
     expect(this.SharpInstanceStub.resize.firstCall.args).to.have.lengthOf(1)
@@ -496,7 +495,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it ignore error when sharp throws' () {
+  async 'it ignore error when sharp throws' (): Promise<void> {
     const img = new ImageData()
     this.SharpStub?.throws(new Error('OOPS'))
     await Functions.RescaleImage(img, 1280, 720)
@@ -506,7 +505,7 @@ export class ImagesRescaleImageTests {
   }
 
   @test
-  async 'it should ignore sharp reejection' () {
+  async 'it should ignore sharp reejection' (): Promise<void> {
     const img = new ImageData()
     this.SharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
     await Functions.RescaleImage(img, 1280, 720)
@@ -521,25 +520,25 @@ export class ImagesReadAndRescaleImageTests {
   readImageStub = sinon.stub()
   rescaleImageStub = sinon.stub()
 
-  before () {
+  before (): void {
     this.readImageStub = sinon.stub(Functions, 'ReadImage').resolves()
     this.rescaleImageStub = sinon.stub(Functions, 'RescaleImage').resolves()
   }
 
-  after () {
+  after (): void {
     this.rescaleImageStub.restore()
     this.readImageStub.restore()
   }
 
   @test
-  async 'it should read image as requested' () {
+  async 'it should read image as requested' (): Promise<void> {
     await Functions.ReadAndRescaleImage('/foo.png', 999, 999)
     expect(this.readImageStub.callCount).to.equal(1)
     expect(this.readImageStub.firstCall.args).to.deep.equal(['/foo.png'])
   }
 
   @test
-  async 'it should rescale image as read' () {
+  async 'it should rescale image as read' (): Promise<void> {
     const img = Math.random()
     this.readImageStub.resolves(img)
     const width = Math.random()
@@ -550,21 +549,21 @@ export class ImagesReadAndRescaleImageTests {
   }
 
   @test
-  async 'it should default enable animated image support' () {
+  async 'it should default enable animated image support' (): Promise<void> {
     await Functions.ReadAndRescaleImage('/foo.png', 99, 99)
     expect(this.rescaleImageStub.callCount).to.equal(1)
     expect(this.rescaleImageStub.firstCall.args[3]).to.equal(true)
   }
 
   @test
-  async 'it should enable animated image support explicitly' () {
+  async 'it should enable animated image support explicitly' (): Promise<void> {
     await Functions.ReadAndRescaleImage('/foo.png', 99, 99, true)
     expect(this.rescaleImageStub.callCount).to.equal(1)
     expect(this.rescaleImageStub.firstCall.args[3]).to.equal(true)
   }
 
   @test
-  async 'it should disable animated image support explicitly' () {
+  async 'it should disable animated image support explicitly' (): Promise<void> {
     await Functions.ReadAndRescaleImage('/foo.png', 99, 99, false)
     expect(this.rescaleImageStub.callCount).to.equal(1)
     expect(this.rescaleImageStub.firstCall.args[3]).to.equal(false)
@@ -583,21 +582,21 @@ export class ImagesSendImageTests {
   ResponseFake = this.ResponseStub as unknown as Response
 
   @test
-  'it should set content-type for valid image' () {
+  'it should set content-type for valid image' (): void {
     const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
     Functions.SendImage(img, this.ResponseFake)
     expect(this.ResponseStub.set.calledWith('Content-Type', 'image/webp')).to.equal(true)
   }
 
   @test
-  'it should set cacheControl for valid image' () {
+  'it should set cacheControl for valid image' (): void {
     const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
     Functions.SendImage(img, this.ResponseFake)
     expect(this.ResponseStub.set.calledWith('Cache-Control', 'public, max-age=2592000000')).to.equal(true)
   }
 
   @test
-  'it should set Expires for valid image' () {
+  'it should set Expires for valid image' (): void {
     const aMonth = 1000 * 60 * 60 * 24 * 30
     const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
     Functions.SendImage(img, this.ResponseFake)
@@ -605,7 +604,7 @@ export class ImagesSendImageTests {
   }
 
   @test
-  'it should send image data for valid image' () {
+  'it should send image data for valid image' (): void {
     const data = Buffer.from('Image Data')
     const img = ImageData.fromImage(data, 'webp', '/image.png')
     Functions.SendImage(img, this.ResponseFake)
@@ -615,38 +614,38 @@ export class ImagesSendImageTests {
   }
 
   @test
-  'it should not set status code explicitly' () {
+  'it should not set status code explicitly' (): void {
     Functions.SendImage(ImageData.fromImage(Buffer.from(''), 'webp', '/image.png'), this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(0)
   }
 
   @test
-  'it should not send json data' () {
+  'it should not send json data' (): void {
     Functions.SendImage(ImageData.fromImage(Buffer.from(''), 'webp', '/image.png'), this.ResponseFake)
     expect(this.ResponseStub.json.callCount).to.equal(0)
   }
 
   @test
-  'it should not set headers for invalid image' () {
+  'it should not set headers for invalid image' (): void {
     Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), this.ResponseFake)
     expect(this.ResponseStub.set.callCount).to.equal(0)
   }
 
   @test
-  'it should not send data for invalid image' () {
+  'it should not send data for invalid image' (): void {
     Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), this.ResponseFake)
     expect(this.ResponseStub.send.callCount).to.equal(0)
   }
 
   @test
-  'it should set http status for invalid image' () {
+  'it should set http status for invalid image' (): void {
     Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), this.ResponseFake)
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.deep.equal([418])
   }
 
   @test
-  'it should send json data for invalid image' () {
+  'it should send json data for invalid image' (): void {
     Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), this.ResponseFake)
     expect(this.ResponseStub.json.callCount).to.equal(1)
     expect(this.ResponseStub.json.firstCall.args).to.deep.equal([{
@@ -662,7 +661,7 @@ export class ImagesSendImageTests {
 @suite
 export class ImagesDefaultCacheStubTests {
   @test
-  async 'default Kiosk Cache should report error' () {
+  async 'default Kiosk Cache should report error' (): Promise<void> {
     const image = await CacheStorage.kioskCache.fetch('/foo.png', 1280, 800)
     expect(image.code).to.equal('INTERNAL_SERVER_ERROR')
     expect(image.statusCode).to.equal(500)
@@ -671,13 +670,25 @@ export class ImagesDefaultCacheStubTests {
   }
 
   @test
-  async 'default scaled Cache should report error' () {
+  async 'default scaled Cache should report error' (): Promise<void> {
     const image = await CacheStorage.scaledCache.fetch('/foo.png', 1280, 800)
     expect(image.code).to.equal('INTERNAL_SERVER_ERROR')
     expect(image.statusCode).to.equal(500)
     expect(image.message).to.equal('CACHE_NOT_INITIALIZED')
     expect(image.path).to.equal('/foo.png')
   }
+}
+
+interface IRequestParams {
+  0: string | undefined
+  width: string | undefined
+  height: string | undefined
+}
+
+interface IRequestStub {
+  params: IRequestParams
+  body: string | undefined
+  originalUrl: string | undefined
 }
 
 @suite
@@ -690,7 +701,7 @@ export class ImagesGetRouterTests {
     get: sinon.stub().returnsThis()
   }
 
-  RequestStub = {
+  RequestStub: IRequestStub = {
     params: {
       0: '',
       width: '1000',
@@ -713,7 +724,7 @@ export class ImagesGetRouterTests {
   RescaleImageStub?: Sinon.SinonStub
   SendImageStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
     this.RouterStub = sinon.stub(Imports, 'Router').returns(this.RouterFake as unknown as Router)
     this.ReadImageStub = sinon.stub(Functions, 'ReadImage').resolves()
@@ -721,7 +732,7 @@ export class ImagesGetRouterTests {
     this.SendImageStub = sinon.stub(Functions, 'SendImage').resolves()
   }
 
-  after () {
+  after (): void {
     this.DebugStub?.restore()
     this.RouterStub?.restore()
     this.ReadImageStub?.restore()
@@ -730,7 +741,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should create and return router' () {
+  async 'it should create and return router' (): Promise<void> {
     const router = await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterStub?.callCount).to.equal(1)
     expect(this.RouterStub?.firstCall.args).to.deep.equal([])
@@ -738,7 +749,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should create logger for logging (but later)' () {
+  async 'it should create logger for logging (but later)' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.DebugStub?.callCount).to.equal(1)
     expect(this.DebugStub?.firstCall.args).to.deep.equal(['type-imagereader:images'])
@@ -746,55 +757,57 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should create kiosk image cache' () {
+  async 'it should create kiosk image cache' (): Promise<void> {
     CacheStorage.kioskCache = null as unknown as ImageCache
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     assert(CacheStorage.kioskCache)
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(CacheStorage.kioskCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
     expect(CacheStorage.kioskCache.items).to.have.lengthOf(0)
   }
 
   @test
-  async 'it should create scaled image cache' () {
+  async 'it should create scaled image cache' (): Promise<void> {
     CacheStorage.scaledCache = null as unknown as ImageCache
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     assert(CacheStorage.scaledCache)
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(CacheStorage.scaledCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
     expect(CacheStorage.scaledCache.items).to.have.lengthOf(0)
   }
 
   @test
-  async 'it should register routes' () {
+  async 'it should register routes' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.callCount).to.equal(4)
   }
 
   @test
-  async 'it should register full image route' () {
+  async 'it should register full image route' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/full/*')).to.equal(true)
   }
 
   @test
-  async 'it should register scaled image route' () {
+  async 'it should register scaled image route' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/scaled/:width/:height/*-image.webp')).to.equal(true)
   }
 
   @test
-  async 'it should register preview image route' () {
+  async 'it should register preview image route' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/preview/*-image.webp')).to.equal(true)
   }
 
   @test
-  async 'it should register kiosk image route' () {
+  async 'it should register kiosk image route' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/kiosk/*-image.webp')).to.equal(true)
   }
 
   @test
-  async 'FullImage - it should get filename from full image request' () {
+  async 'FullImage - it should get filename from full image request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/full/*')
@@ -813,7 +826,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'FullImage - it should get default filename from full image request' () {
+  async 'FullImage - it should get default filename from full image request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/full/*')
@@ -832,7 +845,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'FullImage - it should get send image directly from reading' () {
+  async 'FullImage - it should get send image directly from reading' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/full/*')
@@ -856,7 +869,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'FullImage - it should handle error' () {
+  async 'FullImage - it should handle error' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/full/*')
@@ -889,7 +902,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it should get filename from full image request' () {
+  async 'ScaledImage - it should get filename from full image request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -912,7 +925,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it should get default filename from full image request' () {
+  async 'ScaledImage - it should get default filename from full image request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -935,7 +948,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it should rescale image after reading' () {
+  async 'ScaledImage - it should rescale image after reading' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -961,7 +974,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it should send image after scaling' () {
+  async 'ScaledImage - it should send image after scaling' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -985,7 +998,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject missing width parameter' () {
+  async 'ScaledImage - it reject missing width parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1015,7 +1028,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject empty width parameter' () {
+  async 'ScaledImage - it reject empty width parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1028,7 +1041,7 @@ export class ImagesGetRouterTests {
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
-    this.RequestStub.params.width = ''
+    this.RequestStub.params.width = undefined
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(spy.callCount).to.equal(0)
@@ -1045,7 +1058,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject non-number width parameter' () {
+  async 'ScaledImage - it reject non-number width parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1075,7 +1088,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject decimal width parameter' () {
+  async 'ScaledImage - it reject decimal width parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1105,7 +1118,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject negative width parameter' () {
+  async 'ScaledImage - it reject negative width parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1135,7 +1148,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject zero width parameter' () {
+  async 'ScaledImage - it reject zero width parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1165,7 +1178,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject zero prefixed width parameter' () {
+  async 'ScaledImage - it reject zero prefixed width parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1195,7 +1208,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject missing height parameter' () {
+  async 'ScaledImage - it reject missing height parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1225,7 +1238,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject empty height parameter' () {
+  async 'ScaledImage - it reject empty height parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1238,7 +1251,7 @@ export class ImagesGetRouterTests {
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
-    this.RequestStub.params.height = ''
+    this.RequestStub.params.height = undefined
     await fn(this.RequestStub, this.ResponseStub)
 
     expect(spy.callCount).to.equal(0)
@@ -1255,7 +1268,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject non-number height parameter' () {
+  async 'ScaledImage - it reject non-number height parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1285,7 +1298,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject decimal height parameter' () {
+  async 'ScaledImage - it reject decimal height parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1315,7 +1328,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject negative height parameter' () {
+  async 'ScaledImage - it reject negative height parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1345,7 +1358,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject zero height parameter' () {
+  async 'ScaledImage - it reject zero height parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1375,7 +1388,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it reject zero prefixed height parameter' () {
+  async 'ScaledImage - it reject zero prefixed height parameter' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1405,7 +1418,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'ScaledImage - it should handle error' () {
+  async 'ScaledImage - it should handle error' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
@@ -1439,7 +1452,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'PreviewImage - it should get filename from full image request' () {
+  async 'PreviewImage - it should get filename from full image request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
@@ -1458,7 +1471,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'PreviewImage - it should get default filename from full image request' () {
+  async 'PreviewImage - it should get default filename from full image request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
@@ -1474,7 +1487,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'PreviewImage - it should get resize image for preview' () {
+  async 'PreviewImage - it should get resize image for preview' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
@@ -1496,7 +1509,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'PreviewImage - it should get send image directly from reading' () {
+  async 'PreviewImage - it should get send image directly from reading' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
@@ -1516,7 +1529,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'PreviewImage - it should not reject on success' () {
+  async 'PreviewImage - it should not reject on success' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
@@ -1535,7 +1548,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'PreviewImage - it should handle error' () {
+  async 'PreviewImage - it should handle error' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
@@ -1568,7 +1581,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'KioskImage - it should get filename from kiosk image request' () {
+  async 'KioskImage - it should get filename from kiosk image request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
@@ -1591,7 +1604,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'KioskImage - it should get default filename from full image request' () {
+  async 'KioskImage - it should get default filename from full image request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
@@ -1611,7 +1624,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'KioskImage - it should resize image to static size for kiosk image' () {
+  async 'KioskImage - it should resize image to static size for kiosk image' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
@@ -1632,7 +1645,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'KioskImage - it should get send image' () {
+  async 'KioskImage - it should get send image' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
@@ -1653,7 +1666,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'KioskImage - it should not reject for non error' () {
+  async 'KioskImage - it should not reject for non error' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
@@ -1672,7 +1685,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'KioskImage - it should handle error' () {
+  async 'KioskImage - it should handle error' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')

@@ -2,9 +2,10 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { Request, Response } from 'express'
+import type { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import browserifyMiddleware, { Imports, Functions } from '../../utils/browserify-middleware'
@@ -12,7 +13,7 @@ import browserifyMiddleware, { Imports, Functions } from '../../utils/browserify
 @suite
 export class BrowserifyMiddlewareGetPathsTests {
   @test
-  'it replaces compileable extension .js' () {
+  'it replaces compileable extension .js' (): void {
     const paths = Functions.GetPaths('foo.js')
     expect(paths).to.deep.equal([
       'foo.js',
@@ -22,7 +23,7 @@ export class BrowserifyMiddlewareGetPathsTests {
   }
 
   @test
-  'it replaces compileable extension .ts' () {
+  'it replaces compileable extension .ts' (): void {
     const paths = Functions.GetPaths('foo.ts')
     expect(paths).to.deep.equal([
       'foo.js',
@@ -32,7 +33,7 @@ export class BrowserifyMiddlewareGetPathsTests {
   }
 
   @test
-  'it ignores non compileable extension .qs' () {
+  'it ignores non compileable extension .qs' (): void {
     const paths = Functions.GetPaths('foo.qs')
     expect(paths).to.deep.equal([
       'foo.qs.js',
@@ -46,66 +47,66 @@ export class BrowserifyMiddlewareGetPathsTests {
 export class BrowserifyMiddlewareGetSystemPathTests {
   AccessStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.AccessStub = sinon.stub(Imports, 'access')
   }
 
-  after () {
+  after (): void {
     this.AccessStub?.restore()
   }
 
   @test
-  async 'It accepts leading slashes' () {
+  async 'It accepts leading slashes' (): Promise<void> {
     this.AccessStub?.resolves()
     await Functions.GetSystemPath('/foo', '/bar')
     expect(this.AccessStub?.calledWith('/foo/bar.js')).to.equal(true)
   }
 
   @test
-  async 'It tests acccess to path + .js' () {
+  async 'It tests acccess to path + .js' (): Promise<void> {
     this.AccessStub?.resolves()
     await Functions.GetSystemPath('/foo', 'bar')
     expect(this.AccessStub?.calledWith('/foo/bar.js')).to.equal(true)
   }
 
   @test
-  async 'It tests acccess to path + .ts' () {
+  async 'It tests acccess to path + .ts' (): Promise<void> {
     this.AccessStub?.resolves()
     await Functions.GetSystemPath('/foo', 'bar')
     expect(this.AccessStub?.calledWith('/foo/bar.ts')).to.equal(true)
   }
 
   @test
-  async 'It tests acccess to path' () {
+  async 'It tests acccess to path' (): Promise<void> {
     this.AccessStub?.resolves()
     await Functions.GetSystemPath('/foo', 'bar')
     expect(this.AccessStub?.calledWith('/foo/bar')).to.equal(true)
   }
 
   @test
-  async 'it resolves to null if no file matches' () {
+  async 'it resolves to null if no file matches' (): Promise<void> {
     this.AccessStub?.rejects('ERROR!')
     const result = await Functions.GetSystemPath('/foo', 'bar')
     expect(result).to.equal(null)
   }
 
   @test
-  async 'it resolves to .js if if all file matches' () {
-    this.AccessStub?.callsFake((_: string) => Promise.resolve())
+  async 'it resolves to .js if if all file matches' (): Promise<void> {
+    this.AccessStub?.callsFake(async (_: string) => { await Promise.resolve() })
     const result = await Functions.GetSystemPath('/foo', 'bar')
     expect(result).to.equal('/foo/bar.js')
   }
 
   @test
-  async 'it resolves to .ts if no .js matches' () {
-    this.AccessStub?.callsFake((path: string) => /\.js$/.test(path) ? Promise.reject(new Error('ERROR')) : Promise.resolve())
+  async 'it resolves to .ts if no .js matches' (): Promise<void> {
+    this.AccessStub?.callsFake(async (path: string) => { /\.js$/.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve() })
     const result = await Functions.GetSystemPath('/foo', 'bar')
     expect(result).to.equal('/foo/bar.ts')
   }
 
   @test
-  async 'it resolves to path if no .js/.ts matches' () {
-    this.AccessStub?.callsFake((path: string) => /\.[jt]s$/.test(path) ? Promise.reject(new Error('ERROR')) : Promise.resolve())
+  async 'it resolves to path if no .js/.ts matches' (): Promise<void> {
+    this.AccessStub?.callsFake(async (path: string) => { /\.[jt]s$/.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve() })
     const result = await Functions.GetSystemPath('/foo', 'bar')
     expect(result).to.equal('/foo/bar')
   }
@@ -123,7 +124,7 @@ export class BrowserifyMiddlewareCompileBundleTests {
     bundle: sinon.stub()
   }
 
-  before () {
+  before (): void {
     this.AccessStub = sinon.stub(Imports, 'access')
     this.AccessStub.resolves()
     this.Browser.bundle.callsFake(fn => fn(null, Buffer.from('browserified', 'utf-8')))
@@ -137,28 +138,28 @@ export class BrowserifyMiddlewareCompileBundleTests {
     })
   }
 
-  after () {
+  after (): void {
     this.AccessStub?.restore()
     this.BrowserifyStub?.restore()
     this.MinifyStub?.restore()
   }
 
   @test
-  async 'it should add tsify plugin' () {
+  async 'it should add tsify plugin' (): Promise<void> {
     expect(this.Browser.plugin.calledWith('tsify')).to.equal(false)
     await Functions.CompileBundle('/foo')
     expect(this.Browser.plugin.calledWith('tsify')).to.equal(true)
   }
 
   @test
-  async 'it should add common-shakeify plugin' () {
+  async 'it should add common-shakeify plugin' (): Promise<void> {
     expect(this.Browser.plugin.calledWith('common-shakeify')).to.equal(false)
     await Functions.CompileBundle('/foo')
     expect(this.Browser.plugin.calledWith('common-shakeify')).to.equal(true)
   }
 
   @test
-  async 'it should add common-shakeify configuration for ecma version 14' () {
+  async 'it should add common-shakeify configuration for ecma version 14' (): Promise<void> {
     expect(this.Browser.plugin.calledWith('common-shakeify')).to.equal(false)
     await Functions.CompileBundle('/foo')
     expect(this.Browser.plugin.calledWith('common-shakeify', {
@@ -167,27 +168,27 @@ export class BrowserifyMiddlewareCompileBundleTests {
   }
 
   @test
-  async 'it should add brfs transform' () {
+  async 'it should add brfs transform' (): Promise<void> {
     expect(this.Browser.transform.calledWith('brfs')).to.equal(false)
     await Functions.CompileBundle('/foo')
     expect(this.Browser.transform.calledWith('brfs')).to.equal(true)
   }
 
   @test
-  async 'it should add path to bundle' () {
+  async 'it should add path to bundle' (): Promise<void> {
     const expected = `/foo/${Math.random()}`
     await Functions.CompileBundle(expected)
     expect(this.Browser.add.calledWith(expected)).to.equal(true)
   }
 
   @test
-  async 'it should resolve to a string on success' () {
+  async 'it should resolve to a string on success' (): Promise<void> {
     const result = await Functions.CompileBundle('/foo')
     expect(result).to.equal('browserified')
   }
 
   @test
-  async 'it should reject when access rejects' () {
+  async 'it should reject when access rejects' (): Promise<void> {
     this.AccessStub?.rejects()
     await Functions.CompileBundle('/foo').then(
       () => expect.fail('Function did not reject as expected!'),
@@ -196,7 +197,7 @@ export class BrowserifyMiddlewareCompileBundleTests {
   }
 
   @test
-  async 'it should reject on generic bundle error' () {
+  async 'it should reject on generic bundle error' (): Promise<void> {
     this.Browser.bundle.callsFake(fn => fn('ERROR!', null))
     await Functions.CompileBundle('/foo').then(
       () => expect.fail('Function did not reject as expected!'),
@@ -205,7 +206,7 @@ export class BrowserifyMiddlewareCompileBundleTests {
   }
 
   @test
-  async 'it should resolve to null on MODULE_NOT_FOUND' () {
+  async 'it should resolve to null on MODULE_NOT_FOUND' (): Promise<void> {
     this.Browser.bundle.callsFake(fn => fn({
       code: 'MODULE_NOT_FOUND'
     }, null))
@@ -214,7 +215,7 @@ export class BrowserifyMiddlewareCompileBundleTests {
   }
 
   @test
-  async 'it should resolve to null on ENOENT' () {
+  async 'it should resolve to null on ENOENT' (): Promise<void> {
     this.Browser.bundle.callsFake(fn => fn({
       code: 'ENOENT'
     }, null))
@@ -223,7 +224,7 @@ export class BrowserifyMiddlewareCompileBundleTests {
   }
 
   @test
-  async 'it should resolve to null when minify fails' () {
+  async 'it should resolve to null when minify fails' (): Promise<void> {
     this.MinifyStub?.callsFake(() => {
       return {}
     })
@@ -239,7 +240,7 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   CompileBundleStub?: Sinon.SinonStub
   Logger?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.GetSystemPath = sinon.stub(Functions, 'GetSystemPath')
     this.GetSystemPath.resolves()
     this.GetPaths = sinon.stub(Functions, 'GetPaths')
@@ -250,7 +251,7 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
     Functions.browserified = {}
   }
 
-  after () {
+  after (): void {
     this.CompileBundleStub?.restore()
     this.GetPaths?.restore()
     this.GetSystemPath?.restore()
@@ -258,35 +259,35 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should abort if real path resolves to null' () {
+  async 'it should abort if real path resolves to null' (): Promise<void> {
     this.GetSystemPath?.resolves(null)
     await Functions.CompileAndCache('/foo', 'bar')
     expect(this.CompileBundleStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should abort if real path resolves to undefined' () {
+  async 'it should abort if real path resolves to undefined' (): Promise<void> {
     this.GetSystemPath?.resolves(undefined)
     await Functions.CompileAndCache('/foo', 'bar')
     expect(this.CompileBundleStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should abort if real path resolves to empty' () {
+  async 'it should abort if real path resolves to empty' (): Promise<void> {
     this.GetSystemPath?.resolves('')
     await Functions.CompileAndCache('/foo', 'bar')
     expect(this.CompileBundleStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should proceed if real path resolves to string' () {
+  async 'it should proceed if real path resolves to string' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     await Functions.CompileAndCache('/foo', 'bar')
     expect(this.GetPaths?.called).to.equal(true)
   }
 
   @test
-  async 'it should get paths for requested path' () {
+  async 'it should get paths for requested path' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     this.GetPaths?.returns(['bar.js', 'bar.ts', 'bar'])
     await Functions.CompileAndCache('/foo', 'bar')
@@ -294,14 +295,14 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should log start compile' () {
+  async 'it should log start compile' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     await Functions.CompileAndCache('/foo', 'bar')
     expect(this.Logger?.calledWith('Begin compiling /foo/bar')).to.equal(true)
   }
 
   @test
-  async 'it should trigger compile requested path' () {
+  async 'it should trigger compile requested path' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     this.GetPaths?.returns(['bar.js', 'bar.ts', 'bar'])
     this.CompileBundleStub?.resolves('some code')
@@ -310,7 +311,7 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should save compile result for .js path' () {
+  async 'it should save compile result for .js path' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     this.GetPaths?.returns(['bar.js', 'bar.ts', 'bar'])
     this.CompileBundleStub?.resolves('some code')
@@ -319,7 +320,7 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should save compile result for .ts path' () {
+  async 'it should save compile result for .ts path' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     this.GetPaths?.returns(['bar.js', 'bar.ts', 'bar'])
     this.CompileBundleStub?.resolves('some code')
@@ -328,7 +329,7 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should save compile result for path' () {
+  async 'it should save compile result for path' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     this.GetPaths?.returns(['bar.js', 'bar.ts', 'bar'])
     this.CompileBundleStub?.resolves('some code')
@@ -337,7 +338,7 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should log compile complete' () {
+  async 'it should log compile complete' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     this.GetPaths?.returns(['bar.js', 'bar.ts', 'bar'])
     this.CompileBundleStub?.resolves('some code')
@@ -346,7 +347,7 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should log error if GetPaths throws' () {
+  async 'it should log error if GetPaths throws' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     const err = new Error('ERROR')
     this.GetPaths?.throws(err)
@@ -358,7 +359,7 @@ export class BrowserifyMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should log error if compile rejects' () {
+  async 'it should log error if compile rejects' (): Promise<void> {
     this.GetSystemPath?.resolves('/foo/bar')
     const err = new Error('ERROR')
     this.GetPaths?.returns(['bar'])
@@ -382,69 +383,69 @@ export class BrowserifyMiddlewareSendScriptTests {
   FakeResponse = this.StubResponse as unknown as Response
   CompileAndCacheStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache')
     this.CompileAndCacheStub.resolves()
     Functions.browserified = {}
   }
 
-  after () {
+  after (): void {
     this.CompileAndCacheStub?.restore()
   }
 
   @test
-  async 'it should set status OK on precompiled script' () {
+  async 'it should set status OK on precompiled script' (): Promise<void> {
     Functions.browserified['/foo'] = Promise.resolve('test script')
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.status.calledWith(StatusCodes.OK)).to.equal(true)
   }
 
   @test
-  async 'it should set content-type on precompiled script' () {
+  async 'it should set content-type on precompiled script' (): Promise<void> {
     Functions.browserified['/foo'] = Promise.resolve('test script')
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.contentType.calledWith('application/javascript')).to.equal(true)
   }
 
   @test
-  async 'it should send script on precompiled script' () {
+  async 'it should send script on precompiled script' (): Promise<void> {
     Functions.browserified['/foo'] = Promise.resolve('test script')
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.send.calledWith('test script')).to.equal(true)
   }
 
   @test
-  async 'it should set status OK on fresh compiled script' () {
-    this.CompileAndCacheStub?.callsFake((_, path: string) => {
+  async 'it should set status OK on fresh compiled script' (): Promise<void> {
+    this.CompileAndCacheStub?.callsFake(async (_, path: string) => {
       Functions.browserified[path] = Promise.resolve('test script')
-      return Functions.browserified[path]
+      return await Functions.browserified[path]
     })
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.status.calledWith(StatusCodes.OK)).to.equal(true)
   }
 
   @test
-  async 'it should set content-type on fresh compiled script' () {
-    this.CompileAndCacheStub?.callsFake((_, path: string) => {
+  async 'it should set content-type on fresh compiled script' (): Promise<void> {
+    this.CompileAndCacheStub?.callsFake(async (_, path: string) => {
       Functions.browserified[path] = Promise.resolve('test script')
-      return Functions.browserified[path]
+      return await Functions.browserified[path]
     })
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.contentType.calledWith('application/javascript')).to.equal(true)
   }
 
   @test
-  async 'it should send script on fresh compiled script' () {
-    this.CompileAndCacheStub?.callsFake((_, path: string) => {
+  async 'it should send script on fresh compiled script' (): Promise<void> {
+    this.CompileAndCacheStub?.callsFake(async (_, path: string) => {
       Functions.browserified[path] = Promise.resolve('test script')
-      return Functions.browserified[path]
+      return await Functions.browserified[path]
     })
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.send.calledWith('test script')).to.equal(true)
   }
 
   @test
-  async 'it should set NOT_FOUND response when script compiles to null' () {
+  async 'it should set NOT_FOUND response when script compiles to null' (): Promise<void> {
     Functions.browserified['/foo'] = Promise.resolve(null)
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.status.calledWith(StatusCodes.NOT_FOUND)).to.equal(true)
@@ -454,7 +455,7 @@ export class BrowserifyMiddlewareSendScriptTests {
   }
 
   @test
-  async 'it should set NOT_FOUND response when script compiles to empty' () {
+  async 'it should set NOT_FOUND response when script compiles to empty' (): Promise<void> {
     Functions.browserified['/foo'] = Promise.resolve('')
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.status.calledWith(StatusCodes.NOT_FOUND)).to.equal(true)
@@ -464,7 +465,7 @@ export class BrowserifyMiddlewareSendScriptTests {
   }
 
   @test
-  async 'it should set NOT_FOUND response when script rejects as MODULE_NOT_FOUND' () {
+  async 'it should set NOT_FOUND response when script rejects as MODULE_NOT_FOUND' (): Promise<void> {
     // eslint-disable-next-line prefer-promise-reject-errors
     Functions.browserified['/foo'] = Promise.reject({
       code: 'MODULE_NOT_FOUND'
@@ -477,7 +478,7 @@ export class BrowserifyMiddlewareSendScriptTests {
   }
 
   @test
-  async 'it should set NOT_FOUND response when script rejects as ENOENT' () {
+  async 'it should set NOT_FOUND response when script rejects as ENOENT' (): Promise<void> {
     // eslint-disable-next-line prefer-promise-reject-errors
     Functions.browserified['/foo'] = Promise.reject({
       code: 'ENOENT'
@@ -490,7 +491,7 @@ export class BrowserifyMiddlewareSendScriptTests {
   }
 
   @test
-  async 'it should set INTERNAL_SERVER_ERROR response when script rejects non Error' () {
+  async 'it should set INTERNAL_SERVER_ERROR response when script rejects non Error' (): Promise<void> {
     // eslint-disable-next-line prefer-promise-reject-errors
     Functions.browserified['/foo'] = Promise.reject('SOMETHING BAD')
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
@@ -501,7 +502,7 @@ export class BrowserifyMiddlewareSendScriptTests {
   }
 
   @test
-  async 'it should set INTERNAL_SERVER_ERROR response when script rejects' () {
+  async 'it should set INTERNAL_SERVER_ERROR response when script rejects' (): Promise<void> {
     const err = new Error('OOPS')
     Functions.browserified['/foo'] = Promise.reject(err)
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
@@ -517,7 +518,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   DebounceStub?: Sinon.SinonStub
   CompileAndCacheStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.LoggerStub = sinon.stub(Functions, 'logger')
     this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache')
     this.CompileAndCacheStub.resolves()
@@ -526,7 +527,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
     this.WatchStub.returns([])
   }
 
-  after () {
+  after (): void {
     this.LoggerStub?.restore()
     this.CompileAndCacheStub?.restore()
     this.DebounceStub?.restore()
@@ -534,19 +535,19 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should watch for changes' () {
+  async 'it should watch for changes' (): Promise<void> {
     await Functions.WatchFolder('/foo', '/bar', false)
     expect(this.WatchStub?.calledWith('/foo/bar', { persistent: false })).to.equal(true)
   }
 
   @test
-  async 'it should log watch starting' () {
+  async 'it should log watch starting' (): Promise<void> {
     await Functions.WatchFolder('/foo', '/bar', false)
     expect(this.LoggerStub?.calledWith('Watching /bar for Scripts')).to.equal(true)
   }
 
   @test
-  async 'it should log error on MODULE_NOT_FOUND' () {
+  async 'it should log error on MODULE_NOT_FOUND' (): Promise<void> {
     this.WatchStub?.throws({
       code: 'MODULE_NOT_FOUND'
     })
@@ -555,7 +556,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should log error on MODULE_NOT_FOUND in iterate' () {
+  async 'it should log error on MODULE_NOT_FOUND in iterate' (): Promise<void> {
     // eslint-disable-next-line prefer-promise-reject-errors
     const err = Promise.reject({
       code: 'MODULE_NOT_FOUND'
@@ -566,7 +567,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should log error on ENOENT' () {
+  async 'it should log error on ENOENT' (): Promise<void> {
     this.WatchStub?.throws({
       code: 'ENOENT'
     })
@@ -575,7 +576,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should log error on ENOENT in iterate' () {
+  async 'it should log error on ENOENT in iterate' (): Promise<void> {
     // eslint-disable-next-line prefer-promise-reject-errors
     const err = Promise.reject({
       code: 'ENOENT'
@@ -586,14 +587,14 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should log error on exception' () {
+  async 'it should log error on exception' (): Promise<void> {
     this.WatchStub?.throws('SOMETHING BAD')
     await Functions.WatchFolder('/foo', '/bar', false)
     expect(this.LoggerStub?.calledWith('Watcher for /bar exited unexpectedly')).to.equal(true)
   }
 
   @test
-  async 'it should log error on exception in iterate' () {
+  async 'it should log error on exception in iterate' (): Promise<void> {
     const err = Promise.reject(new Error('SOMETHING BAD'))
     this.WatchStub?.returns([err])
     await Functions.WatchFolder('/foo', '/bar', false)
@@ -601,7 +602,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should ignore event without filename' () {
+  async 'it should ignore event without filename' (): Promise<void> {
     this.WatchStub?.returns([{
       filename: null,
       eventType: 'change'
@@ -611,7 +612,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should debounce non folder event on iteration' () {
+  async 'it should debounce non folder event on iteration' (): Promise<void> {
     this.WatchStub?.returns([{
       filename: '/baz',
       eventType: 'change'
@@ -621,7 +622,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should debounce folder event on iteration' () {
+  async 'it should debounce folder event on iteration' (): Promise<void> {
     this.WatchStub?.returns([{
       filename: '/baz',
       eventType: 'change'
@@ -631,7 +632,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should compile scripts for non folder event on iteration' () {
+  async 'it should compile scripts for non folder event on iteration' (): Promise<void> {
     this.WatchStub?.returns([{
       filename: '/baz',
       eventType: 'change'
@@ -643,7 +644,7 @@ export class BrowserifyMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should compile scripts for folder event on iteration' () {
+  async 'it should compile scripts for folder event on iteration' (): Promise<void> {
     this.WatchStub?.returns([{
       filename: '/baz',
       eventType: 'change'
@@ -662,14 +663,14 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   WatchFolderStub?: Sinon.SinonStub
   LoggerStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.ReaddirStub = sinon.stub(Imports, 'readdir').resolves([])
     this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache').resolves(undefined)
     this.WatchFolderStub = sinon.stub(Functions, 'WatchFolder').resolves(undefined)
     this.LoggerStub = sinon.stub(Functions, 'logger')
   }
 
-  after () {
+  after (): void {
     this.ReaddirStub?.restore()
     this.CompileAndCacheStub?.restore()
     this.WatchFolderStub?.restore()
@@ -677,7 +678,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should read each folder in the list of watchdirs' () {
+  async 'it should read each folder in the list of watchdirs' (): Promise<void> {
     await Functions.WatchAllFolders('/foo', ['/bar', '/baz'])
     expect(this.ReaddirStub?.calledWith('/foo/bar', { withFileTypes: true })).to.equal(true)
     expect(this.ReaddirStub?.calledWith('/foo/baz', { withFileTypes: true })).to.equal(true)
@@ -685,7 +686,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should watch each folder in the list of watchdirs' () {
+  async 'it should watch each folder in the list of watchdirs' (): Promise<void> {
     await Functions.WatchAllFolders('/foo', ['/bar', '/baz'])
     expect(this.WatchFolderStub?.calledWith('/foo', '/bar', false)).to.equal(true)
     expect(this.WatchFolderStub?.calledWith('/foo', '/baz', false)).to.equal(true)
@@ -693,7 +694,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should ignore dotfiles when scanning for scripts to compile' () {
+  async 'it should ignore dotfiles when scanning for scripts to compile' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: '.eslintrc.js',
       isDirectory: () => false
@@ -704,7 +705,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should ignore dotfolders when scanning for scripts to compile' () {
+  async 'it should ignore dotfolders when scanning for scripts to compile' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: '.tmp',
       isDirectory: () => true
@@ -715,7 +716,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should ignore file without compileable extension when scanning for scripts to compile' () {
+  async 'it should ignore file without compileable extension when scanning for scripts to compile' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: 'eslintrc.yaml',
       isDirectory: () => false
@@ -726,7 +727,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should compile .js file when scanning for scripts to compile' () {
+  async 'it should compile .js file when scanning for scripts to compile' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: 'application.js',
       isDirectory: () => false
@@ -737,7 +738,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should compile .ts file when scanning for scripts to compile' () {
+  async 'it should compile .ts file when scanning for scripts to compile' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: 'application.ts',
       isDirectory: () => false
@@ -748,7 +749,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should compile folder when scanning for scripts to compile' () {
+  async 'it should compile folder when scanning for scripts to compile' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: 'application',
       isDirectory: () => true
@@ -759,7 +760,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should watch contents of folders when scanning for scripts to compile' () {
+  async 'it should watch contents of folders when scanning for scripts to compile' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: 'application',
       isDirectory: () => true
@@ -770,7 +771,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should complain about folder not existing when erroring with MODULE_NOT_FOUND' () {
+  async 'it should complain about folder not existing when erroring with MODULE_NOT_FOUND' (): Promise<void> {
     this.ReaddirStub?.rejects({
       code: 'MODULE_NOT_FOUND'
     })
@@ -779,7 +780,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should complain about folder not existing when erroring with ENOENT' () {
+  async 'it should complain about folder not existing when erroring with ENOENT' (): Promise<void> {
     this.ReaddirStub?.rejects({
       code: 'ENOENT'
     })
@@ -788,14 +789,14 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should handle unexpected error gracefully' () {
+  async 'it should handle unexpected error gracefully' (): Promise<void> {
     this.ReaddirStub?.rejects('SOMETHING BAD')
     await Functions.WatchAllFolders('/foo', ['/bar'])
     expect(this.LoggerStub?.calledWith('Unexpected Error while precompiling /bar scripts')).to.equal(true)
   }
 
   @test
-  async 'it should continue processing other folders after getting one error' () {
+  async 'it should continue processing other folders after getting one error' (): Promise<void> {
     this.ReaddirStub?.onFirstCall().rejects('SOMETHING_BAD')
     await Functions.WatchAllFolders('/foo', ['/bar', '/baz'])
     expect(this.ReaddirStub?.calledWith('/foo/bar', { withFileTypes: true })).to.equal(true)
@@ -803,7 +804,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should continue processing when CompileAndCache rejects' () {
+  async 'it should continue processing when CompileAndCache rejects' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: 'application.ts',
       isDirectory: () => false
@@ -814,7 +815,7 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
   }
 
   @test
-  async 'it should continue processing when WatchFolder rejects' () {
+  async 'it should continue processing when WatchFolder rejects' (): Promise<void> {
     this.ReaddirStub?.resolves([{
       name: 'application',
       isDirectory: () => true
@@ -843,18 +844,18 @@ export class BrowserifyMiddlewareTests {
   WatchAllFoldersStub?: Sinon.SinonStub
   SendScriptStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.WatchAllFoldersStub = sinon.stub(Functions, 'WatchAllFolders').resolves(undefined)
     this.SendScriptStub = sinon.stub(Functions, 'SendScript')
   }
 
-  after () {
+  after (): void {
     this.WatchAllFoldersStub?.restore()
     this.SendScriptStub?.restore()
   }
 
   @test
-  'it should return a callable' () {
+  'it should return a callable' (): void {
     const result = browserifyMiddleware({
       basePath: '/'
     })
@@ -862,7 +863,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  'it should not watch when paths not specified' () {
+  'it should not watch when paths not specified' (): void {
     browserifyMiddleware({
       basePath: '/'
     })
@@ -870,7 +871,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  'it should not watch when paths empty' () {
+  'it should not watch when paths empty' (): void {
     browserifyMiddleware({
       basePath: '/',
       watchPaths: []
@@ -879,7 +880,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  'it should watch when paths provided' () {
+  'it should watch when paths provided' (): void {
     browserifyMiddleware({
       basePath: '/foo',
       watchPaths: ['/bar', '/baz']
@@ -888,9 +889,9 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should tolerate WatchAllFolders rejecting' () {
-    const awaiter = new Promise<boolean>(resolve => resolve(true))
-    this.WatchAllFoldersStub?.callsFake(() => awaiter.then(() => Promise.reject(new Error('FOO!'))))
+  async 'it should tolerate WatchAllFolders rejecting' (): Promise<void> {
+    const awaiter = new Promise<boolean>(resolve => { resolve(true) })
+    this.WatchAllFoldersStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new Error('FOO!'))))
     browserifyMiddleware({
       basePath: '/foo',
       watchPaths: ['/bar', '/baz']
@@ -900,7 +901,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should pass request to next for POST request' () {
+  async 'it should pass request to next for POST request' (): Promise<void> {
     const result = browserifyMiddleware({
       basePath: '/'
     })
@@ -914,7 +915,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should pass request to next for HEAD request' () {
+  async 'it should pass request to next for HEAD request' (): Promise<void> {
     const result = browserifyMiddleware({
       basePath: '/'
     })
@@ -928,7 +929,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should pass request to next for PATCH request' () {
+  async 'it should pass request to next for PATCH request' (): Promise<void> {
     const result = browserifyMiddleware({
       basePath: '/'
     })
@@ -942,7 +943,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should pass request to next for DELETE request' () {
+  async 'it should pass request to next for DELETE request' (): Promise<void> {
     const result = browserifyMiddleware({
       basePath: '/'
     })
@@ -956,7 +957,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should pass request to next for non compileable request' () {
+  async 'it should pass request to next for non compileable request' (): Promise<void> {
     const result = browserifyMiddleware({
       basePath: '/'
     })
@@ -970,7 +971,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should pass render forbidden error for directory traversal' () {
+  async 'it should pass render forbidden error for directory traversal' (): Promise<void> {
     const result = browserifyMiddleware({
       basePath: '/'
     })
@@ -987,7 +988,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should send file for valid request' () {
+  async 'it should send file for valid request' (): Promise<void> {
     const result = browserifyMiddleware({
       basePath: '/foo'
     })
@@ -1001,7 +1002,7 @@ export class BrowserifyMiddlewareTests {
   }
 
   @test
-  async 'it should pass render Internal Server error for send file failure' () {
+  async 'it should pass render Internal Server error for send file failure' (): Promise<void> {
     const result = browserifyMiddleware({
       basePath: '/'
     })

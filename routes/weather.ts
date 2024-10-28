@@ -1,18 +1,19 @@
 'use sanity'
 
-import { Application, Router, Request, Response, RequestHandler } from 'express'
-import { Server as WebSocketServer } from 'socket.io'
-import { Server } from 'http'
+import { Router } from 'express'
+import type { Application, Request, Response, RequestHandler } from 'express'
+import type { Server as WebSocketServer } from 'socket.io'
+import type { Server } from 'http'
 import { StatusCodes } from 'http-status-codes'
 
 interface WeatherResults {
-  temp: number|undefined
-  pressure: number|undefined
-  humidity: number|undefined
-  description: string|undefined
-  icon: string|undefined
-  sunrise: number|undefined
-  sunset: number|undefined
+  temp: number | undefined
+  pressure: number | undefined
+  humidity: number | undefined
+  description: string | undefined
+  icon: string | undefined
+  sunrise: number | undefined
+  sunset: number | undefined
 }
 
 export interface OpenWeatherData {
@@ -21,10 +22,10 @@ export interface OpenWeatherData {
     pressure: number
     humidity: number
   }
-  weather: {
+  weather: Array<{
     main: string
     icon: string
-  }[]
+  }>
   sys: {
     sunrise: number
     sunset: number
@@ -33,11 +34,11 @@ export interface OpenWeatherData {
 
 export class Imports {
   public static get appId (): string {
-    return process.env.OPENWEATHER_APPID || ''
+    return process.env.OPENWEATHER_APPID ?? ''
   }
 
   public static get location (): string {
-    return encodeURIComponent(process.env.OPENWEATHER_LOCATION || '')
+    return encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
   }
 
   public static setInterval = setInterval
@@ -57,10 +58,10 @@ export class Functions {
   }
 
   public static async GetWeather (): Promise<OpenWeatherData> {
-    if (!Imports.appId) {
+    if (Imports.appId.length < 1) {
       throw new Error('no OpewnWeather AppId Defined!')
     }
-    if (!Imports.location) {
+    if (Imports.location.length < 1) {
       throw new Error('no OpewnWeather Location Defined!')
     }
     const response = await Imports.fetch(`https://api.openweathermap.org/data/2.5/weather?q=${Imports.location}&appid=${Imports.appId}`)
@@ -71,13 +72,13 @@ export class Functions {
     const weather = Functions.weather
     try {
       const data = await Functions.GetWeather()
-      if (data && data.main) {
+      if (data?.main != null) {
         weather.temp = data.main.temp - 273.15
         weather.pressure = data.main.pressure
         weather.humidity = data.main.humidity
       }
-      weather.description = (data.weather[0] || {}).main
-      weather.icon = (data.weather[0] || {}).icon
+      weather.description = data.weather[0]?.main
+      weather.icon = data.weather[0]?.icon
       weather.sunrise = 1000 * data.sys.sunrise
       weather.sunset = 1000 * data.sys.sunset
     } catch (_) {
@@ -94,7 +95,7 @@ export class Functions {
 }
 
 // Export the base-router
-export async function getRouter (_: Application, __: Server, ___: WebSocketServer) {
+export async function getRouter (_app: Application, _server: Server, _sockets: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
 
   const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler => async (req: Request, res: Response) => {
@@ -114,7 +115,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     res.status(StatusCodes.OK).json(Functions.weather)
   }))
 
-  Imports.setInterval(Functions.UpdateWeather, 10 * 60 * 1000)
+  Imports.setInterval(() => { Functions.UpdateWeather().catch(() => {}) }, 10 * 60 * 1000)
   Functions.UpdateWeather().catch(() => {})
 
   return router

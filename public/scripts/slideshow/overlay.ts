@@ -6,9 +6,9 @@ import { GetAlmanac } from './weather'
 const fadein: number = 30 * 60 * 1000
 const maxOpacity: number = 0.85 // in percent.
 
-const updateOverlay = async () => {
+const updateOverlay = async (): Promise<void> => {
   const kioskMode = new URLSearchParams(window.location.search).has('kiosk')
-  const overlay = document.querySelector('.overlay') as HTMLElement|null
+  const overlay = document.querySelector('.overlay') as unknown as HTMLElement
 
   if (!kioskMode) return
   overlay?.classList.remove('hide')
@@ -25,7 +25,7 @@ const updateOverlay = async () => {
     offset = now - times.sunset
   }
   overlay?.style.setProperty('opacity', `${Math.min(maxOpacity * (offset / fadein), maxOpacity)}`)
-  return Promise.resolve()
+  await Promise.resolve()
 }
 
 export default CyclicUpdater.create(updateOverlay, 100)

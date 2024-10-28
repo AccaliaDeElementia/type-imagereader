@@ -4,7 +4,7 @@ module.exports = {
     node: true
   },
   extends: [
-    'standard'
+    'eslint-config-standard-with-typescript'
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -17,6 +17,8 @@ module.exports = {
   ],
 
   rules: {
+    "@typescript-eslint/no-extraneous-class": "off", //TODO: sort this out at some point...
+    "@typescript-eslint/consistent-indexed-object-style": "off", //TODO: sort this out at some point...
     "@typescript-eslint/no-floating-promises": "error"
   },
   ignorePatterns: [

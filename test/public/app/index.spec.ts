@@ -2,7 +2,8 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
 import { Loading } from '../../../public/scripts/app/loading'
 import { WakeLock } from '../../../public/scripts/app/wakelock'
@@ -26,7 +27,7 @@ export class AppIndexTests {
   pubsubDeferredSpy: Sinon.SinonStub = sinon.stub()
   wakeLockInitSpy: Sinon.SinonStub = sinon.stub()
 
-  before () {
+  before (): void {
     this.loadingInitSpy = sinon.stub(Loading, 'Init')
     this.actionsInitSpy = sinon.stub(Actions, 'Init')
     this.tabsInitSpy = sinon.stub(Tabs, 'Init')
@@ -38,7 +39,7 @@ export class AppIndexTests {
     this.wakeLockInitSpy = sinon.stub(WakeLock, 'Init')
   }
 
-  after () {
+  after (): void {
     this.loadingInitSpy.restore()
     this.actionsInitSpy.restore()
     this.tabsInitSpy.restore()
@@ -51,7 +52,7 @@ export class AppIndexTests {
   }
 
   @test
-  async 'it inits all modules' () {
+  async 'it inits all modules' (): Promise<void> {
     await import('../../../public/scripts/app/index')
     expect(this.loadingInitSpy.called, 'Loading.Init() should be called').to.equal(true)
     expect(this.actionsInitSpy.called, 'Actions.Init() should be called').to.equal(true)

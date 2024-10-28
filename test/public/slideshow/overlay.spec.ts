@@ -48,8 +48,8 @@ export class SlideshowWeatherTests {
 
     this.fetchStub = sinon.stub(global, 'fetch')
     this.fetchStub.resolves({
-      json: () => Promise.resolve(this.fetchData)
-    } as Response)
+      json: async () => await Promise.resolve(this.fetchData)
+    })
 
     this.fetchData = {
       sunrise: -Infinity,
@@ -70,7 +70,7 @@ export class SlideshowWeatherTests {
   }
 
   @test
-  async 'overlay does not open in non kiosk mode' () {
+  async 'overlay does not open in non kiosk mode' (): Promise<void> {
     const now = new Date('1999-12-31T12:00:00.000Z')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
@@ -90,7 +90,7 @@ export class SlideshowWeatherTests {
   }
 
   @test
-  async 'overlay opens in kiosk mode' () {
+  async 'overlay opens in kiosk mode' (): Promise<void> {
     const now = new Date('1999-12-31T12:00:00.000Z')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
@@ -110,7 +110,7 @@ export class SlideshowWeatherTests {
   }
 
   @test
-  async 'overlay Shows "fully opaque" well before sunrise' () {
+  async 'overlay Shows "fully opaque" well before sunrise' (): Promise<void> {
     const now = new Date('1999-12-31T01:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
@@ -122,12 +122,12 @@ export class SlideshowWeatherTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as HTMLElement
+    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
     expect(overlay.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
   }
 
   @test
-  async 'overlay fades out before sunrise' () {
+  async 'overlay fades out before sunrise' (): Promise<void> {
     const now = new Date('1999-12-31T05:45:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
@@ -139,7 +139,7 @@ export class SlideshowWeatherTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as HTMLElement
+    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
     expect(overlay.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
     for (let i = 1; i <= 30; i++) {
       const offset = (30 - i) / 30
@@ -150,7 +150,7 @@ export class SlideshowWeatherTests {
   }
 
   @test
-  async 'overlay is tranparent during the day' () {
+  async 'overlay is tranparent during the day' (): Promise<void> {
     const now = new Date('1999-12-31T10:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
@@ -162,12 +162,12 @@ export class SlideshowWeatherTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as HTMLElement
+    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
     expect(overlay.style.getPropertyValue('opacity')).to.equal('0')
   }
 
   @test
-  async 'overlay fades in after sunset' () {
+  async 'overlay fades in after sunset' (): Promise<void> {
     const now = new Date('1999-12-31T21:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
@@ -179,7 +179,7 @@ export class SlideshowWeatherTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as HTMLElement
+    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
     expect(overlay.style.getPropertyValue('opacity')).to.equal('0')
     for (let i = 1; i <= 30; i++) {
       const offset = i / 30
@@ -190,7 +190,7 @@ export class SlideshowWeatherTests {
   }
 
   @test
-  async 'overlay Shows "fully opaque" well after sunset' () {
+  async 'overlay Shows "fully opaque" well after sunset' (): Promise<void> {
     const now = new Date('1999-12-31T22:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
@@ -202,7 +202,7 @@ export class SlideshowWeatherTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as HTMLElement
+    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
     expect(overlay.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
   }
 }

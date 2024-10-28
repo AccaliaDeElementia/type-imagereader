@@ -5,12 +5,12 @@ import _morgan from 'morgan'
 import { join } from 'path'
 import _helmet from 'helmet'
 
-import express, { Express, Request, Response, NextFunction } from 'express'
+import express, { type Express, type Request, type Response, type NextFunction } from 'express'
 import _favicon from 'serve-favicon'
 import StatusCodes from 'http-status-codes'
 import 'express-async-errors'
 
-import { Server as HttpServer } from 'http'
+import { type Server as HttpServer } from 'http'
 import { Server as WebSocketServer } from 'socket.io'
 
 import { getRouter as getApiRouter } from './routes/api'
@@ -88,19 +88,21 @@ export class Functions {
     app.set('views', join(__dirname, 'views'))
     app.set('view engine', 'pug')
 
-    app.use(Imports.sassMiddleware({
+    const sassMiddleware = Imports.sassMiddleware({
       mountPath: join(__dirname, 'public'),
       watchdir: '/stylesheets'
-    }))
-    app.use(Imports.browserifyMiddleware({
+    })
+    app.use((req, res, next) => { sassMiddleware(req, res, next).catch(() => { next() }) })
+    const browserifyMiddleware = Imports.browserifyMiddleware({
       basePath: join(__dirname, 'public'),
       watchPaths: ['/scripts', '/bundles']
-    }))
+    })
+    app.use((req, res, next) => { browserifyMiddleware(req, res, next).catch(() => { next() }) })
     app.use(express.static(join(__dirname, 'public')))
   }
 }
 
-export default async function start (port: number) {
+export default async function start (port: number): Promise<{ app: Express, server: HttpServer }> {
   const [app, server, websockets] = Functions.CreateApp(port)
 
   Functions.ConfigureBaseApp(app)

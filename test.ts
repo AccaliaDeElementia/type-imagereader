@@ -1,9 +1,9 @@
 import fsWalker from './utils/fswalker'
 
-fsWalker('/data', (items: {path: string, isFile: boolean}[], _: Number) => {
+fsWalker('/data', async (items: Array<{ path: string, isFile: boolean }>, _: number) => {
   const dirs = items.filter(item => !item.isFile)
   dirs.forEach(dir => {
     console.log(dir.path)
   })
-  return Promise.resolve()
-}).then(() => console.log('done!'), (err) => console.error('whoops!', err))
+  await Promise.resolve()
+}).then(() => { console.log('done!') }, (err) => { console.error('whoops!', err) })

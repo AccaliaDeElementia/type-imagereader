@@ -1,8 +1,8 @@
 'use sanity'
 
-import { Application, Router, Request, Response, RequestHandler } from 'express'
-import { Server as WebSocketServer } from 'socket.io'
-import { Server } from 'http'
+import { type Application, Router, type Request, type Response, type RequestHandler } from 'express'
+import { type Server as WebSocketServer } from 'socket.io'
+import { type Server } from 'http'
 import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'path'
@@ -19,7 +19,7 @@ export class Imports {
 }
 
 // Export the base-router
-export async function getRouter (_: Application, __: Server, ___: WebSocketServer) {
+export async function getRouter (_app: Application, _server: Server, _socket: WebSocketServer): Promise<Router> {
   const knex = await persistance.initialize()
   // Init router and path
   const router = Imports.Router()
@@ -41,7 +41,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
     }
   }
 
-  const parsePath = (path: string, res: Response) => {
+  const parsePath = (path: string, res: Response): string | null => {
     if (normalize(path) !== path) {
       res.status(StatusCodes.FORBIDDEN).json({
         error: {
@@ -64,10 +64,10 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }))
 
   const listing = handleErrors(async (req, res) => {
-    const path = parsePath(req.params[0] || '/', res)
+    const path = parsePath(req.params[0] ?? '/', res)
     if (path === null) { return }
     const folder = await Functions.GetListing(knex, normalize(path + '/'))
-    if (!folder) {
+    if (folder == null) {
       res.status(StatusCodes.NOT_FOUND).json({
         error: {
           code: 'E_NOT_FOUND',
@@ -86,8 +86,8 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   router.post('/navigate/latest', handleErrors(async (req, res) => {
     const incomingModCount = +req.body.modCount
     let response = -1
-    const path = parsePath(UriSafePath.decode(req.body.path), res)
-    if (!path) {
+    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
+    if (path == null) {
       return
     }
     if (incomingModCount === -1) {
@@ -103,7 +103,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }))
 
   router.post('/mark/read', handleErrors(async (req, res) => {
-    const path = parsePath(UriSafePath.decode(req.body.path), res)
+    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
     if (path !== null) {
       await Functions.MarkFolderRead(knex, normalize(path + '/'))
       res.status(StatusCodes.OK).end()
@@ -111,7 +111,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }))
 
   router.post('/mark/unread', handleErrors(async (req, res) => {
-    const path = parsePath(UriSafePath.decode(req.body.path), res)
+    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
     if (path !== null) {
       await Functions.MarkFolderUnread(knex, normalize(path + '/'))
       res.status(StatusCodes.OK).end()
@@ -127,7 +127,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   router.get('/bookmarks', getBookmarks)
 
   router.post('/bookmarks/add', handleErrors(async (req, res) => {
-    const path = parsePath(UriSafePath.decode(req.body.path), res)
+    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
     if (path !== null) {
       await Functions.AddBookmark(knex, path)
       res.status(StatusCodes.OK).end()
@@ -135,7 +135,7 @@ export async function getRouter (_: Application, __: Server, ___: WebSocketServe
   }))
 
   router.post('/bookmarks/remove', handleErrors(async (req, res) => {
-    const path = parsePath(UriSafePath.decode(req.body.path), res)
+    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
     if (path !== null) {
       await Functions.RemoveBookmark(knex, path)
       res.status(StatusCodes.OK).end()

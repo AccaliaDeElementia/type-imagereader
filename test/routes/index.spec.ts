@@ -2,18 +2,16 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { Application, Router } from 'express'
-import { Server } from 'http'
-import { Server as WebSocketServer } from 'socket.io'
+import type { Application, Router } from 'express'
+import type { Server } from 'http'
+import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 
 import { getRouter, Imports } from '../../routes/index'
-
-function assert (condition: unknown, msg?: string): asserts condition {
-  if (!condition) throw new Error(msg || 'Assertion failure!')
-}
+import assert from 'assert'
 
 @suite
 export class ImagesGetRouterTests {
@@ -37,16 +35,16 @@ export class ImagesGetRouterTests {
 
   RouterStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.RouterStub = sinon.stub(Imports, 'Router').returns(this.RouterFake as unknown as Router)
   }
 
-  after () {
+  after (): void {
     this.RouterStub?.restore()
   }
 
   @test
-  async 'it should construct and return router' () {
+  async 'it should construct and return router' (): Promise<void> {
     const router = await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterStub?.callCount).to.equal(1)
     expect(this.RouterStub?.firstCall.args).to.have.lengthOf(0)
@@ -54,13 +52,13 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should register route /' () {
+  async 'it should register route /' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/')).to.equal(true)
   }
 
   @test
-  async 'it should redirect route / to /show' () {
+  async 'it should redirect route / to /show' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/')
@@ -73,19 +71,19 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should register route /show' () {
+  async 'it should register route /show' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/show')).to.equal(true)
   }
 
   @test
-  async 'it should register route /show/*' () {
+  async 'it should register route /show/*' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/show/*')).to.equal(true)
   }
 
   @test
-  async 'it should use same handler for /show to /show/*' () {
+  async 'it should use same handler for /show to /show/*' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const show = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show')
@@ -101,7 +99,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should render app for default /show request' () {
+  async 'it should render app for default /show request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const show = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show')
@@ -114,7 +112,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should render app for valid /show request' () {
+  async 'it should render app for valid /show request' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const show = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show')
@@ -128,7 +126,7 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should render error for /show request with directory traversal' () {
+  async 'it should render error for /show request with directory traversal' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const show = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show')

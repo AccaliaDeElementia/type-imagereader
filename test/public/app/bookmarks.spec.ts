@@ -29,9 +29,7 @@ html
         button Remove
 `
 
-export interface SubscriberPromiseFunction {
-  (recievedData: any, actualTopic?: string): Promise<void>;
-}
+export type SubscriberPromiseFunction = (recievedData: any, actualTopic?: string) => Promise<void>
 
 class TestBookmarks extends Bookmarks {
   public static get bookmarkCard (): DocumentFragment | undefined {
@@ -102,7 +100,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   GetJSONSpy: sinon.SinonStub = sinon.stub()
   PostJSONSpy: sinon.SinonStub = sinon.stub()
 
-  before () {
+  before (): void {
     super.before()
     TestBookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     this.BuildBookmarksSpy = sinon.stub(Bookmarks, 'buildBookmarks')
@@ -112,7 +110,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     this.PostJSONSpy.resolves()
   }
 
-  after () {
+  after (): void {
     this.PostJSONSpy.restore()
     this.GetJSONSpy.restore()
     this.BuildBookmarksSpy.restore()
@@ -120,34 +118,34 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should set bookmarkCard on init' () {
+  'it should set bookmarkCard on init' (): void {
     TestBookmarks.bookmarkCard = undefined
     Bookmarks.Init()
     expect(TestBookmarks.bookmarkCard).to.not.equal(undefined)
   }
 
   @test
-  'it should set bookmarkFolder on init' () {
+  'it should set bookmarkFolder on init' (): void {
     TestBookmarks.bookmarkFolder = undefined
     Bookmarks.Init()
     expect(TestBookmarks.bookmarkFolder).to.not.equal(undefined)
   }
 
   @test
-  'it should set bookmarksTab on init' () {
+  'it should set bookmarksTab on init' (): void {
     TestBookmarks.bookmarksTab = null
     Bookmarks.Init()
     expect(TestBookmarks.bookmarksTab).to.not.equal(null)
   }
 
   @test
-  'it should subscribe to Navigate:Data' () {
+  'it should subscribe to Navigate:Data' (): void {
     Bookmarks.Init()
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
   }
 
   @test
-  'it should build bookmarks on Navigate:Data' () {
+  'it should build bookmarks on Navigate:Data' (): void {
     Bookmarks.Init()
     const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
     assert(subscriberfn !== undefined)
@@ -157,13 +155,13 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should subscribe to Bookmarks:Load' () {
+  'it should subscribe to Bookmarks:Load' (): void {
     Bookmarks.Init()
     expect(PubSub.subscribers['BOOKMARKS:LOAD']).to.have.length(1)
   }
 
   @test
-  async 'it should use GetJSON when loading Bookmarks' () {
+  async 'it should use GetJSON when loading Bookmarks' (): Promise<void> {
     Bookmarks.Init()
     const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction
     assert(handler, 'Handler must be found to have valid test')
@@ -172,7 +170,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  async 'it should build bookmarks with undefined when loading Bookmarks results in blank results' () {
+  async 'it should build bookmarks with undefined when loading Bookmarks results in blank results' (): Promise<void> {
     Bookmarks.Init()
     const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction
     assert(handler, 'Handler must be found to have valid test')
@@ -184,7 +182,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  async 'it should build bookmarks with results of loading Bookmarks' () {
+  async 'it should build bookmarks with results of loading Bookmarks' (): Promise<void> {
     Bookmarks.Init()
     const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction
     assert(handler, 'Handler must be found to have valid test')
@@ -197,13 +195,13 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should subscribe to Bookmarks:Add' () {
+  'it should subscribe to Bookmarks:Add' (): void {
     Bookmarks.Init()
     expect(PubSub.subscribers['BOOKMARKS:ADD']).to.have.length(1)
   }
 
   @test
-  async 'it should use PostJSON when adding Bookmarks' () {
+  async 'it should use PostJSON when adding Bookmarks' (): Promise<void> {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
@@ -217,7 +215,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  async 'it should use Publish Bookmarks:Load when adding Bookmarks' () {
+  async 'it should use Publish Bookmarks:Load when adding Bookmarks' (): Promise<void> {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
@@ -231,13 +229,13 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should subscribe to Bookmarks:Remove' () {
+  'it should subscribe to Bookmarks:Remove' (): void {
     Bookmarks.Init()
     expect(PubSub.subscribers['BOOKMARKS:REMOVE']).to.have.length(1)
   }
 
   @test
-  async 'it should use PostJSON when removing Bookmarks' () {
+  async 'it should use PostJSON when removing Bookmarks' (): Promise<void> {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
@@ -251,7 +249,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  async 'it should use Publish Bookmarks:Load when removing Bookmarks' () {
+  async 'it should use Publish Bookmarks:Load when removing Bookmarks' (): Promise<void> {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
@@ -263,6 +261,49 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     expect(spy.called).to.equal(true)
     expect(spy.calledAfter(this.PostJSONSpy)).to.equal(true)
   }
+
+  @test
+  async 'it shhould tolerate PostJSON rejecting for Bookmarks:Load' (): Promise<void> {
+    Bookmarks.Init()
+    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction
+    assert(handler, 'Handler must be found to have valid test')
+    this.GetJSONSpy.rejects('FOO')
+    await handler('/foo/bar/baz')
+    await Promise.resolve()
+    expect(this.BuildBookmarksSpy.called).to.equal(false)
+  }
+
+  @test
+  async 'it shhould tolerate PostJSON rejecting for Bookmarks:Add' (): Promise<void> {
+    Bookmarks.Init()
+    const successSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', successSpy)
+    const loadSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', loadSpy)
+    const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction
+    assert(handler, 'Handler must be found to have valid test')
+    this.PostJSONSpy.rejects('FOO')
+    await handler('/foo/bar/baz')
+    await Promise.resolve()
+    expect(successSpy.called).to.equal(false)
+    expect(loadSpy.called).to.equal(false)
+  }
+
+  @test
+  async 'it shhould tolerate PostJSON rejecting for Bookmarks:Remove' (): Promise<void> {
+    Bookmarks.Init()
+    const successSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', successSpy)
+    const loadSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', loadSpy)
+    const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction
+    assert(handler, 'Handler must be found to have valid test')
+    this.PostJSONSpy.rejects('FOO')
+    await handler('/foo/bar/baz')
+    await Promise.resolve()
+    expect(successSpy.called).to.equal(false)
+    expect(loadSpy.called).to.equal(false)
+  }
 }
 
 @suite
@@ -271,7 +312,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   NavigateLoadSpy: sinon.SinonStub = sinon.stub()
   PostJSONSpy: sinon.SinonStub = sinon.stub()
 
-  before () {
+  before (): void {
     super.before()
     TestBookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     this.BookmarksRemoveSpy = sinon.stub()
@@ -282,13 +323,13 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     this.PostJSONSpy.resolves()
   }
 
-  after () {
+  after (): void {
     this.PostJSONSpy.restore()
     super.after()
   }
 
   @test
-  'it should return null if card template is missing' () {
+  'it should return null if card template is missing' (): void {
     TestBookmarks.bookmarkCard = undefined
     const result = Bookmarks.BuildBookmark({
       name: '',
@@ -299,7 +340,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should return HTMLElement if card template exist' () {
+  'it should return HTMLElement if card template exist' (): void {
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: 'foo',
@@ -309,7 +350,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should set title in result card' () {
+  'it should set title in result card' (): void {
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: 'foo',
@@ -320,7 +361,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should set background image to bookmark in result card' () {
+  'it should set background image to bookmark in result card' (): void {
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: '/foo/bar.png',
@@ -331,7 +372,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should strip leading folder path from title in result card' () {
+  'it should strip leading folder path from title in result card' (): void {
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: '/path/to/foo/folder/foo',
@@ -342,7 +383,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should publish Bookmarks:Remove on button click' () {
+  'it should publish Bookmarks:Remove on button click' (): void {
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: '/path/to/foo/folder/foo',
@@ -360,7 +401,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
-  async 'it should navigate latest on bookmark click' () {
+  async 'it should navigate latest on bookmark click' (): Promise<void> {
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: '/path/to/foo/folder/foo',
@@ -368,11 +409,8 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     })
 
     this.PostJSONSpy.reset()
-    let waiter: Promise<void> | null = null
-    this.PostJSONSpy.callsFake(() => {
-      waiter = new Promise((resolve) => resolve())
-      return waiter
-    })
+    const waiter = new Promise<void>((resolve) => { resolve() })
+    this.PostJSONSpy.callsFake(async () => { await waiter })
 
     const evt = new this.dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
@@ -384,7 +422,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
-  async 'it should navigate load on bookmark click' () {
+  async 'it should navigate load on bookmark click' (): Promise<void> {
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: '/path/to/foo/folder/foo',
@@ -392,16 +430,16 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     })
 
     this.PostJSONSpy.reset()
-    let waiter: Promise<void> | null = null
-    this.PostJSONSpy.callsFake(() => {
-      waiter = new Promise((resolve) => resolve())
-      return waiter
+    const waiter = new Promise<void>(resolve => { resolve() })
+    this.PostJSONSpy.callsFake(async () => {
+      await waiter
     })
 
     const evt = new this.dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
 
     await waiter
+    await Promise.resolve()
 
     expect(this.NavigateLoadSpy.calledAfter(this.PostJSONSpy)).to.equal(true)
     expect(this.NavigateLoadSpy.called).to.equal(true)
@@ -412,7 +450,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 
   @test
-  async 'it should not Navigate:Load when PostJSON rejects on bookmark click' () {
+  async 'it should not Navigate:Load when PostJSON rejects on bookmark click' (): Promise<void> {
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: '/path/to/foo/folder/foo',
@@ -423,10 +461,9 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     PubSub.Subscribe('Navigate:Load', spy)
 
     this.PostJSONSpy.reset()
-    let waiter: Promise<void> | null = null
-    this.PostJSONSpy.callsFake(() => {
-      waiter = new Promise(resolve => resolve())
-      return waiter.then(() => Promise.reject(new Error('FOO!')))
+    const waiter = new Promise<void>(resolve => { resolve() })
+    this.PostJSONSpy.callsFake(async () => {
+      await waiter.then(async () => await Promise.reject(new Error('FOO!')))
     })
 
     const evt = new this.dom.window.MouseEvent('click')
@@ -440,21 +477,21 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
 
 @suite
 export class BookmarksGetFolderTests extends BaseBookmarksTests {
-  before () {
+  before (): void {
     super.before()
     TestBookmarks.bookmarkFolder = this.dom.window.document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     TestBookmarks.bookmarksTab = this.dom.window.document.querySelector<HTMLElement>('#tabBookmarks')
     Bookmarks.BookmarkFolders = []
   }
 
-  after () {
+  after (): void {
     TestBookmarks.bookmarkFolder = undefined
     TestBookmarks.bookmarksTab = null
     super.after()
   }
 
   @test
-  'it should return an HTMLElement' () {
+  'it should return an HTMLElement' (): void {
     const result = Bookmarks.GetFolder('', {
       name: '',
       path: '/foo/bar.jpg',
@@ -464,7 +501,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should add folder to folder list on creation' () {
+  'it should add folder to folder list on creation' (): void {
     expect(Bookmarks.BookmarkFolders).to.have.length(0)
     const result = Bookmarks.GetFolder('', {
       name: '/foo',
@@ -479,7 +516,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should return existing folder element for matching name' () {
+  'it should return existing folder element for matching name' (): void {
     const element = this.dom.window.document.createElement('div')
     Bookmarks.BookmarkFolders.push({
       name: '/foo/bar/baz/',
@@ -494,7 +531,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should return null for folder when template is missing' () {
+  'it should return null for folder when template is missing' (): void {
     TestBookmarks.bookmarkFolder = undefined
 
     const result = Bookmarks.GetFolder('', {
@@ -506,7 +543,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should set data attribute for folderPath' () {
+  'it should set data attribute for folderPath' (): void {
     const result = Bookmarks.GetFolder('', {
       name: '/foo/bar/baz',
       path: '/foo/bar/baz/',
@@ -517,7 +554,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should set title' () {
+  'it should set title' (): void {
     const result = Bookmarks.GetFolder('', {
       name: '/foo/bar/baz',
       path: '/foo/bar/baz/quux.png',
@@ -528,7 +565,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should uridecode title' () {
+  'it should uridecode title' (): void {
     const result = Bookmarks.GetFolder('', {
       name: '%7C',
       path: '',
@@ -539,7 +576,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should not create title if element is missing from template' () {
+  'it should not create title if element is missing from template' (): void {
     TestBookmarks.bookmarkFolder?.querySelector('.title')?.remove()
     const result = Bookmarks.GetFolder('', {
       name: '%7C',
@@ -551,7 +588,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should not add the closed class with matching path' () {
+  'it should not add the closed class with matching path' (): void {
     const result = Bookmarks.GetFolder('/bar', {
       name: '/bar',
       path: '/bar/baz.png',
@@ -561,7 +598,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should add the closed class with non matching path' () {
+  'it should add the closed class with non matching path' (): void {
     const result = Bookmarks.GetFolder('/foo', {
       name: '/bar',
       path: '/bar/baz.png',
@@ -571,7 +608,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should have on click handler to open self' () {
+  'it should have on click handler to open self' (): void {
     const result = Bookmarks.GetFolder('/foo', {
       name: '',
       path: '/bar/baz.png',
@@ -587,7 +624,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should have on click handler to close others' () {
+  'it should have on click handler to close others' (): void {
     for (let i = 1; i <= 50; i++) {
       Bookmarks.GetFolder('/foo', {
         name: `/bar${i}`,
@@ -611,7 +648,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
 export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   GetFolderSpy = sinon.stub()
   BuildBookmarkSpy = sinon.stub()
-  before () {
+  before (): void {
     super.before()
     TestBookmarks.bookmarkCard = this.document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     TestBookmarks.bookmarkFolder = this.document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
@@ -621,14 +658,14 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     this.BuildBookmarkSpy = sinon.stub(Bookmarks, 'BuildBookmark')
   }
 
-  after () {
+  after (): void {
     this.BuildBookmarkSpy.restore()
     this.GetFolderSpy.restore()
     super.after()
   }
 
   @test
-  'it should bail when bookmarksTab is missing' () {
+  'it should bail when bookmarksTab is missing' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -650,7 +687,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should bail when bookmarkCard is missing' () {
+  'it should bail when bookmarkCard is missing' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -672,7 +709,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should bail when bookmarkFolder is missing' () {
+  'it should bail when bookmarkFolder is missing' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -694,7 +731,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should use the current path when no open details exist' () {
+  'it should use the current path when no open details exist' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -714,7 +751,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should use the current path when open details with no path exists' () {
+  'it should use the current path when open details with no path exists' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -737,7 +774,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should use the openPath fron open details when path exists' () {
+  'it should use the openPath fron open details when path exists' (): void {
     const data = {
       path: '/foo/bar/baz/',
       bookmarks: [
@@ -761,7 +798,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should remove existing details from bookmark tab' () {
+  'it should remove existing details from bookmark tab' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -789,7 +826,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should call GetFolder to retrieve folder for bookmarks' () {
+  'it should call GetFolder to retrieve folder for bookmarks' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -809,7 +846,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should not call BuildBookmark if GetFolder fails' () {
+  'it should not call BuildBookmark if GetFolder fails' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -830,7 +867,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should call BuildBookmark when GetFolder succeeds' () {
+  'it should call BuildBookmark when GetFolder succeeds' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -853,7 +890,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should not appendChild when BuildBookmark fails' () {
+  'it should not appendChild when BuildBookmark fails' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -876,7 +913,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should appendChild when BuildBookmark succeeds' () {
+  'it should appendChild when BuildBookmark succeeds' (): void {
     const data = {
       path: '/',
       bookmarks: [
@@ -901,7 +938,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should sort BookmarkFolders' () {
+  'it should sort BookmarkFolders' (): void {
     this.GetFolderSpy.callsFake(() => {
       Bookmarks.BookmarkFolders = [
         {
@@ -944,7 +981,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should add elements from BookmarkFolders' () {
+  'it should add elements from BookmarkFolders' (): void {
     this.GetFolderSpy.callsFake(() => {
       Bookmarks.BookmarkFolders = []
       for (let i = 1; i <= 100; i++) {

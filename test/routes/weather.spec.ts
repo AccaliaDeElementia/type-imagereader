@@ -2,14 +2,17 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { Application, Router } from 'express'
-import { Server } from 'http'
-import { Server as WebSocketServer } from 'socket.io'
+import type { Application, Router } from 'express'
+import type { Server } from 'http'
+import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 
-import { getRouter, Functions, Imports, OpenWeatherData } from '../../routes/weather'
+import { getRouter, Functions, Imports } from '../../routes/weather'
+import type { OpenWeatherData } from '../../routes/weather'
+import assert from 'assert'
 
 @suite
 export class WeatherFunctionsGetWeatherTests {
@@ -19,18 +22,18 @@ export class WeatherFunctionsGetWeatherTests {
     json: sinon.stub().resolves()
   }
 
-  before () {
+  before (): void {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
     this.FetchStub = sinon.stub(Imports, 'fetch').resolves(this.FetchResult as unknown as globalThis.Response)
   }
 
-  after () {
+  after (): void {
     this.FetchStub?.restore()
   }
 
   @test
-  async 'it should reject when appid not set' () {
+  async 'it should reject when appid not set' (): Promise<void> {
     process.env.OPENWEATHER_LOCATION = 'location'
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
@@ -41,7 +44,7 @@ export class WeatherFunctionsGetWeatherTests {
   }
 
   @test
-  async 'it should reject when location not set' () {
+  async 'it should reject when location not set' (): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
@@ -52,7 +55,7 @@ export class WeatherFunctionsGetWeatherTests {
   }
 
   @test
-  async 'it should reject when fetch fail' () {
+  async 'it should reject when fetch fail' (): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     const err = new Error('FETCH FAIL')
@@ -63,7 +66,7 @@ export class WeatherFunctionsGetWeatherTests {
   }
 
   @test
-  async 'it should fetch from version 2.5 of the weather api' () {
+  async 'it should fetch from version 2.5 of the weather api' (): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     await Functions.GetWeather()
@@ -73,7 +76,7 @@ export class WeatherFunctionsGetWeatherTests {
   }
 
   @test
-  async 'it should return parsed JSON' () {
+  async 'it should return parsed JSON' (): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     const data = { data: Math.random() }
@@ -84,7 +87,7 @@ export class WeatherFunctionsGetWeatherTests {
   }
 
   @test
-  async 'it should reject when JSON parse fails' () {
+  async 'it should reject when JSON parse fails' (): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     const err = new Error('JSON PARSE FAIL')
@@ -117,7 +120,7 @@ export class WeatherFunctionsUpdateWeatherTests {
     }
   }
 
-  before () {
+  before (): void {
     Functions.weather.temp = undefined
     Functions.weather.pressure = undefined
     Functions.weather.humidity = undefined
@@ -129,32 +132,32 @@ export class WeatherFunctionsUpdateWeatherTests {
     this.GetWeatherStub = sinon.stub(Functions, 'GetWeather').resolves(this.weatherData)
   }
 
-  after () {
+  after (): void {
     this.GetWeatherStub?.restore()
   }
 
   @test
-  async 'it should call GetWeather' () {
+  async 'it should call GetWeather' (): Promise<void> {
     await Functions.UpdateWeather()
     expect(this.GetWeatherStub?.callCount).to.equal(1)
     expect(this.GetWeatherStub?.firstCall.args).to.deep.equal([])
   }
 
   @test
-  async 'it should return weatherdata' () {
+  async 'it should return weatherdata' (): Promise<void> {
     const data = await Functions.UpdateWeather()
     expect(data).to.equal(Functions.weather)
   }
 
   @test
-  async 'it should return weatherdata on error too' () {
+  async 'it should return weatherdata on error too' (): Promise<void> {
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     const data = await Functions.UpdateWeather()
     expect(data).to.equal(Functions.weather)
   }
 
   @test
-  async 'it should set temp in celcius from kelvin' () {
+  async 'it should set temp in celcius from kelvin' (): Promise<void> {
     this.weatherData.main = { temp: 273.15, pressure: 0, humidity: 0 }
     await Functions.UpdateWeather()
     expect(Functions.weather.temp).to.equal(0)
@@ -164,42 +167,42 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set pressure' () {
+  async 'it should set pressure' (): Promise<void> {
     this.weatherData.main = { temp: 273.15, pressure: 1011, humidity: 0 }
     await Functions.UpdateWeather()
     expect(Functions.weather.pressure).to.equal(1011)
   }
 
   @test
-  async 'it should set humidity' () {
+  async 'it should set humidity' (): Promise<void> {
     this.weatherData.main = { temp: 273.15, pressure: 0, humidity: 75 }
     await Functions.UpdateWeather()
     expect(Functions.weather.humidity).to.equal(75)
   }
 
   @test
-  async 'it should fail to set temp if main data missing' () {
+  async 'it should fail to set temp if main data missing' (): Promise<void> {
     (this.weatherData as any).main = null
     await Functions.UpdateWeather()
     expect(Functions.weather.temp).to.equal(undefined)
   }
 
   @test
-  async 'it should fail to set pressure if main data missing' () {
+  async 'it should fail to set pressure if main data missing' (): Promise<void> {
     (this.weatherData as any).main = null
     await Functions.UpdateWeather()
     expect(Functions.weather.pressure).to.equal(undefined)
   }
 
   @test
-  async 'it should fail to set humidity if main data missing' () {
+  async 'it should fail to set humidity if main data missing' (): Promise<void> {
     (this.weatherData as any).main = null
     await Functions.UpdateWeather()
     expect(Functions.weather.humidity).to.equal(undefined)
   }
 
   @test
-  async 'it should set description from weather forecast' () {
+  async 'it should set description from weather forecast' (): Promise<void> {
     const expected = `Description ${Math.random()}`
     this.weatherData.weather = [{ main: expected, icon: 'Icon' }]
     await Functions.UpdateWeather()
@@ -207,7 +210,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set description from first weather forecast' () {
+  async 'it should set description from first weather forecast' (): Promise<void> {
     const expected = `Description ${Math.random()}`
     this.weatherData.weather = [{ main: expected, icon: 'Icon' }, { main: 'Bad Description', icon: 'Bad Icon' }]
     await Functions.UpdateWeather()
@@ -215,14 +218,14 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set blank description from none weather forecast' () {
+  async 'it should set blank description from none weather forecast' (): Promise<void> {
     this.weatherData.weather = []
     await Functions.UpdateWeather()
     expect(Functions.weather.description).to.equal(undefined)
   }
 
   @test
-  async 'it should set icon from weather forecast' () {
+  async 'it should set icon from weather forecast' (): Promise<void> {
     const expected = `Icon ${Math.random()}`
     this.weatherData.weather = [{ main: 'Description', icon: expected }]
     await Functions.UpdateWeather()
@@ -230,7 +233,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set icon from first weather forecast' () {
+  async 'it should set icon from first weather forecast' (): Promise<void> {
     const expected = `Icon ${Math.random()}`
     this.weatherData.weather = [{ main: 'Description', icon: expected }, { main: 'Bad Description', icon: 'Bad Icon' }]
     await Functions.UpdateWeather()
@@ -238,28 +241,28 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set blank icon from none weather forecast' () {
+  async 'it should set blank icon from none weather forecast' (): Promise<void> {
     this.weatherData.weather = []
     await Functions.UpdateWeather()
     expect(Functions.weather.icon).to.equal(undefined)
   }
 
   @test
-  async 'it should set sunrise in ms from s' () {
+  async 'it should set sunrise in ms from s' (): Promise<void> {
     this.weatherData.sys.sunrise = 42
     await Functions.UpdateWeather()
     expect(Functions.weather.sunrise).to.equal(42000)
   }
 
   @test
-  async 'it should set sunset in ms from s' () {
+  async 'it should set sunset in ms from s' (): Promise<void> {
     this.weatherData.sys.sunset = 42
     await Functions.UpdateWeather()
     expect(Functions.weather.sunset).to.equal(42000)
   }
 
   @test
-  async 'it should clear temp on error' () {
+  async 'it should clear temp on error' (): Promise<void> {
     Functions.weather.temp = 69
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -267,7 +270,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear pressure on error' () {
+  async 'it should clear pressure on error' (): Promise<void> {
     Functions.weather.pressure = 69
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -275,7 +278,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear humidity on error' () {
+  async 'it should clear humidity on error' (): Promise<void> {
     Functions.weather.humidity = 69
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -283,7 +286,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear description on error' () {
+  async 'it should clear description on error' (): Promise<void> {
     Functions.weather.description = 'SEXY DESCRIPTION'
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -291,7 +294,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear icon on error' () {
+  async 'it should clear icon on error' (): Promise<void> {
     Functions.weather.icon = 'SEXY ICON'
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -299,16 +302,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should be the 1024th test written in this project' () {
-    const one = +!![]
-    const two = one + one
-    const ten = Math.pow(two, two + one) + two
-    const testNumber = Math.pow(two, ten)
-    expect(testNumber).to.equal(1024)
-  }
-
-  @test
-  async 'it should clear sunrise on error' () {
+  async 'it should clear sunrise on error' (): Promise<void> {
     Functions.weather.sunrise = 69
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -316,7 +310,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear sunset on error' () {
+  async 'it should clear sunset on error' (): Promise<void> {
     Functions.weather.sunset = 69
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -347,27 +341,27 @@ export class WeatherRouterTests {
   SetIntervalStub?: Sinon.SinonStub
   UpdateWeatherStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.RouterStub = sinon.stub(Imports, 'Router').returns(this.RouterFake as unknown as Router)
     this.SetIntervalStub = sinon.stub(Imports, 'setInterval')
     this.UpdateWeatherStub = sinon.stub(Functions, 'UpdateWeather').resolves()
   }
 
-  after () {
+  after (): void {
     this.RouterStub?.restore()
     this.SetIntervalStub?.restore()
     this.UpdateWeatherStub?.restore()
   }
 
   @test
-  async 'it should return router from getRouter' () {
+  async 'it should return router from getRouter' (): Promise<void> {
     const result = await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(result).to.equal(this.RouterFake)
   }
 
   @test
-  async 'it should tolerate update weather rejecting on initial call' () {
-    const awaiter = new Promise<void>(resolve => resolve())
+  async 'it should tolerate update weather rejecting on initial call' (): Promise<void> {
+    const awaiter = new Promise<void>(resolve => { resolve() })
     this.UpdateWeatherStub?.rejects(new Error('FOO!'))
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     await awaiter
@@ -375,23 +369,50 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should update weather immediately' () {
+  async 'it should update weather immediately' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.UpdateWeatherStub?.callCount).to.equal(1)
     expect(this.UpdateWeatherStub?.firstCall.args).to.deep.equal([])
   }
 
   @test
-  async 'it should update weather using setInterval' () {
+  async 'it should update weather using setInterval' (): Promise<void> {
+    this.UpdateWeatherStub?.resolves()
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    this.UpdateWeatherStub?.resetHistory()
     expect(this.SetIntervalStub?.callCount).to.equal(1)
     expect(this.SetIntervalStub?.firstCall.args).to.have.lengthOf(2)
-    expect(this.SetIntervalStub?.firstCall.args[0]).to.equal(this.UpdateWeatherStub)
+    const fn = this.SetIntervalStub?.firstCall.args[0] as () => void
+    assert(fn != null)
+    expect(this.UpdateWeatherStub?.called).to.equal(false)
+    fn()
+    expect(this.UpdateWeatherStub?.called).to.equal(true)
     expect(this.SetIntervalStub?.firstCall.args[1]).to.equal(600_000)
   }
 
   @test
-  async 'it should register get handler for /' () {
+  async 'it should tolerate UpdateWearther rejecting' (): Promise<void> {
+    this.UpdateWeatherStub?.rejects(new Error('FOO'))
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    await Promise.resolve()
+    assert(true, 'should not get an exception nor break due to unhandled promise rejection')
+  }
+
+  @test
+  async 'it should tolerate UpdateWearther rejecting in setInterval' (): Promise<void> {
+    this.UpdateWeatherStub?.resolves()
+    await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
+    this.UpdateWeatherStub?.resetHistory()
+    this.UpdateWeatherStub?.rejects(new Error('FOO'))
+    const fn = this.SetIntervalStub?.firstCall.args[0] as () => void
+    assert(fn != null)
+    fn()
+    await Promise.resolve()
+    assert(true, 'should not get an exception nor break due to unhandled promise rejection')
+  }
+
+  @test
+  async 'it should register get handler for /' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.callCount).to.equal(1)
     expect(this.RouterFake.get.firstCall.args).to.have.lengthOf(2)
@@ -399,12 +420,10 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should send weather for / route' () {
+  async 'it should send weather for / route' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.firstCall.args[1]
-    if (!fn) {
-      throw new Error('fn should be defined!')
-    }
+    assert(fn != null, 'fn should be defined!')
     expect(fn).to.be.a('function')
     await fn(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -415,12 +434,10 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should send error for error in / route' () {
+  async 'it should send error for error in / route' (): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.firstCall.args[1]
-    if (!fn) {
-      throw new Error('fn should be defined!')
-    }
+    assert(fn != null, 'fn should be defined!')
     expect(fn).to.be.a('function')
     this.ResponseStub.status.onFirstCall().throws(new Error('I DON\'T WANNA'))
     await fn(this.RequestStub, this.ResponseStub)

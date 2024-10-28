@@ -10,13 +10,13 @@ export interface Bookmark {
 }
 
 interface BookmarkFolder {
-  name: string,
-  path: string,
+  name: string
+  path: string
   bookmarks: Bookmark[]
 }
 
 interface DataWithBookmarks {
-  path: string,
+  path: string
   bookmarks: BookmarkFolder[]
 }
 
@@ -34,9 +34,9 @@ export class Bookmarks {
 
   public static GetFolder (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null {
     let folder = this.BookmarkFolders.filter(e => e.name === bookmarkFolder.path)[0]
-    if (!folder) {
+    if (folder == null) {
       const element = (Bookmarks.bookmarkFolder?.cloneNode(true) as HTMLElement | null)?.firstElementChild as HTMLElement | null
-      if (!element) {
+      if (element == null) {
         return null
       }
       folder = {
@@ -45,7 +45,7 @@ export class Bookmarks {
       }
       element.setAttribute('data-folderPath', bookmarkFolder.path)
       const title = element.querySelector<HTMLElement>('.title')
-      if (title) title.innerText = decodeURI(bookmarkFolder.name)
+      if (title != null) title.innerText = decodeURI(bookmarkFolder.name)
       title?.addEventListener('click', (e) => {
         for (const otherFolder of this.BookmarkFolders) {
           otherFolder.element.classList.add('closed')
@@ -60,9 +60,9 @@ export class Bookmarks {
     return folder.element
   }
 
-  public static BuildBookmark (bookmark: Bookmark): HTMLElement|null {
+  public static BuildBookmark (bookmark: Bookmark): HTMLElement | null {
     const card = (Bookmarks.bookmarkCard?.cloneNode(true) as HTMLElement)?.firstElementChild as HTMLElement
-    if (!card) {
+    if (card == null) {
       return null
     }
 
@@ -80,19 +80,25 @@ export class Bookmarks {
         path: bookmark.path,
         modCount: -1
       })
-        .then(() => Publish('Navigate:Load', {
-          path: bookmark.folder,
-          noMenu: true
-        }), () => {})
+        .then(() => {
+          Publish('Navigate:Load', {
+            path: bookmark.folder,
+            noMenu: true
+          })
+        }, () => {})
       event.stopPropagation()
     })
     return card
   }
 
   public static buildBookmarks (data: DataWithBookmarks): void {
-    if (!this.bookmarksTab || !this.bookmarkCard || !this.bookmarkFolder) return
+    if (this.bookmarksTab == null ||
+      this.bookmarkCard == null ||
+      this.bookmarkFolder == null) {
+      return
+    }
 
-    const openPath = this.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') || data.path
+    const openPath = this.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') ?? data.path
 
     for (const existing of this.bookmarksTab.querySelectorAll('div.folder')) {
       existing.remove()
@@ -102,12 +108,12 @@ export class Bookmarks {
     // TODO: REbuild this to take advantage of the new structure instead of just massaging it into old style
     for (const folder of data.bookmarks) {
       const folderNode = this.GetFolder(openPath, folder)
-      if (!folderNode) {
+      if (folderNode == null) {
         continue
       }
       for (const bookmark of folder.bookmarks) {
         const card = this.BuildBookmark(bookmark)
-        if (!card) {
+        if (card == null) {
           continue
         }
         folderNode.appendChild(card)
@@ -119,24 +125,31 @@ export class Bookmarks {
     }
   }
 
-  public static Init () {
+  public static Init (): void {
     this.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     this.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     this.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
 
-    Subscribe('Navigate:Data', (data) => this.buildBookmarks(data))
+    Subscribe('Navigate:Data', (data) => { this.buildBookmarks(data as DataWithBookmarks) })
 
-    Subscribe('Bookmarks:Load', (): Promise<void> => Net.GetJSON<BookmarkFolder[]>('/api/bookmarks')
-      .then(bookmarks => this.buildBookmarks({ path: '', bookmarks })))
+    Subscribe('Bookmarks:Load', () => {
+      Net.GetJSON<BookmarkFolder[]>('/api/bookmarks')
+        .then(bookmarks => { this.buildBookmarks({ path: '', bookmarks }) })
+        .catch(() => {})
+    })
 
-    Subscribe('Bookmarks:Add', (path: string): Promise<void> =>
+    Subscribe('Bookmarks:Add', (path: string) => {
       Net.PostJSON('/api/bookmarks/add', { path })
-        .then(() => Publish('Bookmarks:Load'))
-        .then(() => Publish('Loading:Success')))
+        .then(() => { Publish('Bookmarks:Load') })
+        .then(() => { Publish('Loading:Success') })
+        .catch(() => {})
+    })
 
-    Subscribe('Bookmarks:Remove', (path: string): Promise<void> =>
+    Subscribe('Bookmarks:Remove', (path: string) => {
       Net.PostJSON('/api/bookmarks/remove', { path })
-        .then(() => Publish('Bookmarks:Load'))
-        .then(() => Publish('Loading:Success')))
+        .then(() => { Publish('Bookmarks:Load') })
+        .then(() => { Publish('Loading:Success') })
+        .catch(() => {})
+    })
   }
 }

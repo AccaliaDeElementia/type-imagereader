@@ -19,7 +19,7 @@ interface ButtonGroups {
 
 export class Actions {
   static setInnerTextMaybe (node: HTMLElement | null, text: string): void {
-    if (node) {
+    if (node != null) {
       node.innerText = text
     }
   }
@@ -30,7 +30,7 @@ export class Actions {
     for (const { name, image } of buttons) {
       const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
       const button = template?.content.cloneNode(true).firstChild as HTMLElement
-      if (!button) continue
+      if (button == null) continue
       this.setInnerTextMaybe(button.querySelector('i'), image)
       this.setInnerTextMaybe(button.querySelector('h5'), name)
       button.addEventListener('click', event => {
@@ -198,17 +198,17 @@ export class Actions {
 
   public static ReadGamepad (): void {
     if (document.hidden) return
-    for (const pad of navigator.getGamepads() || []) {
-      if (!pad) continue
-      const Xaxis = pad.axes[0] || 0
-      const Yaxis = pad.axes[1] || 0
+    for (const pad of navigator.getGamepads() ?? []) {
+      if (pad == null) continue
+      const Xaxis = pad.axes[0] ?? 0
+      const Yaxis = pad.axes[1] ?? 0
       const status = {
-        A: pad.buttons[0]?.pressed || false,
-        B: pad.buttons[1]?.pressed || false,
-        X: pad.buttons[3]?.pressed || false,
-        Y: pad.buttons[2]?.pressed || false,
-        L: pad.buttons[4]?.pressed || false,
-        R: pad.buttons[5]?.pressed || false,
+        A: pad.buttons[0]?.pressed ?? false,
+        B: pad.buttons[1]?.pressed ?? false,
+        X: pad.buttons[3]?.pressed ?? false,
+        Y: pad.buttons[2]?.pressed ?? false,
+        L: pad.buttons[4]?.pressed ?? false,
+        R: pad.buttons[5]?.pressed ?? false,
         Left: Xaxis < -0.5,
         Right: Xaxis > 0.5,
         Up: Yaxis < -0.5,
@@ -244,11 +244,12 @@ export class Actions {
     }
   }
 
-  public static Init () {
+  public static Init (): void {
     this.BuildActions()
 
     Subscribe('Navigate:Data', (data: NavigateData) => {
-      if (!data.children?.length && !data.pictures?.length) {
+      if ((data.pictures == null || data.pictures.length < 1) &&
+        (data.children == null || data.children.length < 1)) {
         Publish('Tab:Select', 'Actions')
       }
     })
@@ -260,6 +261,6 @@ export class Actions {
         event.key.toUpperCase()
       Publish(`Action:Keypress:${key}`, key)
     })
-    window.addEventListener('gamepadconnected', () => AddInterval('ReadGamepad', () => this.ReadGamepad(), 20))
+    window.addEventListener('gamepadconnected', () => { AddInterval('ReadGamepad', () => { this.ReadGamepad() }, 20) })
   }
 }

@@ -5,6 +5,7 @@ import { suite, test } from '@testdeck/mocha'
 import * as sinon from 'sinon'
 
 import { Debouncer } from '../../utils/debounce'
+import assert from 'assert'
 
 @suite
 export class DebouncerTests extends Debouncer {
@@ -16,7 +17,7 @@ export class DebouncerTests extends Debouncer {
     })
   }
 
-  before () {
+  before (): void {
     Debouncer.debouncers = []
     this.clock.restore()
     this.clock = sinon.useFakeTimers({
@@ -24,20 +25,20 @@ export class DebouncerTests extends Debouncer {
     })
   }
 
-  after () {
+  after (): void {
     Debouncer.timer = undefined
     this.clock.restore()
   }
 
   @test
-  'static startTimer() starts the timers' () {
+  'static startTimer() starts the timers' (): void {
     expect(this.clock.countTimers()).to.equal(0)
     Debouncer.startTimers()
     expect(this.clock.countTimers()).to.equal(1)
   }
 
   @test
-  'static startTimer() starts the timers once' () {
+  'static startTimer() starts the timers once' (): void {
     expect(this.clock.countTimers()).to.equal(0)
     Debouncer.startTimers()
     Debouncer.startTimers()
@@ -45,7 +46,7 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'static stopTimer() stops the timers' () {
+  'static stopTimer() stops the timers' (): void {
     Debouncer.startTimers()
     expect(this.clock.countTimers()).to.equal(1)
     Debouncer.stopTimers()
@@ -53,17 +54,17 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'static stopTimer() allows multiple stops' () {
+  'static stopTimer() allows multiple stops' (): void {
     expect(this.clock.countTimers()).to.equal(0)
     Debouncer.stopTimers()
     expect(this.clock.countTimers()).to.equal(0)
   }
 
   @test
-  'static interval fires timers periodically' () {
+  'static interval fires timers periodically' (): void {
     Debouncer.startTimers()
     const object = Debouncer.create(200) as DebouncerTests
-    object.debounce('foobar', () => Promise.resolve())
+    object.debounce('foobar', async () => { await Promise.resolve() })
     expect(object.counters[0]?.counter).to.equal(2)
     this.clock.tick(50)
     expect(object.counters[0]?.counter, 'timer fired early!').to.equal(2)
@@ -72,25 +73,25 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'protected static getDebouncers gets the underlying debounce array' () {
+  'protected static getDebouncers gets the underlying debounce array' (): void {
     expect(Debouncer.getDebouncers()).to.equal(Debouncer.debouncers)
   }
 
   @test
-  'create() creates Debouncer' () {
+  'create() creates Debouncer' (): void {
     const object = Debouncer.create(0)
     expect(object).to.be.instanceOf(Debouncer)
   }
 
   @test
-  'create() creates Debouncer with default duration' () {
+  'create() creates Debouncer with default duration' (): void {
     const object = Debouncer.create() as DebouncerTests
     expect(object).to.be.instanceOf(Debouncer)
     expect(object.cycleCount).to.equal(1)
   }
 
   @test
-  'create() adds Debouncer to bouncer list' () {
+  'create() adds Debouncer to bouncer list' (): void {
     expect(Debouncer.debouncers).to.have.length(0)
     const object = Debouncer.create(0)
     expect(Debouncer.debouncers).to.have.length(1)
@@ -98,28 +99,28 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'remove() clears Debouncer from bouncer list' () {
+  'remove() clears Debouncer from bouncer list' (): void {
     const object = Debouncer.create(0)
     Debouncer.remove(object)
     expect(Debouncer.debouncers).to.not.include(object)
   }
 
   @test
-  'doCycle() decrements pending debouncers' () {
+  'doCycle() decrements pending debouncers' (): void {
     const object = Debouncer.create(500) as DebouncerTests
-    object.debounce('foobar', () => Promise.resolve())
+    object.debounce('foobar', async () => { await Promise.resolve() })
     expect(object.counters[0]?.counter).to.equal(5)
     DebouncerTests.doCycle()
     expect(object.counters[0]?.counter).to.equal(4)
   }
 
   @test
-  'doCycle() does not fire pending debouncers' () {
+  'doCycle() does not fire pending debouncers' (): void {
     const object = Debouncer.create(500) as DebouncerTests
     let fired = false
-    object.debounce('foobar', () => {
+    object.debounce('foobar', async () => {
       fired = true
-      return Promise.resolve()
+      await Promise.resolve()
     })
     expect(fired).to.equal(false)
     DebouncerTests.doCycle()
@@ -127,19 +128,17 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'doCycle() fires due debouncers' () {
+  'doCycle() fires due debouncers' (): void {
     const object = Debouncer.create(500) as DebouncerTests
     let fired = false
-    object.debounce('foobar', () => {
+    object.debounce('foobar', async () => {
       fired = true
-      return Promise.resolve()
+      await Promise.resolve()
     })
 
     const counter = object.counters[0]
-    expect(counter).to.not.equal(undefined)
-    if (counter) {
-      counter.counter = 0
-    }
+    assert(counter != null, 'counter must have a value')
+    counter.counter = 0
 
     expect(fired).to.equal(false)
     DebouncerTests.doCycle()
@@ -147,15 +146,13 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'doCycle() removes due debouncers' () {
+  'doCycle() removes due debouncers' (): void {
     const object = Debouncer.create(500) as DebouncerTests
-    object.debounce('foobar', () => Promise.resolve())
+    object.debounce('foobar', async () => { await Promise.resolve() })
 
     const counter = object.counters[0]
-    expect(counter).to.not.equal(undefined)
-    if (counter) {
-      counter.counter = 0
-    }
+    assert(counter != null, 'counter must have a value')
+    counter.counter = 0
 
     expect(object.counters).to.have.length(1)
     DebouncerTests.doCycle()
@@ -163,33 +160,29 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'doCycle() handles due debouncers that reject' () {
+  'doCycle() handles due debouncers that reject' (): void {
     const object = Debouncer.create(500) as DebouncerTests
-    object.debounce('foobar', () => Promise.reject(new Error('OOOGA BOOGA!')))
+    object.debounce('foobar', async () => { await Promise.reject(new Error('OOOGA BOOGA!')) })
 
     const counter = object.counters[0]
-    expect(counter).to.not.equal(undefined)
-    if (counter) {
-      counter.counter = 0
-    }
+    assert(counter != null, 'counter must have a value')
+    counter.counter = 0
 
-    expect(() => DebouncerTests.doCycle()).to.not.Throw()
+    expect(() => { DebouncerTests.doCycle() }).to.not.Throw()
   }
 
   @test
-  'doCycle() does not fire expired debouncers' () {
+  'doCycle() does not fire expired debouncers' (): void {
     const object = Debouncer.create(500) as DebouncerTests
     let fired = false
-    object.debounce('foobar', () => {
+    object.debounce('foobar', async () => {
       fired = true
-      return Promise.resolve()
+      await Promise.resolve()
     })
 
     const counter = object.counters[0]
-    expect(counter).to.not.equal(undefined)
-    if (counter) {
-      counter.counter = -10
-    }
+    assert(counter != null, 'counter must have a value')
+    counter.counter = -10
 
     expect(fired).to.equal(false)
     DebouncerTests.doCycle()
@@ -197,15 +190,13 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'doCycle() removes expired debouncers' () {
+  'doCycle() removes expired debouncers' (): void {
     const object = Debouncer.create(500) as DebouncerTests
-    object.debounce('foobar', () => Promise.resolve())
+    object.debounce('foobar', async () => { await Promise.resolve() })
 
     const counter = object.counters[0]
-    expect(counter).to.not.equal(undefined)
-    if (counter) {
-      counter.counter = -10
-    }
+    assert(counter != null, 'counter must have a value')
+    counter.counter = -10
 
     expect(object.counters).to.have.length(1)
     DebouncerTests.doCycle()
@@ -213,33 +204,33 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'constructor sets cycleCount' () {
+  'constructor sets cycleCount' (): void {
     const object = Debouncer.create(200) as DebouncerTests
     expect(object.cycleCount).to.equal(2)
   }
 
   @test
-  'constructor sets cycleCount, rounding up' () {
+  'constructor sets cycleCount, rounding up' (): void {
     const object = Debouncer.create(150) as DebouncerTests
     expect(object.cycleCount).to.equal(2)
   }
 
   @test
-  'constructor sets cycleCount, not negative' () {
+  'constructor sets cycleCount, not negative' (): void {
     const object = Debouncer.create(-100) as DebouncerTests
     expect(object.cycleCount).to.equal(1)
   }
 
   @test
-  'constructor sets cycleCount, minimum one' () {
+  'constructor sets cycleCount, minimum one' (): void {
     const object = Debouncer.create(0) as DebouncerTests
     expect(object.cycleCount).to.equal(1)
   }
 
   @test
-  'debounce() adds to counters' () {
+  'debounce() adds to counters' (): void {
     const key = `${Math.random()}`
-    const fn = () => Promise.resolve()
+    const fn = async (): Promise<void> => { await Promise.resolve() }
 
     const object = Debouncer.create(500) as DebouncerTests
     expect(object.counters).to.have.length(0)
@@ -253,10 +244,10 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'debounce() replaces existing callback when debouncing' () {
+  'debounce() replaces existing callback when debouncing' (): void {
     const key = `${Math.random()}`
-    const replaced = () => Promise.resolve()
-    const fn = () => Promise.resolve()
+    const replaced = async (): Promise<void> => { await Promise.resolve() }
+    const fn = async (): Promise<void> => { await Promise.resolve() }
 
     const object = Debouncer.create(500) as DebouncerTests
     object.debounce(key, replaced)
@@ -271,18 +262,16 @@ export class DebouncerTests extends Debouncer {
   }
 
   @test
-  'debounce() resets countdown when debouncing' () {
+  'debounce() resets countdown when debouncing' (): void {
     const key = `${Math.random()}`
-    const replaced = () => Promise.resolve()
-    const fn = () => Promise.resolve()
+    const replaced = async (): Promise<void> => { await Promise.resolve() }
+    const fn = async (): Promise<void> => { await Promise.resolve() }
 
     const object = Debouncer.create(500) as DebouncerTests
     object.debounce(key, replaced)
     const counter = object.counters[0]
-    expect(counter).to.not.equal(undefined)
-    if (counter) {
-      counter.counter = 1
-    }
+    assert(counter != null, 'counter must have a value')
+    counter.counter = 1
 
     object.debounce(key, fn)
 

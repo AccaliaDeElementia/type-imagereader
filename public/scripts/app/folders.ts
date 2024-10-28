@@ -5,7 +5,7 @@ import { Publish, Subscribe } from './pubsub'
 export interface Folder {
   name: string
   path: string
-  cover: string|null
+  cover: string | null
   totalSeen: number
   totalCount: number
 }
@@ -15,14 +15,14 @@ export interface Data {
 }
 
 export class Folders {
-  static FolderCard: DocumentFragment|null = null
+  static FolderCard: DocumentFragment | null = null
 
-  public static BuildCard (folder: Folder): HTMLElement|null {
+  public static BuildCard (folder: Folder): HTMLElement | null {
     const card = (this.FolderCard?.cloneNode(true) as HTMLElement)?.firstElementChild as HTMLElement
-    if (!card) {
+    if (card == null) {
       return null
     }
-    if (folder.cover) {
+    if (folder.cover != null && folder.cover.length > 0) {
       card.querySelector('i')?.remove()
       card.style.backgroundImage = `url("/images/preview${folder.cover}-image.webp")`
     }
@@ -35,12 +35,12 @@ export class Folders {
     const percentSeen = 100 * folder.totalSeen / folder.totalCount
 
     const header = card.querySelector('h5')
-    if (header) header.innerText = folder.name
+    if (header != null) header.innerText = folder.name
     const progress = card.querySelector<HTMLDivElement>('div.text')
-    if (progress) progress.innerText = `${txtSeen}/${txtCount}`
+    if (progress != null) progress.innerText = `${txtSeen}/${txtCount}`
     const slider = card.querySelector<HTMLDivElement>('div.slider')
-    if (slider) slider.style.width = `${percentSeen.toFixed(2)}%`
-    card.addEventListener('click', () => Publish('Navigate:Load', folder.path))
+    if (slider != null) slider.style.width = `${percentSeen.toFixed(2)}%`
+    card.addEventListener('click', () => { Publish('Navigate:Load', folder.path) })
     return card
   }
 
@@ -48,11 +48,11 @@ export class Folders {
     for (const folder of document.querySelectorAll('#tabFolders .folders')) {
       folder.remove()
     }
-    if (!data.children || !data.children?.length) {
+    if (data.children == null || data.children.length < 1) {
       document.querySelector('a[href="#tabFolders')?.parentElement?.classList.add('hidden')
       return
     }
-    if (!data.pictures || !data.pictures?.length) {
+    if (data.pictures == null || data.pictures.length < 1) {
       Publish('Tab:Select', 'Folders')
     }
     document.querySelector('a[href="#tabFolders')?.parentElement?.classList.remove('hidden')
@@ -63,14 +63,14 @@ export class Folders {
 
     for (const folder of data.children) {
       const card = this.BuildCard(folder)
-      if (!card) continue
+      if (card == null) continue
       container.appendChild(card)
     }
   }
 
-  public static Init () {
-    this.FolderCard = (document.querySelector('#FolderCard') as HTMLTemplateElement).content
+  public static Init (): void {
+    this.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
 
-    Subscribe('Navigate:Data', (data) => this.BuildFolders(data))
+    Subscribe('Navigate:Data', (data) => { this.BuildFolders(data as Data) })
   }
 }

@@ -1,10 +1,10 @@
 'use sanity'
 
-import { io, Socket } from 'socket.io-client'
-import { DefaultEventsMap } from 'socket.io/dist/typed-events'
+import { io, type Socket } from 'socket.io-client'
+import { type DefaultEventsMap } from 'socket.io/dist/typed-events'
 type WebSocket = Socket<DefaultEventsMap, DefaultEventsMap>
 
-const handleKeys = (event: KeyboardEvent, socket: WebSocket) => {
+const handleKeys = (event: KeyboardEvent, socket: WebSocket): void => {
   if (event.key.toUpperCase() === 'ARROWRIGHT') {
     socket.emit('next-image')
   } else if (event.key.toUpperCase() === 'ARROWLEFT') {
@@ -14,8 +14,8 @@ const handleKeys = (event: KeyboardEvent, socket: WebSocket) => {
   }
 }
 
-const handleClick = (event: MouseEvent, socket: WebSocket, initialScale: number) => {
-  if (window.visualViewport && window.visualViewport.scale > initialScale) {
+const handleClick = (event: MouseEvent, socket: WebSocket, initialScale: number): void => {
+  if (window.visualViewport != null && window.visualViewport.scale > initialScale) {
     socket.emit('notify-done')
     return
   }
@@ -61,10 +61,16 @@ export class WebSockets {
   public static LocationReload?: () => void
   static connect (): void {
     WebSockets.launchId = undefined
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     WebSockets.LocationAssign = window.location.assign
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     WebSockets.LocationReload = window.location.reload
     this.socket = io(new URL(window.location.href).origin)
-    const room = decodeURI(window.location.pathname.replace(/^\/[^/]+/, '') || '/')
+    let uri = window.location.pathname.replace(/^\/[^/]+/, '')
+    if (uri.length < 1) {
+      uri = '/'
+    }
+    const room = decodeURI(uri)
     this.socket.on('connect', () => {
       this.socket.emit('join-slideshow', room)
       this.socket.emit('get-launchId', (launchId: unknown) => {
@@ -81,9 +87,9 @@ export class WebSockets {
       doNewImage(path)
       this.socket.emit('notify-done')
     })
-    const initialScale = window.visualViewport ? window.visualViewport.scale : 1
-    document.body.addEventListener('click', event => handleClick(event, this.socket, initialScale))
-    document.body.addEventListener('keyup', event => handleKeys(event, this.socket))
+    const initialScale = window.visualViewport != null ? window.visualViewport.scale : 1
+    document.body.addEventListener('click', event => { handleClick(event, this.socket, initialScale) })
+    document.body.addEventListener('keyup', event => { handleKeys(event, this.socket) })
   }
 
   protected static disconnect (): void {

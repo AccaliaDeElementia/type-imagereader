@@ -3,15 +3,15 @@
 import { Subscribe, Publish, Defer } from './pubsub'
 
 export class Loading {
-  protected static overlay: HTMLElement|null
-  protected static navbar: HTMLElement|null
+  protected static overlay: HTMLElement | null
+  protected static navbar: HTMLElement | null
 
   static Init (): void {
     this.overlay = document.querySelector<HTMLElement>('#loadingScreen')
     this.navbar = document.querySelector<HTMLElement>('#navbar')
 
     Subscribe('Loading:Error', (message) => {
-      if (message) {
+      if (message != null) {
         window.console.error(message)
       }
       this.navbar?.style.removeProperty('transition')

@@ -9,23 +9,23 @@ import fsWalker from '../../utils/fswalker'
 @suite
 export class fsWalkerTests {
   readdirSpy: sinon.SinonStub = sinon.stub()
-  before () {
+  before (): void {
     this.readdirSpy = sinon.stub(fsWalker.fn, 'readdir')
     this.readdirSpy.resolves([])
   }
 
-  after () {
+  after (): void {
     this.readdirSpy.restore()
   }
 
   @test
-  async 'it should call readdir starting at root' () {
-    await fsWalker('/foo/bar/baz', () => Promise.resolve())
+  async 'it should call readdir starting at root' (): Promise<void> {
+    await fsWalker('/foo/bar/baz', async () => { await new Promise<void>(resolve => { resolve() }) })
     expect(this.readdirSpy.callCount).to.equal(1)
   }
 
   @test
-  async 'it call each item for root node' () {
+  async 'it call each item for root node' (): Promise<void> {
     this.readdirSpy.resolves([
       {
         name: 'foo.png',
@@ -45,7 +45,7 @@ export class fsWalkerTests {
   }
 
   @test
-  async 'it should call each item for root node' () {
+  async 'it should call each item for root node' (): Promise<void> {
     this.readdirSpy.resolves([
       {
         name: 'foo.png',
@@ -65,7 +65,7 @@ export class fsWalkerTests {
   }
 
   @test
-  async 'it should add folder to list' () {
+  async 'it should add folder to list' (): Promise<void> {
     this.readdirSpy.onFirstCall().resolves([
       {
         name: 'foo.png',
@@ -85,7 +85,7 @@ export class fsWalkerTests {
   }
 
   @test
-  async 'it should filter unexpected filetype' () {
+  async 'it should filter unexpected filetype' (): Promise<void> {
     this.readdirSpy.resolves([
       {
         name: 'foo.txt',
@@ -100,7 +100,7 @@ export class fsWalkerTests {
   }
 
   @test
-  async 'it should ignore hidden folder' () {
+  async 'it should ignore hidden folder' (): Promise<void> {
     this.readdirSpy.onFirstCall().resolves([
       {
         name: '.foo.png',

@@ -9,6 +9,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { CyclicManager, CyclicUpdater } from '../../../public/scripts/slideshow/updater'
+import assert from 'assert'
 
 ChaiUse(chaiAsPromised)
 
@@ -65,7 +66,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'triggering not yet due Cycler decrements countdown' () {
+  async 'triggering not yet due Cycler decrements countdown' (): Promise<void> {
     this.countdown = 1000
     this.updateSpy.resolves()
 
@@ -76,7 +77,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'triggering not yet due Cycler fires when trigger becomes due' () {
+  async 'triggering not yet due Cycler fires when trigger becomes due' (): Promise<void> {
     this.countdown = 10
     this.updateSpy.resolves()
 
@@ -87,7 +88,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'triggering overdue Cycler fires' () {
+  async 'triggering overdue Cycler fires' (): Promise<void> {
     this.countdown = -1000
     this.updateSpy.resolves()
 
@@ -98,7 +99,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'Rejecting update triggers rollback of frequency' () {
+  async 'Rejecting update triggers rollback of frequency' (): Promise<void> {
     this.countdown = -1000
     this.updateSpy.rejects('MUY MALO!')
 
@@ -121,7 +122,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'Rejecting update triggers escalating rollback of frequency' () {
+  async 'Rejecting update triggers escalating rollback of frequency' (): Promise<void> {
     this.countdown = -1000
     this.failCount = 4
     this.updateSpy.rejects('MUY MALO!')
@@ -145,7 +146,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'Escalating rollback of frequency maxes out at 10 doublings' () {
+  async 'Escalating rollback of frequency maxes out at 10 doublings' (): Promise<void> {
     this.countdown = -1000
     this.failCount = 40
     this.updateSpy.rejects('MUY MALO!')
@@ -169,7 +170,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'Default Updater rejects when triggered' () {
+  async 'Default Updater rejects when triggered' (): Promise<void> {
     const sadness = new CyclicUpdater()
     await expect(sadness.updateFn()).to.eventually.be.rejectedWith('Cyclic Updater Called with No Updater')
   }
@@ -199,7 +200,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
   }
 
   @test
-  'Add appends to existing list' () {
+  'Add appends to existing list' (): void {
     CyclicManager.updaters.push(
       ...Array.from({ length: 10 }).map(() => new CyclicUpdater())
     )
@@ -209,7 +210,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
   }
 
   @test
-  'start sets timer going' () {
+  'start sets timer going' (): void {
     const spy = sinon.stub()
     spy.resolves()
     const updater = new CyclicUpdater(spy, 10)
@@ -220,7 +221,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
   }
 
   @test
-  'started timer triggers updaters' () {
+  'started timer triggers updaters' (): void {
     const spy = sinon.stub()
     spy.resolves()
     const updater = new CyclicUpdater(spy, 10)
@@ -231,7 +232,19 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
   }
 
   @test
-  'stop clears timer' () {
+  async 'started timer tolerates updater that rejects' (): Promise<void> {
+    const spy = sinon.stub().rejects()
+    const updater = new CyclicUpdater(spy, 10)
+    CyclicManager.Add(updater)
+    CyclicManager.Start(100)
+    this.clock.tick(100)
+    await Promise.resolve()
+    expect(spy.called).to.equal(true)
+    assert(true, 'Should succeed and not reject or throw due to rejecting updater')
+  }
+
+  @test
+  'stop clears timer' (): void {
     const spy = sinon.stub()
     spy.resolves()
     const updater = new CyclicUpdater(spy, 10)

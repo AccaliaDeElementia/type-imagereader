@@ -8,17 +8,17 @@ export interface WakeLockSentinel {
 }
 
 export class WakeLock {
-  public static sentinel: WakeLockSentinel|null = null
+  public static sentinel: WakeLockSentinel | null = null
   public static timeout: number = 0
   public static readonly wakeTime = 2 * 60 * 1000
-  public static Init () {
-    Subscribe('Picture:LoadNew', () => this.TakeLock())
-    AddInterval('WakeLock:Release', () => this.ReleaseLock(), 30 * 1000)
+  public static Init (): void {
+    Subscribe('Picture:LoadNew', () => { this.TakeLock().catch(() => {}) })
+    AddInterval('WakeLock:Release', () => { this.ReleaseLock().catch(() => {}) }, 30 * 1000)
   }
 
-  public static async TakeLock () {
+  public static async TakeLock (): Promise<void> {
     try {
-      if (!this.sentinel || this.sentinel.released) {
+      if (this.sentinel == null || this.sentinel.released) {
         this.sentinel = await navigator.wakeLock.request('screen')
       }
       this.timeout = Date.now() + this.wakeTime
@@ -28,8 +28,8 @@ export class WakeLock {
     }
   }
 
-  public static async ReleaseLock () {
-    if (!this.sentinel || this.timeout > Date.now()) return
+  public static async ReleaseLock (): Promise<void> {
+    if (this.sentinel == null || this.timeout > Date.now()) return
     this.timeout = 0
     try {
       if (!this.sentinel.released) {

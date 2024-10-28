@@ -2,9 +2,10 @@
 
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
-import Sinon, * as sinon from 'sinon'
+import type Sinon from 'sinon'
+import * as sinon from 'sinon'
 
-import { Request, Response } from 'express'
+import type { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import sassMiddleware, { Imports, Functions } from '../../utils/sass-middleware'
@@ -14,7 +15,7 @@ export class SassMiddlewareCompileCssTests {
   CompileAsyncStub?: Sinon.SinonStub
   LoggingStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.CompileAsyncStub = sinon.stub(Imports.sass, 'compileAsync').resolves({
       css: '',
       loadedUrls: []
@@ -22,19 +23,19 @@ export class SassMiddlewareCompileCssTests {
     this.LoggingStub = sinon.stub(Functions, 'logger')
   }
 
-  after () {
+  after (): void {
     this.CompileAsyncStub?.restore()
     this.LoggingStub?.restore()
   }
 
   @test
-  async 'it should log start of processing' () {
+  async 'it should log start of processing' (): Promise<void> {
     await Functions.CompileCss('/foo', '/bar.css')
     expect(this.LoggingStub?.calledWith('Begin compiling /bar.css')).to.equal(true)
   }
 
   @test
-  async 'it should compile using sass' () {
+  async 'it should compile using sass' (): Promise<void> {
     await Functions.CompileCss('/foo', '/bar.css')
     expect(this.CompileAsyncStub?.calledWith('/foo/bar.css', {
       style: 'compressed',
@@ -43,13 +44,13 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should log completion of processing' () {
+  async 'it should log completion of processing' (): Promise<void> {
     await Functions.CompileCss('/foo', '/bar.css')
     expect(this.LoggingStub?.calledWith('/bar.css compiled successfully')).to.equal(true)
   }
 
   @test
-  async 'it should return the compiled css' () {
+  async 'it should return the compiled css' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: 'THIS IS MY CSS',
       loadedUrls: []
@@ -59,7 +60,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with default version' () {
+  async 'it should return the sourceMap with default version' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: '',
       loadedUrls: []
@@ -69,7 +70,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with calculated version' () {
+  async 'it should return the sourceMap with calculated version' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: '',
       loadedUrls: [],
@@ -82,7 +83,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with NaN for invalid version' () {
+  async 'it should return the sourceMap with NaN for invalid version' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: '',
       loadedUrls: [],
@@ -95,7 +96,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with filename' () {
+  async 'it should return the sourceMap with filename' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: '',
       loadedUrls: [],
@@ -106,7 +107,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with default names array' () {
+  async 'it should return the sourceMap with default names array' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: '',
       loadedUrls: [],
@@ -117,7 +118,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with sourceMap Names' () {
+  async 'it should return the sourceMap with sourceMap Names' (): Promise<void> {
     const names = ['foo', 'bar', 'baz']
     this.CompileAsyncStub?.resolves({
       css: '',
@@ -131,7 +132,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with default sources array' () {
+  async 'it should return the sourceMap with default sources array' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: '',
       loadedUrls: [],
@@ -142,7 +143,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with sources array' () {
+  async 'it should return the sourceMap with sources array' (): Promise<void> {
     const sources = ['foo', 'bar', 'baz']
     this.CompileAsyncStub?.resolves({
       css: '',
@@ -156,7 +157,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with default mappings' () {
+  async 'it should return the sourceMap with default mappings' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: '',
       loadedUrls: [],
@@ -167,7 +168,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should return the sourceMap with mappings' () {
+  async 'it should return the sourceMap with mappings' (): Promise<void> {
     this.CompileAsyncStub?.resolves({
       css: '',
       loadedUrls: [],
@@ -180,21 +181,21 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should log error message when non Error is thrown' () {
+  async 'it should log error message when non Error is thrown' (): Promise<void> {
     this.CompileAsyncStub?.rejects('SOMETHING BAD')
     await (Functions.CompileCss('/foo', '/bar.css').catch(() => 0))
     expect(this.LoggingStub?.calledWith('Error Compiling /bar.css: SOMETHING BAD')).to.equal(true)
   }
 
   @test
-  async 'it should log error message when Error is thrown' () {
+  async 'it should log error message when Error is thrown' (): Promise<void> {
     this.CompileAsyncStub?.rejects(new Error('SOMETHING BAD'))
     await (Functions.CompileCss('/foo', '/bar.css').catch(() => 0))
     expect(this.LoggingStub?.calledWith('Error Compiling /bar.css: Error: SOMETHING BAD')).to.equal(true)
   }
 
   @test
-  async 'it should rethrow error when non Error is thrown' () {
+  async 'it should rethrow error when non Error is thrown' (): Promise<void> {
     this.CompileAsyncStub?.rejects('SOMETHING BAD')
     await (Functions.CompileCss('/foo', '/bar.css')
       .then(() => expect.fail('Test should have rejected the promise'),
@@ -202,7 +203,7 @@ export class SassMiddlewareCompileCssTests {
   }
 
   @test
-  async 'it should rethrow error when Error is thrown' () {
+  async 'it should rethrow error when Error is thrown' (): Promise<void> {
     const expected = new Error('SOMETHING BAD')
     this.CompileAsyncStub?.rejects(expected)
     await (Functions.CompileCss('/foo', '/bar.css')
@@ -216,37 +217,37 @@ export class SassMiddlewareCompileAndCacheTests {
   CompileCssStub?: Sinon.SinonStub
   AccessStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     Functions.cache = {}
     this.CompileCssStub = sinon.stub(Functions, 'CompileCss').resolves(undefined)
     this.AccessStub = sinon.stub(Imports, 'access').resolves()
   }
 
-  after () {
+  after (): void {
     this.CompileCssStub?.restore()
     this.AccessStub?.restore()
   }
 
   @test
-  async 'it should test access to full path' () {
+  async 'it should test access to full path' (): Promise<void> {
     await Functions.CompileAndCache('/foo', '/bar.scss')
     expect(this.AccessStub?.calledWith('/foo/bar.scss')).to.equal(true)
   }
 
   @test
-  async 'it should return true on success' () {
+  async 'it should return true on success' (): Promise<void> {
     const result = await Functions.CompileAndCache('/foo', '/bar.scss')
     expect(result).to.equal(true)
   }
 
   @test
-  async 'it should place cache entry on success' () {
+  async 'it should place cache entry on success' (): Promise<void> {
     await Functions.CompileAndCache('/foo', '/bar.scss')
     expect(Functions.cache['/bar.css']).to.not.equal(undefined)
   }
 
   @test
-  async 'it should create compiled cache entry when compile succeeds' () {
+  async 'it should create compiled cache entry when compile succeeds' (): Promise<void> {
     const expected = {}
     this.CompileCssStub?.resolves(expected)
     await Functions.CompileAndCache('/foo', '/bar.scss')
@@ -254,28 +255,28 @@ export class SassMiddlewareCompileAndCacheTests {
   }
 
   @test
-  async 'it should create compiled cache entry when compile fails' () {
+  async 'it should create compiled cache entry when compile fails' (): Promise<void> {
     this.CompileCssStub?.rejects()
     await Functions.CompileAndCache('/foo', '/bar.scss')
     expect(await Functions.cache['/bar.css']).to.equal(null)
   }
 
   @test
-  async 'it should return false when access test fails' () {
+  async 'it should return false when access test fails' (): Promise<void> {
     this.AccessStub?.rejects()
     const result = await Functions.CompileAndCache('/foo', '/bar.scss')
     expect(result).to.equal(false)
   }
 
   @test
-  async 'it should not try to compile when access test fails' () {
+  async 'it should not try to compile when access test fails' (): Promise<void> {
     this.AccessStub?.rejects()
     await Functions.CompileAndCache('/foo', '/bar.scss')
     expect(this.CompileCssStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should not place a cache entry when access test fails' () {
+  async 'it should not place a cache entry when access test fails' (): Promise<void> {
     this.AccessStub?.rejects()
     await Functions.CompileAndCache('/foo', '/bar.scss')
     expect(Functions.cache['/bar.css']).to.equal(undefined)
@@ -287,54 +288,54 @@ export class SassMiddlewareCompileFolderTests {
   ReaddirStub?: Sinon.SinonStub
   CompileAndCacheStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.ReaddirStub = sinon.stub(Imports, 'readdir').resolves([])
     this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache').resolves(undefined)
   }
 
-  after () {
+  after (): void {
     this.ReaddirStub?.restore()
     this.CompileAndCacheStub?.restore()
   }
 
   @test
-  async 'it should handle empty directory gracefully' () {
+  async 'it should handle empty directory gracefully' (): Promise<void> {
     await Functions.CompileFolder('/foo', '/bar')
     expect(this.CompileAndCacheStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should ignore non saas file' () {
+  async 'it should ignore non saas file' (): Promise<void> {
     this.ReaddirStub?.resolves([{ name: 'styles.css' }])
     await Functions.CompileFolder('/foo', '/bar')
     expect(this.CompileAndCacheStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should ignore dotfiles' () {
+  async 'it should ignore dotfiles' (): Promise<void> {
     this.ReaddirStub?.resolves([{ name: '.styles.scss' }, { name: '/.styles.scss' }, { name: '/.baz/styles.scss' }])
     await Functions.CompileFolder('/foo', '/bar')
     expect(this.CompileAndCacheStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should compile sass files' () {
+  async 'it should compile sass files' (): Promise<void> {
     this.ReaddirStub?.resolves([{ name: 'styles.sass' }])
     await Functions.CompileFolder('/foo', '/bar')
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/bar/styles.sass')).to.equal(true)
   }
 
   @test
-  async 'it should compile scss files' () {
+  async 'it should compile scss files' (): Promise<void> {
     this.ReaddirStub?.resolves([{ name: 'styles.scss' }])
     await Functions.CompileFolder('/foo', '/bar')
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/bar/styles.scss')).to.equal(true)
   }
 
   @test
-  async 'it should tolerate CompileAndCache rejecting' () {
-    const awaiter = new Promise<boolean>(resolve => resolve(true))
-    this.CompileAndCacheStub?.callsFake(() => awaiter.then(() => Promise.reject(new ErrorEvent('FOO'))))
+  async 'it should tolerate CompileAndCache rejecting' (): Promise<void> {
+    const awaiter = new Promise<boolean>(resolve => { resolve(true) })
+    this.CompileAndCacheStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new ErrorEvent('FOO'))))
     this.ReaddirStub?.resolves([{ name: 'styles.scss' }, { name: 'styles2.scss' }])
     await Functions.CompileFolder('/foo', '/bar')
     await awaiter
@@ -349,7 +350,7 @@ export class SassMiddlewareWatchFolderTests {
   DebouncerStub?: Sinon.SinonStub
   CompileAndCacheStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.LoggerStub = sinon.stub(Functions, 'logger')
     this.WatchStub = sinon.stub(Imports, 'watch')
     this.WatchStub.returns([])
@@ -357,7 +358,7 @@ export class SassMiddlewareWatchFolderTests {
     this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache').resolves()
   }
 
-  after () {
+  after (): void {
     this.LoggerStub?.restore()
     this.WatchStub?.restore()
     this.DebouncerStub?.restore()
@@ -365,19 +366,19 @@ export class SassMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should log start of watching' () {
+  async 'it should log start of watching' (): Promise<void> {
     await Functions.WatchFolder('/foo', '/bar')
     expect(this.LoggerStub?.calledWith('Watching /bar for stylesheets')).to.equal(true)
   }
 
   @test
-  async 'it should call watch function with proper flags' () {
+  async 'it should call watch function with proper flags' (): Promise<void> {
     await Functions.WatchFolder('/foo', '/bar')
     expect(this.WatchStub?.calledWith('/foo/bar', { persistent: false })).to.equal(true)
   }
 
   @test
-  async 'it should log when watcher fails to init' () {
+  async 'it should log when watcher fails to init' (): Promise<void> {
     const err = new Error('AAAH!')
     this.WatchStub?.throws(err)
     await Functions.WatchFolder('/foo', '/bar')
@@ -385,35 +386,35 @@ export class SassMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it should ignore non sass file to compile' () {
+  async 'it should ignore non sass file to compile' (): Promise<void> {
     this.WatchStub?.returns([{ filename: 'file.txt' }])
     await Functions.WatchFolder('/foo', '/bar')
     expect(this.DebouncerStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should ignore ecent without filename' () {
+  async 'it should ignore ecent without filename' (): Promise<void> {
     this.WatchStub?.returns([{ filename: null }])
     await Functions.WatchFolder('/foo', '/bar')
     expect(this.DebouncerStub?.called).to.equal(false)
   }
 
   @test
-  async 'it should ignore dotfiles to compile' () {
+  async 'it should ignore dotfiles to compile' (): Promise<void> {
     this.WatchStub?.returns([{ filename: '.file.sass' }, { filename: '/.file.sass' }, { filename: '/quux/.bar/file.sass' }])
     await Functions.WatchFolder('/foo', '/bar')
     expect(this.DebouncerStub?.called).to.equal(false)
   }
 
   @test
-  async 'it debounce when compiling sass file' () {
+  async 'it debounce when compiling sass file' (): Promise<void> {
     this.WatchStub?.returns([{ filename: 'styles.sass' }])
     await Functions.WatchFolder('/foo', '/bar')
     expect(this.DebouncerStub?.calledWith('/bar/styles.sass')).to.equal(true)
   }
 
   @test
-  async 'it log entry in debounced file' () {
+  async 'it log entry in debounced file' (): Promise<void> {
     this.WatchStub?.returns([{ filename: 'styles.sass', eventType: 'change' }])
     await Functions.WatchFolder('/foo', '/bar')
     const fn = this.DebouncerStub?.lastCall.args[1]
@@ -422,7 +423,7 @@ export class SassMiddlewareWatchFolderTests {
   }
 
   @test
-  async 'it compile and cache debounced file' () {
+  async 'it compile and cache debounced file' (): Promise<void> {
     this.WatchStub?.returns([{ filename: 'styles.scss', eventType: 'change' }])
     await Functions.WatchFolder('/foo', '/bar')
     const fn = this.DebouncerStub?.lastCall.args[1]
@@ -452,20 +453,20 @@ export class SassMiddlewareTests {
   CompileFolderStub?: Sinon.SinonStub
   WatchFolderStub?: Sinon.SinonStub
 
-  before () {
+  before (): void {
     this.CompileAndCacheStub = sinon.stub(Functions, 'CompileAndCache').resolves(true)
     this.CompileFolderStub = sinon.stub(Functions, 'CompileFolder').resolves(undefined)
     this.WatchFolderStub = sinon.stub(Functions, 'WatchFolder').resolves(undefined)
   }
 
-  after () {
+  after (): void {
     this.CompileAndCacheStub?.restore()
     this.CompileFolderStub?.restore()
     this.WatchFolderStub?.restore()
   }
 
   @test
-  'it should watch the configured folder' () {
+  'it should watch the configured folder' (): void {
     sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -474,9 +475,9 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should tolerate WatchFolder rejecting' () {
-    const awaiter = new Promise<boolean>(resolve => resolve(true))
-    this.WatchFolderStub?.callsFake(() => awaiter.then(() => Promise.reject(new ErrorEvent('FOO'))))
+  async 'it should tolerate WatchFolder rejecting' (): Promise<void> {
+    const awaiter = new Promise<boolean>(resolve => { resolve(true) })
+    this.WatchFolderStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new ErrorEvent('FOO'))))
     sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -486,9 +487,9 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should toplerate CompileFolder rejecting' () {
-    const awaiter = new Promise<boolean>(resolve => resolve(true))
-    this.CompileFolderStub?.callsFake(() => awaiter.then(() => Promise.reject(new ErrorEvent('FOO'))))
+  async 'it should toplerate CompileFolder rejecting' (): Promise<void> {
+    const awaiter = new Promise<boolean>(resolve => { resolve(true) })
+    this.CompileFolderStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new ErrorEvent('FOO'))))
     sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -498,7 +499,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  'it should compile the configured folder' () {
+  'it should compile the configured folder' (): void {
     sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -507,7 +508,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  'it should return a function' () {
+  'it should return a function' (): void {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -516,7 +517,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should ignore a POST request' () {
+  async 'it should ignore a POST request' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -528,7 +529,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should ignore a non css request' () {
+  async 'it should ignore a non css request' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -540,7 +541,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should ignore a dotfile request' () {
+  async 'it should ignore a dotfile request' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -552,7 +553,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should reject a directory traversal request' () {
+  async 'it should reject a directory traversal request' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -567,7 +568,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should reject a file that is not found' () {
+  async 'it should reject a file that is not found' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -582,7 +583,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should compile sass for a file that is not in the cache' () {
+  async 'it should compile sass for a file that is not in the cache' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -595,7 +596,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should compile scss when sass is not found for a file that is not in the cache' () {
+  async 'it should compile scss when sass is not found for a file that is not in the cache' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -609,7 +610,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should send css map when requested' () {
+  async 'it should send css map when requested' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -634,7 +635,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should send css when requested' () {
+  async 'it should send css when requested' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -659,7 +660,7 @@ export class SassMiddlewareTests {
   }
 
   @test
-  async 'it should reject with internal server error when error happens' () {
+  async 'it should reject with internal server error when error happens' (): Promise<void> {
     const sass = sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'

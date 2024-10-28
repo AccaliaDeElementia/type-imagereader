@@ -8,7 +8,8 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import { Folders, Folder } from '../../../public/scripts/app/folders'
+import type { Folder } from '../../../public/scripts/app/folders'
+import { Folders } from '../../../public/scripts/app/folders'
 import assert from 'assert'
 
 const markup = `
@@ -60,6 +61,7 @@ abstract class BaseFolderTests extends PubSub {
 
     PubSub.subscribers = {}
     PubSub.deferred = []
+    Folders.FolderCard = null
   }
 
   after (): void {
@@ -72,25 +74,25 @@ abstract class BaseFolderTests extends PubSub {
 export class FoldersInitTests extends BaseFolderTests {
   BuildFoldersSpy: sinon.SinonStub = sinon.stub()
 
-  before () {
+  before (): void {
     super.before()
     this.BuildFoldersSpy = sinon.stub(Folders, 'BuildFolders')
   }
 
-  after () {
+  after (): void {
     this.BuildFoldersSpy.restore()
     super.after()
   }
 
   @test
-  'it should subscribe to Navigate:Data' () {
+  'it should subscribe to Navigate:Data' (): void {
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.equal(undefined)
     Folders.Init()
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
   }
 
   @test
-  'it should build folders on Navigate:Data' () {
+  'it should build folders on Navigate:Data' (): void {
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.equal(undefined)
     Folders.Init()
     const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
@@ -98,6 +100,21 @@ export class FoldersInitTests extends BaseFolderTests {
     expect(this.BuildFoldersSpy.called).to.equal(false)
     subscriberfn('this is my test data')
     expect(this.BuildFoldersSpy.calledWith('this is my test data')).to.equal(true)
+  }
+
+  @test
+  'it should locate and save the folder card for use when building markup' (): void {
+    expect(Folders.FolderCard).to.equal(null)
+    Folders.Init()
+    expect(Folders.FolderCard).to.not.equal(null)
+  }
+
+  @test
+  'it should set null for missing folder card for use when building markup' (): void {
+    this.document.querySelector('#FolderCard')?.remove()
+    expect(Folders.FolderCard).to.equal(null)
+    Folders.Init()
+    expect(Folders.FolderCard).to.equal(null)
   }
 }
 
@@ -113,7 +130,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
     totalSeen: 0
   }
 
-  before () {
+  before (): void {
     super.before()
     this.BuildCardSpy = sinon.stub(Folders, 'BuildCard')
     this.BuildCardSpy.returns(this.document.createElement('div'))
@@ -121,13 +138,13 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
     PubSub.subscribers['TAB:SELECT'] = [this.TabSelectSpy]
   }
 
-  after () {
+  after (): void {
     this.BuildCardSpy.restore()
     super.after()
   }
 
   @test
-  'it should remove folder elements from tab' () {
+  'it should remove folder elements from tab' (): void {
     const tab = this.document.querySelector('div#tabFolders')
     assert(tab, 'Tab cannot be null for valid test')
     for (let i = 0; i < 10; i++) {
@@ -141,7 +158,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should leave non-folder elements in tab' () {
+  'it should leave non-folder elements in tab' (): void {
     const tab = this.document.querySelector('div#tabFolders')
     assert(tab, 'Tab cannot be null for valid test')
     for (let i = 0; i < 10; i++) {
@@ -155,7 +172,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should hide tab link for missing children list' () {
+  'it should hide tab link for missing children list' (): void {
     const link = this.document.querySelector('div#tabLink')
     assert(link, 'Link must exist for valid test')
     expect(link.classList.contains('hidden')).to.equal(false)
@@ -166,7 +183,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should hide tab link for empty children list' () {
+  'it should hide tab link for empty children list' (): void {
     const link = this.document.querySelector('div#tabLink')
     assert(link, 'Link must exist for valid test')
     expect(link.classList.contains('hidden')).to.equal(false)
@@ -177,7 +194,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should reveal tab link for children list with elements' () {
+  'it should reveal tab link for children list with elements' (): void {
     const link = this.document.querySelector('div#tabLink')
     assert(link, 'Link must exist for valid test')
     link.classList.add('hidden')
@@ -188,7 +205,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should select Folders tab when Pictures are missing' () {
+  'it should select Folders tab when Pictures are missing' (): void {
     expect(this.TabSelectSpy.called).to.equal(false)
     Folders.BuildFolders({
       children: [this.TestFolder],
@@ -198,7 +215,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should select Folders tab when Pictures are empty' () {
+  'it should select Folders tab when Pictures are empty' (): void {
     expect(this.TabSelectSpy.called).to.equal(false)
     Folders.BuildFolders({
       children: [this.TestFolder],
@@ -208,7 +225,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should not select Folders tab when folders are missing and Pictures are missing' () {
+  'it should not select Folders tab when folders are missing and Pictures are missing' (): void {
     expect(this.TabSelectSpy.called).to.equal(false)
     Folders.BuildFolders({
       children: undefined,
@@ -218,7 +235,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should select Folders tab when folders are empty and Pictures are empty' () {
+  'it should select Folders tab when folders are empty and Pictures are empty' (): void {
     expect(this.TabSelectSpy.called).to.equal(false)
     Folders.BuildFolders({
       children: [],
@@ -228,7 +245,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should not select Folders tab when Pictures are present' () {
+  'it should not select Folders tab when Pictures are present' (): void {
     expect(this.TabSelectSpy.called).to.equal(false)
     Folders.BuildFolders({
       children: [this.TestFolder],
@@ -238,7 +255,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should append folders div to tab contents' () {
+  'it should append folders div to tab contents' (): void {
     const tab = this.document.querySelector('div#tabFolders')
     assert(tab, 'Tab cannot be null for valid test')
     expect(tab.children).to.have.length(0)
@@ -250,7 +267,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should call BuildCard to build cards' () {
+  'it should call BuildCard to build cards' (): void {
     Folders.BuildFolders({
       children: Array(50).fill(this.TestFolder)
     })
@@ -258,7 +275,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should use results of BuildCard to fill folder container' () {
+  'it should use results of BuildCard to fill folder container' (): void {
     this.BuildCardSpy.callsFake(() => this.document.createElement('div'))
     Folders.BuildFolders({
       children: Array(50).fill(this.TestFolder)
@@ -269,7 +286,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   }
 
   @test
-  'it should not append anything when BuildCard returns null' () {
+  'it should not append anything when BuildCard returns null' (): void {
     this.BuildCardSpy.returns(null)
     Folders.BuildFolders({
       children: [this.TestFolder]
@@ -282,16 +299,16 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
 
 @suite
 export class FoldersBuildCardTests extends BaseFolderTests {
-  FolderCard: DocumentFragment|null = null
+  FolderCard: DocumentFragment | null = null
 
-  before () {
+  before (): void {
     super.before()
-    this.FolderCard = (document.querySelector('#FolderCard') as HTMLTemplateElement).content
+    this.FolderCard = (document.querySelector('#FolderCard') as unknown as HTMLTemplateElement).content
     Folders.FolderCard = this.FolderCard
   }
 
   @test
-  'it should return null when template is missing' () {
+  'it should return null when template is missing' (): void {
     Folders.FolderCard = null
     const result = Folders.BuildCard({
       name: 'foo',
@@ -304,8 +321,8 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should return null when template is empty' () {
-    for (const child of this.FolderCard?.children || []) {
+  'it should return null when template is empty' (): void {
+    for (const child of this.FolderCard?.children ?? []) {
       child.remove()
     }
     const result = Folders.BuildCard({
@@ -319,7 +336,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should leave emoji cover when cover image is null' () {
+  'it should leave emoji cover when cover image is null' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -327,13 +344,13 @@ export class FoldersBuildCardTests extends BaseFolderTests {
       totalCount: 100,
       totalSeen: 0
     })
-    const icon = result?.querySelector('i.material-icons') || null
+    const icon = result?.querySelector('i.material-icons') ?? null
     expect(icon).to.not.equal(null)
     expect(icon?.innerHTML).to.equal('folder')
   }
 
   @test
-  'it should leave emoji cover when cover image is empty' () {
+  'it should leave emoji cover when cover image is empty' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -341,13 +358,13 @@ export class FoldersBuildCardTests extends BaseFolderTests {
       totalCount: 100,
       totalSeen: 0
     })
-    const icon = result?.querySelector('i.material-icons') || null
+    const icon = result?.querySelector('i.material-icons') ?? null
     expect(icon).to.not.equal(null)
     expect(icon?.innerHTML).to.equal('folder')
   }
 
   @test
-  'it should remove emoji cover when cover image is set' () {
+  'it should remove emoji cover when cover image is set' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -355,12 +372,12 @@ export class FoldersBuildCardTests extends BaseFolderTests {
       totalCount: 100,
       totalSeen: 0
     })
-    const icon = result?.querySelector('i.material-icons') || null
+    const icon = result?.querySelector('i.material-icons') ?? null
     expect(icon).to.equal(null)
   }
 
   @test
-  'it should set card backgroundImage when cover image is set' () {
+  'it should set card backgroundImage when cover image is set' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -372,7 +389,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should not set seen flag when read count iz zero' () {
+  'it should not set seen flag when read count iz zero' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -384,7 +401,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should not set seen flag when read count less than total count' () {
+  'it should not set seen flag when read count less than total count' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -396,7 +413,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should set seen flag when read count equals total count' () {
+  'it should set seen flag when read count equals total count' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -408,7 +425,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should set seen flag when read count exceeds total count' () {
+  'it should set seen flag when read count exceeds total count' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -420,7 +437,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should set folder name header' () {
+  'it should set folder name header' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -432,7 +449,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should gracefully decline to set folder name header when missing' () {
+  'it should gracefully decline to set folder name header when missing' (): void {
     this.FolderCard?.querySelector('h5')?.remove()
     const result = Folders.BuildCard({
       name: 'foo',
@@ -445,7 +462,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should set folder progress text' () {
+  'it should set folder progress text' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -457,7 +474,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should gracefully decline to set folder progress text when missing' () {
+  'it should gracefully decline to set folder progress text when missing' (): void {
     this.FolderCard?.querySelector('div.text')?.remove()
     const result = Folders.BuildCard({
       name: 'foo',
@@ -470,7 +487,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should set folder slider width' () {
+  'it should set folder slider width' (): void {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -482,7 +499,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should gracefully decline to set folder slider width when missing' () {
+  'it should gracefully decline to set folder slider width when missing' (): void {
     this.FolderCard?.querySelector('div.slider')?.remove()
     const result = Folders.BuildCard({
       name: 'foo',
@@ -495,7 +512,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
   }
 
   @test
-  'it should navigate on click' () {
+  'it should navigate on click' (): void {
     const evt = new this.dom.window.MouseEvent('click')
     const result = Folders.BuildCard({
       name: 'foo',

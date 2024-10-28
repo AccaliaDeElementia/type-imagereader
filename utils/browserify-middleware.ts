@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { join, normalize } from 'path'
@@ -24,7 +24,7 @@ export class Imports {
 }
 
 export class Functions {
-  public static browserified: { [key: string]: Promise<string|null> } = {}
+  public static browserified: { [key: string]: Promise<string | null> } = {}
   public static logger = debug('type-imagereader:browserify-middleware')
   public static debouncer = Debouncer.create()
 
@@ -34,16 +34,16 @@ export class Functions {
   }
 
   public static GetSystemPath = async (basePath: string, path: string): Promise<string | null> => {
-    const test = async (testpath: string) => Imports.access(testpath).then(() => true).catch(() => false)
+    const test = async (testpath: string): Promise<boolean> => await Imports.access(testpath).then(() => true).catch(() => false)
     const candidates = Functions.GetPaths(path)
       .map(candidate => join(basePath, candidate))
-    const exists = await Promise.all(candidates.map(candidate => test(candidate)))
-    return candidates.filter((_, i) => exists[i])[0] || null
+    const exists = await Promise.all(candidates.map(async candidate => await test(candidate)))
+    return candidates.filter((_, i) => exists[i])[0] ?? null
   }
 
-  public static CompileBundle (path: string): Promise<string|null> {
-    return Imports.access(path)
-      .then((): Promise<string> => new Promise((resolve, reject) => {
+  public static async CompileBundle (path: string): Promise<string | null> {
+    return await Imports.access(path)
+      .then(async (): Promise<string> => await new Promise((resolve, reject) => {
         const browser = Imports.browserify()
         browser.plugin('tsify')
         browser.plugin('common-shakeify', {
@@ -52,26 +52,27 @@ export class Functions {
         browser.transform('brfs')
         browser.add(path)
         browser.bundle((err, source) => {
-          if (err) {
+          if (err != null) {
             reject(err)
           } else {
             resolve(source.toString())
           }
         })
       }))
-      .then(src => Imports.minify(src))
-      .then(minified => minified.code || null)
-      .catch((err: any): Promise<string|null> => new Promise((resolve, reject) => {
+      .then(async src => await Imports.minify(src))
+      .then(minified => minified.code ?? null)
+      .catch(async (err: any): Promise<string | null> => await new Promise((resolve, reject) => {
         if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
-          return resolve(null)
+          resolve(null)
+        } else {
+          reject(err)
         }
-        reject(err)
       }))
   }
 
-  public static async CompileAndCache (basePath: string, mountedPath: string) {
+  public static async CompileAndCache (basePath: string, mountedPath: string): Promise<void> {
     const realPath = await Functions.GetSystemPath(basePath, mountedPath)
-    if (!realPath) return
+    if (realPath == null || realPath.length < 1) return
     try {
       const paths = Functions.GetPaths(mountedPath)
       Functions.logger(`Begin compiling ${realPath}`)
@@ -86,8 +87,8 @@ export class Functions {
     }
   }
 
-  public static async SendScript (basepath: string, path: string, res: Response) {
-    const renderError = (code:StatusCodes, err: Error|String) => {
+  public static async SendScript (basepath: string, path: string, res: Response): Promise<void> {
+    const renderError = (code: StatusCodes, err: Error | string): void => {
       if (err instanceof Error) {
         res.status(code).render('error', err)
       } else {
@@ -95,32 +96,32 @@ export class Functions {
       }
     }
     try {
-      if (!Functions.browserified[path]) {
+      if (Functions.browserified[path] == null) {
         await Functions.CompileAndCache(basepath, path)
       }
       const code = await Functions.browserified[path]
-      if (!code) {
-        return renderError(StatusCodes.NOT_FOUND, `Not Found: ${path}`)
+      if (code == null || code.length < 1) {
+        renderError(StatusCodes.NOT_FOUND, `Not Found: ${path}`)
+      } else {
+        res.status(StatusCodes.OK).contentType('application/javascript').send(code)
       }
-      res.status(StatusCodes.OK).contentType('application/javascript').send(code)
     } catch (err: any) {
       if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
-        return renderError(StatusCodes.NOT_FOUND, `Not Found: ${path}`)
-      }
-      if (!(err instanceof Error)) {
-        return renderError(StatusCodes.INTERNAL_SERVER_ERROR, 'INTERNAL SERVER ERROR')
+        renderError(StatusCodes.NOT_FOUND, `Not Found: ${path}`)
+      } else if (!(err instanceof Error)) {
+        renderError(StatusCodes.INTERNAL_SERVER_ERROR, 'INTERNAL SERVER ERROR')
       } else {
-        return renderError(StatusCodes.INTERNAL_SERVER_ERROR, err)
+        renderError(StatusCodes.INTERNAL_SERVER_ERROR, err)
       }
     }
   }
 
-  public static async WatchFolder (basePath: string, mountPath: string, isFolder: boolean) {
+  public static async WatchFolder (basePath: string, mountPath: string, isFolder: boolean): Promise<void> {
     try {
       Functions.logger(`Watching ${mountPath} for Scripts`)
       const watcher = Imports.watch(join(basePath, mountPath), { persistent: false })
       for await (const event of watcher) {
-        if (!event.filename) continue
+        if (event.filename == null) continue
         const scriptFile = isFolder ? mountPath : join(mountPath, event.filename)
         Functions.debouncer.debounce(scriptFile, async () => {
           Functions.logger(`${scriptFile} needs recompiling. ${event.eventType}`)
@@ -136,7 +137,7 @@ export class Functions {
     }
   }
 
-  public static async WatchAllFolders (basePath: string, watchDirs: string[]) {
+  public static async WatchAllFolders (basePath: string, watchDirs: string[]): Promise<void> {
     for (const dir of watchDirs) {
       try {
         for (const dirinfo of await Imports.readdir(join(basePath, dir), { withFileTypes: true })) {
@@ -168,16 +169,18 @@ export interface Options {
   watchPaths?: string[]
 }
 
-export default (options: Options) => {
-  if (options.watchPaths && options.watchPaths.length) {
+export default (options: Options): (req: Request, res: Response, next: NextFunction) => Promise<void> => {
+  if (options.watchPaths != null && options.watchPaths.length > 0) {
     Functions.WatchAllFolders(options.basePath, options.watchPaths).catch(() => {})
   }
-  return async (req: Request, res: Response, next: NextFunction) => {
-    if (req.method.toLowerCase() !== 'get' || !req.path.match(isCompileableExtension)) {
-      return next()
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (req.method.toLowerCase() !== 'get' || !isCompileableExtension.test(req.path)) {
+      next()
+      return
     }
     if (normalize(req.path) !== req.path) {
-      return res.status(StatusCodes.FORBIDDEN).render('error', { message: 'Directory Traversal Not Allowed!' })
+      res.status(StatusCodes.FORBIDDEN).render('error', { message: 'Directory Traversal Not Allowed!' })
+      return
     }
     try {
       await Functions.SendScript(options.basePath, req.path, res)
