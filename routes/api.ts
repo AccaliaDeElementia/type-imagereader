@@ -64,7 +64,8 @@ export async function getRouter (_app: Application, _server: Server, _socket: We
   }))
 
   const listing = handleErrors(async (req, res) => {
-    const path = parsePath(req.params[0] ?? '/', res)
+    let path: string | null = req.params[0] != null && req.params[0].length > 0 ? req.params[0] : '/'
+    path = parsePath(path, res)
     if (path === null) { return }
     const folder = await Functions.GetListing(knex, normalize(path + '/'))
     if (folder == null) {

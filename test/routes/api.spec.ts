@@ -439,6 +439,15 @@ export class ApiGetListingRouteTests {
   }
 
   @test
+  async 'it should call GetListingStub to retrieve empty path listing' (): Promise<void> {
+    this.RequestStub.params = ['']
+    assert(this.RouteHandler)
+    await this.RouteHandler(this.RequestFake, this.ResponseFake)
+    expect(this.GetListingStub?.callCount).to.equal(1)
+    expect(this.GetListingStub?.firstCall.args[1]).to.equal('/')
+  }
+
+  @test
   async 'it should call GetListingStub to retrieve explicit root listing' (): Promise<void> {
     this.RequestStub.params = ['/']
     assert(this.RouteHandler)
