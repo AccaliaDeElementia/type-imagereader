@@ -22,7 +22,6 @@ export class ImageReader {
     }
     await this.StartServer(port)
 
-    console.log(process.env.SKIP_SYNC, process.env.SKIP_SYNC == null, process.env.SKIP_SYNC === '1')
     if (process.env.SKIP_SYNC == null ||
       (process.env.SKIP_SYNC !== '1' && process.env.SKIP_SYNC !== 'true')) {
       const doSync = async (): Promise<void> => {
