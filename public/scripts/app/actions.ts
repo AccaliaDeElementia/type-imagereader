@@ -209,10 +209,10 @@ export class Actions {
         Y: pad.buttons[2]?.pressed ?? false,
         L: pad.buttons[4]?.pressed ?? false,
         R: pad.buttons[5]?.pressed ?? false,
-        Left: Xaxis < -0.5,
-        Right: Xaxis > 0.5,
-        Up: Yaxis < -0.5,
-        Down: Yaxis > 0.5
+        Left: Xaxis < -0.5 || (pad.buttons[14]?.pressed ?? false),
+        Right: Xaxis > 0.5 || (pad.buttons[15]?.pressed ?? false),
+        Up: Yaxis < -0.5 || (pad.buttons[12]?.pressed ?? false),
+        Down: Yaxis > 0.5 || (pad.buttons[13]?.pressed ?? false)
       }
       const pressing = Object.values(status).reduce((a, b) => a || b, false)
       const pressed = Object.values(this.lastStatus).reduce((a, b) => a || b, false)

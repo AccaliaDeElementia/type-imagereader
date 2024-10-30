@@ -73,7 +73,7 @@ class BaseActionsTests extends PubSub {
 }
 
 @suite
-export class AppActionsSetInnertTextMaybeTests extends BaseActionsTests {
+export class AppActionsSetInnerTextMaybeTests extends BaseActionsTests {
   @test
   'it should not explode for null node' (): void {
     Actions.setInnerTextMaybe(null, 'foobar')
@@ -317,6 +317,15 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
+  'it should flag Left for left activation of d-pad' (): void {
+    this.testGamePad.buttons = Array(20).fill({ pressed: false })
+    this.testGamePad.buttons[14] = { pressed: true, value: 1, touched: true }
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Left).to.equal(true)
+  }
+
+  @test
   'it should not flag Left for tiny left activation of gamepad' (): void {
     this.testGamePad.axes = [-0.0001]
     Actions.ReadGamepad()
@@ -343,6 +352,15 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   @test
   'it should flag Right for right activation of gamepad' (): void {
     this.testGamePad.axes = [1]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Right).to.equal(true)
+  }
+
+  @test
+  'it should flag Right for right activation of d-pad' (): void {
+    this.testGamePad.buttons = Array(20).fill({ pressed: false })
+    this.testGamePad.buttons[15] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
     expect(TestActions.lastStatus.Right).to.equal(true)
@@ -381,6 +399,15 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
+  'it should flag Down for down activation of d-pad' (): void {
+    this.testGamePad.buttons = Array(20).fill({ pressed: false })
+    this.testGamePad.buttons[13] = { pressed: true, value: 1, touched: true }
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Down).to.equal(true)
+  }
+
+  @test
   'it should not flag Down for tiny down activation of gamepad' (): void {
     this.testGamePad.axes = [0, 0.0001]
     Actions.ReadGamepad()
@@ -407,6 +434,15 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   @test
   'it should flag Up for up activation of gamepad' (): void {
     this.testGamePad.axes = [0, -1]
+    Actions.ReadGamepad()
+    expect(this.actionGamepadListener.callCount).to.equal(0)
+    expect(TestActions.lastStatus.Up).to.equal(true)
+  }
+
+  @test
+  'it should flag Up for up activation of d-pad' (): void {
+    this.testGamePad.buttons = Array(20).fill({ pressed: false })
+    this.testGamePad.buttons[12] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
     expect(TestActions.lastStatus.Up).to.equal(true)
