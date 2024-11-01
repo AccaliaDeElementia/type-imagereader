@@ -70,7 +70,7 @@ export class WebSockets {
     if (uri.length < 1) {
       uri = '/'
     }
-    const room = decodeURI(uri)
+    const room = decodeURIComponent(uri)
     this.socket.on('connect', () => {
       this.socket.emit('join-slideshow', room)
       this.socket.emit('get-launchId', (launchId: unknown) => {
