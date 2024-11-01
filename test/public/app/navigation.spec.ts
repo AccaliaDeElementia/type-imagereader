@@ -1134,6 +1134,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     const err = new Error('oopsies')
     this.PostJSONStub.rejects(err)
+    PubSub.subscribers['LOADING:ERROR'] = [() => {}]
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
     await new Promise(resolve => {
@@ -1218,6 +1219,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     const err = new Error('oopsies')
     this.PostJSONStub.rejects(err)
+    PubSub.subscribers['LOADING:ERROR'] = [() => {}]
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
     await new Promise(resolve => {
