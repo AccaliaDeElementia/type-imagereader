@@ -151,6 +151,9 @@ export class Functions {
       await Functions.MarkImageRead(knex, image)
     }
     room.uriSafeImage = UriSafePath.encode(room.images[room.index] ?? '')
+    if (increment !== 0) {
+      room.countdown = Config.countdownDuration
+    }
     return room
   }
 

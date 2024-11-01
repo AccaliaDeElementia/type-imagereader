@@ -726,6 +726,94 @@ export class SlideshowGetRoomAndIncrementImageTests {
     await Functions.GetRoomAndIncrementImage(this.KnexFake, '/images!/')
     expect(this.MarkImageReadStub?.callCount).to.equal(0)
   }
+
+  @test
+  async 'it should not reset countdown when no increment specified' (): Promise<void> {
+    const first = Array(20).fill(undefined).map((_, i) => `/image${i}.png`)
+    const room = {
+      countdown: 50,
+      images: first,
+      path: '/path/',
+      index: 10,
+      uriSafeImage: undefined,
+      pages: {
+        unread: 0,
+        all: 0,
+        pages: 0,
+        page: 11
+      }
+    }
+    Config.rooms['/path/'] = room
+    Config.countdownDuration = 100
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/')
+    expect(room.countdown).to.equal(50)
+  }
+
+  @test
+  async 'it should not reset countdown when zero increment specified' (): Promise<void> {
+    const first = Array(20).fill(undefined).map((_, i) => `/image${i}.png`)
+    const room = {
+      countdown: 50,
+      images: first,
+      path: '/path/',
+      index: 10,
+      uriSafeImage: undefined,
+      pages: {
+        unread: 0,
+        all: 0,
+        pages: 0,
+        page: 11
+      }
+    }
+    Config.rooms['/path/'] = room
+    Config.countdownDuration = 100
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/', 0)
+    expect(room.countdown).to.equal(50)
+  }
+
+  @test
+  async 'it should reset countdown when negative increment specified' (): Promise<void> {
+    const first = Array(20).fill(undefined).map((_, i) => `/image${i}.png`)
+    const room = {
+      countdown: 50,
+      images: first,
+      path: '/path/',
+      index: 10,
+      uriSafeImage: undefined,
+      pages: {
+        unread: 0,
+        all: 0,
+        pages: 0,
+        page: 11
+      }
+    }
+    Config.rooms['/path/'] = room
+    Config.countdownDuration = 100
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/', -1)
+    expect(room.countdown).to.equal(100)
+  }
+
+  @test
+  async 'it should reset countdown when positive increment specified' (): Promise<void> {
+    const first = Array(20).fill(undefined).map((_, i) => `/image${i}.png`)
+    const room = {
+      countdown: 50,
+      images: first,
+      path: '/path/',
+      index: 10,
+      uriSafeImage: undefined,
+      pages: {
+        unread: 0,
+        all: 0,
+        pages: 0,
+        page: 11
+      }
+    }
+    Config.rooms['/path/'] = room
+    Config.countdownDuration = 100
+    await Functions.GetRoomAndIncrementImage(this.KnexFake, '/path/', 1)
+    expect(room.countdown).to.equal(100)
+  }
 }
 
 @suite
