@@ -392,8 +392,8 @@ export class SyncFoldersSyncNewPicturesTests {
     this.KnexInstanceStub.raw.returns(rawQuery)
     await Functions.SyncNewPictures(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexInstanceStub.raw.callCount).to.equal(1)
-    expect(this.KnexInstanceStub.raw.firstCall.args[0]).to.equal('?? (??, ??, ??)')
-    expect(this.KnexInstanceStub.raw.firstCall.args[1]).to.deep.equal(['pictures', 'folder', 'path', 'sortKey'])
+    expect(this.KnexInstanceStub.raw.firstCall.args[0]).to.equal('?? (??, ??, ??, ??)')
+    expect(this.KnexInstanceStub.raw.firstCall.args[1]).to.deep.equal(['pictures', 'folder', 'path', 'sortKey', 'pathHash'])
     expect(this.KnexInstanceStub.from.calledAfter(this.KnexInstanceStub.raw)).to.equal(true)
     expect(this.KnexInstanceStub.from.calledWith(rawQuery)).to.equal(true)
   }
@@ -421,7 +421,7 @@ export class SyncFoldersSyncNewPicturesTests {
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args[0]).to.deep.equal(
-      ['syncitems.folder', 'syncitems.path', 'syncitems.sortKey']
+      ['syncitems.folder', 'syncitems.path', 'syncitems.sortKey', 'syncitems.pathHash']
     )
     expect(this.KnexInnerInstanceStub.select.calledBefore(this.KnexInnerInstanceStub.from)).to.equal(true)
     expect(this.KnexInnerInstanceStub.from.calledWith('syncitems')).to.equal(true)

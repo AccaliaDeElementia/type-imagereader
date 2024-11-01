@@ -13,8 +13,15 @@ import { UriSafePath, Functions as api } from './apiFunctions'
 
 import type { Knex } from 'knex'
 
+interface SlideshowPages {
+  pages: number
+  page: number
+  unread: number
+  all: number
+}
 interface SlideshowRoom {
   countdown: number
+  pages: SlideshowPages
   index: number
   path: string
   images: string[]
@@ -39,12 +46,59 @@ export class Imports {
 }
 
 export class Functions {
-  public static async GetImages (knex: Knex, path: string, count: number): Promise<string[]> {
+  public static async GetUnreadImageCount (knex: Knex, path: string): Promise<number> {
+    const counts = await knex('pictures')
+      .count({ count: 'path' })
+      .where('path', 'like', `${path}%`)
+      .andWhere('seen', '=', false)
+    if (counts[0]?.count != null) {
+      return +counts[0].count
+    }
+    return 0
+  }
+
+  public static async GetImageCount (knex: Knex, path: string): Promise<number> {
+    const counts = await knex('pictures')
+      .count({ count: 'path' })
+      .where('path', 'like', `${path}%`)
+    if (counts[0]?.count != null) {
+      return +counts[0].count
+    }
+    return 0
+  }
+
+  public static async GetCounts (knex: Knex, path: string, currentPage: number | undefined = undefined, mutator = (page: number): number => page): Promise<SlideshowPages> {
+    const unreadcount = await Functions.GetUnreadImageCount(knex, path)
+    const allcount = await Functions.GetImageCount(knex, path)
+    let pages = Math.ceil(allcount / Config.memorySize)
+    if (unreadcount > 0) {
+      pages = Math.ceil(unreadcount / Config.memorySize)
+      currentPage = 0
+    } else if (currentPage == null) {
+      currentPage = Math.floor(Math.random() * pages)
+    } else {
+      currentPage = mutator(currentPage)
+      if (currentPage < 0) {
+        currentPage = pages - 1
+      } else if (currentPage >= pages) {
+        currentPage = 0
+      }
+    }
+    return {
+      unread: unreadcount,
+      all: allcount,
+      pages,
+      page: currentPage
+    }
+  }
+
+  public static async GetImages (knex: Knex, path: string, page: number, count: number): Promise<string[]> {
     return (await knex('pictures')
       .select('path')
       .where('path', 'like', `${path}%`)
       .orderBy('seen')
-      .orderByRaw('RANDOM()')
+      .orderBy('pathHash')
+      .offset(page * count)
       .limit(count))
       .map((img: ImageWithPath) => img.path)
   }
@@ -70,25 +124,27 @@ export class Functions {
   public static async GetRoomAndIncrementImage (knex: Knex, name: string, increment: number = 0): Promise<SlideshowRoom> {
     let room = Config.rooms[name]
     if (room == null) {
+      const pages = await Functions.GetCounts(knex, name)
       room = {
         countdown: Config.countdownDuration,
         path: name,
-        images: await Functions.GetImages(knex, name, Config.memorySize * 2),
-        index: Config.memorySize - 1 - increment,
+        pages,
+        images: await Functions.GetImages(knex, name, pages.page, Config.memorySize),
+        index: 0,
         uriSafeImage: undefined
       }
       Config.rooms[name] = room
-    }
-    room.index += increment
-    if (room.index < 0) {
-      const after = room.images.slice(0, Config.memorySize)
-      room.images = await Functions.GetImages(knex, name, Config.memorySize)
-      room.index = room.images.length - 1
-      room.images = room.images.concat(after)
-    } else if (room.index >= room.images.length) {
-      room.images = room.images.slice(-Config.memorySize)
-      room.index = room.images.length
-      room.images = room.images.concat(await Functions.GetImages(knex, name, Config.memorySize))
+    } else {
+      room.index += increment
+      if (room.index < 0) {
+        room.pages = await Functions.GetCounts(knex, name, room.pages.page, x => x - 1)
+        room.images = await Functions.GetImages(knex, name, room.pages.page, Config.memorySize)
+        room.index = room.images.length - 1
+      } else if (room.index >= room.images.length) {
+        room.pages = await Functions.GetCounts(knex, name, room.pages.page, x => x + 1)
+        room.index = 0
+        room.images = await Functions.GetImages(knex, name, room.pages.page, Config.memorySize)
+      }
     }
     const image = room.images[room.index]
     if (image != null) {

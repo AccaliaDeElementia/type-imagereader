@@ -4,6 +4,7 @@ import persistance from './persistance'
 import _fsWalker from './fswalker'
 import wordsToNumbers from 'words-to-numbers'
 import posix from 'path'
+import { createHash } from 'crypto'
 import type { Knex } from 'knex'
 
 import _debug from 'debug'
@@ -67,11 +68,13 @@ export class Functions {
       if (folder.length > 1) {
         folder += posix.sep
       }
+      const path = item.path + (!item.isFile ? posix.sep : '')
       return {
         folder,
-        path: item.path + (!item.isFile ? posix.sep : ''),
+        path,
         isFile: item.isFile,
-        sortKey: Functions.ToSortKey(posix.basename(item.path))
+        sortKey: Functions.ToSortKey(posix.basename(item.path)),
+        pathHash: createHash('sha512').update(path).digest('base64')
       }
     }))
     return {
@@ -110,9 +113,9 @@ export class Functions {
   }
 
   public static async SyncNewPictures (logger: Debugger, knex: Knex): Promise<void> {
-    const insertedpics: any = await knex.from(knex.raw('?? (??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey']))
+    const insertedpics: any = await knex.from(knex.raw('?? (??, ??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey', 'pathHash']))
       .insert(function (this: Knex) {
-        return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey']).from('syncitems')
+        return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey', 'syncitems.pathHash']).from('syncitems')
           .leftJoin('pictures', 'pictures.path', 'syncitems.path')
           .andWhere({
             'syncitems.isFile': true,
