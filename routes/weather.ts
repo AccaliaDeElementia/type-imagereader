@@ -41,6 +41,43 @@ export class Imports {
     return encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
   }
 
+  public static get nightNotBefore (): number {
+    const time = new Date()
+    time.setMilliseconds(0)
+    time.setSeconds(0)
+    time.setMinutes(0)
+    time.setHours(21)
+    const env = (process.env.NIGHT_NOT_BEFORE ?? '').split(':')
+    if (env[0] !== undefined && env[0] !== '') {
+      const hour = +env[0]
+      const minute = +(env[1] ?? '0')
+      console.log(env, hour, minute)
+      if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+        time.setMinutes(minute)
+        time.setHours(hour)
+      }
+    }
+    return time.getTime()
+  }
+
+  public static get nightNotAfter (): number {
+    const time = new Date()
+    time.setMilliseconds(0)
+    time.setSeconds(0)
+    time.setMinutes(0)
+    time.setHours(6)
+    const env = (process.env.NIGHT_NOT_AFTER ?? '').split(':')
+    if (env[0] !== undefined && env[0] !== '') {
+      const hour = +env[0]
+      const minute = +(env[1] ?? '0')
+      if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+        time.setMinutes(minute)
+        time.setHours(hour)
+      }
+    }
+    return time.getTime()
+  }
+
   public static setInterval = setInterval
   public static fetch = fetch
   public static Router = Router
@@ -79,16 +116,16 @@ export class Functions {
       }
       weather.description = data.weather[0]?.main
       weather.icon = data.weather[0]?.icon
-      weather.sunrise = 1000 * data.sys.sunrise
-      weather.sunset = 1000 * data.sys.sunset
+      weather.sunrise = Math.min(1000 * data.sys.sunrise, Imports.nightNotAfter)
+      weather.sunset = Math.max(1000 * data.sys.sunset, Imports.nightNotBefore)
     } catch (_) {
       weather.temp = undefined
       weather.pressure = undefined
       weather.humidity = undefined
       weather.description = undefined
       weather.icon = undefined
-      weather.sunrise = undefined
-      weather.sunset = undefined
+      weather.sunrise = Imports.nightNotAfter
+      weather.sunset = Imports.nightNotBefore
     }
     return weather
   }
