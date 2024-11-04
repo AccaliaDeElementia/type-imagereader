@@ -17,8 +17,11 @@ import assert from 'assert'
 @suite
 export class ImportsEnvironmentLookupTests {
   clock = {} as unknown as Sinon.SinonFakeTimers
+  tz? = ''
 
   before (): void {
+    this.tz = process.env.TZ
+    process.env.TZ = 'UTC'
     this.clock = sinon.useFakeTimers(946684800000) // 2000-01-01T00:00:00.000Z
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
@@ -28,6 +31,7 @@ export class ImportsEnvironmentLookupTests {
 
   after (): void {
     this.clock.restore()
+    process.env.TZ = this.tz
   }
 
   @test
@@ -75,133 +79,133 @@ export class ImportsEnvironmentLookupTests {
   @test
   'nightNotBefore: it should return default time when env undefined' (): void {
     delete process.env.NIGHT_NOT_BEFORE
-    expect(Imports.nightNotBefore).to.equal(946692000000) // 2000-01-01T21:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env blank' (): void {
     process.env.NIGHT_NOT_BEFORE = ''
-    expect(Imports.nightNotBefore).to.equal(946692000000) // 2000-01-01T21:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return configured time when env specifies hour only' (): void {
     process.env.NIGHT_NOT_BEFORE = '16'
-    expect(Imports.nightNotBefore).to.equal(946674000000) // 2000-01-01T16:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946742400000) // 2000-01-01T16:00:00.000
   }
 
   @test
   'nightNotBefore: it should return configured time when env specifies hour: only' (): void {
     process.env.NIGHT_NOT_BEFORE = '16:'
-    expect(Imports.nightNotBefore).to.equal(946674000000) // 2000-01-01T16:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946742400000) // 2000-01-01T16:00:00.000
   }
 
   @test
   'nightNotBefore: it should return configured time when env specifies hour and minute' (): void {
     process.env.NIGHT_NOT_BEFORE = '16:15'
-    expect(Imports.nightNotBefore).to.equal(946674900000) // 2000-01-01T16:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946743300000) // 2000-01-01T16:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has NaN hour' (): void {
     process.env.NIGHT_NOT_BEFORE = 'Foo:15'
-    expect(Imports.nightNotBefore).to.equal(946692000000) // 2000-01-01T21:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has negative hour' (): void {
     process.env.NIGHT_NOT_BEFORE = '-1:15'
-    expect(Imports.nightNotBefore).to.equal(946692000000) // 2000-01-01T21:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has out of range hour' (): void {
     process.env.NIGHT_NOT_BEFORE = '24:15'
-    expect(Imports.nightNotBefore).to.equal(946692000000) // 2000-01-01T21:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has NaN minute' (): void {
     process.env.NIGHT_NOT_BEFORE = '16:Foo'
-    expect(Imports.nightNotBefore).to.equal(946692000000) // 2000-01-01T21:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has negative minute' (): void {
     process.env.NIGHT_NOT_BEFORE = '16:-1'
-    expect(Imports.nightNotBefore).to.equal(946692000000) // 2000-01-01T21:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has out of range minute' (): void {
     process.env.NIGHT_NOT_BEFORE = '16:60'
-    expect(Imports.nightNotBefore).to.equal(946692000000) // 2000-01-01T21:00:00.000
+    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env undefined' (): void {
     delete process.env.NIGHT_NOT_AFTER
-    expect(Imports.nightNotAfter).to.equal(946638000000) // 2000-01-01T06:15:00.000
+    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env blank' (): void {
     process.env.NIGHT_NOT_AFTER = ''
-    expect(Imports.nightNotAfter).to.equal(946638000000) // 2000-01-01T06:15:00.000
+    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return requested time time when env has only hour' (): void {
     process.env.NIGHT_NOT_AFTER = '07'
-    expect(Imports.nightNotAfter).to.equal(946641600000) // 2000-01-01T07:00:00.000
+    expect(Imports.nightNotAfter).to.equal(946710000000) // 2000-01-01T07:00:00.000
   }
 
   @test
   'nightNotAfter: it should return requested time time when env has only hour:' (): void {
     process.env.NIGHT_NOT_AFTER = '07:'
-    expect(Imports.nightNotAfter).to.equal(946641600000) // 2000-01-01T07:00:00.000
+    expect(Imports.nightNotAfter).to.equal(946710000000) // 2000-01-01T07:00:00.000
   }
 
   @test
   'nightNotAfter: it should return requested time time when env has hour and minute' (): void {
     process.env.NIGHT_NOT_AFTER = '07:15'
-    expect(Imports.nightNotAfter).to.equal(946642500000) // 2000-01-01T07:00:00.000
+    expect(Imports.nightNotAfter).to.equal(946710900000) // 2000-01-01T07:00:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has NaN Hour' (): void {
     process.env.NIGHT_NOT_AFTER = 'Foo:30'
-    expect(Imports.nightNotAfter).to.equal(946638000000) // 2000-01-01T06:15:00.000
+    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has negative Hour' (): void {
     process.env.NIGHT_NOT_AFTER = '-1:30'
-    expect(Imports.nightNotAfter).to.equal(946638000000) // 2000-01-01T06:15:00.000
+    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has out of range Hour' (): void {
     process.env.NIGHT_NOT_AFTER = '24:30'
-    expect(Imports.nightNotAfter).to.equal(946638000000) // 2000-01-01T06:15:00.000
+    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has NaN minute' (): void {
     process.env.NIGHT_NOT_AFTER = '06:Foo'
-    expect(Imports.nightNotAfter).to.equal(946638000000) // 2000-01-01T06:15:00.000
+    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has negative minute' (): void {
     process.env.NIGHT_NOT_AFTER = '06:-1'
-    expect(Imports.nightNotAfter).to.equal(946638000000) // 2000-01-01T06:15:00.000
+    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has out of range minute' (): void {
     process.env.NIGHT_NOT_AFTER = '06:60'
-    expect(Imports.nightNotAfter).to.equal(946638000000) // 2000-01-01T06:15:00.000
+    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 }
 

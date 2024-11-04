@@ -64,7 +64,7 @@ export class Imports {
     const time = new Date()
     time.setMilliseconds(0)
     time.setSeconds(0)
-    time.setMinutes(0)
+    time.setMinutes(15)
     time.setHours(6)
     const env = (process.env.NIGHT_NOT_AFTER ?? '').split(':')
     if (env[0] !== undefined && env[0] !== '') {
