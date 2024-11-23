@@ -71,3 +71,6 @@ typings/
 # IDE files
 .theia/**
 .vscode/**
+
+# Ignore secrets configuration
+.env
