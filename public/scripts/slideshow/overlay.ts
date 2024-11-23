@@ -3,7 +3,7 @@
 import { CyclicUpdater } from './updater'
 import { GetAlmanac } from './weather'
 
-const fadein: number = 30 * 60 * 1000
+const fadein: number = 15 * 60 * 1000
 const maxOpacity: number = 0.85 // in percent.
 
 const updateOverlay = async (): Promise<void> => {
