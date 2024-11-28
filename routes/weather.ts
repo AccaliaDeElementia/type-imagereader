@@ -51,7 +51,6 @@ export class Imports {
     if (env[0] !== undefined && env[0] !== '') {
       const hour = +env[0]
       const minute = +(env[1] ?? '0')
-      console.log(env, hour, minute)
       if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
         time.setMinutes(minute)
         time.setHours(hour)
