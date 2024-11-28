@@ -30,7 +30,7 @@
     "common-shakeify": "^1.1.2",
     "cookie-parser": "^1.4.6",
     "debug": "^4.3.4",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
     "handlebars": "^4.7.8",
@@ -109,7 +109,8 @@
     ],
     "exclude": [
       "**/*.spec.ts",
-      "knexfile.ts"
+      "knexfile.ts",
+      "test.ts"
     ],
     "reporter": [
       "lcov",

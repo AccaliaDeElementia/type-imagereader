@@ -1,5 +1,8 @@
 'use sanity'
 
+// force reading from .env before any imports fire
+import 'dotenv/config'
+
 import synchronize from './utils/syncfolders'
 import start from './Server'
 
