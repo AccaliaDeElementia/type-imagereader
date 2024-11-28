@@ -36,12 +36,18 @@ export class SlideshowTimeTests {
     this.existingWindow = global.window
     global.window = (this.dom.window as unknown) as Window & typeof globalThis
     this.existingDocument = global.document
-    global.document = this.dom.window.document
+    Object.defineProperty(global, 'document', {
+      configurable: true,
+      get: () => this.dom.window.document
+    })
   }
 
   async after (): Promise<void> {
     global.window = this.existingWindow
-    global.document = this.existingDocument
+    Object.defineProperty(global, 'document', {
+      configurable: true,
+      get: () => this.existingDocument
+    })
 
     this.clock?.restore()
     this.clock = undefined

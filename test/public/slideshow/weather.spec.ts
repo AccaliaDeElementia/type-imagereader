@@ -7,7 +7,7 @@ import * as sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
-import { GetAlmanac, LocalWeatherUpdater, WeatherUpdater } from '../../../public/scripts/slideshow/weather'
+import { GetAlmanac, LocalWeatherUpdater, WeatherUpdater, Functions } from '../../../public/scripts/slideshow/weather'
 
 const markup = `
 html
@@ -46,12 +46,16 @@ export class SlideshowWeatherTests {
     this.existingWindow = global.window
     global.window = (this.dom.window as unknown) as Window & typeof globalThis
     this.existingDocument = global.document
-    global.document = this.dom.window.document
+    Object.defineProperty(global, 'document', {
+      configurable: true,
+      get: () => this.dom.window.document
+    })
 
-    this.fetchStub = sinon.stub(global, 'fetch')
+    this.fetchStub = sinon.stub()
     this.fetchStub.resolves({
       json: async () => await Promise.resolve(this.fetchData)
     })
+    Functions.fetch = this.fetchStub
 
     this.fetchData = {
       sunrise: -Infinity,
@@ -63,9 +67,12 @@ export class SlideshowWeatherTests {
 
   async after (): Promise<void> {
     global.window = this.existingWindow
-    global.document = this.existingDocument
+    Object.defineProperty(global, 'document', {
+      configurable: true,
+      get: () => this.existingDocument
+    })
 
-    this.fetchStub.restore()
+    Functions.fetch = global.fetch
 
     this.clock?.restore()
     this.clock = undefined

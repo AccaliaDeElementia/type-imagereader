@@ -7,7 +7,7 @@ import * as sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
-import { WeatherUpdater } from '../../../public/scripts/slideshow/weather'
+import { Functions, WeatherUpdater } from '../../../public/scripts/slideshow/weather'
 import OverlayUpdater from '../../../public/scripts/slideshow/overlay'
 
 const markup = `
@@ -22,8 +22,8 @@ html
 
 const maxOpacity = 0.85
 
-@suite()
-export class SlideshowWeatherTests {
+@suite
+export class SlideshowOverlayTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
@@ -44,12 +44,15 @@ export class SlideshowWeatherTests {
     this.existingWindow = global.window
     global.window = (this.dom.window as unknown) as Window & typeof globalThis
     this.existingDocument = global.document
-    global.document = this.dom.window.document
+    Object.defineProperty(global, 'document', {
+      configurable: true,
+      get: () => this.dom.window.document
+    })
 
-    this.fetchStub = sinon.stub(global, 'fetch')
-    this.fetchStub.resolves({
+    this.fetchStub = sinon.stub().resolves({
       json: async () => await Promise.resolve(this.fetchData)
     })
+    Functions.fetch = this.fetchStub
 
     this.fetchData = {
       sunrise: -Infinity,
@@ -61,9 +64,11 @@ export class SlideshowWeatherTests {
 
   async after (): Promise<void> {
     global.window = this.existingWindow
-    global.document = this.existingDocument
-
-    this.fetchStub.restore()
+    Object.defineProperty(global, 'document', {
+      configurable: true,
+      get: () => this.existingDocument
+    })
+    Functions.fetch = global.fetch
 
     this.clock?.restore()
     this.clock = undefined
@@ -128,7 +133,7 @@ export class SlideshowWeatherTests {
 
   @test
   async 'overlay fades out before sunrise' (): Promise<void> {
-    const now = new Date('1999-12-31T05:45:00.000')
+    const now = new Date('1999-12-31T06:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
       shouldClearNativeTimers: false

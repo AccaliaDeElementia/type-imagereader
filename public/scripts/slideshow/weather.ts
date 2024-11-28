@@ -12,7 +12,11 @@ export interface WeatherResults {
   sunset: number | undefined
 }
 
-const fetchWeather = async (uri: string): Promise<WeatherResults> => await fetch(uri)
+export const Functions = {
+  fetch
+}
+
+const fetchWeather = async (uri: string): Promise<WeatherResults> => await Functions.fetch(uri)
   .then(async result => await (result.json() as Promise<WeatherResults>))
 
 const formatData = (data: any, suffix = ''): Text => {

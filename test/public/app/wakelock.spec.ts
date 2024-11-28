@@ -148,7 +148,10 @@ export class WakeLockTakeLockTests extends BaseTests {
     this.wakelockRequest = sinon.stub()
     this.wakelockRequest.resolves(this.sentinel)
     this.existingNavigator = global.navigator
-    global.navigator = this.dom.window.navigator
+    Object.defineProperty(global, 'navigator', {
+      configurable: true,
+      get: () => this.dom.window.navigator
+    })
     assert(undefined === navigator.wakeLock, 'expect env not to support wakelock for testing')
     Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
@@ -165,7 +168,10 @@ export class WakeLockTakeLockTests extends BaseTests {
       configurable: true,
       get: () => undefined
     })
-    global.navigator = this.existingNavigator
+    Object.defineProperty(global, 'navigator', {
+      configurable: true,
+      get: () => this.existingNavigator
+    })
     this.clock?.restore()
     super.after()
   }
