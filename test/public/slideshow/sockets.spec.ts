@@ -69,6 +69,8 @@ export class SlideshowSocketsTests extends WebSockets {
         } else {
           resolve()
         }
+      }).catch(() => {
+        reject(new Error('Socket Close Failed!'))
       })
     })
   }
