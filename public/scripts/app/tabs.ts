@@ -9,7 +9,7 @@ export class Tabs {
   public static Init (): void {
     this.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
     this.tabNames = this.tabs.map(tab => tab.getAttribute('href'))
-      .filter(name => name !== null) as string[]
+      .filter(name => name !== null)
 
     for (const tab of this.tabs) {
       tab.parentElement?.addEventListener('click', evt => {
