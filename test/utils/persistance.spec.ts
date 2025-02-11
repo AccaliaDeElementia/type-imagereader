@@ -114,7 +114,8 @@ export class PersistanceInitializeTests {
 
   before (): void {
     Imports.Initializer = undefined
-    this.StubKnex = sinon.stub(Imports, 'knex').returns(this.StubKnexInstance as unknown as Knex<{}, unknown>) // eslint-disable-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Dont' break on Knex.... yet
+    this.StubKnex = sinon.stub(Imports, 'knex').returns(this.StubKnexInstance as unknown as Knex<{}, unknown>)
     this.StubEnvironment = sinon.stub(Functions, 'Environment').get(() => this.FakeEnvironment)
   }
 
@@ -133,7 +134,7 @@ export class PersistanceInitializeTests {
 
   @test
   async 'it should set stored Initializer when empty' (): Promise<void> {
-    persistance.initialize().catch(() => {})
+    persistance.initialize().catch(() => null)
     expect(await Imports.Initializer).to.equal(this.StubKnexInstance)
   }
 

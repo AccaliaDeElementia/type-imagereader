@@ -42,7 +42,7 @@ export class Navigation {
 
   public static get FolderPath (): string {
     const path = window.location.pathname.replace(/^\/[^/]+/, '')
-    return path != null && path.length > 0 ? path : '/'
+    return path.length > 0 ? path : '/'
   }
 
   public static LocationAssign?: (url: string | URL) => void
@@ -66,31 +66,31 @@ export class Navigation {
       return
     }
     this.current = { path }
-    this.LoadData().catch(() => {})
+    this.LoadData().catch(() => null)
   }
 
   public static Init (): void {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- allow unboind saving of browser function
     this.LocationAssign = window.location.assign
     this.current.path = this.FolderPath
-    this.LoadData().catch(() => {})
+    this.LoadData().catch(() => null)
     Subscribe('Navigate:Load', (path: string | NoMenuPath): void => {
       if (typeof path === 'string') {
         this.current = { path }
       } else {
         this.current = path
       }
-      this.LoadData().catch(() => {})
+      this.LoadData().catch(() => null)
     })
-    Subscribe('Navigate:Reload', () => { this.LoadData().catch(() => {}) })
+    Subscribe('Navigate:Reload', () => { this.LoadData().catch(() => null) })
     window.addEventListener('popstate', () => {
       this.current = {
         path: this.FolderPath
       }
-      this.LoadData(true).catch(() => {})
+      this.LoadData(true).catch(() => null)
     })
 
-    Subscribe('Navigate:Data', (data: any): void => { window.console.log(data) })
+    Subscribe('Navigate:Data', (data: unknown): void => { window.console.log(data) })
 
     const mainMenu = document.querySelector('#mainMenu')
     Subscribe('Menu:Show', () => mainMenu?.classList.remove('hidden'))
@@ -115,20 +115,20 @@ export class Navigation {
     })
     Subscribe('Action:Execute:ParentFolder', () => { this.NavigateTo(this.current.parent, 'ParentFolder') })
     Subscribe('Action:Execute:FirstUnfinished', () => {
-      const target = this.current.children?.filter(child => child.totalSeen < child.totalCount)[0]
+      const target = this.current.children?.find(child => child.totalSeen < child.totalCount)
       this.NavigateTo(target?.path, 'FirstUnfinished')
     })
     Subscribe('Action:Execute:ShowMenu', () => { Publish('Menu:Show') })
     Subscribe('Action:Execute:HideMenu', () => { Publish('Menu:Hide') })
     Subscribe('Action:Execute:MarkAllSeen', () => {
       Net.PostJSON('/api/mark/read', { path: this.current.path })
-        .then(async () => { await this.LoadData(true) }, err => { Publish('Loading:Error', err) })
-        .catch(() => {})
+        .then(async () => { await this.LoadData(true) }, (err: unknown) => { Publish('Loading:Error', err) })
+        .catch(() => null)
     })
     Subscribe('Action:Execute:MarkAllUnseen', () => {
       Net.PostJSON('/api/mark/unread', { path: this.current.path })
-        .then(async () => { await this.LoadData(true) }, err => { Publish('Loading:Error', err) })
-        .catch(() => {})
+        .then(async () => { await this.LoadData(true) }, (err: unknown) => { Publish('Loading:Error', err) })
+        .catch(() => null)
     })
     Subscribe('Action:Execute:Slideshow', () => {
       Navigation.LocationAssign?.call(window.location, `/slideshow${this.current.path}`)
@@ -136,9 +136,9 @@ export class Navigation {
     Subscribe('Action:Execute:FullScreen', () => {
       if (document.fullscreenElement == null) {
         document.body.requestFullscreen({ navigationUI: 'hide' })
-          .catch(err => { Publish('Loading:Error', err) })
+          .catch((err: unknown) => { Publish('Loading:Error', err) })
       } else {
-        document.exitFullscreen().catch(err => { Publish('Loading:Error', err) })
+        document.exitFullscreen().catch((err: unknown) => { Publish('Loading:Error', err) })
       }
     })
 
@@ -152,7 +152,7 @@ export class Navigation {
     Subscribe('Action:Gamepad:A', () => { Publish('Action:Execute:FirstUnfinished') })
   }
 
-  public static async LoadData (noHistory: boolean = false): Promise<void> {
+  public static async LoadData (noHistory = false): Promise<void> {
     try {
       Publish('Loading:Show')
       this.current = await Net.GetJSON<Data>(`/api/listing${this.current.path}`)

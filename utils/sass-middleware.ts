@@ -35,6 +35,14 @@ export class Imports {
   public static watch = watch
 }
 
+function LogError(err: unknown, message: string, defaultError: string): Error {
+  Functions.logger(message, err)
+  if (err instanceof Error) {
+    return err
+  }
+  return new Error(defaultError)
+}
+
 export class Functions {
   public static logger = debug('type-imagereader:sass-middleware')
   public static debouncer = Debouncer.create()
@@ -58,9 +66,8 @@ export class Functions {
           mappings: styles.sourceMap?.mappings ?? ''
         }
       }
-    } catch (err: any) {
-      Functions.logger(`Error Compiling ${filename}: ${err}`)
-      throw err
+    } catch (err) {
+      throw LogError(err, `Error Compiling ${filename}:`, 'Unexpected Error Encountered Compiling CSS')
     }
   }
 
@@ -80,7 +87,7 @@ export class Functions {
     for (const dirinfo of await Imports.readdir(join(basePath, path), { withFileTypes: true })) {
       if (sassExtension.test(dirinfo.name) && !/(^|\/)\./.test(dirinfo.name)) {
         const sassFile = join(path, dirinfo.name)
-        Functions.CompileAndCache(basePath, sassFile).catch(() => {})
+        Functions.CompileAndCache(basePath, sassFile).catch(() => null)
       }
     }
   }
@@ -110,14 +117,21 @@ export interface Options {
 }
 
 export default ({ mountPath, watchdir }: Options): (req: Request, res: Response, next: NextFunction) => Promise<void> => {
-  Functions.WatchFolder(mountPath, watchdir).catch(() => {})
-  Functions.CompileFolder(mountPath, watchdir).catch(() => {})
+  Functions.WatchFolder(mountPath, watchdir).catch(() => null)
+  Functions.CompileFolder(mountPath, watchdir).catch(() => null)
 
-  return async (req: Request, res: Response, next: NextFunction) => {
+  const acceptRequest = (req: Request): boolean => {
     // ignore all requests that are not GET or don't have .css in them
     if (req.method.toLowerCase() !== 'get' ||
       !/\.css(\.map)?$/.test(req.path) ||
       /(^|\/)\.[^.]/.test(req.path)) {
+      return false
+    }
+    return true
+  }
+
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (! acceptRequest(req)) {
       next()
       return
     }
@@ -136,14 +150,18 @@ export default ({ mountPath, watchdir }: Options): (req: Request, res: Response,
       if (styles == null) {
         res.status(StatusCodes.NOT_FOUND).send('NOT FOUND')
       } else {
-        if (/\.map$/.test(req.path)) {
+        if (/\.map$/i.test(req.path)) {
           res.status(StatusCodes.OK).set('Content-Type', 'application/json').json(styles.map)
         } else {
           res.status(StatusCodes.OK).set('Content-Type', 'text/css').send(styles.css)
         }
       }
-    } catch (err: any) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message)
+    } catch (err) {
+      let message = 'Internal Server Error'
+      if (err instanceof Error) {
+        message = err.message
+      }
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(message)
     }
   }
 }

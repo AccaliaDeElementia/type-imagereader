@@ -1,8 +1,8 @@
 'use sanity'
 
 import { type Application, Router, type Request, type Response, type RequestHandler } from 'express'
-import { type Server as WebSocketServer } from 'socket.io'
-import { type Server } from 'http'
+import type { Server as WebSocketServer } from 'socket.io'
+import type { Server } from 'http'
 import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'path'
@@ -16,6 +16,11 @@ import debug from 'debug'
 export class Imports {
   public static Router = Router
   public static debug = debug
+}
+
+interface BodyData {
+  modCount: number,
+  path: string
 }
 
 // Export the base-router
@@ -57,10 +62,12 @@ export async function getRouter (_app: Application, _server: Server, _socket: We
 
   router.get('/', handleErrors(async (_, res) => {
     res.status(StatusCodes.OK).json({ title: 'API' })
+    await Promise.resolve()
   }))
 
   router.get('/healthcheck', handleErrors(async (_, res) => {
     res.status(StatusCodes.OK).send('OK')
+    await Promise.resolve()
   }))
 
   const listing = handleErrors(async (req, res) => {
@@ -84,10 +91,18 @@ export async function getRouter (_app: Application, _server: Server, _socket: We
   router.get('/listing/*', listing)
   router.get('/listing', listing)
 
+  const ReadBody = (req: Request): BodyData => ({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Handle reading posted data - TODO figure out a typesafe way to do this?
+    modCount: +`${req.body?.modCount}`,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Handle reading posted data - TODO figure out a typesafe way to do this?
+    path: `${req.body?.path}`
+  })
+
   router.post('/navigate/latest', handleErrors(async (req, res) => {
-    const incomingModCount = +req.body.modCount
+    const body = ReadBody(req)
+    const incomingModCount = body.modCount
     let response = -1
-    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
+    const path = parsePath(UriSafePath.decode(body.path), res)
     if (path == null) {
       return
     }
@@ -104,7 +119,8 @@ export async function getRouter (_app: Application, _server: Server, _socket: We
   }))
 
   router.post('/mark/read', handleErrors(async (req, res) => {
-    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
+    const body = ReadBody(req)
+    const path = parsePath(UriSafePath.decode(body.path), res)
     if (path !== null) {
       await Functions.MarkFolderRead(knex, normalize(path + '/'))
       res.status(StatusCodes.OK).end()
@@ -112,7 +128,8 @@ export async function getRouter (_app: Application, _server: Server, _socket: We
   }))
 
   router.post('/mark/unread', handleErrors(async (req, res) => {
-    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
+    const body = ReadBody(req)
+    const path = parsePath(UriSafePath.decode(body.path), res)
     if (path !== null) {
       await Functions.MarkFolderUnread(knex, normalize(path + '/'))
       res.status(StatusCodes.OK).end()
@@ -128,7 +145,8 @@ export async function getRouter (_app: Application, _server: Server, _socket: We
   router.get('/bookmarks', getBookmarks)
 
   router.post('/bookmarks/add', handleErrors(async (req, res) => {
-    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
+    const body = ReadBody(req)
+    const path = parsePath(UriSafePath.decode(body.path), res)
     if (path !== null) {
       await Functions.AddBookmark(knex, path)
       res.status(StatusCodes.OK).end()
@@ -136,7 +154,8 @@ export async function getRouter (_app: Application, _server: Server, _socket: We
   }))
 
   router.post('/bookmarks/remove', handleErrors(async (req, res) => {
-    const path = parsePath(UriSafePath.decode(`${req.body.path}`), res)
+    const body = ReadBody(req)
+    const path = parsePath(UriSafePath.decode(body.path), res)
     if (path !== null) {
       await Functions.RemoveBookmark(knex, path)
       res.status(StatusCodes.OK).end()

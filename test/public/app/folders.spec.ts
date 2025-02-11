@@ -146,7 +146,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   @test
   'it should remove folder elements from tab' (): void {
     const tab = this.document.querySelector('div#tabFolders')
-    assert(tab, 'Tab cannot be null for valid test')
+    assert(tab !== null, 'Tab cannot be null for valid test')
     for (let i = 0; i < 10; i++) {
       const elem = this.document.createElement('div')
       elem.classList.add('folders')
@@ -160,7 +160,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   @test
   'it should leave non-folder elements in tab' (): void {
     const tab = this.document.querySelector('div#tabFolders')
-    assert(tab, 'Tab cannot be null for valid test')
+    assert(tab !== null, 'Tab cannot be null for valid test')
     for (let i = 0; i < 10; i++) {
       const elem = this.document.createElement('div')
       elem.classList.add('not-a-folders')
@@ -174,7 +174,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   @test
   'it should hide tab link for missing children list' (): void {
     const link = this.document.querySelector('div#tabLink')
-    assert(link, 'Link must exist for valid test')
+    assert(link !== null, 'Link must exist for valid test')
     expect(link.classList.contains('hidden')).to.equal(false)
     Folders.BuildFolders({
       children: undefined
@@ -185,7 +185,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   @test
   'it should hide tab link for empty children list' (): void {
     const link = this.document.querySelector('div#tabLink')
-    assert(link, 'Link must exist for valid test')
+    assert(link !== null, 'Link must exist for valid test')
     expect(link.classList.contains('hidden')).to.equal(false)
     Folders.BuildFolders({
       children: []
@@ -196,7 +196,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   @test
   'it should reveal tab link for children list with elements' (): void {
     const link = this.document.querySelector('div#tabLink')
-    assert(link, 'Link must exist for valid test')
+    assert(link !== null, 'Link must exist for valid test')
     link.classList.add('hidden')
     Folders.BuildFolders({
       children: [this.TestFolder]
@@ -249,7 +249,11 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
     expect(this.TabSelectSpy.called).to.equal(false)
     Folders.BuildFolders({
       children: [this.TestFolder],
-      pictures: [{}]
+      pictures: [{
+        path: '',
+        name: '',
+        seen: false
+      }]
     })
     expect(this.TabSelectSpy.calledWith('Folders')).to.equal(false)
   }
@@ -257,7 +261,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
   @test
   'it should append folders div to tab contents' (): void {
     const tab = this.document.querySelector('div#tabFolders')
-    assert(tab, 'Tab cannot be null for valid test')
+    assert(tab !== null, 'Tab cannot be null for valid test')
     expect(tab.children).to.have.length(0)
     Folders.BuildFolders({
       children: [this.TestFolder]
@@ -281,7 +285,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
       children: Array(50).fill(this.TestFolder)
     })
     const container = this.document.querySelector('div#tabFolders .folders')
-    assert(container, 'Tab cannot be null for valid test')
+    assert(container !== null, 'Tab cannot be null for valid test')
     expect(container.children).to.have.length(50)
   }
 
@@ -292,7 +296,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
       children: [this.TestFolder]
     })
     const container = this.document.querySelector('div#tabFolders .folders')
-    assert(container, 'Tab cannot be null for valid test')
+    assert(container !== null, 'Tab cannot be null for valid test')
     expect(container.children).to.have.length(0)
   }
 }
@@ -523,7 +527,7 @@ export class FoldersBuildCardTests extends BaseFolderTests {
     })
     const spy = sinon.stub()
     PubSub.subscribers['NAVIGATE:LOAD'] = [spy]
-    assert(result, 'result is required for valid test')
+    assert(result !== null, 'result is required for valid test')
     result.dispatchEvent(evt)
     expect(spy.calledWith('/path/foo')).to.equal(true)
   }

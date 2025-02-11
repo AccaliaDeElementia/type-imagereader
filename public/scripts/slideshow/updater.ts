@@ -1,12 +1,13 @@
 'use sanity'
 
-type UpdateFn = () => Promise<any>
+type UpdateFn = () => Promise<void>
+const defaultUpdateFn: UpdateFn = async () => { await Promise.reject(new Error('Cyclic Updater Called with No Updater')) }
 export class CyclicUpdater {
-  protected countdown: number = -1
-  protected failCount: number = 0
-  protected maxFails: number = 10
-  period: number = 60 * 1000
-  updateFn: UpdateFn = async () => await Promise.reject(new Error('Cyclic Updater Called with No Updater'))
+  protected countdown = -1
+  protected failCount = 0
+  protected maxFails = 10
+  period = 60 * 1000
+  updateFn = defaultUpdateFn
 
   constructor (updateFn?: UpdateFn, period?: number) {
     this.updateFn = updateFn ?? this.updateFn
@@ -36,20 +37,22 @@ export class CyclicUpdater {
 
 export class CyclicManager {
   protected static updaters: CyclicUpdater[] = []
-  protected static timer: any // It's a timer...
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- This is a timer, and the definition is different between the browser and node...
+  protected static timer: any = undefined
   static Add (...updaters: CyclicUpdater[]): void {
     this.updaters.push(...updaters)
   }
 
   static Start (interval: number): void {
     this.timer = setInterval(
-      () => { this.updaters.forEach(updater => { updater.trigger(interval).catch(() => {}) }) },
+      () => { this.updaters.forEach(updater => { updater.trigger(interval).catch(() => null) }) },
       interval
     )
   }
 
   static Stop (): void {
     if (this.timer != null) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- This is a timer, and the definition is different between the browser and node...
       clearInterval(this.timer as number)
       this.timer = undefined
     }

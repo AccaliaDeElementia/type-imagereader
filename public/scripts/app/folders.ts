@@ -2,6 +2,8 @@
 
 import { Publish, Subscribe } from './pubsub'
 
+import type { Picture } from './pictures'
+
 export interface Folder {
   name: string
   path: string
@@ -11,14 +13,15 @@ export interface Folder {
 }
 export interface Data {
   children?: Folder[]
-  pictures?: any[]
+  pictures?: Picture[]
 }
 
 export class Folders {
   static FolderCard: DocumentFragment | null = null
 
   public static BuildCard (folder: Folder): HTMLElement | null {
-    const card = (this.FolderCard?.cloneNode(true) as HTMLElement)?.firstElementChild as HTMLElement
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Clone but typesafe?
+    const card = (this.FolderCard?.cloneNode(true) as HTMLElement | undefined)?.firstElementChild as HTMLElement | null | undefined
     if (card == null) {
       return null
     }
@@ -71,6 +74,7 @@ export class Folders {
   public static Init (): void {
     this.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Redo with typesafe PubSub
     Subscribe('Navigate:Data', (data) => { this.BuildFolders(data as Data) })
   }
 }

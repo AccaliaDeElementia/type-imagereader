@@ -1,5 +1,6 @@
 'use sanity'
 
+import { promisify } from 'util'
 import { expect } from 'chai'
 import { suite, test, slow } from '@testdeck/mocha'
 import type Sinon from 'sinon'
@@ -7,13 +8,12 @@ import * as sinon from 'sinon'
 
 import type { Socket } from 'socket.io'
 import { Server as WebSocketServer } from 'socket.io'
-import type { DefaultEventsMap } from 'socket.io/dist/typed-events'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { WebSockets } from '../../../public/scripts/slideshow/sockets'
 
-type Websocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+type Websocket = Socket
 
 type OnWebsocketConnect = (socket: Websocket) => Promise<void>
 
@@ -62,25 +62,18 @@ export class SlideshowSocketsTests extends WebSockets {
       get: () => this.existingDocument
     })
     WebSockets.disconnect()
-    await new Promise<void>((resolve, reject) => {
-      this.socketServer.close((err) => {
-        if (err != null) {
-          reject(err)
-        } else {
-          resolve()
-        }
-      }).catch(() => {
-        reject(new Error('Socket Close Failed!'))
+    await promisify((cb) => {
+      this.socketServer.close(err => { cb(err, null) }).catch(() => {
+        cb(new Error('Socket Close Failed!'), null)
       })
-    })
+    })()
   }
 
   async connectSocket (onConnect: OnWebsocketConnect): Promise<void> {
-    const result = new Promise<void>((resolve, reject) => {
-      this.socketServer.on('connection', (socket) => {
-        onConnect(socket).then(resolve, reject)
-      })
-    })
+    const result = (async () => {
+      const socket = (await (promisify((cb) => this.socketServer.on('connection', socket => { cb(null, socket) })))()) as Websocket
+      await onConnect(socket)
+    })()
     WebSockets.connect()
     await result
   }
@@ -89,9 +82,7 @@ export class SlideshowSocketsTests extends WebSockets {
   async 'it should reset launchId' (): Promise<void> {
     WebSockets.launchId = 8472
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.on('join-slideshow', () => { resolve() })
-      })
+      await (promisify((cb) => socket.on('join-slideshow', () => { cb( null, null) })))()
     })
     expect(WebSockets.launchId).to.equal(undefined)
   }
@@ -100,11 +91,9 @@ export class SlideshowSocketsTests extends WebSockets {
   async 'it should reset LocationAssign' (): Promise<void> {
     WebSockets.LocationAssign = undefined
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.on('join-slideshow', () => { resolve() })
-      })
+      await (promisify((cb) => socket.on('join-slideshow', () => { cb( null, null) })))()
     })
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Testing function equality, cannot bind function
     expect(WebSockets.LocationAssign).to.equal(this.dom.window.location.assign)
   }
 
@@ -112,54 +101,40 @@ export class SlideshowSocketsTests extends WebSockets {
   async 'it should reset LocationReload' (): Promise<void> {
     WebSockets.LocationReload = undefined
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.on('join-slideshow', () => { resolve() })
-      })
+      await (promisify((cb) => socket.on('join-slideshow', () => { cb( null, null) })))()
     })
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Testing function equality, cannot bind function
     expect(WebSockets.LocationReload).to.equal(this.dom.window.location.reload)
   }
 
   @test
   async 'emits join-slideshow on connection' (): Promise<void> {
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.on('join-slideshow', () => { resolve() })
-      })
+      await (promisify((cb) => socket.on('join-slideshow', () => { cb( null, null) })))()
     })
   }
 
   @test
   async 'emits join-slideshow on connection with default path' (): Promise<void> {
-    let connectedRoom: string | undefined
+    let connectedRoom: string | undefined = undefined
     this.dom.reconfigure({
       url: 'http://127.0.0.1:2999/slideshow'
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.on('join-slideshow', (value) => {
-          connectedRoom = value
-          resolve()
-        })
-      })
+      connectedRoom = (await (promisify((cb) => socket.on('join-slideshow', (value) => { cb( null, value) })))()) as string
     })
     expect(connectedRoom).to.equal('/')
   }
 
   @test
   async 'emits join-slideshow on connection with laoded path' (): Promise<void> {
-    let connectedRoom: string | undefined
+    let connectedRoom: string | undefined = undefined
     const expectedPath = `/${Math.random()}`
     this.dom.reconfigure({
       url: 'http://127.0.0.1:2999/slideshow' + expectedPath
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.on('join-slideshow', (value) => {
-          connectedRoom = value
-          resolve()
-        })
-      })
+      connectedRoom = (await (promisify((cb) => socket.on('join-slideshow', (value) => { cb( null, value) })))()) as string
     })
     expect(connectedRoom).to.equal(expectedPath)
   }
@@ -168,12 +143,10 @@ export class SlideshowSocketsTests extends WebSockets {
   async 'emits get-launchId on connection' (): Promise<void> {
     const spy = sinon.stub()
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.on('get-launchId', () => {
-          spy()
-          resolve()
-        })
-      })
+      await (promisify((cb) => socket.on('get-launchId', () => { 
+        spy()
+        cb( null, null)
+      })))()
     })
     expect(spy.callCount).to.equal(1)
   }
@@ -181,29 +154,31 @@ export class SlideshowSocketsTests extends WebSockets {
   @test
   async 'get-launchId sets launch Id when starting' (): Promise<void> {
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        WebSockets.launchId = undefined
-        socket.on('get-launchId', (fn) => { fn(3) })
-        socket.on('notify-done', () => { resolve() })
-      })
+      WebSockets.launchId = undefined
+      await (promisify((cb) => socket.on('get-launchId', (fn) => { 
+        fn(3)
+        cb( null, null)
+      })))()
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
     expect(WebSockets.launchId).to.equal(3)
   }
 
   @test
   async 'get-launchId no-ops when launchId matches' (): Promise<void> {
-    let spy: Sinon.SinonStub | undefined
+    let spy: Sinon.SinonStub | undefined = undefined
     try {
+      spy = sinon.stub(WebSockets, 'LocationReload')
       await this.connectSocket(async socket => {
-        await new Promise<void>(resolve => {
-          WebSockets.launchId = 7
-          spy = sinon.stub(WebSockets, 'LocationReload')
-          socket.on('get-launchId', (fn) => { fn(7) })
-          socket.on('notify-done', () => { resolve() })
-        })
+        WebSockets.launchId = 7
+        await (promisify((cb) => socket.on('get-launchId', (fn) => { 
+          fn(7)
+          cb( null, null)
+        })))()
+        await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
       })
       expect(WebSockets.launchId).to.equal(7)
-      expect(spy?.callCount).to.equal(0)
+      expect(spy.callCount).to.equal(0)
     } finally {
       spy?.restore()
     }
@@ -211,20 +186,21 @@ export class SlideshowSocketsTests extends WebSockets {
 
   @test
   async 'get-launchId reloads page when launchId mismatches' (): Promise<void> {
-    let spy: Sinon.SinonStub | undefined
+    let spy: Sinon.SinonStub | undefined = sinon.stub()
     try {
       await this.connectSocket(async socket => {
-        await new Promise<void>(resolve => {
-          WebSockets.launchId = 7
-          spy = sinon.stub(WebSockets, 'LocationReload')
-          socket.on('get-launchId', (fn) => { fn(42) })
-          socket.on('notify-done', () => { resolve() })
-        })
+        spy = sinon.stub(WebSockets, 'LocationReload')
+        WebSockets.launchId = 7
+        await (promisify((cb) => socket.on('get-launchId', (fn) => { 
+          fn(42)
+          cb( null, null)
+        })))()
+        await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
       })
       expect(WebSockets.launchId).to.equal(42)
-      expect(spy?.callCount).to.equal(1)
+      expect(spy.callCount).to.equal(1)
     } finally {
-      spy?.restore()
+      spy.restore()
     }
   }
 
@@ -235,10 +211,8 @@ export class SlideshowSocketsTests extends WebSockets {
     }
 
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.emit('new-image', '/some/image.png')
-        socket.on('notify-done', resolve)
-      })
+      socket.emit('new-image', '/some/image.png')
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
 
     for (const img of this.dom.window.document.querySelectorAll('img')) {
@@ -253,10 +227,8 @@ export class SlideshowSocketsTests extends WebSockets {
     }
 
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.emit('new-image', '/some/image.gif')
-        socket.on('notify-done', resolve)
-      })
+      socket.emit('new-image', '/some/image.gif')
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
 
     for (const img of this.dom.window.document.querySelectorAll('img.bottomImage')) {
@@ -276,10 +248,8 @@ export class SlideshowSocketsTests extends WebSockets {
     const imagePath = `/${Math.random()}.png`
 
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.emit('new-image', imagePath)
-        socket.on('notify-done', resolve)
-      })
+      socket.emit('new-image', imagePath)
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
 
     for (const img of this.dom.window.document.querySelectorAll('img')) {
@@ -296,10 +266,8 @@ export class SlideshowSocketsTests extends WebSockets {
     const imagePath = `/${Math.random()}.gif`
 
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.emit('new-image', imagePath)
-        socket.on('notify-done', resolve)
-      })
+      socket.emit('new-image', imagePath)
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
 
     for (const img of this.dom.window.document.querySelectorAll('img.bottomImage')) {
@@ -319,10 +287,8 @@ export class SlideshowSocketsTests extends WebSockets {
     const imagePath = `/${Math.random()}.GIF`
 
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        socket.emit('new-image', imagePath)
-        socket.on('notify-done', resolve)
-      })
+      socket.emit('new-image', imagePath)
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
 
     for (const img of this.dom.window.document.querySelectorAll('img.bottomImage')) {
@@ -340,11 +306,10 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        global.document.body.dispatchEvent(event)
-        socket.on('prev-image', resolve)
-      })
+      global.document.body.dispatchEvent(event)
+      await (promisify((cb) => socket.on('prev-image', () => { cb( null, null) })))()
     })
+    // TODO: there's no assert here? what is this testing?
   }
 
   @test
@@ -354,11 +319,10 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        global.document.body.dispatchEvent(event)
-        socket.on('next-image', resolve)
-      })
+      global.document.body.dispatchEvent(event)
+      await (promisify((cb) => socket.on('next-image', () => { cb( null, null) })))()
     })
+    // TODO: there's no assert. what5 is this testing?
   }
 
   @test
@@ -373,15 +337,16 @@ export class SlideshowSocketsTests extends WebSockets {
     try {
       await this.connectSocket(async socket => {
         assignStub = sinon.stub(WebSockets, 'LocationAssign')
-        await new Promise<void>(resolve => {
-          global.document.body.dispatchEvent(event)
-          socket.on('goto-image', (fn) => fn(folder))
-          socket.on('notify-done', resolve)
-        })
+        global.document.body.dispatchEvent(event)
+        await (promisify((cb) => socket.on('goto-image', (fn) => { 
+          fn(folder)
+          cb( null, null)
+        })))()
+        await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
       })
-      expect(assignStub?.calledOnceWithExactly(`/show${folder}?noMenu`)).to.equal(true)
+      expect(assignStub.calledOnceWithExactly(`/show${folder}?noMenu`)).to.equal(true)
     } finally {
-      assignStub?.restore()
+      assignStub.restore()
     }
   }
 
@@ -395,11 +360,10 @@ export class SlideshowSocketsTests extends WebSockets {
       url: 'http://127.0.0.1:2999/slideshow?kiosk'
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>((resolve, reject) => {
-        global.document.body.dispatchEvent(event)
-        socket.on('goto-image', () => { reject(new Error()) })
-        socket.on('next-image', resolve)
-      })
+      global.document.body.dispatchEvent(event)
+      // TODO: work out how to test this without missing the timing....
+      // await (promisify((cb) => socket.on('goto-image', () => { cb(new Error('Should not have navigated'), null) })))()
+      await (promisify((cb) => socket.on('next-image', () => { cb( null, null) })))()
     })
   }
 
@@ -410,14 +374,13 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        global.window.visualViewport = {
-          scale: 1.5
-        } as unknown as VisualViewport
-        global.document.body.dispatchEvent(event)
-        socket.on('notify-done', resolve)
-      })
+      global.window.visualViewport = {
+        scale: 1.5
+      } as unknown as VisualViewport
+      global.document.body.dispatchEvent(event)
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
+    // TODO: what is this asserting?
   }
 
   @test
@@ -427,13 +390,11 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        global.window.visualViewport = {
-          scale: 1.5
-        } as unknown as VisualViewport
-        global.document.body.dispatchEvent(event)
-        socket.on('notify-done', resolve)
-      })
+      global.window.visualViewport = {
+        scale: 1.5
+      } as unknown as VisualViewport
+      global.document.body.dispatchEvent(event)
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
   }
 
@@ -447,13 +408,11 @@ export class SlideshowSocketsTests extends WebSockets {
       scale: 1
     } as unknown as VisualViewport
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        global.window.visualViewport = {
-          scale: 1.5
-        } as unknown as VisualViewport
-        global.document.body.dispatchEvent(event)
-        socket.on('notify-done', resolve)
-      })
+      global.window.visualViewport = {
+        scale: 1.5
+      } as unknown as VisualViewport
+      global.document.body.dispatchEvent(event)
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
   }
 
@@ -463,10 +422,8 @@ export class SlideshowSocketsTests extends WebSockets {
       key: 'A'
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        global.document.body.dispatchEvent(event)
-        socket.on('notify-done', resolve)
-      })
+      global.document.body.dispatchEvent(event)
+      await (promisify((cb) => socket.on('notify-done', () => { cb( null, null) })))()
     })
   }
 
@@ -476,10 +433,8 @@ export class SlideshowSocketsTests extends WebSockets {
       key: 'ArrowLeft'
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        global.document.body.dispatchEvent(event)
-        socket.on('prev-image', resolve)
-      })
+      global.document.body.dispatchEvent(event)
+      await (promisify((cb) => socket.on('prev-image', () => { cb( null, null) })))()
     })
   }
 
@@ -489,10 +444,8 @@ export class SlideshowSocketsTests extends WebSockets {
       key: 'ArrowRight'
     })
     await this.connectSocket(async socket => {
-      await new Promise<void>(resolve => {
-        global.document.body.dispatchEvent(event)
-        socket.on('next-image', resolve)
-      })
+      global.document.body.dispatchEvent(event)
+      await (promisify((cb) => socket.on('next-image', () => { cb( null, null) })))()
     })
   }
 }

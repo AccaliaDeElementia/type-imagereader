@@ -29,7 +29,7 @@ html
         button Remove
 `
 
-export type SubscriberPromiseFunction = (recievedData: any, actualTopic?: string) => Promise<void>
+export type SubscriberPromiseFunction = (recievedData: string | undefined, actualTopic?: string) => Promise<void>
 
 class TestBookmarks extends Bookmarks {
   public static get bookmarkCard (): DocumentFragment | undefined {
@@ -163,8 +163,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should use GetJSON when loading Bookmarks' (): Promise<void> {
     Bookmarks.Init()
-    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler(undefined)
     expect(this.GetJSONSpy.calledWith('/api/bookmarks')).to.equal(true)
   }
@@ -172,8 +172,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should build bookmarks with undefined when loading Bookmarks results in blank results' (): Promise<void> {
     Bookmarks.Init()
-    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler(undefined)
     expect(this.BuildBookmarksSpy.firstCall.args[0]).to.deep.equal({
       path: '',
@@ -184,8 +184,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should build bookmarks with results of loading Bookmarks' (): Promise<void> {
     Bookmarks.Init()
-    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     this.GetJSONSpy.resolves([true, false, 42, 3.1415926])
     await handler(undefined)
     expect(this.BuildBookmarksSpy.firstCall.args[0]).to.deep.equal({
@@ -205,8 +205,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
     expect(this.PostJSONSpy.calledWith('/api/bookmarks/add')).to.equal(true)
     expect(this.PostJSONSpy.firstCall.args[1]).to.deep.equal({
@@ -219,8 +219,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
     await handler('/foo/bar/baz')
@@ -239,8 +239,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
     expect(this.PostJSONSpy.calledWith('/api/bookmarks/remove')).to.equal(true)
     expect(this.PostJSONSpy.firstCall.args[1]).to.deep.equal({
@@ -253,8 +253,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
     await handler('/foo/bar/baz')
@@ -265,8 +265,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it shhould tolerate PostJSON rejecting for Bookmarks:Load' (): Promise<void> {
     Bookmarks.Init()
-    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:LOAD']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     this.GetJSONSpy.rejects('FOO')
     await handler('/foo/bar/baz')
     await Promise.resolve()
@@ -280,8 +280,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     PubSub.Subscribe('Loading:Success', successSpy)
     const loadSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', loadSpy)
-    const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     this.PostJSONSpy.rejects('FOO')
     await handler('/foo/bar/baz')
     await Promise.resolve()
@@ -296,8 +296,8 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     PubSub.Subscribe('Loading:Success', successSpy)
     const loadSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', loadSpy)
-    const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction
-    assert(handler, 'Handler must be found to have valid test')
+    const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
     this.PostJSONSpy.rejects('FOO')
     await handler('/foo/bar/baz')
     await Promise.resolve()
@@ -409,7 +409,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     })
 
     this.PostJSONSpy.reset()
-    const waiter = new Promise<void>((resolve) => { resolve() })
+    const waiter = Promise.resolve()
     this.PostJSONSpy.callsFake(async () => { await waiter })
 
     const evt = new this.dom.window.MouseEvent('click')
@@ -430,7 +430,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     })
 
     this.PostJSONSpy.reset()
-    const waiter = new Promise<void>(resolve => { resolve() })
+    const waiter = Promise.resolve()
     this.PostJSONSpy.callsFake(async () => {
       await waiter
     })
@@ -461,7 +461,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
     PubSub.Subscribe('Navigate:Load', spy)
 
     this.PostJSONSpy.reset()
-    const waiter = new Promise<void>(resolve => { resolve() })
+    const waiter = Promise.resolve()
     this.PostJSONSpy.callsFake(async () => {
       await waiter.then(async () => await Promise.reject(new Error('FOO!')))
     })
@@ -510,7 +510,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
     })
     expect(Bookmarks.BookmarkFolders).to.have.length(1)
     const folder = Bookmarks.BookmarkFolders.pop()
-    assert(folder, 'Folder should exist')
+    assert(folder !== undefined, 'Folder should exist')
     expect(folder.name).to.equal('/foo')
     expect(result).to.equal(folder.element)
   }
@@ -615,9 +615,9 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
       bookmarks: []
     })
     const folder = TestBookmarks.BookmarkFolders[0]
-    assert(folder, 'must have folder to be valid test')
+    assert(folder !== undefined, 'must have folder to be valid test')
     const title = result?.querySelector<HTMLElement>('.title')
-    assert(title, 'must get a result to issue event to')
+    assert(title !== null && title !== undefined, 'must get a result to issue event to')
     const evt = new this.dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
     expect(folder.element.classList.contains('closed')).to.equal(false)
@@ -633,9 +633,9 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
       })
     }
     const folder = TestBookmarks.BookmarkFolders[25]
-    assert(folder, 'must have folder to be valid test')
+    assert(folder !== undefined, 'must have folder to be valid test')
     const title = folder.element.querySelector<HTMLElement>('.title')
-    assert(title, 'must get a result to issue event to')
+    assert(title !== null, 'must get a result to issue event to')
     const evt = new this.dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
     for (let i = 0; i < TestBookmarks.BookmarkFolders.length; i++) {
@@ -991,7 +991,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
         })
       }
     })
-    assert(TestBookmarks.bookmarksTab, 'tab must exist')
+    assert(TestBookmarks.bookmarksTab !== null, 'tab must exist')
     const appendChildSpy = sinon.stub(TestBookmarks.bookmarksTab, 'appendChild')
     Bookmarks.buildBookmarks({
       path: '/',

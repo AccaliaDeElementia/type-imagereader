@@ -232,7 +232,8 @@ export class WeatherFunctionsGetWeatherTests {
     process.env.OPENWEATHER_LOCATION = 'location'
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
-      (e) => {
+      (e: unknown) => {
+        assert(e instanceof Error)
         expect(e).to.be.an('Error')
         expect(e.message).to.equal('no OpewnWeather AppId Defined!')
       })
@@ -243,7 +244,8 @@ export class WeatherFunctionsGetWeatherTests {
     process.env.OPENWEATHER_APPID = 'appid'
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
-      (e) => {
+      (e: unknown) => {
+        assert(e instanceof Error)
         expect(e).to.be.an('Error')
         expect(e.message).to.equal('no OpewnWeather Location Defined!')
       })
@@ -257,7 +259,7 @@ export class WeatherFunctionsGetWeatherTests {
     this.FetchStub?.rejects(err)
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
-      (e) => expect(e).to.equal(err))
+      (e: unknown) => expect(e).to.equal(err))
   }
 
   @test
@@ -289,7 +291,7 @@ export class WeatherFunctionsGetWeatherTests {
     this.FetchResult.json.rejects(err)
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
-      (e) => expect(e).to.equal(err))
+      (e: unknown) => expect(e).to.equal(err))
   }
 }
 
@@ -383,21 +385,21 @@ export class WeatherFunctionsUpdateWeatherTests {
 
   @test
   async 'it should fail to set temp if main data missing' (): Promise<void> {
-    (this.weatherData as any).main = null
+    this.weatherData.main = undefined
     await Functions.UpdateWeather()
     expect(Functions.weather.temp).to.equal(undefined)
   }
 
   @test
   async 'it should fail to set pressure if main data missing' (): Promise<void> {
-    (this.weatherData as any).main = null
+    this.weatherData.main = undefined
     await Functions.UpdateWeather()
     expect(Functions.weather.pressure).to.equal(undefined)
   }
 
   @test
   async 'it should fail to set humidity if main data missing' (): Promise<void> {
-    (this.weatherData as any).main = null
+    this.weatherData.main = undefined
     await Functions.UpdateWeather()
     expect(Functions.weather.humidity).to.equal(undefined)
   }
@@ -580,7 +582,7 @@ export class WeatherRouterTests {
 
   @test
   async 'it should tolerate update weather rejecting on initial call' (): Promise<void> {
-    const awaiter = new Promise<void>(resolve => { resolve() })
+    const awaiter = Promise.resolve()
     this.UpdateWeatherStub?.rejects(new Error('FOO!'))
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     await awaiter
@@ -602,7 +604,6 @@ export class WeatherRouterTests {
     expect(this.SetIntervalStub?.callCount).to.equal(1)
     expect(this.SetIntervalStub?.firstCall.args).to.have.lengthOf(2)
     const fn = this.SetIntervalStub?.firstCall.args[0] as () => void
-    assert(fn != null)
     expect(this.UpdateWeatherStub?.called).to.equal(false)
     fn()
     expect(this.UpdateWeatherStub?.called).to.equal(true)
@@ -624,7 +625,6 @@ export class WeatherRouterTests {
     this.UpdateWeatherStub?.resetHistory()
     this.UpdateWeatherStub?.rejects(new Error('FOO'))
     const fn = this.SetIntervalStub?.firstCall.args[0] as () => void
-    assert(fn != null)
     fn()
     await Promise.resolve()
     assert(true, 'should not get an exception nor break due to unhandled promise rejection')

@@ -17,9 +17,10 @@ export const Functions = {
 }
 
 const fetchWeather = async (uri: string): Promise<WeatherResults> => await Functions.fetch(uri)
-  .then(async result => await (result.json() as Promise<WeatherResults>))
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Generic browser fetch? browsserify node-fetch?
+  .then(async result => (await result.json()) as WeatherResults)
 
-const formatData = (data: any, suffix = ''): Text => {
+const formatData = (data: number | string | undefined, suffix = ''): Text => {
   let text = ''
   if (typeof data === 'number') {
     text = `${data.toFixed(1)}${suffix}`
@@ -33,10 +34,10 @@ const showWeather = (base: HTMLElement | null, weather: WeatherResults): Weather
   if (base == null) return weather
   base.style.setProperty('display', weather.temp !== undefined ? 'flex' : 'none')
   base.querySelector('.temp')?.replaceChildren(formatData(weather.temp, '°C'))
-  const description = base.querySelector('.desc') as unknown as HTMLElement
+  const description = base.querySelector<HTMLElement>('.desc')
   description?.style.setProperty('display', weather.description !== undefined ? 'flex' : 'none')
   base.querySelector('.desctext')?.replaceChildren(formatData(weather.description))
-  const icon = base.querySelector('.icon') as unknown as HTMLElement
+  const icon = base.querySelector<HTMLElement>('.icon')
   icon?.style.setProperty('display', weather.icon != null ? 'inline-block' : 'none')
   const src = `https://openweathermap.org/img/w/${weather.icon}.png`
   if (icon?.getAttribute('src') !== src) {
@@ -57,9 +58,10 @@ const almanac: SunTimes = {
 
 export const GetAlmanac = (): SunTimes => almanac
 
-export const LocalWeatherUpdater = CyclicUpdater.create(async () =>
+export const LocalWeatherUpdater = CyclicUpdater.create(async () => {
   await fetchWeather('http://localhost:8080/')
     .then(weather => showWeather(document.querySelector('.localweather'), weather))
+  }
 , 1000)
 
 export const WeatherUpdater = CyclicUpdater.create(async () => {

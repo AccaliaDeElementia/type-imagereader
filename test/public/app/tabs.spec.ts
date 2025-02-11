@@ -146,7 +146,7 @@ export class AppTabsTests extends PubSub {
         const event = new this.dom.window.MouseEvent('click')
         link.parentElement?.dispatchEvent(event)
         const href = link.getAttribute('href') ?? undefined
-        assert(href !== null, 'href must be defined')
+        assert(href !== undefined, 'href must be defined')
         expect(spy.calledWith(href)).to.equal(true)
       }
     } finally {

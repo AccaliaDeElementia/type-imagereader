@@ -15,12 +15,12 @@ export class Debouncer {
   protected cycleCount: number
   protected counters: DebounceCounter[] = []
 
-  protected constructor (timeoutMs: number = 100) {
+  protected constructor (timeoutMs = 100) {
     this.cycleCount = Math.max(Math.ceil(timeoutMs / Debouncer.interval), 1)
   }
 
   debounce (key: string, callback: DebounceCallback): void {
-    const counter = this.counters.filter(c => c.key === key)[0]
+    const counter = this.counters.find(c => c.key === key)
     if (counter != null) {
       counter.counter = this.cycleCount
       counter.callback = callback
@@ -33,12 +33,12 @@ export class Debouncer {
     }
   }
 
-  protected static debouncers: any[] = []
+  protected static debouncers: Debouncer[] = []
   protected static timer?: ReturnType<typeof setInterval>
-  protected static interval: number = 100
+  protected static interval = 100
 
   protected static getDebouncers (): Debouncer[] {
-    return this.debouncers as Debouncer[]
+    return this.debouncers
   }
 
   public static startTimers (): void {
@@ -66,14 +66,14 @@ export class Debouncer {
       })
       callbacksDue.forEach(({ key, callback }) => {
         callback()
-          .catch(err => {
+          .catch((err: unknown) => {
             logger(`DebounceCallback for ${key} failed`, err)
           })
       })
     })
   }
 
-  public static create (timeoutMs: number = 100): Debouncer {
+  public static create (timeoutMs = 100): Debouncer {
     const result = new Debouncer(timeoutMs)
     this.debouncers.push(result)
     return result

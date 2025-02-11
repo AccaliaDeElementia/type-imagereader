@@ -73,7 +73,7 @@ export class WakeLockInitTests extends BaseTests {
   'it should execute TakeLock on receiving Picture:LoadNew notification' (): void {
     WakeLock.Init()
     const fn = (PubSub.subscribers['PICTURE:LOADNEW'] ?? [])[0]
-    assert(fn)
+    assert(fn !== undefined)
     fn(undefined)
     expect(this.takeLockSpy.callCount).to.equal(1)
   }
@@ -83,7 +83,7 @@ export class WakeLockInitTests extends BaseTests {
     WakeLock.Init()
     this.takeLockSpy.rejects('FOO')
     const fn = (PubSub.subscribers['PICTURE:LOADNEW'] ?? [])[0]
-    assert(fn)
+    assert(fn !== undefined)
     fn(undefined)
     await Promise.resolve()
     expect(this.takeLockSpy.callCount).to.equal(1)
@@ -99,7 +99,7 @@ export class WakeLockInitTests extends BaseTests {
   'it should use an interval of 30 seconds for wakelock.Release()' (): void {
     WakeLock.Init()
     const interval = PubSub.intervals['WakeLock:Release']
-    assert(interval)
+    assert(interval !== undefined)
     expect(interval.intervalCycles).to.equal(3000)
   }
 
@@ -107,8 +107,7 @@ export class WakeLockInitTests extends BaseTests {
   'it should invoke WakeLock.release() when release timer expires' (): void {
     WakeLock.Init()
     const interval = PubSub.intervals['WakeLock:Release']
-    assert(interval)
-    assert(interval.method)
+    assert(interval !== undefined)
     interval.method()
     expect(this.releaseLockSpy.callCount).to.equal(1)
   }
@@ -118,8 +117,7 @@ export class WakeLockInitTests extends BaseTests {
     WakeLock.Init()
     this.releaseLockSpy.rejects('FOO')
     const interval = PubSub.intervals['WakeLock:Release']
-    assert(interval)
-    assert(interval.method)
+    assert(interval !== undefined)
     interval.method()
     await Promise.resolve()
     expect(this.releaseLockSpy.callCount).to.equal(1)
@@ -152,14 +150,14 @@ export class WakeLockTakeLockTests extends BaseTests {
       configurable: true,
       get: () => this.dom.window.navigator
     })
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We're testing wakelock assuming there is no default on ein the test env. if an update adds it we want the test setup to fail
     assert(undefined === navigator.wakeLock, 'expect env not to support wakelock for testing')
     Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
-      get: () => {
-        return {
+      get: () => ({
           request: this.wakelockRequest
-        }
-      }
+        })
     })
   }
 

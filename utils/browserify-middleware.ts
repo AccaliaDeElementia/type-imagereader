@@ -3,6 +3,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
+import { promisify } from 'util'
 import { join, normalize } from 'path'
 import { readdir, watch, access } from 'fs/promises'
 
@@ -23,6 +24,21 @@ export class Imports {
   public static minify = minify
 }
 
+function isError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error
+}
+
+function isErrorWithCode(error: unknown, ... codes: string[]): error is NodeJS.ErrnoException  {
+  return isError(error) && codes.find( code => code === error.code) !== undefined;
+}
+
+function unknownToError(err: unknown, message: string): Error {
+  if (err instanceof Error) {
+    return err
+  }
+  return new Error(message)
+}
+
 export class Functions {
   public static browserified: { [key: string]: Promise<string | null> } = {}
   public static logger = debug('type-imagereader:browserify-middleware')
@@ -38,12 +54,12 @@ export class Functions {
     const candidates = Functions.GetPaths(path)
       .map(candidate => join(basePath, candidate))
     const exists = await Promise.all(candidates.map(async candidate => await test(candidate)))
-    return candidates.filter((_, i) => exists[i])[0] ?? null
+    return candidates.find((_, i) => exists[i] === true) ?? null
   }
 
   public static async CompileBundle (path: string): Promise<string | null> {
     return await Imports.access(path)
-      .then(async (): Promise<string> => await new Promise((resolve, reject) => {
+      .then(async (): Promise<string> => {
         const browser = Imports.browserify()
         browser.plugin('tsify')
         browser.plugin('common-shakeify', {
@@ -51,23 +67,18 @@ export class Functions {
         })
         browser.transform('brfs')
         browser.add(path)
-        browser.bundle((err, source) => {
-          if (err != null) {
-            reject(err)
-          } else {
-            resolve(source.toString())
-          }
-        })
-      }))
+        const source = await promisify(browser.bundle.bind(browser))()
+        return source.toString()
+      })
       .then(async src => await Imports.minify(src))
       .then(minified => minified.code ?? null)
-      .catch(async (err: any): Promise<string | null> => await new Promise((resolve, reject) => {
-        if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
-          resolve(null)
+      .catch(async (err: unknown): Promise<string | null> => {
+        if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
+          return await Promise.resolve(null)
         } else {
-          reject(err)
+          return await Promise.reject(unknownToError(err, 'Compile Error'))
         }
-      }))
+      })
   }
 
   public static async CompileAndCache (basePath: string, mountedPath: string): Promise<void> {
@@ -105,8 +116,8 @@ export class Functions {
       } else {
         res.status(StatusCodes.OK).contentType('application/javascript').send(code)
       }
-    } catch (err: any) {
-      if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
+    } catch (err: unknown) {
+      if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
         renderError(StatusCodes.NOT_FOUND, `Not Found: ${path}`)
       } else if (!(err instanceof Error)) {
         renderError(StatusCodes.INTERNAL_SERVER_ERROR, 'INTERNAL SERVER ERROR')
@@ -128,8 +139,8 @@ export class Functions {
           await Functions.CompileAndCache(basePath, scriptFile)
         })
       }
-    } catch (err: any) {
-      if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
+    } catch (err: unknown) {
+      if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
         Functions.logger(`${mountPath} does not exist to watch`, err.message)
       } else {
         Functions.logger(`Watcher for ${mountPath} exited unexpectedly`, err)
@@ -141,20 +152,20 @@ export class Functions {
     for (const dir of watchDirs) {
       try {
         for (const dirinfo of await Imports.readdir(join(basePath, dir), { withFileTypes: true })) {
-          if (/^\./.test(dirinfo.name)) {
+          if (dirinfo.name.startsWith('.')) {
             continue
           }
           const target = join(dir, dirinfo.name)
           if (isCompileableExtension.test(dirinfo.name) || dirinfo.isDirectory()) {
-            Functions.CompileAndCache(basePath, target).catch(() => {})
+            Functions.CompileAndCache(basePath, target).catch(() => null)
           }
           if (dirinfo.isDirectory()) {
-            Functions.WatchFolder(basePath, target, true).catch(() => {})
+            Functions.WatchFolder(basePath, target, true).catch(() => null)
           }
         }
-        Functions.WatchFolder(basePath, dir, false).catch(() => {})
-      } catch (err: any) {
-        if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ENOENT') {
+        Functions.WatchFolder(basePath, dir, false).catch(() => null)
+      } catch (err: unknown) {
+        if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
           Functions.logger(`${dir} does not exist to precompile scripts`, err.message)
         } else {
           Functions.logger(`Unexpected Error while precompiling ${dir} scripts`, err)
@@ -171,7 +182,7 @@ export interface Options {
 
 export default (options: Options): (req: Request, res: Response, next: NextFunction) => Promise<void> => {
   if (options.watchPaths != null && options.watchPaths.length > 0) {
-    Functions.WatchAllFolders(options.basePath, options.watchPaths).catch(() => {})
+    Functions.WatchAllFolders(options.basePath, options.watchPaths).catch(() => null)
   }
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (req.method.toLowerCase() !== 'get' || !isCompileableExtension.test(req.path)) {

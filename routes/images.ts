@@ -1,8 +1,8 @@
 'use sanity'
 
 import { type Application, Router, type Request, type Response, type RequestHandler } from 'express'
-import { type Server as WebSocketServer } from 'socket.io'
-import { type Server } from 'http'
+import type { Server as WebSocketServer } from 'socket.io'
+import type { Server } from 'http'
 import { normalize, join, extname } from 'path'
 import { readFile } from 'fs/promises'
 
@@ -18,9 +18,9 @@ export class ImageData {
   data: Buffer = Buffer.from('')
   extension: string | null = null
   code: string | null = null
-  statusCode: number = 500
+  statusCode = 500
   message: string | null = null
-  path: string = ''
+  path = ''
 
   static fromImage (data: Buffer, extension: string, path: string): ImageData {
     const result = new ImageData()
@@ -72,7 +72,7 @@ export class ImageCache {
     if (i >= 0 && item !== null) {
       this.items.splice(i, 1)
       this.items.unshift(item)
-      return await item?.image
+      return await item.image
     } else {
       item = {
         path,
@@ -121,7 +121,7 @@ export class Functions {
     }
   }
 
-  public static async RescaleImage (image: ImageData, width: number, height: number, animated: boolean = true): Promise<void> {
+  public static async RescaleImage (image: ImageData, width: number, height: number, animated = true): Promise<void> {
     if (image.code !== null) {
       return // Image already has an error
     }
@@ -142,7 +142,7 @@ export class Functions {
     }
   }
 
-  public static async ReadAndRescaleImage (path: string, width: number, height: number, animated: boolean = true): Promise<ImageData> {
+  public static async ReadAndRescaleImage (path: string, width: number, height: number, animated = true): Promise<ImageData> {
     const image = await Functions.ReadImage(path)
     await Functions.RescaleImage(image, width, height, animated)
     return image
@@ -169,8 +169,14 @@ export class Functions {
 }
 
 export const CacheStorage = {
-  kioskCache: new ImageCache(async (path, _, __) => ImageData.fromError('INTERNAL_SERVER_ERROR', StatusCodes.INTERNAL_SERVER_ERROR, 'CACHE_NOT_INITIALIZED', path)),
-  scaledCache: new ImageCache(async (path, _, __) => ImageData.fromError('INTERNAL_SERVER_ERROR', StatusCodes.INTERNAL_SERVER_ERROR, 'CACHE_NOT_INITIALIZED', path))
+  kioskCache: new ImageCache(async (path, _, __) => {
+    await Promise.resolve()
+    return ImageData.fromError('INTERNAL_SERVER_ERROR', StatusCodes.INTERNAL_SERVER_ERROR, 'CACHE_NOT_INITIALIZED', path)
+  }),
+  scaledCache: new ImageCache(async (path, _, __) => {
+    await Promise.resolve()
+    return ImageData.fromError('INTERNAL_SERVER_ERROR', StatusCodes.INTERNAL_SERVER_ERROR, 'CACHE_NOT_INITIALIZED', path)
+  })
 }
 
 // Export the base-router
@@ -180,9 +186,9 @@ export async function getRouter (_app: Application, _serve: Server, _socket: Web
 
   const logger = Imports.debug('type-imagereader:images')
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- Method is static, no need to bind
   CacheStorage.kioskCache = new ImageCache(Functions.ReadAndRescaleImage)
-  // eslint-disable-next-line @typescript-eslint/unbound-method
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- Method is static, no need to bind
   CacheStorage.scaledCache = new ImageCache(Functions.ReadAndRescaleImage)
 
   const sendError = (res: Response, code: string, statusCode: StatusCodes, message: string): void => {
@@ -247,6 +253,8 @@ export async function getRouter (_app: Application, _serve: Server, _socket: Web
     const image = await CacheStorage.kioskCache.fetch(filename, 1280, 800)
     Functions.SendImage(image, res)
   }))
+
+  await Promise.resolve()
 
   return router
 }

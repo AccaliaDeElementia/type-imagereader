@@ -9,6 +9,7 @@ import type { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import sassMiddleware, { Imports, Functions } from '../../utils/sass-middleware'
+import assert from 'assert'
 
 @suite
 export class SassMiddlewareCompileCssTests {
@@ -182,24 +183,51 @@ export class SassMiddlewareCompileCssTests {
 
   @test
   async 'it should log error message when non Error is thrown' (): Promise<void> {
+    this.CompileAsyncStub?.callsFake(() => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- Deliberately throw non error to test error handling
+      throw 'SOMETHING BAD'
+  })
+    await (Functions.CompileCss('/foo', '/bar.css').catch(() => 0))
+    expect(this.LoggingStub?.calledWith('Error Compiling /bar.css:')).to.equal(true)
+  }
+  @test
+  async 'it should log error message when non Error is rejected' (): Promise<void> {
     this.CompileAsyncStub?.rejects('SOMETHING BAD')
     await (Functions.CompileCss('/foo', '/bar.css').catch(() => 0))
-    expect(this.LoggingStub?.calledWith('Error Compiling /bar.css: SOMETHING BAD')).to.equal(true)
+    expect(this.LoggingStub?.calledWith('Error Compiling /bar.css:')).to.equal(true)
   }
 
   @test
   async 'it should log error message when Error is thrown' (): Promise<void> {
-    this.CompileAsyncStub?.rejects(new Error('SOMETHING BAD'))
+    const err = new Error('SOMETHING BAD')
+    this.CompileAsyncStub?.rejects(err)
     await (Functions.CompileCss('/foo', '/bar.css').catch(() => 0))
-    expect(this.LoggingStub?.calledWith('Error Compiling /bar.css: Error: SOMETHING BAD')).to.equal(true)
+    expect(this.LoggingStub?.calledWith('Error Compiling /bar.css:', err)).to.equal(true)
   }
 
   @test
-  async 'it should rethrow error when non Error is thrown' (): Promise<void> {
+  async 'it should throw generic error when non Error is thrown' (): Promise<void> {
+    this.CompileAsyncStub?.callsFake(() => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- Deliberately throw non error to test error handling
+      throw 'SOMETHING BAD'
+    })
+    await (Functions.CompileCss('/foo', '/bar.css')
+      .then(() => expect.fail('Test should have rejected the promise'),
+        (err:unknown) => {
+          assert(err instanceof Error, 'error should be an actual error!')
+          expect(`${err}`).to.equal('Error: Unexpected Error Encountered Compiling CSS')
+        }))
+  }
+
+  @test
+  async 'it should rethrow error when non Error is rejected' (): Promise<void> {
     this.CompileAsyncStub?.rejects('SOMETHING BAD')
     await (Functions.CompileCss('/foo', '/bar.css')
       .then(() => expect.fail('Test should have rejected the promise'),
-        (err) => expect(`${err}`).to.equal('SOMETHING BAD')))
+        (err: unknown) => {
+          assert(err instanceof Error, 'error should be an actual error!')
+          expect(`${err}`).to.equal('SOMETHING BAD')
+        }))
   }
 
   @test
@@ -208,7 +236,7 @@ export class SassMiddlewareCompileCssTests {
     this.CompileAsyncStub?.rejects(expected)
     await (Functions.CompileCss('/foo', '/bar.css')
       .then(() => expect.fail('Test should have rejected the promise'),
-        (err) => expect(err).to.equal(expected)))
+        (err: unknown) => expect(err).to.equal(expected)))
   }
 }
 
@@ -334,8 +362,8 @@ export class SassMiddlewareCompileFolderTests {
 
   @test
   async 'it should tolerate CompileAndCache rejecting' (): Promise<void> {
-    const awaiter = new Promise<boolean>(resolve => { resolve(true) })
-    this.CompileAndCacheStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new ErrorEvent('FOO'))))
+    const awaiter = Promise.resolve(true)
+    this.CompileAndCacheStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new Error('FOO'))))
     this.ReaddirStub?.resolves([{ name: 'styles.scss' }, { name: 'styles2.scss' }])
     await Functions.CompileFolder('/foo', '/bar')
     await awaiter
@@ -476,8 +504,8 @@ export class SassMiddlewareTests {
 
   @test
   async 'it should tolerate WatchFolder rejecting' (): Promise<void> {
-    const awaiter = new Promise<boolean>(resolve => { resolve(true) })
-    this.WatchFolderStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new ErrorEvent('FOO'))))
+    const awaiter = Promise.resolve(true)
+    this.WatchFolderStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new Error('FOO'))))
     sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'
@@ -488,8 +516,8 @@ export class SassMiddlewareTests {
 
   @test
   async 'it should toplerate CompileFolder rejecting' (): Promise<void> {
-    const awaiter = new Promise<boolean>(resolve => { resolve(true) })
-    this.CompileFolderStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new ErrorEvent('FOO'))))
+    const awaiter = Promise.resolve(true)
+    this.CompileFolderStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new Error('FOO'))))
     sassMiddleware({
       mountPath: '/foo',
       watchdir: '/bar'

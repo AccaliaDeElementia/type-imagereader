@@ -9,11 +9,11 @@ export interface WakeLockSentinel {
 
 export class WakeLock {
   public static sentinel: WakeLockSentinel | null = null
-  public static timeout: number = 0
+  public static timeout = 0
   public static readonly wakeTime = 2 * 60 * 1000
   public static Init (): void {
-    Subscribe('Picture:LoadNew', () => { this.TakeLock().catch(() => {}) })
-    AddInterval('WakeLock:Release', () => { this.ReleaseLock().catch(() => {}) }, 30 * 1000)
+    Subscribe('Picture:LoadNew', () => { this.TakeLock().catch(() => null) })
+    AddInterval('WakeLock:Release', () => { this.ReleaseLock().catch(() => null) }, 30 * 1000)
   }
 
   public static async TakeLock (): Promise<void> {

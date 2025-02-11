@@ -224,7 +224,7 @@ export class AppPubSubTests extends PubSub {
       [31, 4]
     ]
     for (const [delay, expected] of matrix) {
-      PubSub.Defer(() => {}, delay)
+      PubSub.Defer(() => null, delay)
       expect(PubSub.deferred.pop()?.delayCycles).to.equal(expected)
     }
   }
@@ -323,34 +323,34 @@ export class PubSubAddIntervalTests extends BaseAppPubSubTests {
   @test
   'Adds interval to map' (): void {
     expect(PubSub.intervals['Test Interval']).to.equal(undefined)
-    PubSub.AddInterval('Test Interval', () => {}, 100)
+    PubSub.AddInterval('Test Interval', () => null, 100)
     expect(PubSub.intervals['Test Interval']).to.not.equal(undefined)
   }
 
   @test
   'Stores function in interval object' (): void {
-    const expected = (): void => {}
+    const expected = (): null => null
     PubSub.AddInterval('Test Interval', expected, 100)
     expect(PubSub.intervals['Test Interval']?.method).to.equal(expected)
   }
 
   @test
   'adds function with delay of zero' (): void {
-    PubSub.AddInterval('Test Interval', () => {}, 100)
+    PubSub.AddInterval('Test Interval', () => null, 100)
     expect(PubSub.intervals['Test Interval']?.delayCycles).to.equal(0)
   }
 
   @test
   'adds function with specified ineterval' (): void {
     PubSub.cycleTime = 30
-    PubSub.AddInterval('Test Interval', () => {}, 100)
+    PubSub.AddInterval('Test Interval', () => null, 100)
     expect(PubSub.intervals['Test Interval']?.intervalCycles).to.equal(4)
   }
 
   @test
   'Second add overwrites first' (): void {
-    const expected = (): void => {}
-    PubSub.AddInterval('Test Interval', () => {}, 150)
+    const expected = (): null => null
+    PubSub.AddInterval('Test Interval', () => null, 150)
     PubSub.AddInterval('Test Interval', expected, 100)
     expect(PubSub.intervals['Test Interval']?.method).to.equal(expected)
     expect(PubSub.intervals['Test Interval']?.intervalCycles).to.equal(10)
@@ -362,7 +362,7 @@ export class PubSubRemoveIntervalTests extends BaseAppPubSubTests {
   @test
   'Removes interval from map' (): void {
     PubSub.intervals['Test Interval'] = {
-      method: () => {},
+      method: () => null,
       delayCycles: 0,
       intervalCycles: 0
     }

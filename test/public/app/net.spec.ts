@@ -133,7 +133,7 @@ export class AppNetTests {
 
   @test
   async 'PostJSON calls fetch with expected data' (): Promise<void> {
-    const matrix: any[] = [
+    const matrix = [
       1,
       '',
       {

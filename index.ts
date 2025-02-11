@@ -38,13 +38,13 @@ export class ImageReader {
           this.SyncRunning = false
         }
       }
-      doSync().catch(() => {})
-      this.Interval = setInterval(() => { doSync().catch(() => {}) }, this.SyncInterval)
+      doSync().catch(() => null)
+      this.Interval = setInterval(() => { doSync().catch(() => null) }, this.SyncInterval)
     }
   }
 }
 
 /* istanbul ignore if */
 if (require.main === module) {
-  ImageReader.Run().catch(() => {})
+  ImageReader.Run().catch(() => null)
 }

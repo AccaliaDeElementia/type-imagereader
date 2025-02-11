@@ -1,5 +1,7 @@
 'use sanity'
 
+import { promisify } from 'util'
+
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import * as sinon from 'sinon'
@@ -25,6 +27,9 @@ html
     div#mainMenu
       div.innerTarget
 `
+const Delay = async (ms = 10): Promise<void> => {
+  await (promisify(cb => { setTimeout(() => { cb(null, null) }, ms)}))()
+}
 
 class TestNavigation extends Navigation {
   public static get current (): Data {
@@ -404,7 +409,7 @@ export class AppnavigationLoadDataTests extends BaseNavigationTests {
     await Navigation.LoadData()
 
     expect(this.PublishSpy.getCalls()
-      .map(c => c.args[1])
+      .map(c => c.args[1] as string)
       .filter(signal => signal === 'LOADING:ERROR')
     ).to.deep.equal([])
   }
@@ -663,7 +668,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const handler = PubSub.subscribers['MENU:SHOW']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     const mainMenu = this.document.querySelector('#mainMenu')
-    assert(mainMenu, 'mainMenu must exist')
+    assert(mainMenu !== null, 'mainMenu must exist')
     mainMenu.classList.add('hidden')
     handler(undefined)
     expect(mainMenu.classList.contains('hidden')).to.equal(false)
@@ -682,7 +687,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const handler = PubSub.subscribers['MENU:HIDE']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     const mainMenu = this.document.querySelector('#mainMenu')
-    assert(mainMenu, 'mainMenu must exist')
+    assert(mainMenu !== null, 'mainMenu must exist')
     mainMenu.classList.remove('hidden')
     handler(undefined)
     expect(mainMenu.classList.contains('hidden')).to.equal(true)
@@ -694,7 +699,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const spy = sinon.stub()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('.innerTarget')
-    assert(target, 'target must exist')
+    assert(target !== null, 'target must exist')
     TestNavigation.current.pictures = [{}]
     const event = new this.dom.window.MouseEvent('click', { bubbles: true })
     target.dispatchEvent(event)
@@ -707,7 +712,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const spy = sinon.stub()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
-    assert(target, 'target must exist')
+    assert(target !== null, 'target must exist')
     TestNavigation.current.pictures = []
     const event = new this.dom.window.MouseEvent('click')
     target.dispatchEvent(event)
@@ -720,7 +725,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const spy = sinon.stub()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
-    assert(target, 'target must exist')
+    assert(target !== null, 'target must exist')
     expect(TestNavigation.current.pictures).to.equal(undefined)
     const event = new this.dom.window.MouseEvent('click')
     target.dispatchEvent(event)
@@ -733,7 +738,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const spy = sinon.stub()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
-    assert(target, 'target must exist')
+    assert(target !== null, 'target must exist')
     TestNavigation.current.pictures = [{}]
     const event = new this.dom.window.MouseEvent('click')
     target.dispatchEvent(event)
@@ -746,7 +751,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const spy = sinon.stub()
     PubSub.subscribers['MENU:SHOW'] = [spy]
     const target = this.document.querySelector('.menuButton')
-    assert(target, 'target must exist')
+    assert(target !== null, 'target must exist')
     TestNavigation.current.pictures = [{}]
     const event = new this.dom.window.MouseEvent('click')
     target.dispatchEvent(event)
@@ -1055,9 +1060,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.PostJSONStub.calledWith('/api/mark/read')).to.equal(true)
   }
 
@@ -1071,9 +1074,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     TestNavigation.current.path = path.path
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     const payload = this.PostJSONStub.firstCall.args[1]
     expect(payload).to.deep.equal(path)
   }
@@ -1085,9 +1086,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.LoadDataStub.calledWith(true)).to.equal(true)
   }
 
@@ -1101,9 +1100,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.LoadDataStub.calledWith(true)).to.equal(true)
     expect(spy.called).to.equal(false)
   }
@@ -1119,9 +1116,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(spy.called).to.equal(true)
     expect(spy.firstCall.args[1]).to.equal('LOADING:ERROR')
     expect(spy.firstCall.args[0]).to.equal(err)
@@ -1134,12 +1129,10 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     const err = new Error('oopsies')
     this.PostJSONStub.rejects(err)
-    PubSub.subscribers['LOADING:ERROR'] = [() => {}]
+    PubSub.subscribers['LOADING:ERROR'] = [() => null]
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.LoadDataStub.called).to.equal(false)
   }
 
@@ -1157,9 +1150,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.PostJSONStub.calledWith('/api/mark/unread')).to.equal(true)
   }
 
@@ -1174,9 +1165,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     TestNavigation.current.path = path.path
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     const payload = this.PostJSONStub.firstCall.args[1]
     expect(payload).to.deep.equal(path)
   }
@@ -1188,9 +1177,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.LoadDataStub.calledWith(true)).to.equal(true)
   }
 
@@ -1205,9 +1192,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(spy.called).to.equal(true)
     expect(spy.firstCall.args[0]).to.equal(err)
   }
@@ -1219,12 +1204,10 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     const err = new Error('oopsies')
     this.PostJSONStub.rejects(err)
-    PubSub.subscribers['LOADING:ERROR'] = [() => {}]
+    PubSub.subscribers['LOADING:ERROR'] = [() => null]
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.LoadDataStub.called).to.equal(false)
   }
 
@@ -1238,9 +1221,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.LoadDataStub.calledWith(true)).to.equal(true)
     expect(spy.called).to.equal(false)
   }
@@ -1326,9 +1307,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     this.RequestFullscreenStub.rejects(err)
     handler(undefined)
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.RequestFullscreenStub.called).to.equal(true)
     expect(this.ExitFullscreenStub.called).to.equal(false)
     expect(spy.called).to.equal(true)
@@ -1362,9 +1341,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     this.ExitFullscreenStub.rejects(err)
     handler(undefined)
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.RequestFullscreenStub.called).to.equal(false)
     expect(this.ExitFullscreenStub.called).to.equal(true)
     expect(spy.called).to.equal(true)

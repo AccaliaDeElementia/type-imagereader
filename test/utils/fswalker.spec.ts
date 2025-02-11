@@ -20,7 +20,7 @@ export class fsWalkerTests {
 
   @test
   async 'it should call readdir starting at root' (): Promise<void> {
-    await fsWalker('/foo/bar/baz', async () => { await new Promise<void>(resolve => { resolve() }) })
+    await fsWalker('/foo/bar/baz', async () => { await Promise.resolve() })
     expect(this.readdirSpy.callCount).to.equal(1)
   }
 

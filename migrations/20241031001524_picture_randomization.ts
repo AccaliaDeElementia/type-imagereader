@@ -15,12 +15,10 @@ export async function up (knex: Knex): Promise<void> {
   const toUpdate = (await knex
     .select('path')
     .from('pictures'))
-    .map(({ path }: PictureWithPath) => {
-      return {
-        path,
-        pathHash: createHash('sha512').update(path).digest('base64')
-      }
-    })
+    .map(({ path }: PictureWithPath) => ({
+      path,
+      pathHash: createHash('sha512').update(path).digest('base64')
+    }))
   for (let i = 0; i < toUpdate.length; i += 1000) {
     await knex('pictures')
       .insert(toUpdate.slice(i, i + 1000))

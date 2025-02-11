@@ -1,5 +1,7 @@
 'use sanity'
 
+import { promisify } from 'util'
+
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
@@ -56,10 +58,8 @@ interface TestVisualViewport {
   scale: number
 }
 
-const Delay = async (ms: number = 10): Promise<void> => {
-  await new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
+const Delay = async (ms = 10): Promise<void> => {
+  await (promisify(cb => { setTimeout(() => { cb(null, null) }, ms)}))()
 }
 
 class TestPics extends Pictures {
@@ -284,7 +284,7 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
   }
 
   @test
-  async 'it should subscribe to Navigate:Data with a call to LoadData()' (): Promise<void> {
+  'it should subscribe to Navigate:Data with a call to LoadData()' (): void {
     const expected = {
       a: Math.random()
     }
@@ -408,11 +408,11 @@ export class AppPicturesCurrentPageTests extends BaseAppPicturesTests {
 export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
   activePageLink: HTMLElement | undefined
   activePageElement: HTMLElement | undefined
-  activePage: number = -1
+  activePage = -1
   nextPageLink: HTMLElement | undefined
   nextPageElement: HTMLElement | undefined
-  nextPage: number = 0
-  totalpages: number = 8
+  nextPage = 0
+  totalpages = 8
   before (): void {
     super.before()
     const tab = this.document.querySelector('#tabImages')
@@ -878,13 +878,11 @@ export class AppPicturesMakeTabTests extends BaseAppPicturesTests {
       return retval
     })
     TestPics.pictures = Array.from({ length: 32 })
-      .map((_: unknown, i: number): Picture => {
-        return {
-          path: `/some/path/${i}.png`,
-          name: `${i}.png`,
-          seen: false
-        }
-      })
+      .map((_: unknown, i: number): Picture => ({
+        path: `/some/path/${i}.png`,
+        name: `${i}.png`,
+        seen: false
+      }))
     this.tab = this.dom.window.document.querySelector('#tabImages')
   }
 
@@ -931,13 +929,11 @@ export class AppPicturesLoadCurrentPageImagesTests extends BaseAppPicturesTests 
   before (): void {
     super.before()
     TestPics.pictures = Array.from({ length: 32 })
-      .map((_: unknown, i: number): Picture => {
-        return {
-          path: `/some/path/${i}.png`,
-          name: `${i}.png`,
-          seen: false
-        }
-      })
+      .map((_: unknown, i: number): Picture => ({
+        path: `/some/path/${i}.png`,
+        name: `${i}.png`,
+        seen: false
+      }))
     Pictures.MakeTab()
     this.tab = this.dom.window.document.querySelector('#tabImages')
   }
@@ -988,7 +984,7 @@ export class AppPicturesLoadCurrentPageImagesTests extends BaseAppPicturesTests 
 
 @suite
 export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
-  totalCount: number = 1500
+  totalCount = 1500
   current: Picture = {
     path: '',
     name: '',
@@ -1011,13 +1007,11 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   before (): void {
     super.before()
     TestPics.pictures = Array.from({ length: this.totalCount })
-      .map((_: unknown, i: number): Picture => {
-        return {
-          path: `/some/path/${i}.png`,
-          name: `${i}.png`,
-          seen: false
-        }
-      })
+      .map((_: unknown, i: number): Picture => ({
+        path: `/some/path/${i}.png`,
+        name: `${i}.png`,
+        seen: false
+      }))
     this.current = TestPics.pictures[1250] ?? {
       path: '',
       name: '',
@@ -1131,19 +1125,19 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   @test
   async 'it should set src height on image' (): Promise<void> {
     expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
-    assert(TestPics.mainImage)
+    assert(TestPics.mainImage !== null)
     TestPics.mainImage.height = 512
     await Pictures.LoadImage()
-    expect(TestPics.mainImage?.getAttribute('src')).to.equal('/images/scaled/0/512/some/path/1250.png-image.webp')
+    expect(TestPics.mainImage.getAttribute('src')).to.equal('/images/scaled/0/512/some/path/1250.png-image.webp')
   }
 
   @test
   async 'it should set src width on image' (): Promise<void> {
     expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
-    assert(TestPics.mainImage)
+    assert(TestPics.mainImage !== null)
     TestPics.mainImage.width = 1024
     await Pictures.LoadImage()
-    expect(TestPics.mainImage?.getAttribute('src')).to.equal('/images/scaled/1024/0/some/path/1250.png-image.webp')
+    expect(TestPics.mainImage.getAttribute('src')).to.equal('/images/scaled/1024/0/some/path/1250.png-image.webp')
   }
 
   @test
@@ -1169,7 +1163,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should default to first image on missing index' (): Promise<void> {
-    assert(TestPics.current != null, 'Current Image must be set for valid test')
+    assert(TestPics.current !== null, 'Current Image must be set for valid test')
     TestPics.current.index = undefined
     await Pictures.LoadImage()
     expect(this.bottomLeftText?.innerHTML).to.equal('(1/1,500)')
@@ -1289,7 +1283,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   async 'it should request expected next URI' (): Promise<void> {
     TestPics.nextPending = false
     this.getPictureSpy.returns({ path: '/foo.png' })
-    assert(TestPics.mainImage)
+    assert(TestPics.mainImage !== null)
     TestPics.mainImage.width = 1000
     TestPics.mainImage.height = 900
     await Pictures.LoadImage()
@@ -1329,7 +1323,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
     this.fetchStub.resolves(delay)
     await Pictures.LoadImage()
     expect(TestPics.nextPending).to.equal(true)
-    await delay.catch(() => {})
+    await delay.catch(() => null)
     expect(TestPics.nextPending).to.equal(false)
   }
 
@@ -1370,14 +1364,12 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
     Subscribe('Menu:Hide', this.menuHideSpy)
     Subscribe('Tab:Select', this.tabSelectSpy)
     this.pictures = Array.from({ length: 64 })
-      .map((_, i) => {
-        return {
-          path: `/some/path/${i}.png`,
-          name: `${i}.png`,
-          seen: false,
-          index: -1
-        }
-      })
+      .map((_, i) => ({
+        path: `/some/path/${i}.png`,
+        name: `${i}.png`,
+        seen: false,
+        index: -1
+      }))
   }
 
   after (): void {
@@ -1388,7 +1380,7 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
 
   @test
   async 'it should tolerate LoadImage rejecting' (): Promise<void> {
-    const awaiter = new Promise<void>(resolve => { resolve() })
+    const awaiter = Delay(1)
     this.loadImageSpy.rejects(new Error('FOO!'))
     Pictures.LoadData({
       pictures: this.pictures
@@ -1631,14 +1623,12 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
     Subscribe('Menu:Hide', this.menuHideSpy)
     Subscribe('Tab:Select', this.tabSelectSpy)
     this.pictures = Array.from({ length: 64 })
-      .map((_, i) => {
-        return {
-          path: `/some/path/${i}.png`,
-          name: `${i}.png`,
-          seen: i >= 16 && i < 48,
-          index: -1
-        }
-      })
+      .map((_, i) => ({
+        path: `/some/path/${i}.png`,
+        name: `${i}.png`,
+        seen: i >= 16 && i < 48,
+        index: -1
+      }))
     Pictures.Init()
   }
 
@@ -1867,7 +1857,7 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
 @suite
 export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
   isLoadingSpy: Sinon.SinonStub = sinon.stub()
-  isLoading: boolean = false
+  isLoading = false
   loadImageSpy: Sinon.SinonStub = sinon.stub()
   menuHideSpy: Sinon.SinonStub = sinon.stub()
   loadingErrorSpy: Sinon.SinonStub = sinon.stub()
@@ -2024,7 +2014,7 @@ export class AppPicturesUpdateUnreadSelectorSlider extends BaseAppPicturesTests 
 export class AppPicturesInitUnreadSelectorSlider extends BaseAppPicturesTests {
   UpdateUnreadSelectorSliderSpy: Sinon.SinonStub = sinon.stub()
   GetShowUnreadOnly: Sinon.SinonStub = sinon.stub()
-  ShowUnreadOnlyValue: boolean = false
+  ShowUnreadOnlyValue = false
   SliderDiv: HTMLDivElement | null = null
 
   before (): void {
@@ -2087,8 +2077,8 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   StubChangePicture: Sinon.SinonStub = sinon.stub()
   StubWindowOpen: Sinon.SinonStub = sinon.stub()
   StubPostJson: Sinon.SinonStub = sinon.stub()
-  ShowUnreadOnlyValue: boolean = false
-  IsMenuActiveValue: boolean = false
+  ShowUnreadOnlyValue = false
+  IsMenuActiveValue = false
 
   before (): void {
     super.before()
@@ -2101,14 +2091,12 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
     this.StubWindowOpen = sinon.stub(this.dom.window, 'open')
     this.StubPostJson = sinon.stub(Net, 'PostJSON')
     this.StubPostJson.resolves()
-    TestPics.pictures = Array(21).fill(null).map((_, i) => {
-      return {
-        name: `${i}.jpg`,
-        path: `/${i}.jpg`,
-        seen: i >= 5 && i < 15,
-        index: i
-      }
-    })
+    TestPics.pictures = Array(21).fill(null).map((_, i) => ({
+      name: `${i}.jpg`,
+      path: `/${i}.jpg`,
+      seen: i >= 5 && i < 15,
+      index: i
+    }))
     TestPics.current = TestPics.pictures[10] ?? null
   }
 
@@ -2421,9 +2409,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
     }
     Publish('Action:Execute:Bookmark')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.StubPostJson.called).to.equal(false)
     expect(spy.called).to.equal(true)
   }
@@ -2439,9 +2425,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
     }
     Publish('Action:Execute:Bookmark')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 10)
-    })
+    await Delay(10)
     expect(spy.called).to.equal(true)
     expect(spy.firstCall.args[0]).to.equal('/Foo/Bar/Baz.jpg')
   }
@@ -2462,9 +2446,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
     }
     Publish('Action:Gamepad:B')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 5)
-    })
+    await Delay(5)
     expect(this.StubPostJson.called).to.equal(false)
     expect(spy.called).to.equal(true)
   }
@@ -2480,9 +2462,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
     }
     Publish('Action:Gamepad:B')
     // let the callback finish
-    await new Promise(resolve => {
-      setTimeout(resolve, 10)
-    })
+    await Delay(10)
     expect(spy.called).to.equal(true)
     expect(spy.firstCall.args[0]).to.equal('/Foo/Bar/Baz.jpg')
   }
@@ -2514,7 +2494,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
     }
     this.visualViewport = this.myVisualViewport
     super.before()
-    const element = TestPics?.mainImage?.parentElement
+    const element = TestPics.mainImage?.parentElement
     assert(element != null)
     this.MainImageBoundingStub = sinon.stub(element, 'getBoundingClientRect')
     this.MainImageBoundingStub.returns(this.boundingRect)

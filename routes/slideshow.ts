@@ -32,6 +32,8 @@ interface ImageWithPath {
   path: string
 }
 
+type SocketCallback = (value: string | number | null) => void
+
 export class Config {
   public static rooms: { [name: string]: SlideshowRoom } = {}
   public static countdownDuration = 60
@@ -107,13 +109,13 @@ export class Functions {
     const picture = await knex('pictures').select('seen').where({
       seen: false,
       path: image
-    })
+    }) as string[] | undefined | null
     if (picture == null || picture.length <= 0) {
       return
     }
     const folders = []
     let path = image
-    while (path != null && path !== '/') {
+    while (path !== '/') {
       path = dirname(path)
       folders.push(`${path}${path !== '/' ? '/' : ''}`)
     }
@@ -121,7 +123,7 @@ export class Functions {
     await knex('pictures').update({ seen: true }).where({ path: image })
   }
 
-  public static async GetRoomAndIncrementImage (knex: Knex, name: string, increment: number = 0): Promise<SlideshowRoom> {
+  public static async GetRoomAndIncrementImage (knex: Knex, name: string, increment = 0): Promise<SlideshowRoom> {
     let room = Config.rooms[name]
     if (room == null) {
       const pages = await Functions.GetCounts(knex, name)
@@ -161,7 +163,7 @@ export class Functions {
     for (const room of Object.values(Config.rooms)) {
       room.countdown--
       if (room.countdown <= -60 * Config.countdownDuration) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- allow cleanup of the room map
         delete Config.rooms[room.path]
         continue
       }
@@ -180,7 +182,7 @@ export class Functions {
   public static HandleSocket (knex: Knex, io: WebSocketServer, socket: Socket): void {
     let socketRoom : (string | null) = null
 
-    socket.on('get-launchId', (callback) => callback(Config.launchId))
+    socket.on('get-launchId', (callback: SocketCallback) => { callback(Config.launchId) })
     socket.on('join-slideshow', async (roomName: string) => {
       socketRoom = roomName
       await socket.join(roomName)
@@ -197,7 +199,7 @@ export class Functions {
       const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom, 1)
       io.to(room.path).emit('new-image', room.uriSafeImage)
     })
-    socket.on('goto-image', async (callback) => {
+    socket.on('goto-image', async (callback: SocketCallback) => {
       if (socketRoom == null) {
         callback(null)
         return
@@ -225,7 +227,7 @@ export class Functions {
     }
     await Functions.GetRoomAndIncrementImage(knex, folder)
       .then(room => {
-        if (room?.images == null || room?.images.length < 1) {
+        if (room.images.length < 1) {
           res.status(StatusCodes.NOT_FOUND).render('error', {
             title: 'ERROR',
             code: 'E_NOT_FOUND',
@@ -238,7 +240,7 @@ export class Functions {
           folder,
           image: room.uriSafeImage
         })
-      }, err => {
+      }, (err: unknown)  => {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).render('error', {
           title: 'ERROR',
           code: 'INTERNAL_SERVER_ERROR',
@@ -256,12 +258,12 @@ export async function getRouter (_: Application, __: Server, io: WebSocketServer
 
   router.get('/launchId', (_, res) => res.json({ launchId: Config.launchId }))
 
-  const handler = (req: Request, res: Response): void => { Functions.RootRoute(knex, req, res).catch(() => {}) }
+  const handler = (req: Request, res: Response): void => { Functions.RootRoute(knex, req, res).catch(() => null) }
   router.get('/', handler)
   router.get('/*', handler)
 
   io.on('connection', (socket) => { Functions.HandleSocket(knex, io, socket) })
-  Imports.setInterval(() => { Functions.TickCountdown(knex, io).catch(() => {}) }, 1000)
+  Imports.setInterval(() => { Functions.TickCountdown(knex, io).catch(() => null) }, 1000)
 
   return router
 }

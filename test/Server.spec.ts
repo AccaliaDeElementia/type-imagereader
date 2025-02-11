@@ -20,7 +20,7 @@ import { getRouter as getSlideshowRouter } from '../routes/slideshow'
 import { getRouter as getWeatherRouter } from '../routes/weather'
 
 import start, { Functions, Routers, Imports } from '../Server'
-import { assert } from 'console'
+import assert from 'assert'
 
 @suite
 export class ServerCreateAppTests {
@@ -366,8 +366,8 @@ export class ServerRegisterViewsAndMiddleware {
     const sass = sinon.stub().resolves()
     this.SassMiddlewareStub?.returns(sass)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.firstCall.args[0] as (req: Request, res: Response, next: NextFunction) => void
-    assert(fn != null)
+    const fn = this.AppStub.use.firstCall.args[0] as ((req: Request, res: Response, next: NextFunction) => void) | undefined
+    assert(fn !== undefined)
     const req = {} as unknown as Request
     const res = {} as unknown as Response
     const next = {} as unknown as NextFunction
@@ -385,8 +385,8 @@ export class ServerRegisterViewsAndMiddleware {
     const sass = sinon.stub().rejects(new Error('FOO!'))
     this.SassMiddlewareStub?.returns(sass)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.firstCall.args[0] as (req: Request, res: Response, next: NextFunction) => void
-    assert(fn != null)
+    const fn = this.AppStub.use.firstCall.args[0] as ((req: Request, res: Response, next: NextFunction) => void) | undefined
+    assert(fn !== undefined)
     const req = {} as unknown as Request
     const res = {} as unknown as Response
     const next = sinon.stub()
@@ -401,8 +401,8 @@ export class ServerRegisterViewsAndMiddleware {
     const browserify = sinon.stub().resolves()
     this.BrowerifyMiddlewareStub?.returns(browserify)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.secondCall.args[0] as (req: Request, res: Response, next: NextFunction) => void
-    assert(fn != null)
+    const fn = this.AppStub.use.secondCall.args[0] as ((req: Request, res: Response, next: NextFunction) => void) | undefined
+    assert(fn !== undefined)
     const req = {} as unknown as Request
     const res = {} as unknown as Response
     const next = {} as unknown as NextFunction
@@ -420,8 +420,8 @@ export class ServerRegisterViewsAndMiddleware {
     const browserify = sinon.stub().rejects(new Error('FOO!'))
     this.BrowerifyMiddlewareStub?.returns(browserify)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.secondCall.args[0] as (req: Request, res: Response, next: NextFunction) => void
-    assert(fn != null)
+    const fn = this.AppStub.use.secondCall.args[0] as ((req: Request, res: Response, next: NextFunction) => void) | undefined
+    assert(fn !== undefined)
     const req = {} as unknown as Request
     const res = {} as unknown as Response
     const next = sinon.stub()

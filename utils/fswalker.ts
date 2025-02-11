@@ -11,14 +11,14 @@ async function fsWalker (root: string, eachItem: (items: Array<{ path: string, i
   const queue = ['/']
   while (queue.length > 0) {
     const current = queue.shift()
-    assert(current)
+    assert(current !== undefined)
     const items: Dirent[] = await fsWalker.fn.readdir(join(root, current), {
       encoding: 'utf8',
       withFileTypes: true
     })
     await eachItem(items
       .filter(item => item.isDirectory()
-        ? item.name[0] !== '.'
+        ? !item.name.startsWith('.')
         : allowedExtensions.test(extname(item.name).slice(1)))
       .map(item => {
         const path = join(current, item.name)

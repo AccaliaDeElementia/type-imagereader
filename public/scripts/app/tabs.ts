@@ -24,7 +24,7 @@ export class Tabs {
   }
 
   static SelectTab (href?: string): void {
-    if (href != null && href[0] !== '#') {
+    if (href != null && !href.startsWith('#')) {
       href = `#tab${href}`
     }
     const lowerHref = href?.toLowerCase()

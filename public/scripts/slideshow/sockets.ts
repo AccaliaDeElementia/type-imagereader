@@ -1,7 +1,7 @@
 'use sanity'
 
 import { io, type Socket } from 'socket.io-client'
-import { type DefaultEventsMap } from 'socket.io/dist/typed-events'
+import type { DefaultEventsMap } from 'socket.io/dist/typed-events'
 type WebSocket = Socket<DefaultEventsMap, DefaultEventsMap>
 
 const handleKeys = (event: KeyboardEvent, socket: WebSocket): void => {
@@ -61,9 +61,9 @@ export class WebSockets {
   public static LocationReload?: () => void
   static connect (): void {
     WebSockets.launchId = undefined
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- function is static, dont bind it to avoid making it untestable
     WebSockets.LocationAssign = window.location.assign
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- function is static, dont bind it to avoid making it untestable
     WebSockets.LocationReload = window.location.reload
     this.socket = io(new URL(window.location.href).origin)
     let uri = window.location.pathname.replace(/^\/[^/]+/, '')
@@ -93,6 +93,6 @@ export class WebSockets {
   }
 
   protected static disconnect (): void {
-    this.socket?.disconnect()
+    this.socket.disconnect()
   }
 }

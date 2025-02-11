@@ -17,7 +17,7 @@ interface WeatherResults {
 }
 
 export interface OpenWeatherData {
-  main: {
+  main?: {
     temp: number
     pressure: number
     humidity: number
@@ -101,14 +101,15 @@ export class Functions {
       throw new Error('no OpewnWeather Location Defined!')
     }
     const response = await Imports.fetch(`https://api.openweathermap.org/data/2.5/weather?q=${Imports.location}&appid=${Imports.appId}`)
-    return await response.json()
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: make this truely typesafe?
+    return await response.json() as unknown as OpenWeatherData
   }
 
   public static async UpdateWeather (): Promise<WeatherResults> {
     const weather = Functions.weather
     try {
       const data = await Functions.GetWeather()
-      if (data?.main != null) {
+      if (data.main != null) {
         weather.temp = data.main.temp - 273.15
         weather.pressure = data.main.pressure
         weather.humidity = data.main.humidity
@@ -149,10 +150,12 @@ export async function getRouter (_app: Application, _server: Server, _sockets: W
 
   router.get('/', handleErrors(async (_, res) => {
     res.status(StatusCodes.OK).json(Functions.weather)
+    await Promise.resolve()
   }))
 
-  Imports.setInterval(() => { Functions.UpdateWeather().catch(() => {}) }, 10 * 60 * 1000)
-  Functions.UpdateWeather().catch(() => {})
+  Imports.setInterval(() => { Functions.UpdateWeather().catch(() => null) }, 10 * 60 * 1000)
+  Functions.UpdateWeather().catch(() => null)
 
+  await Promise.resolve()
   return router
 }

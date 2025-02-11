@@ -24,13 +24,21 @@ html
         img.icon
 `
 
+interface FetchDataMap {
+  sunrise?: number
+  sunset?: number
+  temp?: number
+  description?: string
+  icon?: string
+}
+
 @suite
 export class SlideshowWeatherTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
   fetchStub: sinon.SinonStub
-  fetchData: any
+  fetchData: FetchDataMap = {}
   clock: sinon.SinonFakeTimers | undefined
   constructor () {
     this.existingWindow = global.window
@@ -65,7 +73,7 @@ export class SlideshowWeatherTests {
     this.fetchData = {}
   }
 
-  async after (): Promise<void> {
+  after (): void {
     global.window = this.existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
@@ -86,7 +94,7 @@ export class SlideshowWeatherTests {
   }
 
   @test
-  async 'LocalWeatherUpdater Has a period of 1000ms' (): Promise<void> {
+  'LocalWeatherUpdater Has a period of 1000ms' (): void {
     expect(LocalWeatherUpdater.period).to.equal(1000)
   }
 
@@ -214,7 +222,7 @@ export class SlideshowWeatherTests {
   }
 
   @test
-  async 'WeatherUpdater Has a period of 1 minute' (): Promise<void> {
+  'WeatherUpdater Has a period of 1 minute' (): void {
     expect(WeatherUpdater.period).to.equal(60 * 1000)
   }
 

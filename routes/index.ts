@@ -35,5 +35,7 @@ export async function getRouter (_app: Application, _serve: Server, _socket: Web
   router.get('/show', rootRoute)
   router.get('/show/*', rootRoute)
 
+  await Promise.resolve()
+  
   return router
 }

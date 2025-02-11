@@ -29,7 +29,7 @@ export class SlideshowTimeTests {
     this.dom = new JSDOM('')
   }
 
-  async before (): Promise<void> {
+  before (): void {
     this.dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999'
     })
@@ -42,7 +42,7 @@ export class SlideshowTimeTests {
     })
   }
 
-  async after (): Promise<void> {
+  after (): void {
     global.window = this.existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
@@ -54,7 +54,7 @@ export class SlideshowTimeTests {
   }
 
   @test
-  async 'updateTime fires every 0.1 seconds' (): Promise<void> {
+  'updateTime fires every 0.1 seconds' (): void {
     expect(TimeUpdater.period).to.equal(100)
   }
 

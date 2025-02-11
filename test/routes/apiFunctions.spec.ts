@@ -519,20 +519,20 @@ export class ApiGetDirectionFolderTests {
       this.KnexFirstCall.andWhere.firstCall.args,
       this.KnexFirstCall.andWhere.secondCall.args
     ]
-    const folderFilter = queries.filter(arg => arg[0] === 'folder')[0]
-    assert(folderFilter)
+    const folderFilter = queries.find(arg => arg[0] === 'folder') as string[] | undefined
+    assert(folderFilter !== undefined)
     expect(folderFilter).to.have.lengthOf(3)
     expect(folderFilter[0]).to.equal('folder')
     expect(folderFilter[1]).to.equal('=')
     expect(folderFilter[2]).to.equal('/foo/')
-    const sortKeyFilter = queries.filter(arg => arg[0] === 'sortKey')[0]
-    assert(sortKeyFilter)
+    const sortKeyFilter = queries.find(arg => arg[0] === 'sortKey') as string[] | undefined
+    assert(sortKeyFilter !== undefined)
     expect(sortKeyFilter).to.have.lengthOf(3)
     expect(sortKeyFilter[0]).to.equal('sortKey')
     expect(sortKeyFilter[1]).to.equal('=')
     expect(sortKeyFilter[2]).to.equal('foo69420')
-    const pathFilter = queries.filter(arg => arg[0] === 'path')[0]
-    assert(pathFilter)
+    const pathFilter = queries.find(arg => arg[0] === 'path') as string[] | undefined
+    assert(pathFilter !== undefined)
     expect(pathFilter).to.have.lengthOf(3)
     expect(pathFilter[0]).to.equal('path')
     expect(pathFilter[1]).to.equal('>')
@@ -549,20 +549,20 @@ export class ApiGetDirectionFolderTests {
       this.KnexFirstCall.andWhere.firstCall.args,
       this.KnexFirstCall.andWhere.secondCall.args
     ]
-    const folderFilter = queries.filter(arg => arg[0] === 'folder')[0]
-    assert(folderFilter)
+    const folderFilter = queries.find(arg => arg[0] === 'folder') as string[] | undefined
+    assert(folderFilter !== undefined)
     expect(folderFilter).to.have.lengthOf(3)
     expect(folderFilter[0]).to.equal('folder')
     expect(folderFilter[1]).to.equal('=')
     expect(folderFilter[2]).to.equal('/foo/')
-    const sortKeyFilter = queries.filter(arg => arg[0] === 'sortKey')[0]
-    assert(sortKeyFilter)
+    const sortKeyFilter = queries.find(arg => arg[0] === 'sortKey') as string[] | undefined
+    assert(sortKeyFilter !== undefined)
     expect(sortKeyFilter).to.have.lengthOf(3)
     expect(sortKeyFilter[0]).to.equal('sortKey')
     expect(sortKeyFilter[1]).to.equal('=')
     expect(sortKeyFilter[2]).to.equal('foo69420')
-    const pathFilter = queries.filter(arg => arg[0] === 'path')[0]
-    assert(pathFilter)
+    const pathFilter = queries.find(arg => arg[0] === 'path') as string[] | undefined
+    assert(pathFilter !== undefined)
     expect(pathFilter).to.have.lengthOf(3)
     expect(pathFilter[0]).to.equal('path')
     expect(pathFilter[1]).to.equal('<')
@@ -582,8 +582,8 @@ export class ApiGetDirectionFolderTests {
       this.KnexFirstCall.andWhere.secondCall.args,
       this.KnexFirstCall.andWhere.thirdCall.args
     ]
-    const filter = queries.filter(arg => arg[0] === 'totalCount')[0]
-    assert(filter)
+    const filter = queries.find(arg => arg[0] === 'totalCount') as string[] | undefined
+    assert(filter !== undefined)
     expect(filter).to.have.lengthOf(3)
     expect(filter[0]).to.equal('totalCount')
     expect(filter[1]).to.equal('>')
@@ -600,14 +600,14 @@ export class ApiGetDirectionFolderTests {
       this.KnexSecondCall.where.firstCall.args,
       this.KnexSecondCall.andWhere.firstCall.args
     ]
-    const folderFilter = queries.filter(arg => arg[0] === 'folder')[0]
-    assert(folderFilter)
+    const folderFilter = queries.find(arg => arg[0] === 'folder') as string[] | undefined
+    assert(folderFilter !== undefined)
     expect(folderFilter).to.have.lengthOf(3)
     expect(folderFilter[0]).to.equal('folder')
     expect(folderFilter[1]).to.equal('=')
     expect(folderFilter[2]).to.equal('/foo/')
-    const sortKeyFilter = queries.filter(arg => arg[0] === 'sortKey')[0]
-    assert(sortKeyFilter)
+    const sortKeyFilter = queries.find(arg => arg[0] === 'sortKey') as string[] | undefined
+    assert(sortKeyFilter !== undefined)
     expect(sortKeyFilter).to.have.lengthOf(3)
     expect(sortKeyFilter[0]).to.equal('sortKey')
     expect(sortKeyFilter[1]).to.equal('>')
@@ -623,14 +623,14 @@ export class ApiGetDirectionFolderTests {
       this.KnexSecondCall.where.firstCall.args,
       this.KnexSecondCall.andWhere.firstCall.args
     ]
-    const folderFilter = queries.filter(arg => arg[0] === 'folder')[0]
-    assert(folderFilter)
+    const folderFilter = queries.find(arg => arg[0] === 'folder') as string[] | undefined
+    assert(folderFilter !== undefined)
     expect(folderFilter).to.have.lengthOf(3)
     expect(folderFilter[0]).to.equal('folder')
     expect(folderFilter[1]).to.equal('=')
     expect(folderFilter[2]).to.equal('/foo/')
-    const sortKeyFilter = queries.filter(arg => arg[0] === 'sortKey')[0]
-    assert(sortKeyFilter)
+    const sortKeyFilter = queries.find(arg => arg[0] === 'sortKey') as string[] | undefined
+    assert(sortKeyFilter !== undefined)
     expect(sortKeyFilter).to.have.lengthOf(3)
     expect(sortKeyFilter[0]).to.equal('sortKey')
     expect(sortKeyFilter[1]).to.equal('<')
@@ -650,8 +650,8 @@ export class ApiGetDirectionFolderTests {
       this.KnexFirstCall.andWhere.secondCall.args,
       this.KnexFirstCall.andWhere.thirdCall.args
     ]
-    const filter = queries.filter(arg => arg[0] === 'totalCount')[0]
-    assert(filter)
+    const filter = queries.find(arg => arg[0] === 'totalCount') as string[] | undefined
+    assert(filter !== undefined)
     expect(filter).to.have.lengthOf(3)
     expect(filter[0]).to.equal('totalCount')
     expect(filter[1]).to.equal('>')
@@ -741,7 +741,7 @@ export class ApiGetDirectionFolderTests {
       firstPicture: '/foo/abcde0/otherImage.png'
     }])
     const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
-    assert(result)
+    assert(result !== null)
     expect(Object.keys(result)).to.have.lengthOf(3)
     expect(result.name).to.equal('abcde0')
     expect(result.path).to.equal('/foo/abcde0')
@@ -756,7 +756,7 @@ export class ApiGetDirectionFolderTests {
       firstPicture: '/foo/abcde<0>/otherImage.png'
     }])
     const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
-    assert(result)
+    assert(result !== null)
     expect(Object.keys(result)).to.have.lengthOf(3)
     expect(result.name).to.equal('abcde<0>')
     expect(result.path).to.equal('/foo/abcde%3C0%3E')
@@ -771,7 +771,7 @@ export class ApiGetDirectionFolderTests {
       firstPicture: '/foo/abcde0/otherImage.png'
     }])
     const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
-    assert(result)
+    assert(result !== null)
     expect(result.cover).to.equal('/foo/abcde0/image.png')
   }
 
@@ -783,7 +783,7 @@ export class ApiGetDirectionFolderTests {
       firstPicture: '/foo/abcde0/otherImage.png'
     }])
     const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
-    assert(result)
+    assert(result !== null)
     expect(result.cover).to.equal('/foo/abcde0/otherImage.png')
   }
 }
@@ -1111,8 +1111,8 @@ export class ApiGetBookmarksTests {
   async 'it should join pictures to bookmarks' (): Promise<void> {
     await Functions.GetBookmarks(this.KnexFake)
     expect(this.KnexInstance.join.callCount).to.be.greaterThanOrEqual(1)
-    const call = this.KnexInstance.join.getCalls().filter(call => call.args[0] === 'pictures')[0]
-    assert(call)
+    const call = this.KnexInstance.join.getCalls().find(call => call.args[0] === 'pictures')
+    assert(call !== undefined)
     expect(call.args).to.deep.equal(['pictures', 'pictures.path', 'bookmarks.path'])
   }
 
@@ -1120,8 +1120,8 @@ export class ApiGetBookmarksTests {
   async 'it should join folders to bookmarks' (): Promise<void> {
     await Functions.GetBookmarks(this.KnexFake)
     expect(this.KnexInstance.join.callCount).to.be.greaterThanOrEqual(1)
-    const call = this.KnexInstance.join.getCalls().filter(call => call.args[0] === 'folders')[0]
-    assert(call)
+    const call = this.KnexInstance.join.getCalls().find(call => call.args[0] === 'folders')
+    assert(call !== undefined)
     expect(call.args).to.deep.equal(['folders', 'folders.path', 'pictures.folder'])
   }
 
@@ -1366,7 +1366,7 @@ export class ApiGetListingTests {
     })
     await Functions.GetListing(this.KnexFake, '/foo/bar/')
     const call = this.GetDirectionFolderStub?.firstCall
-    assert(call)
+    assert(call !== undefined)
     expect(call.args).to.have.lengthOf(5)
     expect(call.args[0]).to.equal(this.KnexFake)
     expect(call.args[1]).to.equal('/foo/bar/')
@@ -1386,7 +1386,7 @@ export class ApiGetListingTests {
     })
     await Functions.GetListing(this.KnexFake, '/foo/bar/')
     const call = this.GetDirectionFolderStub?.secondCall
-    assert(call)
+    assert(call !== undefined)
     expect(call.args).to.have.lengthOf(5)
     expect(call.args[0]).to.equal(this.KnexFake)
     expect(call.args[1]).to.equal('/foo/bar/')
@@ -1405,7 +1405,7 @@ export class ApiGetListingTests {
       sortKey: 'bar>-<'
     })
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
-    assert(result)
+    assert(result !== null)
     expect(result.name).to.equal('bar<=>')
     expect(result.path).to.equal('/fop/bat/')
     expect(result.parent).to.equal('/foo/')
@@ -1418,7 +1418,7 @@ export class ApiGetListingTests {
     this.GetFolderStub?.resolves({})
     this.GetNextFolderStub?.resolves(data)
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
-    assert(result)
+    assert(result !== null)
     expect(result.next).to.equal(data)
   }
 
@@ -1428,7 +1428,7 @@ export class ApiGetListingTests {
     this.GetFolderStub?.resolves({})
     this.GetPreviousFolderStub?.resolves(data)
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
-    assert(result)
+    assert(result !== null)
     expect(result.prev).to.equal(data)
   }
 
@@ -1438,7 +1438,7 @@ export class ApiGetListingTests {
     this.GetFolderStub?.resolves({})
     this.GetChildFoldersStub?.resolves(data)
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
-    assert(result)
+    assert(result !== null)
     expect(result.children).to.equal(data)
   }
 
@@ -1448,7 +1448,7 @@ export class ApiGetListingTests {
     this.GetFolderStub?.resolves({})
     this.GetPicturesStub?.resolves(data)
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
-    assert(result)
+    assert(result !== null)
     expect(result.pictures).to.equal(data)
   }
 
@@ -1458,7 +1458,7 @@ export class ApiGetListingTests {
     this.GetFolderStub?.resolves({})
     this.GetBookmarksStub?.resolves(data)
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
-    assert(result)
+    assert(result !== null)
     expect(result.bookmarks).to.equal(data)
   }
 
@@ -1467,7 +1467,7 @@ export class ApiGetListingTests {
     this.GetFolderStub?.resolves({})
     ApiModCountTests.ModCount.modCount = 9090
     const result = await Functions.GetListing(this.KnexFake, '/foo/bar/')
-    assert(result)
+    assert(result !== null)
     expect(result.modCount).to.equal(9090)
   }
 }
@@ -1494,9 +1494,22 @@ export class ApiGetPictureFoldersTests {
   }
 }
 
+interface TestPicture {
+  seen?: boolean
+}
+
+interface KnexStub {
+  select: Sinon.SinonStub,
+  increment: Sinon.SinonStub
+  update: Sinon.SinonStub
+  whereIn: Sinon.SinonStub
+  orWhere: Sinon.SinonStub
+  where: Sinon.SinonStub
+}
+
 @suite
 export class ApiSetLatestPictureTests {
-  queryResults: any = []
+  queryResults: TestPicture[] = []
 
   GetKnexInstance (): Knex {
     return {
@@ -1505,7 +1518,7 @@ export class ApiSetLatestPictureTests {
       update: sinon.stub().returnsThis(),
       whereIn: sinon.stub().resolves([]),
       orWhere: sinon.stub().resolves([]),
-      where: sinon.stub().callsFake(async (): Promise<any> => await Promise.resolve(this.queryResults))
+      where: sinon.stub().callsFake(async (): Promise<TestPicture[]> => await Promise.resolve(this.queryResults))
     } as unknown as Knex
   }
 
@@ -1528,8 +1541,8 @@ export class ApiSetLatestPictureTests {
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
-    const knexInstance = this.KnexStub.firstCall.returnValue
-    assert(knexInstance)
+    const knexInstance = this.KnexStub.firstCall.returnValue as KnexStub | undefined
+    assert(knexInstance !== undefined)
     expect(knexInstance.select.callCount).to.equal(1)
     expect(knexInstance.select.firstCall.args).to.deep.equal(['seen'])
     expect(knexInstance.where.callCount).to.equal(1)
@@ -1555,8 +1568,8 @@ export class ApiSetLatestPictureTests {
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(2)
     expect(this.KnexStub.lastCall.args).to.deep.equal(['folders'])
-    const knexInstance = this.KnexStub.lastCall.returnValue
-    assert(knexInstance)
+    const knexInstance = this.KnexStub.lastCall.returnValue as KnexStub | undefined
+    assert(knexInstance !== undefined)
     expect(knexInstance.update.callCount).to.equal(1)
     expect(knexInstance.update.firstCall.args).to.deep.equal([{ current: '/foo/bar/image.pdf' }])
     expect(knexInstance.where.callCount).to.equal(1)
@@ -1593,8 +1606,8 @@ export class ApiSetLatestPictureTests {
     this.GetPictureFoldersStub?.returns(folders)
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThan(2)
-    const call = this.KnexStub.getCalls().filter(call => call.args[0] === 'folders')[0]
-    assert(call)
+    const call = this.KnexStub.getCalls().find(call => call.args[0] === 'folders')
+    assert(call !== undefined)
     expect(call.returnValue.increment.callCount).to.equal(1)
     expect(call.returnValue.increment.firstCall.args).to.deep.equal(['seenCount', 1])
     expect(this.GetPictureFoldersStub?.callCount).to.equal(1)
@@ -1611,7 +1624,7 @@ export class ApiSetLatestPictureTests {
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThan(2)
     const call = this.KnexStub.getCalls().filter(call => call.args[0] === 'pictures')[1]
-    assert(call)
+    assert(call !== undefined)
     expect(call.returnValue.update.callCount).to.equal(1)
     expect(call.returnValue.update.firstCall.args).to.deep.equal([{ seen: true }])
     expect(call.returnValue.where.callCount).to.equal(1)
@@ -1622,7 +1635,7 @@ export class ApiSetLatestPictureTests {
 
 @suite
 export class ApiMarkFolderReadTests {
-  queryResults: any = null
+  queryResults: number | null = null
 
   GetKnexInstance (): Knex {
     return {
@@ -1631,7 +1644,7 @@ export class ApiMarkFolderReadTests {
       update: sinon.stub().returnsThis(),
       whereIn: sinon.stub().resolves([]),
       where: sinon.stub().returnsThis(),
-      andWhere: sinon.stub().callsFake(async (): Promise<any> => await Promise.resolve(this.queryResults)),
+      andWhere: sinon.stub().callsFake(async (): Promise<number | null> => await Promise.resolve(this.queryResults)),
       orWhere: sinon.stub().resolves([])
     } as unknown as Knex
   }
@@ -1660,7 +1673,7 @@ export class ApiMarkFolderReadTests {
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
     const knex = this.KnexStub.firstCall.returnValue
-    assert(knex)
+    assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(1)
     expect(knex.update.firstCall.args).to.deep.equal([{ seen: true }])
     expect(knex.where.callCount).to.equal(1)
@@ -1678,7 +1691,7 @@ export class ApiMarkFolderReadTests {
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.secondCall.args).to.deep.equal(['folders'])
     const knex = this.KnexStub.secondCall.returnValue
-    assert(knex)
+    assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(0)
     expect(knex.increment.callCount).to.equal(1)
     expect(knex.increment.firstCall.args).to.deep.equal(['seenCount', 5050])
@@ -1696,12 +1709,12 @@ export class ApiMarkFolderReadTests {
   async 'it should max seen counts of target folder and children folders' (): Promise<void> {
     this.queryResults = 5050
     const rawParam = { knexRaw: Math.random() }
-    this.KnexRawStub?.returns(rawParam)
+    this.KnexRawStub.returns(rawParam)
     await Functions.MarkFolderRead(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.thirdCall.args).to.deep.equal(['folders'])
     const knex = this.KnexStub.thirdCall.returnValue
-    assert(knex)
+    assert(knex !== undefined)
     expect(this.KnexRawStub.callCount).to.equal(1)
     expect(this.KnexRawStub.firstCall.args).to.deep.equal(['"totalCount"'])
     expect(knex.where.callCount).to.equal(1)
@@ -1713,7 +1726,7 @@ export class ApiMarkFolderReadTests {
 
 @suite
 export class ApiMarkFolderUnreadTests {
-  queryResults: any = null
+  queryResults = -1
 
   GetKnexInstance (): Knex {
     return {
@@ -1722,7 +1735,7 @@ export class ApiMarkFolderUnreadTests {
       update: sinon.stub().returnsThis(),
       whereIn: sinon.stub().resolves([]),
       where: sinon.stub().returnsThis(),
-      andWhere: sinon.stub().callsFake(async (): Promise<any> => await Promise.resolve(this.queryResults)),
+      andWhere: sinon.stub().callsFake(async (): Promise<number> => await Promise.resolve(this.queryResults)),
       orWhere: sinon.stub().resolves([])
     } as unknown as Knex
   }
@@ -1748,7 +1761,7 @@ export class ApiMarkFolderUnreadTests {
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
     const knex = this.KnexStub.firstCall.returnValue
-    assert(knex)
+    assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(1)
     expect(knex.update.firstCall.args).to.deep.equal([{ seen: false }])
     expect(knex.where.callCount).to.equal(1)
@@ -1766,7 +1779,7 @@ export class ApiMarkFolderUnreadTests {
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.secondCall.args).to.deep.equal(['folders'])
     const knex = this.KnexStub.secondCall.returnValue
-    assert(knex)
+    assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(0)
     expect(knex.increment.callCount).to.equal(1)
     expect(knex.increment.firstCall.args).to.deep.equal(['seenCount', -5050])
@@ -1787,7 +1800,7 @@ export class ApiMarkFolderUnreadTests {
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.thirdCall.args).to.deep.equal(['folders'])
     const knex = this.KnexStub.thirdCall.returnValue
-    assert(knex)
+    assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(1)
     expect(knex.update.firstCall.args).to.deep.equal([{ seenCount: 0, current: null }])
     expect(knex.where.callCount).to.equal(1)

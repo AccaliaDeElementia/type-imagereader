@@ -154,7 +154,7 @@ export class ImageCacheTests {
     const spy = sinon.stub().returns(image)
     const cache = new ImageCache(spy)
     await cache.fetch(path, width, height)
-    assert(cache.items[0])
+    assert(cache.items[0] !== undefined)
     expect(cache.items[0].path).to.equal(path)
     expect(cache.items[0].width).to.equal(width)
     expect(cache.items[0].height).to.equal(height)
@@ -417,7 +417,7 @@ export class ImagesRescaleImageTests {
     const img = new ImageData()
     img.data = data
     await Functions.RescaleImage(img, 1280, 720)
-    assert(this.SharpStub)
+    assert(this.SharpStub !== undefined)
     expect(this.SharpStub.callCount).to.equal(1)
     expect(this.SharpStub.firstCall.args).to.have.lengthOf(2)
     expect(this.SharpStub.firstCall.args[0]).to.equal(data)
@@ -430,7 +430,7 @@ export class ImagesRescaleImageTests {
     const img = new ImageData()
     img.data = data
     await Functions.RescaleImage(img, 1280, 720)
-    assert(this.SharpStub)
+    assert(this.SharpStub !== undefined)
     expect(this.SharpStub.callCount).to.equal(1)
     expect(this.SharpStub.firstCall.args).to.have.lengthOf(2)
     expect(this.SharpStub.firstCall.args[1]).to.deep.equal({ animated: true })
@@ -442,7 +442,7 @@ export class ImagesRescaleImageTests {
     const img = new ImageData()
     img.data = data
     await Functions.RescaleImage(img, 1280, 720, true)
-    assert(this.SharpStub)
+    assert(this.SharpStub !== undefined)
     expect(this.SharpStub.callCount).to.equal(1)
     expect(this.SharpStub.firstCall.args).to.have.lengthOf(2)
     expect(this.SharpStub.firstCall.args[1]).to.deep.equal({ animated: true })
@@ -454,7 +454,7 @@ export class ImagesRescaleImageTests {
     const img = new ImageData()
     img.data = data
     await Functions.RescaleImage(img, 1280, 720, false)
-    assert(this.SharpStub)
+    assert(this.SharpStub !== undefined)
     expect(this.SharpStub.callCount).to.equal(1)
     expect(this.SharpStub.firstCall.args).to.have.lengthOf(2)
     expect(this.SharpStub.firstCall.args[1]).to.deep.equal({ animated: false })
@@ -685,11 +685,19 @@ interface IRequestParams {
   height: string | undefined
 }
 
-interface IRequestStub {
+interface MockedRequest {
   params: IRequestParams
   body: string | undefined
   originalUrl: string | undefined
 }
+
+interface MockedResponse {
+  status: Sinon.SinonStub
+  json: Sinon.SinonStub
+}
+
+type MockedRouter = (req: MockedRequest, resp: MockedResponse) => Promise<void>
+
 
 @suite
 export class ImagesGetRouterTests {
@@ -701,7 +709,7 @@ export class ImagesGetRouterTests {
     get: sinon.stub().returnsThis()
   }
 
-  RequestStub: IRequestStub = {
+  RequestStub: MockedRequest = {
     params: {
       0: '',
       width: '1000',
@@ -711,7 +719,7 @@ export class ImagesGetRouterTests {
     originalUrl: ''
   }
 
-  ResponseStub = {
+  ResponseStub: MockedResponse = {
     status: sinon.stub().returnsThis(),
     json: sinon.stub().returnsThis()
   }
@@ -760,8 +768,8 @@ export class ImagesGetRouterTests {
   async 'it should create kiosk image cache' (): Promise<void> {
     CacheStorage.kioskCache = null as unknown as ImageCache
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    assert(CacheStorage.kioskCache)
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(CacheStorage.kioskCache).to.not.equal(null)
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Testing equality. cannot bind method call
     expect(CacheStorage.kioskCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
     expect(CacheStorage.kioskCache.items).to.have.lengthOf(0)
   }
@@ -770,8 +778,8 @@ export class ImagesGetRouterTests {
   async 'it should create scaled image cache' (): Promise<void> {
     CacheStorage.scaledCache = null as unknown as ImageCache
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    assert(CacheStorage.scaledCache)
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(CacheStorage.scaledCache).to.not.equal(null)
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Testing equality. cannot bind method call
     expect(CacheStorage.scaledCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
     expect(CacheStorage.scaledCache.items).to.have.lengthOf(0)
   }
@@ -811,8 +819,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/full/*')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     this.RequestStub.params[0] = 'foo/bar.png'
@@ -830,8 +838,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/full/*')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     this.RequestStub.params[0] = ''
@@ -849,8 +857,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/full/*')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -873,8 +881,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/full/*')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const err = new Error('SOME ERROR')
@@ -906,8 +914,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -929,8 +937,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -952,8 +960,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -978,8 +986,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1002,8 +1010,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1032,8 +1040,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1062,8 +1070,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1092,8 +1100,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1122,8 +1130,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1152,8 +1160,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1182,8 +1190,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1212,8 +1220,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1242,8 +1250,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1272,8 +1280,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1302,8 +1310,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1332,8 +1340,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1362,8 +1370,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1392,8 +1400,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1422,8 +1430,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
@@ -1456,8 +1464,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     this.RequestStub.params[0] = 'foo/bar.png'
@@ -1475,8 +1483,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     this.RequestStub.params[0] = ''
@@ -1491,8 +1499,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -1513,8 +1521,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -1533,8 +1541,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -1552,8 +1560,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/preview/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const err = new Error('SOME ERROR')
@@ -1585,8 +1593,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
@@ -1608,8 +1616,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
@@ -1628,8 +1636,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
@@ -1649,8 +1657,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -1670,8 +1678,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
@@ -1689,8 +1697,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/kiosk/*-image.webp')
-      .map(call => call.args[1])[0]
-    assert(fn, 'Router handler should be found')
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const err = new Error('SOME ERROR')

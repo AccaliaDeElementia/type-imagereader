@@ -33,6 +33,10 @@ interface FolderInfo {
   seenCount: number
 }
 
+interface RowCountResult {
+  rowCount: number | undefined
+}
+
 export class Imports {
   public static logPrefix = 'type-imagereader:syncfolders'
   public static debug = _debug
@@ -113,7 +117,7 @@ export class Functions {
   }
 
   public static async SyncNewPictures (logger: Debugger, knex: Knex): Promise<void> {
-    const insertedpics: any = await knex.from(knex.raw('?? (??, ??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey', 'pathHash']))
+    const insertedpics = await knex.from(knex.raw('?? (??, ??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey', 'pathHash']))
       .insert(function (this: Knex) {
         return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey', 'syncitems.pathHash']).from('syncitems')
           .leftJoin('pictures', 'pictures.path', 'syncitems.path')
@@ -122,9 +126,11 @@ export class Functions {
             'pictures.path': null
           })
       })
-    let count: number = insertedpics.rowCount
-    if (Number.isInteger(insertedpics[0])) {
-      count = insertedpics[0]
+    
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Convert to prisma to avoid oddities of KNEX
+    let count = (insertedpics as unknown as RowCountResult).rowCount
+    if (count === undefined) {
+      [ count ] = insertedpics
     }
     logger(`Added ${count} new pictures`)
   }
@@ -132,7 +138,7 @@ export class Functions {
   public static async SyncRemovedPictures (logger: Debugger, knex: Knex): Promise<void> {
     const deletedpics = await knex('pictures')
       .whereNotExists(function () {
-        this.select('*') // eslint-disable-line @typescript-eslint/no-floating-promises
+        this.select('*')
           .from('syncitems')
           .whereRaw('syncitems.path = pictures.path')
       })
@@ -143,7 +149,7 @@ export class Functions {
   public static async SyncRemovedBookmarks (logger: Debugger, knex: Knex): Promise<void> {
     const removedBookmarks = await knex('bookmarks')
       .whereNotExists(function () {
-        this.select('*') // eslint-disable-line @typescript-eslint/no-floating-promises
+        this.select('*')
           .from('pictures')
           .whereRaw('pictures.path = bookmarks.path')
       })
@@ -159,7 +165,7 @@ export class Functions {
   }
 
   public static async SyncNewFolders (logger: Debugger, knex: Knex): Promise<void> {
-    const folders: any = await knex.from(knex.raw('?? (??, ??, ??)', ['folders', 'folder', 'path', 'sortKey']))
+    const folders = await knex.from(knex.raw('?? (??, ??, ??)', ['folders', 'folder', 'path', 'sortKey']))
       .insert(function (this: Knex) {
         return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey']).from('syncitems')
           .leftJoin('folders', 'folders.path', 'syncitems.path')
@@ -168,9 +174,11 @@ export class Functions {
             'folders.path': null
           })
       })
-    let count: number = folders.rowCount
-    if (Number.isInteger(folders[0]) && folders[0] > 0) {
-      count = folders[0]
+    
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Convert to prisma to avoid oddities of KNEX
+    let count = (folders as unknown as RowCountResult).rowCount
+    if (count === undefined) {
+      [ count ] = folders
     }
     logger(`Added ${count} new folders`)
   }
@@ -178,7 +186,7 @@ export class Functions {
   public static async SyncRemovedFolders (logger: Debugger, knex: Knex): Promise<void> {
     const deletedfolders = await knex('folders')
       .whereNotExists(function () {
-        this.select('*') // eslint-disable-line @typescript-eslint/no-floating-promises
+        this.select('*')
           .from('syncitems')
           .whereRaw('syncitems.path = folders.path')
       })
@@ -189,7 +197,7 @@ export class Functions {
   public static async SyncMissingCoverImages (logger: Debugger, knex: Knex): Promise<void> {
     const removedCoverImages = await knex('folders')
       .whereNotExists(function () {
-        this.select('*') // eslint-disable-line @typescript-eslint/no-floating-promises
+        this.select('*')
           .from('pictures')
           .whereRaw('pictures.path = folders.current')
       })
@@ -234,7 +242,7 @@ export class Functions {
   }
 
   public static async GetAllFolderInfos (knex: Knex): Promise<{ [name: string]: FolderInfo }> {
-    const rawFolders = await knex('folders').select('path')
+    const rawFolders = await knex('folders').select('path') as SyncItem[]
     const folders: { [name: string]: FolderInfo } = {}
     for (const folder of rawFolders) {
       folders[folder.path] = {
@@ -261,8 +269,8 @@ export class Functions {
       while (parts.length > 1) { // don't loop all the way to zero to avoid double counting the root
         parts.pop()
         const parentPath = parts.join('/') + '/'
-        let parent = allFolders[parentPath]
-        if (parent === null || parent === undefined) {
+        let {[parentPath]: parent} = allFolders
+        if (parent === undefined) {
           parent = {
             path: parentPath,
             totalCount: 0,

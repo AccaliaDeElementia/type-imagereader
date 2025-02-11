@@ -10,7 +10,7 @@ import _favicon from 'serve-favicon'
 import StatusCodes from 'http-status-codes'
 import 'express-async-errors'
 
-import { type Server as HttpServer } from 'http'
+import type { Server as HttpServer } from 'http'
 import { Server as WebSocketServer } from 'socket.io'
 
 import { getRouter as getApiRouter } from './routes/api'
@@ -47,7 +47,7 @@ export class Routers {
 export class Functions {
   public static CreateApp (port: number): [Express, HttpServer, WebSocketServer] {
     const app = Imports.express()
-    const server = app.listen(port, () => {})
+    const server = app.listen(port, () => null)
     const websockets = new Imports.WebSocketServer(server)
     return [app, server, websockets]
   }
@@ -61,19 +61,17 @@ export class Functions {
 
   public static ConfigureLoggingAndErrors (app: Express): void {
     switch (process.env.NODE_ENV) {
-      case 'development':
-        app.use(Imports.morgan('dev'))
-        break
       case 'production':
         app.use(Imports.helmet())
         break
+      case 'development':
+        app.use(Imports.morgan('dev'))
+        break
+      default:
+        break
     }
 
-    app.use((err: Error, _: Request, res: Response, __: NextFunction) => {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        error: err.message
-      })
-    })
+    app.use((err: Error, _: Request, res: Response, __: NextFunction) => res.status(StatusCodes.BAD_REQUEST).json({ error: err.message }))
   }
 
   public static async RegisterRouters (app: Express, server: HttpServer, websockets: WebSocketServer): Promise<void> {

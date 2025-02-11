@@ -29,7 +29,8 @@ export class Actions {
     result.classList.add('actions')
     for (const { name, image } of buttons) {
       const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
-      const button = template?.content.cloneNode(true).firstChild as HTMLElement
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Clone but typesafe?
+      const button = template?.content.cloneNode(true).firstChild as HTMLElement | null | undefined
       if (button == null) continue
       this.setInnerTextMaybe(button.querySelector('i'), image)
       this.setInnerTextMaybe(button.querySelector('h5'), name)
@@ -198,7 +199,9 @@ export class Actions {
 
   public static ReadGamepad (): void {
     if (document.hidden) return
-    for (const pad of navigator.getGamepads() ?? []) {
+    const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
+    if (gamepads == null || gamepads.length < 1) return
+    for (const pad of gamepads) {
       if (pad == null) continue
       const Xaxis = pad.axes[0] ?? 0
       const Yaxis = pad.axes[1] ?? 0

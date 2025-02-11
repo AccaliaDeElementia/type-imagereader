@@ -22,13 +22,21 @@ html
 
 const maxOpacity = 0.85
 
+interface FetchDataType {
+  sunrise?: number
+  sunset?: number
+}
+
 @suite
 export class SlideshowOverlayTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
   fetchStub: sinon.SinonStub
-  fetchData: any
+  fetchData: FetchDataType = {
+    sunrise: undefined,
+    sunset: undefined
+  }
   clock: sinon.SinonFakeTimers | undefined
   constructor () {
     this.existingWindow = global.window
@@ -62,7 +70,7 @@ export class SlideshowOverlayTests {
     this.fetchData = {}
   }
 
-  async after (): Promise<void> {
+  after (): void {
     global.window = this.existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,

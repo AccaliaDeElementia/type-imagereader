@@ -6,12 +6,12 @@ import { Loading } from './loading'
 import { Navigation } from './navigation'
 
 export enum NavigateTo {
-  First, // eslint-disable-line no-unused-vars
-  PreviousUnread, // eslint-disable-line no-unused-vars
-  Previous, // eslint-disable-line no-unused-vars
-  Next, // eslint-disable-line no-unused-vars
-  NextUnread, // eslint-disable-line no-unused-vars
-  Last // eslint-disable-line no-unused-vars
+  First,
+  PreviousUnread,
+  Previous,
+  Next,
+  NextUnread,
+  Last
 }
 
 export interface Picture {
@@ -35,14 +35,14 @@ export type PageSelector = () => number
 export class Pictures {
   protected static pictures: Picture[]
   protected static current: Picture | null
-  public static modCount: number = -1
+  public static modCount = -1
   protected static mainImage: HTMLImageElement | null
   protected static imageCard: Element | null
-  protected static pageSize: number = 32
+  protected static pageSize = 32
   protected static nextLoader: Promise<void> = Promise.resolve()
-  protected static nextPending: boolean = true
+  protected static nextPending = true
 
-  protected static initialScale: number = -1
+  protected static initialScale = -1
 
   public static Init (): void {
     this.pictures = []
@@ -83,15 +83,13 @@ export class Pictures {
   }
 
   public static InitActions (): void {
-    const doIfNoMenu = (action: string) => {
-      return () => {
-        if (!Navigation.IsMenuActive) {
-          Publish(`Action:Execute:${action}`)
-        } else if (this.pictures.length > 0) {
-          Publish('Action:Execute:HideMenu')
-        }
+    const doIfNoMenu = (action: string) => (() => {
+      if (!Navigation.IsMenuActive) {
+        Publish(`Action:Execute:${action}`)
+      } else if (this.pictures.length > 0) {
+        Publish('Action:Execute:HideMenu')
       }
-    }
+    })
     Subscribe('Action:Keypress:ArrowUp', doIfNoMenu('ShowMenu'))
     Subscribe('Action:Keypress:ArrowRight', doIfNoMenu('Next'))
     Subscribe('Action:Keypress:ArrowLeft', doIfNoMenu('Previous'))
@@ -201,6 +199,7 @@ export class Pictures {
   }
 
   public static MakePictureCard (picture: Picture): HTMLElement {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: clone but typesafe?
     const card = this.imageCard?.cloneNode(true) as HTMLElement
     picture.element = card
     card.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
@@ -227,8 +226,9 @@ export class Pictures {
   }
 
   public static MakePaginatorItem (label: string, selector: PageSelector): HTMLElement {
-    const pageItem = (document.querySelector('#PaginatorItem') as unknown as HTMLTemplateElement).content
-    const item = (pageItem.cloneNode(true) as HTMLElement).firstElementChild as HTMLElement
+    const pageItem = document.querySelector<HTMLTemplateElement>('#PaginatorItem')?.content
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: clone but typesafe?
+    const item = (pageItem?.cloneNode(true) as HTMLElement | undefined)?.firstElementChild as HTMLElement
     item.querySelector('span')?.replaceChildren(document.createTextNode(label))
     item.addEventListener('click', (e: Event) => {
       this.SelectPage(selector())
@@ -239,9 +239,10 @@ export class Pictures {
 
   public static MakePaginator (pageCount: number): HTMLElement | null {
     if (pageCount < 2) return null
-    const paginator = ((document.querySelector('#Paginator') as unknown as HTMLTemplateElement)
-      .content.cloneNode(true) as HTMLElement).firstElementChild as HTMLElement
-    const domItems = paginator?.querySelector('.pagination')
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: clone but typesafe?
+    const paginator = (document.querySelector<HTMLTemplateElement>('#Paginator')
+      ?.content.cloneNode(true) as HTMLElement | undefined)?.firstElementChild as HTMLElement
+    const domItems = paginator.querySelector('.pagination')
     domItems?.appendChild(this.MakePaginatorItem('«', () => Math.max(this.CurrentPage - 1, 1)))
     for (let i = 1; i <= pageCount; i++) {
       domItems?.appendChild(this.MakePaginatorItem(`${i}`, () => i))
@@ -252,14 +253,14 @@ export class Pictures {
 
   public static MakeTab (): void {
     const pageCount = Math.ceil(this.pictures.length / this.pageSize)
-    const tab = document.querySelector('#tabImages') as unknown as HTMLElement
+    const tab = document.querySelector<HTMLElement>('#tabImages')
     const pages: HTMLElement[] = Array.from({ length: pageCount })
       .map((_, i) =>
         this.MakePicturesPage(i + 1, this.pictures.slice(i * this.pageSize, (i + 1) * this.pageSize))
       )
     const pagninator = this.MakePaginator(pageCount)
     if (pagninator != null) {
-      tab.appendChild(pagninator)
+      tab?.appendChild(pagninator)
     }
     pages.forEach(page => tab?.appendChild(page))
   }
@@ -272,11 +273,12 @@ export class Pictures {
     try {
       this.current.seen = true
       this.current.element?.classList.add('seen')
-      this.modCount = await Net.PostJSON<number>('/api/navigate/latest', { path: this.current.path, modCount: this.modCount })
-      if (this.modCount === undefined || this.modCount < 0) {
+      const newModCount = await Net.PostJSON<number | undefined>('/api/navigate/latest', { path: this.current.path, modCount: this.modCount })
+      if (newModCount === undefined || newModCount < 0) {
         Publish('Navigate:Reload')
         return
       }
+      this.modCount = newModCount
       const makeURI = (img: Picture): string => '/images/scaled/' + this.mainImage?.width + '/' + this.mainImage?.height + img.path + '-image.webp'
       await this.nextLoader
       // this.mainImage?.setAttribute('src', '/images/full' + this.current.path)
@@ -313,7 +315,8 @@ export class Pictures {
   public static LoadData (data: DataWithPictures): void {
     this.ResetMarkup()
 
-    if (data.pictures == null || data.pictures?.length < 1) {
+    const fistPic = data.pictures?.slice(0,1)[0]
+    if (data.pictures == null || fistPic === undefined) {
       this.mainImage?.classList.add('hidden')
       Publish('Menu:Show')
       document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.add('hidden')
@@ -328,11 +331,11 @@ export class Pictures {
       pic.index = i
     })
 
-    const selected = this.pictures.filter(picture => picture.path === data.cover)
-    if (selected.length > 0) {
-      this.current = selected[0] as unknown as Picture
+    const selected = this.pictures.find(picture => picture.path === data.cover)
+    if (selected !== undefined) {
+      this.current = selected
     } else {
-      this.current = this.pictures[0] as unknown as Picture
+      this.current = fistPic
     }
     this.MakeTab()
     Publish('Tab:Select', 'Images')
@@ -343,12 +346,12 @@ export class Pictures {
       Publish('Menu:Hide')
     }
 
-    this.LoadImage().catch(() => {})
+    this.LoadImage().catch(() => null)
   }
 
   public static GetPicture (navi: NavigateTo): Picture | undefined {
     let index = -1
-    let idx: number | undefined
+    let idx: number | undefined = undefined
     const current = this.current?.index
     if (current === undefined) {
       return undefined
@@ -387,7 +390,7 @@ export class Pictures {
     }
     if (pic != null) {
       this.current = pic
-      this.LoadImage().catch(() => {})
+      this.LoadImage().catch(() => null)
       Publish('Menu:Hide')
     } else {
       Publish('Loading:Error', 'Change Picture called with No Picture to change to')

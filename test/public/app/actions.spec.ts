@@ -116,12 +116,10 @@ export class AppActionsCreateButtons extends BaseActionsTests {
   @test
   'it should create buttons for each element' (): void {
     const target = Math.ceil(Math.random() * 40) + 10
-    const buttons = Array(target).fill(undefined).map((_, i) => {
-      return {
-        name: `button${i}`,
-        image: `image${i}`
-      }
-    })
+    const buttons = Array(target).fill(undefined).map((_, i) => ({
+      name: `button${i}`,
+      image: `image${i}`
+    }))
     const result = Actions.createButtons(buttons)
     expect(result.children).to.have.length(target)
   }
@@ -300,7 +298,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  async 'It should accept a valid gamepad' (): Promise<void> {
+  'It should accept a valid gamepad' (): void {
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.called).to.equal(false)
   }
@@ -693,7 +691,7 @@ export class AppActionsInitTests extends BaseActionsTests {
     ]
 
     const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-    assert(handler, 'Navigate:Data handler must be defined')
+    assert(handler !== undefined, 'Navigate:Data handler must be defined')
 
     const spy = sinon.stub()
     PubSub.subscribers['TAB:SELECT'] = [spy]
@@ -718,7 +716,7 @@ export class AppActionsInitTests extends BaseActionsTests {
     ]
 
     const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-    assert(handler, 'Navigate:Data handler must be defined')
+    assert(handler !== undefined, 'Navigate:Data handler must be defined')
 
     const spy = sinon.stub()
     PubSub.subscribers['TAB:SELECT'] = [spy]
@@ -778,8 +776,8 @@ export class AppActionsInitTests extends BaseActionsTests {
     const spy = sinon.spy(this.dom.window, 'addEventListener')
     try {
       Actions.Init()
-      const fn = spy.firstCall.args[1] as () => void
-      assert(fn)
+      const fn = spy.firstCall.args[1] as (() => void) | undefined
+      assert(fn !== undefined)
       fn()
       expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
     } finally {
@@ -792,8 +790,8 @@ export class AppActionsInitTests extends BaseActionsTests {
     const spy = sinon.spy(this.dom.window, 'addEventListener')
     try {
       Actions.Init()
-      const fn = spy.firstCall.args[1] as () => void
-      assert(fn)
+      const fn = spy.firstCall.args[1] as (() => void) | undefined
+      assert(fn !== undefined)
       const readspy = sinon.stub(Actions, 'ReadGamepad')
       try {
         fn()

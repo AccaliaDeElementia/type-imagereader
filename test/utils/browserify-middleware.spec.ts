@@ -99,7 +99,7 @@ export class BrowserifyMiddlewareGetSystemPathTests {
 
   @test
   async 'it resolves to .ts if no .js matches' (): Promise<void> {
-    this.AccessStub?.callsFake(async (path: string) => { /\.js$/.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve() })
+    this.AccessStub?.callsFake(async (path: string) => { /\.js$/i.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve() })
     const result = await Functions.GetSystemPath('/foo', 'bar')
     expect(result).to.equal('/foo/bar.ts')
   }
@@ -109,6 +109,14 @@ export class BrowserifyMiddlewareGetSystemPathTests {
     this.AccessStub?.callsFake(async (path: string) => { /\.[jt]s$/.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve() })
     const result = await Functions.GetSystemPath('/foo', 'bar')
     expect(result).to.equal('/foo/bar')
+  }
+}
+
+class ErrorWithCode extends Error {
+  code: string
+  constructor(message: string, code: string) {
+    super(message)
+    this.code = code
   }
 }
 
@@ -127,15 +135,11 @@ export class BrowserifyMiddlewareCompileBundleTests {
   before (): void {
     this.AccessStub = sinon.stub(Imports, 'access')
     this.AccessStub.resolves()
-    this.Browser.bundle.callsFake(fn => fn(null, Buffer.from('browserified', 'utf-8')))
+    this.Browser.bundle.callsFake(fn => { fn(null, Buffer.from('browserified', 'utf-8')) })
     this.BrowserifyStub = sinon.stub(Imports, 'browserify')
     this.BrowserifyStub.returns(this.Browser)
     this.MinifyStub = sinon.stub(Imports, 'minify')
-    this.MinifyStub.callsFake(src => {
-      return {
-        code: src
-      }
-    })
+    this.MinifyStub.callsFake(src => ({ code: src }))
   }
 
   after (): void {
@@ -192,42 +196,36 @@ export class BrowserifyMiddlewareCompileBundleTests {
     this.AccessStub?.rejects()
     await Functions.CompileBundle('/foo').then(
       () => expect.fail('Function did not reject as expected!'),
-      () => {}
+      () => null
     )
   }
 
   @test
   async 'it should reject on generic bundle error' (): Promise<void> {
-    this.Browser.bundle.callsFake(fn => fn('ERROR!', null))
+    this.Browser.bundle.callsFake(fn => { fn('ERROR!', null) })
     await Functions.CompileBundle('/foo').then(
       () => expect.fail('Function did not reject as expected!'),
-      () => {}
+      () => null
     )
   }
 
   @test
   async 'it should resolve to null on MODULE_NOT_FOUND' (): Promise<void> {
-    this.Browser.bundle.callsFake(fn => fn({
-      code: 'MODULE_NOT_FOUND'
-    }, null))
+    this.Browser.bundle.callsFake(fn => { fn(new ErrorWithCode('OOPS', 'MODULE_NOT_FOUND'), null) })
     const result = await Functions.CompileBundle('/foo')
     expect(result).to.equal(null)
   }
 
   @test
   async 'it should resolve to null on ENOENT' (): Promise<void> {
-    this.Browser.bundle.callsFake(fn => fn({
-      code: 'ENOENT'
-    }, null))
+    this.Browser.bundle.callsFake(fn => { fn(new ErrorWithCode('OOPS', 'ENOENT'), null) })
     const result = await Functions.CompileBundle('/foo')
     expect(result).to.equal(null)
   }
 
   @test
   async 'it should resolve to null when minify fails' (): Promise<void> {
-    this.MinifyStub?.callsFake(() => {
-      return {}
-    })
+    this.MinifyStub?.callsFake(() => ({}))
     const result = await Functions.CompileBundle('/foo')
     expect(result).to.equal(null)
   }
@@ -466,10 +464,7 @@ export class BrowserifyMiddlewareSendScriptTests {
 
   @test
   async 'it should set NOT_FOUND response when script rejects as MODULE_NOT_FOUND' (): Promise<void> {
-    // eslint-disable-next-line prefer-promise-reject-errors
-    Functions.browserified['/foo'] = Promise.reject({
-      code: 'MODULE_NOT_FOUND'
-    })
+    Functions.browserified['/foo'] = Promise.reject(new ErrorWithCode('OOPS', 'MODULE_NOT_FOUND'))
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.status.calledWith(StatusCodes.NOT_FOUND)).to.equal(true)
     expect(this.StubResponse.render.calledWith('error', {
@@ -479,10 +474,7 @@ export class BrowserifyMiddlewareSendScriptTests {
 
   @test
   async 'it should set NOT_FOUND response when script rejects as ENOENT' (): Promise<void> {
-    // eslint-disable-next-line prefer-promise-reject-errors
-    Functions.browserified['/foo'] = Promise.reject({
-      code: 'ENOENT'
-    })
+    Functions.browserified['/foo'] = Promise.reject(new ErrorWithCode('OOPS', 'ENOENT'))
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.status.calledWith(StatusCodes.NOT_FOUND)).to.equal(true)
     expect(this.StubResponse.render.calledWith('error', {
@@ -492,7 +484,7 @@ export class BrowserifyMiddlewareSendScriptTests {
 
   @test
   async 'it should set INTERNAL_SERVER_ERROR response when script rejects non Error' (): Promise<void> {
-    // eslint-disable-next-line prefer-promise-reject-errors
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- Testing error handling with non errors being rejected
     Functions.browserified['/foo'] = Promise.reject('SOMETHING BAD')
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.status.calledWith(StatusCodes.INTERNAL_SERVER_ERROR)).to.equal(true)
@@ -548,19 +540,14 @@ export class BrowserifyMiddlewareWatchFolderTests {
 
   @test
   async 'it should log error on MODULE_NOT_FOUND' (): Promise<void> {
-    this.WatchStub?.throws({
-      code: 'MODULE_NOT_FOUND'
-    })
+    this.WatchStub?.throws(new ErrorWithCode('OOPS', 'MODULE_NOT_FOUND'))
     await Functions.WatchFolder('/foo', '/bar', false)
     expect(this.LoggerStub?.calledWith('/bar does not exist to watch')).to.equal(true)
   }
 
   @test
   async 'it should log error on MODULE_NOT_FOUND in iterate' (): Promise<void> {
-    // eslint-disable-next-line prefer-promise-reject-errors
-    const err = Promise.reject({
-      code: 'MODULE_NOT_FOUND'
-    })
+    const err = Promise.reject(new ErrorWithCode('OOPS', 'MODULE_NOT_FOUND'))
     this.WatchStub?.returns([err])
     await Functions.WatchFolder('/foo', '/bar', false)
     expect(this.LoggerStub?.calledWith('/bar does not exist to watch')).to.equal(true)
@@ -568,19 +555,14 @@ export class BrowserifyMiddlewareWatchFolderTests {
 
   @test
   async 'it should log error on ENOENT' (): Promise<void> {
-    this.WatchStub?.throws({
-      code: 'ENOENT'
-    })
+    this.WatchStub?.throws(new ErrorWithCode('OOPS', 'ENOENT'))
     await Functions.WatchFolder('/foo', '/bar', false)
     expect(this.LoggerStub?.calledWith('/bar does not exist to watch')).to.equal(true)
   }
 
   @test
   async 'it should log error on ENOENT in iterate' (): Promise<void> {
-    // eslint-disable-next-line prefer-promise-reject-errors
-    const err = Promise.reject({
-      code: 'ENOENT'
-    })
+    const err = Promise.reject(new ErrorWithCode('OOPS', 'ENOENT'))
     this.WatchStub?.returns([err])
     await Functions.WatchFolder('/foo', '/bar', false)
     expect(this.LoggerStub?.calledWith('/bar does not exist to watch')).to.equal(true)
@@ -772,18 +754,14 @@ export class BrowserifyMiddlewareWatchAllFoldersTests {
 
   @test
   async 'it should complain about folder not existing when erroring with MODULE_NOT_FOUND' (): Promise<void> {
-    this.ReaddirStub?.rejects({
-      code: 'MODULE_NOT_FOUND'
-    })
+    this.ReaddirStub?.rejects(new ErrorWithCode('OOPS', 'MODULE_NOT_FOUND'))
     await Functions.WatchAllFolders('/foo', ['/bar'])
     expect(this.LoggerStub?.calledWith('/bar does not exist to precompile scripts')).to.equal(true)
   }
 
   @test
   async 'it should complain about folder not existing when erroring with ENOENT' (): Promise<void> {
-    this.ReaddirStub?.rejects({
-      code: 'ENOENT'
-    })
+    this.ReaddirStub?.rejects(new ErrorWithCode('OOPS', 'ENOENT'))
     await Functions.WatchAllFolders('/foo', ['/bar'])
     expect(this.LoggerStub?.calledWith('/bar does not exist to precompile scripts')).to.equal(true)
   }
@@ -890,7 +868,7 @@ export class BrowserifyMiddlewareTests {
 
   @test
   async 'it should tolerate WatchAllFolders rejecting' (): Promise<void> {
-    const awaiter = new Promise<boolean>(resolve => { resolve(true) })
+    const awaiter = Promise.resolve(true)
     this.WatchAllFoldersStub?.callsFake(async () => await awaiter.then(async () => await Promise.reject(new Error('FOO!'))))
     browserifyMiddleware({
       basePath: '/foo',

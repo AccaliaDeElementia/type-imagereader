@@ -1017,6 +1017,9 @@ export class SlideshowTickCountdownTests {
   }
 }
 
+type SocketIoVoidFunc = () => Promise<void>
+type SocketIoFunc<T> = (arg: T) => Promise<void>
+
 @suite
 export class SlideshowHandleSocketTests {
   KnexFake = { knex: Math.random() } as unknown as Knex
@@ -1065,8 +1068,10 @@ export class SlideshowHandleSocketTests {
   }
 
   async joinSlideshow (roomname: string): Promise<void> {
-    const fn = this.SocketStub.on.getCalls().filter(call => call.args[0] === 'join-slideshow').map(call => call.args[1])[0]
-    assert(fn)
+    const fn = this.SocketStub.on.getCalls()
+      .filter(call => call.args[0] === 'join-slideshow')
+      .map(call => call.args[1] as SocketIoFunc<string>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn(roomname)
     this.SocketStub.join.resetHistory()
@@ -1091,8 +1096,8 @@ export class SlideshowHandleSocketTests {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'get-launchId')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<Sinon.SinonStub>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const expected = Math.random() * 1000000
     Config.launchId = expected
@@ -1114,8 +1119,8 @@ export class SlideshowHandleSocketTests {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'join-slideshow')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<string>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const expected = `/testRoom/${Math.random()}`
     await fn(expected)
@@ -1128,8 +1133,8 @@ export class SlideshowHandleSocketTests {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'join-slideshow')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<string>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const expected = `/testRoom/${Math.random()}`
     await fn(expected)
@@ -1144,8 +1149,8 @@ export class SlideshowHandleSocketTests {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'join-slideshow')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<string>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const expected = `/testRoom/${Math.random()}`
     await fn(expected)
@@ -1166,8 +1171,8 @@ export class SlideshowHandleSocketTests {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'prev-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoVoidFunc)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
     expect(this.GetRoomStub?.callCount).to.equal(0)
@@ -1182,8 +1187,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'prev-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoVoidFunc)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
     expect(this.GetRoomStub?.callCount).to.equal(1)
@@ -1200,8 +1205,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'prev-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoVoidFunc)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
     expect(this.IoStub.to.callCount).to.equal(1)
@@ -1223,8 +1228,8 @@ export class SlideshowHandleSocketTests {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'next-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoVoidFunc)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
     expect(this.GetRoomStub?.callCount).to.equal(0)
@@ -1239,8 +1244,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'next-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoVoidFunc)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
     expect(this.GetRoomStub?.callCount).to.equal(1)
@@ -1257,8 +1262,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'next-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoVoidFunc)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
     expect(this.IoStub.to.callCount).to.equal(1)
@@ -1280,8 +1285,8 @@ export class SlideshowHandleSocketTests {
     Functions.HandleSocket(this.KnexFake, this.IoFake, this.SocketFake)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'goto-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<Sinon.SinonStub>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
     await fn(callback)
@@ -1299,8 +1304,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'goto-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<Sinon.SinonStub>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
     await fn(callback)
@@ -1317,8 +1322,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'goto-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<Sinon.SinonStub>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
     const expected = `/some/test/image/${Math.random()}.png`
@@ -1338,8 +1343,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'goto-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<Sinon.SinonStub>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
     const expected = `/some/test/path/${Math.random()}/`
@@ -1356,8 +1361,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'goto-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<Sinon.SinonStub>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
     const room = { images: [], index: 0 }
@@ -1374,8 +1379,8 @@ export class SlideshowHandleSocketTests {
     await this.joinSlideshow(roomname)
     const fn = this.SocketStub.on.getCalls()
       .filter(call => call.args[0] === 'goto-image')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as SocketIoFunc<Sinon.SinonStub>)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
     const room = { images: [], index: 0 }
@@ -1384,6 +1389,18 @@ export class SlideshowHandleSocketTests {
     expect(this.SetLatestStub?.callCount).to.equal(0)
   }
 }
+
+interface FakeRequest {
+  params: string[]
+}
+
+interface FakeResponse {
+  status: Sinon.SinonStub,
+  render: Sinon.SinonStub,
+  json: Sinon.SinonStub
+}
+
+type MockedRouter = (req: FakeRequest, res: FakeResponse) => Promise<void>
 
 @suite
 export class SlideshowGetRouterTests {
@@ -1405,11 +1422,11 @@ export class SlideshowGetRouterTests {
     get: sinon.stub()
   }
 
-  RequestStub = {
+  RequestStub: FakeRequest = {
     params: [] as string[]
   }
 
-  ResponseStub = {
+  ResponseStub: FakeResponse = {
     status: sinon.stub().returnsThis(),
     render: sinon.stub().returnsThis(),
     json: sinon.stub().returnsThis()
@@ -1470,9 +1487,9 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/launchId')
-      .map(call => call.args[1])[0]
+      .map(call => call.args[1] as MockedRouter)[0]
     Config.launchId = expected
-    assert(handler)
+    assert(handler !== undefined)
     await handler(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.render.callCount).to.equal(0)
@@ -1498,7 +1515,6 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.AppRouterStub.get.secondCall.args[0]).to.equal('/')
     const fn = this.AppRouterStub.get.secondCall.args[1] as (req: Request, res: Response) => void
-    assert(fn != null)
     const spy = sinon.stub(Functions, 'RootRoute').rejects('FOO')
     try {
       fn(null as unknown as Request, null as unknown as Response)
@@ -1512,7 +1528,6 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.AppRouterStub.get.thirdCall.args[0]).to.equal('/*')
     const fn = this.AppRouterStub.get.thirdCall.args[1] as (req: Request, res: Response) => void
-    assert(fn != null)
     const spy = sinon.stub(Functions, 'RootRoute').rejects('FOO')
     try {
       fn(null as unknown as Request, null as unknown as Response)
@@ -1526,12 +1541,12 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const fn = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
+      .map(call => call.args[1] as MockedRouter)[0]
     const fn2 = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/*')
-      .map(call => call.args[1])[0]
-    assert(fn)
-    assert(fn2)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
+    assert(fn2 !== undefined)
     expect(fn).to.equal(fn2)
   }
 
@@ -1540,8 +1555,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/../bar/']
     await handler(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1554,8 +1569,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/../bar/']
     await handler(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.render.callCount).to.equal(1)
@@ -1573,8 +1588,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = []
     await handler(this.RequestStub, this.ResponseStub)
     expect(this.GetRoomStub?.callCount).to.equal(1)
@@ -1588,8 +1603,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     await handler(this.RequestStub, this.ResponseStub)
     expect(this.GetRoomStub?.callCount).to.equal(1)
@@ -1603,10 +1618,10 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
-    this.GetRoomStub?.resolves(undefined)
+    this.GetRoomStub?.resolves({ images: [] })
     await handler(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.have.lengthOf(1)
@@ -1618,10 +1633,10 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
-    this.GetRoomStub?.resolves(undefined)
+    this.GetRoomStub?.resolves({ images: [] })
     await handler(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(2)
@@ -1638,8 +1653,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.resolves({ images: [] })
     await handler(this.RequestStub, this.ResponseStub)
@@ -1653,8 +1668,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.resolves({ images: [] })
     await handler(this.RequestStub, this.ResponseStub)
@@ -1673,8 +1688,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.rejects(new Error('FOO'))
     await handler(this.RequestStub, this.ResponseStub)
@@ -1688,8 +1703,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     const msg = new Error('FOO!')
     this.GetRoomStub?.rejects(msg)
@@ -1709,8 +1724,8 @@ export class SlideshowGetRouterTests {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     const handler = this.AppRouterStub.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(handler)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.resolves({
       images: [1],

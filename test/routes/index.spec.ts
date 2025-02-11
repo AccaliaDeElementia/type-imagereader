@@ -13,6 +13,18 @@ import { StatusCodes } from 'http-status-codes'
 import { getRouter, Imports } from '../../routes/index'
 import assert from 'assert'
 
+interface MockedRequest {
+  params: string[]
+}
+
+interface MockedResponse {
+  status: Sinon.SinonStub
+  render: Sinon.SinonStub
+  redirect: Sinon.SinonStub
+}
+
+type MockedRouter = (req: MockedRequest, resp: MockedResponse) => Promise<void>
+
 @suite
 export class ImagesGetRouterTests {
   ApplicationFake = {} as unknown as Application
@@ -23,11 +35,11 @@ export class ImagesGetRouterTests {
     get: sinon.stub().returnsThis()
   }
 
-  RequestStub = {
+  RequestStub: MockedRequest = {
     params: [] as string[]
   }
 
-  ResponseStub = {
+  ResponseStub: MockedResponse = {
     status: sinon.stub().returnsThis(),
     render: sinon.stub().returnsThis(),
     redirect: sinon.stub().returnsThis()
@@ -62,8 +74,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/')
-      .map(call => call.args[1])[0]
-    assert(fn)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.redirect.callCount).to.equal(1)
@@ -87,13 +99,13 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const show = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show')
-      .map(call => call.args[1])[0]
-    assert(show)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(show !== undefined)
     expect(show).to.be.a('function')
     const showStar = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show/*')
-      .map(call => call.args[1])[0]
-    assert(showStar)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(showStar !== undefined)
     expect(showStar).to.be.a('function')
     expect(show).to.equal(showStar)
   }
@@ -103,8 +115,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const show = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show')
-      .map(call => call.args[1])[0]
-    assert(show)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(show !== undefined)
     await show(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(1)
@@ -116,8 +128,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const show = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show')
-      .map(call => call.args[1])[0]
-    assert(show)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(show !== undefined)
     this.RequestStub.params = ['foo/bar/baz/']
     await show(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.render.callCount).to.equal(1)
@@ -130,8 +142,8 @@ export class ImagesGetRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const show = this.RouterFake.get.getCalls()
       .filter(call => call.args[0] === '/show')
-      .map(call => call.args[1])[0]
-    assert(show)
+      .map(call => call.args[1] as MockedRouter)[0]
+    assert(show !== undefined)
     this.RequestStub.params = ['foo/../bar/']
     await show(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.status.callCount).to.equal(1)

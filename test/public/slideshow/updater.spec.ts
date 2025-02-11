@@ -39,7 +39,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
     this.updateFn = this.updateSpy
   }
 
-  async before (): Promise<void> {
+  before (): void {
     this.dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999'
     })
@@ -61,7 +61,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
     this.failCount = 0
   }
 
-  async after (): Promise<void> {
+  after (): void {
     global.window = this.existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
@@ -192,7 +192,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
     })
   }
 
-  async before (): Promise<void> {
+  before (): void {
     this.clock.restore()
     this.clock = sinon.useFakeTimers({
       shouldClearNativeTimers: false
@@ -200,7 +200,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
     CyclicManager.updaters = []
   }
 
-  async after (): Promise<void> {
+  after (): void {
     CyclicManager.Stop()
     this.clock.restore()
   }

@@ -14,12 +14,12 @@ import type { Debugger } from 'debug'
 export class SyncFoldersToSortKeyTests {
   @test
   'it should return key unchanged with no replacers' (): void {
-    expect(Functions.ToSortKey('this key')).to.equal('this key')
+    expect(Functions.ToSortKey('some key')).to.equal('some key')
   }
 
   @test
   'it should return key lowercased with no replacers' (): void {
-    expect(Functions.ToSortKey('THIS KEY')).to.equal('this key')
+    expect(Functions.ToSortKey('SOME KEY')).to.equal('some key')
   }
 
   @test
@@ -185,8 +185,7 @@ export class SyncFoldersFindSyncItemsTests {
 
   KnexInstanceStub = {
     del: sinon.stub().resolves(),
-    insert: sinon.stub().resolves(),
-    catch: sinon.stub()
+    insert: sinon.stub().resolves()
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
@@ -1072,9 +1071,7 @@ export class SyncFoldersGetAllFolderInfosTests {
   @test
   async 'it should add path to result for each folder' (): Promise<void> {
     const folders = ['/', '/foo', '/foo/bar', '/baz', '/quux/is/beast']
-    this.KnexInstanceStub.select.resolves(folders.map(path => {
-      return { path }
-    }))
+    this.KnexInstanceStub.select.resolves(folders.map(path => ({ path })))
     const results = await Functions.GetAllFolderInfos(this.KnexFnFake)
     for (const folder of folders) {
       expect(results).to.have.any.keys(folder)

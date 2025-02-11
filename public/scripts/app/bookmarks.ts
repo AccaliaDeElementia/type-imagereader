@@ -33,8 +33,9 @@ export class Bookmarks {
   public static BookmarkFolders: BookMarkFolder[] = []
 
   public static GetFolder (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null {
-    let folder = this.BookmarkFolders.filter(e => e.name === bookmarkFolder.path)[0]
+    let folder = this.BookmarkFolders.find(e => e.name === bookmarkFolder.path)
     if (folder == null) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Clone but typesafe?
       const element = (Bookmarks.bookmarkFolder?.cloneNode(true) as HTMLElement | null)?.firstElementChild as HTMLElement | null
       if (element == null) {
         return null
@@ -50,6 +51,7 @@ export class Bookmarks {
         for (const otherFolder of this.BookmarkFolders) {
           otherFolder.element.classList.add('closed')
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Typesafe capture of target node?
         (e.target as HTMLElement).parentElement?.classList.remove('closed')
       })
       if (bookmarkFolder.path === openPath) {
@@ -61,7 +63,8 @@ export class Bookmarks {
   }
 
   public static BuildBookmark (bookmark: Bookmark): HTMLElement | null {
-    const card = (Bookmarks.bookmarkCard?.cloneNode(true) as HTMLElement)?.firstElementChild as HTMLElement
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Clone but typesafe?
+    const card = (Bookmarks.bookmarkCard?.cloneNode(true) as HTMLElement | undefined)?.firstElementChild as HTMLElement | null | undefined
     if (card == null) {
       return null
     }
@@ -70,7 +73,7 @@ export class Bookmarks {
     title?.replaceChildren(bookmark.path.replace(/.*\/([^/]+)$/, '$1'))
 
     card.style.backgroundImage = `url("/images/preview${bookmark.path}-image.webp")`
-    const button = card?.querySelector('button')
+    const button = card.querySelector('button')
     button?.addEventListener('click', event => {
       Publish('Bookmarks:Remove', bookmark.path)
       event.stopPropagation()
@@ -85,7 +88,7 @@ export class Bookmarks {
             path: bookmark.folder,
             noMenu: true
           })
-        }, () => {})
+        }, () => null)
       event.stopPropagation()
     })
     return card
@@ -130,26 +133,27 @@ export class Bookmarks {
     this.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     this.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: redo with typesafe PubSub
     Subscribe('Navigate:Data', (data) => { this.buildBookmarks(data as DataWithBookmarks) })
 
     Subscribe('Bookmarks:Load', () => {
       Net.GetJSON<BookmarkFolder[]>('/api/bookmarks')
         .then(bookmarks => { this.buildBookmarks({ path: '', bookmarks }) })
-        .catch(() => {})
+        .catch(() => null)
     })
 
     Subscribe('Bookmarks:Add', (path: string) => {
       Net.PostJSON('/api/bookmarks/add', { path })
         .then(() => { Publish('Bookmarks:Load') })
         .then(() => { Publish('Loading:Success') })
-        .catch(() => {})
+        .catch(() => null)
     })
 
     Subscribe('Bookmarks:Remove', (path: string) => {
       Net.PostJSON('/api/bookmarks/remove', { path })
         .then(() => { Publish('Bookmarks:Load') })
         .then(() => { Publish('Loading:Success') })
-        .catch(() => {})
+        .catch(() => null)
     })
   }
 }
