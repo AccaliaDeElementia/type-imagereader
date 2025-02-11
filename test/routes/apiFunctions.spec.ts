@@ -434,7 +434,7 @@ export class ApiGetDirectionFolderTests {
     where: sinon.stub().returnsThis(),
     andWhere: sinon.stub().returnsThis(),
     orderBy: sinon.stub().returnsThis(),
-    limit: sinon.stub().returns(1)
+    limit: sinon.stub().returns([])
   }
 
   KnexSecondCall = {
@@ -442,7 +442,7 @@ export class ApiGetDirectionFolderTests {
     where: sinon.stub().returnsThis(),
     andWhere: sinon.stub().returnsThis(),
     orderBy: sinon.stub().returnsThis(),
-    limit: sinon.stub().returns(2)
+    limit: sinon.stub().returns([])
   }
 
   KnexStub = sinon.stub()
@@ -452,10 +452,8 @@ export class ApiGetDirectionFolderTests {
   KnexFake = this.KnexStub as unknown as Knex
 
   RawStub = sinon.stub()
-  UnionStub = sinon.stub().resolves([])
 
   before (): void {
-    this.KnexFake.union = this.UnionStub
     this.KnexFake.raw = this.RawStub
   }
 
@@ -717,25 +715,32 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should union same sortkey and different sort key queries for asc' (): Promise<void> {
-    this.KnexFirstCall.limit.returns(100)
-    this.KnexSecondCall.limit.returns(200)
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
-    expect(this.UnionStub.callCount).to.equal(1)
-    expect(this.UnionStub.firstCall.args).to.have.lengthOf(2)
-    expect(this.UnionStub.firstCall.args[0]).to.deep.equal([100, 200])
-    expect(this.UnionStub.firstCall.args[1]).to.equal(true)
+    this.KnexFirstCall.limit.resolves([{ path: '100' }])
+    this.KnexSecondCall.limit.resolves([{ path: '200' }])
+    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    assert (result != null)
+    expect(result.path).to.equal('100')
+  }
+
+  @test
+  async 'it should union same sortkey and different sort key queries for desc' (): Promise<void> {
+    this.KnexFirstCall.limit.resolves([])
+    this.KnexSecondCall.limit.resolves([{ path: '200' }])
+    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    assert (result != null)
+    expect(result.path).to.equal('200')
   }
 
   @test
   async 'it should resolve null when query finds no results' (): Promise<void> {
-    this.UnionStub.resolves([])
+    
     const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
     expect(result).to.equal(null)
   }
 
   @test
   async 'it should resolve parsed result when query finds results' (): Promise<void> {
-    this.UnionStub.resolves([{
+    this.KnexSecondCall.limit.resolves([{
       path: '/foo/abcde0',
       current: '/foo/abcde0/image.png',
       firstPicture: '/foo/abcde0/otherImage.png'
@@ -750,7 +755,7 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should resolve uri safe results when query finds results' (): Promise<void> {
-    this.UnionStub.resolves([{
+    this.KnexFirstCall.limit.resolves([{
       path: '/foo/abcde<0>',
       current: '/foo/abcde<0>/image.png',
       firstPicture: '/foo/abcde<0>/otherImage.png'
@@ -765,7 +770,7 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should resolve with current image as cover when set' (): Promise<void> {
-    this.UnionStub.resolves([{
+    this.KnexSecondCall.limit.resolves([{
       path: '/foo/abcde0',
       current: '/foo/abcde0/image.png',
       firstPicture: '/foo/abcde0/otherImage.png'
@@ -777,7 +782,7 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should resolve with firstPicture as cover when current image not set' (): Promise<void> {
-    this.UnionStub.resolves([{
+    this.KnexFirstCall.limit.resolves([{
       path: '/foo/abcde0',
       current: null,
       firstPicture: '/foo/abcde0/otherImage.png'
@@ -1012,6 +1017,19 @@ export class ApiGetFolderTests {
     }])
     const result = await Functions.GetFolder(this.KnexFake, '/foo/bar')
     expect(result?.folder).to.equal('/foo/')
+  }
+  
+  @test
+  async 'it should set default folder when db returns null' (): Promise<void> {
+    this.KnexInstance.limit.resolves([{
+      path: '/foo/The Boss/',
+      folder: null,
+      sortKey: 'bar',
+      current: '/foo/bar/image.png',
+      firstPicture: '/foo/bar/otherImage.png'
+    }])
+    const result = await Functions.GetFolder(this.KnexFake, '/foo/bar')
+    expect(result?.folder).to.equal('/')
   }
 
   @test

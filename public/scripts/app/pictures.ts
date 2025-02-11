@@ -1,5 +1,6 @@
 'use sanity'
 
+import { CloneNode } from './utils'
 import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
 import { Loading } from './loading'
@@ -37,7 +38,7 @@ export class Pictures {
   protected static current: Picture | null
   public static modCount = -1
   protected static mainImage: HTMLImageElement | null
-  protected static imageCard: Element | null
+  protected static imageCard: HTMLTemplateElement | null
   protected static pageSize = 32
   protected static nextLoader: Promise<void> = Promise.resolve()
   protected static nextPending = true
@@ -69,7 +70,6 @@ export class Pictures {
   protected static ResetMarkup (): void {
     this.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
     this.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
-      ?.content.firstElementChild ?? null
     for (const existing of document.querySelectorAll('#tabImages .pages, #tabImages .page')) {
       existing.parentElement?.removeChild(existing)
     }
@@ -198,16 +198,15 @@ export class Pictures {
     }
   }
 
-  public static MakePictureCard (picture: Picture): HTMLElement {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: clone but typesafe?
-    const card = this.imageCard?.cloneNode(true) as HTMLElement
+  public static MakePictureCard (picture: Picture): HTMLElement| undefined {
+    const card = CloneNode(this.imageCard)
     picture.element = card
-    card.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
+    card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
     if (picture.seen) {
-      card.classList.add('seen')
+      card?.classList.add('seen')
     }
-    card.querySelector('h5')?.replaceChildren(picture.name)
-    card.addEventListener('click', () => {
+    card?.querySelector('h5')?.replaceChildren(picture.name)
+    card?.addEventListener('click', () => {
       Pictures.ChangePicture(picture)
       Publish('Menu:Hide')
     })
@@ -219,18 +218,18 @@ export class Pictures {
     page.classList.add('page')
     for (const picture of pictures) {
       const card = this.MakePictureCard(picture)
+      if (card == null) continue
       picture.page = pageNum
       page.appendChild(card)
     }
     return page
   }
 
-  public static MakePaginatorItem (label: string, selector: PageSelector): HTMLElement {
-    const pageItem = document.querySelector<HTMLTemplateElement>('#PaginatorItem')?.content
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: clone but typesafe?
-    const item = (pageItem?.cloneNode(true) as HTMLElement | undefined)?.firstElementChild as HTMLElement
-    item.querySelector('span')?.replaceChildren(document.createTextNode(label))
-    item.addEventListener('click', (e: Event) => {
+  public static MakePaginatorItem (label: string, selector: PageSelector): HTMLElement | undefined {
+    const pageItem = document.querySelector<HTMLTemplateElement>('#PaginatorItem')
+    const item = CloneNode(pageItem)
+    item?.querySelector('span')?.replaceChildren(document.createTextNode(label))
+    item?.addEventListener('click', (e: Event) => {
       this.SelectPage(selector())
       e.preventDefault()
     })
@@ -239,15 +238,17 @@ export class Pictures {
 
   public static MakePaginator (pageCount: number): HTMLElement | null {
     if (pageCount < 2) return null
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: clone but typesafe?
-    const paginator = (document.querySelector<HTMLTemplateElement>('#Paginator')
-      ?.content.cloneNode(true) as HTMLElement | undefined)?.firstElementChild as HTMLElement
+    const paginator = CloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'))
+    if (paginator === undefined) return null
     const domItems = paginator.querySelector('.pagination')
-    domItems?.appendChild(this.MakePaginatorItem('«', () => Math.max(this.CurrentPage - 1, 1)))
+    const firstItem = this.MakePaginatorItem('«', () => Math.max(this.CurrentPage - 1, 1))
+    if (firstItem !== undefined) domItems?.appendChild(firstItem)
     for (let i = 1; i <= pageCount; i++) {
-      domItems?.appendChild(this.MakePaginatorItem(`${i}`, () => i))
+      const item = this.MakePaginatorItem(`${i}`, () => i)
+      if (item !== undefined) domItems?.appendChild(item)
     }
-    domItems?.appendChild(this.MakePaginatorItem('»', () => Math.min(this.CurrentPage + 1, pageCount)))
+    const lastItem = this.MakePaginatorItem('»', () => Math.min(this.CurrentPage + 1, pageCount))
+    if (lastItem !== undefined) domItems?.appendChild(lastItem)
     return paginator
   }
 
@@ -281,7 +282,6 @@ export class Pictures {
       this.modCount = newModCount
       const makeURI = (img: Picture): string => '/images/scaled/' + this.mainImage?.width + '/' + this.mainImage?.height + img.path + '-image.webp'
       await this.nextLoader
-      // this.mainImage?.setAttribute('src', '/images/full' + this.current.path)
       this.mainImage?.setAttribute('src', makeURI(this.current))
       const index = this.current.index ?? 0
       const displayTotal = this.pictures.length.toLocaleString()

@@ -87,7 +87,7 @@ class TestPics extends Pictures {
     Pictures.mainImage = value
   }
 
-  public static get imageCard (): Element | null {
+  public static get imageCard (): HTMLTemplateElement | null {
     return Pictures.imageCard
   }
 
@@ -229,7 +229,6 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
 
     const expectedImage = this.document.querySelector<HTMLElement>('#bigImage img')
     const expectedCard = this.document.querySelector<HTMLTemplateElement>('#ImageCard')
-      ?.content.firstElementChild
 
     expect(expectedImage).to.not.equal(undefined)
     expect(expectedImage).to.not.equal(null)
@@ -299,7 +298,6 @@ export class AppPicturesResetTests extends BaseAppPicturesTests {
   'locates critical elements' (): void {
     const expectedImage = this.document.querySelector<HTMLElement>('#bigImage img')
     const expectedCard = this.document.querySelector<HTMLTemplateElement>('#ImageCard')
-      ?.content.firstElementChild
 
     TestPics.ResetMarkup()
 
@@ -594,6 +592,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       seen: false
     }
     const card = Pictures.MakePictureCard(pic)
+    assert(card !== undefined)
     expect(card.getAttribute('data-backgroundImage'))
       .to.equal(`url("/images/preview${pic.path}-image.webp")`)
   }
@@ -606,6 +605,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       seen: false
     }
     const card = Pictures.MakePictureCard(pic)
+    assert(card !== undefined)
     expect(card.classList.contains('seen')).to.equal(pic.seen)
   }
 
@@ -617,6 +617,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       seen: true
     }
     const card = Pictures.MakePictureCard(pic)
+    assert(card !== undefined)
     expect(card.classList.contains('seen')).to.equal(pic.seen)
   }
 
@@ -628,6 +629,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       seen: true
     }
     const card = Pictures.MakePictureCard(pic)
+    assert(card !== undefined)
     expect(card.querySelector('h5')?.innerHTML).to.equal(pic.name)
   }
 
@@ -642,6 +644,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
     PubSub.Subscribe('Menu:Hide', () => 0)
     expect(TestPics.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
+    assert(card !== undefined)
     const event = new this.dom.window.MouseEvent('click')
     card.dispatchEvent(event)
     expect(this.changePictureSpy.calledOnceWithExactly(pic)).to.equal(true)
@@ -661,6 +664,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
     })
     expect(TestPics.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
+    assert(card !== undefined)
     const event = new this.dom.window.MouseEvent('click')
     card.dispatchEvent(event)
     expect(executed).to.equal(true)
@@ -676,6 +680,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
     PubSub.Subscribe('Menu:Hide', () => 0)
     expect(TestPics.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
+    assert(card !== undefined)
     const event = new this.dom.window.MouseEvent('click')
     card.dispatchEvent(event)
     expect(this.changePictureSpy.called).to.equal(true)
@@ -716,6 +721,18 @@ export class AppPicturesMakePicturesPageTests extends BaseAppPicturesTests {
     const results = Pictures.MakePicturesPage(1, pics)
     expect(results.querySelectorAll('div.card').length).to.equal(20)
   }
+
+  @test
+  'ignores undefined cards' (): void {
+    const pics = this.makePics(20)
+    const stub = Sinon.stub(Pictures, "MakePictureCard").returns(undefined)
+    try {
+      const results = Pictures.MakePicturesPage(1, pics)
+      expect(results.querySelectorAll('div.card').length).to.equal(0)
+    } finally {
+      stub.restore()
+    }
+  }
 }
 
 @suite
@@ -742,6 +759,7 @@ export class AppPicturesMakePaginatorItemTests extends BaseAppPicturesTests {
   'it sets inner span to provided label' (): void {
     const label = `LABEL ${Math.random()}`
     const result = Pictures.MakePaginatorItem(label, () => 0)
+    assert(result !== undefined)
     expect(result.querySelector('span')?.innerHTML).to.equal(label)
   }
 
@@ -750,6 +768,7 @@ export class AppPicturesMakePaginatorItemTests extends BaseAppPicturesTests {
     const selector = sinon.stub()
     selector.returns(0)
     const item = Pictures.MakePaginatorItem('label', selector)
+    assert(item !== undefined)
     const event = new this.dom.window.MouseEvent('click')
     expect(selector.called).to.equal(false)
     item.dispatchEvent(event)
@@ -760,6 +779,7 @@ export class AppPicturesMakePaginatorItemTests extends BaseAppPicturesTests {
   'it adds click handler that selects appropriate page' (): void {
     const expected = Math.ceil(Math.random() * 9000) + 1000
     const item = Pictures.MakePaginatorItem('label', () => expected)
+    assert(item !== undefined)
     const event = new this.dom.window.MouseEvent('click')
     item.dispatchEvent(event)
     expect(this.selectPageSpy.calledOnceWithExactly(expected)).to.equal(true)
@@ -793,6 +813,14 @@ export class AppPicturesMakePaginatorTests extends BaseAppPicturesTests {
     expect(Pictures.MakePaginator(-1)).to.equal(null)
     expect(Pictures.MakePaginator(0)).to.equal(null)
     expect(Pictures.MakePaginator(1)).to.equal(null)
+  }
+
+  @test
+  'it should return null for missing template' (): void {
+    const template = this.document.querySelector('#Paginator')
+    assert (template !== null)
+    template.remove()
+    expect(Pictures.MakePaginator(17)).to.equal(null)
   }
 
   @test

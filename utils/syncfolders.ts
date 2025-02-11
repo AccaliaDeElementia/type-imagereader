@@ -127,7 +127,7 @@ export class Functions {
           })
       })
     
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Convert to prisma to avoid oddities of KNEX
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Postgres returns rowcount differently. handle the difference.
     let count = (insertedpics as unknown as RowCountResult).rowCount
     if (count === undefined) {
       [ count ] = insertedpics
@@ -175,7 +175,7 @@ export class Functions {
           })
       })
     
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Convert to prisma to avoid oddities of KNEX
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Postgres returns rowcount differently. handle the difference.
     let count = (folders as unknown as RowCountResult).rowCount
     if (count === undefined) {
       [ count ] = folders

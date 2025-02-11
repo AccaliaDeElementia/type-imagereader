@@ -2,6 +2,7 @@
 
 import { Publish, Subscribe } from './pubsub'
 import { Net } from './net'
+import { CloneNode } from './utils'
 
 export interface Bookmark {
   name: string
@@ -35,8 +36,7 @@ export class Bookmarks {
   public static GetFolder (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null {
     let folder = this.BookmarkFolders.find(e => e.name === bookmarkFolder.path)
     if (folder == null) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Clone but typesafe?
-      const element = (Bookmarks.bookmarkFolder?.cloneNode(true) as HTMLElement | null)?.firstElementChild as HTMLElement | null
+      const element = CloneNode(Bookmarks.bookmarkFolder)
       if (element == null) {
         return null
       }
@@ -47,12 +47,11 @@ export class Bookmarks {
       element.setAttribute('data-folderPath', bookmarkFolder.path)
       const title = element.querySelector<HTMLElement>('.title')
       if (title != null) title.innerText = decodeURI(bookmarkFolder.name)
-      title?.addEventListener('click', (e) => {
+      title?.addEventListener('click', () => {
         for (const otherFolder of this.BookmarkFolders) {
           otherFolder.element.classList.add('closed')
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Typesafe capture of target node?
-        (e.target as HTMLElement).parentElement?.classList.remove('closed')
+        element.classList.remove('closed')
       })
       if (bookmarkFolder.path === openPath) {
         element.classList.remove('closed')
@@ -63,8 +62,7 @@ export class Bookmarks {
   }
 
   public static BuildBookmark (bookmark: Bookmark): HTMLElement | null {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Clone but typesafe?
-    const card = (Bookmarks.bookmarkCard?.cloneNode(true) as HTMLElement | undefined)?.firstElementChild as HTMLElement | null | undefined
+    const card = CloneNode(Bookmarks.bookmarkCard)
     if (card == null) {
       return null
     }

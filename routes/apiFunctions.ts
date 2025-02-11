@@ -110,7 +110,7 @@ interface DbChildFolder {
 
 interface DbFolder {
   path: string
-  folder: string
+  folder: string | null
   sortKey: string
   current: string | null
   firstPicture: string | null
@@ -128,9 +128,8 @@ interface DbBookmark {
 
 export class Functions {
   public static async GetChildFolders (knex: Knex, path: string): Promise<FolderWithCounts[]> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO, make a true typesafe db access, use Prisma maybe?
     const data = await knex('folders')
-      .select(
+      .select<DbChildFolder[]>(
         'path',
         'current',
         'totalCount',
@@ -138,7 +137,7 @@ export class Functions {
         'firstPicture'
       )
       .where('folder', '=', path)
-      .orderBy('sortKey') as DbChildFolder[]
+      .orderBy('sortKey')
     return data.map(i => ({
       name: basename(i.path),
       path: UriSafePath.encode(i.path),
@@ -149,9 +148,8 @@ export class Functions {
   }
 
   public static async GetFolder (knex: Knex, path: string): Promise<FolderWithParent | null> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO, make a true typesafe db access, use Prisma maybe?
     const folder = (await knex('folders')
-      .select(
+      .select<DbFolder[]>(
         'path',
         'folder',
         'sortKey',
@@ -159,14 +157,14 @@ export class Functions {
         'firstPicture'
       )
       .where('path', '=', path)
-      .limit(1))[0] as DbFolder | undefined
+      .limit(1))[0]
     if (folder == null) {
       return null
     }
     return {
       name: basename(folder.path),
       path: UriSafePath.encode(folder.path),
-      folder: UriSafePath.encode(folder.folder),
+      folder: UriSafePath.encode(folder.folder ?? '/'),
       sortKey: folder.sortKey,
       cover: UriSafePath.encodeNullable(folder.current ?? folder.firstPicture)
     }
@@ -176,9 +174,9 @@ export class Functions {
   public static async GetDirectionFolder (knex: Knex, path: string, sortKey: string, direction: 'asc' | 'desc', type: 'all' | 'unread'): Promise<Folder | null> {
     const comparer = direction === 'asc' ? '>' : '<'
     const folderpath = normalize(dirname(path) + sep)
-    const doSelect = (filter: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Knex.QueryBuilder => {
+    const doSelect = (filter: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Knex.QueryBuilder<DbFolder, DbFolder[]> => {
       let query = knex('folders')
-        .select(
+        .select<DbFolder[]>(
           'path',
           'current',
           'firstPicture'
@@ -189,16 +187,14 @@ export class Functions {
       }
       return filter(query).limit(1)
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO, make a true typesafe db access, use Prisma maybe?
-    const folder = (await knex.union([
-      doSelect(query => query
-        .andWhere('sortKey', '=', sortKey)
-        .andWhere('path', comparer, path)
-        .orderBy('path', direction)),
-      doSelect(query => query
-        .andWhere('sortKey', comparer, sortKey)
-        .orderBy('sortKey', direction))
-    ], true))[0] as DbFolder | undefined
+    const eqlFolders = await doSelect(query => query
+      .andWhere('sortKey', '=', sortKey)
+      .andWhere('path', comparer, path)
+      .orderBy('path', direction))
+    const neqFolders = await doSelect(query => query
+      .andWhere('sortKey', comparer, sortKey)
+      .orderBy('sortKey', direction))
+    const folder = [...eqlFolders, ...neqFolders][0]
     if (folder == null) {
       return null
     }
@@ -218,14 +214,13 @@ export class Functions {
   }
 
   public static async GetPictures (knex: Knex, path: string): Promise<Picture[]> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO, make a true typesafe db access, use Prisma maybe?
     const pics = await knex('pictures')
-      .select(
+      .select<DbPicture[]>(
         'path',
         'seen'
       )
       .where('folder', '=', path)
-      .orderBy('sortKey', 'path') as DbPicture[]
+      .orderBy('sortKey', 'path')
     return pics.map((pic, index) => ({
       name: basename(pic.path, extname(pic.path)),
       path: UriSafePath.encode(pic.path),
@@ -235,9 +230,8 @@ export class Functions {
   }
 
   public static async GetBookmarks (knex: Knex): Promise<BookmarkFolder[]> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO, make a true typesafe db access, use Prisma maybe?
     const bookmarks = await knex('bookmarks')
-      .select(
+      .select<DbBookmark[]>(
         'pictures.path',
         'pictures.folder'
       )
@@ -248,7 +242,7 @@ export class Functions {
         'folders.sortKey',
         'pictures.sortKey',
         'pictures.path'
-      ]) as DbBookmark[]
+      ])
     let folder: BookmarkFolder = {
       name: '',
       path: '',
@@ -315,8 +309,7 @@ export class Functions {
 
   public static async SetLatestPicture (knex: Knex, path: string): Promise<string | null> {
     const folder = normalize(dirname(path) + sep)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO, make a true typesafe db access, use Prisma maybe?
-    const picture = (await knex('pictures').select('seen').where({ path }))[0] as DbPicture | undefined
+    const picture = (await knex('pictures').select<DbPicture[]>('seen').where({ path }))[0]
     if (picture == null) { return null }
     if (!picture.seen) {
       await knex('folders').increment('seenCount', 1).whereIn('path', Functions.GetPictureFolders(path))

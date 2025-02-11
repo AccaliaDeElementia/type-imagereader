@@ -3,6 +3,7 @@
 import { Publish, Subscribe } from './pubsub'
 
 import type { Picture } from './pictures'
+import { CloneNode } from './utils'
 
 export interface Folder {
   name: string
@@ -20,8 +21,7 @@ export class Folders {
   static FolderCard: DocumentFragment | null = null
 
   public static BuildCard (folder: Folder): HTMLElement | null {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Clone but typesafe?
-    const card = (this.FolderCard?.cloneNode(true) as HTMLElement | undefined)?.firstElementChild as HTMLElement | null | undefined
+    const card = CloneNode(this.FolderCard)
     if (card == null) {
       return null
     }
