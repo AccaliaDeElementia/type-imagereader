@@ -210,11 +210,624 @@ export class ImportsEnvironmentLookupTests {
 }
 
 @suite
+export class WeatherFunctionsIsOpenWeatherData {
+  @test
+  'it should reject null' (): void {
+    expect(Functions.isOpenWeatherData(null)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined' (): void {
+    expect(Functions.isOpenWeatherData(undefined)).to.equal(false)
+  }
+
+  @test
+  'it should reject {}' (): void {
+    expect(Functions.isOpenWeatherData({})).to.equal(false)
+  }
+
+  @test
+  'it should reject string' (): void {
+    expect(Functions.isOpenWeatherData('')).to.equal(false)
+  }
+
+  @test
+  'it should reject number' (): void {
+    expect(Functions.isOpenWeatherData(42)).to.equal(false)
+  }
+
+  @test
+  'it should reject boolean' (): void {
+    expect(Functions.isOpenWeatherData(true)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object main' (): void {
+    const obj = {
+      main: 60,
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null main' (): void {
+    const obj = {
+      main: null,
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null weather' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: null,
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject object weather' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: {},
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non array weather' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: 17.2,
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null weather entry' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [ null ],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object weather entry' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [ 3.1415926 ],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number pressure' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: '',
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept missing pressure' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number temp' (): void {
+    const obj = {
+      main: {
+        temp: {},
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing temp' (): void {
+    const obj = {
+      main: {
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number humidity' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: true
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing humidity' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept valid weather entry' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [{
+        main: '',
+        icon: ''
+      }],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should reject non string weather main' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [{
+        main: 0,
+        icon: ''
+      }],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null weather main' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [{
+        main: null,
+        icon: ''
+      }],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing weather main' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [{
+        icon: ''
+      }],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string weather icon' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [{
+        main: '',
+        icon: Number.NaN
+      }],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null weather icon' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [{
+        main: '',
+        icon: null
+      }],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing weather icon' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [{
+        main: ''
+      }],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing obj.sys' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: []
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object obj.sys' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: 'bad data'
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null obj.sys' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: null
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing sunrise' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number sunrise' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: {},
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept NaN sunrise' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: Number.NaN,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept positive sunrise' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 89.34,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept negative sunrise' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: -3.14159,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should reject missing sunset' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number sunset' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: "Number"
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept NaN sunset' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: Number.NaN
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept positive sunset' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 9001
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept negative sunset' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: -50090
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept minimum object' (): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0
+      },
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(true)
+  }
+}
+
+@suite
 export class WeatherFunctionsGetWeatherTests {
   FetchStub?: Sinon.SinonStub
 
   FetchResult = {
-    json: sinon.stub().resolves()
+    json: sinon.stub().resolves({
+      weather: [],
+      sys: {
+        sunrise: 0,
+        sunset: 0
+      }
+    })
   }
 
   before (): void {
@@ -276,11 +889,17 @@ export class WeatherFunctionsGetWeatherTests {
   async 'it should return parsed JSON' (): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
-    const data = { data: Math.random() }
+    const data = {
+      weather: [],
+      sys: {
+        sunrise: Math.random(),
+        sunset: Math.random()
+      }
+    }
     this.FetchResult.json.resolves(data)
     const result = await Functions.GetWeather()
     expect(this.FetchResult.json.callCount).to.equal(1)
-    expect(result).to.equal(data)
+    expect(result).to.deep.equal(data)
   }
 
   @test
@@ -292,6 +911,18 @@ export class WeatherFunctionsGetWeatherTests {
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
       (e: unknown) => expect(e).to.equal(err))
+  }
+  @test
+  async 'it should reject when JSON parses invalid object' (): Promise<void> {
+    process.env.OPENWEATHER_APPID = 'appid'
+    process.env.OPENWEATHER_LOCATION = 'location'
+    this.FetchResult.json.resolves({})
+    await Functions.GetWeather().then(
+      () => expect.fail('should not have resolved!'),
+      (e: unknown) => {
+        if (!(e instanceof Error)) expect.fail('should have rejected with an error!')
+        expect(e.message).to.equal('Invalid JSON returned from Open Weather Map')
+      })
   }
 }
 

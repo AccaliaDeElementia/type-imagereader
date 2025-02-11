@@ -93,6 +93,26 @@ export class Functions {
     sunset: undefined
   }
 
+  public static isOpenWeatherData (data: unknown): data is OpenWeatherData {
+    if (typeof data !== 'object' || data == null) return false
+    if ('main' in data) {
+      if (typeof data.main !== 'object' || data.main == null) return false
+      if (!('temp' in data.main) || typeof data.main.temp !== 'number') return false
+      if (!('pressure' in data.main) || typeof data.main.pressure !== 'number') return false
+      if (!('humidity' in data.main) || typeof data.main.humidity !== 'number') return false
+    }
+    if (!('weather' in data) || !(data.weather instanceof Array)) return false
+    for (const record of data.weather as unknown[]) {
+      if (typeof record !== 'object' || record == null) return false
+      if (!('main' in record) || typeof record.main !== 'string') return false
+      if (!('icon' in record) || typeof record.icon !== 'string') return false
+    }
+    if (!('sys' in data) || typeof data.sys !== 'object' || data.sys == null) return false
+    if (!('sunrise' in data.sys) || typeof data.sys.sunrise !== 'number') return false
+    if (!('sunset' in data.sys) || typeof data.sys.sunset !== 'number') return false
+    return true
+  }
+
   public static async GetWeather (): Promise<OpenWeatherData> {
     if (Imports.appId.length < 1) {
       throw new Error('no OpewnWeather AppId Defined!')
@@ -101,8 +121,9 @@ export class Functions {
       throw new Error('no OpewnWeather Location Defined!')
     }
     const response = await Imports.fetch(`https://api.openweathermap.org/data/2.5/weather?q=${Imports.location}&appid=${Imports.appId}`)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: make this truely typesafe?
-    return await response.json() as unknown as OpenWeatherData
+    const data: unknown = await response.json()
+    if (!this.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
+    return data
   }
 
   public static async UpdateWeather (): Promise<WeatherResults> {
