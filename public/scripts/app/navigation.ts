@@ -24,6 +24,35 @@ export interface Data {
   children?: ChildFolder[]
 }
 
+export function isData (obj: unknown): obj is Data {
+  if (typeof obj !== 'object' || obj == null) return false
+  if (!('path' in obj) || typeof obj.path !== 'string') return false
+  if ('noMenu' in obj && typeof obj.noMenu !== 'boolean' && obj.noMenu !== undefined) return false
+  if ('name' in obj && typeof obj.name !== 'string' && obj.name !== undefined) return false
+  if ('parent' in obj && typeof obj.parent !== 'string' && obj.parent !== undefined) return false
+  if ('next' in obj && !isData(obj.next)) return false
+  if ('nextUnread' in obj && !isData(obj.nextUnread)) return false
+  if ('prev' in obj && !isData(obj.prev)) return false
+  if ('prevUnread' in obj && !isData(obj.prevUnread)) return false
+  if ('pictures' in obj) {
+    if (!(obj.pictures instanceof Array)) return false
+    for(const pic of obj.pictures as unknown[]) {
+      if (typeof pic !== 'object' || pic == null) return false
+    }
+  }
+  if ('children' in obj) {
+    if (!(obj.children instanceof Array)) return false
+    for(const folder of obj.children as unknown[]) {
+      if (typeof folder !== 'object' || folder == null) return false
+      if (!('name' in folder) || typeof folder.name !== 'string') return false
+      if (!('path' in folder) || typeof folder.path !== 'string') return false
+      if (!('totalCount' in folder) || typeof folder.totalCount !== 'number') return false
+      if (!('totalSeen' in folder) || typeof folder.totalSeen !== 'number') return false
+    }
+  }
+  return true
+}
+
 interface NoMenuPath {
   path: string
   noMenu: boolean
@@ -121,12 +150,12 @@ export class Navigation {
     Subscribe('Action:Execute:ShowMenu', () => { Publish('Menu:Show') })
     Subscribe('Action:Execute:HideMenu', () => { Publish('Menu:Hide') })
     Subscribe('Action:Execute:MarkAllSeen', () => {
-      Net.PostJSON('/api/mark/read', { path: this.current.path })
+      Net.PostJSON('/api/mark/read', { path: this.current.path }, (_: unknown): _ is unknown => true)
         .then(async () => { await this.LoadData(true) }, (err: unknown) => { Publish('Loading:Error', err) })
         .catch(() => null)
     })
     Subscribe('Action:Execute:MarkAllUnseen', () => {
-      Net.PostJSON('/api/mark/unread', { path: this.current.path })
+      Net.PostJSON('/api/mark/unread', { path: this.current.path }, (_: unknown): _ is unknown => true)
         .then(async () => { await this.LoadData(true) }, (err: unknown) => { Publish('Loading:Error', err) })
         .catch(() => null)
     })
@@ -155,7 +184,7 @@ export class Navigation {
   public static async LoadData (noHistory = false): Promise<void> {
     try {
       Publish('Loading:Show')
-      this.current = await Net.GetJSON<Data>(`/api/listing${this.current.path}`)
+      this.current = await Net.GetJSON<Data>(`/api/listing${this.current.path}`, isData)
       this.current.noMenu = this.IsSuppressMenu
       for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
         let name = this.current.name

@@ -10,7 +10,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import { Navigation } from '../../../public/scripts/app/navigation'
+import { isData, Navigation } from '../../../public/scripts/app/navigation'
 import type { Data } from '../../../public/scripts/app/navigation'
 import { Net } from '../../../public/scripts/app/net'
 import assert from 'assert'
@@ -38,6 +38,532 @@ class TestNavigation extends Navigation {
 
   public static set current (data: Data) {
     Navigation.current = data
+  }
+}
+
+@suite
+export class NavigationIsDataTests {
+  @test
+  'it should accept minimum object' (): void {
+    const obj = {
+      path: ''
+    }
+    expect(isData(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept omplete object' (): void {
+    const obj = {
+      path: '',
+      noMenu: false,
+      name: '',
+      parent: '',
+      next: {
+        path: ''
+      },
+      nextUnread: {
+        path: ''
+      },
+      prev: {
+        path: ''
+      },
+      prevUnread: {
+        path: ''
+      },
+      pictures: [{}],
+      children: [{
+        name: '',
+        path: '',
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should reject null object' (): void {
+    const obj = null
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object' (): void {
+    const obj = 3.1415
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null path' (): void {
+    const obj = { path: null }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string path' (): void {
+    const obj = { path: {} }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing path' (): void {
+    const obj = null
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non boolean noMenu' (): void {
+    const obj = {
+      path: '',
+      noMenu: -0
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept undefined boolean noMenu' (): void {
+    const obj = {
+      path: '',
+      noMenu: undefined
+    }
+    expect(isData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should reject null name' (): void {
+    const obj = {
+      path: '',
+      name: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string name' (): void {
+    const obj = {
+      path: '',
+      name: 1e7
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null parent' (): void {
+    const obj = {
+      path: '',
+      parent: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string parent' (): void {
+    const obj = {
+      path: '',
+      parent: true
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null next object' (): void {
+    const obj = {
+      path: '',
+      next: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject invalid next object' (): void {
+    const obj = {
+      path: '',
+      next: {
+        path: false
+      }
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null nextUnread' (): void {
+    const obj = {
+      path: '',
+      nextUnread: {
+        path: false
+      }
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject invalid nextUnread' (): void {
+    const obj = {
+      path: '',
+      nextUnread: {
+        path: false
+      }
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null prev' (): void {
+    const obj = {
+      path: '',
+      prev: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject invalid prev' (): void {
+    const obj = {
+      path: '',
+      prev: {
+        path: false
+      }
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null prevUnread' (): void {
+    const obj = {
+      path: '',
+      prevUnread: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject invalid prevUnread' (): void {
+    const obj = {
+      path: '',
+      prevUnread: {
+        path: false
+      }
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null pictures' (): void {
+    const obj = {
+      path: '',
+      pictures: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject object pictures' (): void {
+    const obj = {
+      path: '',
+      pictures: {}
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null picture in array' (): void {
+    const obj = {
+      path: '',
+      pictures: [ null ]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined picture in array' (): void {
+    const obj = {
+      path: '',
+      pictures: [ undefined ]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object picture in array' (): void {
+    const obj = {
+      path: '',
+      pictures: [ false ]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null children' (): void {
+    const obj = {
+      path: '',
+      children: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined children' (): void {
+    const obj = {
+      path: '',
+      children: undefined
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non array children' (): void {
+    const obj = {
+      path: '',
+      children: 0
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null child' (): void {
+    const obj = {
+      path: '',
+      children: [ null ]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined child' (): void {
+    const obj = {
+      path: '',
+      children: [ undefined ]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject nonobject child' (): void {
+    const obj = {
+      path: '',
+      children: [ 17 ]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null child name' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: null,
+        path: '',
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefiend child name' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: undefined,
+        path: '',
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string child name' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: {},
+        path: '',
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing child name' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        path: '',
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null child path' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: null,
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined child path' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: undefined,
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string child path' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: {},
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing child path' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        totalCount: 0,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null child totalCount' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: '',
+        totalCount: null,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined child totalCount' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: '',
+        totalCount: undefined,
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non-number child totalCount' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: '',
+        totalCount: '',
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing child totalCount' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: '',
+        totalSeen: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null child totalSeen' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: '',
+        totalCount: 0,
+        totalSeen: null
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined child totalSeen' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: '',
+        totalCount: 0,
+        totalSeen: undefined
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non-number child totalSeen' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: '',
+        totalCount: 0,
+        totalSeen: {}
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing child totalSeen' (): void {
+    const obj = {
+      path: '',
+      children: [{
+        name: '',
+        path: '',
+        totalCount: 0
+      }]
+    }
+    expect(isData(obj)).to.equal(false)
   }
 }
 
@@ -1080,6 +1606,28 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
+  async 'Action:Execute:MarkAllSeen should pass vacuous itIs function as it ignores result of post' (): Promise<void> {
+    Navigation.Init()
+    expect(this.PostJSONStub.callCount).to.equal(0)
+    const path = {
+      path: '/foo/bar/baz/' + Math.random()
+    }
+    TestNavigation.current.path = path.path
+    PubSub.Publish('Action:Execute:MarkAllSeen')
+    // let the callback finish
+    await Delay(5)
+    const fn = this.PostJSONStub.firstCall.args[2]
+    assert (fn !== undefined)
+    expect(fn(undefined)).to.equal(true)
+    expect(fn(null)).to.equal(true)
+    expect(fn(true)).to.equal(true)
+    expect(fn(0)).to.equal(true)
+    expect(fn('')).to.equal(true)
+    expect(fn({})).to.equal(true)
+    expect(fn([])).to.equal(true)
+  }
+
+  @test
   async 'Action:Execute:MarkAllSeen reloads data after successful post' (): Promise<void> {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
@@ -1168,6 +1716,28 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     await Delay(5)
     const payload = this.PostJSONStub.firstCall.args[1]
     expect(payload).to.deep.equal(path)
+  }
+
+  @test
+  async 'Action:Execute:MarkAllUnseen should pass vacuous itIs function as it ignores result of post' (): Promise<void> {
+    Navigation.Init()
+    expect(this.PostJSONStub.callCount).to.equal(0)
+    const path = {
+      path: '/foo/bar/baz/' + Math.random()
+    }
+    TestNavigation.current.path = path.path
+    PubSub.Publish('Action:Execute:MarkAllUnseen')
+    // let the callback finish
+    await Delay(5)
+    const fn = this.PostJSONStub.firstCall.args[2]
+    assert (fn !== undefined)
+    expect(fn(undefined)).to.equal(true)
+    expect(fn(null)).to.equal(true)
+    expect(fn(true)).to.equal(true)
+    expect(fn(0)).to.equal(true)
+    expect(fn('')).to.equal(true)
+    expect(fn({})).to.equal(true)
+    expect(fn([])).to.equal(true)
   }
 
   @test

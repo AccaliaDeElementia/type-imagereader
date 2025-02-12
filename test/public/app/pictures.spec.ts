@@ -1134,6 +1134,21 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   }
 
   @test
+  async 'it should accept number from PostJSON' (): Promise<void> {
+    TestPics.modCount = 50
+    await Pictures.LoadImage()
+    expect(this.postJSONSpy.callCount).to.equal(1)
+    const fn = this.postJSONSpy.firstCall.args[2]
+    assert(fn !== undefined)
+    expect(fn(undefined)).to.equal(true)
+    expect(fn(50)).to.equal(true)
+    expect(fn('foo')).to.equal(false)
+    expect(fn(null)).to.equal(false)
+    expect(fn({})).to.equal(false)
+    expect(fn(false)).to.equal(false)
+  }
+
+  @test
   async 'it should await next loader when loading image' (): Promise<void> {
     let awaited = false
     TestPics.nextLoader = Delay(10).then(() => {

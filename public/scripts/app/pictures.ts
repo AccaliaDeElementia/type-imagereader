@@ -274,7 +274,10 @@ export class Pictures {
     try {
       this.current.seen = true
       this.current.element?.classList.add('seen')
-      const newModCount = await Net.PostJSON<number | undefined>('/api/navigate/latest', { path: this.current.path, modCount: this.modCount })
+      const newModCount = await Net.PostJSON<number | undefined>(
+        '/api/navigate/latest',
+        { path: this.current.path, modCount: this.modCount },
+        (o) => typeof o === 'number' || o === undefined)
       if (newModCount === undefined || newModCount < 0) {
         Publish('Navigate:Reload')
         return

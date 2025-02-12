@@ -16,6 +16,7 @@ interface BookmarkFolder {
   bookmarks: Bookmark[]
 }
 
+
 interface DataWithBookmarks {
   path: string
   bookmarks: BookmarkFolder[]
@@ -24,6 +25,23 @@ interface DataWithBookmarks {
 interface BookMarkFolder {
   name: string
   element: HTMLElement
+}
+
+export function isBookmarkFolderArray(obj: unknown): obj is BookmarkFolder[] {
+  if (typeof obj !== 'object' || !(obj instanceof Array)) return false
+  for (const folder of obj as unknown[]) {
+    if (typeof folder !== 'object' || folder == null) return false
+    if (!('name' in folder) || typeof folder.name !== 'string') return false
+    if (!('path' in folder) || typeof folder.path !== 'string') return false
+    if (!('bookmarks' in folder) || !(folder.bookmarks instanceof Array)) return false
+    for(const bookmark of folder.bookmarks as unknown[]) {
+      if (typeof bookmark !== 'object' || bookmark == null) return false
+      if (!('name' in bookmark) || typeof bookmark.name !== 'string') return false
+      if (!('path' in bookmark) || typeof bookmark.path !== 'string') return false
+      if (!('folder' in bookmark) || typeof bookmark.folder !== 'string') return false
+    }
+  }
+  return true
 }
 
 export class Bookmarks {
@@ -80,7 +98,7 @@ export class Bookmarks {
       Net.PostJSON('/api/navigate/latest', {
         path: bookmark.path,
         modCount: -1
-      })
+      }, (_: unknown): _ is unknown => true)
         .then(() => {
           Publish('Navigate:Load', {
             path: bookmark.folder,
@@ -135,20 +153,20 @@ export class Bookmarks {
     Subscribe('Navigate:Data', (data) => { this.buildBookmarks(data as DataWithBookmarks) })
 
     Subscribe('Bookmarks:Load', () => {
-      Net.GetJSON<BookmarkFolder[]>('/api/bookmarks')
+      Net.GetJSON<BookmarkFolder[]>('/api/bookmarks', isBookmarkFolderArray)
         .then(bookmarks => { this.buildBookmarks({ path: '', bookmarks }) })
         .catch(() => null)
     })
 
     Subscribe('Bookmarks:Add', (path: string) => {
-      Net.PostJSON('/api/bookmarks/add', { path })
+      Net.PostJSON('/api/bookmarks/add', { path }, (_: unknown): _ is unknown => true)
         .then(() => { Publish('Bookmarks:Load') })
         .then(() => { Publish('Loading:Success') })
         .catch(() => null)
     })
 
     Subscribe('Bookmarks:Remove', (path: string) => {
-      Net.PostJSON('/api/bookmarks/remove', { path })
+      Net.PostJSON('/api/bookmarks/remove', { path }, (_: unknown): _ is unknown => true)
         .then(() => { Publish('Bookmarks:Load') })
         .then(() => { Publish('Loading:Success') })
         .catch(() => null)

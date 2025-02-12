@@ -9,7 +9,7 @@ import { render } from 'pug'
 
 import { Net } from '../../../public/scripts/app/net'
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import { Bookmarks } from '../../../public/scripts/app/bookmarks'
+import { isBookmarkFolderArray, Bookmarks } from '../../../public/scripts/app/bookmarks'
 import assert from 'assert'
 
 const markup = `
@@ -28,6 +28,419 @@ html
           h5.title placeholder
         button Remove
 `
+
+@suite
+export class BookmarksIsBookmarkFolderArrayTests {
+  @test
+  'it should reject null object' (): void {
+    const obj: unknown = null
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject bare object' (): void {
+    const obj: unknown = {}
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non array object' (): void {
+    const obj: unknown = true
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null folder in array' (): void {
+    const obj: unknown = [null]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefiend folder in array' (): void {
+    const obj: unknown = [undefined]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object folder in array' (): void {
+    const obj: unknown = ['NCC-1701-D']
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null folder name' (): void {
+    const obj: unknown = [{
+      name: null,
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined folder name' (): void {
+    const obj: unknown = [{
+      name: undefined,
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string folder name' (): void {
+    const obj: unknown = [{
+      name: 0,
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing folder name' (): void {
+    const obj: unknown = [{
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null folder path' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: null,
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefiend folder path' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: undefined,
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string folder path' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: -10,
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing folder path' (): void {
+    const obj: unknown = [{
+      name: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null bookmarks' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: null
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined bookmarks' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: undefined
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non array bookmarks' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: {}
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing bookmarks' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null bookmark object' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [null]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined bookmark object' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [undefined]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object bookmark object' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: ['Use the force luke']
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null bookmark name' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: null,
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined bookmark name' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: undefined,
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string bookmark name' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: Math.E,
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing bookmark name' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null bookmark path' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: null,
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined object' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: undefined,
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string bookmark path' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: true,
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing bookmark path' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null bookmark folder' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: null
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined bookmark folder' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: undefined
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string bookmark folder' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: Math.PI
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing bookmark folder' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept empty array' (): void {
+    const obj: unknown = []
+    expect(isBookmarkFolderArray(obj)).to.equal(true)
+  }
+
+  @test
+  'it should empty bookmarks array' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: []
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept base array' (): void {
+    const obj: unknown = [{
+      name: '',
+      path: '',
+      bookmarks: [{
+        name: '',
+        path: '',
+        folder: ''
+      }]
+    }]
+    expect(isBookmarkFolderArray(obj)).to.equal(true)
+  }
+}
 
 export type SubscriberPromiseFunction = (recievedData: string | undefined, actualTopic?: string) => Promise<void>
 
@@ -215,6 +628,25 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
+  async 'it should use vacuous isIt to ignore return of BookmarksAdd' (): Promise<void> {
+    Bookmarks.Init()
+    const successSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', successSpy)
+    const handler = PubSub.subscribers['BOOKMARKS:ADD']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
+    await handler('/foo/bar/baz')
+    
+    const fn = this.PostJSONSpy.firstCall.args[2]
+    assert(fn !== undefined)
+    expect(fn(undefined)).to.equal(true)
+    expect(fn(50)).to.equal(true)
+    expect(fn('foo')).to.equal(true)
+    expect(fn(null)).to.equal(true)
+    expect(fn({})).to.equal(true)
+    expect(fn(false)).to.equal(true)
+  }
+
+  @test
   async 'it should use Publish Bookmarks:Load when adding Bookmarks' (): Promise<void> {
     Bookmarks.Init()
     const successSpy = sinon.stub()
@@ -246,6 +678,25 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     expect(this.PostJSONSpy.firstCall.args[1]).to.deep.equal({
       path: '/foo/bar/baz'
     })
+  }
+
+  @test
+  async 'it should use vacuous isIt to ignore return of BookmarksRemove' (): Promise<void> {
+    Bookmarks.Init()
+    const successSpy = sinon.stub()
+    PubSub.Subscribe('Loading:Success', successSpy)
+    const handler = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop() as SubscriberPromiseFunction | undefined
+    assert(handler !== undefined, 'Handler must be found to have valid test')
+    await handler('/foo/bar/baz')
+    
+    const fn = this.PostJSONSpy.firstCall.args[2]
+    assert(fn !== undefined)
+    expect(fn(undefined)).to.equal(true)
+    expect(fn(50)).to.equal(true)
+    expect(fn('foo')).to.equal(true)
+    expect(fn(null)).to.equal(true)
+    expect(fn({})).to.equal(true)
+    expect(fn(false)).to.equal(true)
   }
 
   @test
@@ -419,6 +870,33 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
 
     expect(this.PostJSONSpy.calledWith('/api/navigate/latest')).to.equal(true)
     expect(this.PostJSONSpy.firstCall.args[1]).to.deep.equal({ path: '/path/to/foo/folder/foo', modCount: -1 })
+  }
+
+  @test
+  async 'it should use vacuous isIt to ignore return of navigation, using only resolve/reject instead' (): Promise<void> {
+    const result = Bookmarks.BuildBookmark({
+      name: '',
+      path: '/path/to/foo/folder/foo',
+      folder: 'bar'
+    })
+
+    this.PostJSONSpy.reset()
+    const waiter = Promise.resolve()
+    this.PostJSONSpy.callsFake(async () => { await waiter })
+
+    const evt = new this.dom.window.MouseEvent('click')
+    result?.dispatchEvent(evt)
+
+    await waiter
+
+    const fn = this.PostJSONSpy.firstCall.args[2]
+    assert(fn !== undefined)
+    expect(fn(undefined)).to.equal(true)
+    expect(fn(50)).to.equal(true)
+    expect(fn('foo')).to.equal(true)
+    expect(fn(null)).to.equal(true)
+    expect(fn({})).to.equal(true)
+    expect(fn(false)).to.equal(true)
   }
 
   @test

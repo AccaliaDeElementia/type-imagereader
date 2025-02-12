@@ -1,20 +1,25 @@
 'use sanity'
 
-const decodeResult = async <T>(response: Response): Promise<T> => {
-  if (response.headers.get('content-length') === '0') {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: rewrite to be typesafe...
-    return {} as unknown as T
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- TODO: rewrite to be typesafe...
-  const data = await response.json()
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- TODO: rewrite to be typesafe...
-  if (data?.error != null) throw new Error(`${data.error}`)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: rewrite to be typesafe...
-  return data as T
+interface JSONError {
+  error: string
+}
+
+function isError(obj: unknown): obj is JSONError {
+  if (typeof obj !== 'object' || obj == null) return false
+  if (!('error' in obj) || typeof obj.error !== 'string') return false
+  return true
+}
+
+const decodeResult = async <T>(response: Response, isT: (obj: unknown) => obj is T): Promise<T> => {
+  if (response.headers.get('content-length') === '0') throw new Error('Empty JSON response recieved')
+  const data = await response.json() as unknown
+  if (isError(data)) throw new Error(data.error)
+  if (!isT(data) || data == null) throw new Error('Invalid JSON object decoded')
+  return data
 }
 
 export class Net {
-  static async GetJSON<T> (path: string): Promise<T> {
+  static async GetJSON<T> (path: string, isT: (obj: unknown) => obj is T): Promise<T> {
     return await fetch(
       path,
       {
@@ -25,11 +30,10 @@ export class Net {
         },
         method: 'GET'
       })
-      .then(async response => await decodeResult<T>(response))
+      .then(async response => await decodeResult<T>(response, isT))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: rewrite to be typesafe...
-  static async PostJSON<T> (path: string, data: any): Promise<T> {
+  static async PostJSON<T> (path: string, data: unknown, isT: (obj: unknown) => obj is T): Promise<T> {
     return await fetch(path,
       {
         headers: {
@@ -40,6 +44,6 @@ export class Net {
         method: 'POST',
         body: JSON.stringify(data)
       })
-      .then(async response => await decodeResult<T>(response))
+      .then(async response => await decodeResult<T>(response, isT))
   }
 }
