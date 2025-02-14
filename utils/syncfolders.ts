@@ -34,7 +34,12 @@ interface FolderInfo {
 }
 
 interface RowCountResult {
-  rowCount: number | undefined
+  rowCount: number
+}
+
+export function isRowCountResult(obj: unknown): obj is RowCountResult {
+  if (obj == null || typeof obj !== 'object') return false
+  return 'rowCount' in obj && typeof obj.rowCount === 'number'
 }
 
 export class Imports {
@@ -126,10 +131,11 @@ export class Functions {
             'pictures.path': null
           })
       })
-    
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Postgres returns rowcount differently. handle the difference.
-    let count = (insertedpics as unknown as RowCountResult).rowCount
-    if (count === undefined) {
+    let count = 0
+    if (isRowCountResult(insertedpics)) {
+      count = insertedpics.rowCount
+    }
+    if (insertedpics instanceof Array && insertedpics.length > 0 && typeof insertedpics[0] === 'number') {
       [ count ] = insertedpics
     }
     logger(`Added ${count} new pictures`)
@@ -174,10 +180,11 @@ export class Functions {
             'folders.path': null
           })
       })
-    
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Postgres returns rowcount differently. handle the difference.
-    let count = (folders as unknown as RowCountResult).rowCount
-    if (count === undefined) {
+    let count = 0
+    if (isRowCountResult(folders)) {
+      count = folders.rowCount
+    }
+    if (folders instanceof Array && folders.length > 0 && typeof folders[0] === 'number') {
       [ count ] = folders
     }
     logger(`Added ${count} new folders`)

@@ -11,12 +11,150 @@ import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 import persistance from '../../utils/persistance'
 
-import { getRouter, Imports } from '../../routes/api'
+import { isReqWithBodyData, getRouter, Imports, ReadBody } from '../../routes/api'
 import { Functions, ModCount } from '../../routes/apiFunctions'
 
 import assert from 'assert'
 import type { Debugger } from 'debug'
 import type { Knex } from 'knex'
+
+@suite
+export class ApiIsbodyDataTests {  
+  @test
+  'it should reject null object' (): void {
+    const obj = null
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined object' (): void {
+    const obj = undefined
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non object object' (): void {
+    const obj = 42
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject null object body' (): void {
+    const obj = {
+      body: null
+    }
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined object body' (): void {
+    const obj = {
+      body: undefined
+    }
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject missing object body' (): void {
+    const obj = {}
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject null object path' (): void {
+    const obj = {
+      body: {
+        path: null
+      }
+    }
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined object path' (): void {
+    const obj = {
+      body: {
+        path: undefined
+      }
+    }
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject missing object path' (): void {
+    const obj = {
+      body: {}
+    }
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non string object path' (): void {
+    const obj = {
+      body: {
+        path: {}
+      }
+    }
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non number modCount' (): void {
+    const obj = {
+      body: {
+        path: '',
+        modCount: {}
+      }
+    }
+    expect(isReqWithBodyData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should accept minimum object' (): void {
+    const obj = {
+      body: {
+        path: ''
+      }
+    }
+    expect(isReqWithBodyData(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept full object' (): void {
+    const obj = {
+      body: {
+        modCount: 0,
+        path: ''
+      }
+    }
+    expect(isReqWithBodyData(obj)).to.equal(true)
+  }
+}
+
+@suite
+export class ApiReadBodyTests {
+  @test
+  'it should return body when successful parse' (): void {
+    const obj = {
+      body: {
+        path: 'this is my path',
+        rand: Math.random()
+      }
+    }
+    expect(ReadBody(obj)).to.equal(obj.body)
+  }
+
+  @test
+  'it should throw when body does not parse' (): void {
+    try {
+      ReadBody({})
+      expect.fail('should not have succeeded in function call')
+    } catch(e: unknown) {
+      if (!(e instanceof Error)) expect.fail('non error should not have been thrown')
+      expect(e.message).to.equal('Invalid JSON Object provided as input')
+    }
+  }
+}
 
 @suite
 export class ApiGetRouterTests {
@@ -641,11 +779,28 @@ export class ApiNavigateLatestRouteTests {
   }
 
   @test
+  async 'it should accept missing modcount and handle as invalid modcount' (): Promise<void> {
+    this.ValidateModcountStub?.returns(false)
+    assert(this.RouteHandler !== undefined)
+    await this.RouteHandler(this.RequestFake, this.ResponseFake)
+    expect(this.ResponseStub.status.callCount).to.equal(1)
+    expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+    expect(this.ResponseStub.send.callCount).to.equal(1)
+    expect(this.ResponseStub.send.firstCall.args).to.deep.equal(['-1'])
+  }
+
+  @test
   async 'it should return new modcount when validate passes' (): Promise<void> {
     this.ValidateModcountStub?.returns(true)
     this.IncrementModcountStub?.returns(5050)
+    const req = {
+      body: {
+        path: '/image.png'
+      },
+      originalUrl: '/'
+    } as unknown as Request
     assert(this.RouteHandler !== undefined)
-    await this.RouteHandler(this.RequestFake, this.ResponseFake)
+    await this.RouteHandler(req, this.ResponseFake)
     expect(this.ResponseStub.send.callCount).to.equal(1)
     expect(this.ResponseStub.send.firstCall.args).to.deep.equal(['5050'])
   }

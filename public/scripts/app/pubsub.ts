@@ -1,7 +1,6 @@
 'use sanity'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Refector to make this explicitly typesafe without resorting to `any`
-export type SubscriberFunction = (recievedData: any, actualTopic?: string) => void
+export type SubscriberFunction = (recievedData: unknown, actualTopic?: string) => void
 
 export type VoidMethod = () => void
 
@@ -18,8 +17,7 @@ export class PubSub {
   protected static subscribers: { [key: string]: SubscriberFunction[] } = {}
   protected static deferred: DeferredMethod[] = []
   protected static intervals: { [key: string]: (DeferredMethod & IntervalMethod) } = {}
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- This is a timer, and the definition is different between the browser and node...
-  protected static timer: any // it's NodeJS.Timer or number depending on browser or tests
+  protected static timer: NodeJS.Timeout | string | number | undefined
   protected static cycleTime = 10
   static Subscribe (topic: string, subscriber: SubscriberFunction): void {
     topic = topic.toUpperCase()
@@ -31,8 +29,7 @@ export class PubSub {
     }
   }
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: Refector to make this explicitly typesafe without resorting to `any`
-  static Publish (topic: string, data?: any): void {
+  static Publish (topic: string, data?: unknown): void {
     const searchTopic = topic.toUpperCase()
     const matchingTopics = Object.keys(this.subscribers)
       .sort()
@@ -98,8 +95,7 @@ export class PubSub {
 
   static StopDeferred (): void {
     if (this.timer != null) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- This is a timer, and the definition is different between the browser and node...
-      clearInterval(this.timer as number)
+      clearInterval(this.timer)
       this.timer = undefined
     }
   }

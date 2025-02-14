@@ -1,11 +1,22 @@
 
-export function CloneNode<T extends HTMLElement>(source: T | DocumentFragment | undefined | null): T | undefined {
-  if (source?.nodeName === 'TEMPLATE') {
-    // unwrap template elements
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Typesafe cloning of HTML nodes doesnt' appear possible without updated d.ts defintitions...
-    source = (source as unknown as HTMLTemplateElement).content
+function isHTMLTemplateElement(obj: HTMLElement|DocumentFragment): obj is HTMLTemplateElement {
+  return obj.nodeName === 'TEMPLATE' && 'content' in obj && obj.content != null
+}
+
+function isElement(obj: unknown): obj is Element {
+  return obj != null && typeof obj === 'object' && 'firstElementChild' in obj
+}
+
+export function isHTMLElement(obj: unknown): obj is HTMLElement {
+  return obj != null && typeof obj === 'object' && 'style' in obj
+}
+
+export function CloneNode<T extends HTMLElement>(source: T | DocumentFragment | undefined | null, isT: (obj: Element | null) => obj is T): T | undefined {
+  if (source != null && isHTMLTemplateElement(source)) {
+    source = source.content
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Typesafe cloning of HTML nodes doesnt' appear possible without updated d.ts defintitions...
-  const elem = (source?.cloneNode(true) as Element | undefined)?.firstElementChild as T | undefined
-  return elem ?? undefined
+  const clone = source?.cloneNode(true)
+  if (!isElement(clone)) return undefined
+  const elem = clone.firstElementChild
+  return isT(elem) ? elem : undefined
 }

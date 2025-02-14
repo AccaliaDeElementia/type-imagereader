@@ -37,8 +37,7 @@ export class CyclicUpdater {
 
 export class CyclicManager {
   protected static updaters: CyclicUpdater[] = []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- This is a timer, and the definition is different between the browser and node...
-  protected static timer: any = undefined
+  protected static timer: NodeJS.Timeout | number | undefined = undefined
   static Add (...updaters: CyclicUpdater[]): void {
     this.updaters.push(...updaters)
   }
@@ -52,8 +51,7 @@ export class CyclicManager {
 
   static Stop (): void {
     if (this.timer != null) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- This is a timer, and the definition is different between the browser and node...
-      clearInterval(this.timer as number)
+      clearInterval(this.timer)
       this.timer = undefined
     }
   }

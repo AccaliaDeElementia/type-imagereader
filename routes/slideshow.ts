@@ -160,13 +160,13 @@ export class Functions {
   }
 
   public static async TickCountdown (knex: Knex, io: WebSocketServer): Promise<void> {
+    const newRooms: {[name: string]: SlideshowRoom} = {}
     for (const room of Object.values(Config.rooms)) {
       room.countdown--
       if (room.countdown <= -60 * Config.countdownDuration) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- allow cleanup of the room map
-        delete Config.rooms[room.path]
         continue
       }
+      newRooms[room.path] = room
       const sockets = io.of('/').adapter.rooms.get(room.path)
       if ((sockets?.size ?? 0) < 1) {
         continue
@@ -177,6 +177,7 @@ export class Functions {
         io.to(room.path).emit('new-image', room.uriSafeImage)
       }
     }
+    Config.rooms = newRooms
   }
 
   public static HandleSocket (knex: Knex, io: WebSocketServer, socket: Socket): void {

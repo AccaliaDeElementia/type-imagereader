@@ -16,10 +16,10 @@ export interface Data {
   noMenu?: boolean
   name?: string
   parent?: string
-  next?: Data
-  nextUnread?: Data
-  prev?: Data
-  prevUnread?: Data
+  next?: Data | null
+  nextUnread?: Data | null
+  prev?: Data | null
+  prevUnread?: Data | null
   pictures?: object[]
   children?: ChildFolder[]
 }
@@ -30,10 +30,10 @@ export function isData (obj: unknown): obj is Data {
   if ('noMenu' in obj && typeof obj.noMenu !== 'boolean' && obj.noMenu !== undefined) return false
   if ('name' in obj && typeof obj.name !== 'string' && obj.name !== undefined) return false
   if ('parent' in obj && typeof obj.parent !== 'string' && obj.parent !== undefined) return false
-  if ('next' in obj && !isData(obj.next)) return false
-  if ('nextUnread' in obj && !isData(obj.nextUnread)) return false
-  if ('prev' in obj && !isData(obj.prev)) return false
-  if ('prevUnread' in obj && !isData(obj.prevUnread)) return false
+  if ('next' in obj && obj.next !== null && !isData(obj.next)) return false
+  if ('nextUnread' in obj && obj.nextUnread !== null && !isData(obj.nextUnread)) return false
+  if ('prev' in obj && obj.prev !== null && !isData(obj.prev)) return false
+  if ('prevUnread' in obj && obj.prevUnread !== null &&  !isData(obj.prevUnread)) return false
   if ('pictures' in obj) {
     if (!(obj.pictures instanceof Array)) return false
     for(const pic of obj.pictures as unknown[]) {
@@ -56,6 +56,13 @@ export function isData (obj: unknown): obj is Data {
 interface NoMenuPath {
   path: string
   noMenu: boolean
+}
+
+export function isNoMenuPath(obj: unknown): obj is NoMenuPath {
+  if (obj == null || typeof obj !== 'object') return false
+  if (!('path' in obj) || typeof obj.path !== 'string') return false
+  if (!('noMenu' in obj) || typeof obj.noMenu !== 'boolean') return false
+  return true
 }
 
 export class Navigation {
@@ -103,10 +110,10 @@ export class Navigation {
     this.LocationAssign = window.location.assign
     this.current.path = this.FolderPath
     this.LoadData().catch(() => null)
-    Subscribe('Navigate:Load', (path: string | NoMenuPath): void => {
+    Subscribe('Navigate:Load', (path): void => {
       if (typeof path === 'string') {
         this.current = { path }
-      } else {
+      } else if (isNoMenuPath(path)) {
         this.current = path
       }
       this.LoadData().catch(() => null)

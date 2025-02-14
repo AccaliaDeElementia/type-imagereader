@@ -18,9 +18,26 @@ export class Imports {
   public static debug = debug
 }
 
+interface ReqWithBodyData {
+  body: BodyData
+}
+
 interface BodyData {
-  modCount: number,
+  modCount?: number,
   path: string
+}
+
+export function isReqWithBodyData(obj: unknown): obj is ReqWithBodyData {
+  if (obj == null || typeof obj !== 'object') return false
+  if (!('body' in obj) || obj.body == null || typeof obj.body !== 'object') return false
+  if ('modCount' in obj.body && typeof obj.body.modCount !== 'number') return false
+  if (!('path' in obj.body) || typeof obj.body.path !== 'string') return false
+  return true
+}
+
+export function ReadBody (req: unknown): BodyData {
+  if (!isReqWithBodyData(req)) throw new Error('Invalid JSON Object provided as input')
+  return req.body
 }
 
 // Export the base-router
@@ -91,16 +108,11 @@ export async function getRouter (_app: Application, _server: Server, _socket: We
   router.get('/listing/*', listing)
   router.get('/listing', listing)
 
-  const ReadBody = (req: Request): BodyData => ({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Handle reading posted data - TODO figure out a typesafe way to do this?
-    modCount: +`${req.body?.modCount}`,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Handle reading posted data - TODO figure out a typesafe way to do this?
-    path: `${req.body?.path}`
-  })
+  
 
   router.post('/navigate/latest', handleErrors(async (req, res) => {
     const body = ReadBody(req)
-    const incomingModCount = body.modCount
+    const incomingModCount = body.modCount ?? Number.NaN
     let response = -1
     const path = parsePath(UriSafePath.decode(body.path), res)
     if (path == null) {

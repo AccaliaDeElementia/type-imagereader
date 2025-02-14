@@ -2,44 +2,63 @@
 
 import { Publish, Subscribe } from './pubsub'
 import { Net } from './net'
-import { CloneNode } from './utils'
+import { CloneNode, isHTMLElement } from './utils'
 
-export interface Bookmark {
+export interface DataBookmark {
   name: string
   path: string
   folder: string
 }
 
-interface BookmarkFolder {
+interface DataBookmarkFolder {
   name: string
   path: string
-  bookmarks: Bookmark[]
+  bookmarks: DataBookmark[]
 }
-
 
 interface DataWithBookmarks {
   path: string
-  bookmarks: BookmarkFolder[]
+  bookmarks: DataBookmarkFolder[]
 }
 
-interface BookMarkFolder {
+interface BookmarkFolder {
   name: string
   element: HTMLElement
 }
 
-export function isBookmarkFolderArray(obj: unknown): obj is BookmarkFolder[] {
+export function isDataBookmark(obj: unknown): obj is DataBookmark {
+  if (typeof obj !== 'object' || obj == null) return false
+  if (!('name' in obj) || typeof obj.name !== 'string') return false
+  if (!('path' in obj) || typeof obj.path !== 'string') return false
+  if (!('folder' in obj) || typeof obj.folder !== 'string') return false
+  return true
+}
+
+export function isDataBookmarkFolder(obj: unknown): obj is DataBookmarkFolder[] {
+  if (typeof obj !== 'object' || obj == null) return false
+  if (!('name' in obj) || typeof obj.name !== 'string') return false
+  if (!('path' in obj) || typeof obj.path !== 'string') return false
+  if (!('bookmarks' in obj) || !(obj.bookmarks instanceof Array)) return false
+  for(const bookmark of obj.bookmarks as unknown[]) {
+    if (!isDataBookmark(bookmark)) return false
+  }
+  return true
+}
+
+export function isDataWithBookmarks(obj: unknown): obj is DataWithBookmarks {
+  if (typeof obj !== 'object' || obj == null) return false
+  if (!('path' in obj) || typeof obj.path !== 'string') return false
+  if (!('bookmarks' in obj) || !(obj.bookmarks instanceof Array)) return false
+  for(const bookmark of obj.bookmarks as unknown[]) {
+    if (!isDataBookmarkFolder(bookmark)) return false
+  }
+  return true
+}
+
+export function isDataBookmarkFolderArray(obj: unknown): obj is DataBookmarkFolder[] {
   if (typeof obj !== 'object' || !(obj instanceof Array)) return false
   for (const folder of obj as unknown[]) {
-    if (typeof folder !== 'object' || folder == null) return false
-    if (!('name' in folder) || typeof folder.name !== 'string') return false
-    if (!('path' in folder) || typeof folder.path !== 'string') return false
-    if (!('bookmarks' in folder) || !(folder.bookmarks instanceof Array)) return false
-    for(const bookmark of folder.bookmarks as unknown[]) {
-      if (typeof bookmark !== 'object' || bookmark == null) return false
-      if (!('name' in bookmark) || typeof bookmark.name !== 'string') return false
-      if (!('path' in bookmark) || typeof bookmark.path !== 'string') return false
-      if (!('folder' in bookmark) || typeof bookmark.folder !== 'string') return false
-    }
+    if (!isDataBookmarkFolder(folder)) return false
   }
   return true
 }
@@ -49,12 +68,12 @@ export class Bookmarks {
   protected static bookmarkFolder: DocumentFragment | undefined = undefined
   protected static bookmarksTab: HTMLElement | null = null
 
-  public static BookmarkFolders: BookMarkFolder[] = []
+  public static BookmarkFolders: BookmarkFolder[] = []
 
-  public static GetFolder (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null {
+  public static GetFolder (openPath: string, bookmarkFolder: DataBookmarkFolder): HTMLElement | null {
     let folder = this.BookmarkFolders.find(e => e.name === bookmarkFolder.path)
     if (folder == null) {
-      const element = CloneNode(Bookmarks.bookmarkFolder)
+      const element = CloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
       if (element == null) {
         return null
       }
@@ -79,8 +98,8 @@ export class Bookmarks {
     return folder.element
   }
 
-  public static BuildBookmark (bookmark: Bookmark): HTMLElement | null {
-    const card = CloneNode(Bookmarks.bookmarkCard)
+  public static BuildBookmark (bookmark: DataBookmark): HTMLElement | null {
+    const card = CloneNode(Bookmarks.bookmarkCard, isHTMLElement)
     if (card == null) {
       return null
     }
@@ -149,24 +168,35 @@ export class Bookmarks {
     this.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     this.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: redo with typesafe PubSub
-    Subscribe('Navigate:Data', (data) => { this.buildBookmarks(data as DataWithBookmarks) })
+    Subscribe('Navigate:Data', (data) => { 
+      if (isDataWithBookmarks(data)) this.buildBookmarks(data)
+    })
 
     Subscribe('Bookmarks:Load', () => {
-      Net.GetJSON<BookmarkFolder[]>('/api/bookmarks', isBookmarkFolderArray)
+      Net.GetJSON<DataBookmarkFolder[]>('/api/bookmarks', isDataBookmarkFolderArray)
         .then(bookmarks => { this.buildBookmarks({ path: '', bookmarks }) })
         .catch(() => null)
     })
 
-    Subscribe('Bookmarks:Add', (path: string) => {
+    Subscribe('Bookmarks:Add', (path) => {
+      if (typeof path !== 'string') return
       Net.PostJSON('/api/bookmarks/add', { path }, (_: unknown): _ is unknown => true)
+        .catch((err: unknown) => {
+          if (!(err instanceof Error)) throw new Error('Non Error rejection!')
+          if (err.message !== 'Empty JSON response recieved') throw err
+        })
         .then(() => { Publish('Bookmarks:Load') })
         .then(() => { Publish('Loading:Success') })
         .catch(() => null)
     })
 
-    Subscribe('Bookmarks:Remove', (path: string) => {
+    Subscribe('Bookmarks:Remove', (path) => {
+      if (typeof path !== 'string') return
       Net.PostJSON('/api/bookmarks/remove', { path }, (_: unknown): _ is unknown => true)
+        .catch((err: unknown) => {
+          if (!(err instanceof Error)) throw new Error('Non Error rejection!')
+          if (err.message !== 'Empty JSON response recieved') throw err
+        })
         .then(() => { Publish('Bookmarks:Load') })
         .then(() => { Publish('Loading:Success') })
         .catch(() => null)

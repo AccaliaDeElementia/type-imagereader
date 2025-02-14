@@ -12,13 +12,28 @@ export interface WeatherResults {
   sunset: number | undefined
 }
 
+export function isWeatherResults(obj: unknown): obj is WeatherResults {
+  if (obj == null || typeof obj !== 'object') return false
+  if ('temp' in obj && obj.temp !== undefined && typeof obj.temp !== 'number') return false
+  if ('pressure' in obj && obj.pressure !== undefined && typeof obj.pressure !== 'number') return false
+  if ('humidity' in obj && obj.humidity !== undefined && typeof obj.humidity !== 'number') return false
+  if ('description' in obj && obj.description !== undefined && typeof obj.description !== 'string') return false
+  if ('icon' in obj && obj.icon !== undefined && typeof obj.icon !== 'string') return false
+  if ('sunrise' in obj && obj.sunrise !== undefined && typeof obj.sunrise !== 'number') return false
+  if ('sunset' in obj && obj.sunset !== undefined && typeof obj.sunset !== 'number') return false
+  return true
+}
+
 export const Functions = {
   fetch
 }
 
 const fetchWeather = async (uri: string): Promise<WeatherResults> => await Functions.fetch(uri)
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Generic browser fetch? browsserify node-fetch?
-  .then(async result => (await result.json()) as WeatherResults)
+  .then(async result => {
+    const data = await result.json() as unknown
+    if (!isWeatherResults(data)) throw new Error('Invalid JSON Object provided as input')
+    return data
+  })
 
 const formatData = (data: number | string | undefined, suffix = ''): Text => {
   let text = ''

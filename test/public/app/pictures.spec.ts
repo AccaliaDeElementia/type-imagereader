@@ -11,7 +11,7 @@ import { render } from 'pug'
 
 import { Net } from '../../../public/scripts/app/net'
 import { Publish, PubSub, Subscribe } from '../../../public/scripts/app/pubsub'
-import { NavigateTo, Pictures } from '../../../public/scripts/app/pictures'
+import { isDataWithPictures, isPicture, NavigateTo, Pictures } from '../../../public/scripts/app/pictures'
 import type { PageSelector, Picture } from '../../../public/scripts/app/pictures'
 import { Loading } from '../../../public/scripts/app/loading'
 import { Navigation } from '../../../public/scripts/app/navigation'
@@ -60,6 +60,484 @@ interface TestVisualViewport {
 
 const Delay = async (ms = 10): Promise<void> => {
   await (promisify(cb => { setTimeout(() => { cb(null, null) }, ms)}))()
+}
+
+@suite
+export class PicturesIsPicture {
+  @test
+  'it should reject null' () : void {
+    const obj = null
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined object' () : void {
+    const obj = undefined
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object object' () : void {
+    const obj = true
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null path object' () : void {
+    const obj = {
+      path: null,
+      name: '',
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined path object' () : void {
+    const obj = {
+      path: undefined,
+      name: '',
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing path object' () : void {
+    const obj = {
+      name: '',
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string path object' () : void {
+    const obj = {
+      path: {},
+      name: '',
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null name object' () : void {
+    const obj = {
+      path: '',
+      name: null,
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined name object' () : void {
+    const obj = {
+      path: '',
+      name: undefined,
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing name object' () : void {
+    const obj = {
+      path: '',
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string object' () : void {
+    const obj = {
+      path: '',
+      name: 42,
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null seen object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: null,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined seen object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: undefined,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing seen object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non boolean seen object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: 'boo',
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number index object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: false,
+      index: true,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number page object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: false,
+      index: 0,
+      page: {},
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non HTMLElement element object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        fake: Math.random()
+      }
+    }
+    expect(isPicture(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept minimum object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: false
+    }
+    expect(isPicture(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept full object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: false,
+      index: 0,
+      page: 0,
+      element: {
+        style: '' // a "fake" HTMLElement
+      }
+    }
+    expect(isPicture(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept alternate full object' () : void {
+    const obj = {
+      path: '',
+      name: '',
+      seen: false,
+      index: undefined,
+      page: undefined,
+      element: undefined
+    }
+    expect(isPicture(obj)).to.equal(true)
+  }
+}
+
+@suite
+export class PictureIsDatasWithPictures {
+  @test
+  'it should rekect null object' (): void {
+    const obj = null
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined object' (): void {
+    const obj = undefined
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non object object' (): void {
+    const obj = ''
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject null pictures object' (): void {
+    const obj = {
+      pictures: null,
+      modCount: -1,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should accept undefined picture object' (): void {
+    const obj = {
+      pictures: undefined,
+      modCount: -1,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept missing pictures object' (): void {
+    const obj = {
+      modCount: -1,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept empty pictures array' (): void {
+    const obj = {
+      pictures: [],
+      modCount: -1,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject non array pictures object' (): void {
+    const obj = {
+      pictures: {},
+      modCount: -1,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject pictures array with invalid picture object' (): void {
+    const obj = {
+      pictures: [null],
+      modCount: -1,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should accept missing modCount object' (): void {
+    const obj = {
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject null modcount object' (): void {
+    const obj = {
+      modCount: null,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined modcount object' (): void {
+    const obj = {
+      modCount: undefined,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non number modcount object' (): void {
+    const obj = {
+      modCount: '-1',
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject null cover object' (): void {
+    const obj = {
+      cover: null,
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined cover object' (): void {
+    const obj = {
+      cover: undefined,
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non string cover object' (): void {
+    const obj = {
+      cover: {},
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject null noMenu object' (): void {
+    const obj = {
+      noMenu: null
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined noMenu object' (): void {
+    const obj = {
+      noMenu: undefined
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non boolean noMenu object' (): void {
+    const obj = {
+      noMenu: 'true'
+    }
+    expect(isDataWithPictures(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept minimum object' (): void {
+    const obj = {}
+    expect(isDataWithPictures(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept full object' (): void {
+    const obj = {
+      pictures: [{
+        name: '',
+        path: '',
+        seen: false
+      }],
+      modCount: -1,
+      cover: '',
+      noMenu: true
+    }
+    expect(isDataWithPictures(obj)).to.equal(true)
+  }
 }
 
 class TestPics extends Pictures {

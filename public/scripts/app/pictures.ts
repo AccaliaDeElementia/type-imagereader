@@ -1,6 +1,6 @@
 'use sanity'
 
-import { CloneNode } from './utils'
+import { isHTMLElement, CloneNode } from './utils'
 import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
 import { Loading } from './loading'
@@ -29,6 +29,31 @@ export interface DataWithPictures {
   modCount?: number
   cover?: string
   noMenu?: boolean
+}
+
+export function isPicture(obj: unknown): obj is Pictures {
+  if (obj == null || typeof obj !== 'object') return false
+  if (!('path' in obj) || typeof obj.path !== 'string') return false
+  if (!('name' in obj) || typeof obj.name !== 'string') return false
+  if (!('seen' in obj) || typeof obj.seen !== 'boolean') return false
+  if ('index' in obj && !(obj.index === undefined || typeof obj.index === 'number')) return false
+  if ('page' in obj && !(obj.page === undefined || typeof obj.page === 'number')) return false
+  if ('element' in obj && !(obj.element === undefined || isHTMLElement(obj.element))) return false
+  return true
+}
+
+export function isDataWithPictures(obj: unknown): obj is DataWithPictures {
+  if (obj == null || typeof obj !== 'object') return false
+  if ('pictures' in obj && obj.pictures !== undefined) {
+    if (obj.pictures === null || !(obj.pictures instanceof Array)) return false
+    for (const pic of obj.pictures as unknown[]) {
+      if (!isPicture(pic)) return false
+    }
+  }
+  if ('modCount' in obj && typeof obj.modCount !== 'number') return false
+  if ('cover' in obj && typeof obj.cover !== 'string') return false
+  if ('noMenu' in obj && typeof obj.noMenu !== 'boolean') return false
+  return true
 }
 
 export type PageSelector = () => number
@@ -61,7 +86,9 @@ export class Pictures {
       }
     })
 
-    Subscribe('Navigate:Data', (data: DataWithPictures) => { this.LoadData(data) })
+    Subscribe('Navigate:Data', (data) => { 
+      if (isDataWithPictures(data)) this.LoadData(data) 
+    })
     this.InitActions()
     this.InitMouse()
     this.InitUnreadSelectorSlider()
@@ -199,7 +226,7 @@ export class Pictures {
   }
 
   public static MakePictureCard (picture: Picture): HTMLElement| undefined {
-    const card = CloneNode(this.imageCard)
+    const card = CloneNode(this.imageCard, isHTMLElement)
     picture.element = card
     card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
     if (picture.seen) {
@@ -227,7 +254,7 @@ export class Pictures {
 
   public static MakePaginatorItem (label: string, selector: PageSelector): HTMLElement | undefined {
     const pageItem = document.querySelector<HTMLTemplateElement>('#PaginatorItem')
-    const item = CloneNode(pageItem)
+    const item = CloneNode(pageItem, isHTMLElement)
     item?.querySelector('span')?.replaceChildren(document.createTextNode(label))
     item?.addEventListener('click', (e: Event) => {
       this.SelectPage(selector())
@@ -238,7 +265,7 @@ export class Pictures {
 
   public static MakePaginator (pageCount: number): HTMLElement | null {
     if (pageCount < 2) return null
-    const paginator = CloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'))
+    const paginator = CloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'), isHTMLElement)
     if (paginator === undefined) return null
     const domItems = paginator.querySelector('.pagination')
     const firstItem = this.MakePaginatorItem('«', () => Math.max(this.CurrentPage - 1, 1))

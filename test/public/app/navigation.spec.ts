@@ -10,7 +10,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import { isData, Navigation } from '../../../public/scripts/app/navigation'
+import { isNoMenuPath, isData, Navigation } from '../../../public/scripts/app/navigation'
 import type { Data } from '../../../public/scripts/app/navigation'
 import { Net } from '../../../public/scripts/app/net'
 import assert from 'assert'
@@ -28,7 +28,108 @@ html
       div.innerTarget
 `
 const Delay = async (ms = 10): Promise<void> => {
-  await (promisify(cb => { setTimeout(() => { cb(null, null) }, ms)}))()
+  await (promisify(cb => { setTimeout(() => { cb(null, null) }, ms) }))()
+}
+
+@suite
+export class NavigationIsNoMenuPathTests {
+  
+  @test
+  'it should reject null object' () : void {
+    const obj = null
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject undefined object' () : void {
+    const obj = undefined
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject non object object' () : void {
+    const obj = 0
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject null path object' () : void {
+    const obj = {
+      path: null,
+      noMenu: false
+    }
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject undefined path object' () : void {
+    const obj = {
+      path: undefined,
+      noMenu: false
+    }
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject missing path object' () : void {
+    const obj = {
+      noMenu: false
+    }
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject non string pathn object' () : void {
+    const obj = {
+      path: 42,
+      noMenu: false
+    }
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject null noMenu object' () : void {
+    const obj = {
+      path: '',
+      noMenu: null
+    }
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject undefined noMenu object' () : void {
+    const obj = {
+      path: '',
+      noMenu: undefined
+    }
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject missing noMenu object' () : void {
+    const obj = {
+      path: ''
+    }
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should reject non boolean noMenu' () : void {
+    const obj = {
+      path: '',
+      noMenu: 0
+    }
+    expect(isNoMenuPath(obj)).to.equal(false) 
+  }
+  
+  @test
+  'it should accept valid object' () : void {
+    const obj = {
+      path: '',
+      noMenu: false
+    }
+    expect(isNoMenuPath(obj)).to.equal(true) 
+  }
 }
 
 class TestNavigation extends Navigation {
@@ -50,7 +151,7 @@ export class NavigationIsDataTests {
     }
     expect(isData(obj)).to.equal(true)
   }
-  
+
   @test
   'it should accept omplete object' (): void {
     const obj = {
@@ -166,12 +267,12 @@ export class NavigationIsDataTests {
   }
 
   @test
-  'it should reject null next object' (): void {
+  'it should accept null next object' (): void {
     const obj = {
       path: '',
       next: null
     }
-    expect(isData(obj)).to.equal(false)
+    expect(isData(obj)).to.equal(true)
   }
 
   @test
@@ -186,14 +287,12 @@ export class NavigationIsDataTests {
   }
 
   @test
-  'it should reject null nextUnread' (): void {
+  'it should accept null nextUnread' (): void {
     const obj = {
       path: '',
-      nextUnread: {
-        path: false
-      }
+      nextUnread: null
     }
-    expect(isData(obj)).to.equal(false)
+    expect(isData(obj)).to.equal(true)
   }
 
   @test
@@ -208,12 +307,12 @@ export class NavigationIsDataTests {
   }
 
   @test
-  'it should reject null prev' (): void {
+  'it should accept null prev' (): void {
     const obj = {
       path: '',
       prev: null
     }
-    expect(isData(obj)).to.equal(false)
+    expect(isData(obj)).to.equal(true)
   }
 
   @test
@@ -228,12 +327,12 @@ export class NavigationIsDataTests {
   }
 
   @test
-  'it should reject null prevUnread' (): void {
+  'it should accept null prevUnread' (): void {
     const obj = {
       path: '',
       prevUnread: null
     }
-    expect(isData(obj)).to.equal(false)
+    expect(isData(obj)).to.equal(true)
   }
 
   @test
@@ -269,7 +368,7 @@ export class NavigationIsDataTests {
   'it should reject null picture in array' (): void {
     const obj = {
       path: '',
-      pictures: [ null ]
+      pictures: [null]
     }
     expect(isData(obj)).to.equal(false)
   }
@@ -278,7 +377,7 @@ export class NavigationIsDataTests {
   'it should reject undefined picture in array' (): void {
     const obj = {
       path: '',
-      pictures: [ undefined ]
+      pictures: [undefined]
     }
     expect(isData(obj)).to.equal(false)
   }
@@ -287,7 +386,7 @@ export class NavigationIsDataTests {
   'it should reject non object picture in array' (): void {
     const obj = {
       path: '',
-      pictures: [ false ]
+      pictures: [false]
     }
     expect(isData(obj)).to.equal(false)
   }
@@ -323,7 +422,7 @@ export class NavigationIsDataTests {
   'it should reject null child' (): void {
     const obj = {
       path: '',
-      children: [ null ]
+      children: [null]
     }
     expect(isData(obj)).to.equal(false)
   }
@@ -332,7 +431,7 @@ export class NavigationIsDataTests {
   'it should reject undefined child' (): void {
     const obj = {
       path: '',
-      children: [ undefined ]
+      children: [undefined]
     }
     expect(isData(obj)).to.equal(false)
   }
@@ -341,7 +440,7 @@ export class NavigationIsDataTests {
   'it should reject nonobject child' (): void {
     const obj = {
       path: '',
-      children: [ 17 ]
+      children: [17]
     }
     expect(isData(obj)).to.equal(false)
   }
@@ -1617,7 +1716,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     // let the callback finish
     await Delay(5)
     const fn = this.PostJSONStub.firstCall.args[2]
-    assert (fn !== undefined)
+    assert(fn !== undefined)
     expect(fn(undefined)).to.equal(true)
     expect(fn(null)).to.equal(true)
     expect(fn(true)).to.equal(true)
@@ -1730,7 +1829,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     // let the callback finish
     await Delay(5)
     const fn = this.PostJSONStub.firstCall.args[2]
-    assert (fn !== undefined)
+    assert(fn !== undefined)
     expect(fn(undefined)).to.equal(true)
     expect(fn(null)).to.equal(true)
     expect(fn(true)).to.equal(true)

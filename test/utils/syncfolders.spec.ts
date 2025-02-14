@@ -7,8 +7,68 @@ import Sinon, * as sinon from 'sinon'
 import type { Knex } from 'knex'
 import persistence from '../../utils/persistance'
 
-import synchronize, { Functions, Imports } from '../../utils/syncfolders'
+import synchronize, { Functions, Imports, isRowCountResult } from '../../utils/syncfolders'
 import type { Debugger } from 'debug'
+
+@suite
+export class SyncFoldersIsRowCountResult {  
+  @test
+  'it should reject null object' (): void {
+    const obj = null
+    expect(isRowCountResult(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined object' (): void {
+    const obj = undefined
+    expect(isRowCountResult(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should accept non object object' (): void {
+    const obj = "hello there"
+    expect(isRowCountResult(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject missing rowCount' (): void {
+    const obj = {
+    }
+    expect(isRowCountResult(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject null rowCount' (): void {
+    const obj = {
+      rowCount: null
+    }
+    expect(isRowCountResult(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined rowCount' (): void {
+    const obj = {
+      rowCount: undefined
+    }
+    expect(isRowCountResult(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non number rowCount' (): void {
+    const obj = {
+      rowCount: 'general kenobi'
+    }
+    expect(isRowCountResult(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should accept minimum object' (): void {
+    const obj = {
+      rowCount: 0
+    }
+    expect(isRowCountResult(obj)).to.equal(true)
+  }
+}
 
 @suite
 export class SyncFoldersToSortKeyTests {

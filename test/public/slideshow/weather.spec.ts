@@ -7,7 +7,7 @@ import * as sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
-import { GetAlmanac, LocalWeatherUpdater, WeatherUpdater, Functions } from '../../../public/scripts/slideshow/weather'
+import { GetAlmanac, LocalWeatherUpdater, WeatherUpdater, Functions, isWeatherResults } from '../../../public/scripts/slideshow/weather'
 
 const markup = `
 html
@@ -30,6 +30,288 @@ interface FetchDataMap {
   temp?: number
   description?: string
   icon?: string
+}
+
+@suite
+export class SlideshowWeatherIsWeatehrResultsTests {
+  @test
+  'it should accept minimum object' (): void {
+    const obj = {}
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject non number temp object' (): void {
+    const obj = {
+      temp: {}
+    }
+    expect(isWeatherResults(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept undefined temp object' (): void {
+    const obj = {
+      temp: undefined
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept number temp object' (): void {
+    const obj = {
+      temp: 42
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept missing temp object' (): void {
+    const obj = {
+      pressure: 0,
+      humidity: 0,
+      description: '',
+      icon: '',
+      sunrise: 0,
+      sunset: 0
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject non number pressure object' (): void {
+    const obj = {
+      pressure: {}
+    }
+    expect(isWeatherResults(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept undefined pressure object' (): void {
+    const obj = {
+      pressure: undefined
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept number pressure object' (): void {
+    const obj = {
+      pressure: 42
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept missing pressure object' (): void {
+    const obj = {
+      temp: 0,
+      humidity: 0,
+      description: '',
+      icon: '',
+      sunrise: 0,
+      sunset: 0
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject non number humidity object' (): void {
+    const obj = {
+      humidity: {}
+    }
+    expect(isWeatherResults(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept undefined humidity object' (): void {
+    const obj = {
+      humidity: undefined
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept number humidity object' (): void {
+    const obj = {
+      humidity: 42
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept missing humidity object' (): void {
+    const obj = {
+      temp: 0,
+      pressure: 0,
+      description: '',
+      icon: '',
+      sunrise: 0,
+      sunset: 0
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject non string description object' (): void {
+    const obj = {
+      description: {}
+    }
+    expect(isWeatherResults(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept undefined description object' (): void {
+    const obj = {
+      description: undefined
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept string description object' (): void {
+    const obj = {
+      description: '42'
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept missing description object' (): void {
+    const obj = {
+      temp: 0,
+      pressure: 0,
+      humidity: 0,
+      icon: '',
+      sunrise: 0,
+      sunset: 0
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject non string icon object' (): void {
+    const obj = {
+      icon: {}
+    }
+    expect(isWeatherResults(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept undefined icon object' (): void {
+    const obj = {
+      icon: undefined
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept string icon object' (): void {
+    const obj = {
+      icon: '42'
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept missing icon object' (): void {
+    const obj = {
+      temp: 0,
+      pressure: 0,
+      humidity: 0,
+      description: '',
+      sunrise: 0,
+      sunset: 0
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject non number sunrise object' (): void {
+    const obj = {
+      sunrise: {}
+    }
+    expect(isWeatherResults(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept undefined sunrise object' (): void {
+    const obj = {
+      sunrise: undefined
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept number sunrise object' (): void {
+    const obj = {
+      sunrise: 42
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept missing sunrise object' (): void {
+    const obj = {
+      temp: 0,
+      pressure: 0,
+      humidity: 0,
+      description: '',
+      icon: '',
+      sunset: 0
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject non number sunset object' (): void {
+    const obj = {
+      sunset: {}
+    }
+    expect(isWeatherResults(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept undefined sunset object' (): void {
+    const obj = {
+      sunset: undefined
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept number sunset object' (): void {
+    const obj = {
+      sunset: 42
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept missing sunset object' (): void {
+    const obj = {
+      temp: 0,
+      pressure: 0,
+      humidity: 0,
+      description: '',
+      icon: '',
+      sunrise: 0
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept full object' (): void {
+    const obj = {
+      temp: 0,
+      pressure: 0,
+      humidity: 0,
+      description: '',
+      icon: '',
+      sunrise: 0,
+      sunset: 0
+    }
+    expect(isWeatherResults(obj)).to.equal(true)
+  }
 }
 
 @suite
@@ -215,6 +497,20 @@ export class SlideshowWeatherTests {
   }
 
   @test
+  async 'LocalWeatherUpdater throws error when invalid response fetched' (): Promise<void> {
+    this.fetchStub.resolves({
+      json: async () => await Promise.resolve(null)
+    })
+    try {
+      await LocalWeatherUpdater.updateFn()
+      expect.fail('Should have received an error not a success!')
+    } catch (e: unknown) {
+      if (!(e instanceof Error)) expect.fail('should have received an instance of an error!')
+      expect(e.message).to.equal('Invalid JSON Object provided as input')
+    }
+  }
+
+  @test
   async 'WeatherUpdater fetches from server' (): Promise<void> {
     this.fetchData = {}
     await WeatherUpdater.updateFn()
@@ -331,6 +627,20 @@ export class SlideshowWeatherTests {
     icon.setAttribute('src', expected)
     await WeatherUpdater.updateFn()
     expect(icon.getAttribute('src')).to.equal(expected)
+  }
+
+  @test
+  async 'WeatherUpdater throws error when invalid response fetched' (): Promise<void> {
+    this.fetchStub.resolves({
+      json: async () => await Promise.resolve(null)
+    })
+    try {
+      await WeatherUpdater.updateFn()
+      expect.fail('Should have received an error not a success!')
+    } catch (e: unknown) {
+      if (!(e instanceof Error)) expect.fail('should have received an instance of an error!')
+      expect(e.message).to.equal('Invalid JSON Object provided as input')
+    }
   }
 
   @test

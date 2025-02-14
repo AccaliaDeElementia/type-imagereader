@@ -3,7 +3,7 @@
 import { Publish, Subscribe } from './pubsub'
 
 import type { Picture } from './pictures'
-import { CloneNode } from './utils'
+import { isHTMLElement, CloneNode } from './utils'
 
 export interface Folder {
   name: string
@@ -21,7 +21,7 @@ export class Folders {
   static FolderCard: DocumentFragment | null = null
 
   public static BuildCard (folder: Folder): HTMLElement | null {
-    const card = CloneNode(this.FolderCard)
+    const card = CloneNode(this.FolderCard, isHTMLElement)
     if (card == null) {
       return null
     }

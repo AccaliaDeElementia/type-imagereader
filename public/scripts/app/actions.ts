@@ -1,10 +1,18 @@
 'use sanity'
 
 import { Subscribe, Publish, AddInterval } from './pubsub'
+import { CloneNode, isHTMLElement } from './utils'
 
 interface NavigateData {
-  children?: number[]
-  pictures?: number[]
+  children?: unknown[]
+  pictures?: unknown[]
+}
+
+export function isNavigateData (obj: unknown): obj is NavigateData {
+  if (obj == null || typeof obj !== 'object') return false
+  if ('children' in obj && !(obj.children instanceof Array || obj.children === undefined) ) return false
+  if ('pictures' in obj && !(obj.pictures instanceof Array || obj.pictures === undefined)) return false
+  return true
 }
 
 interface ButtonDefinition {
@@ -29,8 +37,7 @@ export class Actions {
     result.classList.add('actions')
     for (const { name, image } of buttons) {
       const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Clone but typesafe?
-      const button = template?.content.cloneNode(true).firstChild as HTMLElement | null | undefined
+      const button = CloneNode(template, isHTMLElement)
       if (button == null) continue
       this.setInnerTextMaybe(button.querySelector('i'), image)
       this.setInnerTextMaybe(button.querySelector('h5'), name)
@@ -250,8 +257,9 @@ export class Actions {
   public static Init (): void {
     this.BuildActions()
 
-    Subscribe('Navigate:Data', (data: NavigateData) => {
-      if ((data.pictures == null || data.pictures.length < 1) &&
+    Subscribe('Navigate:Data', (data) => {
+      if (isNavigateData(data) &&
+        (data.pictures == null || data.pictures.length < 1) &&
         (data.children == null || data.children.length < 1)) {
         Publish('Tab:Select', 'Actions')
       }

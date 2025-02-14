@@ -8,7 +8,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import { Actions } from '../../../public/scripts/app/actions'
+import { Actions, isNavigateData } from '../../../public/scripts/app/actions'
 import assert from 'assert'
 
 const markup = `
@@ -35,6 +35,82 @@ interface GamePadStatus {
   Right: boolean
   Up: boolean
   Down: boolean
+}
+
+@suite
+export class ActionsIsNavigateData {
+  
+  @test
+  'it should accept empty object' (): void {
+    const obj = {}
+    expect(isNavigateData(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept object with children array' (): void {
+    const obj = {
+      children: [1, 2, 3]
+    }
+    expect(isNavigateData(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept undefined children array' (): void {
+    const obj = {
+      children: undefined
+    }
+    expect(isNavigateData(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject undefined children array' (): void {
+    const obj = {
+      children: null
+    }
+    expect(isNavigateData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should accept object with pictures array' (): void {
+    const obj = {
+      pictures: ['1', 4, false]
+    }
+    expect(isNavigateData(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should accept undefiend pictures array' (): void {
+    const obj = {
+      pictures: undefined
+    }
+    expect(isNavigateData(obj)).to.equal(true)
+  }
+  
+  @test
+  'it should reject null pictures array' (): void {
+    const obj = {
+      pictures: null
+    }
+    expect(isNavigateData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject null object' (): void {
+    const obj = null
+    expect(isNavigateData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject undefined' (): void {
+    const obj = undefined
+    expect(isNavigateData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should reject non object' (): void {
+    const obj = 42
+    expect(isNavigateData(obj)).to.equal(false)
+  }
 }
 
 class TestActions extends Actions {

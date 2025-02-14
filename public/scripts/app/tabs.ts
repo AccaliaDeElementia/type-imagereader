@@ -19,7 +19,9 @@ export class Tabs {
       })
     }
 
-    Subscribe('Tab:Select', (name) => { this.SelectTab(`${name}`) })
+    Subscribe('Tab:Select', (name) => { 
+      if (typeof name === 'string') this.SelectTab(name)
+    })
     this.SelectTab()
   }
 
