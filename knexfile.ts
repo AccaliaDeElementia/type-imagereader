@@ -7,15 +7,15 @@ module.exports = {
       host: 'postgres',
       database: 'postgres',
       user: 'postgres',
-      password: 'password'
+      password: 'password',
     },
     pool: {
       min: 2,
-      max: 10
+      max: 10,
     },
     migrations: {
-      tableName: 'knex_migrations'
-    }
+      tableName: 'knex_migrations',
+    },
   },
 
   // sqlite3: {
@@ -35,14 +35,14 @@ module.exports = {
       host: 'postgres',
       database: 'postgres',
       user: 'postgres',
-      password: 'password'
+      password: 'password',
     },
     pool: {
       min: 2,
-      max: 10
+      max: 10,
     },
     migrations: {
-      tableName: 'knex_migrations'
-    }
-  }
+      tableName: 'knex_migrations',
+    },
+  },
 }

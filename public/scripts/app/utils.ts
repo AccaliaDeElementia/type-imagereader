@@ -1,5 +1,4 @@
-
-function isHTMLTemplateElement(obj: HTMLElement|DocumentFragment): obj is HTMLTemplateElement {
+function isHTMLTemplateElement(obj: HTMLElement | DocumentFragment): obj is HTMLTemplateElement {
   return obj.nodeName === 'TEMPLATE' && 'content' in obj && obj.content != null
 }
 
@@ -11,7 +10,10 @@ export function isHTMLElement(obj: unknown): obj is HTMLElement {
   return obj != null && typeof obj === 'object' && 'style' in obj
 }
 
-export function CloneNode<T extends HTMLElement>(source: T | DocumentFragment | undefined | null, isT: (obj: Element | null) => obj is T): T | undefined {
+export function CloneNode<T extends HTMLElement>(
+  source: T | DocumentFragment | undefined | null,
+  isT: (obj: Element | null) => obj is T,
+): T | undefined {
   if (source != null && isHTMLTemplateElement(source)) {
     source = source.content
   }

@@ -47,7 +47,7 @@ export function isData(obj: unknown): obj is Data {
 export class Folders {
   static FolderCard: DocumentFragment | null = null
 
-  public static BuildCard (folder: Folder): HTMLElement | null {
+  public static BuildCard(folder: Folder): HTMLElement | null {
     const card = CloneNode(this.FolderCard, isHTMLElement)
     if (card == null) {
       return null
@@ -62,7 +62,7 @@ export class Folders {
 
     const txtSeen = folder.totalSeen.toLocaleString()
     const txtCount = folder.totalCount.toLocaleString()
-    const percentSeen = 100 * folder.totalSeen / folder.totalCount
+    const percentSeen = (100 * folder.totalSeen) / folder.totalCount
 
     const header = card.querySelector('h5')
     if (header != null) header.innerText = folder.name
@@ -70,11 +70,13 @@ export class Folders {
     if (progress != null) progress.innerText = `${txtSeen}/${txtCount}`
     const slider = card.querySelector<HTMLDivElement>('div.slider')
     if (slider != null) slider.style.width = `${percentSeen.toFixed(2)}%`
-    card.addEventListener('click', () => { Publish('Navigate:Load', folder.path) })
+    card.addEventListener('click', () => {
+      Publish('Navigate:Load', folder.path)
+    })
     return card
   }
 
-  public static BuildFolders (data: Data): void {
+  public static BuildFolders(data: Data): void {
     for (const folder of document.querySelectorAll('#tabFolders .folders')) {
       folder.remove()
     }
@@ -98,10 +100,10 @@ export class Folders {
     }
   }
 
-  public static Init (): void {
+  public static Init(): void {
     this.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
 
-    Subscribe('Navigate:Data', (data) => { 
+    Subscribe('Navigate:Data', (data) => {
       if (isData(data)) this.BuildFolders(data)
     })
   }

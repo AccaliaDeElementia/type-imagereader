@@ -9,28 +9,30 @@ import fsWalker from '../../utils/fswalker'
 @suite
 export class fsWalkerTests {
   readdirSpy: sinon.SinonStub = sinon.stub()
-  before (): void {
+  before(): void {
     this.readdirSpy = sinon.stub(fsWalker.fn, 'readdir')
     this.readdirSpy.resolves([])
   }
 
-  after (): void {
+  after(): void {
     this.readdirSpy.restore()
   }
 
   @test
-  async 'it should call readdir starting at root' (): Promise<void> {
-    await fsWalker('/foo/bar/baz', async () => { await Promise.resolve() })
+  async 'it should call readdir starting at root'(): Promise<void> {
+    await fsWalker('/foo/bar/baz', async () => {
+      await Promise.resolve()
+    })
     expect(this.readdirSpy.callCount).to.equal(1)
   }
 
   @test
-  async 'it call each item for root node' (): Promise<void> {
+  async 'it call each item for root node'(): Promise<void> {
     this.readdirSpy.resolves([
       {
         name: 'foo.png',
-        isDirectory: () => false
-      }
+        isDirectory: () => false,
+      },
     ])
     const spy = sinon.stub()
     spy.resolves()
@@ -39,18 +41,18 @@ export class fsWalkerTests {
     expect(spy.firstCall.args[0]).to.deep.equal([
       {
         path: '/foo.png',
-        isFile: true
-      }
+        isFile: true,
+      },
     ])
   }
 
   @test
-  async 'it should call each item for root node' (): Promise<void> {
+  async 'it should call each item for root node'(): Promise<void> {
     this.readdirSpy.resolves([
       {
         name: 'foo.png',
-        isDirectory: () => false
-      }
+        isDirectory: () => false,
+      },
     ])
     const spy = sinon.stub()
     spy.resolves()
@@ -59,18 +61,18 @@ export class fsWalkerTests {
     expect(spy.firstCall.args[0]).to.deep.equal([
       {
         path: '/foo.png',
-        isFile: true
-      }
+        isFile: true,
+      },
     ])
   }
 
   @test
-  async 'it should add folder to list' (): Promise<void> {
+  async 'it should add folder to list'(): Promise<void> {
     this.readdirSpy.onFirstCall().resolves([
       {
         name: 'foo.png',
-        isDirectory: () => true
-      }
+        isDirectory: () => true,
+      },
     ])
     const spy = sinon.stub()
     spy.resolves()
@@ -79,18 +81,18 @@ export class fsWalkerTests {
     expect(spy.firstCall.args[0]).to.deep.equal([
       {
         path: '/foo.png',
-        isFile: false
-      }
+        isFile: false,
+      },
     ])
   }
 
   @test
-  async 'it should filter unexpected filetype' (): Promise<void> {
+  async 'it should filter unexpected filetype'(): Promise<void> {
     this.readdirSpy.resolves([
       {
         name: 'foo.txt',
-        isDirectory: () => false
-      }
+        isDirectory: () => false,
+      },
     ])
     const spy = sinon.stub()
     spy.resolves()
@@ -100,12 +102,12 @@ export class fsWalkerTests {
   }
 
   @test
-  async 'it should ignore hidden folder' (): Promise<void> {
+  async 'it should ignore hidden folder'(): Promise<void> {
     this.readdirSpy.onFirstCall().resolves([
       {
         name: '.foo.png',
-        isDirectory: () => true
-      }
+        isDirectory: () => true,
+      },
     ])
     const spy = sinon.stub()
     spy.resolves()

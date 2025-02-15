@@ -5,6 +5,9 @@
   "scripts": {
     "prebuild": "npm run lint",
     "build": "tsc --build tsconfig.json",
+    "pretty": "prettier . --write",
+    "prettyCheck": "prettier . --check",
+    "prelint": "npm run prettyCheck",
     "lint": "eslint .",
     "start": "ts-node .",
     "pretest": "npm run build",
@@ -83,6 +86,7 @@
     "command-line-args": "^6.0.1",
     "eslint": "^9.20.0",
     "eslint-config-love": "^118.0.0",
+    "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^7.2.1",
@@ -90,6 +94,7 @@
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
+    "prettier": "^3.5.1",
     "sinon": "^19.0.2",
     "source-map-support": "^0.5.21",
     "typescript-eslint": "^8.23.0"

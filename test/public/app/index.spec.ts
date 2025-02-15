@@ -27,7 +27,7 @@ export class AppIndexTests {
   pubsubDeferredSpy: Sinon.SinonStub = sinon.stub()
   wakeLockInitSpy: Sinon.SinonStub = sinon.stub()
 
-  before (): void {
+  before(): void {
     this.loadingInitSpy = sinon.stub(Loading, 'Init')
     this.actionsInitSpy = sinon.stub(Actions, 'Init')
     this.tabsInitSpy = sinon.stub(Tabs, 'Init')
@@ -39,7 +39,7 @@ export class AppIndexTests {
     this.wakeLockInitSpy = sinon.stub(WakeLock, 'Init')
   }
 
-  after (): void {
+  after(): void {
     this.loadingInitSpy.restore()
     this.actionsInitSpy.restore()
     this.tabsInitSpy.restore()
@@ -52,7 +52,7 @@ export class AppIndexTests {
   }
 
   @test
-  async 'it inits all modules' (): Promise<void> {
+  async 'it inits all modules'(): Promise<void> {
     await import('../../../public/scripts/app/index')
     expect(this.loadingInitSpy.called, 'Loading.Init() should be called').to.equal(true)
     expect(this.actionsInitSpy.called, 'Actions.Init() should be called').to.equal(true)

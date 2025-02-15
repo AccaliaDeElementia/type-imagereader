@@ -1,5 +1,5 @@
 declare module 'minify-stream' {
-  export default function minifyStream (options?: {
+  export default function minifyStream(options?: {
     compress?: {
       ecma?: number
       passes?: number

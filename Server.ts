@@ -45,21 +45,21 @@ export class Routers {
 }
 
 export class Functions {
-  public static CreateApp (port: number): [Express, HttpServer, WebSocketServer] {
+  public static CreateApp(port: number): [Express, HttpServer, WebSocketServer] {
     const app = Imports.express()
     const server = app.listen(port, () => null)
     const websockets = new Imports.WebSocketServer(server)
     return [app, server, websockets]
   }
 
-  public static ConfigureBaseApp (app: Express): void {
+  public static ConfigureBaseApp(app: Express): void {
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
     app.use(Imports.cookieParser())
     app.use(Imports.favicon(join(__dirname, 'public', 'images', 'favicon.ico')))
   }
 
-  public static ConfigureLoggingAndErrors (app: Express): void {
+  public static ConfigureLoggingAndErrors(app: Express): void {
     switch (process.env.NODE_ENV) {
       case 'production':
         app.use(Imports.helmet())
@@ -71,10 +71,12 @@ export class Functions {
         break
     }
 
-    app.use((err: Error, _: Request, res: Response, __: NextFunction) => res.status(StatusCodes.BAD_REQUEST).json({ error: err.message }))
+    app.use((err: Error, _: Request, res: Response, __: NextFunction) =>
+      res.status(StatusCodes.BAD_REQUEST).json({ error: err.message }),
+    )
   }
 
-  public static async RegisterRouters (app: Express, server: HttpServer, websockets: WebSocketServer): Promise<void> {
+  public static async RegisterRouters(app: Express, server: HttpServer, websockets: WebSocketServer): Promise<void> {
     app.use('/', await Routers.Root(app, server, websockets))
     app.use('/api', await Routers.Api(app, server, websockets))
     app.use('/images', await Routers.Images(app, server, websockets))
@@ -82,25 +84,33 @@ export class Functions {
     app.use('/weather', await Routers.Weather(app, server, websockets))
   }
 
-  public static RegisterViewsAndMiddleware (app: Express): void {
+  public static RegisterViewsAndMiddleware(app: Express): void {
     app.set('views', join(__dirname, 'views'))
     app.set('view engine', 'pug')
 
     const sassMiddleware = Imports.sassMiddleware({
       mountPath: join(__dirname, 'public'),
-      watchdir: '/stylesheets'
+      watchdir: '/stylesheets',
     })
-    app.use((req, res, next) => { sassMiddleware(req, res, next).catch(() => { next() }) })
+    app.use((req, res, next) => {
+      sassMiddleware(req, res, next).catch(() => {
+        next()
+      })
+    })
     const browserifyMiddleware = Imports.browserifyMiddleware({
       basePath: join(__dirname, 'public'),
-      watchPaths: ['/scripts', '/bundles']
+      watchPaths: ['/scripts', '/bundles'],
     })
-    app.use((req, res, next) => { browserifyMiddleware(req, res, next).catch(() => { next() }) })
+    app.use((req, res, next) => {
+      browserifyMiddleware(req, res, next).catch(() => {
+        next()
+      })
+    })
     app.use(express.static(join(__dirname, 'public')))
   }
 }
 
-export default async function start (port: number): Promise<{ app: Express, server: HttpServer }> {
+export default async function start(port: number): Promise<{ app: Express; server: HttpServer }> {
   const [app, server, websockets] = Functions.CreateApp(port)
 
   Functions.ConfigureBaseApp(app)

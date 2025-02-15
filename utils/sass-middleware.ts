@@ -48,12 +48,12 @@ export class Functions {
   public static debouncer = Debouncer.create()
   public static cache: { [key: string]: Promise<cssAndMap | null> } = {}
 
-  public static async CompileCss (path: string, filename: string): Promise<cssAndMap> {
+  public static async CompileCss(path: string, filename: string): Promise<cssAndMap> {
     try {
       Functions.logger(`Begin compiling ${filename}`)
       const styles = await Imports.sass.compileAsync(join(path, filename), {
         style: 'compressed',
-        sourceMap: true
+        sourceMap: true,
       })
       Functions.logger(`${filename} compiled successfully`)
       return {
@@ -63,28 +63,29 @@ export class Functions {
           file: filename,
           names: styles.sourceMap?.names ?? [],
           sources: styles.sourceMap?.sources ?? [],
-          mappings: styles.sourceMap?.mappings ?? ''
-        }
+          mappings: styles.sourceMap?.mappings ?? '',
+        },
       }
     } catch (err) {
       throw LogError(err, `Error Compiling ${filename}:`, 'Unexpected Error Encountered Compiling CSS')
     }
   }
 
-  public static async CompileAndCache (basePath: string, filename: string): Promise<boolean> {
+  public static async CompileAndCache(basePath: string, filename: string): Promise<boolean> {
     try {
       await Imports.access(join(basePath, filename))
       const key = filename.replace(sassExtension, '.css')
-      Functions.cache[key] = Functions.CompileCss(basePath, filename)
-        .catch(() => null)
+      Functions.cache[key] = Functions.CompileCss(basePath, filename).catch(() => null)
       return true
     } catch (err) {
       return false
     }
   }
 
-  public static async CompileFolder (basePath: string, path: string): Promise<void> {
-    for (const dirinfo of await Imports.readdir(join(basePath, path), { withFileTypes: true })) {
+  public static async CompileFolder(basePath: string, path: string): Promise<void> {
+    for (const dirinfo of await Imports.readdir(join(basePath, path), {
+      withFileTypes: true,
+    })) {
       if (sassExtension.test(dirinfo.name) && !/(^|\/)\./.test(dirinfo.name)) {
         const sassFile = join(path, dirinfo.name)
         Functions.CompileAndCache(basePath, sassFile).catch(() => null)
@@ -92,7 +93,7 @@ export class Functions {
     }
   }
 
-  public static async WatchFolder (basePath: string, path: string): Promise<void> {
+  public static async WatchFolder(basePath: string, path: string): Promise<void> {
     try {
       Functions.logger(`Watching ${path} for stylesheets`)
       const watcher = Imports.watch(join(basePath, path), { persistent: false })
@@ -116,22 +117,23 @@ export interface Options {
   watchdir: string
 }
 
-export default ({ mountPath, watchdir }: Options): (req: Request, res: Response, next: NextFunction) => Promise<void> => {
+export default ({
+  mountPath,
+  watchdir,
+}: Options): ((req: Request, res: Response, next: NextFunction) => Promise<void>) => {
   Functions.WatchFolder(mountPath, watchdir).catch(() => null)
   Functions.CompileFolder(mountPath, watchdir).catch(() => null)
 
   const acceptRequest = (req: Request): boolean => {
     // ignore all requests that are not GET or don't have .css in them
-    if (req.method.toLowerCase() !== 'get' ||
-      !/\.css(\.map)?$/.test(req.path) ||
-      /(^|\/)\.[^.]/.test(req.path)) {
+    if (req.method.toLowerCase() !== 'get' || !/\.css(\.map)?$/.test(req.path) || /(^|\/)\.[^.]/.test(req.path)) {
       return false
     }
     return true
   }
 
   return async (req: Request, res: Response, next: NextFunction) => {
-    if (! acceptRequest(req)) {
+    if (!acceptRequest(req)) {
       next()
       return
     }
@@ -143,8 +145,8 @@ export default ({ mountPath, watchdir }: Options): (req: Request, res: Response,
     try {
       const path = req.path.replace(/\.map$/, '')
       if (Functions.cache[path] == null) {
-        await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.sass')) ||
-        await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.scss'))
+        ;(await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.sass'))) ||
+          (await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.scss')))
       }
       const styles = await Functions.cache[path]
       if (styles == null) {

@@ -21,19 +21,19 @@ class BaseTests extends PubSub {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
-  constructor () {
+  constructor() {
     super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
   }
 
-  before (): void {
+  before(): void {
     this.dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999'
+      url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    global.window = this.dom.window as unknown as Window & typeof globalThis
     this.existingDocument = global.document
     global.document = this.dom.window.document
     PubSub.subscribers = {}
@@ -41,7 +41,7 @@ class BaseTests extends PubSub {
     PubSub.deferred = []
   }
 
-  after (): void {
+  after(): void {
     global.window = this.existingWindow
     global.document = this.existingDocument
   }
@@ -51,26 +51,26 @@ class BaseTests extends PubSub {
 export class WakeLockInitTests extends BaseTests {
   takeLockSpy: sinon.SinonStub = sinon.stub()
   releaseLockSpy: sinon.SinonStub = sinon.stub()
-  before (): void {
+  before(): void {
     super.before()
     this.takeLockSpy = sinon.stub(WakeLock, 'TakeLock').resolves()
     this.releaseLockSpy = sinon.stub(WakeLock, 'ReleaseLock').resolves()
   }
 
-  after (): void {
+  after(): void {
     this.takeLockSpy.restore()
     this.releaseLockSpy.restore()
     super.after()
   }
 
   @test
-  'it should subscribe to Picture:LoadNew' (): void {
+  'it should subscribe to Picture:LoadNew'(): void {
     WakeLock.Init()
     expect(PubSub.subscribers).to.have.any.keys('PICTURE:LOADNEW')
   }
 
   @test
-  'it should execute TakeLock on receiving Picture:LoadNew notification' (): void {
+  'it should execute TakeLock on receiving Picture:LoadNew notification'(): void {
     WakeLock.Init()
     const fn = (PubSub.subscribers['PICTURE:LOADNEW'] ?? [])[0]
     assert(fn !== undefined)
@@ -79,7 +79,7 @@ export class WakeLockInitTests extends BaseTests {
   }
 
   @test
-  async 'it should tolerate TakeLock rejecting on receiving Picture:LoadNew notification' (): Promise<void> {
+  async 'it should tolerate TakeLock rejecting on receiving Picture:LoadNew notification'(): Promise<void> {
     WakeLock.Init()
     this.takeLockSpy.rejects('FOO')
     const fn = (PubSub.subscribers['PICTURE:LOADNEW'] ?? [])[0]
@@ -90,13 +90,13 @@ export class WakeLockInitTests extends BaseTests {
   }
 
   @test
-  'it should add interval for WakeLock:Release' (): void {
+  'it should add interval for WakeLock:Release'(): void {
     WakeLock.Init()
     expect(PubSub.intervals).to.have.any.keys('WakeLock:Release')
   }
 
   @test
-  'it should use an interval of 30 seconds for wakelock.Release()' (): void {
+  'it should use an interval of 30 seconds for wakelock.Release()'(): void {
     WakeLock.Init()
     const interval = PubSub.intervals['WakeLock:Release']
     assert(interval !== undefined)
@@ -104,7 +104,7 @@ export class WakeLockInitTests extends BaseTests {
   }
 
   @test
-  'it should invoke WakeLock.release() when release timer expires' (): void {
+  'it should invoke WakeLock.release() when release timer expires'(): void {
     WakeLock.Init()
     const interval = PubSub.intervals['WakeLock:Release']
     assert(interval !== undefined)
@@ -113,7 +113,7 @@ export class WakeLockInitTests extends BaseTests {
   }
 
   @test
-  async 'it should tolerate WakeLock.release() rejecting when release timer expires' (): Promise<void> {
+  async 'it should tolerate WakeLock.release() rejecting when release timer expires'(): Promise<void> {
     WakeLock.Init()
     this.releaseLockSpy.rejects('FOO')
     const interval = PubSub.intervals['WakeLock:Release']
@@ -131,110 +131,121 @@ export class WakeLockTakeLockTests extends BaseTests {
   wakelockRequest: sinon.SinonStub = sinon.stub()
   sentinel: WakeLockSentinel = {
     release: sinon.stub().resolves(),
-    released: false
+    released: false,
   }
 
-  before (): void {
+  before(): void {
     super.before()
     this.clock = sinon.useFakeTimers()
     WakeLock.sentinel = null
     WakeLock.timeout = 0
     this.sentinel = {
       release: sinon.stub().resolves(),
-      released: false
+      released: false,
     }
     this.wakelockRequest = sinon.stub()
     this.wakelockRequest.resolves(this.sentinel)
     this.existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
       configurable: true,
-      get: () => this.dom.window.navigator
+      get: () => this.dom.window.navigator,
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We're testing wakelock assuming there is no default on ein the test env. if an update adds it we want the test setup to fail
-    assert(undefined === navigator.wakeLock, 'expect env not to support wakelock for testing')
+    assert(
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We're testing wakelock assuming there is no default on ein the test env. if an update adds it we want the test setup to fail
+      undefined === navigator.wakeLock,
+      'expect env not to support wakelock for testing',
+    )
     Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
       get: () => ({
-          request: this.wakelockRequest
-        })
+        request: this.wakelockRequest,
+      }),
     })
   }
 
-  after (): void {
+  after(): void {
     Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
-      get: () => undefined
+      get: () => undefined,
     })
     Object.defineProperty(global, 'navigator', {
       configurable: true,
-      get: () => this.existingNavigator
+      get: () => this.existingNavigator,
     })
     this.clock?.restore()
     super.after()
   }
 
   @test
-  async 'it should take lock if sentinel is null' (): Promise<void> {
+  async 'it should take lock if sentinel is null'(): Promise<void> {
     await WakeLock.TakeLock()
     expect(this.wakelockRequest.callCount).to.equal(1)
   }
 
   @test
-  async 'it should take lock if sentinel is already released' (): Promise<void> {
+  async 'it should take lock if sentinel is already released'(): Promise<void> {
     WakeLock.sentinel = {
-      release: async () => { await Promise.resolve() },
-      released: true
+      release: async () => {
+        await Promise.resolve()
+      },
+      released: true,
     }
     await WakeLock.TakeLock()
     expect(this.wakelockRequest.callCount).to.equal(1)
   }
 
   @test
-  async 'it should not take lock if lock already held' (): Promise<void> {
+  async 'it should not take lock if lock already held'(): Promise<void> {
     WakeLock.sentinel = {
-      release: async () => { await Promise.resolve() },
-      released: false
+      release: async () => {
+        await Promise.resolve()
+      },
+      released: false,
     }
     await WakeLock.TakeLock()
     expect(this.wakelockRequest.callCount).to.equal(0)
   }
 
   @test
-  async 'it should save lock sentinel when sentinel is null' (): Promise<void> {
+  async 'it should save lock sentinel when sentinel is null'(): Promise<void> {
     await WakeLock.TakeLock()
     expect(WakeLock.sentinel).to.equal(this.sentinel)
   }
 
   @test
-  async 'it should save lock sentinel when current sentinel is already released' (): Promise<void> {
+  async 'it should save lock sentinel when current sentinel is already released'(): Promise<void> {
     WakeLock.sentinel = {
-      release: async () => { await Promise.resolve() },
-      released: true
+      release: async () => {
+        await Promise.resolve()
+      },
+      released: true,
     }
     await WakeLock.TakeLock()
     expect(WakeLock.sentinel).to.equal(this.sentinel)
   }
 
   @test
-  async 'it should not overwrite lock sentinel when lock already held' (): Promise<void> {
+  async 'it should not overwrite lock sentinel when lock already held'(): Promise<void> {
     WakeLock.sentinel = {
-      release: async () => { await Promise.resolve() },
-      released: false
+      release: async () => {
+        await Promise.resolve()
+      },
+      released: false,
     }
     await WakeLock.TakeLock()
     expect(WakeLock.sentinel).to.not.equal(this.sentinel)
   }
 
   @test
-  async 'it should set timeout when taking lock' (): Promise<void> {
+  async 'it should set timeout when taking lock'(): Promise<void> {
     this.clock?.tick(3141)
     await WakeLock.TakeLock()
     expect(WakeLock.timeout).to.equal(123141) // 120 seconds plus system time
   }
 
   @test
-  async 'it should reset timeout when lock already held' (): Promise<void> {
+  async 'it should reset timeout when lock already held'(): Promise<void> {
     this.clock?.tick(6282)
     WakeLock.sentinel = this.sentinel
     await WakeLock.TakeLock()
@@ -243,7 +254,7 @@ export class WakeLockTakeLockTests extends BaseTests {
   }
 
   @test
-  async 'it should reset state when lock request rejects' (): Promise<void> {
+  async 'it should reset state when lock request rejects'(): Promise<void> {
     WakeLock.sentinel = this.sentinel
     this.sentinel.released = true
     WakeLock.timeout = 1
@@ -254,7 +265,7 @@ export class WakeLockTakeLockTests extends BaseTests {
   }
 
   @test
-  async 'it should reset state when lock request throws' (): Promise<void> {
+  async 'it should reset state when lock request throws'(): Promise<void> {
     WakeLock.sentinel = this.sentinel
     this.sentinel.released = true
     WakeLock.timeout = 1
@@ -265,13 +276,13 @@ export class WakeLockTakeLockTests extends BaseTests {
   }
 
   @test
-  async 'it should reset state when wakeLock not supported' (): Promise<void> {
+  async 'it should reset state when wakeLock not supported'(): Promise<void> {
     WakeLock.sentinel = this.sentinel
     this.sentinel.released = true
     WakeLock.timeout = 1
     Object.defineProperty(navigator, 'wakeLock', {
       configurable: true,
-      get: () => undefined
+      get: () => undefined,
     })
     await WakeLock.TakeLock()
     expect(WakeLock.sentinel).to.equal(null)
@@ -285,26 +296,26 @@ export class WakeLockReleaseLockTests extends PubSub {
   sentinelRelease: sinon.SinonStub = sinon.stub()
   sentinel: WakeLockSentinel = {
     release: sinon.stub().resolves(),
-    released: false
+    released: false,
   }
 
-  before (): void {
+  before(): void {
     this.clock = sinon.useFakeTimers()
     WakeLock.sentinel = null
     WakeLock.timeout = 0
     this.sentinelRelease = sinon.stub().resolves()
     this.sentinel = {
       release: this.sentinelRelease,
-      released: false
+      released: false,
     }
   }
 
-  after (): void {
+  after(): void {
     this.clock?.restore()
   }
 
   @test
-  async 'it should not release when sentinel is null' (): Promise<void> {
+  async 'it should not release when sentinel is null'(): Promise<void> {
     this.clock?.tick(100)
     WakeLock.timeout = 10
     WakeLock.sentinel = null
@@ -313,7 +324,7 @@ export class WakeLockReleaseLockTests extends PubSub {
   }
 
   @test
-  async 'it should not release when timeout is not expired' (): Promise<void> {
+  async 'it should not release when timeout is not expired'(): Promise<void> {
     this.clock?.tick(100)
     WakeLock.timeout = 110
     WakeLock.sentinel = this.sentinel
@@ -323,7 +334,7 @@ export class WakeLockReleaseLockTests extends PubSub {
   }
 
   @test
-  async 'it should reset timeout when expired' (): Promise<void> {
+  async 'it should reset timeout when expired'(): Promise<void> {
     this.clock?.tick(100)
     WakeLock.timeout = 10
     WakeLock.sentinel = this.sentinel
@@ -332,7 +343,7 @@ export class WakeLockReleaseLockTests extends PubSub {
   }
 
   @test
-  async 'it should null released sentinel' (): Promise<void> {
+  async 'it should null released sentinel'(): Promise<void> {
     this.clock?.tick(100)
     WakeLock.timeout = 10
     WakeLock.sentinel = this.sentinel
@@ -341,7 +352,7 @@ export class WakeLockReleaseLockTests extends PubSub {
   }
 
   @test
-  async 'it should release active sentinel when expired' (): Promise<void> {
+  async 'it should release active sentinel when expired'(): Promise<void> {
     this.clock?.tick(100)
     WakeLock.timeout = 10
     WakeLock.sentinel = this.sentinel
@@ -350,7 +361,7 @@ export class WakeLockReleaseLockTests extends PubSub {
   }
 
   @test
-  async 'it should not release already released sentinel when expired' (): Promise<void> {
+  async 'it should not release already released sentinel when expired'(): Promise<void> {
     this.clock?.tick(100)
     WakeLock.timeout = 10
     WakeLock.sentinel = this.sentinel
@@ -360,7 +371,7 @@ export class WakeLockReleaseLockTests extends PubSub {
   }
 
   @test
-  async 'it should handle when sentinel release rejects' (): Promise<void> {
+  async 'it should handle when sentinel release rejects'(): Promise<void> {
     this.clock?.tick(100)
     WakeLock.timeout = 10
     WakeLock.sentinel = this.sentinel
@@ -370,7 +381,7 @@ export class WakeLockReleaseLockTests extends PubSub {
   }
 
   @test
-  async 'it should handle when sentinel release throws' (): Promise<void> {
+  async 'it should handle when sentinel release throws'(): Promise<void> {
     this.clock?.tick(100)
     WakeLock.timeout = 10
     WakeLock.sentinel = this.sentinel

@@ -35,46 +35,46 @@ export class SlideshowOverlayTests {
   fetchStub: sinon.SinonStub
   fetchData: FetchDataType = {
     sunrise: undefined,
-    sunset: undefined
+    sunset: undefined,
   }
   clock: sinon.SinonFakeTimers | undefined
-  constructor () {
+  constructor() {
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('')
     this.fetchStub = sinon.stub()
   }
 
-  async before (): Promise<void> {
+  async before(): Promise<void> {
     this.dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999'
+      url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    global.window = this.dom.window as unknown as Window & typeof globalThis
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,
-      get: () => this.dom.window.document
+      get: () => this.dom.window.document,
     })
 
     this.fetchStub = sinon.stub().resolves({
-      json: async () => await Promise.resolve(this.fetchData)
+      json: async () => await Promise.resolve(this.fetchData),
     })
     Functions.fetch = this.fetchStub
 
     this.fetchData = {
       sunrise: -Infinity,
-      sunset: Infinity
+      sunset: Infinity,
     }
     await WeatherUpdater.updateFn()
     this.fetchData = {}
   }
 
-  after (): void {
+  after(): void {
     global.window = this.existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
-      get: () => this.existingDocument
+      get: () => this.existingDocument,
     })
     Functions.fetch = global.fetch
 
@@ -83,15 +83,15 @@ export class SlideshowOverlayTests {
   }
 
   @test
-  async 'overlay does not open in non kiosk mode' (): Promise<void> {
+  async 'overlay does not open in non kiosk mode'(): Promise<void> {
     const now = new Date('1999-12-31T12:00:00.000Z')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     await WeatherUpdater.updateFn()
     this.dom.reconfigure({
-      url: 'http://127.0.0.1:2999'
+      url: 'http://127.0.0.1:2999',
     })
     // Test begins
     await OverlayUpdater.updateFn()
@@ -103,15 +103,15 @@ export class SlideshowOverlayTests {
   }
 
   @test
-  async 'overlay opens in kiosk mode' (): Promise<void> {
+  async 'overlay opens in kiosk mode'(): Promise<void> {
     const now = new Date('1999-12-31T12:00:00.000Z')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     await WeatherUpdater.updateFn()
     this.dom.reconfigure({
-      url: 'http://127.0.0.1:2999?kiosk'
+      url: 'http://127.0.0.1:2999?kiosk',
     })
     // Test begins
     await OverlayUpdater.updateFn()
@@ -123,15 +123,15 @@ export class SlideshowOverlayTests {
   }
 
   @test
-  async 'overlay Shows "fully opaque" well before sunrise' (): Promise<void> {
+  async 'overlay Shows "fully opaque" well before sunrise'(): Promise<void> {
     const now = new Date('1999-12-31T01:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     await WeatherUpdater.updateFn()
     this.dom.reconfigure({
-      url: 'http://127.0.0.1:2999?kiosk'
+      url: 'http://127.0.0.1:2999?kiosk',
     })
     // Test begins
     await OverlayUpdater.updateFn()
@@ -140,15 +140,15 @@ export class SlideshowOverlayTests {
   }
 
   @test
-  async 'overlay fades out before sunrise' (): Promise<void> {
+  async 'overlay fades out before sunrise'(): Promise<void> {
     const now = new Date('1999-12-31T06:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     await WeatherUpdater.updateFn()
     this.dom.reconfigure({
-      url: 'http://127.0.0.1:2999?kiosk'
+      url: 'http://127.0.0.1:2999?kiosk',
     })
     // Test begins
     await OverlayUpdater.updateFn()
@@ -163,15 +163,15 @@ export class SlideshowOverlayTests {
   }
 
   @test
-  async 'overlay is tranparent during the day' (): Promise<void> {
+  async 'overlay is tranparent during the day'(): Promise<void> {
     const now = new Date('1999-12-31T10:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     await WeatherUpdater.updateFn()
     this.dom.reconfigure({
-      url: 'http://127.0.0.1:2999?kiosk'
+      url: 'http://127.0.0.1:2999?kiosk',
     })
     // Test begins
     await OverlayUpdater.updateFn()
@@ -180,15 +180,15 @@ export class SlideshowOverlayTests {
   }
 
   @test
-  async 'overlay fades in after sunset' (): Promise<void> {
+  async 'overlay fades in after sunset'(): Promise<void> {
     const now = new Date('1999-12-31T21:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     await WeatherUpdater.updateFn()
     this.dom.reconfigure({
-      url: 'http://127.0.0.1:2999?kiosk'
+      url: 'http://127.0.0.1:2999?kiosk',
     })
     // Test begins
     await OverlayUpdater.updateFn()
@@ -203,15 +203,15 @@ export class SlideshowOverlayTests {
   }
 
   @test
-  async 'overlay Shows "fully opaque" well after sunset' (): Promise<void> {
+  async 'overlay Shows "fully opaque" well after sunset'(): Promise<void> {
     const now = new Date('1999-12-31T22:00:00.000')
     this.clock = sinon.useFakeTimers({
       now: now.getTime(),
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     await WeatherUpdater.updateFn()
     this.dom.reconfigure({
-      url: 'http://127.0.0.1:2999?kiosk'
+      url: 'http://127.0.0.1:2999?kiosk',
     })
     // Test begins
     await OverlayUpdater.updateFn()

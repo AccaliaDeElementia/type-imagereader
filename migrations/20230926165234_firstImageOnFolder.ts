@@ -2,26 +2,26 @@
 
 import type { Knex } from 'knex'
 
-export async function up (knex: Knex): Promise<void> {
-  await knex.schema.alterTable('folders', table => {
+export async function up(knex: Knex): Promise<void> {
+  await knex.schema.alterTable('folders', (table) => {
     table.string('firstPicture', 8192)
   })
   const toUpdate = await knex
-    .with('firsts',
-      qb => qb
+    .with('firsts', (qb) =>
+      qb
         .select('pictures.folder')
         .min({
-          sortKey: 'pictures.sortKey'
+          sortKey: 'pictures.sortKey',
         })
         .from('pictures')
-        .groupBy('pictures.folder')
+        .groupBy('pictures.folder'),
     )
     .select('pictures.folder as path')
     .min('pictures.path as firstPicture')
     .from('firsts')
     .join('pictures', {
       'firsts.folder': 'pictures.folder',
-      'firsts.sortKey': 'pictures.sortKey'
+      'firsts.sortKey': 'pictures.sortKey',
     })
     .groupBy('pictures.folder')
     .orderBy('pictures.folder', 'pictures.path')
@@ -33,8 +33,8 @@ export async function up (knex: Knex): Promise<void> {
   }
 }
 
-export async function down (knex: Knex): Promise<void> {
-  await knex.schema.alterTable('folders', table => {
+export async function down(knex: Knex): Promise<void> {
+  await knex.schema.alterTable('folders', (table) => {
     table.dropColumn('firstPicture')
   })
 }

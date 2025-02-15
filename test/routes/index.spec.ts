@@ -32,31 +32,31 @@ export class ImagesGetRouterTests {
   WebsocketsFake = {} as unknown as WebSocketServer
 
   RouterFake = {
-    get: sinon.stub().returnsThis()
+    get: sinon.stub().returnsThis(),
   }
 
   RequestStub: MockedRequest = {
-    params: [] as string[]
+    params: [] as string[],
   }
 
   ResponseStub: MockedResponse = {
     status: sinon.stub().returnsThis(),
     render: sinon.stub().returnsThis(),
-    redirect: sinon.stub().returnsThis()
+    redirect: sinon.stub().returnsThis(),
   }
 
   RouterStub?: Sinon.SinonStub
 
-  before (): void {
+  before(): void {
     this.RouterStub = sinon.stub(Imports, 'Router').returns(this.RouterFake as unknown as Router)
   }
 
-  after (): void {
+  after(): void {
     this.RouterStub?.restore()
   }
 
   @test
-  async 'it should construct and return router' (): Promise<void> {
+  async 'it should construct and return router'(): Promise<void> {
     const router = await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterStub?.callCount).to.equal(1)
     expect(this.RouterStub?.firstCall.args).to.have.lengthOf(0)
@@ -64,17 +64,18 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should register route /' (): Promise<void> {
+  async 'it should register route /'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/')).to.equal(true)
   }
 
   @test
-  async 'it should redirect route / to /show' (): Promise<void> {
+  async 'it should redirect route / to /show'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    const fn = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/')
-      .map(call => call.args[1] as MockedRouter)[0]
+    const fn = this.RouterFake.get
+      .getCalls()
+      .filter((call) => call.args[0] === '/')
+      .map((call) => call.args[1] as MockedRouter)[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn(this.RequestStub, this.ResponseStub)
@@ -83,39 +84,42 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should register route /show' (): Promise<void> {
+  async 'it should register route /show'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/show')).to.equal(true)
   }
 
   @test
-  async 'it should register route /show/*' (): Promise<void> {
+  async 'it should register route /show/*'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.calledWith('/show/*')).to.equal(true)
   }
 
   @test
-  async 'it should use same handler for /show to /show/*' (): Promise<void> {
+  async 'it should use same handler for /show to /show/*'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    const show = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/show')
-      .map(call => call.args[1] as MockedRouter)[0]
+    const show = this.RouterFake.get
+      .getCalls()
+      .filter((call) => call.args[0] === '/show')
+      .map((call) => call.args[1] as MockedRouter)[0]
     assert(show !== undefined)
     expect(show).to.be.a('function')
-    const showStar = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/show/*')
-      .map(call => call.args[1] as MockedRouter)[0]
+    const showStar = this.RouterFake.get
+      .getCalls()
+      .filter((call) => call.args[0] === '/show/*')
+      .map((call) => call.args[1] as MockedRouter)[0]
     assert(showStar !== undefined)
     expect(showStar).to.be.a('function')
     expect(show).to.equal(showStar)
   }
 
   @test
-  async 'it should render app for default /show request' (): Promise<void> {
+  async 'it should render app for default /show request'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    const show = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/show')
-      .map(call => call.args[1] as MockedRouter)[0]
+    const show = this.RouterFake.get
+      .getCalls()
+      .filter((call) => call.args[0] === '/show')
+      .map((call) => call.args[1] as MockedRouter)[0]
     assert(show !== undefined)
     await show(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.render.callCount).to.equal(1)
@@ -124,11 +128,12 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should render app for valid /show request' (): Promise<void> {
+  async 'it should render app for valid /show request'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    const show = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/show')
-      .map(call => call.args[1] as MockedRouter)[0]
+    const show = this.RouterFake.get
+      .getCalls()
+      .filter((call) => call.args[0] === '/show')
+      .map((call) => call.args[1] as MockedRouter)[0]
     assert(show !== undefined)
     this.RequestStub.params = ['foo/bar/baz/']
     await show(this.RequestStub, this.ResponseStub)
@@ -138,11 +143,12 @@ export class ImagesGetRouterTests {
   }
 
   @test
-  async 'it should render error for /show request with directory traversal' (): Promise<void> {
+  async 'it should render error for /show request with directory traversal'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    const show = this.RouterFake.get.getCalls()
-      .filter(call => call.args[0] === '/show')
-      .map(call => call.args[1] as MockedRouter)[0]
+    const show = this.RouterFake.get
+      .getCalls()
+      .filter((call) => call.args[0] === '/show')
+      .map((call) => call.args[1] as MockedRouter)[0]
     assert(show !== undefined)
     this.RequestStub.params = ['foo/../bar/']
     await show(this.RequestStub, this.ResponseStub)
@@ -155,8 +161,8 @@ export class ImagesGetRouterTests {
       error: {
         title: 'ERROR',
         code: 'E_NO_TRAVERSE',
-        message: 'Directory Traversal is not Allowed!'
-      }
+        message: 'Directory Traversal is not Allowed!',
+      },
     })
   }
 }

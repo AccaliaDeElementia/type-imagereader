@@ -39,82 +39,81 @@ interface GamePadStatus {
 
 @suite
 export class ActionsIsNavigateData {
-  
   @test
-  'it should accept empty object' (): void {
+  'it should accept empty object'(): void {
     const obj = {}
     expect(isNavigateData(obj)).to.equal(true)
   }
-  
+
   @test
-  'it should accept object with children array' (): void {
+  'it should accept object with children array'(): void {
     const obj = {
-      children: [1, 2, 3]
+      children: [1, 2, 3],
     }
     expect(isNavigateData(obj)).to.equal(true)
   }
-  
+
   @test
-  'it should accept undefined children array' (): void {
+  'it should accept undefined children array'(): void {
     const obj = {
-      children: undefined
+      children: undefined,
     }
     expect(isNavigateData(obj)).to.equal(true)
   }
-  
+
   @test
-  'it should reject undefined children array' (): void {
+  'it should reject undefined children array'(): void {
     const obj = {
-      children: null
+      children: null,
     }
     expect(isNavigateData(obj)).to.equal(false)
   }
-  
+
   @test
-  'it should accept object with pictures array' (): void {
+  'it should accept object with pictures array'(): void {
     const obj = {
-      pictures: ['1', 4, false]
+      pictures: ['1', 4, false],
     }
     expect(isNavigateData(obj)).to.equal(true)
   }
-  
+
   @test
-  'it should accept undefiend pictures array' (): void {
+  'it should accept undefiend pictures array'(): void {
     const obj = {
-      pictures: undefined
+      pictures: undefined,
     }
     expect(isNavigateData(obj)).to.equal(true)
   }
-  
+
   @test
-  'it should reject null pictures array' (): void {
+  'it should reject null pictures array'(): void {
     const obj = {
-      pictures: null
+      pictures: null,
     }
     expect(isNavigateData(obj)).to.equal(false)
   }
-  
+
   @test
-  'it should reject null object' (): void {
+  'it should reject null object'(): void {
     const obj = null
     expect(isNavigateData(obj)).to.equal(false)
   }
-  
+
   @test
-  'it should reject undefined' (): void {
+  'it should reject undefined'(): void {
     const obj = undefined
     expect(isNavigateData(obj)).to.equal(false)
   }
-  
+
   @test
-  'it should reject non object' (): void {
+  'it should reject non object'(): void {
     const obj = 42
     expect(isNavigateData(obj)).to.equal(false)
   }
 }
 
 class TestActions extends Actions {
-  public static get lastStatus (): GamePadStatus {
+  public static get lastStatus(): GamePadStatus {
     return Actions.lastStatus
   }
 }
@@ -123,26 +122,26 @@ class BaseActionsTests extends PubSub {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
-  constructor () {
+  constructor() {
     super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
   }
 
-  before (): void {
+  before(): void {
     this.dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999'
+      url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    global.window = this.dom.window as unknown as Window & typeof globalThis
     this.existingDocument = global.document
     global.document = this.dom.window.document
     PubSub.subscribers = {}
     PubSub.deferred = []
   }
 
-  after (): void {
+  after(): void {
     global.window = this.existingWindow
     global.document = this.existingDocument
   }
@@ -151,13 +150,13 @@ class BaseActionsTests extends PubSub {
 @suite
 export class AppActionsSetInnerTextMaybeTests extends BaseActionsTests {
   @test
-  'it should not explode for null node' (): void {
+  'it should not explode for null node'(): void {
     Actions.setInnerTextMaybe(null, 'foobar')
     assert(true, 'The preceeding line should not error')
   }
 
   @test
-  'it should set inner text for HTMLElement' (): void {
+  'it should set inner text for HTMLElement'(): void {
     const tag = this.dom.window.document.createElement('div')
     const expected = 'FOO BAR BAZ ' + Math.random()
     Actions.setInnerTextMaybe(tag, expected)
@@ -168,45 +167,51 @@ export class AppActionsSetInnerTextMaybeTests extends BaseActionsTests {
 @suite
 export class AppActionsCreateButtons extends BaseActionsTests {
   @test
-  'it should return div element' (): void {
+  'it should return div element'(): void {
     const result = Actions.createButtons([])
     expect(result).to.be.instanceOf(this.dom.window.HTMLDivElement)
   }
 
   @test
-  'it should return div with css class `actions`' (): void {
+  'it should return div with css class `actions`'(): void {
     const result = Actions.createButtons([])
     expect(result.classList.contains('actions')).to.equal(true)
   }
 
   @test
-  'it should ignore buttons for missing template' (): void {
+  'it should ignore buttons for missing template'(): void {
     this.dom.window.document.querySelector('#ActionCard')?.remove()
-    const result = Actions.createButtons([{
-      name: 'name',
-      image: 'icon'
-    }])
+    const result = Actions.createButtons([
+      {
+        name: 'name',
+        image: 'icon',
+      },
+    ])
     expect(result.children).to.have.length(0)
   }
 
   @test
-  'it should create buttons for each element' (): void {
+  'it should create buttons for each element'(): void {
     const target = Math.ceil(Math.random() * 40) + 10
-    const buttons = Array(target).fill(undefined).map((_, i) => ({
-      name: `button${i}`,
-      image: `image${i}`
-    }))
+    const buttons = Array(target)
+      .fill(undefined)
+      .map((_, i) => ({
+        name: `button${i}`,
+        image: `image${i}`,
+      }))
     const result = Actions.createButtons(buttons)
     expect(result.children).to.have.length(target)
   }
 
   @test
-  'it should set icon for buttons' (): void {
+  'it should set icon for buttons'(): void {
     const expected = `RANDOM TEXT ${Math.random()}`
-    const container = Actions.createButtons([{
-      name: 'name',
-      image: expected
-    }])
+    const container = Actions.createButtons([
+      {
+        name: 'name',
+        image: expected,
+      },
+    ])
     const result = container.children[0]
     expect(result).to.be.instanceOf(this.dom.window.HTMLElement)
     const text = result?.querySelector('i')
@@ -215,12 +220,14 @@ export class AppActionsCreateButtons extends BaseActionsTests {
   }
 
   @test
-  'it should set name for buttons' (): void {
+  'it should set name for buttons'(): void {
     const expected = `RANDOM TEXT ${Math.random()}`
-    const container = Actions.createButtons([{
-      name: expected,
-      image: 'icon'
-    }])
+    const container = Actions.createButtons([
+      {
+        name: expected,
+        image: 'icon',
+      },
+    ])
     const result = container.children[0]
     expect(result).to.be.instanceOf(this.dom.window.HTMLElement)
     const text = result?.querySelector('h5')
@@ -229,11 +236,13 @@ export class AppActionsCreateButtons extends BaseActionsTests {
   }
 
   @test
-  'it should prevent default on click' (): void {
-    const container = Actions.createButtons([{
-      name: 'Button',
-      image: 'icon'
-    }])
+  'it should prevent default on click'(): void {
+    const container = Actions.createButtons([
+      {
+        name: 'Button',
+        image: 'icon',
+      },
+    ])
     PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [() => 0]
     const button = container.children[0]
     const event = new this.dom.window.MouseEvent('click')
@@ -243,11 +252,13 @@ export class AppActionsCreateButtons extends BaseActionsTests {
   }
 
   @test
-  'it should publish Action:Execute event on click' (): void {
-    const container = Actions.createButtons([{
-      name: 'Button',
-      image: 'icon'
-    }])
+  'it should publish Action:Execute event on click'(): void {
+    const container = Actions.createButtons([
+      {
+        name: 'Button',
+        image: 'icon',
+      },
+    ])
     const spy = sinon.stub()
     PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [spy]
     const button = container.children[0]
@@ -257,11 +268,13 @@ export class AppActionsCreateButtons extends BaseActionsTests {
   }
 
   @test
-  'it should collapse spaces from button name when publishing Action:Execute' (): void {
-    const container = Actions.createButtons([{
-      name: 'This Is Not A Button',
-      image: 'icon'
-    }])
+  'it should collapse spaces from button name when publishing Action:Execute'(): void {
+    const container = Actions.createButtons([
+      {
+        name: 'This Is Not A Button',
+        image: 'icon',
+      },
+    ])
     const spy = sinon.stub()
     PubSub.subscribers['ACTION:EXECUTE:THISISNOTABUTTON'] = [spy]
     const button = container.children[0]
@@ -274,28 +287,40 @@ export class AppActionsCreateButtons extends BaseActionsTests {
 @suite
 export class AppActionsBuildActions extends BaseActionsTests {
   @test
-  'it should return build actions for each tab' (): void {
+  'it should return build actions for each tab'(): void {
     Actions.BuildActions()
     for (const { target, buttons } of Actions.ActionGroups) {
       const result = this.dom.window.document.querySelectorAll(target + ' .actions')
       expect(result).to.have.length(buttons.length, `${target} should have ${buttons.length} rows`)
       for (let i = 0; i < buttons.length; i++) {
-        expect(result[i]).to.be.instanceOf(this.dom.window.HTMLDivElement, `${target} row ${i} should have expected type`)
-        expect(result[i]?.children).to.have.length(buttons[i]?.length ?? -1, `${target} row ${i} should have ${buttons[i]?.length} buttons`)
+        expect(result[i]).to.be.instanceOf(
+          this.dom.window.HTMLDivElement,
+          `${target} row ${i} should have expected type`,
+        )
+        expect(result[i]?.children).to.have.length(
+          buttons[i]?.length ?? -1,
+          `${target} row ${i} should have ${buttons[i]?.length} buttons`,
+        )
       }
     }
   }
 
   @test
-  'it should be idempotent' (): void {
+  'it should be idempotent'(): void {
     Actions.BuildActions()
     Actions.BuildActions()
     for (const { target, buttons } of Actions.ActionGroups) {
       const result = this.dom.window.document.querySelectorAll(target + ' .actions')
       expect(result).to.have.length(buttons.length, `${target} should have ${buttons.length} rows`)
       for (let i = 0; i < buttons.length; i++) {
-        expect(result[i]).to.be.instanceOf(this.dom.window.HTMLDivElement, `${target} row ${i} should have expected type`)
-        expect(result[i]?.children).to.have.length(buttons[i]?.length ?? -1, `${target} row ${i} should have ${buttons[i]?.length} buttons`)
+        expect(result[i]).to.be.instanceOf(
+          this.dom.window.HTMLDivElement,
+          `${target} row ${i} should have expected type`,
+        )
+        expect(result[i]?.children).to.have.length(
+          buttons[i]?.length ?? -1,
+          `${target} row ${i} should have ${buttons[i]?.length} buttons`,
+        )
       }
     }
   }
@@ -308,26 +333,26 @@ export class AppActionsReadGamepad extends BaseActionsTests {
     axes: number[]
     buttons: GamepadButton[]
   } = {
-      axes: [],
-      buttons: []
-    }
+    axes: [],
+    buttons: [],
+  }
 
   getTestGamepads: sinon.SinonStub = sinon.stub()
   actionGamepadListener: sinon.SinonStub = sinon.stub()
   documentHidden = false
 
-  before (): void {
+  before(): void {
     super.before()
     this.existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
       configurable: true,
-      get: () => this.dom.window.navigator
+      get: () => this.dom.window.navigator,
     })
     this.getTestGamepads = sinon.stub()
     this.dom.window.navigator.getGamepads = this.getTestGamepads
     Object.defineProperty(this.dom.window.document, 'hidden', {
       configurable: true,
-      get: () => this.documentHidden
+      get: () => this.documentHidden,
     })
     this.getTestGamepads.returns([this.testGamePad])
     TestActions.lastStatus.Left = false
@@ -344,43 +369,49 @@ export class AppActionsReadGamepad extends BaseActionsTests {
     PubSub.Subscribe('Action:Gamepad', this.actionGamepadListener)
   }
 
-  after (): void {
+  after(): void {
     Object.defineProperty(global, 'navigator', {
       configurable: true,
-      get: () => this.existingNavigator
+      get: () => this.existingNavigator,
     })
     super.after()
   }
 
   @test
-  'It should accept an null of gamepads' (): void {
+  'It should accept an null of gamepads'(): void {
     this.getTestGamepads.resetBehavior()
     this.getTestGamepads.returns(null)
-    expect(() => { Actions.ReadGamepad() }).to.not.throw()
+    expect(() => {
+      Actions.ReadGamepad()
+    }).to.not.throw()
   }
 
   @test
-  'It should accept an empty list of gamepads' (): void {
+  'It should accept an empty list of gamepads'(): void {
     this.getTestGamepads.resetBehavior()
     this.getTestGamepads.returns([])
-    expect(() => { Actions.ReadGamepad() }).to.not.throw()
+    expect(() => {
+      Actions.ReadGamepad()
+    }).to.not.throw()
   }
 
   @test
-  'It should accept a null gamepad' (): void {
+  'It should accept a null gamepad'(): void {
     this.getTestGamepads.resetBehavior()
     this.getTestGamepads.returns([null])
-    expect(() => { Actions.ReadGamepad() }).to.not.throw()
+    expect(() => {
+      Actions.ReadGamepad()
+    }).to.not.throw()
   }
 
   @test
-  'It should accept a valid gamepad' (): void {
+  'It should accept a valid gamepad'(): void {
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.called).to.equal(false)
   }
 
   @test
-  'it should not flag Left for left activation of gamepad on hidden page' (): void {
+  'it should not flag Left for left activation of gamepad on hidden page'(): void {
     this.documentHidden = true
     this.testGamePad.axes = [-1]
     Actions.ReadGamepad()
@@ -389,7 +420,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Left for left activation of gamepad' (): void {
+  'it should flag Left for left activation of gamepad'(): void {
     this.testGamePad.axes = [-1]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -397,7 +428,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Left for left activation of d-pad' (): void {
+  'it should flag Left for left activation of d-pad'(): void {
     this.testGamePad.buttons = Array(20).fill({ pressed: false })
     this.testGamePad.buttons[14] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
@@ -406,7 +437,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag Left for tiny left activation of gamepad' (): void {
+  'it should not flag Left for tiny left activation of gamepad'(): void {
     this.testGamePad.axes = [-0.0001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -414,7 +445,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag Left for moderate but not enough left activation of gamepad' (): void {
+  'it should not flag Left for moderate but not enough left activation of gamepad'(): void {
     this.testGamePad.axes = [-0.4999]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -422,7 +453,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Left for minimumleft activation of gamepad' (): void {
+  'it should flag Left for minimumleft activation of gamepad'(): void {
     this.testGamePad.axes = [-0.500000001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -430,7 +461,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Right for right activation of gamepad' (): void {
+  'it should flag Right for right activation of gamepad'(): void {
     this.testGamePad.axes = [1]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -438,7 +469,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Right for right activation of d-pad' (): void {
+  'it should flag Right for right activation of d-pad'(): void {
     this.testGamePad.buttons = Array(20).fill({ pressed: false })
     this.testGamePad.buttons[15] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
@@ -447,7 +478,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag Right for tiny right activation of gamepad' (): void {
+  'it should not flag Right for tiny right activation of gamepad'(): void {
     this.testGamePad.axes = [0.0001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -455,7 +486,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag Right for moderate but not enough right activation of gamepad' (): void {
+  'it should not flag Right for moderate but not enough right activation of gamepad'(): void {
     this.testGamePad.axes = [0.4999]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -463,7 +494,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Right for minimum right activation of gamepad' (): void {
+  'it should flag Right for minimum right activation of gamepad'(): void {
     this.testGamePad.axes = [0.500000001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -471,7 +502,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Down for down activation of gamepad' (): void {
+  'it should flag Down for down activation of gamepad'(): void {
     this.testGamePad.axes = [0, 1]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -479,7 +510,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Down for down activation of d-pad' (): void {
+  'it should flag Down for down activation of d-pad'(): void {
     this.testGamePad.buttons = Array(20).fill({ pressed: false })
     this.testGamePad.buttons[13] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
@@ -488,7 +519,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag Down for tiny down activation of gamepad' (): void {
+  'it should not flag Down for tiny down activation of gamepad'(): void {
     this.testGamePad.axes = [0, 0.0001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -496,7 +527,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag Down for moderate but not enough down activation of gamepad' (): void {
+  'it should not flag Down for moderate but not enough down activation of gamepad'(): void {
     this.testGamePad.axes = [0, 0.4999]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -504,7 +535,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Down for minimum down activation of gamepad' (): void {
+  'it should flag Down for minimum down activation of gamepad'(): void {
     this.testGamePad.axes = [0, 0.500000001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -512,7 +543,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Up for up activation of gamepad' (): void {
+  'it should flag Up for up activation of gamepad'(): void {
     this.testGamePad.axes = [0, -1]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -520,7 +551,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Up for up activation of d-pad' (): void {
+  'it should flag Up for up activation of d-pad'(): void {
     this.testGamePad.buttons = Array(20).fill({ pressed: false })
     this.testGamePad.buttons[12] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
@@ -529,7 +560,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag Up for tiny up activation of gamepad' (): void {
+  'it should not flag Up for tiny up activation of gamepad'(): void {
     this.testGamePad.axes = [0, -0.0001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -537,7 +568,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag Up for moderate but not enough up activation of gamepad' (): void {
+  'it should not flag Up for moderate but not enough up activation of gamepad'(): void {
     this.testGamePad.axes = [0, -0.4999]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -545,7 +576,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Up for minimum up activation of gamepad' (): void {
+  'it should flag Up for minimum up activation of gamepad'(): void {
     this.testGamePad.axes = [0, -0.500000001]
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -553,7 +584,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not flag button for button activation of gamepad on hidden page' (): void {
+  'it should not flag button for button activation of gamepad on hidden page'(): void {
     this.documentHidden = true
     this.testGamePad.buttons[1] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
@@ -562,7 +593,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag A button for button activation of gamepad' (): void {
+  'it should flag A button for button activation of gamepad'(): void {
     this.testGamePad.buttons[0] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -570,7 +601,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag B button for button activation of gamepad' (): void {
+  'it should flag B button for button activation of gamepad'(): void {
     this.testGamePad.buttons[1] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -578,7 +609,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag X button for button activation of gamepad' (): void {
+  'it should flag X button for button activation of gamepad'(): void {
     this.testGamePad.buttons[3] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -586,7 +617,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag Y button for button activation of gamepad' (): void {
+  'it should flag Y button for button activation of gamepad'(): void {
     this.testGamePad.buttons[2] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -594,7 +625,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag L button for button activation of gamepad' (): void {
+  'it should flag L button for button activation of gamepad'(): void {
     this.testGamePad.buttons[4] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -602,7 +633,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag R button for button activation of gamepad' (): void {
+  'it should flag R button for button activation of gamepad'(): void {
     this.testGamePad.buttons[5] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -610,7 +641,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should flag multiple buttons for multiple button activation of gamepad' (): void {
+  'it should flag multiple buttons for multiple button activation of gamepad'(): void {
     this.testGamePad.buttons[5] = { pressed: true, value: 1, touched: true }
     this.testGamePad.buttons[2] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
@@ -620,83 +651,83 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not send game pad action on null controller input when no flags set' (): void {
+  'it should not send game pad action on null controller input when no flags set'(): void {
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
   }
 
   @test
-  'it should clear Right flag on null controller input when no flags set' (): void {
+  'it should clear Right flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.Right = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.Right).to.equal(false)
   }
 
   @test
-  'it should clear Left flag on null controller input when no flags set' (): void {
+  'it should clear Left flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.Left = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.Right).to.equal(false)
   }
 
   @test
-  'it should clear Up flag on null controller input when no flags set' (): void {
+  'it should clear Up flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.Up = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.Up).to.equal(false)
   }
 
   @test
-  'it should clear Down flag on null controller input when no flags set' (): void {
+  'it should clear Down flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.Down = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.Down).to.equal(false)
   }
 
   @test
-  'it should clear A flag on null controller input when no flags set' (): void {
+  'it should clear A flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.A = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.A).to.equal(false)
   }
 
   @test
-  'it should clear B flag on null controller input when no flags set' (): void {
+  'it should clear B flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.B = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.B).to.equal(false)
   }
 
   @test
-  'it should clear X flag on null controller input when no flags set' (): void {
+  'it should clear X flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.X = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.X).to.equal(false)
   }
 
   @test
-  'it should clear Y flag on null controller input when no flags set' (): void {
+  'it should clear Y flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.Y = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.Y).to.equal(false)
   }
 
   @test
-  'it should clear L flag on null controller input when no flags set' (): void {
+  'it should clear L flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.L = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.L).to.equal(false)
   }
 
   @test
-  'it should clear R flag on null controller input when no flags set' (): void {
+  'it should clear R flag on null controller input when no flags set'(): void {
     TestActions.lastStatus.R = true
     Actions.ReadGamepad()
     expect(TestActions.lastStatus.R).to.equal(false)
   }
 
   @test
-  'it should send single button pad action on null controller input when one flag set' (): void {
+  'it should send single button pad action on null controller input when one flag set'(): void {
     TestActions.lastStatus.Left = true
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(1)
@@ -712,7 +743,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should not send button pad action on null controller input when document hidden' (): void {
+  'it should not send button pad action on null controller input when document hidden'(): void {
     this.documentHidden = true
     TestActions.lastStatus.Left = true
     Actions.ReadGamepad()
@@ -720,7 +751,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
   }
 
   @test
-  'it should send multiple button pad action on null controller input when many flag set' (): void {
+  'it should send multiple button pad action on null controller input when many flag set'(): void {
     TestActions.lastStatus.Left = true
     TestActions.lastStatus.A = true
     this.actionGamepadListener.resetHistory()
@@ -735,35 +766,35 @@ export class AppActionsReadGamepad extends BaseActionsTests {
 export class AppActionsInitTests extends BaseActionsTests {
   BuildActionsSpy: sinon.SinonStub = sinon.stub()
 
-  before (): void {
+  before(): void {
     super.before()
     this.BuildActionsSpy = sinon.stub(Actions, 'BuildActions')
   }
 
-  after (): void {
+  after(): void {
     this.BuildActionsSpy.restore()
     super.after()
   }
 
   @test
-  'it should build actions on init' (): void {
+  'it should build actions on init'(): void {
     Actions.Init()
     expect(this.BuildActionsSpy.called).to.equal(true)
   }
 
   @test
-  'it should subscribe to Navigate:Data' (): void {
+  'it should subscribe to Navigate:Data'(): void {
     Actions.Init()
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
   }
 
   @test
-  'it should Tab:Select self on Navigate:Data with no folders nor pictures' (): void {
+  'it should Tab:Select self on Navigate:Data with no folders nor pictures'(): void {
     Actions.Init()
     const testCases: Array<[string[] | undefined, string[] | undefined]> = [
       [undefined, undefined],
       [[], undefined],
-      [undefined, []]
+      [undefined, []],
     ]
 
     const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
@@ -775,20 +806,20 @@ export class AppActionsInitTests extends BaseActionsTests {
       spy.reset()
       handler({
         children,
-        pictures
+        pictures,
       })
       expect(spy.called).to.equal(true)
     }
   }
 
   @test
-  'it should not Tab:Select self on Navigate:Data with folders or pictures' (): void {
+  'it should not Tab:Select self on Navigate:Data with folders or pictures'(): void {
     Actions.Init()
     const testCases = [
       [[1], undefined],
       [[1], []],
       [undefined, [1]],
-      [[], [1]]
+      [[], [1]],
     ]
 
     const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
@@ -800,14 +831,14 @@ export class AppActionsInitTests extends BaseActionsTests {
       spy.reset()
       handler({
         children,
-        pictures
+        pictures,
       })
       expect(spy.called).to.equal(false)
     }
   }
 
   @test
-  'it should create keyup listener that publishes keypress' (): void {
+  'it should create keyup listener that publishes keypress'(): void {
     Actions.Init()
 
     const spy = sinon.stub()
@@ -821,14 +852,14 @@ export class AppActionsInitTests extends BaseActionsTests {
       [true, false, false, 'e', '<CTRL>E'],
       [true, false, true, 'f', '<CTRL><SHIFT>F'],
       [true, true, false, 'g', '<CTRL><ALT>G'],
-      [true, true, true, 'h', '<CTRL><ALT><SHIFT>H']
+      [true, true, true, 'h', '<CTRL><ALT><SHIFT>H'],
     ]
     for (const [ctrlKey, altKey, shiftKey, key, result] of testCases) {
       const event = new this.dom.window.KeyboardEvent('keyup', {
         altKey,
         ctrlKey,
         shiftKey,
-        key
+        key,
       })
       this.dom.window.document.dispatchEvent(event)
 
@@ -837,7 +868,7 @@ export class AppActionsInitTests extends BaseActionsTests {
   }
 
   @test
-  'it should register a window listener for gamepad connected' (): void {
+  'it should register a window listener for gamepad connected'(): void {
     const spy = sinon.spy(this.dom.window, 'addEventListener')
     try {
       Actions.Init()
@@ -848,7 +879,7 @@ export class AppActionsInitTests extends BaseActionsTests {
   }
 
   @test
-  'it should add a named interval when adding a gamepad' (): void {
+  'it should add a named interval when adding a gamepad'(): void {
     const spy = sinon.spy(this.dom.window, 'addEventListener')
     try {
       Actions.Init()
@@ -862,7 +893,7 @@ export class AppActionsInitTests extends BaseActionsTests {
   }
 
   @test
-  'it should read gamepad when named interval fires' (): void {
+  'it should read gamepad when named interval fires'(): void {
     const spy = sinon.spy(this.dom.window, 'addEventListener')
     try {
       Actions.Init()

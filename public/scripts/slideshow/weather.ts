@@ -25,12 +25,12 @@ export function isWeatherResults(obj: unknown): obj is WeatherResults {
 }
 
 export const Functions = {
-  fetch
+  fetch,
 }
 
-const fetchWeather = async (uri: string): Promise<WeatherResults> => await Functions.fetch(uri)
-  .then(async result => {
-    const data = await result.json() as unknown
+const fetchWeather = async (uri: string): Promise<WeatherResults> =>
+  await Functions.fetch(uri).then(async (result) => {
+    const data = (await result.json()) as unknown
     if (!isWeatherResults(data)) throw new Error('Invalid JSON Object provided as input')
     return data
   })
@@ -68,21 +68,21 @@ export interface SunTimes {
 
 const almanac: SunTimes = {
   sunrise: -Infinity,
-  sunset: Infinity
+  sunset: Infinity,
 }
 
 export const GetAlmanac = (): SunTimes => almanac
 
 export const LocalWeatherUpdater = CyclicUpdater.create(async () => {
-  await fetchWeather('http://localhost:8080/')
-    .then(weather => showWeather(document.querySelector('.localweather'), weather))
-  }
-, 1000)
+  await fetchWeather('http://localhost:8080/').then((weather) =>
+    showWeather(document.querySelector('.localweather'), weather),
+  )
+}, 1000)
 
 export const WeatherUpdater = CyclicUpdater.create(async () => {
   await fetchWeather('/weather')
-    .then(weather => showWeather(document.querySelector('.weather'), weather))
-    .then(weather => {
+    .then((weather) => showWeather(document.querySelector('.weather'), weather))
+    .then((weather) => {
       const today = new Date()
       today.setMilliseconds(0)
       today.setSeconds(0)
@@ -101,5 +101,4 @@ export const WeatherUpdater = CyclicUpdater.create(async () => {
         almanac.sunset = today.getTime()
       }
     })
-}
-, 60 * 1000)
+}, 60 * 1000)

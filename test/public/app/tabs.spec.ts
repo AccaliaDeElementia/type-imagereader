@@ -33,15 +33,15 @@ html
 `
 
 class TestTabs extends Tabs {
-  public static get Tabs (): HTMLElement[] {
+  public static get Tabs(): HTMLElement[] {
     return Tabs.tabs
   }
 
-  public static get TabNames (): string[] {
+  public static get TabNames(): string[] {
     return Tabs.tabNames
   }
 
-  public static Reset (): void {
+  public static Reset(): void {
     Tabs.tabs = []
     Tabs.tabNames = []
   }
@@ -58,7 +58,7 @@ export class AppTabsTests extends PubSub {
   imagesScroll: sinon.SinonStub
   bookmarksScroll: sinon.SinonStub
   tabSelectedSpy: sinon.SinonStub
-  constructor () {
+  constructor() {
     super()
     this.existingWindow = global.window
     this.existingDocument = global.document
@@ -71,12 +71,12 @@ export class AppTabsTests extends PubSub {
     this.tabSelectedSpy = sinon.stub()
   }
 
-  before (): void {
+  before(): void {
     this.dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999'
+      url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    global.window = this.dom.window as unknown as Window & typeof globalThis
     this.existingDocument = global.document
     global.document = this.dom.window.document
     this.consoleError = sinon.stub(global.window.console, 'error')
@@ -105,13 +105,13 @@ export class AppTabsTests extends PubSub {
     this.actionsScroll.reset()
   }
 
-  after (): void {
+  after(): void {
     global.window = this.existingWindow
     global.document = this.existingDocument
   }
 
   @test
-  'Init(): All tabs discovered' (): void {
+  'Init(): All tabs discovered'(): void {
     TestTabs.Reset()
     expect(TestTabs.Tabs).to.have.length(0)
     expect(TestTabs.TabNames).to.have.length(0)
@@ -121,12 +121,12 @@ export class AppTabsTests extends PubSub {
   }
 
   @test
-  'Init(): Subscribes to Tab:Select event' (): void {
+  'Init(): Subscribes to Tab:Select event'(): void {
     expect(PubSub.subscribers['TAB:SELECT']).to.have.length(1)
   }
 
   @test
-  'Init(): Tab:Select fires SelectTab' (): void {
+  'Init(): Tab:Select fires SelectTab'(): void {
     const spy = sinon.stub(Tabs, 'SelectTab')
     try {
       spy.returns(undefined)
@@ -138,7 +138,7 @@ export class AppTabsTests extends PubSub {
   }
 
   @test
-  'Init(): Registers click events for tabs which fire SelectTab' (): void {
+  'Init(): Registers click events for tabs which fire SelectTab'(): void {
     const spy = sinon.stub(Tabs, 'SelectTab')
     try {
       spy.returns(undefined)
@@ -155,7 +155,7 @@ export class AppTabsTests extends PubSub {
   }
 
   @test
-  'Init(): Click event handler defaults to empty string on null href' (): void {
+  'Init(): Click event handler defaults to empty string on null href'(): void {
     const spy = sinon.stub(Tabs, 'SelectTab')
     try {
       spy.returns(undefined)
@@ -171,44 +171,44 @@ export class AppTabsTests extends PubSub {
   }
 
   @test
-  'SelectTab() publishes selectedTab' (): void {
+  'SelectTab() publishes selectedTab'(): void {
     Tabs.SelectTab('#tabImages')
     expect(this.tabSelectedSpy.calledWith('#tabImages')).to.equal(true)
   }
 
   @test
-  'SelectTab() adds missing `#tab` prefix to href' (): void {
+  'SelectTab() adds missing `#tab` prefix to href'(): void {
     Tabs.SelectTab('Images')
     expect(this.tabSelectedSpy.calledWith('#tabImages')).to.equal(true)
   }
 
   @test
-  'SelectTab() is case insensitive' (): void {
+  'SelectTab() is case insensitive'(): void {
     Tabs.SelectTab('#TABIMAGES')
     expect(this.tabSelectedSpy.calledWith('#tabImages')).to.equal(true)
   }
 
   @test
-  'SelectTab() defaults to first tab when selecting non existant tab' (): void {
+  'SelectTab() defaults to first tab when selecting non existant tab'(): void {
     Tabs.SelectTab('#TABDOESNOTEXIST')
     expect(this.tabSelectedSpy.calledWith(TestTabs.TabNames[0])).to.equal(true)
   }
 
   @test
-  'SelectTab() sets active css class on selected Tab' (): void {
+  'SelectTab() sets active css class on selected Tab'(): void {
     Tabs.SelectTab(TestTabs.TabNames[2])
     expect(TestTabs.Tabs[2]?.parentElement?.classList.contains('active')).to.equal(true)
   }
 
   @test
-  'SelectTab() removes active css class on non selected tab' (): void {
+  'SelectTab() removes active css class on non selected tab'(): void {
     TestTabs.Tabs[2]?.parentElement?.classList.add('active')
     Tabs.SelectTab(TestTabs.TabNames[1])
     expect(TestTabs.Tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
   }
 
   @test
-  'SelectTab() removes active css class null href tab' (): void {
+  'SelectTab() removes active css class null href tab'(): void {
     TestTabs.Tabs[2]?.parentElement?.classList.add('active')
     TestTabs.Tabs[2]?.removeAttribute('href')
     Tabs.SelectTab(TestTabs.TabNames[2])
@@ -216,22 +216,28 @@ export class AppTabsTests extends PubSub {
   }
 
   @test
-  'SelectTab() displays contected content on tab select' (): void {
+  'SelectTab() displays contected content on tab select'(): void {
     Tabs.SelectTab(TestTabs.TabNames[1])
-    expect(this.dom.window.document.querySelector<HTMLElement>(TestTabs.Tabs[1]?.getAttribute('href') ?? '')?.style.getPropertyValue('display')).to.equal('block')
+    expect(
+      this.dom.window.document
+        .querySelector<HTMLElement>(TestTabs.Tabs[1]?.getAttribute('href') ?? '')
+        ?.style.getPropertyValue('display'),
+    ).to.equal('block')
   }
 
   @test
-  'SelectTab() scrolls contnet into view on tab select' (): void {
+  'SelectTab() scrolls contnet into view on tab select'(): void {
     Tabs.SelectTab('Folders')
-    expect(this.foldersScroll.calledWith({
-      top: 0,
-      behavior: 'smooth'
-    })).to.equal(true)
+    expect(
+      this.foldersScroll.calledWith({
+        top: 0,
+        behavior: 'smooth',
+      }),
+    ).to.equal(true)
   }
 
   @test
-  'SelectTab Handles no tabs gracefully' (): void {
+  'SelectTab Handles no tabs gracefully'(): void {
     TestTabs.Reset()
     Tabs.SelectTab('Images')
     expect(true, 'Should not have thrown on previous line').to.equal(true)
@@ -241,7 +247,7 @@ export class AppTabsTests extends PubSub {
   }
 
   @test
-  'SelectTab() hides other tab content on tab select' (): void {
+  'SelectTab() hides other tab content on tab select'(): void {
     const content = this.dom.window.document.querySelector<HTMLElement>(TestTabs.Tabs[1]?.getAttribute('href') ?? '')
     content?.style.setProperty('display', 'block')
     Tabs.SelectTab(TestTabs.TabNames[3])

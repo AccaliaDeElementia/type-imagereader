@@ -6,7 +6,7 @@ export class Loading {
   protected static overlay: HTMLElement | null
   protected static navbar: HTMLElement | null
 
-  static Init (): void {
+  static Init(): void {
     this.overlay = document.querySelector<HTMLElement>('#loadingScreen')
     this.navbar = document.querySelector<HTMLElement>('#navbar')
 
@@ -34,7 +34,7 @@ export class Loading {
     Subscribe('Loading:Show', () => this.overlay?.style.setProperty('display', 'block'))
   }
 
-  static get IsLoading (): boolean {
+  static get IsLoading(): boolean {
     return this.overlay?.style.getPropertyValue('display') === 'block'
   }
 }

@@ -20,31 +20,31 @@ class BaseAppPubSubTests extends PubSub {
   existingDocument: Document
   dom: JSDOM
   clock: sinon.SinonFakeTimers
-  constructor () {
+  constructor() {
     super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
 
     this.clock = sinon.useFakeTimers({
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
 
     this.consoleWarn = sinon.stub()
   }
 
-  before (): void {
+  before(): void {
     this.dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999'
+      url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    global.window = this.dom.window as unknown as Window & typeof globalThis
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
     this.clock.restore()
     this.clock = sinon.useFakeTimers({
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     this.consoleWarn = sinon.stub(global.window.console, 'warn')
 
@@ -54,7 +54,7 @@ class BaseAppPubSubTests extends PubSub {
     PubSub.intervals = {}
   }
 
-  after (): void {
+  after(): void {
     global.window = this.existingWindow
     global.document = this.existingDocument
 
@@ -73,31 +73,31 @@ export class AppPubSubTests extends PubSub {
   existingDocument: Document
   dom: JSDOM
   clock: sinon.SinonFakeTimers
-  constructor () {
+  constructor() {
     super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
 
     this.clock = sinon.useFakeTimers({
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
 
     this.consoleWarn = sinon.stub()
   }
 
-  before (): void {
+  before(): void {
     this.dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999'
+      url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    global.window = this.dom.window as unknown as Window & typeof globalThis
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
     this.clock.restore()
     this.clock = sinon.useFakeTimers({
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     this.consoleWarn = sinon.stub(global.window.console, 'warn')
 
@@ -106,7 +106,7 @@ export class AppPubSubTests extends PubSub {
     PubSub.intervals = {}
   }
 
-  after (): void {
+  after(): void {
     global.window = this.existingWindow
     global.document = this.existingDocument
 
@@ -115,7 +115,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Subscribe adds subscriber to list' (): void {
+  'Subscribe adds subscriber to list'(): void {
     const fn = sinon.stub()
     const key = 'FOOBAR'
     PubSub.Subscribe(key, fn)
@@ -124,7 +124,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Subscribe appends subscriber to list' (): void {
+  'Subscribe appends subscriber to list'(): void {
     const fn = sinon.stub()
     const fn2 = sinon.stub()
     const key = 'FOOBAR'
@@ -135,14 +135,16 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Publish Warns on publish with no subscribers' (): void {
+  'Publish Warns on publish with no subscribers'(): void {
     PubSub.Publish('Foo:Bar', 'Baz')
     expect(this.consoleWarn.callCount).to.equal(1)
-    expect(this.consoleWarn.calledWithExactly('PUBSUB: topic Foo:Bar published without subscribers', 'Baz')).to.equal(true)
+    expect(this.consoleWarn.calledWithExactly('PUBSUB: topic Foo:Bar published without subscribers', 'Baz')).to.equal(
+      true,
+    )
   }
 
   @test
-  'Publish Warns on publish with no subscribers, but with subscribvers to child event' (): void {
+  'Publish Warns on publish with no subscribers, but with subscribvers to child event'(): void {
     const spy = sinon.stub()
     PubSub.subscribers['Foo:Bar'] = [spy]
     PubSub.Publish('Foo', 'Baz')
@@ -152,7 +154,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Publish Warns on publish with registered topic but no subscribers' (): void {
+  'Publish Warns on publish with registered topic but no subscribers'(): void {
     PubSub.subscribers['FOO:BAR'] = []
     PubSub.Publish('Foo:Bar', 'Baz')
     expect(this.consoleWarn.callCount).to.equal(1)
@@ -160,7 +162,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Publish publishes valid event' (): void {
+  'Publish publishes valid event'(): void {
     const spy = sinon.stub()
     const topic = `FOO:${Math.random()}`
     const data = Math.random()
@@ -170,7 +172,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Publish publishes all for valid event' (): void {
+  'Publish publishes all for valid event'(): void {
     const spy1 = sinon.stub()
     const spy2 = sinon.stub()
     const spy3 = sinon.stub()
@@ -187,7 +189,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Publish publishes hierarchy for valid event' (): void {
+  'Publish publishes hierarchy for valid event'(): void {
     const spy1 = sinon.stub()
     const spy2 = sinon.stub()
     const spy3 = sinon.stub()
@@ -205,7 +207,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Defer adds method to the list of defers' (): void {
+  'Defer adds method to the list of defers'(): void {
     const spy = sinon.stub()
     PubSub.Defer(spy, 100)
     expect(PubSub.deferred).to.have.length(1)
@@ -213,7 +215,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Defer enforces positive integer delay cycle count' (): void {
+  'Defer enforces positive integer delay cycle count'(): void {
     const matrix: Array<[number, number]> = [
       [-100, 1],
       [0, 1],
@@ -221,7 +223,7 @@ export class AppPubSubTests extends PubSub {
       [10, 1],
       [11, 2],
       [21, 3],
-      [31, 4]
+      [31, 4],
     ]
     for (const [delay, expected] of matrix) {
       PubSub.Defer(() => null, delay)
@@ -230,14 +232,14 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Defer does not fire immediately' (): void {
+  'Defer does not fire immediately'(): void {
     const spy = sinon.stub()
     PubSub.Defer(spy, 500)
     expect(spy.called).to.equal(false)
   }
 
   @test
-  'Defer trigger decrements remaining cycles' (): void {
+  'Defer trigger decrements remaining cycles'(): void {
     const spy = sinon.stub()
     PubSub.Defer(spy, 50)
     const deferred = PubSub.deferred[0]
@@ -254,7 +256,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Defer trigger fires overdue defer and removes' (): void {
+  'Defer trigger fires overdue defer and removes'(): void {
     const spy = sinon.stub()
     PubSub.Defer(spy, 500)
     const deferred = PubSub.deferred[0] ?? { delayCycles: 0 }
@@ -265,7 +267,7 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Defer trigger fires due defer and removes' (): void {
+  'Defer trigger fires due defer and removes'(): void {
     const spy = sinon.stub()
     PubSub.Defer(spy, 500)
     const deferred = PubSub.deferred[0] ?? { delayCycles: 0 }
@@ -276,12 +278,12 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Defer trigger fires interval that is due' (): void {
+  'Defer trigger fires interval that is due'(): void {
     const spy = sinon.stub()
     const testInterval = {
       method: spy,
       delayCycles: 0,
-      intervalCycles: 5
+      intervalCycles: 5,
     }
     PubSub.intervals['FOO IS FOO'] = testInterval
     PubSub.ExecuteInterval()
@@ -290,12 +292,12 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Defer trigger fires interval that is overdue' (): void {
+  'Defer trigger fires interval that is overdue'(): void {
     const spy = sinon.stub()
     const testInterval = {
       method: spy,
       delayCycles: -5,
-      intervalCycles: 5
+      intervalCycles: 5,
     }
     PubSub.intervals['FOO IS FOO'] = testInterval
     PubSub.ExecuteInterval()
@@ -304,12 +306,12 @@ export class AppPubSubTests extends PubSub {
   }
 
   @test
-  'Defer trigger decrements interval timer' (): void {
+  'Defer trigger decrements interval timer'(): void {
     const spy = sinon.stub()
     const testInterval = {
       method: spy,
       delayCycles: 5,
-      intervalCycles: 5
+      intervalCycles: 5,
     }
     PubSub.intervals['FOO IS FOO'] = testInterval
     PubSub.ExecuteInterval()
@@ -321,34 +323,34 @@ export class AppPubSubTests extends PubSub {
 @suite
 export class PubSubAddIntervalTests extends BaseAppPubSubTests {
   @test
-  'Adds interval to map' (): void {
+  'Adds interval to map'(): void {
     expect(PubSub.intervals['Test Interval']).to.equal(undefined)
     PubSub.AddInterval('Test Interval', () => null, 100)
     expect(PubSub.intervals['Test Interval']).to.not.equal(undefined)
   }
 
   @test
-  'Stores function in interval object' (): void {
+  'Stores function in interval object'(): void {
     const expected = (): null => null
     PubSub.AddInterval('Test Interval', expected, 100)
     expect(PubSub.intervals['Test Interval']?.method).to.equal(expected)
   }
 
   @test
-  'adds function with delay of zero' (): void {
+  'adds function with delay of zero'(): void {
     PubSub.AddInterval('Test Interval', () => null, 100)
     expect(PubSub.intervals['Test Interval']?.delayCycles).to.equal(0)
   }
 
   @test
-  'adds function with specified ineterval' (): void {
+  'adds function with specified ineterval'(): void {
     PubSub.cycleTime = 30
     PubSub.AddInterval('Test Interval', () => null, 100)
     expect(PubSub.intervals['Test Interval']?.intervalCycles).to.equal(4)
   }
 
   @test
-  'Second add overwrites first' (): void {
+  'Second add overwrites first'(): void {
     const expected = (): null => null
     PubSub.AddInterval('Test Interval', () => null, 150)
     PubSub.AddInterval('Test Interval', expected, 100)
@@ -360,26 +362,28 @@ export class PubSubAddIntervalTests extends BaseAppPubSubTests {
 @suite
 export class PubSubRemoveIntervalTests extends BaseAppPubSubTests {
   @test
-  'Removes interval from map' (): void {
+  'Removes interval from map'(): void {
     PubSub.intervals['Test Interval'] = {
       method: () => null,
       delayCycles: 0,
-      intervalCycles: 0
+      intervalCycles: 0,
     }
     PubSub.RemoveInterval('Test Interval')
     expect(PubSub.intervals['Test Interval']).to.equal(undefined)
   }
 
   @test
-  'Can remove non existing interval from map' (): void {
-    expect(() => { PubSub.RemoveInterval('Test Interval') }).to.not.throw()
+  'Can remove non existing interval from map'(): void {
+    expect(() => {
+      PubSub.RemoveInterval('Test Interval')
+    }).to.not.throw()
   }
 }
 
 @suite
 export class PubSubStartDeferredAddsTimer extends BaseAppPubSubTests {
   @test
-  'Removes interval from map' (): void {
+  'Removes interval from map'(): void {
     expect(PubSub.timer).that.equal(undefined)
     PubSub.StartDeferred()
     expect(PubSub.timer).to.not.equal(undefined)
@@ -390,26 +394,26 @@ export class PubSubStartDeferredAddsTimer extends BaseAppPubSubTests {
 export class PubSubStartDeferred extends BaseAppPubSubTests {
   setIntervalStub: sinon.SinonStub = sinon.stub()
   baseCycleTime = PubSub.cycleTime
-  before (): void {
+  before(): void {
     super.before()
     this.setIntervalStub = sinon.stub(global, 'setInterval')
     PubSub.cycleTime = this.baseCycleTime
   }
 
-  after (): void {
+  after(): void {
     this.setIntervalStub.restore()
     PubSub.timer = undefined
     super.after()
   }
 
   @test
-  'it should call setInterval to create interval' (): void {
+  'it should call setInterval to create interval'(): void {
     PubSub.StartDeferred()
     expect(this.setIntervalStub.called).to.equal(true)
   }
 
   @test
-  'it should save timer id for later cancelation' (): void {
+  'it should save timer id for later cancelation'(): void {
     const expected = Math.random() * 1000
     this.setIntervalStub.returns(expected)
     PubSub.StartDeferred()
@@ -417,7 +421,7 @@ export class PubSubStartDeferred extends BaseAppPubSubTests {
   }
 
   @test
-  'it should call setInterval with configured interval' (): void {
+  'it should call setInterval with configured interval'(): void {
     const expected = Math.random() * 1000
     PubSub.cycleTime = expected
     PubSub.StartDeferred()
@@ -425,7 +429,7 @@ export class PubSubStartDeferred extends BaseAppPubSubTests {
   }
 
   @test
-  'it should call ExecuteInterval on firing interval' (): void {
+  'it should call ExecuteInterval on firing interval'(): void {
     const spy = sinon.stub(PubSub, 'ExecuteInterval')
     try {
       PubSub.StartDeferred()
@@ -441,26 +445,26 @@ export class PubSubStartDeferred extends BaseAppPubSubTests {
 export class PubSubStopDeferred extends BaseAppPubSubTests {
   clearIntervalStub: sinon.SinonStub = sinon.stub()
   baseCycleTime = PubSub.cycleTime
-  before (): void {
+  before(): void {
     super.before()
     this.clearIntervalStub = sinon.stub(global, 'clearInterval')
   }
 
-  after (): void {
+  after(): void {
     this.clearIntervalStub.restore()
     PubSub.timer = undefined
     super.after()
   }
 
   @test
-  'it should not call clearInterval when no timer exists' (): void {
+  'it should not call clearInterval when no timer exists'(): void {
     PubSub.timer = undefined
     PubSub.StopDeferred()
     expect(this.clearIntervalStub.called).to.equal(false)
   }
 
   @test
-  'it should call clearInterval to clear timer' (): void {
+  'it should call clearInterval to clear timer'(): void {
     const expected = Math.random() + 1000
     PubSub.timer = expected
     PubSub.StopDeferred()
@@ -468,7 +472,7 @@ export class PubSubStopDeferred extends BaseAppPubSubTests {
   }
 
   @test
-  'it should delete timer' (): void {
+  'it should delete timer'(): void {
     PubSub.timer = Math.random() + 1000
     PubSub.StopDeferred()
     expect(PubSub.timer).to.equal(undefined)

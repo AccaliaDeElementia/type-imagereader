@@ -6,31 +6,30 @@ export class Tabs {
   protected static tabs: HTMLElement[] = []
   protected static tabNames: string[] = []
 
-  public static Init (): void {
+  public static Init(): void {
     this.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
-    this.tabNames = this.tabs.map(tab => tab.getAttribute('href'))
-      .filter(name => name !== null)
+    this.tabNames = this.tabs.map((tab) => tab.getAttribute('href')).filter((name) => name !== null)
 
     for (const tab of this.tabs) {
-      tab.parentElement?.addEventListener('click', evt => {
+      tab.parentElement?.addEventListener('click', (evt) => {
         this.SelectTab(tab.getAttribute('href') ?? '')
         evt.preventDefault()
         return false
       })
     }
 
-    Subscribe('Tab:Select', (name) => { 
+    Subscribe('Tab:Select', (name) => {
       if (typeof name === 'string') this.SelectTab(name)
     })
     this.SelectTab()
   }
 
-  static SelectTab (href?: string): void {
+  static SelectTab(href?: string): void {
     if (href != null && !href.startsWith('#')) {
       href = `#tab${href}`
     }
     const lowerHref = href?.toLowerCase()
-    if (href == null || !this.tabNames.some(name => name.toLowerCase() === lowerHref)) {
+    if (href == null || !this.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
       href = this.tabNames[0] ?? ''
     }
     for (const tab of this.tabs) {
@@ -46,7 +45,7 @@ export class Tabs {
         content?.style.setProperty('display', 'block')
         content?.scroll({
           top: 0,
-          behavior: 'smooth'
+          behavior: 'smooth',
         })
       } else {
         tab.parentElement?.classList.remove('active')

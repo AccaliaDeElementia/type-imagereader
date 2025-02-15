@@ -39,7 +39,7 @@ export function isDataBookmarkFolder(obj: unknown): obj is DataBookmarkFolder[] 
   if (!('name' in obj) || typeof obj.name !== 'string') return false
   if (!('path' in obj) || typeof obj.path !== 'string') return false
   if (!('bookmarks' in obj) || !(obj.bookmarks instanceof Array)) return false
-  for(const bookmark of obj.bookmarks as unknown[]) {
+  for (const bookmark of obj.bookmarks as unknown[]) {
     if (!isDataBookmark(bookmark)) return false
   }
   return true
@@ -49,7 +49,7 @@ export function isDataWithBookmarks(obj: unknown): obj is DataWithBookmarks {
   if (typeof obj !== 'object' || obj == null) return false
   if (!('path' in obj) || typeof obj.path !== 'string') return false
   if (!('bookmarks' in obj) || !(obj.bookmarks instanceof Array)) return false
-  for(const bookmark of obj.bookmarks as unknown[]) {
+  for (const bookmark of obj.bookmarks as unknown[]) {
     if (!isDataBookmarkFolder(bookmark)) return false
   }
   return true
@@ -70,8 +70,8 @@ export class Bookmarks {
 
   public static BookmarkFolders: BookmarkFolder[] = []
 
-  public static GetFolder (openPath: string, bookmarkFolder: DataBookmarkFolder): HTMLElement | null {
-    let folder = this.BookmarkFolders.find(e => e.name === bookmarkFolder.path)
+  public static GetFolder(openPath: string, bookmarkFolder: DataBookmarkFolder): HTMLElement | null {
+    let folder = this.BookmarkFolders.find((e) => e.name === bookmarkFolder.path)
     if (folder == null) {
       const element = CloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
       if (element == null) {
@@ -79,7 +79,7 @@ export class Bookmarks {
       }
       folder = {
         name: bookmarkFolder.name,
-        element
+        element,
       }
       element.setAttribute('data-folderPath', bookmarkFolder.path)
       const title = element.querySelector<HTMLElement>('.title')
@@ -98,7 +98,7 @@ export class Bookmarks {
     return folder.element
   }
 
-  public static BuildBookmark (bookmark: DataBookmark): HTMLElement | null {
+  public static BuildBookmark(bookmark: DataBookmark): HTMLElement | null {
     const card = CloneNode(Bookmarks.bookmarkCard, isHTMLElement)
     if (card == null) {
       return null
@@ -109,34 +109,39 @@ export class Bookmarks {
 
     card.style.backgroundImage = `url("/images/preview${bookmark.path}-image.webp")`
     const button = card.querySelector('button')
-    button?.addEventListener('click', event => {
+    button?.addEventListener('click', (event) => {
       Publish('Bookmarks:Remove', bookmark.path)
       event.stopPropagation()
     })
-    card.addEventListener('click', event => {
-      Net.PostJSON('/api/navigate/latest', {
-        path: bookmark.path,
-        modCount: -1
-      }, (_: unknown): _ is unknown => true)
-        .then(() => {
+    card.addEventListener('click', (event) => {
+      Net.PostJSON(
+        '/api/navigate/latest',
+        {
+          path: bookmark.path,
+          modCount: -1,
+        },
+        (_: unknown): _ is unknown => true,
+      ).then(
+        () => {
           Publish('Navigate:Load', {
             path: bookmark.folder,
-            noMenu: true
+            noMenu: true,
           })
-        }, () => null)
+        },
+        () => null,
+      )
       event.stopPropagation()
     })
     return card
   }
 
-  public static buildBookmarks (data: DataWithBookmarks): void {
-    if (this.bookmarksTab == null ||
-      this.bookmarkCard == null ||
-      this.bookmarkFolder == null) {
+  public static buildBookmarks(data: DataWithBookmarks): void {
+    if (this.bookmarksTab == null || this.bookmarkCard == null || this.bookmarkFolder == null) {
       return
     }
 
-    const openPath = this.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') ?? data.path
+    const openPath =
+      this.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') ?? data.path
 
     for (const existing of this.bookmarksTab.querySelectorAll('div.folder')) {
       existing.remove()
@@ -157,24 +162,26 @@ export class Bookmarks {
         folderNode.appendChild(card)
       }
     }
-    this.BookmarkFolders.sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0)
+    this.BookmarkFolders.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
     for (const folder of this.BookmarkFolders) {
       this.bookmarksTab.appendChild(folder.element)
     }
   }
 
-  public static Init (): void {
+  public static Init(): void {
     this.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     this.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     this.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
 
-    Subscribe('Navigate:Data', (data) => { 
+    Subscribe('Navigate:Data', (data) => {
       if (isDataWithBookmarks(data)) this.buildBookmarks(data)
     })
 
     Subscribe('Bookmarks:Load', () => {
       Net.GetJSON<DataBookmarkFolder[]>('/api/bookmarks', isDataBookmarkFolderArray)
-        .then(bookmarks => { this.buildBookmarks({ path: '', bookmarks }) })
+        .then((bookmarks) => {
+          this.buildBookmarks({ path: '', bookmarks })
+        })
         .catch(() => null)
     })
 
@@ -185,8 +192,12 @@ export class Bookmarks {
           if (!(err instanceof Error)) throw new Error('Non Error rejection!')
           if (err.message !== 'Empty JSON response recieved') throw err
         })
-        .then(() => { Publish('Bookmarks:Load') })
-        .then(() => { Publish('Loading:Success') })
+        .then(() => {
+          Publish('Bookmarks:Load')
+        })
+        .then(() => {
+          Publish('Loading:Success')
+        })
         .catch(() => null)
     })
 
@@ -197,8 +208,12 @@ export class Bookmarks {
           if (!(err instanceof Error)) throw new Error('Non Error rejection!')
           if (err.message !== 'Empty JSON response recieved') throw err
         })
-        .then(() => { Publish('Bookmarks:Load') })
-        .then(() => { Publish('Loading:Success') })
+        .then(() => {
+          Publish('Bookmarks:Load')
+        })
+        .then(() => {
+          Publish('Loading:Success')
+        })
         .catch(() => null)
     })
   }

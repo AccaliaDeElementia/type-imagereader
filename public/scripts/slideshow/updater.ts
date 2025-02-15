@@ -1,7 +1,9 @@
 'use sanity'
 
 type UpdateFn = () => Promise<void>
-const defaultUpdateFn: UpdateFn = async () => { await Promise.reject(new Error('Cyclic Updater Called with No Updater')) }
+const defaultUpdateFn: UpdateFn = async () => {
+  await Promise.reject(new Error('Cyclic Updater Called with No Updater'))
+}
 export class CyclicUpdater {
   protected countdown = -1
   protected failCount = 0
@@ -9,12 +11,12 @@ export class CyclicUpdater {
   period = 60 * 1000
   updateFn = defaultUpdateFn
 
-  constructor (updateFn?: UpdateFn, period?: number) {
+  constructor(updateFn?: UpdateFn, period?: number) {
     this.updateFn = updateFn ?? this.updateFn
     this.period = period ?? this.period
   }
 
-  async trigger (elapsed: number): Promise<void> {
+  async trigger(elapsed: number): Promise<void> {
     this.countdown -= elapsed
     if (this.countdown <= 0) {
       this.countdown = Infinity
@@ -30,7 +32,7 @@ export class CyclicUpdater {
     }
   }
 
-  static create (updateFn: UpdateFn, period: number): CyclicUpdater {
+  static create(updateFn: UpdateFn, period: number): CyclicUpdater {
     return new CyclicUpdater(updateFn, period)
   }
 }
@@ -38,18 +40,19 @@ export class CyclicUpdater {
 export class CyclicManager {
   protected static updaters: CyclicUpdater[] = []
   protected static timer: NodeJS.Timeout | number | undefined = undefined
-  static Add (...updaters: CyclicUpdater[]): void {
+  static Add(...updaters: CyclicUpdater[]): void {
     this.updaters.push(...updaters)
   }
 
-  static Start (interval: number): void {
-    this.timer = setInterval(
-      () => { this.updaters.forEach(updater => { updater.trigger(interval).catch(() => null) }) },
-      interval
-    )
+  static Start(interval: number): void {
+    this.timer = setInterval(() => {
+      this.updaters.forEach((updater) => {
+        updater.trigger(interval).catch(() => null)
+      })
+    }, interval)
   }
 
-  static Stop (): void {
+  static Stop(): void {
     if (this.timer != null) {
       clearInterval(this.timer)
       this.timer = undefined

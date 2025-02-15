@@ -19,7 +19,7 @@ export class ImportsEnvironmentLookupTests {
   clock = {} as unknown as Sinon.SinonFakeTimers
   tz? = ''
 
-  before (): void {
+  before(): void {
     this.tz = process.env.TZ
     process.env.TZ = 'UTC'
     this.clock = sinon.useFakeTimers(946684800000) // 2000-01-01T00:00:00.000Z
@@ -29,181 +29,181 @@ export class ImportsEnvironmentLookupTests {
     delete process.env.NIGHT_NOT_BEFORE
   }
 
-  after (): void {
+  after(): void {
     this.clock.restore()
     process.env.TZ = this.tz
   }
 
   @test
-  'appId: it should return empty string when env undefined' (): void {
+  'appId: it should return empty string when env undefined'(): void {
     delete process.env.OPENWEATHER_APPID
     expect(Imports.appId).to.equal('')
   }
 
   @test
-  'appId: it should return empty string when env empty' (): void {
+  'appId: it should return empty string when env empty'(): void {
     process.env.OPENWEATHER_APPID = ''
     expect(Imports.appId).to.equal('')
   }
 
   @test
-  'appId: it should return env string when set' (): void {
+  'appId: it should return env string when set'(): void {
     process.env.OPENWEATHER_APPID = 'foo'
     expect(Imports.appId).to.equal('foo')
   }
 
   @test
-  'location: it should return empty string when env undefined' (): void {
+  'location: it should return empty string when env undefined'(): void {
     delete process.env.OPENWEATHER_LOCATION
     expect(Imports.location).to.equal('')
   }
 
   @test
-  'location: it should return empty string when env empty' (): void {
+  'location: it should return empty string when env empty'(): void {
     process.env.OPENWEATHER_LOCATION = ''
     expect(Imports.location).to.equal('')
   }
 
   @test
-  'location: it should return env string when set' (): void {
+  'location: it should return env string when set'(): void {
     process.env.OPENWEATHER_LOCATION = 'foo'
     expect(Imports.location).to.equal('foo')
   }
 
   @test
-  'location: it should URI encode string when set' (): void {
+  'location: it should URI encode string when set'(): void {
     process.env.OPENWEATHER_LOCATION = 'foo bar'
     expect(Imports.location).to.equal('foo%20bar')
   }
 
   @test
-  'nightNotBefore: it should return default time when env undefined' (): void {
+  'nightNotBefore: it should return default time when env undefined'(): void {
     delete process.env.NIGHT_NOT_BEFORE
     expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return default time when env blank' (): void {
+  'nightNotBefore: it should return default time when env blank'(): void {
     process.env.NIGHT_NOT_BEFORE = ''
     expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return configured time when env specifies hour only' (): void {
+  'nightNotBefore: it should return configured time when env specifies hour only'(): void {
     process.env.NIGHT_NOT_BEFORE = '16'
     expect(Imports.nightNotBefore).to.equal(946742400000) // 2000-01-01T16:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return configured time when env specifies hour: only' (): void {
+  'nightNotBefore: it should return configured time when env specifies hour: only'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:'
     expect(Imports.nightNotBefore).to.equal(946742400000) // 2000-01-01T16:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return configured time when env specifies hour and minute' (): void {
+  'nightNotBefore: it should return configured time when env specifies hour and minute'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:15'
     expect(Imports.nightNotBefore).to.equal(946743300000) // 2000-01-01T16:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return default time when env has NaN hour' (): void {
+  'nightNotBefore: it should return default time when env has NaN hour'(): void {
     process.env.NIGHT_NOT_BEFORE = 'Foo:15'
     expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return default time when env has negative hour' (): void {
+  'nightNotBefore: it should return default time when env has negative hour'(): void {
     process.env.NIGHT_NOT_BEFORE = '-1:15'
     expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return default time when env has out of range hour' (): void {
+  'nightNotBefore: it should return default time when env has out of range hour'(): void {
     process.env.NIGHT_NOT_BEFORE = '24:15'
     expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return default time when env has NaN minute' (): void {
+  'nightNotBefore: it should return default time when env has NaN minute'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:Foo'
     expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return default time when env has negative minute' (): void {
+  'nightNotBefore: it should return default time when env has negative minute'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:-1'
     expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
-  'nightNotBefore: it should return default time when env has out of range minute' (): void {
+  'nightNotBefore: it should return default time when env has out of range minute'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:60'
     expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
-  'nightNotAfter: it should return default time when env undefined' (): void {
+  'nightNotAfter: it should return default time when env undefined'(): void {
     delete process.env.NIGHT_NOT_AFTER
     expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
-  'nightNotAfter: it should return default time when env blank' (): void {
+  'nightNotAfter: it should return default time when env blank'(): void {
     process.env.NIGHT_NOT_AFTER = ''
     expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
-  'nightNotAfter: it should return requested time time when env has only hour' (): void {
+  'nightNotAfter: it should return requested time time when env has only hour'(): void {
     process.env.NIGHT_NOT_AFTER = '07'
     expect(Imports.nightNotAfter).to.equal(946710000000) // 2000-01-01T07:00:00.000
   }
 
   @test
-  'nightNotAfter: it should return requested time time when env has only hour:' (): void {
+  'nightNotAfter: it should return requested time time when env has only hour:'(): void {
     process.env.NIGHT_NOT_AFTER = '07:'
     expect(Imports.nightNotAfter).to.equal(946710000000) // 2000-01-01T07:00:00.000
   }
 
   @test
-  'nightNotAfter: it should return requested time time when env has hour and minute' (): void {
+  'nightNotAfter: it should return requested time time when env has hour and minute'(): void {
     process.env.NIGHT_NOT_AFTER = '07:15'
     expect(Imports.nightNotAfter).to.equal(946710900000) // 2000-01-01T07:00:00.000
   }
 
   @test
-  'nightNotAfter: it should return default time when env has NaN Hour' (): void {
+  'nightNotAfter: it should return default time when env has NaN Hour'(): void {
     process.env.NIGHT_NOT_AFTER = 'Foo:30'
     expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
-  'nightNotAfter: it should return default time when env has negative Hour' (): void {
+  'nightNotAfter: it should return default time when env has negative Hour'(): void {
     process.env.NIGHT_NOT_AFTER = '-1:30'
     expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
-  'nightNotAfter: it should return default time when env has out of range Hour' (): void {
+  'nightNotAfter: it should return default time when env has out of range Hour'(): void {
     process.env.NIGHT_NOT_AFTER = '24:30'
     expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
-  'nightNotAfter: it should return default time when env has NaN minute' (): void {
+  'nightNotAfter: it should return default time when env has NaN minute'(): void {
     process.env.NIGHT_NOT_AFTER = '06:Foo'
     expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
-  'nightNotAfter: it should return default time when env has negative minute' (): void {
+  'nightNotAfter: it should return default time when env has negative minute'(): void {
     process.env.NIGHT_NOT_AFTER = '06:-1'
     expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
-  'nightNotAfter: it should return default time when env has out of range minute' (): void {
+  'nightNotAfter: it should return default time when env has out of range minute'(): void {
     process.env.NIGHT_NOT_AFTER = '06:60'
     expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
@@ -212,605 +212,619 @@ export class ImportsEnvironmentLookupTests {
 @suite
 export class WeatherFunctionsIsOpenWeatherData {
   @test
-  'it should reject null' (): void {
+  'it should reject null'(): void {
     expect(Functions.isOpenWeatherData(null)).to.equal(false)
   }
 
   @test
-  'it should reject undefined' (): void {
+  'it should reject undefined'(): void {
     expect(Functions.isOpenWeatherData(undefined)).to.equal(false)
   }
 
   @test
-  'it should reject {}' (): void {
+  'it should reject {}'(): void {
     expect(Functions.isOpenWeatherData({})).to.equal(false)
   }
 
   @test
-  'it should reject string' (): void {
+  'it should reject string'(): void {
     expect(Functions.isOpenWeatherData('')).to.equal(false)
   }
 
   @test
-  'it should reject number' (): void {
+  'it should reject number'(): void {
     expect(Functions.isOpenWeatherData(42)).to.equal(false)
   }
 
   @test
-  'it should reject boolean' (): void {
+  'it should reject boolean'(): void {
     expect(Functions.isOpenWeatherData(true)).to.equal(false)
   }
 
   @test
-  'it should reject non object main' (): void {
+  'it should reject non object main'(): void {
     const obj = {
       main: 60,
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject null main' (): void {
+  'it should reject null main'(): void {
     const obj = {
       main: null,
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject null weather' (): void {
+  'it should reject null weather'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: null,
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject object weather' (): void {
+  'it should reject object weather'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: {},
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non array weather' (): void {
+  'it should reject non array weather'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: 17.2,
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject null weather entry' (): void {
+  'it should reject null weather entry'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
-      weather: [ null ],
+      weather: [null],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non object weather entry' (): void {
+  'it should reject non object weather entry'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
-      weather: [ 3.1415926 ],
+      weather: [3.1415926],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non number pressure' (): void {
+  'it should reject non number pressure'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: '',
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should accept missing pressure' (): void {
+  'it should accept missing pressure'(): void {
     const obj = {
       main: {
         temp: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non number temp' (): void {
+  'it should reject non number temp'(): void {
     const obj = {
       main: {
         temp: {},
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject missing temp' (): void {
+  'it should reject missing temp'(): void {
     const obj = {
       main: {
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non number humidity' (): void {
+  'it should reject non number humidity'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: true
+        humidity: true,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject missing humidity' (): void {
-    const obj = {
-      main: {
-        temp: 0,
-        pressure: 0
-      },
-      weather: [],
-      sys: {
-        sunrise: 0,
-        sunset: 0
-      }
-    }
-    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
-  }
-
-  @test
-  'it should accept valid weather entry' (): void {
+  'it should reject missing humidity'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
       },
-      weather: [{
-        main: '',
-        icon: ''
-      }],
+      weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept valid weather entry'(): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0,
+      },
+      weather: [
+        {
+          main: '',
+          icon: '',
+        },
+      ],
+      sys: {
+        sunrise: 0,
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(true)
   }
 
   @test
-  'it should reject non string weather main' (): void {
+  'it should reject non string weather main'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
-      weather: [{
-        main: 0,
-        icon: ''
-      }],
+      weather: [
+        {
+          main: 0,
+          icon: '',
+        },
+      ],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject null weather main' (): void {
+  'it should reject null weather main'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
-      weather: [{
-        main: null,
-        icon: ''
-      }],
+      weather: [
+        {
+          main: null,
+          icon: '',
+        },
+      ],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject missing weather main' (): void {
+  'it should reject missing weather main'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
-      weather: [{
-        icon: ''
-      }],
+      weather: [
+        {
+          icon: '',
+        },
+      ],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non string weather icon' (): void {
+  'it should reject non string weather icon'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
-      weather: [{
-        main: '',
-        icon: Number.NaN
-      }],
+      weather: [
+        {
+          main: '',
+          icon: Number.NaN,
+        },
+      ],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject null weather icon' (): void {
+  'it should reject null weather icon'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
-      weather: [{
-        main: '',
-        icon: null
-      }],
+      weather: [
+        {
+          main: '',
+          icon: null,
+        },
+      ],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject missing weather icon' (): void {
+  'it should reject missing weather icon'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
-      weather: [{
-        main: ''
-      }],
+      weather: [
+        {
+          main: '',
+        },
+      ],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
-    }
-    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing obj.sys' (): void {
-    const obj = {
-      main: {
-        temp: 0,
-        pressure: 0,
-        humidity: 0
+        sunset: 0,
       },
-      weather: []
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non object obj.sys' (): void {
+  'it should reject missing obj.sys'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
-      sys: 'bad data'
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject null obj.sys' (): void {
+  'it should reject non object obj.sys'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
-      sys: null
+      sys: 'bad data',
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject missing sunrise' (): void {
+  'it should reject null obj.sys'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
+      },
+      weather: [],
+      sys: null,
+    }
+    expect(Functions.isOpenWeatherData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing sunrise'(): void {
+    const obj = {
+      main: {
+        temp: 0,
+        pressure: 0,
+        humidity: 0,
       },
       weather: [],
       sys: {
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non number sunrise' (): void {
+  'it should reject non number sunrise'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: {},
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should accept NaN sunrise' (): void {
+  'it should accept NaN sunrise'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: Number.NaN,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(true)
   }
 
   @test
-  'it should accept positive sunrise' (): void {
+  'it should accept positive sunrise'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 89.34,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(true)
   }
 
   @test
-  'it should accept negative sunrise' (): void {
+  'it should accept negative sunrise'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: -3.14159,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(true)
   }
 
   @test
-  'it should reject missing sunset' (): void {
+  'it should reject missing sunset'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
-        sunrise: 0
-      }
+        sunrise: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should reject non number sunset' (): void {
+  'it should reject non number sunset'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: "Number"
-      }
+        sunset: 'Number',
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(false)
   }
 
   @test
-  'it should accept NaN sunset' (): void {
+  'it should accept NaN sunset'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: Number.NaN
-      }
+        sunset: Number.NaN,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(true)
   }
 
   @test
-  'it should accept positive sunset' (): void {
+  'it should accept positive sunset'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 9001
-      }
+        sunset: 9001,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(true)
   }
 
   @test
-  'it should accept negative sunset' (): void {
+  'it should accept negative sunset'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: -50090
-      }
+        sunset: -50090,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(true)
   }
 
   @test
-  'it should accept minimum object' (): void {
+  'it should accept minimum object'(): void {
     const obj = {
       main: {
         temp: 0,
         pressure: 0,
-        humidity: 0
+        humidity: 0,
       },
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
+        sunset: 0,
+      },
     }
     expect(Functions.isOpenWeatherData(obj)).to.equal(true)
   }
@@ -825,23 +839,23 @@ export class WeatherFunctionsGetWeatherTests {
       weather: [],
       sys: {
         sunrise: 0,
-        sunset: 0
-      }
-    })
+        sunset: 0,
+      },
+    }),
   }
 
-  before (): void {
+  before(): void {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
     this.FetchStub = sinon.stub(Imports, 'fetch').resolves(this.FetchResult as unknown as globalThis.Response)
   }
 
-  after (): void {
+  after(): void {
     this.FetchStub?.restore()
   }
 
   @test
-  async 'it should reject when appid not set' (): Promise<void> {
+  async 'it should reject when appid not set'(): Promise<void> {
     process.env.OPENWEATHER_LOCATION = 'location'
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
@@ -849,11 +863,12 @@ export class WeatherFunctionsGetWeatherTests {
         assert(e instanceof Error)
         expect(e).to.be.an('Error')
         expect(e.message).to.equal('no OpewnWeather AppId Defined!')
-      })
+      },
+    )
   }
 
   @test
-  async 'it should reject when location not set' (): Promise<void> {
+  async 'it should reject when location not set'(): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
@@ -861,40 +876,43 @@ export class WeatherFunctionsGetWeatherTests {
         assert(e instanceof Error)
         expect(e).to.be.an('Error')
         expect(e.message).to.equal('no OpewnWeather Location Defined!')
-      })
+      },
+    )
   }
 
   @test
-  async 'it should reject when fetch fail' (): Promise<void> {
+  async 'it should reject when fetch fail'(): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     const err = new Error('FETCH FAIL')
     this.FetchStub?.rejects(err)
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
-      (e: unknown) => expect(e).to.equal(err))
+      (e: unknown) => expect(e).to.equal(err),
+    )
   }
 
   @test
-  async 'it should fetch from version 2.5 of the weather api' (): Promise<void> {
+  async 'it should fetch from version 2.5 of the weather api'(): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     await Functions.GetWeather()
     expect(this.FetchStub?.callCount).to.equal(1)
-    expect(this.FetchStub?.firstCall.args).to.deep
-      .equal(['https://api.openweathermap.org/data/2.5/weather?q=location&appid=appid'])
+    expect(this.FetchStub?.firstCall.args).to.deep.equal([
+      'https://api.openweathermap.org/data/2.5/weather?q=location&appid=appid',
+    ])
   }
 
   @test
-  async 'it should return parsed JSON' (): Promise<void> {
+  async 'it should return parsed JSON'(): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     const data = {
       weather: [],
       sys: {
         sunrise: Math.random(),
-        sunset: Math.random()
-      }
+        sunset: Math.random(),
+      },
     }
     this.FetchResult.json.resolves(data)
     const result = await Functions.GetWeather()
@@ -903,17 +921,18 @@ export class WeatherFunctionsGetWeatherTests {
   }
 
   @test
-  async 'it should reject when JSON parse fails' (): Promise<void> {
+  async 'it should reject when JSON parse fails'(): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     const err = new Error('JSON PARSE FAIL')
     this.FetchResult.json.rejects(err)
     await Functions.GetWeather().then(
       () => expect.fail('should not have resolved!'),
-      (e: unknown) => expect(e).to.equal(err))
+      (e: unknown) => expect(e).to.equal(err),
+    )
   }
   @test
-  async 'it should reject when JSON parses invalid object' (): Promise<void> {
+  async 'it should reject when JSON parses invalid object'(): Promise<void> {
     process.env.OPENWEATHER_APPID = 'appid'
     process.env.OPENWEATHER_LOCATION = 'location'
     this.FetchResult.json.resolves({})
@@ -922,7 +941,8 @@ export class WeatherFunctionsGetWeatherTests {
       (e: unknown) => {
         if (!(e instanceof Error)) expect.fail('should have rejected with an error!')
         expect(e.message).to.equal('Invalid JSON returned from Open Weather Map')
-      })
+      },
+    )
   }
 }
 
@@ -936,21 +956,21 @@ export class WeatherFunctionsUpdateWeatherTests {
     main: {
       temp: 273.15,
       pressure: 12,
-      humidity: 12
+      humidity: 12,
     },
     weather: [
       {
         main: 'Clouds',
-        icon: 'clouds'
-      }
+        icon: 'clouds',
+      },
     ],
     sys: {
       sunrise: Date.now() - 1000 * 60 * 60 * 6,
-      sunset: Date.now() + 1000 * 60 * 60 * 6
-    }
+      sunset: Date.now() + 1000 * 60 * 60 * 6,
+    },
   }
 
-  before (): void {
+  before(): void {
     Functions.weather.temp = undefined
     Functions.weather.pressure = undefined
     Functions.weather.humidity = undefined
@@ -964,34 +984,34 @@ export class WeatherFunctionsUpdateWeatherTests {
     this.NightNotBeforeStub = sinon.stub(Imports, 'nightNotBefore').get(() => 0)
   }
 
-  after (): void {
+  after(): void {
     this.NightNotBeforeStub.restore()
     this.NightNotAfterStub.restore()
     this.GetWeatherStub?.restore()
   }
 
   @test
-  async 'it should call GetWeather' (): Promise<void> {
+  async 'it should call GetWeather'(): Promise<void> {
     await Functions.UpdateWeather()
     expect(this.GetWeatherStub?.callCount).to.equal(1)
     expect(this.GetWeatherStub?.firstCall.args).to.deep.equal([])
   }
 
   @test
-  async 'it should return weatherdata' (): Promise<void> {
+  async 'it should return weatherdata'(): Promise<void> {
     const data = await Functions.UpdateWeather()
     expect(data).to.equal(Functions.weather)
   }
 
   @test
-  async 'it should return weatherdata on error too' (): Promise<void> {
+  async 'it should return weatherdata on error too'(): Promise<void> {
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     const data = await Functions.UpdateWeather()
     expect(data).to.equal(Functions.weather)
   }
 
   @test
-  async 'it should set temp in celcius from kelvin' (): Promise<void> {
+  async 'it should set temp in celcius from kelvin'(): Promise<void> {
     this.weatherData.main = { temp: 273.15, pressure: 0, humidity: 0 }
     await Functions.UpdateWeather()
     expect(Functions.weather.temp).to.equal(0)
@@ -1001,42 +1021,42 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set pressure' (): Promise<void> {
+  async 'it should set pressure'(): Promise<void> {
     this.weatherData.main = { temp: 273.15, pressure: 1011, humidity: 0 }
     await Functions.UpdateWeather()
     expect(Functions.weather.pressure).to.equal(1011)
   }
 
   @test
-  async 'it should set humidity' (): Promise<void> {
+  async 'it should set humidity'(): Promise<void> {
     this.weatherData.main = { temp: 273.15, pressure: 0, humidity: 75 }
     await Functions.UpdateWeather()
     expect(Functions.weather.humidity).to.equal(75)
   }
 
   @test
-  async 'it should fail to set temp if main data missing' (): Promise<void> {
+  async 'it should fail to set temp if main data missing'(): Promise<void> {
     this.weatherData.main = undefined
     await Functions.UpdateWeather()
     expect(Functions.weather.temp).to.equal(undefined)
   }
 
   @test
-  async 'it should fail to set pressure if main data missing' (): Promise<void> {
+  async 'it should fail to set pressure if main data missing'(): Promise<void> {
     this.weatherData.main = undefined
     await Functions.UpdateWeather()
     expect(Functions.weather.pressure).to.equal(undefined)
   }
 
   @test
-  async 'it should fail to set humidity if main data missing' (): Promise<void> {
+  async 'it should fail to set humidity if main data missing'(): Promise<void> {
     this.weatherData.main = undefined
     await Functions.UpdateWeather()
     expect(Functions.weather.humidity).to.equal(undefined)
   }
 
   @test
-  async 'it should set description from weather forecast' (): Promise<void> {
+  async 'it should set description from weather forecast'(): Promise<void> {
     const expected = `Description ${Math.random()}`
     this.weatherData.weather = [{ main: expected, icon: 'Icon' }]
     await Functions.UpdateWeather()
@@ -1044,22 +1064,25 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set description from first weather forecast' (): Promise<void> {
+  async 'it should set description from first weather forecast'(): Promise<void> {
     const expected = `Description ${Math.random()}`
-    this.weatherData.weather = [{ main: expected, icon: 'Icon' }, { main: 'Bad Description', icon: 'Bad Icon' }]
+    this.weatherData.weather = [
+      { main: expected, icon: 'Icon' },
+      { main: 'Bad Description', icon: 'Bad Icon' },
+    ]
     await Functions.UpdateWeather()
     expect(Functions.weather.description).to.equal(expected)
   }
 
   @test
-  async 'it should set blank description from none weather forecast' (): Promise<void> {
+  async 'it should set blank description from none weather forecast'(): Promise<void> {
     this.weatherData.weather = []
     await Functions.UpdateWeather()
     expect(Functions.weather.description).to.equal(undefined)
   }
 
   @test
-  async 'it should set icon from weather forecast' (): Promise<void> {
+  async 'it should set icon from weather forecast'(): Promise<void> {
     const expected = `Icon ${Math.random()}`
     this.weatherData.weather = [{ main: 'Description', icon: expected }]
     await Functions.UpdateWeather()
@@ -1067,29 +1090,32 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set icon from first weather forecast' (): Promise<void> {
+  async 'it should set icon from first weather forecast'(): Promise<void> {
     const expected = `Icon ${Math.random()}`
-    this.weatherData.weather = [{ main: 'Description', icon: expected }, { main: 'Bad Description', icon: 'Bad Icon' }]
+    this.weatherData.weather = [
+      { main: 'Description', icon: expected },
+      { main: 'Bad Description', icon: 'Bad Icon' },
+    ]
     await Functions.UpdateWeather()
     expect(Functions.weather.icon).to.equal(expected)
   }
 
   @test
-  async 'it should set blank icon from none weather forecast' (): Promise<void> {
+  async 'it should set blank icon from none weather forecast'(): Promise<void> {
     this.weatherData.weather = []
     await Functions.UpdateWeather()
     expect(Functions.weather.icon).to.equal(undefined)
   }
 
   @test
-  async 'it should set sunrise in ms from s' (): Promise<void> {
+  async 'it should set sunrise in ms from s'(): Promise<void> {
     this.weatherData.sys.sunrise = 42
     await Functions.UpdateWeather()
     expect(Functions.weather.sunrise).to.equal(42000)
   }
 
   @test
-  async 'it should set sunrise from NightNotAfter when sunrise too late' (): Promise<void> {
+  async 'it should set sunrise from NightNotAfter when sunrise too late'(): Promise<void> {
     this.weatherData.sys.sunrise = 62
     this.NightNotAfterStub.get(() => 42000)
     await Functions.UpdateWeather()
@@ -1097,14 +1123,14 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set sunset in ms from s' (): Promise<void> {
+  async 'it should set sunset in ms from s'(): Promise<void> {
     this.weatherData.sys.sunset = 42
     await Functions.UpdateWeather()
     expect(Functions.weather.sunset).to.equal(42000)
   }
 
   @test
-  async 'it should set sunset from NightNotBefore when sunset too early' (): Promise<void> {
+  async 'it should set sunset from NightNotBefore when sunset too early'(): Promise<void> {
     this.weatherData.sys.sunset = 12
     this.NightNotBeforeStub.get(() => 42000)
     await Functions.UpdateWeather()
@@ -1112,7 +1138,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear temp on error' (): Promise<void> {
+  async 'it should clear temp on error'(): Promise<void> {
     Functions.weather.temp = 69
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -1120,7 +1146,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear pressure on error' (): Promise<void> {
+  async 'it should clear pressure on error'(): Promise<void> {
     Functions.weather.pressure = 69
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -1128,7 +1154,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear humidity on error' (): Promise<void> {
+  async 'it should clear humidity on error'(): Promise<void> {
     Functions.weather.humidity = 69
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -1136,7 +1162,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear description on error' (): Promise<void> {
+  async 'it should clear description on error'(): Promise<void> {
     Functions.weather.description = 'SEXY DESCRIPTION'
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -1144,7 +1170,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should clear icon on error' (): Promise<void> {
+  async 'it should clear icon on error'(): Promise<void> {
     Functions.weather.icon = 'SEXY ICON'
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
@@ -1152,7 +1178,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set sunrise to NightNotAfter on error' (): Promise<void> {
+  async 'it should set sunrise to NightNotAfter on error'(): Promise<void> {
     Functions.weather.sunrise = 69
     this.NightNotAfterStub.get(() => 314159)
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
@@ -1161,7 +1187,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   }
 
   @test
-  async 'it should set sunset to NightNotBefore on error' (): Promise<void> {
+  async 'it should set sunset to NightNotBefore on error'(): Promise<void> {
     Functions.weather.sunset = 69
     this.NightNotBeforeStub.get(() => 314159)
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
@@ -1177,42 +1203,42 @@ export class WeatherRouterTests {
   WebsocketsFake = {} as unknown as WebSocketServer
 
   RouterFake = {
-    get: sinon.stub().returnsThis()
+    get: sinon.stub().returnsThis(),
   }
 
   RequestStub = {
-    params: [] as string[]
+    params: [] as string[],
   }
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
-    json: sinon.stub().returnsThis()
+    json: sinon.stub().returnsThis(),
   }
 
   RouterStub?: Sinon.SinonStub
   SetIntervalStub?: Sinon.SinonStub
   UpdateWeatherStub?: Sinon.SinonStub
 
-  before (): void {
+  before(): void {
     this.RouterStub = sinon.stub(Imports, 'Router').returns(this.RouterFake as unknown as Router)
     this.SetIntervalStub = sinon.stub(Imports, 'setInterval')
     this.UpdateWeatherStub = sinon.stub(Functions, 'UpdateWeather').resolves()
   }
 
-  after (): void {
+  after(): void {
     this.RouterStub?.restore()
     this.SetIntervalStub?.restore()
     this.UpdateWeatherStub?.restore()
   }
 
   @test
-  async 'it should return router from getRouter' (): Promise<void> {
+  async 'it should return router from getRouter'(): Promise<void> {
     const result = await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(result).to.equal(this.RouterFake)
   }
 
   @test
-  async 'it should tolerate update weather rejecting on initial call' (): Promise<void> {
+  async 'it should tolerate update weather rejecting on initial call'(): Promise<void> {
     const awaiter = Promise.resolve()
     this.UpdateWeatherStub?.rejects(new Error('FOO!'))
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
@@ -1221,14 +1247,14 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should update weather immediately' (): Promise<void> {
+  async 'it should update weather immediately'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.UpdateWeatherStub?.callCount).to.equal(1)
     expect(this.UpdateWeatherStub?.firstCall.args).to.deep.equal([])
   }
 
   @test
-  async 'it should update weather using setInterval' (): Promise<void> {
+  async 'it should update weather using setInterval'(): Promise<void> {
     this.UpdateWeatherStub?.resolves()
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     this.UpdateWeatherStub?.resetHistory()
@@ -1242,7 +1268,7 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should tolerate UpdateWearther rejecting' (): Promise<void> {
+  async 'it should tolerate UpdateWearther rejecting'(): Promise<void> {
     this.UpdateWeatherStub?.rejects(new Error('FOO'))
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     await Promise.resolve()
@@ -1250,7 +1276,7 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should tolerate UpdateWearther rejecting in setInterval' (): Promise<void> {
+  async 'it should tolerate UpdateWearther rejecting in setInterval'(): Promise<void> {
     this.UpdateWeatherStub?.resolves()
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     this.UpdateWeatherStub?.resetHistory()
@@ -1262,7 +1288,7 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should register get handler for /' (): Promise<void> {
+  async 'it should register get handler for /'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(this.RouterFake.get.callCount).to.equal(1)
     expect(this.RouterFake.get.firstCall.args).to.have.lengthOf(2)
@@ -1270,7 +1296,7 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should send weather for / route' (): Promise<void> {
+  async 'it should send weather for / route'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.firstCall.args[1]
     assert(fn != null, 'fn should be defined!')
@@ -1284,12 +1310,12 @@ export class WeatherRouterTests {
   }
 
   @test
-  async 'it should send error for error in / route' (): Promise<void> {
+  async 'it should send error for error in / route'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     const fn = this.RouterFake.get.firstCall.args[1]
     assert(fn != null, 'fn should be defined!')
     expect(fn).to.be.a('function')
-    this.ResponseStub.status.onFirstCall().throws(new Error('I DON\'T WANNA'))
+    this.ResponseStub.status.onFirstCall().throws(new Error("I DON'T WANNA"))
     await fn(this.RequestStub, this.ResponseStub)
     expect(this.ResponseStub.status.callCount).to.equal(2)
     expect(this.ResponseStub.status.secondCall.args).to.deep.equal([StatusCodes.INTERNAL_SERVER_ERROR])
@@ -1298,8 +1324,8 @@ export class WeatherRouterTests {
     expect(this.ResponseStub.json.firstCall.args[0]).to.deep.equal({
       error: {
         code: 'E_INTERNAL_ERROR',
-        message: 'Internal Server Error'
-      }
+        message: 'Internal Server Error',
+      },
     })
   }
 }

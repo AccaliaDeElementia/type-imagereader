@@ -28,8 +28,8 @@ function isError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error
 }
 
-function isErrorWithCode(error: unknown, ... codes: string[]): error is NodeJS.ErrnoException  {
-  return isError(error) && codes.find( code => code === error.code) !== undefined;
+function isErrorWithCode(error: unknown, ...codes: string[]): error is NodeJS.ErrnoException {
+  return isError(error) && codes.find((code) => code === error.code) !== undefined
 }
 
 function unknownToError(err: unknown, message: string): Error {
@@ -44,34 +44,36 @@ export class Functions {
   public static logger = debug('type-imagereader:browserify-middleware')
   public static debouncer = Debouncer.create()
 
-  public static GetPaths (path: string): string[] {
+  public static GetPaths(path: string): string[] {
     const exts = ['.js', '.ts', '']
-    return exts.map(ext => path.replace(isCompileableExtension, '') + ext)
+    return exts.map((ext) => path.replace(isCompileableExtension, '') + ext)
   }
 
   public static GetSystemPath = async (basePath: string, path: string): Promise<string | null> => {
-    const test = async (testpath: string): Promise<boolean> => await Imports.access(testpath).then(() => true).catch(() => false)
-    const candidates = Functions.GetPaths(path)
-      .map(candidate => join(basePath, candidate))
-    const exists = await Promise.all(candidates.map(async candidate => await test(candidate)))
+    const test = async (testpath: string): Promise<boolean> =>
+      await Imports.access(testpath)
+        .then(() => true)
+        .catch(() => false)
+    const candidates = Functions.GetPaths(path).map((candidate) => join(basePath, candidate))
+    const exists = await Promise.all(candidates.map(async (candidate) => await test(candidate)))
     return candidates.find((_, i) => exists[i] === true) ?? null
   }
 
-  public static async CompileBundle (path: string): Promise<string | null> {
+  public static async CompileBundle(path: string): Promise<string | null> {
     return await Imports.access(path)
       .then(async (): Promise<string> => {
         const browser = Imports.browserify()
         browser.plugin('tsify')
         browser.plugin('common-shakeify', {
-          ecmaVersion: 14
+          ecmaVersion: 14,
         })
         browser.transform('brfs')
         browser.add(path)
         const source = await promisify(browser.bundle.bind(browser))()
         return source.toString()
       })
-      .then(async src => await Imports.minify(src))
-      .then(minified => minified.code ?? null)
+      .then(async (src) => await Imports.minify(src))
+      .then((minified) => minified.code ?? null)
       .catch(async (err: unknown): Promise<string | null> => {
         if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
           return await Promise.resolve(null)
@@ -81,7 +83,7 @@ export class Functions {
       })
   }
 
-  public static async CompileAndCache (basePath: string, mountedPath: string): Promise<void> {
+  public static async CompileAndCache(basePath: string, mountedPath: string): Promise<void> {
     const realPath = await Functions.GetSystemPath(basePath, mountedPath)
     if (realPath == null || realPath.length < 1) return
     try {
@@ -98,7 +100,7 @@ export class Functions {
     }
   }
 
-  public static async SendScript (basepath: string, path: string, res: Response): Promise<void> {
+  public static async SendScript(basepath: string, path: string, res: Response): Promise<void> {
     const renderError = (code: StatusCodes, err: Error | string): void => {
       if (err instanceof Error) {
         res.status(code).render('error', err)
@@ -127,10 +129,12 @@ export class Functions {
     }
   }
 
-  public static async WatchFolder (basePath: string, mountPath: string, isFolder: boolean): Promise<void> {
+  public static async WatchFolder(basePath: string, mountPath: string, isFolder: boolean): Promise<void> {
     try {
       Functions.logger(`Watching ${mountPath} for Scripts`)
-      const watcher = Imports.watch(join(basePath, mountPath), { persistent: false })
+      const watcher = Imports.watch(join(basePath, mountPath), {
+        persistent: false,
+      })
       for await (const event of watcher) {
         if (event.filename == null) continue
         const scriptFile = isFolder ? mountPath : join(mountPath, event.filename)
@@ -148,10 +152,12 @@ export class Functions {
     }
   }
 
-  public static async WatchAllFolders (basePath: string, watchDirs: string[]): Promise<void> {
+  public static async WatchAllFolders(basePath: string, watchDirs: string[]): Promise<void> {
     for (const dir of watchDirs) {
       try {
-        for (const dirinfo of await Imports.readdir(join(basePath, dir), { withFileTypes: true })) {
+        for (const dirinfo of await Imports.readdir(join(basePath, dir), {
+          withFileTypes: true,
+        })) {
           if (dirinfo.name.startsWith('.')) {
             continue
           }
@@ -180,7 +186,7 @@ export interface Options {
   watchPaths?: string[]
 }
 
-export default (options: Options): (req: Request, res: Response, next: NextFunction) => Promise<void> => {
+export default (options: Options): ((req: Request, res: Response, next: NextFunction) => Promise<void>) => {
   if (options.watchPaths != null && options.watchPaths.length > 0) {
     Functions.WatchAllFolders(options.basePath, options.watchPaths).catch(() => null)
   }

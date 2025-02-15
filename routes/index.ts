@@ -12,7 +12,7 @@ export class Imports {
   public static Router = Router
 }
 
-export async function getRouter (_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
+export async function getRouter(_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
 
   const rootRoute = (req: Request, res: Response): void => {
@@ -22,8 +22,8 @@ export async function getRouter (_app: Application, _serve: Server, _socket: Web
         error: {
           title: 'ERROR',
           code: 'E_NO_TRAVERSE',
-          message: 'Directory Traversal is not Allowed!'
-        }
+          message: 'Directory Traversal is not Allowed!',
+        },
       })
       return
     }
@@ -36,6 +36,6 @@ export async function getRouter (_app: Application, _serve: Server, _socket: Web
   router.get('/show/*', rootRoute)
 
   await Promise.resolve()
-  
+
   return router
 }

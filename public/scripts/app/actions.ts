@@ -8,9 +8,9 @@ interface NavigateData {
   pictures?: unknown[]
 }
 
-export function isNavigateData (obj: unknown): obj is NavigateData {
+export function isNavigateData(obj: unknown): obj is NavigateData {
   if (obj == null || typeof obj !== 'object') return false
-  if ('children' in obj && !(obj.children instanceof Array || obj.children === undefined) ) return false
+  if ('children' in obj && !(obj.children instanceof Array || obj.children === undefined)) return false
   if ('pictures' in obj && !(obj.pictures instanceof Array || obj.pictures === undefined)) return false
   return true
 }
@@ -26,13 +26,13 @@ interface ButtonGroups {
 }
 
 export class Actions {
-  static setInnerTextMaybe (node: HTMLElement | null, text: string): void {
+  static setInnerTextMaybe(node: HTMLElement | null, text: string): void {
     if (node != null) {
       node.innerText = text
     }
   }
 
-  static createButtons (buttons: ButtonDefinition[]): HTMLElement {
+  static createButtons(buttons: ButtonDefinition[]): HTMLElement {
     const result = document.createElement('div')
     result.classList.add('actions')
     for (const { name, image } of buttons) {
@@ -41,7 +41,7 @@ export class Actions {
       if (button == null) continue
       this.setInnerTextMaybe(button.querySelector('i'), image)
       this.setInnerTextMaybe(button.querySelector('h5'), name)
-      button.addEventListener('click', event => {
+      button.addEventListener('click', (event) => {
         Publish(`Action:Execute:${name.replace(/\s+/g, '')}`)
         event.preventDefault()
         return false
@@ -58,127 +58,158 @@ export class Actions {
         [
           {
             name: 'Previous Image',
-            image: 'fast_rewind'
-          }, {
+            image: 'fast_rewind',
+          },
+          {
             name: 'Previous Unseen',
-            image: 'chevron_left'
-          }, {
+            image: 'chevron_left',
+          },
+          {
             name: 'Fullscreen',
-            image: 'fullscreen'
-          }, {
+            image: 'fullscreen',
+          },
+          {
             name: 'Next Unseen',
-            image: 'chevron_right'
-          }, {
+            image: 'chevron_right',
+          },
+          {
             name: 'Next Image',
-            image: 'fast_forward'
-          }
-        ], [
+            image: 'fast_forward',
+          },
+        ],
+        [
           {
             name: 'Previous Folder',
-            image: 'first_page'
-          }, {
+            image: 'first_page',
+          },
+          {
             name: 'View Full Size',
-            image: 'open_in_new'
-          }, {
+            image: 'open_in_new',
+          },
+          {
             name: 'Parent Folder',
-            image: 'folder'
-          }, {
+            image: 'folder',
+          },
+          {
             name: 'Bookmark',
-            image: 'bookmarks'
-          }, {
+            image: 'bookmarks',
+          },
+          {
             name: 'Next Folder',
-            image: 'last_page'
-          }
-        ]
-      ]
-    }, {
+            image: 'last_page',
+          },
+        ],
+      ],
+    },
+    {
       target: '#tabFolders',
       buttons: [
         [
           {
             name: 'Previous Folder',
-            image: 'first_page'
-          }, {
+            image: 'first_page',
+          },
+          {
             name: 'Mark All Seen',
-            image: 'check_box'
-          }, {
+            image: 'check_box',
+          },
+          {
             name: 'Fullscreen',
-            image: 'fullscreen'
-          }, {
+            image: 'fullscreen',
+          },
+          {
             name: 'Parent Folder',
-            image: 'folder'
-          }, {
+            image: 'folder',
+          },
+          {
             name: 'Slideshow',
-            image: 'slideshow'
-          }, {
+            image: 'slideshow',
+          },
+          {
             name: 'Mark All Unseen',
-            image: 'check_box_outline_blank'
-          }, {
+            image: 'check_box_outline_blank',
+          },
+          {
             name: 'Next Folder',
-            image: 'last_page'
-          }
-        ]
-      ]
-    }, {
+            image: 'last_page',
+          },
+        ],
+      ],
+    },
+    {
       target: '#tabActions',
       buttons: [
         [
           {
             name: 'First',
-            image: 'skip_previous'
-          }, {
+            image: 'skip_previous',
+          },
+          {
             name: 'Previous Image',
-            image: 'fast_rewind'
-          }, {
+            image: 'fast_rewind',
+          },
+          {
             name: 'Fullscreen',
-            image: 'fullscreen'
-          }, {
+            image: 'fullscreen',
+          },
+          {
             name: 'Next Image',
-            image: 'fast_forward'
-          }, {
+            image: 'fast_forward',
+          },
+          {
             name: 'Last',
-            image: 'skip_next'
-          }
-        ], [
+            image: 'skip_next',
+          },
+        ],
+        [
           {
             name: 'Previous Folder',
-            image: 'first_page'
-          }, {
+            image: 'first_page',
+          },
+          {
             name: 'Previous Unseen',
-            image: 'chevron_left'
-          }, {
+            image: 'chevron_left',
+          },
+          {
             name: 'View Full Size',
-            image: 'open_in_new'
-          }, {
+            image: 'open_in_new',
+          },
+          {
             name: 'Next Unseen',
-            image: 'chevron_right'
-          }, {
+            image: 'chevron_right',
+          },
+          {
             name: 'Next Folder',
-            image: 'last_page'
-          }
-        ], [
+            image: 'last_page',
+          },
+        ],
+        [
           {
             name: 'Mark All Seen',
-            image: 'check_box'
-          }, {
+            image: 'check_box',
+          },
+          {
             name: 'Parent Folder',
-            image: 'folder'
-          }, {
+            image: 'folder',
+          },
+          {
             name: 'Bookmark',
-            image: 'bookmarks'
-          }, {
+            image: 'bookmarks',
+          },
+          {
             name: 'Slideshow',
-            image: 'slideshow'
-          }, {
+            image: 'slideshow',
+          },
+          {
             name: 'Mark All Unseen',
-            image: 'check_box_outline_blank'
-          }
-        ]
-      ]
-    }
+            image: 'check_box_outline_blank',
+          },
+        ],
+      ],
+    },
   ]
 
-  public static BuildActions (): void {
+  public static BuildActions(): void {
     for (const group of this.ActionGroups) {
       const existing = document.querySelectorAll(`${group.target} .actions`)
       for (const elem of existing) {
@@ -201,10 +232,10 @@ export class Actions {
     Left: false,
     Right: false,
     Up: false,
-    Down: false
+    Down: false,
   }
 
-  public static ReadGamepad (): void {
+  public static ReadGamepad(): void {
     if (document.hidden) return
     const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
     if (gamepads == null || gamepads.length < 1) return
@@ -222,7 +253,7 @@ export class Actions {
         Left: Xaxis < -0.5 || (pad.buttons[14]?.pressed ?? false),
         Right: Xaxis > 0.5 || (pad.buttons[15]?.pressed ?? false),
         Up: Yaxis < -0.5 || (pad.buttons[12]?.pressed ?? false),
-        Down: Yaxis > 0.5 || (pad.buttons[13]?.pressed ?? false)
+        Down: Yaxis > 0.5 || (pad.buttons[13]?.pressed ?? false),
       }
       const pressing = Object.values(status).reduce((a, b) => a || b, false)
       const pressed = Object.values(this.lastStatus).reduce((a, b) => a || b, false)
@@ -238,7 +269,10 @@ export class Actions {
         this.lastStatus.Up ||= status.Up
         this.lastStatus.Down ||= status.Down
       } else if (pressed) {
-        const buttons = Object.entries(this.lastStatus).filter(([_, val]) => val).map(([key, _]) => key).join('')
+        const buttons = Object.entries(this.lastStatus)
+          .filter(([_, val]) => val)
+          .map(([key, _]) => key)
+          .join('')
         this.lastStatus.A = false
         this.lastStatus.B = false
         this.lastStatus.X = false
@@ -254,24 +288,35 @@ export class Actions {
     }
   }
 
-  public static Init (): void {
+  public static Init(): void {
     this.BuildActions()
 
     Subscribe('Navigate:Data', (data) => {
-      if (isNavigateData(data) &&
+      if (
+        isNavigateData(data) &&
         (data.pictures == null || data.pictures.length < 1) &&
-        (data.children == null || data.children.length < 1)) {
+        (data.children == null || data.children.length < 1)
+      ) {
         Publish('Tab:Select', 'Actions')
       }
     })
 
-    document.addEventListener('keyup', event => {
-      const key = (event.ctrlKey ? '<CTRL>' : '') +
+    document.addEventListener('keyup', (event) => {
+      const key =
+        (event.ctrlKey ? '<CTRL>' : '') +
         (event.altKey ? '<ALT>' : '') +
         (event.shiftKey ? '<SHIFT>' : '') +
         event.key.toUpperCase()
       Publish(`Action:Keypress:${key}`, key)
     })
-    window.addEventListener('gamepadconnected', () => { AddInterval('ReadGamepad', () => { this.ReadGamepad() }, 20) })
+    window.addEventListener('gamepadconnected', () => {
+      AddInterval(
+        'ReadGamepad',
+        () => {
+          this.ReadGamepad()
+        },
+        20,
+      )
+    })
   }
 }

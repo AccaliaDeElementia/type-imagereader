@@ -25,27 +25,29 @@ import assert from 'assert'
 @suite
 export class ServerCreateAppTests {
   HttpServerInstanceFake = { http: Math.random() } as unknown as HttpServer
-  WebSocketServerInstanceFake = { socketio: Math.random() } as unknown as WebSocketServer
+  WebSocketServerInstanceFake = {
+    socketio: Math.random(),
+  } as unknown as WebSocketServer
 
   ExpressStub?: Sinon.SinonStub
   ExpressInstanceStub = {
-    listen: sinon.stub().returns(this.HttpServerInstanceFake)
+    listen: sinon.stub().returns(this.HttpServerInstanceFake),
   }
 
   WebSocketServerStub?: Sinon.SinonStub
 
-  before (): void {
+  before(): void {
     this.ExpressStub = sinon.stub(Imports, 'express').returns(this.ExpressInstanceStub as unknown as Express)
     this.WebSocketServerStub = sinon.stub(Imports, 'WebSocketServer').returns(this.WebSocketServerInstanceFake)
   }
 
-  after (): void {
+  after(): void {
     this.ExpressStub?.restore()
     this.WebSocketServerStub?.restore()
   }
 
   @test
-  'it should construct Express object' (): void {
+  'it should construct Express object'(): void {
     const [express] = Functions.CreateApp(8080)
     expect(this.ExpressStub?.callCount).to.equal(1)
     expect(this.ExpressStub?.firstCall.args).to.deep.equal([])
@@ -53,7 +55,7 @@ export class ServerCreateAppTests {
   }
 
   @test
-  'it should create HttpServer on expected port' (): void {
+  'it should create HttpServer on expected port'(): void {
     const [, server] = Functions.CreateApp(65535)
     expect(this.ExpressInstanceStub.listen.callCount).to.equal(1)
     expect(this.ExpressInstanceStub.listen.firstCall.args).to.have.lengthOf(2)
@@ -64,8 +66,8 @@ export class ServerCreateAppTests {
   }
 
   @test
-  'it should create WebSocketServer using HttpServer as base' (): void {
-    const [,, websockets] = Functions.CreateApp(8080)
+  'it should create WebSocketServer using HttpServer as base'(): void {
+    const [, , websockets] = Functions.CreateApp(8080)
     expect(this.WebSocketServerStub?.callCount).to.equal(1)
     expect(this.WebSocketServerStub?.calledWithNew()).to.equal(true)
     expect(this.WebSocketServerStub?.firstCall.args).to.have.lengthOf(1)
@@ -77,27 +79,27 @@ export class ServerCreateAppTests {
 @suite
 export class ServerRoutersImportTests {
   @test
-  'it should include root router creator' (): void {
+  'it should include root router creator'(): void {
     expect(Routers.Root).to.equal(getRootRouter)
   }
 
   @test
-  'it should include api router creator' (): void {
+  'it should include api router creator'(): void {
     expect(Routers.Api).to.equal(getApiRouter)
   }
 
   @test
-  'it should include image router creator' (): void {
+  'it should include image router creator'(): void {
     expect(Routers.Images).to.equal(getImagesRouter)
   }
 
   @test
-  'it should include slideshow router creator' (): void {
+  'it should include slideshow router creator'(): void {
     expect(Routers.Slideshow).to.equal(getSlideshowRouter)
   }
 
   @test
-  'it should include weather router creator' (): void {
+  'it should include weather router creator'(): void {
     expect(Routers.Weather).to.equal(getWeatherRouter)
   }
 }
@@ -105,7 +107,7 @@ export class ServerRoutersImportTests {
 @suite
 export class ServerRegisterRoutersTests {
   AppStub = {
-    use: sinon.stub()
+    use: sinon.stub(),
   }
 
   AppFake = this.AppStub as unknown as Express
@@ -118,7 +120,7 @@ export class ServerRegisterRoutersTests {
   SlideshowRouteStub?: Sinon.SinonStub
   WeatherRouteStub?: Sinon.SinonStub
 
-  before (): void {
+  before(): void {
     this.RootRouteStub = sinon.stub(Routers, 'Root').resolves()
     this.ApiRouteStub = sinon.stub(Routers, 'Api').resolves()
     this.ImagesRouteStub = sinon.stub(Routers, 'Images').resolves()
@@ -126,7 +128,7 @@ export class ServerRegisterRoutersTests {
     this.WeatherRouteStub = sinon.stub(Routers, 'Weather').resolves()
   }
 
-  after (): void {
+  after(): void {
     this.RootRouteStub?.restore()
     this.ApiRouteStub?.restore()
     this.ImagesRouteStub?.restore()
@@ -135,12 +137,12 @@ export class ServerRegisterRoutersTests {
   }
 
   @test
-  async 'it should register all five routes' (): Promise<void> {
+  async 'it should register all five routes'(): Promise<void> {
     await Functions.RegisterRouters(this.AppFake, this.ServerFake, this.WebSocketsFake)
   }
 
   @test
-  async 'it should register / route' (): Promise<void> {
+  async 'it should register / route'(): Promise<void> {
     const route = { route: Math.random() }
     this.RootRouteStub?.resolves(route)
     await Functions.RegisterRouters(this.AppFake, this.ServerFake, this.WebSocketsFake)
@@ -155,7 +157,7 @@ export class ServerRegisterRoutersTests {
   }
 
   @test
-  async 'it should register /api route' (): Promise<void> {
+  async 'it should register /api route'(): Promise<void> {
     const route = { route: Math.random() }
     this.ApiRouteStub?.resolves(route)
     await Functions.RegisterRouters(this.AppFake, this.ServerFake, this.WebSocketsFake)
@@ -170,7 +172,7 @@ export class ServerRegisterRoutersTests {
   }
 
   @test
-  async 'it should register /images route' (): Promise<void> {
+  async 'it should register /images route'(): Promise<void> {
     const route = { route: Math.random() }
     this.ImagesRouteStub?.resolves(route)
     await Functions.RegisterRouters(this.AppFake, this.ServerFake, this.WebSocketsFake)
@@ -185,7 +187,7 @@ export class ServerRegisterRoutersTests {
   }
 
   @test
-  async 'it should register /slkideshow route' (): Promise<void> {
+  async 'it should register /slkideshow route'(): Promise<void> {
     const route = { route: Math.random() }
     this.SlideshowRouteStub?.resolves(route)
     await Functions.RegisterRouters(this.AppFake, this.ServerFake, this.WebSocketsFake)
@@ -200,7 +202,7 @@ export class ServerRegisterRoutersTests {
   }
 
   @test
-  async 'it should register /weather route' (): Promise<void> {
+  async 'it should register /weather route'(): Promise<void> {
     const route = { route: Math.random() }
     this.WeatherRouteStub?.resolves(route)
     await Functions.RegisterRouters(this.AppFake, this.ServerFake, this.WebSocketsFake)
@@ -218,21 +220,21 @@ export class ServerRegisterRoutersTests {
 @suite
 export class ServerConfigureLoggingAndErrorsTests {
   AppStub = {
-    use: sinon.stub()
+    use: sinon.stub(),
   }
 
   AppFake = this.AppStub as unknown as Express
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
-    json: sinon.stub().returnsThis()
+    json: sinon.stub().returnsThis(),
   }
 
   MorganOrig: typeof morgan = morgan
   MorganStub?: Sinon.SinonStub
   HelmetStub?: Sinon.SinonStub
 
-  before (): void {
+  before(): void {
     // Save and replace as stubbing causes unwanted deprication warning due to how the stub replaces part of morgan
     this.MorganOrig = Imports.morgan
     this.MorganStub = sinon.stub()
@@ -241,13 +243,13 @@ export class ServerConfigureLoggingAndErrorsTests {
     delete process.env.NODE_ENV
   }
 
-  after (): void {
+  after(): void {
     this.HelmetStub?.restore()
     Imports.morgan = this.MorganOrig
   }
 
   @test
-  'it should add morgan for development NODE_ENV' (): void {
+  'it should add morgan for development NODE_ENV'(): void {
     process.env.NODE_ENV = 'development'
     const morgan = { morgan: Math.random() }
     this.MorganStub?.returns(morgan)
@@ -258,21 +260,21 @@ export class ServerConfigureLoggingAndErrorsTests {
   }
 
   @test
-  'it should not add helmet for development NODE_ENV' (): void {
+  'it should not add helmet for development NODE_ENV'(): void {
     process.env.NODE_ENV = 'development'
     Functions.ConfigureLoggingAndErrors(this.AppFake)
     expect(this.HelmetStub?.callCount).to.equal(0)
   }
 
   @test
-  'it should not add morgan for production NODE_ENV' (): void {
+  'it should not add morgan for production NODE_ENV'(): void {
     process.env.NODE_ENV = 'production'
     Functions.ConfigureLoggingAndErrors(this.AppFake)
     expect(this.MorganStub?.callCount).to.equal(0)
   }
 
   @test
-  'it should add helmet for production NODE_ENV' (): void {
+  'it should add helmet for production NODE_ENV'(): void {
     process.env.NODE_ENV = 'production'
     const helmet = { helmet: Math.random() }
     this.HelmetStub?.returns(helmet)
@@ -283,35 +285,35 @@ export class ServerConfigureLoggingAndErrorsTests {
   }
 
   @test
-  'it should not add morgan for funny NODE_ENV' (): void {
+  'it should not add morgan for funny NODE_ENV'(): void {
     process.env.NODE_ENV = 'funny'
     Functions.ConfigureLoggingAndErrors(this.AppFake)
     expect(this.MorganStub?.callCount).to.equal(0)
   }
 
   @test
-  'it should not add helmet for funny NODE_ENV' (): void {
+  'it should not add helmet for funny NODE_ENV'(): void {
     process.env.NODE_ENV = 'funny'
     Functions.ConfigureLoggingAndErrors(this.AppFake)
     expect(this.HelmetStub?.callCount).to.equal(0)
   }
 
   @test
-  'it should not add morgan for unset NODE_ENV' (): void {
+  'it should not add morgan for unset NODE_ENV'(): void {
     delete process.env.NODE_ENV
     Functions.ConfigureLoggingAndErrors(this.AppFake)
     expect(this.MorganStub?.callCount).to.equal(0)
   }
 
   @test
-  'it should not add helmet for unset NODE_ENV' (): void {
+  'it should not add helmet for unset NODE_ENV'(): void {
     delete process.env.NODE_ENV
     Functions.ConfigureLoggingAndErrors(this.AppFake)
     expect(this.HelmetStub?.callCount).to.equal(0)
   }
 
   @test
-  'it should add error handler' (): void {
+  'it should add error handler'(): void {
     Functions.ConfigureLoggingAndErrors(this.AppFake)
     const handler = this.AppStub.use.lastCall.args[0]
     expect(handler).to.be.a('function')
@@ -332,41 +334,43 @@ export class ServerRegisterViewsAndMiddleware {
 
   AppStub = {
     use: sinon.stub(),
-    set: sinon.stub()
+    set: sinon.stub(),
   }
 
   AppFake = this.AppStub as unknown as Express
 
-  before (): void {
+  before(): void {
     this.SassMiddlewareStub = sinon.stub(Imports, 'sassMiddleware')
     this.BrowerifyMiddlewareStub = sinon.stub(Imports, 'browserifyMiddleware')
     this.StaticServeStub = sinon.stub(express, 'static')
   }
 
-  after (): void {
+  after(): void {
     this.SassMiddlewareStub?.restore()
     this.BrowerifyMiddlewareStub?.restore()
     this.StaticServeStub?.restore()
   }
 
   @test
-  'it should set the views directory' (): void {
+  'it should set the views directory'(): void {
     Functions.RegisterViewsAndMiddleware(this.AppFake)
     expect(this.AppStub.set.calledWith('views', Imports.dirname + '/views')).to.equal(true)
   }
 
   @test
-  'it should set the view engine' (): void {
+  'it should set the view engine'(): void {
     Functions.RegisterViewsAndMiddleware(this.AppFake)
     expect(this.AppStub.set.calledWith('view engine', 'pug')).to.equal(true)
   }
 
   @test
-  'it should configure SassMiddleware' (): void {
+  'it should configure SassMiddleware'(): void {
     const sass = sinon.stub().resolves()
     this.SassMiddlewareStub?.returns(sass)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.firstCall.args[0] as ((req: Request, res: Response, next: NextFunction) => void) | undefined
+    const fn = this.AppStub.use.firstCall.args[0] as
+      | ((req: Request, res: Response, next: NextFunction) => void)
+      | undefined
     assert(fn !== undefined)
     const req = {} as unknown as Request
     const res = {} as unknown as Response
@@ -374,18 +378,22 @@ export class ServerRegisterViewsAndMiddleware {
     fn(req, res, next)
     expect(sass.calledWithExactly(req, res, next)).to.equal(true)
     expect(this.SassMiddlewareStub?.callCount).to.equal(1)
-    expect(this.SassMiddlewareStub?.firstCall.args).to.deep.equal([{
-      mountPath: Imports.dirname + '/public',
-      watchdir: '/stylesheets'
-    }])
+    expect(this.SassMiddlewareStub?.firstCall.args).to.deep.equal([
+      {
+        mountPath: Imports.dirname + '/public',
+        watchdir: '/stylesheets',
+      },
+    ])
   }
 
   @test
-  async 'it should call next middelware when SassMiddleware rejects' (): Promise<void> {
+  async 'it should call next middelware when SassMiddleware rejects'(): Promise<void> {
     const sass = sinon.stub().rejects(new Error('FOO!'))
     this.SassMiddlewareStub?.returns(sass)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.firstCall.args[0] as ((req: Request, res: Response, next: NextFunction) => void) | undefined
+    const fn = this.AppStub.use.firstCall.args[0] as
+      | ((req: Request, res: Response, next: NextFunction) => void)
+      | undefined
     assert(fn !== undefined)
     const req = {} as unknown as Request
     const res = {} as unknown as Response
@@ -397,11 +405,13 @@ export class ServerRegisterViewsAndMiddleware {
   }
 
   @test
-  'it should configure BrowserifyMiddleware' (): void {
+  'it should configure BrowserifyMiddleware'(): void {
     const browserify = sinon.stub().resolves()
     this.BrowerifyMiddlewareStub?.returns(browserify)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.secondCall.args[0] as ((req: Request, res: Response, next: NextFunction) => void) | undefined
+    const fn = this.AppStub.use.secondCall.args[0] as
+      | ((req: Request, res: Response, next: NextFunction) => void)
+      | undefined
     assert(fn !== undefined)
     const req = {} as unknown as Request
     const res = {} as unknown as Response
@@ -409,18 +419,22 @@ export class ServerRegisterViewsAndMiddleware {
     fn(req, res, next)
     expect(browserify.calledWithExactly(req, res, next)).to.equal(true)
     expect(this.BrowerifyMiddlewareStub?.callCount).to.equal(1)
-    expect(this.BrowerifyMiddlewareStub?.firstCall.args).to.deep.equal([{
-      basePath: Imports.dirname + '/public',
-      watchPaths: ['/scripts', '/bundles']
-    }])
+    expect(this.BrowerifyMiddlewareStub?.firstCall.args).to.deep.equal([
+      {
+        basePath: Imports.dirname + '/public',
+        watchPaths: ['/scripts', '/bundles'],
+      },
+    ])
   }
 
   @test
-  async 'it should call next middelware when BrowserifyMiddleware rejects' (): Promise<void> {
+  async 'it should call next middelware when BrowserifyMiddleware rejects'(): Promise<void> {
     const browserify = sinon.stub().rejects(new Error('FOO!'))
     this.BrowerifyMiddlewareStub?.returns(browserify)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.secondCall.args[0] as ((req: Request, res: Response, next: NextFunction) => void) | undefined
+    const fn = this.AppStub.use.secondCall.args[0] as
+      | ((req: Request, res: Response, next: NextFunction) => void)
+      | undefined
     assert(fn !== undefined)
     const req = {} as unknown as Request
     const res = {} as unknown as Response
@@ -432,7 +446,7 @@ export class ServerRegisterViewsAndMiddleware {
   }
 
   @test
-  'it should configure static file serving' (): void {
+  'it should configure static file serving'(): void {
     const staticServe = { statid: Math.random() }
     this.StaticServeStub?.returns(staticServe)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
@@ -450,19 +464,19 @@ export class ServerConfigureBaseAppTests {
   FaviconStub?: Sinon.SinonStub
 
   AppStub = {
-    use: sinon.stub()
+    use: sinon.stub(),
   }
 
   AppFake = this.AppStub as unknown as Express
 
-  before (): void {
+  before(): void {
     this.JsonifyStub = sinon.stub(express, 'json')
     this.UrlEncoderStub = sinon.stub(express, 'urlencoded')
     this.CookieParserStub = sinon.stub(Imports, 'cookieParser')
     this.FaviconStub = sinon.stub(Imports, 'favicon')
   }
 
-  after (): void {
+  after(): void {
     this.JsonifyStub?.restore()
     this.UrlEncoderStub?.restore()
     this.CookieParserStub?.restore()
@@ -470,7 +484,7 @@ export class ServerConfigureBaseAppTests {
   }
 
   @test
-  'it should contfigure jsonify' (): void {
+  'it should contfigure jsonify'(): void {
     const json = { json: Math.random() }
     this.JsonifyStub?.returns(json)
     Functions.ConfigureBaseApp(this.AppFake)
@@ -480,7 +494,7 @@ export class ServerConfigureBaseAppTests {
   }
 
   @test
-  'it should contfigure UrlEncoder' (): void {
+  'it should contfigure UrlEncoder'(): void {
     const urlencoded = { urlencoded: Math.random() }
     this.UrlEncoderStub?.returns(urlencoded)
     Functions.ConfigureBaseApp(this.AppFake)
@@ -490,7 +504,7 @@ export class ServerConfigureBaseAppTests {
   }
 
   @test
-  'it should contfigure cookie parser' (): void {
+  'it should contfigure cookie parser'(): void {
     const cookieParser = { cookieParser: Math.random() }
     this.CookieParserStub?.returns(cookieParser)
     Functions.ConfigureBaseApp(this.AppFake)
@@ -500,7 +514,7 @@ export class ServerConfigureBaseAppTests {
   }
 
   @test
-  'it should contfigure favicon' (): void {
+  'it should contfigure favicon'(): void {
     const favicon = { favicon: Math.random() }
     this.FaviconStub?.returns(favicon)
     Functions.ConfigureBaseApp(this.AppFake)
@@ -513,7 +527,7 @@ export class ServerConfigureBaseAppTests {
 @suite
 export class ServerStartTests {
   AppStub = {
-    get: sinon.stub()
+    get: sinon.stub(),
   }
 
   AppFake = this.AppStub as unknown as Express
@@ -527,8 +541,10 @@ export class ServerStartTests {
   RegisterViewsStub?: Sinon.SinonStub
   DebouncerStartStub?: Sinon.SinonStub
 
-  before (): void {
-    this.CreateAppStub = sinon.stub(Functions, 'CreateApp').returns([this.AppFake, this.ServerFake, this.WebSocketsFake])
+  before(): void {
+    this.CreateAppStub = sinon
+      .stub(Functions, 'CreateApp')
+      .returns([this.AppFake, this.ServerFake, this.WebSocketsFake])
     this.ConfigureBaseAppStub = sinon.stub(Functions, 'ConfigureBaseApp')
     this.RegisterRoutersStub = sinon.stub(Functions, 'RegisterRouters').resolves()
     this.ConfigureLoggingStub = sinon.stub(Functions, 'ConfigureLoggingAndErrors')
@@ -536,7 +552,7 @@ export class ServerStartTests {
     this.DebouncerStartStub = sinon.stub(Debouncer, 'startTimers')
   }
 
-  after (): void {
+  after(): void {
     this.CreateAppStub?.restore()
     this.ConfigureBaseAppStub?.restore()
     this.RegisterRoutersStub?.restore()
@@ -546,21 +562,21 @@ export class ServerStartTests {
   }
 
   @test
-  async 'it should create app on provided port' (): Promise<void> {
+  async 'it should create app on provided port'(): Promise<void> {
     await start(8472)
     expect(this.CreateAppStub?.callCount).to.equal(1)
     expect(this.CreateAppStub?.firstCall.args).to.deep.equal([8472])
   }
 
   @test
-  async 'it should return app and server from start' (): Promise<void> {
+  async 'it should return app and server from start'(): Promise<void> {
     const { app, server } = await start(3030)
     expect(app).to.equal(this.AppFake)
     expect(server).to.equal(this.ServerFake)
   }
 
   @test
-  async 'it should configure base app' (): Promise<void> {
+  async 'it should configure base app'(): Promise<void> {
     await start(8080)
     expect(this.ConfigureBaseAppStub?.callCount).to.equal(1)
     expect(this.ConfigureBaseAppStub?.firstCall.args).to.have.lengthOf(1)
@@ -568,7 +584,7 @@ export class ServerStartTests {
   }
 
   @test
-  async 'it should register routers' (): Promise<void> {
+  async 'it should register routers'(): Promise<void> {
     await start(8080)
     expect(this.RegisterRoutersStub?.callCount).to.equal(1)
     expect(this.RegisterRoutersStub?.firstCall.args).to.have.lengthOf(3)
@@ -578,7 +594,7 @@ export class ServerStartTests {
   }
 
   @test
-  async 'it should configure logging app' (): Promise<void> {
+  async 'it should configure logging app'(): Promise<void> {
     await start(8080)
     expect(this.ConfigureLoggingStub?.callCount).to.equal(1)
     expect(this.ConfigureLoggingStub?.firstCall.args).to.have.lengthOf(1)
@@ -586,7 +602,7 @@ export class ServerStartTests {
   }
 
   @test
-  async 'it should register views app' (): Promise<void> {
+  async 'it should register views app'(): Promise<void> {
     await start(8080)
     expect(this.RegisterViewsStub?.callCount).to.equal(1)
     expect(this.RegisterViewsStub?.firstCall.args).to.have.lengthOf(1)
@@ -594,7 +610,7 @@ export class ServerStartTests {
   }
 
   @test
-  async 'it should set Clacks Overhead' (): Promise<void> {
+  async 'it should set Clacks Overhead'(): Promise<void> {
     await start(3030)
     expect(this.AppStub.get.callCount).to.equal(1)
     expect(this.AppStub.get.firstCall.args).to.have.lengthOf(2)
@@ -602,7 +618,7 @@ export class ServerStartTests {
     const fn = this.AppStub.get.firstCall.args[1]
     expect(fn).to.be.a('function')
     const resultStub = {
-      set: sinon.stub()
+      set: sinon.stub(),
     }
     const nextFn = sinon.stub()
     fn(undefined, resultStub, nextFn)
@@ -613,7 +629,7 @@ export class ServerStartTests {
   }
 
   @test
-  async 'it should start timers' (): Promise<void> {
+  async 'it should start timers'(): Promise<void> {
     await start(8080)
     expect(this.DebouncerStartStub?.callCount).to.equal(1)
     expect(this.DebouncerStartStub?.firstCall.args).to.deep.equal([])

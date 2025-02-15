@@ -23,7 +23,7 @@ const handleClick = (event: MouseEvent, socket: WebSocket, initialScale: number)
   const x = event.clientX
   if (x < pageWidth / 3) {
     socket.emit('prev-image')
-  } else if (x > pageWidth * 2 / 3) {
+  } else if (x > (pageWidth * 2) / 3) {
     socket.emit('next-image')
   } else {
     if (new URLSearchParams(window.location.search).has('kiosk')) {
@@ -59,7 +59,7 @@ export class WebSockets {
   protected static launchId: unknown = undefined
   public static LocationAssign?: (url: string | URL) => void
   public static LocationReload?: () => void
-  static connect (): void {
+  static connect(): void {
     WebSockets.launchId = undefined
     // eslint-disable-next-line @typescript-eslint/unbound-method -- function is static, dont bind it to avoid making it untestable
     WebSockets.LocationAssign = window.location.assign
@@ -88,11 +88,15 @@ export class WebSockets {
       this.socket.emit('notify-done')
     })
     const initialScale = window.visualViewport != null ? window.visualViewport.scale : 1
-    document.body.addEventListener('click', event => { handleClick(event, this.socket, initialScale) })
-    document.body.addEventListener('keyup', event => { handleKeys(event, this.socket) })
+    document.body.addEventListener('click', (event) => {
+      handleClick(event, this.socket, initialScale)
+    })
+    document.body.addEventListener('keyup', (event) => {
+      handleKeys(event, this.socket)
+    })
   }
 
-  protected static disconnect (): void {
+  protected static disconnect(): void {
     this.socket.disconnect()
   }
 }

@@ -12,8 +12,8 @@ export class ImageReader {
   static Interval?: ReturnType<typeof setInterval>
   static SyncRunning = false
   static SyncInterval = 3 * 60 * 60 * 1000 // Three Hours
-  static async Run (): Promise<void> {
-    const port = Number((process.env.PORT != null && process.env.PORT.length > 0) ? process.env.PORT : 3030)
+  static async Run(): Promise<void> {
+    const port = Number(process.env.PORT != null && process.env.PORT.length > 0 ? process.env.PORT : 3030)
     if (Number.isNaN(port)) {
       throw new Error(`Port ${port} (from env: ${process.env.PORT}) is not a number. Valid ports must be a number.`)
     }
@@ -25,8 +25,7 @@ export class ImageReader {
     }
     await this.StartServer(port)
 
-    if (process.env.SKIP_SYNC == null ||
-      (process.env.SKIP_SYNC !== '1' && process.env.SKIP_SYNC !== 'true')) {
+    if (process.env.SKIP_SYNC == null || (process.env.SKIP_SYNC !== '1' && process.env.SKIP_SYNC !== 'true')) {
       const doSync = async (): Promise<void> => {
         if (this.SyncRunning) {
           return
@@ -39,7 +38,9 @@ export class ImageReader {
         }
       }
       doSync().catch(() => null)
-      this.Interval = setInterval(() => { doSync().catch(() => null) }, this.SyncInterval)
+      this.Interval = setInterval(() => {
+        doSync().catch(() => null)
+      }, this.SyncInterval)
     }
   }
 }

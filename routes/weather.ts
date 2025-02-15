@@ -33,15 +33,15 @@ export interface OpenWeatherData {
 }
 
 export class Imports {
-  public static get appId (): string {
+  public static get appId(): string {
     return process.env.OPENWEATHER_APPID ?? ''
   }
 
-  public static get location (): string {
+  public static get location(): string {
     return encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
   }
 
-  public static get nightNotBefore (): number {
+  public static get nightNotBefore(): number {
     const time = new Date()
     time.setMilliseconds(0)
     time.setSeconds(0)
@@ -59,7 +59,7 @@ export class Imports {
     return time.getTime()
   }
 
-  public static get nightNotAfter (): number {
+  public static get nightNotAfter(): number {
     const time = new Date()
     time.setMilliseconds(0)
     time.setSeconds(0)
@@ -90,10 +90,10 @@ export class Functions {
     description: undefined,
     icon: undefined,
     sunrise: undefined,
-    sunset: undefined
+    sunset: undefined,
   }
 
-  public static isOpenWeatherData (data: unknown): data is OpenWeatherData {
+  public static isOpenWeatherData(data: unknown): data is OpenWeatherData {
     if (typeof data !== 'object' || data == null) return false
     if ('main' in data) {
       if (typeof data.main !== 'object' || data.main == null) return false
@@ -113,20 +113,22 @@ export class Functions {
     return true
   }
 
-  public static async GetWeather (): Promise<OpenWeatherData> {
+  public static async GetWeather(): Promise<OpenWeatherData> {
     if (Imports.appId.length < 1) {
       throw new Error('no OpewnWeather AppId Defined!')
     }
     if (Imports.location.length < 1) {
       throw new Error('no OpewnWeather Location Defined!')
     }
-    const response = await Imports.fetch(`https://api.openweathermap.org/data/2.5/weather?q=${Imports.location}&appid=${Imports.appId}`)
+    const response = await Imports.fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${Imports.location}&appid=${Imports.appId}`,
+    )
     const data: unknown = await response.json()
     if (!this.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
     return data
   }
 
-  public static async UpdateWeather (): Promise<WeatherResults> {
+  public static async UpdateWeather(): Promise<WeatherResults> {
     const weather = Functions.weather
     try {
       const data = await Functions.GetWeather()
@@ -153,28 +155,38 @@ export class Functions {
 }
 
 // Export the base-router
-export async function getRouter (_app: Application, _server: Server, _sockets: WebSocketServer): Promise<Router> {
+export async function getRouter(_app: Application, _server: Server, _sockets: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
 
-  const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler => async (req: Request, res: Response) => {
-    try {
-      await action(req, res)
-    } catch (e) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        error: {
-          code: 'E_INTERNAL_ERROR',
-          message: 'Internal Server Error'
-        }
-      })
+  const handleErrors =
+    (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
+    async (req: Request, res: Response) => {
+      try {
+        await action(req, res)
+      } catch (e) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          error: {
+            code: 'E_INTERNAL_ERROR',
+            message: 'Internal Server Error',
+          },
+        })
+      }
     }
-  }
 
-  router.get('/', handleErrors(async (_, res) => {
-    res.status(StatusCodes.OK).json(Functions.weather)
-    await Promise.resolve()
-  }))
+  router.get(
+    '/',
+    handleErrors(async (_, res) => {
+      res.status(StatusCodes.OK).json(Functions.weather)
+      await Promise.resolve()
+    }),
+  )
 
-  Imports.setInterval(() => { Functions.UpdateWeather().catch(() => null) }, 10 * 60 * 1000)
+  Imports.setInterval(
+    () => {
+      Functions.UpdateWeather().catch(() => null)
+    },
+    10 * 60 * 1000,
+  )
   Functions.UpdateWeather().catch(() => null)
 
   await Promise.resolve()

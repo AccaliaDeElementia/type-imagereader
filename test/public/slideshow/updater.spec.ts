@@ -25,35 +25,35 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   dom: JSDOM
   clock: sinon.SinonFakeTimers
   updateSpy: sinon.SinonStub
-  constructor () {
+  constructor() {
     super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
 
     this.clock = sinon.useFakeTimers({
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
 
     this.updateSpy = sinon.stub()
     this.updateFn = this.updateSpy
   }
 
-  before (): void {
+  before(): void {
     this.dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999'
+      url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = (this.dom.window as unknown) as Window & typeof globalThis
+    global.window = this.dom.window as unknown as Window & typeof globalThis
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,
-      get: () => this.dom.window.document
+      get: () => this.dom.window.document,
     })
 
     this.clock.restore()
     this.clock = sinon.useFakeTimers({
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
 
     this.updateSpy.reset()
@@ -61,18 +61,18 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
     this.failCount = 0
   }
 
-  after (): void {
+  after(): void {
     global.window = this.existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
-      get: () => this.existingDocument
+      get: () => this.existingDocument,
     })
 
     this.clock.restore()
   }
 
   @test
-  async 'triggering not yet due Cycler decrements countdown' (): Promise<void> {
+  async 'triggering not yet due Cycler decrements countdown'(): Promise<void> {
     this.countdown = 1000
     this.updateSpy.resolves()
 
@@ -83,7 +83,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'triggering not yet due Cycler fires when trigger becomes due' (): Promise<void> {
+  async 'triggering not yet due Cycler fires when trigger becomes due'(): Promise<void> {
     this.countdown = 10
     this.updateSpy.resolves()
 
@@ -94,7 +94,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'triggering overdue Cycler fires' (): Promise<void> {
+  async 'triggering overdue Cycler fires'(): Promise<void> {
     this.countdown = -1000
     this.updateSpy.resolves()
 
@@ -105,14 +105,11 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'Rejecting update triggers rollback of frequency' (): Promise<void> {
+  async 'Rejecting update triggers rollback of frequency'(): Promise<void> {
     this.countdown = -1000
     this.updateSpy.rejects('MUY MALO!')
 
-    const consoleSpy = sinon.stub(
-      global.window.console,
-      'error'
-    )
+    const consoleSpy = sinon.stub(global.window.console, 'error')
     consoleSpy.returns()
     try {
       await this.trigger(100)
@@ -128,15 +125,12 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'Rejecting update triggers escalating rollback of frequency' (): Promise<void> {
+  async 'Rejecting update triggers escalating rollback of frequency'(): Promise<void> {
     this.countdown = -1000
     this.failCount = 4
     this.updateSpy.rejects('MUY MALO!')
 
-    const consoleSpy = sinon.stub(
-      global.window.console,
-      'error'
-    )
+    const consoleSpy = sinon.stub(global.window.console, 'error')
     consoleSpy.returns()
     try {
       await this.trigger(100)
@@ -152,15 +146,12 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'Escalating rollback of frequency maxes out at 10 doublings' (): Promise<void> {
+  async 'Escalating rollback of frequency maxes out at 10 doublings'(): Promise<void> {
     this.countdown = -1000
     this.failCount = 40
     this.updateSpy.rejects('MUY MALO!')
 
-    const consoleSpy = sinon.stub(
-      global.window.console,
-      'error'
-    )
+    const consoleSpy = sinon.stub(global.window.console, 'error')
     consoleSpy.returns()
     try {
       await this.trigger(100)
@@ -176,7 +167,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   }
 
   @test
-  async 'Default Updater rejects when triggered' (): Promise<void> {
+  async 'Default Updater rejects when triggered'(): Promise<void> {
     const sadness = new CyclicUpdater()
     await expect(sadness.updateFn()).to.eventually.be.rejectedWith('Cyclic Updater Called with No Updater')
   }
@@ -185,38 +176,36 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
 @suite
 export class SlideshowCyclicManagerTests extends CyclicManager {
   clock: sinon.SinonFakeTimers
-  constructor () {
+  constructor() {
     super()
     this.clock = sinon.useFakeTimers({
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
   }
 
-  before (): void {
+  before(): void {
     this.clock.restore()
     this.clock = sinon.useFakeTimers({
-      shouldClearNativeTimers: false
+      shouldClearNativeTimers: false,
     })
     CyclicManager.updaters = []
   }
 
-  after (): void {
+  after(): void {
     CyclicManager.Stop()
     this.clock.restore()
   }
 
   @test
-  'Add appends to existing list' (): void {
-    CyclicManager.updaters.push(
-      ...Array.from({ length: 10 }).map(() => new CyclicUpdater())
-    )
+  'Add appends to existing list'(): void {
+    CyclicManager.updaters.push(...Array.from({ length: 10 }).map(() => new CyclicUpdater()))
     expect(CyclicManager.updaters).to.have.length(10)
     CyclicManager.Add(...Array.from({ length: 10 }).map(() => new CyclicUpdater()))
     expect(CyclicManager.updaters).to.have.length(20)
   }
 
   @test
-  'start sets timer going' (): void {
+  'start sets timer going'(): void {
     const spy = sinon.stub()
     spy.resolves()
     const updater = new CyclicUpdater(spy, 10)
@@ -227,7 +216,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
   }
 
   @test
-  'started timer triggers updaters' (): void {
+  'started timer triggers updaters'(): void {
     const spy = sinon.stub()
     spy.resolves()
     const updater = new CyclicUpdater(spy, 10)
@@ -238,7 +227,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
   }
 
   @test
-  async 'started timer tolerates updater that rejects' (): Promise<void> {
+  async 'started timer tolerates updater that rejects'(): Promise<void> {
     const spy = sinon.stub().rejects()
     const updater = new CyclicUpdater(spy, 10)
     CyclicManager.Add(updater)
@@ -250,7 +239,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
   }
 
   @test
-  'stop clears timer' (): void {
+  'stop clears timer'(): void {
     const spy = sinon.stub()
     spy.resolves()
     const updater = new CyclicUpdater(spy, 10)

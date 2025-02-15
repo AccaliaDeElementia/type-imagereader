@@ -16,10 +16,12 @@ interface IntervalMethod {
 export class PubSub {
   protected static subscribers: { [key: string]: SubscriberFunction[] } = {}
   protected static deferred: DeferredMethod[] = []
-  protected static intervals: { [key: string]: (DeferredMethod & IntervalMethod) } = {}
+  protected static intervals: {
+    [key: string]: DeferredMethod & IntervalMethod
+  } = {}
   protected static timer: NodeJS.Timeout | string | number | undefined
   protected static cycleTime = 10
-  static Subscribe (topic: string, subscriber: SubscriberFunction): void {
+  static Subscribe(topic: string, subscriber: SubscriberFunction): void {
     topic = topic.toUpperCase()
     const subs = this.subscribers[topic]
     if (subs == null) {
@@ -28,13 +30,12 @@ export class PubSub {
       subs.push(subscriber)
     }
   }
-  
-  static Publish (topic: string, data?: unknown): void {
+
+  static Publish(topic: string, data?: unknown): void {
     const searchTopic = topic.toUpperCase()
     const matchingTopics = Object.keys(this.subscribers)
       .sort()
-      .filter(key => key === searchTopic ||
-        searchTopic.startsWith(`${key}:`))
+      .filter((key) => key === searchTopic || searchTopic.startsWith(`${key}:`))
     if (matchingTopics.length === 0) {
       window.console.warn(`PUBSUB: topic ${topic} published without subscribers`, data)
     } else {
@@ -43,57 +44,63 @@ export class PubSub {
         if (subscribers == null || subscribers.length < 1) {
           window.console.warn(`PUBSUB: topic ${key} registered without subscribers!`)
         } else {
-          subscribers.forEach(subscriber => { subscriber(data, searchTopic) })
+          subscribers.forEach((subscriber) => {
+            subscriber(data, searchTopic)
+          })
         }
       }
     }
   }
 
-  static Defer (method: VoidMethod, delayMs: number): void {
+  static Defer(method: VoidMethod, delayMs: number): void {
     this.deferred.push({
       method,
-      delayCycles: Math.max(Math.ceil(delayMs / this.cycleTime), 1)
+      delayCycles: Math.max(Math.ceil(delayMs / this.cycleTime), 1),
     })
   }
 
-  static AddInterval (name: string, method: VoidMethod, delayMs: number): void {
+  static AddInterval(name: string, method: VoidMethod, delayMs: number): void {
     this.intervals[name] = {
       method,
       intervalCycles: Math.max(Math.ceil(delayMs / this.cycleTime), 1),
-      delayCycles: 0
+      delayCycles: 0,
     }
   }
 
-  static RemoveInterval (name: string): void {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Allow removing intervals
-    delete this.intervals[name]
+  static RemoveInterval(name: string): void {
+    //eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- todo: rewrite intervals to support removbing intervals without delete
+    if (name in this.intervals) delete this.intervals[name]
   }
 
-  static ExecuteInterval (): void {
+  static ExecuteInterval(): void {
     this.deferred
-      .filter(delay => delay.delayCycles <= 0)
-      .forEach(delay => { delay.method() })
-    Object.values(this.intervals)
-      .forEach(delay => {
-        if (delay.delayCycles <= 0) {
-          delay.delayCycles = delay.intervalCycles
-          delay.method()
-        } else {
-          delay.delayCycles--
-        }
+      .filter((delay) => delay.delayCycles <= 0)
+      .forEach((delay) => {
+        delay.method()
       })
+    Object.values(this.intervals).forEach((delay) => {
+      if (delay.delayCycles <= 0) {
+        delay.delayCycles = delay.intervalCycles
+        delay.method()
+      } else {
+        delay.delayCycles--
+      }
+    })
     this.deferred = this.deferred
-      .filter(method => method.delayCycles > 0).map(method => {
+      .filter((method) => method.delayCycles > 0)
+      .map((method) => {
         method.delayCycles--
         return method
       })
   }
 
-  static StartDeferred (): void {
-    this.timer = setInterval((): void => { this.ExecuteInterval() }, this.cycleTime)
+  static StartDeferred(): void {
+    this.timer = setInterval((): void => {
+      this.ExecuteInterval()
+    }, this.cycleTime)
   }
 
-  static StopDeferred (): void {
+  static StopDeferred(): void {
     if (this.timer != null) {
       clearInterval(this.timer)
       this.timer = undefined
