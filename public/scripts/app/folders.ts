@@ -2,7 +2,7 @@
 
 import { Publish, Subscribe } from './pubsub'
 
-import type { Picture } from './pictures'
+import { isPicture, type Picture } from './pictures'
 import { isHTMLElement, CloneNode } from './utils'
 
 export interface Folder {
@@ -15,6 +15,33 @@ export interface Folder {
 export interface Data {
   children?: Folder[]
   pictures?: Picture[]
+}
+
+export function isFolder(obj: unknown): obj is Folder {
+  if (obj == null || typeof obj !== 'object') return false
+  if (!('name' in obj) || !(typeof obj.name === 'string')) return false
+  if (!('path' in obj) || !(typeof obj.path === 'string')) return false
+  if (!('cover' in obj) || !(typeof obj.cover === 'string' || obj.cover === null)) return false
+  if (!('totalSeen' in obj) || !(typeof obj.totalSeen === 'number')) return false
+  if (!('totalCount' in obj) || !(typeof obj.totalCount === 'number')) return false
+  return true
+}
+
+export function isData(obj: unknown): obj is Data {
+  if (obj == null || typeof obj !== 'object') return false
+  if ('children' in obj) {
+    if (obj.children == null || !(obj.children instanceof Array)) return false
+    for (const child of obj.children as unknown[]) {
+      if (!isFolder(child)) return false
+    }
+  }
+  if ('pictures' in obj) {
+    if (obj.pictures == null || !(obj.pictures instanceof Array)) return false
+    for (const picture of obj.pictures as unknown[]) {
+      if (!isPicture(picture)) return false
+    }
+  }
+  return true
 }
 
 export class Folders {
@@ -74,7 +101,8 @@ export class Folders {
   public static Init (): void {
     this.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: Redo with typesafe PubSub
-    Subscribe('Navigate:Data', (data) => { this.BuildFolders(data as Data) })
+    Subscribe('Navigate:Data', (data) => { 
+      if (isData(data)) this.BuildFolders(data)
+    })
   }
 }

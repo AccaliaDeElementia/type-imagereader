@@ -9,7 +9,7 @@ import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
 import type { Folder } from '../../../public/scripts/app/folders'
-import { Folders } from '../../../public/scripts/app/folders'
+import { Folders, isData, isFolder } from '../../../public/scripts/app/folders'
 import assert from 'assert'
 
 const markup = `
@@ -34,6 +34,397 @@ html
           div.text placeholder%
           div.slider(style="width: 0")
 `
+
+@suite
+export class FoldersIsFolderTests {
+  @test
+  'it should reject null object' (): void {
+    const obj = null
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined object' (): void {
+    const obj = undefined
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object object' (): void {
+    const obj = ''
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null name object' (): void {
+    const obj = {
+      name: null,
+      path: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined name object' (): void {
+    const obj = {
+      name: undefined,
+      path: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject miasing name object' (): void {
+    const obj = {
+      path: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string name object' (): void {
+    const obj = {
+      name: {},
+      path: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null path object' (): void {
+    const obj = {
+      name: '',
+      path: null,
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined path object' (): void {
+    const obj = {
+      name: '',
+      path: undefined,
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing path object' (): void {
+    const obj = {
+      name: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string path object' (): void {
+    const obj = {
+      name: '',
+      path: {},
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined cover object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: undefined,
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non string cover object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: {},
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null totalSeen object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalSeen: null,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined totalSeen object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalSeen: undefined,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing totalSeen object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number totalSeen object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalSeen: '0',
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null totalCount object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: null
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined totalCount object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: undefined
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject missing totalCount object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalSeen: 0
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non number totalCount object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: '0'
+    }
+    expect(isFolder(obj)).to.equal(false)
+  }
+
+  @test
+  'it should accept base object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: '',
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept alternat base object' (): void {
+    const obj = {
+      name: '',
+      path: '',
+      cover: null,
+      totalSeen: 0,
+      totalCount: 0
+    }
+    expect(isFolder(obj)).to.equal(true)
+  }
+}
+
+@suite
+export class FolderIsDataTests {
+
+  @test
+  'it should reject null object' (): void {
+    const obj = null
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined object' (): void {
+    const obj = undefined
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non object object' (): void {
+    const obj = '{}'
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null children object' (): void {
+    const obj = {
+      children: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefined children object' (): void {
+    const obj = {
+      children: undefined
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non array children object' (): void {
+    const obj = {
+      children: '[]'
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject invalid children array object' (): void {
+    const obj = {
+      children: [0]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject null pictures object' (): void {
+    const obj = {
+      pictures: null
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject undefiend object' (): void {
+    const obj = {
+      pictures: undefined
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject non array pictures object' (): void {
+    const obj = {
+      pictures: '[]'
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+
+  @test
+  'it should reject invalid pictures array object' (): void {
+    const obj = {
+      pictures: [0]
+    }
+    expect(isData(obj)).to.equal(false)
+  }
+  
+  @test
+  'it should accept bare object' (): void {
+    const obj = {}
+    expect(isData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept enpty children array object' (): void {
+    const obj = {
+      children: []
+    }
+    expect(isData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept empty pictures array object' (): void {
+    const obj = {
+      pictures: []
+    }
+    expect(isData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept valid children array object' (): void {
+    const obj = {
+      children: [{
+        name: '',
+        path: '',
+        cover: null,
+        totalSeen: 0,
+        totalCount: 100
+      }]
+    }
+    expect(isData(obj)).to.equal(true)
+  }
+
+  @test
+  'it should accept valid pictures array object' (): void {
+    const obj = {
+      pictures: [{
+        name: '',
+        path: '',
+        seen: false
+      }]
+    }
+    expect(isData(obj)).to.equal(true)
+  }
+}
 
 abstract class BaseFolderTests extends PubSub {
   existingWindow: Window & typeof globalThis
@@ -98,8 +489,12 @@ export class FoldersInitTests extends BaseFolderTests {
     const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
     assert(subscriberfn !== undefined)
     expect(this.BuildFoldersSpy.called).to.equal(false)
-    subscriberfn('this is my test data')
-    expect(this.BuildFoldersSpy.calledWith('this is my test data')).to.equal(true)
+    const data = {
+      children: [],
+      nonce: Math.random()
+    }
+    subscriberfn(data)
+    expect(this.BuildFoldersSpy.calledWith(data)).to.equal(true)
   }
 
   @test
