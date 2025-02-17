@@ -1,7 +1,6 @@
 'use sanity'
 
-import { expect, use as ChaiUse } from 'chai'
-import chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import * as sinon from 'sinon'
 
@@ -10,8 +9,7 @@ import { render } from 'pug'
 
 import { CyclicManager, CyclicUpdater } from '../../../public/scripts/slideshow/updater'
 import assert from 'assert'
-
-ChaiUse(chaiAsPromised)
+import { EventuallyRejects } from '../../testutils/EventuallyErrors'
 
 const markup = `
 html
@@ -169,7 +167,8 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
   @test
   async 'Default Updater rejects when triggered'(): Promise<void> {
     const sadness = new CyclicUpdater()
-    await expect(sadness.updateFn()).to.eventually.be.rejectedWith('Cyclic Updater Called with No Updater')
+    const e = await EventuallyRejects(sadness.updateFn())
+    expect(e.message).to.equal('Cyclic Updater Called with No Updater')
   }
 }
 

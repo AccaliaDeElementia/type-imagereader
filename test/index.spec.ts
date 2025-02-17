@@ -1,193 +1,165 @@
 'use sanity'
 
+import assert from 'assert'
+import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
-import { suite, test } from '@testdeck/mocha'
 import type Sinon from 'sinon'
 import * as sinon from 'sinon'
+import { EventuallyRejects } from './testutils/EventuallyErrors'
 
 import { ImageReader } from '..'
-import assert from 'assert'
 
-@suite
-export class ImageReaderTests {
-  StartServer?: Sinon.SinonStub
-  Synchronize?: Sinon.SinonStub
-  Clock?: Sinon.SinonFakeTimers
-  before(): void {
+describe('/index.ts tests', (): void => {
+  let StartServerStub: Sinon.SinonStub | undefined = undefined
+  let SynchronizeStub: Sinon.SinonStub | undefined = undefined
+  let ClockFake: Sinon.SinonFakeTimers | undefined = undefined
+
+  beforeEach(() => {
     delete process.env.PORT
     delete process.env.SKIP_SYNC
-    this.StartServer = sinon.stub(ImageReader, 'StartServer').resolves(undefined)
-    this.Synchronize = sinon.stub(ImageReader, 'Synchronize').resolves(undefined)
-    this.Synchronize.resolves()
-    this.Clock = sinon.useFakeTimers()
-  }
+    StartServerStub = sinon.stub(ImageReader, 'StartServer').resolves()
+    SynchronizeStub = sinon.stub(ImageReader, 'Synchronize').resolves()
+    ClockFake = sinon.useFakeTimers()
+  })
 
-  after(): void {
+  afterEach(() => {
     ImageReader.Interval = undefined
     ImageReader.SyncRunning = false
-    this.StartServer?.restore()
-    this.Synchronize?.restore()
-    this.Clock?.restore()
-  }
+    StartServerStub?.restore()
+    SynchronizeStub?.restore()
+    ClockFake?.restore()
+  })
 
-  @test
-  async 'it should reject when StartServer throws'(): Promise<void> {
-    this.StartServer?.throws(new Error('FOO'))
-    await expect(ImageReader.Run()).to.eventually.be.rejectedWith(Error)
-  }
+  it('should reject when StartServer throws', async () => {
+    StartServerStub?.throws(new Error('FOO'))
+    const err = await EventuallyRejects(ImageReader.Run())
+    expect(err).to.be.instanceOf(Error)
+    expect(err.message).to.equal('FOO')
+  })
 
-  @test
-  async 'it should reject when StartServer rejects'(): Promise<void> {
-    this.StartServer?.rejects(new Error('FOO'))
-    await expect(ImageReader.Run()).to.eventually.be.rejectedWith(Error)
-  }
+  it('should reject when StartServer rejects', async () => {
+    StartServerStub?.rejects(new Error('FOO'))
+    const err = await EventuallyRejects(ImageReader.Run())
+    expect(err).to.be.instanceOf(Error)
+    expect(err.message).to.equal('FOO')
+  })
 
-  @test
-  async 'it should start using default port when PORT is not defined'(): Promise<void> {
+  it('should start using default port when PORT is not defined', async () => {
     delete process.env.PORT
     await ImageReader.Run()
-    expect(this.StartServer?.called).to.equal(true)
-    expect(this.StartServer?.firstCall.args[0]).to.equal(3030)
-  }
+    expect(StartServerStub?.called).to.equal(true)
+    expect(StartServerStub?.firstCall.args[0]).to.equal(3030)
+  })
 
-  @test
-  async 'it should start using default port when PORT is blank'(): Promise<void> {
+  it('should start using default port when PORT is blank', async () => {
     process.env.PORT = ''
     await ImageReader.Run()
-    expect(this.StartServer?.called).to.equal(true)
-    expect(this.StartServer?.firstCall.args[0]).to.equal(3030)
-  }
+    expect(StartServerStub?.called).to.equal(true)
+    expect(StartServerStub?.firstCall.args[0]).to.equal(3030)
+  })
 
-  @test
-  async 'it should start using specified port when PORT is valid'(): Promise<void> {
+  it('should start using specified port when PORT is valid', async () => {
     process.env.PORT = '5555'
     await ImageReader.Run()
-    expect(this.StartServer?.called).to.equal(true)
-    expect(this.StartServer?.firstCall.args[0]).to.equal(5555)
-  }
+    expect(StartServerStub?.called).to.equal(true)
+    expect(StartServerStub?.firstCall.args[0]).to.equal(5555)
+  })
 
-  @test
-  async 'it should reject start when PORT fails to parse'(): Promise<void> {
+  it('should reject start when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
-    try {
-      await ImageReader.Run()
-    } catch (e) {
-      expect(this.StartServer?.called).to.equal(false)
-      expect(this.Synchronize?.called).to.equal(false)
-      expect((e as Error).message).to.equal('Port NaN (from env: FOO) is not a number. Valid ports must be a number.')
-    }
-  }
+    const e = await EventuallyRejects(ImageReader.Run())
+    expect(StartServerStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).to.equal(false)
+    expect(e.message).to.equal('Port NaN (from env: FOO) is not a number. Valid ports must be a number.')
+  })
 
-  @test
-  async 'it should reject start when PORT is too small'(): Promise<void> {
+  it('should reject start when PORT is too small', async () => {
     process.env.PORT = '-1'
-    try {
-      await ImageReader.Run()
-    } catch (e) {
-      expect(this.StartServer?.called).to.equal(false)
-      expect(this.Synchronize?.called).to.equal(false)
-      expect((e as Error).message).to.equal('Port -1 is out of range. Valid ports must be between 0 and 65535.')
-    }
-  }
+    const e = await EventuallyRejects(ImageReader.Run())
+    expect(StartServerStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).to.equal(false)
+    expect(e.message).to.equal('Port -1 is out of range. Valid ports must be between 0 and 65535.')
+  })
 
-  @test
-  async 'it should reject start when PORT is too big'(): Promise<void> {
+  it('should reject start when PORT is too big', async () => {
     process.env.PORT = '131072'
-    try {
-      await ImageReader.Run()
-    } catch (e) {
-      expect(this.StartServer?.called).to.equal(false)
-      expect(this.Synchronize?.called).to.equal(false)
-      expect((e as Error).message).to.equal('Port 131072 is out of range. Valid ports must be between 0 and 65535.')
-    }
-  }
+    const e = await EventuallyRejects(ImageReader.Run())
+    expect(StartServerStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).to.equal(false)
+    expect(e.message).to.equal('Port 131072 is out of range. Valid ports must be between 0 and 65535.')
+  })
 
-  @test
-  async 'it should reject start when PORT is not integer'(): Promise<void> {
+  it('should reject start when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
-    try {
-      await ImageReader.Run()
-    } catch (e) {
-      expect(this.StartServer?.called).to.equal(false)
-      expect(this.Synchronize?.called).to.equal(false)
-      expect((e as Error).message).to.equal(
-        'Port 3.1415926 is not integer. Valid ports must be integer between 0 and 65535.',
-      )
-    }
-  }
+    const e = await EventuallyRejects(ImageReader.Run())
+    expect(StartServerStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).to.equal(false)
+    expect(e.message).to.equal('Port 3.1415926 is not integer. Valid ports must be integer between 0 and 65535.')
+  })
 
-  @test
-  async 'it should run Synchronization if SKIP_SYNC is not set'(): Promise<void> {
+  it('should run Synchronization if SKIP_SYNC is not set', async () => {
     delete process.env.SKIP_SYNC
     await ImageReader.Run()
-    expect(this.Synchronize?.called).to.equal(true)
-  }
+    expect(SynchronizeStub?.called).to.equal(true)
+  })
 
-  @test
-  async 'it should run Synchronization if SKIP_SYNC is blank'(): Promise<void> {
+  it('should run Synchronization if SKIP_SYNC is blank', async () => {
     process.env.SKIP_SYNC = ''
     await ImageReader.Run()
-    expect(this.Synchronize?.called).to.equal(true)
-  }
+    expect(SynchronizeStub?.called).to.equal(true)
+  })
 
-  @test
-  async 'it should not run Synchronization if SKIP_SYNC is true'(): Promise<void> {
+  it('should not run Synchronization if SKIP_SYNC is true', async () => {
     process.env.SKIP_SYNC = 'true'
     await ImageReader.Run()
-    expect(this.Synchronize?.called).to.equal(false)
-  }
+    expect(SynchronizeStub?.called).to.equal(false)
+  })
 
-  @test
-  async 'it should not run Synchronization if SKIP_SYNC is 1'(): Promise<void> {
+  it('should not run Synchronization if SKIP_SYNC is 1', async () => {
     process.env.SKIP_SYNC = '1'
     await ImageReader.Run()
-    expect(this.Synchronize?.called).to.equal(false)
-  }
+    expect(SynchronizeStub?.called).to.equal(false)
+  })
 
-  @test
-  async 'it should run Synchronization again after SyncInterval miliseconds'(): Promise<void> {
+  it('should run Synchronization again after SyncInterval miliseconds', async () => {
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
-    this.Synchronize?.resetHistory()
-    this.Clock?.tick(99)
-    expect(this.Synchronize?.called).to.equal(false)
-    this.Clock?.tick(1)
-    expect(this.Synchronize?.called).to.equal(true)
-  }
+    SynchronizeStub?.resetHistory()
+    ClockFake?.tick(99)
+    expect(SynchronizeStub?.called).to.equal(false)
+    ClockFake?.tick(1)
+    expect(SynchronizeStub?.called).to.equal(true)
+  })
 
-  @test
-  async 'it should skip Synchronization if a previous run is still running'(): Promise<void> {
+  it('should skip Synchronization if a previous run is still running', async () => {
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
-    this.Synchronize?.resetHistory()
+    SynchronizeStub?.resetHistory()
     ImageReader.SyncRunning = true
-    this.Clock?.tick(101)
-    expect(this.Synchronize?.called).to.equal(false)
-  }
+    ClockFake?.tick(101)
+    expect(SynchronizeStub?.called).to.equal(false)
+  })
 
-  @test
-  async 'it should reset sync running if Synchronization throws'(): Promise<void> {
-    this.Synchronize?.throws(new Error('FOO!'))
+  it('should reset sync running if Synchronization throws', async () => {
+    SynchronizeStub?.throws(new Error('FOO!'))
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
     expect(ImageReader.SyncRunning).to.equal(false)
-  }
+  })
 
-  @test
-  async 'it should reset sync running if Synchronization rejects'(): Promise<void> {
-    this.Synchronize?.rejects(new Error('FOO!'))
+  it('should reset sync running if Synchronization rejects', async () => {
+    SynchronizeStub?.rejects(new Error('FOO!'))
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
     expect(ImageReader.SyncRunning).to.equal(false)
-  }
+  })
 
-  @test
-  async 'it should tolerate Synchronization rejects in interval'(): Promise<void> {
+  it('should tolerate Synchronization rejects in interval', async () => {
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
-    this.Synchronize?.rejects(new Error('FOO!'))
-    this.Clock?.tick(105)
+    SynchronizeStub?.rejects(new Error('FOO!'))
+    ClockFake?.tick(105)
     await Promise.resolve()
     assert(true, 'should not throw or reject because inner promise rejects')
-  }
-}
+  })
+})
