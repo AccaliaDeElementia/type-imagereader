@@ -91,8 +91,8 @@ export class ImageCache {
   }
 }
 
-export class Functions {
-  public static async ReadImage(path: string): Promise<ImageData> {
+export const Functions = {
+  ReadImage: async (path: string): Promise<ImageData> => {
     if (normalize(path) !== path) {
       return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
     }
@@ -106,9 +106,8 @@ export class Functions {
     } catch (e) {
       return ImageData.fromError('E_NOT_FOUND', StatusCodes.NOT_FOUND, 'Requested Path Not Found!', path)
     }
-  }
-
-  public static async RescaleImage(image: ImageData, width: number, height: number, animated = true): Promise<void> {
+  },
+  RescaleImage: async (image: ImageData, width: number, height: number, animated = true): Promise<void> => {
     if (image.code !== null) {
       return // Image already has an error
     }
@@ -127,20 +126,13 @@ export class Functions {
     } catch (e) {
       // Do nothing.... we tried
     }
-  }
-
-  public static async ReadAndRescaleImage(
-    path: string,
-    width: number,
-    height: number,
-    animated = true,
-  ): Promise<ImageData> {
+  },
+  ReadAndRescaleImage: async (path: string, width: number, height: number, animated = true): Promise<ImageData> => {
     const image = await Functions.ReadImage(path)
     await Functions.RescaleImage(image, width, height, animated)
     return image
-  }
-
-  public static SendImage(image: ImageData, res: Response): void {
+  },
+  SendImage: (image: ImageData, res: Response): void => {
     const aMonth = 1000 * 60 * 60 * 24 * 30
     if (image.code != null) {
       res.status(image.statusCode).json({
@@ -157,7 +149,7 @@ export class Functions {
       .set('Cache-Control', `public, max-age=${aMonth}`)
       .set('Expires', new Date(Date.now() + aMonth).toUTCString())
       .send(image.data)
-  }
+  },
 }
 
 export const CacheStorage = {
@@ -188,9 +180,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
 
   const logger = Imports.debug('type-imagereader:images')
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- Method is static, no need to bind
   CacheStorage.kioskCache = new ImageCache(Functions.ReadAndRescaleImage)
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- Method is static, no need to bind
   CacheStorage.scaledCache = new ImageCache(Functions.ReadAndRescaleImage)
 
   const sendError = (res: Response, code: string, statusCode: StatusCodes, message: string): void => {

@@ -768,10 +768,7 @@ export class ImagesGetRouterTests {
     CacheStorage.kioskCache = null as unknown as ImageCache
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(CacheStorage.kioskCache).to.not.equal(null)
-    expect(CacheStorage.kioskCache.cacheFunction).to.equal(
-      // eslint-disable-next-line @typescript-eslint/unbound-method -- Testing equality. cannot bind method call
-      Functions.ReadAndRescaleImage,
-    )
+    expect(CacheStorage.kioskCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
     expect(CacheStorage.kioskCache.items).to.have.lengthOf(0)
   }
 
@@ -780,10 +777,7 @@ export class ImagesGetRouterTests {
     CacheStorage.scaledCache = null as unknown as ImageCache
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(CacheStorage.scaledCache).to.not.equal(null)
-    expect(CacheStorage.scaledCache.cacheFunction).to.equal(
-      // eslint-disable-next-line @typescript-eslint/unbound-method -- Testing equality. cannot bind method call
-      Functions.ReadAndRescaleImage,
-    )
+    expect(CacheStorage.scaledCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
     expect(CacheStorage.scaledCache.items).to.have.lengthOf(0)
   }
 
