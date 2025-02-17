@@ -24,33 +24,65 @@ export interface Data {
   children?: ChildFolder[]
 }
 
-export function isData(obj: unknown): obj is Data {
-  if (typeof obj !== 'object' || obj == null) return false
-  if (!('path' in obj) || typeof obj.path !== 'string') return false
-  if ('noMenu' in obj && typeof obj.noMenu !== 'boolean' && obj.noMenu !== undefined) return false
-  if ('name' in obj && typeof obj.name !== 'string' && obj.name !== undefined) return false
-  if ('parent' in obj && typeof obj.parent !== 'string' && obj.parent !== undefined) return false
-  if ('next' in obj && obj.next !== null && !isData(obj.next)) return false
-  if ('nextUnread' in obj && obj.nextUnread !== null && !isData(obj.nextUnread)) return false
-  if ('prev' in obj && obj.prev !== null && !isData(obj.prev)) return false
-  if ('prevUnread' in obj && obj.prevUnread !== null && !isData(obj.prevUnread)) return false
+function hasPicturesArray(obj: object): boolean {
   if ('pictures' in obj) {
     if (!(obj.pictures instanceof Array)) return false
     for (const pic of obj.pictures as unknown[]) {
       if (typeof pic !== 'object' || pic == null) return false
     }
   }
+  return true
+}
+
+function isFolder(folder: unknown): boolean {
+  if (typeof folder !== 'object' || folder == null) return false
+  if (!('name' in folder) || typeof folder.name !== 'string') return false
+  if (!('path' in folder) || typeof folder.path !== 'string') return false
+  if (!('totalCount' in folder) || typeof folder.totalCount !== 'number') return false
+  return 'totalSeen' in folder && typeof folder.totalSeen === 'number'
+}
+
+function hasChildrenArray(obj: object): boolean {
   if ('children' in obj) {
     if (!(obj.children instanceof Array)) return false
     for (const folder of obj.children as unknown[]) {
-      if (typeof folder !== 'object' || folder == null) return false
-      if (!('name' in folder) || typeof folder.name !== 'string') return false
-      if (!('path' in folder) || typeof folder.path !== 'string') return false
-      if (!('totalCount' in folder) || typeof folder.totalCount !== 'number') return false
-      if (!('totalSeen' in folder) || typeof folder.totalSeen !== 'number') return false
+      if (!isFolder(folder)) return false
     }
   }
   return true
+}
+
+function hasSiblingData(obj: object): boolean {
+  if ('next' in obj && !isNullOrData(obj.next)) return false
+  if ('nextUnread' in obj && !isNullOrData(obj.nextUnread)) return false
+  if ('prev' in obj && !isNullOrData(obj.prev)) return false
+  if ('prevUnread' in obj && !isNullOrData(obj.prevUnread)) return false
+  return true
+}
+
+function isNullOrData(obj: unknown): boolean {
+  return obj == null || isData(obj)
+}
+
+function isUndefinedOrboolean(obj: unknown): boolean {
+  return typeof obj === 'boolean' || obj === undefined
+}
+
+function isUndefinedOrString(obj: unknown): boolean {
+  return typeof obj === 'string' || obj === undefined
+}
+
+function hasValidName(obj: object): boolean {
+  if ('name' in obj && !isUndefinedOrString(obj.name)) return false
+  if ('parent' in obj && !isUndefinedOrString(obj.parent)) return false
+  return true
+}
+
+export function isData(obj: unknown): obj is Data {
+  if (typeof obj !== 'object' || obj == null) return false
+  if (!('path' in obj) || typeof obj.path !== 'string') return false
+  if ('noMenu' in obj && !isUndefinedOrboolean(obj.noMenu)) return false
+  return hasValidName(obj) && hasSiblingData(obj) && hasPicturesArray(obj) && hasChildrenArray(obj)
 }
 
 interface NoMenuPath {

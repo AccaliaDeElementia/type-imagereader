@@ -32,6 +32,33 @@ export interface OpenWeatherData {
   }
 }
 
+function isMainValid(data: object): boolean {
+  if ('main' in data) {
+    if (typeof data.main !== 'object' || data.main == null) return false
+    if (!('temp' in data.main) || typeof data.main.temp !== 'number') return false
+    if (!('pressure' in data.main) || typeof data.main.pressure !== 'number') return false
+    if (!('humidity' in data.main) || typeof data.main.humidity !== 'number') return false
+  }
+  return true
+}
+
+function isWeatherValid(data: object): boolean {
+  if (!('weather' in data) || !(data.weather instanceof Array)) return false
+  for (const record of data.weather as unknown[]) {
+    if (typeof record !== 'object' || record == null) return false
+    if (!('main' in record) || typeof record.main !== 'string') return false
+    if (!('icon' in record) || typeof record.icon !== 'string') return false
+  }
+  return true
+}
+
+function isSysValid(data: object): boolean {
+  if (!('sys' in data) || typeof data.sys !== 'object' || data.sys == null) return false
+  if (!('sunrise' in data.sys) || typeof data.sys.sunrise !== 'number') return false
+  if (!('sunset' in data.sys) || typeof data.sys.sunset !== 'number') return false
+  return true
+}
+
 export class Imports {
   public static get appId(): string {
     return process.env.OPENWEATHER_APPID ?? ''
@@ -95,22 +122,9 @@ export class Functions {
 
   public static isOpenWeatherData(data: unknown): data is OpenWeatherData {
     if (typeof data !== 'object' || data == null) return false
-    if ('main' in data) {
-      if (typeof data.main !== 'object' || data.main == null) return false
-      if (!('temp' in data.main) || typeof data.main.temp !== 'number') return false
-      if (!('pressure' in data.main) || typeof data.main.pressure !== 'number') return false
-      if (!('humidity' in data.main) || typeof data.main.humidity !== 'number') return false
-    }
-    if (!('weather' in data) || !(data.weather instanceof Array)) return false
-    for (const record of data.weather as unknown[]) {
-      if (typeof record !== 'object' || record == null) return false
-      if (!('main' in record) || typeof record.main !== 'string') return false
-      if (!('icon' in record) || typeof record.icon !== 'string') return false
-    }
-    if (!('sys' in data) || typeof data.sys !== 'object' || data.sys == null) return false
-    if (!('sunrise' in data.sys) || typeof data.sys.sunrise !== 'number') return false
-    if (!('sunset' in data.sys) || typeof data.sys.sunset !== 'number') return false
-    return true
+    if (!isMainValid(data)) return false
+    if (!isWeatherValid(data)) return false
+    return isSysValid(data)
   }
 
   public static async GetWeather(): Promise<OpenWeatherData> {

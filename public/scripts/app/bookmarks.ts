@@ -34,15 +34,19 @@ export function isDataBookmark(obj: unknown): obj is DataBookmark {
   return true
 }
 
-export function isDataBookmarkFolder(obj: unknown): obj is DataBookmarkFolder[] {
-  if (typeof obj !== 'object' || obj == null) return false
-  if (!('name' in obj) || typeof obj.name !== 'string') return false
-  if (!('path' in obj) || typeof obj.path !== 'string') return false
+function hasValidBookmarks(obj: object): boolean {
   if (!('bookmarks' in obj) || !(obj.bookmarks instanceof Array)) return false
   for (const bookmark of obj.bookmarks as unknown[]) {
     if (!isDataBookmark(bookmark)) return false
   }
   return true
+}
+
+export function isDataBookmarkFolder(obj: unknown): obj is DataBookmarkFolder[] {
+  if (typeof obj !== 'object' || obj == null) return false
+  if (!('name' in obj) || typeof obj.name !== 'string') return false
+  if (!('path' in obj) || typeof obj.path !== 'string') return false
+  return hasValidBookmarks(obj)
 }
 
 export function isDataWithBookmarks(obj: unknown): obj is DataWithBookmarks {
@@ -135,20 +139,7 @@ export class Bookmarks {
     return card
   }
 
-  public static buildBookmarks(data: DataWithBookmarks): void {
-    if (this.bookmarksTab == null || this.bookmarkCard == null || this.bookmarkFolder == null) {
-      return
-    }
-
-    const openPath =
-      this.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') ?? data.path
-
-    for (const existing of this.bookmarksTab.querySelectorAll('div.folder')) {
-      existing.remove()
-    }
-
-    this.BookmarkFolders = []
-    // TODO: REbuild this to take advantage of the new structure instead of just massaging it into old style
+  public static buildBookmarkNodes(data: DataWithBookmarks, openPath: string): void {
     for (const folder of data.bookmarks) {
       const folderNode = this.GetFolder(openPath, folder)
       if (folderNode == null) {
@@ -162,6 +153,22 @@ export class Bookmarks {
         folderNode.appendChild(card)
       }
     }
+  }
+
+  public static buildBookmarks(data: DataWithBookmarks): void {
+    if (this.bookmarksTab == null || this.bookmarkCard == null || this.bookmarkFolder == null) {
+      return
+    }
+
+    const openPath =
+      this.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') ?? data.path
+
+    for (const existing of this.bookmarksTab.querySelectorAll('div.folder')) {
+      existing.remove()
+    }
+
+    this.BookmarkFolders = []
+    this.buildBookmarkNodes(data, openPath)
     this.BookmarkFolders.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
     for (const folder of this.BookmarkFolders) {
       this.bookmarksTab.appendChild(folder.element)

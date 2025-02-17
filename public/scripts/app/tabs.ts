@@ -33,25 +33,28 @@ export class Tabs {
       href = this.tabNames[0] ?? ''
     }
     for (const tab of this.tabs) {
-      const tabHref = tab.getAttribute('href')
-      if (tabHref === null) {
-        tab.parentElement?.classList.remove('active')
-        continue
-      }
-      const content = document.querySelector<HTMLElement>(tabHref)
-      if (tabHref.toLowerCase() === lowerHref) {
-        href = tabHref
-        tab.parentElement?.classList.add('active')
-        content?.style.setProperty('display', 'block')
-        content?.scroll({
-          top: 0,
-          behavior: 'smooth',
-        })
-      } else {
-        tab.parentElement?.classList.remove('active')
-        content?.style.setProperty('display', 'none')
-      }
+      tab.parentElement?.classList.remove('active')
+      href = setTabActive(tab, lowerHref) ?? href
     }
     Publish('Tab:Selected', href)
   }
+}
+
+function setTabActive(tab: HTMLElement, activeHref: string | undefined): string | null {
+  const tabHref = tab.getAttribute('href')
+  let href = null
+  if (tabHref == null) return null
+  const content = document.querySelector<HTMLElement>(tabHref)
+  if (tabHref.toLowerCase() === activeHref) {
+    href = tabHref
+    tab.parentElement?.classList.add('active')
+    content?.style.setProperty('display', 'block')
+    content?.scroll({
+      top: 0,
+      behavior: 'smooth',
+    })
+  } else {
+    content?.style.setProperty('display', 'none')
+  }
+  return href
 }

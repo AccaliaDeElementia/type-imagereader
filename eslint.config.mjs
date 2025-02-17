@@ -34,8 +34,8 @@ export default [
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/prefer-destructuring': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/no-floating-promises': 'error',
-      complexity: ['error', { max: 50 }],
       'max-lines': 'off', //TODO: Sort this rule out eventually
+      //'no-console': 'warn', // only set for debugging!
     },
   },
   {

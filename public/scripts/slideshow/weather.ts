@@ -12,16 +12,28 @@ export interface WeatherResults {
   sunset: number | undefined
 }
 
-export function isWeatherResults(obj: unknown): obj is WeatherResults {
-  if (obj == null || typeof obj !== 'object') return false
+function isValidTemps(obj: object): boolean {
   if ('temp' in obj && obj.temp !== undefined && typeof obj.temp !== 'number') return false
   if ('pressure' in obj && obj.pressure !== undefined && typeof obj.pressure !== 'number') return false
   if ('humidity' in obj && obj.humidity !== undefined && typeof obj.humidity !== 'number') return false
+  return true
+}
+
+function isValidDescriptions(obj: object): boolean {
   if ('description' in obj && obj.description !== undefined && typeof obj.description !== 'string') return false
   if ('icon' in obj && obj.icon !== undefined && typeof obj.icon !== 'string') return false
+  return true
+}
+
+function isValidSunData(obj: object): boolean {
   if ('sunrise' in obj && obj.sunrise !== undefined && typeof obj.sunrise !== 'number') return false
   if ('sunset' in obj && obj.sunset !== undefined && typeof obj.sunset !== 'number') return false
   return true
+}
+
+export function isWeatherResults(obj: unknown): obj is WeatherResults {
+  if (obj == null || typeof obj !== 'object') return false
+  return isValidTemps(obj) && isValidDescriptions(obj) && isValidSunData(obj)
 }
 
 export const Functions = {
@@ -45,15 +57,18 @@ const formatData = (data: number | string | undefined, suffix = ''): Text => {
   return document.createTextNode(text)
 }
 
+function setVisibility(elem: HTMLElement | null, data: unknown, styleExists: string, styleNotExists: string): void {
+  elem?.style.setProperty('display', data != null ? styleExists : styleNotExists)
+}
+
 const showWeather = (base: HTMLElement | null, weather: WeatherResults): WeatherResults => {
   if (base == null) return weather
-  base.style.setProperty('display', weather.temp !== undefined ? 'flex' : 'none')
+  setVisibility(base, weather.temp, 'flex', 'none')
   base.querySelector('.temp')?.replaceChildren(formatData(weather.temp, '°C'))
-  const description = base.querySelector<HTMLElement>('.desc')
-  description?.style.setProperty('display', weather.description !== undefined ? 'flex' : 'none')
+  setVisibility(base.querySelector<HTMLElement>('.desc'), weather.description, 'flex', 'none')
   base.querySelector('.desctext')?.replaceChildren(formatData(weather.description))
   const icon = base.querySelector<HTMLElement>('.icon')
-  icon?.style.setProperty('display', weather.icon != null ? 'inline-block' : 'none')
+  setVisibility(icon, weather.icon, 'inline-block', 'none')
   const src = `https://openweathermap.org/img/w/${weather.icon}.png`
   if (icon?.getAttribute('src') !== src) {
     icon?.setAttribute('src', src)

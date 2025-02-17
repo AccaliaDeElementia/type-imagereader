@@ -32,23 +32,37 @@ export interface KnexOptions {
   }
 }
 
+function isConnectionValid(obj: object): boolean {
+  if (!('connection' in obj) || obj.connection == null || typeof obj.connection !== 'object') return false
+  const entries = Object.entries(obj.connection)
+  for (const key of ['host', 'database', 'user', 'password', 'filename']) {
+    const value = entries.find(([k]) => k === key)
+    if (value != null && typeof value[1] !== 'string') return false
+  }
+  return true
+}
+
+function isPoolValid(obj: object): boolean {
+  if (!('pool' in obj)) return true
+  if (obj.pool == null || typeof obj.pool !== 'object') return false
+  if (!('min' in obj.pool) || typeof obj.pool.min !== 'number') return false
+  if (!('max' in obj.pool) || typeof obj.pool.max !== 'number') return false
+  return true
+}
+
+function isMigrationsValid(obj: object): boolean {
+  if (!('migrations' in obj) || obj.migrations == null || typeof obj.migrations !== 'object') return false
+  if (!('tableName' in obj.migrations) || typeof obj.migrations.tableName !== 'string') return false
+  return true
+}
+
 export function isKnexOptions(obj: unknown): obj is KnexOptions {
   if (obj == null || typeof obj !== 'object') return false
   if (!('client' in obj) || typeof obj.client !== 'string') return false
-  if (!('connection' in obj) || obj.connection == null || typeof obj.connection !== 'object') return false
-  if ('host' in obj.connection && typeof obj.connection.host !== 'string') return false
-  if ('database' in obj.connection && typeof obj.connection.database !== 'string') return false
-  if ('user' in obj.connection && typeof obj.connection.user !== 'string') return false
-  if ('password' in obj.connection && typeof obj.connection.password !== 'string') return false
-  if ('filename' in obj.connection && typeof obj.connection.filename !== 'string') return false
+  if (!isConnectionValid(obj)) return false
   if ('useNullAsDefault' in obj && typeof obj.useNullAsDefault !== 'boolean') return false
-  if ('pool' in obj) {
-    if (obj.pool == null || typeof obj.pool !== 'object') return false
-    if (!('min' in obj.pool) || typeof obj.pool.min !== 'number') return false
-    if (!('max' in obj.pool) || typeof obj.pool.max !== 'number') return false
-  }
-  if (!('migrations' in obj) || obj.migrations == null || typeof obj.migrations !== 'object') return false
-  if (!('tableName' in obj.migrations) || typeof obj.migrations.tableName !== 'string') return false
+  if (!isPoolValid(obj)) return false
+  if (!isMigrationsValid(obj)) return false
   return true
 }
 

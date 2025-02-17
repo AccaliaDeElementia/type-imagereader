@@ -2004,6 +2004,18 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
   }
 
   @test
+  'it shoudl aboirt execution when mainImage is missing'(): void {
+    this.document.querySelector<HTMLImageElement>('#bigImage img')?.remove()
+    Pictures.LoadData({
+      pictures: this.pictures,
+    })
+    expect(this.makeTabSpy.called).to.equal(false)
+    expect(this.tabSelectSpy.called).to.equal(false)
+    expect(this.menuHideSpy.called).to.equal(false)
+    expect(this.loadImageSpy.called).to.equal(false)
+  }
+
+  @test
   'it should remove hidden from main image when loading with pictures'(): void {
     TestPics.mainImage?.classList.add('hidden')
     Pictures.LoadData({

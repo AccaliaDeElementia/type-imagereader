@@ -576,6 +576,13 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
     expect(link.classList.contains('hidden')).to.equal(false)
     Folders.BuildFolders({
       children: undefined,
+      pictures: [
+        {
+          name: '',
+          path: '',
+          seen: false,
+        },
+      ],
     })
     expect(link.classList.contains('hidden')).to.equal(true)
   }
@@ -587,6 +594,13 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
     expect(link.classList.contains('hidden')).to.equal(false)
     Folders.BuildFolders({
       children: [],
+      pictures: [
+        {
+          name: '',
+          path: '',
+          seen: false,
+        },
+      ],
     })
     expect(link.classList.contains('hidden')).to.equal(true)
   }

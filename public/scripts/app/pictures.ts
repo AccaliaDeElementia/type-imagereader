@@ -31,29 +31,50 @@ export interface DataWithPictures {
   noMenu?: boolean
 }
 
-export function isPicture(obj: unknown): obj is Pictures {
-  if (obj == null || typeof obj !== 'object') return false
+function isApiPicture(obj: object): boolean {
   if (!('path' in obj) || typeof obj.path !== 'string') return false
   if (!('name' in obj) || typeof obj.name !== 'string') return false
   if (!('seen' in obj) || typeof obj.seen !== 'boolean') return false
+  return true
+}
+
+function isUIPicture(obj: object): boolean {
   if ('index' in obj && !(obj.index === undefined || typeof obj.index === 'number')) return false
   if ('page' in obj && !(obj.page === undefined || typeof obj.page === 'number')) return false
   if ('element' in obj && !(obj.element === undefined || isHTMLElement(obj.element))) return false
   return true
 }
 
-export function isDataWithPictures(obj: unknown): obj is DataWithPictures {
+export function isPicture(obj: unknown): obj is Pictures {
   if (obj == null || typeof obj !== 'object') return false
+  return isApiPicture(obj) && isUIPicture(obj)
+}
+
+function hasPictureArray(obj: object): boolean {
   if ('pictures' in obj && obj.pictures !== undefined) {
     if (obj.pictures === null || !(obj.pictures instanceof Array)) return false
     for (const pic of obj.pictures as unknown[]) {
       if (!isPicture(pic)) return false
     }
   }
+  return true
+}
+
+export function isDataWithPictures(obj: unknown): obj is DataWithPictures {
+  if (obj == null || typeof obj !== 'object') return false
+  if (!hasPictureArray(obj)) return false
   if ('modCount' in obj && typeof obj.modCount !== 'number') return false
   if ('cover' in obj && typeof obj.cover !== 'string') return false
   if ('noMenu' in obj && typeof obj.noMenu !== 'boolean') return false
   return true
+}
+
+function setTextContent(selector: string, content: string): void {
+  document.querySelector(selector)?.replaceChildren(document.createTextNode(content))
+}
+
+function makeURI(width: number | undefined, height: number | undefined, img: Picture): string {
+  return '/images/scaled/' + width + '/' + height + img.path + '-image.webp'
 }
 
 export type PageSelector = () => number
@@ -313,6 +334,24 @@ export class Pictures {
     pages.forEach((page) => tab?.appendChild(page))
   }
 
+  public static LoadNextImage(): void {
+    const next = this.GetPicture(this.ShowUnreadOnly ? NavigateTo.NextUnread : NavigateTo.Next)
+    if (next == null) {
+      this.nextPending = false
+      this.nextLoader = Promise.resolve()
+    } else {
+      this.nextPending = true
+      this.nextLoader = fetch(makeURI(this.mainImage?.width, this.mainImage?.height, next)).then(
+        () => {
+          this.nextPending = false
+        },
+        () => {
+          this.nextPending = false
+        },
+      )
+    }
+  }
+
   public static async LoadImage(): Promise<void> {
     if (this.current == null) return
     if (this.nextPending) {
@@ -331,54 +370,33 @@ export class Pictures {
         return
       }
       this.modCount = newModCount
-      const makeURI = (img: Picture): string =>
-        '/images/scaled/' + this.mainImage?.width + '/' + this.mainImage?.height + img.path + '-image.webp'
       await this.nextLoader
-      this.mainImage?.setAttribute('src', makeURI(this.current))
+      this.mainImage?.setAttribute('src', makeURI(this.mainImage.width, this.mainImage.height, this.current))
       const index = this.current.index ?? 0
       const displayTotal = this.pictures.length.toLocaleString()
       const displayIndex = (index + 1).toLocaleString()
       const displayPercent = (Math.floor((1000 * (index + 1)) / this.pictures.length) / 10).toLocaleString()
-      document.querySelector('.statusBar.bottom .center')?.replaceChildren(document.createTextNode(this.current.name))
-      document
-        .querySelector('.statusBar.bottom .left')
-        ?.replaceChildren(document.createTextNode(`(${displayIndex}/${displayTotal})`))
-      document
-        .querySelector('.statusBar.bottom .right')
-        ?.replaceChildren(document.createTextNode(`(${displayPercent}%)`))
+      setTextContent('.statusBar.bottom .center', this.current.name)
+      setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
+      setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
       this.SelectPage(this.current.page ?? 1)
-      const next = this.GetPicture(this.ShowUnreadOnly ? NavigateTo.NextUnread : NavigateTo.Next)
-      if (next == null) {
-        this.nextPending = false
-        this.nextLoader = Promise.resolve()
-      } else {
-        this.nextPending = true
-        this.nextLoader = fetch(makeURI(next)).then(
-          () => {
-            this.nextPending = false
-          },
-          () => {
-            this.nextPending = false
-          },
-        )
-      }
+      this.LoadNextImage()
       Publish('Picture:LoadNew')
     } catch (err) {
       Publish('Loading:Error', err)
     }
   }
 
-  public static LoadData(data: DataWithPictures): void {
-    this.ResetMarkup()
-
-    const fistPic = data.pictures?.slice(0, 1)[0]
-    if (data.pictures == null || fistPic === undefined) {
-      this.mainImage?.classList.add('hidden')
+  public static SetPicturesGetFirst(data: DataWithPictures): Picture | null {
+    if (this.mainImage == null) return null
+    const firstPic = data.pictures?.slice(0, 1)[0]
+    if (data.pictures == null || firstPic === undefined) {
+      this.mainImage.classList.add('hidden')
       Publish('Menu:Show')
       document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.add('hidden')
-      return
+      return null
     }
-    this.mainImage?.classList.remove('hidden')
+    this.mainImage.classList.remove('hidden')
     document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
 
     this.pictures = data.pictures
@@ -386,12 +404,19 @@ export class Pictures {
     this.pictures.forEach((pic, i) => {
       pic.index = i
     })
+    return firstPic
+  }
+
+  public static LoadData(data: DataWithPictures): void {
+    this.ResetMarkup()
+    const firstPic = this.SetPicturesGetFirst(data)
+    if (firstPic === null) return
 
     const selected = this.pictures.find((picture) => picture.path === data.cover)
     if (selected !== undefined) {
       this.current = selected
     } else {
-      this.current = fistPic
+      this.current = firstPic
     }
     this.MakeTab()
     Publish('Tab:Select', 'Images')
@@ -405,9 +430,26 @@ export class Pictures {
     this.LoadImage().catch(() => null)
   }
 
+  public static ChoosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[]): number {
+    if (this.pictures.length < 1) return -1
+    switch (navi) {
+      case NavigateTo.First:
+        return 0
+      case NavigateTo.PreviousUnread:
+        return unreads.pop()?.index ?? -1
+      case NavigateTo.Previous:
+        return current !== 0 ? current - 1 : -1
+      case NavigateTo.Next:
+        return current < this.pictures.length - 1 ? current + 1 : -1
+      case NavigateTo.NextUnread:
+        return unreads.shift()?.index ?? -1
+      case NavigateTo.Last:
+        return this.pictures.length - 1
+    }
+  }
+
   public static GetPicture(navi: NavigateTo): Picture | undefined {
     let index = -1
-    let idx: number | undefined = undefined
     const current = this.current?.index
     if (current === undefined) {
       return undefined
@@ -416,27 +458,7 @@ export class Pictures {
       ...this.pictures.filter((image) => !image.seen && image.index !== undefined && image.index > current),
       ...this.pictures.filter((image) => !image.seen && image.index !== undefined && image.index < current),
     ]
-    switch (navi) {
-      case NavigateTo.First:
-        index = this.pictures.length > 0 ? 0 : -1
-        break
-      case NavigateTo.PreviousUnread:
-        idx = unreads.pop()?.index
-        index = idx ?? -1
-        break
-      case NavigateTo.Previous:
-        index = this.pictures.length > 0 && current !== 0 ? current - 1 : -1
-        break
-      case NavigateTo.Next:
-        index = this.pictures.length > 0 && current < this.pictures.length ? current + 1 : -1
-        break
-      case NavigateTo.NextUnread:
-        idx = unreads.shift()?.index
-        index = idx ?? -1
-        break
-      case NavigateTo.Last:
-        index = this.pictures.length > 0 ? this.pictures.length - 1 : -1
-    }
+    index = this.ChoosePictureIndex(navi, current, unreads)
     return this.pictures[index]
   }
 

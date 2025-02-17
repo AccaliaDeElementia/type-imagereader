@@ -17,24 +17,37 @@ export interface Data {
   pictures?: Picture[]
 }
 
-export function isFolder(obj: unknown): obj is Folder {
-  if (obj == null || typeof obj !== 'object') return false
-  if (!('name' in obj) || !(typeof obj.name === 'string')) return false
-  if (!('path' in obj) || !(typeof obj.path === 'string')) return false
-  if (!('cover' in obj) || !(typeof obj.cover === 'string' || obj.cover === null)) return false
-  if (!('totalSeen' in obj) || !(typeof obj.totalSeen === 'number')) return false
-  if (!('totalCount' in obj) || !(typeof obj.totalCount === 'number')) return false
-  return true
+function hasKeyAndIsNumber(obj: object, key: string): boolean {
+  const entries = Object.entries(obj)
+  const e = entries.find(([k]) => k === key)
+  return e != null && typeof e[1] === 'number'
 }
 
-export function isData(obj: unknown): obj is Data {
+function hasKeyAndIsString(obj: object, key: string): boolean {
+  const entries = Object.entries(obj)
+  const e = entries.find(([k]) => k === key)
+  return e != null && typeof e[1] === 'string'
+}
+
+export function isFolder(obj: unknown): obj is Folder {
   if (obj == null || typeof obj !== 'object') return false
+  if (!hasKeyAndIsString(obj, 'name')) return false
+  if (!hasKeyAndIsString(obj, 'path')) return false
+  if (!('cover' in obj) || !(typeof obj.cover === 'string' || obj.cover === null)) return false
+  return hasKeyAndIsNumber(obj, 'totalSeen') && hasKeyAndIsNumber(obj, 'totalCount')
+}
+
+function hasValidChildren(obj: object): boolean {
   if ('children' in obj) {
     if (obj.children == null || !(obj.children instanceof Array)) return false
     for (const child of obj.children as unknown[]) {
       if (!isFolder(child)) return false
     }
   }
+  return true
+}
+
+function hasValidPictures(obj: object): boolean {
   if ('pictures' in obj) {
     if (obj.pictures == null || !(obj.pictures instanceof Array)) return false
     for (const picture of obj.pictures as unknown[]) {
@@ -42,6 +55,31 @@ export function isData(obj: unknown): obj is Data {
     }
   }
   return true
+}
+
+export function isData(obj: unknown): obj is Data {
+  if (obj == null || typeof obj !== 'object') return false
+  return hasValidChildren(obj) && hasValidPictures(obj)
+}
+
+function buildCards(data: Data): void {
+  if (data.children === undefined) return
+  const container: HTMLElement = document.createElement('div')
+  container.classList.add('folders')
+  document.querySelector('#tabFolders')?.appendChild(container)
+
+  for (const folder of data.children) {
+    const card = Folders.BuildCard(folder)
+    if (card == null) continue
+    container.appendChild(card)
+  }
+}
+
+function hideTab(selector: string): void {
+  document.querySelector(selector)?.parentElement?.classList.add('hidden')
+}
+function unhideTab(selector: string): void {
+  document.querySelector(selector)?.parentElement?.classList.remove('hidden')
 }
 
 export class Folders {
@@ -80,24 +118,17 @@ export class Folders {
     for (const folder of document.querySelectorAll('#tabFolders .folders')) {
       folder.remove()
     }
-    if (data.children == null || data.children.length < 1) {
-      document.querySelector('a[href="#tabFolders')?.parentElement?.classList.add('hidden')
-      return
+    const hasChildren = (data.children?.length ?? -1) > 0
+    const hasPictures = (data.pictures?.length ?? -1) > 0
+    if (hasChildren) {
+      unhideTab('a[href="#tabFolders')
+      if (!hasPictures) {
+        Publish('Tab:Select', 'Folders')
+      }
+    } else {
+      hideTab('a[href="#tabFolders')
     }
-    if (data.pictures == null || data.pictures.length < 1) {
-      Publish('Tab:Select', 'Folders')
-    }
-    document.querySelector('a[href="#tabFolders')?.parentElement?.classList.remove('hidden')
-
-    const container: HTMLElement = document.createElement('div')
-    container.classList.add('folders')
-    document.querySelector('#tabFolders')?.appendChild(container)
-
-    for (const folder of data.children) {
-      const card = this.BuildCard(folder)
-      if (card == null) continue
-      container.appendChild(card)
-    }
+    buildCards(data)
   }
 
   public static Init(): void {
