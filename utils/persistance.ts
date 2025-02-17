@@ -1,17 +1,27 @@
 'use sanity'
 
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+
 import type { Knex } from 'knex'
 import knex from 'knex'
 
 const initialize = async (): Promise<Knex> => {
-  const knexInstance = Imports.knex(Functions.Environment)
+  const config = await Functions.GetKnexConfig()
+  const knexInstance = Imports.knex(config)
   await knexInstance.migrate.latest()
   return knexInstance
 }
 
 export interface KnexOptions {
   client: string
-  connection: Record<'host' | 'database' | 'user' | 'password' | 'filename', string>
+  connection: {
+    host?: string
+    database?: string
+    user?: string
+    password?: string
+    filename?: string
+  }
   useNullAsDefault?: boolean
   pool?: {
     min: number
@@ -42,9 +52,15 @@ export function isKnexOptions(obj: unknown): obj is KnexOptions {
   return true
 }
 
+export function isDictionary(obj: unknown): obj is { [key: string]: unknown } {
+  if (obj == null || typeof obj !== 'object') return false
+  return true
+}
+
 export class Imports {
   public static knex = knex
   public static Initializer?: Promise<Knex>
+  public static readFile = readFile
 }
 
 export class Functions {
@@ -55,10 +71,19 @@ export class Functions {
     return process.env.DB_CLIENT
   }
 
-  public static get Environment(): KnexOptions {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-require-imports  -- Knex be weird... this can probably be done differently...?
-    const connection = require('../knexfile')[Functions.EnvironmentName]
-    if (!isKnexOptions(connection)) throw new Error('Invalid Confugiration Detected!')
+  public static async readConfigurationBlock(): Promise<KnexOptions> {
+    const content = await Imports.readFile(join(__dirname, '../knexfile.json'), { encoding: 'utf-8' })
+    if (content.length < 1) throw new Error('Invalid Configuration Detected!')
+    const data = JSON.parse(content) as unknown
+    if (!isDictionary(data)) throw new Error('Invalid Configuration Detected!')
+    if (!(Functions.EnvironmentName in data)) throw new Error('Invalid Configuration Detected!')
+    const config = data[Functions.EnvironmentName]
+    if (!isKnexOptions(config)) throw new Error('Invalid Configuration Detected!')
+    return config
+  }
+
+  public static async GetKnexConfig(): Promise<KnexOptions> {
+    const connection = await Functions.readConfigurationBlock()
     const keys: Array<'host' | 'database' | 'user' | 'password' | 'filename'> = [
       'host',
       'database',
