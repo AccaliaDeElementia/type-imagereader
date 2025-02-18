@@ -6,6 +6,7 @@ import * as sinon from 'sinon'
 
 import { Net } from '../../../public/scripts/app/net'
 import { EventuallyRejects } from '../../testutils/EventuallyErrors'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 @suite
 export class AppNetTests {
@@ -20,12 +21,14 @@ export class AppNetTests {
   }
 
   before(): void {
-    AppNetTests.fetchStub.resolves({
-      headers: {
-        get: AppNetTests.fetchLengthStub,
-      },
-      json: AppNetTests.fetchData,
-    } as unknown as Response)
+    AppNetTests.fetchStub.resolves(
+      ForceCastTo<Response>({
+        headers: {
+          get: AppNetTests.fetchLengthStub,
+        },
+        json: AppNetTests.fetchData,
+      }),
+    )
     AppNetTests.fetchLengthStub.returns('2')
     AppNetTests.fetchData.resolves({})
   }

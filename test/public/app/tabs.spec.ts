@@ -10,6 +10,7 @@ import { render } from 'pug'
 import { PubSub } from '../../../public/scripts/app/pubsub'
 import { Tabs } from '../../../public/scripts/app/tabs'
 import { assert } from 'console'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -76,7 +77,7 @@ export class AppTabsTests extends PubSub {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
     this.consoleError = sinon.stub(global.window.console, 'error')
@@ -159,11 +160,11 @@ export class AppTabsTests extends PubSub {
     const spy = sinon.stub(Tabs, 'SelectTab')
     try {
       spy.returns(undefined)
-      const link = this.dom.window.document.querySelector('a[href="#tabActions"]') as unknown as HTMLElement
-      link.removeAttribute('href')
+      const link = this.dom.window.document.querySelector<HTMLElement>('a[href="#tabActions"]')
+      link?.removeAttribute('href')
       const event = new this.dom.window.MouseEvent('click')
-      link.parentElement?.dispatchEvent(event)
-      expect(link.getAttribute('href')).to.equal(null)
+      link?.parentElement?.dispatchEvent(event)
+      expect(link?.getAttribute('href')).to.equal(null)
       expect(spy.calledWith('')).to.equal(true)
     } finally {
       spy.restore()

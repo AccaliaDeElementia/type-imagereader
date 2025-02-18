@@ -6,7 +6,7 @@
     "prebuild": "npm run lint",
     "build": "tsc --build tsconfig.json",
     "pretty": "prettier . --write",
-    "prettyCheck": "prettier . --write",
+    "prettyCheck": "prettier . --write --log-level=warn",
     "prelint": "npm run prettyCheck",
     "lint": "eslint .",
     "start": "DEBUG='type-imagereader:*' ts-node .",

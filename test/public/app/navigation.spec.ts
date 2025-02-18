@@ -15,6 +15,7 @@ import type { Data } from '../../../public/scripts/app/navigation'
 import { Net } from '../../../public/scripts/app/net'
 import assert from 'assert'
 import { Pictures } from '../../../public/scripts/app/pictures'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -725,7 +726,7 @@ abstract class BaseNavigationTests extends PubSub {
     })
     this.document = this.dom.window.document
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
@@ -1070,7 +1071,7 @@ export class AppnavigationLoadDataTests extends BaseNavigationTests {
 
     expect(
       this.PublishSpy.getCalls()
-        .map((c) => c.args[1] as string)
+        .map((c) => ForceCastTo<string>(c.args[1]))
         .filter((signal) => signal === 'LOADING:ERROR'),
     ).to.deep.equal([])
   }

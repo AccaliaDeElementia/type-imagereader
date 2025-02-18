@@ -14,6 +14,7 @@ import {
   Functions,
   isWeatherResults,
 } from '../../../public/scripts/slideshow/weather'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -340,7 +341,7 @@ export class SlideshowWeatherTests {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,
@@ -392,9 +393,9 @@ export class SlideshowWeatherTests {
       temp: undefined,
     }
     await LocalWeatherUpdater.updateFn()
-    const base = this.dom.window.document.querySelector('.localweather') as unknown as HTMLElement
+    const base = this.dom.window.document.querySelector<HTMLElement>('.localweather')
     expect(base).to.not.equal(null)
-    expect(base.style.getPropertyValue('display')).to.equal('none')
+    expect(base?.style.getPropertyValue('display')).to.equal('none')
   }
 
   @test
@@ -403,9 +404,9 @@ export class SlideshowWeatherTests {
       temp: -273.15,
     }
     await LocalWeatherUpdater.updateFn()
-    const base = this.dom.window.document.querySelector('.localweather') as unknown as HTMLElement
+    const base = this.dom.window.document.querySelector<HTMLElement>('.localweather')
     expect(base).to.not.equal(null)
-    expect(base.style.getPropertyValue('display')).to.equal('flex')
+    expect(base?.style.getPropertyValue('display')).to.equal('flex')
   }
 
   @test
@@ -414,9 +415,9 @@ export class SlideshowWeatherTests {
       temp: -273.15,
     }
     await LocalWeatherUpdater.updateFn()
-    const base = this.dom.window.document.querySelector('.localweather .temp') as unknown as HTMLElement
+    const base = this.dom.window.document.querySelector<HTMLElement>('.localweather .temp')
     expect(base).to.not.equal(null)
-    expect(base.innerHTML).to.equal('-273.1°C')
+    expect(base?.innerHTML).to.equal('-273.1°C')
   }
 
   @test
@@ -425,8 +426,8 @@ export class SlideshowWeatherTests {
       description: undefined,
     }
     await LocalWeatherUpdater.updateFn()
-    const description = this.dom.window.document.querySelector('.localweather .desc') as unknown as HTMLElement
-    expect(description.style.getPropertyValue('display')).to.equal('none')
+    const description = this.dom.window.document.querySelector<HTMLElement>('.localweather .desc')
+    expect(description?.style.getPropertyValue('display')).to.equal('none')
   }
 
   @test
@@ -435,8 +436,8 @@ export class SlideshowWeatherTests {
       description: `data${Math.random()}`,
     }
     await LocalWeatherUpdater.updateFn()
-    const description = this.dom.window.document.querySelector('.localweather .desc') as unknown as HTMLElement
-    expect(description.style.getPropertyValue('display')).to.equal('flex')
+    const description = this.dom.window.document.querySelector<HTMLElement>('.localweather .desc')
+    expect(description?.style.getPropertyValue('display')).to.equal('flex')
   }
 
   @test
@@ -446,8 +447,8 @@ export class SlideshowWeatherTests {
       description: expected,
     }
     await LocalWeatherUpdater.updateFn()
-    const description = this.dom.window.document.querySelector('.localweather .desctext') as unknown as HTMLElement
-    expect(description.innerHTML).to.equal(expected)
+    const description = this.dom.window.document.querySelector<HTMLElement>('.localweather .desctext')
+    expect(description?.innerHTML).to.equal(expected)
   }
 
   @test
@@ -456,8 +457,8 @@ export class SlideshowWeatherTests {
       icon: undefined,
     }
     await LocalWeatherUpdater.updateFn()
-    const icon = this.dom.window.document.querySelector('.localweather .icon') as unknown as HTMLElement
-    expect(icon.style.getPropertyValue('display')).to.equal('none')
+    const icon = this.dom.window.document.querySelector<HTMLElement>('.localweather .icon')
+    expect(icon?.style.getPropertyValue('display')).to.equal('none')
   }
 
   @test
@@ -466,8 +467,8 @@ export class SlideshowWeatherTests {
       icon: 'sunnyDays',
     }
     await LocalWeatherUpdater.updateFn()
-    const icon = this.dom.window.document.querySelector('.localweather .icon') as unknown as HTMLElement
-    expect(icon.style.getPropertyValue('display')).to.equal('inline-block')
+    const icon = this.dom.window.document.querySelector<HTMLElement>('.localweather .icon')
+    expect(icon?.style.getPropertyValue('display')).to.equal('inline-block')
   }
 
   @test
@@ -477,8 +478,8 @@ export class SlideshowWeatherTests {
     }
     const expected = 'https://openweathermap.org/img/w/sunnyDays.png'
     await LocalWeatherUpdater.updateFn()
-    const icon = this.dom.window.document.querySelector('.localweather .icon') as unknown as HTMLElement
-    expect(icon.getAttribute('src')).to.equal(expected)
+    const icon = this.dom.window.document.querySelector<HTMLElement>('.localweather .icon')
+    expect(icon?.getAttribute('src')).to.equal(expected)
   }
 
   @test
@@ -487,17 +488,17 @@ export class SlideshowWeatherTests {
       icon: 'sunnyDays',
     }
     const expected = 'https://openweathermap.org/img/w/sunnyDays.png'
-    const icon = this.dom.window.document.querySelector('.localweather .icon') as unknown as HTMLElement
-    icon.setAttribute('src', expected)
+    const icon = this.dom.window.document.querySelector<HTMLElement>('.localweather .icon')
+    icon?.setAttribute('src', expected)
     await LocalWeatherUpdater.updateFn()
-    expect(icon.getAttribute('src')).to.equal(expected)
+    expect(icon?.getAttribute('src')).to.equal(expected)
   }
 
   @test
   async 'LocalWeatherUpdater gracefully handles missing base element'(): Promise<void> {
     this.fetchData = {}
-    const base = this.dom.window.document.querySelector('.localweather') as unknown as HTMLElement
-    base.remove()
+    const base = this.dom.window.document.querySelector<HTMLElement>('.localweather')
+    base?.remove()
     await LocalWeatherUpdater.updateFn()
     assert(true, 'This test passes if it does not throw error prior to this line')
   }
@@ -534,9 +535,9 @@ export class SlideshowWeatherTests {
       temp: undefined,
     }
     await WeatherUpdater.updateFn()
-    const base = this.dom.window.document.querySelector('.weather') as unknown as HTMLElement
+    const base = this.dom.window.document.querySelector<HTMLElement>('.weather')
     expect(base).to.not.equal(null)
-    expect(base.style.getPropertyValue('display')).to.equal('none')
+    expect(base?.style.getPropertyValue('display')).to.equal('none')
   }
 
   @test
@@ -545,9 +546,9 @@ export class SlideshowWeatherTests {
       temp: -273.15,
     }
     await WeatherUpdater.updateFn()
-    const base = this.dom.window.document.querySelector('.weather') as unknown as HTMLElement
+    const base = this.dom.window.document.querySelector<HTMLElement>('.weather')
     expect(base).to.not.equal(null)
-    expect(base.style.getPropertyValue('display')).to.equal('flex')
+    expect(base?.style.getPropertyValue('display')).to.equal('flex')
   }
 
   @test
@@ -556,9 +557,9 @@ export class SlideshowWeatherTests {
       temp: -273.15,
     }
     await WeatherUpdater.updateFn()
-    const base = this.dom.window.document.querySelector('.weather .temp') as unknown as HTMLElement
+    const base = this.dom.window.document.querySelector<HTMLElement>('.weather .temp')
     expect(base).to.not.equal(null)
-    expect(base.innerHTML).to.equal('-273.1°C')
+    expect(base?.innerHTML).to.equal('-273.1°C')
   }
 
   @test
@@ -567,8 +568,8 @@ export class SlideshowWeatherTests {
       description: undefined,
     }
     await WeatherUpdater.updateFn()
-    const description = this.dom.window.document.querySelector('.weather .desc') as unknown as HTMLElement
-    expect(description.style.getPropertyValue('display')).to.equal('none')
+    const description = this.dom.window.document.querySelector<HTMLElement>('.weather .desc')
+    expect(description?.style.getPropertyValue('display')).to.equal('none')
   }
 
   @test
@@ -577,8 +578,8 @@ export class SlideshowWeatherTests {
       description: `data${Math.random()}`,
     }
     await WeatherUpdater.updateFn()
-    const description = this.dom.window.document.querySelector('.weather .desc') as unknown as HTMLElement
-    expect(description.style.getPropertyValue('display')).to.equal('flex')
+    const description = this.dom.window.document.querySelector<HTMLElement>('.weather .desc')
+    expect(description?.style.getPropertyValue('display')).to.equal('flex')
   }
 
   @test
@@ -588,8 +589,8 @@ export class SlideshowWeatherTests {
       description: expected,
     }
     await WeatherUpdater.updateFn()
-    const description = this.dom.window.document.querySelector('.weather .desctext') as unknown as HTMLElement
-    expect(description.innerHTML).to.equal(expected)
+    const description = this.dom.window.document.querySelector<HTMLElement>('.weather .desctext')
+    expect(description?.innerHTML).to.equal(expected)
   }
 
   @test
@@ -598,8 +599,8 @@ export class SlideshowWeatherTests {
       icon: undefined,
     }
     await WeatherUpdater.updateFn()
-    const icon = this.dom.window.document.querySelector('.weather .icon') as unknown as HTMLElement
-    expect(icon.style.getPropertyValue('display')).to.equal('none')
+    const icon = this.dom.window.document.querySelector<HTMLElement>('.weather .icon')
+    expect(icon?.style.getPropertyValue('display')).to.equal('none')
   }
 
   @test
@@ -608,8 +609,8 @@ export class SlideshowWeatherTests {
       icon: 'sunnyDays',
     }
     await WeatherUpdater.updateFn()
-    const icon = this.dom.window.document.querySelector('.weather .icon') as unknown as HTMLElement
-    expect(icon.style.getPropertyValue('display')).to.equal('inline-block')
+    const icon = this.dom.window.document.querySelector<HTMLElement>('.weather .icon')
+    expect(icon?.style.getPropertyValue('display')).to.equal('inline-block')
   }
 
   @test
@@ -619,8 +620,8 @@ export class SlideshowWeatherTests {
     }
     const expected = 'https://openweathermap.org/img/w/sunnyDays.png'
     await WeatherUpdater.updateFn()
-    const icon = this.dom.window.document.querySelector('.weather .icon') as unknown as HTMLElement
-    expect(icon.getAttribute('src')).to.equal(expected)
+    const icon = this.dom.window.document.querySelector<HTMLElement>('.weather .icon')
+    expect(icon?.getAttribute('src')).to.equal(expected)
   }
 
   @test
@@ -629,10 +630,10 @@ export class SlideshowWeatherTests {
       icon: 'sunnyDays',
     }
     const expected = 'https://openweathermap.org/img/w/sunnyDays.png'
-    const icon = this.dom.window.document.querySelector('.weather .icon') as unknown as HTMLElement
-    icon.setAttribute('src', expected)
+    const icon = this.dom.window.document.querySelector<HTMLElement>('.weather .icon')
+    icon?.setAttribute('src', expected)
     await WeatherUpdater.updateFn()
-    expect(icon.getAttribute('src')).to.equal(expected)
+    expect(icon?.getAttribute('src')).to.equal(expected)
   }
 
   @test
@@ -652,8 +653,8 @@ export class SlideshowWeatherTests {
   @test
   async 'WeatherUpdater gracefully handles missing base element'(): Promise<void> {
     this.fetchData = {}
-    const base = this.dom.window.document.querySelector('.localweather') as unknown as HTMLElement
-    base.remove()
+    const base = this.dom.window.document.querySelector<HTMLElement>('.localweather')
+    base?.remove()
     await WeatherUpdater.updateFn()
     assert(true, 'This test passes if it does not throw error prior to this line')
   }

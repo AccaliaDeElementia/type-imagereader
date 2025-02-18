@@ -46,7 +46,6 @@ export default [
       '@typescript-eslint/no-unsafe-call': 'off', // TODO: Sinon asserts throw this a lot..... figure out a better way to implement those and avoid disabling this error
       '@typescript-eslint/no-unsafe-assignment': 'off', // TODO: Sinon asserts throw this a lot..... figure out a better way to implement those and avoid disabling this error
       '@typescript-eslint/no-unsafe-member-access': 'off', // TODO: Sinon asserts throw this a lot..... figure out a better way to implement those and avoid disabling this error
-      '@typescript-eslint/no-unsafe-type-assertion': 'off', // TODO: Type assertions for Knex and Debugger trigger this a bunch. figure out a better way to implement tests to avoid
     },
   },
   {

@@ -7,6 +7,15 @@ import * as sinon from 'sinon'
 import { Debouncer } from '../../utils/debounce'
 import assert from 'assert'
 
+function IsDebouncerTests(_: Debouncer): _ is DebouncerTests {
+  return true
+}
+
+function ToDebouncerTests(o: Debouncer): DebouncerTests {
+  if (IsDebouncerTests(o)) return o
+  throw new Error('Debugger is not DebuggerTests')
+}
+
 @suite
 export class DebouncerTests extends Debouncer {
   clock: sinon.SinonFakeTimers
@@ -63,7 +72,7 @@ export class DebouncerTests extends Debouncer {
   @test
   'static interval fires timers periodically'(): void {
     Debouncer.startTimers()
-    const object = Debouncer.create(200) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(200))
     object.debounce('foobar', async () => {
       await Promise.resolve()
     })
@@ -87,7 +96,7 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'create() creates Debouncer with default duration'(): void {
-    const object = Debouncer.create() as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create())
     expect(object).to.be.instanceOf(Debouncer)
     expect(object.cycleCount).to.equal(1)
   }
@@ -109,7 +118,7 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'doCycle() decrements pending debouncers'(): void {
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     object.debounce('foobar', async () => {
       await Promise.resolve()
     })
@@ -120,7 +129,7 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'doCycle() does not fire pending debouncers'(): void {
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     let fired = false
     object.debounce('foobar', async () => {
       fired = true
@@ -133,7 +142,7 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'doCycle() fires due debouncers'(): void {
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     let fired = false
     object.debounce('foobar', async () => {
       fired = true
@@ -151,7 +160,7 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'doCycle() removes due debouncers'(): void {
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     object.debounce('foobar', async () => {
       await Promise.resolve()
     })
@@ -167,7 +176,7 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'doCycle() handles due debouncers that reject'(): void {
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     object.debounce('foobar', async () => {
       await Promise.reject(new Error('OOOGA BOOGA!'))
     })
@@ -183,7 +192,7 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'doCycle() does not fire expired debouncers'(): void {
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     let fired = false
     object.debounce('foobar', async () => {
       fired = true
@@ -201,7 +210,7 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'doCycle() removes expired debouncers'(): void {
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     object.debounce('foobar', async () => {
       await Promise.resolve()
     })
@@ -217,25 +226,25 @@ export class DebouncerTests extends Debouncer {
 
   @test
   'constructor sets cycleCount'(): void {
-    const object = Debouncer.create(200) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(200))
     expect(object.cycleCount).to.equal(2)
   }
 
   @test
   'constructor sets cycleCount, rounding up'(): void {
-    const object = Debouncer.create(150) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(150))
     expect(object.cycleCount).to.equal(2)
   }
 
   @test
   'constructor sets cycleCount, not negative'(): void {
-    const object = Debouncer.create(-100) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(-100))
     expect(object.cycleCount).to.equal(1)
   }
 
   @test
   'constructor sets cycleCount, minimum one'(): void {
-    const object = Debouncer.create(0) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(0))
     expect(object.cycleCount).to.equal(1)
   }
 
@@ -246,7 +255,7 @@ export class DebouncerTests extends Debouncer {
       await Promise.resolve()
     }
 
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     expect(object.counters).to.have.length(0)
 
     object.debounce(key, fn)
@@ -267,7 +276,7 @@ export class DebouncerTests extends Debouncer {
       await Promise.resolve()
     }
 
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     object.debounce(key, replaced)
     expect(object.counters).to.have.length(1)
 
@@ -289,7 +298,7 @@ export class DebouncerTests extends Debouncer {
       await Promise.resolve()
     }
 
-    const object = Debouncer.create(500) as DebouncerTests
+    const object = ToDebouncerTests(Debouncer.create(500))
     object.debounce(key, replaced)
     const counter = object.counters[0]
     assert(counter != null, 'counter must have a value')

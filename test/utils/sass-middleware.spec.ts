@@ -5,11 +5,11 @@ import { suite, test } from '@testdeck/mocha'
 import type Sinon from 'sinon'
 import * as sinon from 'sinon'
 
-import type { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import sassMiddleware, { Imports, Functions } from '../../utils/sass-middleware'
 import assert from 'assert'
+import { StubToResponse, StubToRequest } from '../testutils/TypeGuards'
 
 @suite
 export class SassMiddlewareCompileCssTests {
@@ -485,8 +485,8 @@ export class SassMiddlewareTests {
     send: sinon.stub().returnsThis(),
   }
 
-  FakeRequest = this.StubRequest as unknown as Request
-  FakeResponse = this.StubResponse as unknown as Response
+  FakeRequest = StubToRequest(this.StubRequest)
+  FakeResponse = StubToResponse(this.StubResponse)
 
   CompileAndCacheStub?: Sinon.SinonStub
   CompileFolderStub?: Sinon.SinonStub

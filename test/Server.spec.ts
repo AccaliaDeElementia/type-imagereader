@@ -21,13 +21,12 @@ import { getRouter as getWeatherRouter } from '../routes/weather'
 
 import start, { Functions, Routers, Imports } from '../Server'
 import assert from 'assert'
+import { ForceCastTo } from './testutils/TypeGuards'
 
 @suite
 export class ServerCreateAppTests {
-  HttpServerInstanceFake = { http: Math.random() } as unknown as HttpServer
-  WebSocketServerInstanceFake = {
-    socketio: Math.random(),
-  } as unknown as WebSocketServer
+  HttpServerInstanceFake = ForceCastTo<HttpServer>({ http: Math.random() })
+  WebSocketServerInstanceFake = ForceCastTo<WebSocketServer>({ socketio: Math.random() })
 
   ExpressStub?: Sinon.SinonStub
   ExpressInstanceStub = {
@@ -37,7 +36,7 @@ export class ServerCreateAppTests {
   WebSocketServerStub?: Sinon.SinonStub
 
   before(): void {
-    this.ExpressStub = sinon.stub(Imports, 'express').returns(this.ExpressInstanceStub as unknown as Express)
+    this.ExpressStub = sinon.stub(Imports, 'express').returns(ForceCastTo<Express>(this.ExpressInstanceStub))
     this.WebSocketServerStub = sinon.stub(Imports, 'WebSocketServer').returns(this.WebSocketServerInstanceFake)
   }
 
@@ -110,9 +109,9 @@ export class ServerRegisterRoutersTests {
     use: sinon.stub(),
   }
 
-  AppFake = this.AppStub as unknown as Express
-  ServerFake = { webserver: Math.random() } as unknown as HttpServer
-  WebSocketsFake = { websockets: Math.random() } as unknown as WebSocketServer
+  AppFake = ForceCastTo<Express>(this.AppStub)
+  ServerFake = ForceCastTo<HttpServer>({ webserver: Math.random() })
+  WebSocketsFake = ForceCastTo<WebSocketServer>({ websockets: Math.random() })
 
   RootRouteStub?: Sinon.SinonStub
   ApiRouteStub?: Sinon.SinonStub
@@ -223,7 +222,7 @@ export class ServerConfigureLoggingAndErrorsTests {
     use: sinon.stub(),
   }
 
-  AppFake = this.AppStub as unknown as Express
+  AppFake = ForceCastTo<Express>(this.AppStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -238,7 +237,7 @@ export class ServerConfigureLoggingAndErrorsTests {
     // Save and replace as stubbing causes unwanted deprication warning due to how the stub replaces part of morgan
     this.MorganOrig = Imports.morgan
     this.MorganStub = sinon.stub()
-    Imports.morgan = this.MorganStub as unknown as typeof morgan
+    Imports.morgan = ForceCastTo<typeof morgan>(this.MorganStub)
     this.HelmetStub = sinon.stub(Imports, 'helmet')
     delete process.env.NODE_ENV
   }
@@ -337,7 +336,7 @@ export class ServerRegisterViewsAndMiddleware {
     set: sinon.stub(),
   }
 
-  AppFake = this.AppStub as unknown as Express
+  AppFake = ForceCastTo<Express>(this.AppStub)
 
   before(): void {
     this.SassMiddlewareStub = sinon.stub(Imports, 'sassMiddleware')
@@ -368,13 +367,13 @@ export class ServerRegisterViewsAndMiddleware {
     const sass = sinon.stub().resolves()
     this.SassMiddlewareStub?.returns(sass)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.firstCall.args[0] as
-      | ((req: Request, res: Response, next: NextFunction) => void)
-      | undefined
+    const fn = ForceCastTo<((req: Request, res: Response, next: NextFunction) => void) | undefined>(
+      this.AppStub.use.firstCall.args[0],
+    )
     assert(fn !== undefined)
-    const req = {} as unknown as Request
-    const res = {} as unknown as Response
-    const next = {} as unknown as NextFunction
+    const req = ForceCastTo<Request>({})
+    const res = ForceCastTo<Response>({})
+    const next = ForceCastTo<NextFunction>({})
     fn(req, res, next)
     expect(sass.calledWithExactly(req, res, next)).to.equal(true)
     expect(this.SassMiddlewareStub?.callCount).to.equal(1)
@@ -391,14 +390,14 @@ export class ServerRegisterViewsAndMiddleware {
     const sass = sinon.stub().rejects(new Error('FOO!'))
     this.SassMiddlewareStub?.returns(sass)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.firstCall.args[0] as
-      | ((req: Request, res: Response, next: NextFunction) => void)
-      | undefined
+    const fn = ForceCastTo<((req: Request, res: Response, next: NextFunction) => void) | undefined>(
+      this.AppStub.use.firstCall.args[0],
+    )
     assert(fn !== undefined)
-    const req = {} as unknown as Request
-    const res = {} as unknown as Response
+    const req = ForceCastTo<Request>({})
+    const res = ForceCastTo<Response>({})
     const next = sinon.stub()
-    fn(req, res, next as unknown as NextFunction)
+    fn(req, res, ForceCastTo<NextFunction>(next))
     await Promise.resolve()
     expect(sass.calledWithExactly(req, res, next)).to.equal(true)
     expect(next.callCount).to.equal(1)
@@ -409,13 +408,13 @@ export class ServerRegisterViewsAndMiddleware {
     const browserify = sinon.stub().resolves()
     this.BrowerifyMiddlewareStub?.returns(browserify)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.secondCall.args[0] as
-      | ((req: Request, res: Response, next: NextFunction) => void)
-      | undefined
+    const fn = ForceCastTo<((req: Request, res: Response, next: NextFunction) => void) | undefined>(
+      this.AppStub.use.secondCall.args[0],
+    )
     assert(fn !== undefined)
-    const req = {} as unknown as Request
-    const res = {} as unknown as Response
-    const next = {} as unknown as NextFunction
+    const req = ForceCastTo<Request>({})
+    const res = ForceCastTo<Response>({})
+    const next = ForceCastTo<NextFunction>({})
     fn(req, res, next)
     expect(browserify.calledWithExactly(req, res, next)).to.equal(true)
     expect(this.BrowerifyMiddlewareStub?.callCount).to.equal(1)
@@ -432,14 +431,14 @@ export class ServerRegisterViewsAndMiddleware {
     const browserify = sinon.stub().rejects(new Error('FOO!'))
     this.BrowerifyMiddlewareStub?.returns(browserify)
     Functions.RegisterViewsAndMiddleware(this.AppFake)
-    const fn = this.AppStub.use.secondCall.args[0] as
-      | ((req: Request, res: Response, next: NextFunction) => void)
-      | undefined
+    const fn = ForceCastTo<((req: Request, res: Response, next: NextFunction) => void) | undefined>(
+      this.AppStub.use.secondCall.args[0],
+    )
     assert(fn !== undefined)
-    const req = {} as unknown as Request
-    const res = {} as unknown as Response
+    const req = ForceCastTo<Request>({})
+    const res = ForceCastTo<Response>({})
     const next = sinon.stub()
-    fn(req, res, next as unknown as NextFunction)
+    fn(req, res, ForceCastTo<NextFunction>(next))
     await Promise.resolve()
     expect(browserify.calledWithExactly(req, res, next)).to.equal(true)
     expect(next.callCount).to.equal(1)
@@ -467,7 +466,7 @@ export class ServerConfigureBaseAppTests {
     use: sinon.stub(),
   }
 
-  AppFake = this.AppStub as unknown as Express
+  AppFake = ForceCastTo<Express>(this.AppStub)
 
   before(): void {
     this.JsonifyStub = sinon.stub(express, 'json')
@@ -530,9 +529,9 @@ export class ServerStartTests {
     get: sinon.stub(),
   }
 
-  AppFake = this.AppStub as unknown as Express
-  ServerFake = { webserver: Math.random() } as unknown as HttpServer
-  WebSocketsFake = { websockets: Math.random() } as unknown as WebSocketServer
+  AppFake = ForceCastTo<Express>(this.AppStub)
+  ServerFake = ForceCastTo<HttpServer>({ webserver: Math.random() })
+  WebSocketsFake = ForceCastTo<WebSocketServer>({ websockets: Math.random() })
 
   CreateAppStub?: Sinon.SinonStub
   ConfigureBaseAppStub?: Sinon.SinonStub

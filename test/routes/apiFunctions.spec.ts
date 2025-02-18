@@ -9,6 +9,7 @@ import type { Knex } from 'knex'
 
 import { Functions, ModCount, UriSafePath } from '../../routes/apiFunctions'
 import assert from 'assert'
+import { ForceCastTo, StubToKnex } from '../testutils/TypeGuards'
 
 @suite
 export class ApiModCountTests {
@@ -154,7 +155,7 @@ export class ApiGetChildFoldersTests {
   }
 
   KnexStub = sinon.stub().returns(this.KnexInstance)
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   @test
   async 'it should select data from folders'(): Promise<void> {
@@ -321,7 +322,7 @@ export class ApiGetChildPicturesTests {
   }
 
   KnexStub = sinon.stub().returns(this.KnexInstance)
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   @test
   async 'it should select data from pictures'(): Promise<void> {
@@ -450,7 +451,7 @@ export class ApiGetDirectionFolderTests {
 
   KnexStub = sinon.stub().onFirstCall().returns(this.KnexFirstCall).onSecondCall().returns(this.KnexSecondCall)
 
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   RawStub = sinon.stub()
 
@@ -797,7 +798,7 @@ export class ApiGetDirectionFolderTests {
 
 @suite
 export class ApiGetNextFolderTests {
-  KnexFake = { Knex: Math.random() } as unknown as Knex
+  KnexFake = StubToKnex({ Knex: Math.random() })
   GetDirectionFolderStub?: Sinon.SinonStub
 
   before(): void {
@@ -849,7 +850,7 @@ export class ApiGetNextFolderTests {
 
 @suite
 export class ApiGetPreviousFolderTests {
-  KnexFake = { Knex: Math.random() } as unknown as Knex
+  KnexFake = StubToKnex({ Knex: Math.random() })
   GetDirectionFolderStub?: Sinon.SinonStub
 
   before(): void {
@@ -908,7 +909,7 @@ export class ApiGetFolderTests {
   }
 
   KnexStub = sinon.stub().returns(this.KnexInstance)
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   @test
   async 'it should select from folders table'(): Promise<void> {
@@ -1133,7 +1134,7 @@ export class ApiGetBookmarksTests {
   }
 
   KnexStub = sinon.stub().returns(this.KnexInstance)
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   @test
   async 'it should select results from bookmarks'(): Promise<void> {
@@ -1240,7 +1241,7 @@ export class ApiGetListingTests {
   GetPicturesStub?: Sinon.SinonStub
   GetBookmarksStub?: Sinon.SinonStub
 
-  KnexFake = { Knex: Math.random() } as unknown as Knex
+  KnexFake = StubToKnex({ Knex: Math.random() })
 
   before(): void {
     ApiModCountTests.ModCount.modCount = 32_768
@@ -1551,19 +1552,19 @@ export class ApiSetLatestPictureTests {
   queryResults: TestPicture[] = []
 
   GetKnexInstance(): Knex {
-    return {
+    return StubToKnex({
       select: sinon.stub().returnsThis(),
       increment: sinon.stub().returnsThis(),
       update: sinon.stub().returnsThis(),
       whereIn: sinon.stub().resolves([]),
       orWhere: sinon.stub().resolves([]),
       where: sinon.stub().callsFake(async (): Promise<TestPicture[]> => await Promise.resolve(this.queryResults)),
-    } as unknown as Knex
+    })
   }
 
   KnexStub = sinon.stub().callsFake(this.GetKnexInstance.bind(this))
 
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   GetPictureFoldersStub?: Sinon.SinonStub
 
@@ -1580,7 +1581,7 @@ export class ApiSetLatestPictureTests {
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
-    const knexInstance = this.KnexStub.firstCall.returnValue as KnexStub | undefined
+    const knexInstance = ForceCastTo<KnexStub | undefined>(this.KnexStub.firstCall.returnValue)
     assert(knexInstance !== undefined)
     expect(knexInstance.select.callCount).to.equal(1)
     expect(knexInstance.select.firstCall.args).to.deep.equal(['seen'])
@@ -1607,7 +1608,7 @@ export class ApiSetLatestPictureTests {
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(2)
     expect(this.KnexStub.lastCall.args).to.deep.equal(['folders'])
-    const knexInstance = this.KnexStub.lastCall.returnValue as KnexStub | undefined
+    const knexInstance = ForceCastTo<KnexStub | undefined>(this.KnexStub.lastCall.returnValue)
     assert(knexInstance !== undefined)
     expect(knexInstance.update.callCount).to.equal(1)
     expect(knexInstance.update.firstCall.args).to.deep.equal([{ current: '/foo/bar/image.pdf' }])
@@ -1679,7 +1680,7 @@ export class ApiMarkFolderReadTests {
   queryResults: number | null = null
 
   GetKnexInstance(): Knex {
-    return {
+    return StubToKnex({
       select: sinon.stub().returnsThis(),
       increment: sinon.stub().returnsThis(),
       update: sinon.stub().returnsThis(),
@@ -1687,14 +1688,14 @@ export class ApiMarkFolderReadTests {
       where: sinon.stub().returnsThis(),
       andWhere: sinon.stub().callsFake(async (): Promise<number | null> => await Promise.resolve(this.queryResults)),
       orWhere: sinon.stub().resolves([]),
-    } as unknown as Knex
+    })
   }
 
   KnexStub = sinon.stub().callsFake(this.GetKnexInstance.bind(this))
 
   KnexRawStub = sinon.stub()
 
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   GetPictureFoldersStub?: Sinon.SinonStub
 
@@ -1770,7 +1771,7 @@ export class ApiMarkFolderUnreadTests {
   queryResults = -1
 
   GetKnexInstance(): Knex {
-    return {
+    return StubToKnex({
       select: sinon.stub().returnsThis(),
       increment: sinon.stub().returnsThis(),
       update: sinon.stub().returnsThis(),
@@ -1778,12 +1779,12 @@ export class ApiMarkFolderUnreadTests {
       where: sinon.stub().returnsThis(),
       andWhere: sinon.stub().callsFake(async (): Promise<number> => await Promise.resolve(this.queryResults)),
       orWhere: sinon.stub().resolves([]),
-    } as unknown as Knex
+    })
   }
 
   KnexStub = sinon.stub().callsFake(this.GetKnexInstance.bind(this))
 
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   GetPictureFoldersStub?: Sinon.SinonStub
 
@@ -1861,7 +1862,7 @@ export class ApiAddBookmarkstests {
 
   KnexStub = sinon.stub().returns(this.KnexInstance)
 
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   @test
   async 'it should query on bookmarks table'(): Promise<void> {
@@ -1896,7 +1897,7 @@ export class ApiRemoveBookmarkstests {
 
   KnexStub = sinon.stub().returns(this.KnexInstance)
 
-  KnexFake = this.KnexStub as unknown as Knex
+  KnexFake = StubToKnex(this.KnexStub)
 
   @test
   async 'it should query on bookmarks table'(): Promise<void> {

@@ -9,6 +9,7 @@ import { render } from 'pug'
 
 import { Functions, WeatherUpdater } from '../../../public/scripts/slideshow/weather'
 import OverlayUpdater from '../../../public/scripts/slideshow/overlay'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -50,7 +51,7 @@ export class SlideshowOverlayTests {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,
@@ -135,8 +136,8 @@ export class SlideshowOverlayTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
-    expect(overlay.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
+    const overlay = this.dom.window.document.querySelector<HTMLElement>('.overlay')
+    expect(overlay?.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
   }
 
   @test
@@ -152,13 +153,13 @@ export class SlideshowOverlayTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
-    expect(overlay.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
+    const overlay = this.dom.window.document.querySelector<HTMLElement>('.overlay')
+    expect(overlay?.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
     for (let i = 1; i <= 15; i++) {
       const offset = (15 - i) / 15
       this.clock.tick(60 * 1000)
       await OverlayUpdater.updateFn()
-      expect(overlay.style.getPropertyValue('opacity')).to.equal(`${maxOpacity * offset}`)
+      expect(overlay?.style.getPropertyValue('opacity')).to.equal(`${maxOpacity * offset}`)
     }
   }
 
@@ -175,8 +176,8 @@ export class SlideshowOverlayTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
-    expect(overlay.style.getPropertyValue('opacity')).to.equal('0')
+    const overlay = this.dom.window.document.querySelector<HTMLElement>('.overlay')
+    expect(overlay?.style.getPropertyValue('opacity')).to.equal('0')
   }
 
   @test
@@ -192,13 +193,13 @@ export class SlideshowOverlayTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
-    expect(overlay.style.getPropertyValue('opacity')).to.equal('0')
+    const overlay = this.dom.window.document.querySelector<HTMLElement>('.overlay')
+    expect(overlay?.style.getPropertyValue('opacity')).to.equal('0')
     for (let i = 1; i <= 15; i++) {
       const offset = i / 15
       this.clock.tick(60 * 1000)
       await OverlayUpdater.updateFn()
-      expect(overlay.style.getPropertyValue('opacity')).to.equal(`${maxOpacity * offset}`)
+      expect(overlay?.style.getPropertyValue('opacity')).to.equal(`${maxOpacity * offset}`)
     }
   }
 
@@ -215,7 +216,7 @@ export class SlideshowOverlayTests {
     })
     // Test begins
     await OverlayUpdater.updateFn()
-    const overlay = this.dom.window.document.querySelector('.overlay') as unknown as HTMLElement
-    expect(overlay.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
+    const overlay = this.dom.window.document.querySelector<HTMLElement>('.overlay')
+    expect(overlay?.style.getPropertyValue('opacity')).to.equal(`${maxOpacity}`)
   }
 }

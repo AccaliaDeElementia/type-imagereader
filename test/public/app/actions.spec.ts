@@ -10,6 +10,7 @@ import { render } from 'pug'
 import { PubSub } from '../../../public/scripts/app/pubsub'
 import { Actions, isNavigateData } from '../../../public/scripts/app/actions'
 import assert from 'assert'
+import { AssertVoidFn, ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -134,7 +135,7 @@ class BaseActionsTests extends PubSub {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
     PubSub.subscribers = {}
@@ -883,8 +884,7 @@ export class AppActionsInitTests extends BaseActionsTests {
     const spy = sinon.spy(this.dom.window, 'addEventListener')
     try {
       Actions.Init()
-      const fn = spy.firstCall.args[1] as (() => void) | undefined
-      assert(fn !== undefined)
+      const fn = AssertVoidFn(spy.firstCall.args[1])
       fn()
       expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
     } finally {
@@ -897,8 +897,7 @@ export class AppActionsInitTests extends BaseActionsTests {
     const spy = sinon.spy(this.dom.window, 'addEventListener')
     try {
       Actions.Init()
-      const fn = spy.firstCall.args[1] as (() => void) | undefined
-      assert(fn !== undefined)
+      const fn = AssertVoidFn(spy.firstCall.args[1])
       const readspy = sinon.stub(Actions, 'ReadGamepad')
       try {
         fn()

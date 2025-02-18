@@ -12,6 +12,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { WebSockets } from '../../../public/scripts/slideshow/sockets'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 type Websocket = Socket
 
@@ -47,7 +48,7 @@ export class SlideshowSocketsTests extends WebSockets {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,
@@ -75,11 +76,13 @@ export class SlideshowSocketsTests extends WebSockets {
 
   async connectSocket(onConnect: OnWebsocketConnect): Promise<void> {
     const result = (async () => {
-      const socket = (await promisify((cb) =>
-        this.socketServer.on('connection', (socket) => {
-          cb(null, socket)
-        }),
-      )()) as Websocket
+      const socket = ForceCastTo<Websocket>(
+        await promisify((cb) =>
+          this.socketServer.on('connection', (socket) => {
+            cb(null, socket)
+          }),
+        )(),
+      )
       await onConnect(socket)
     })()
     WebSockets.connect()
@@ -145,11 +148,13 @@ export class SlideshowSocketsTests extends WebSockets {
       url: 'http://127.0.0.1:2999/slideshow',
     })
     await this.connectSocket(async (socket) => {
-      connectedRoom = (await promisify((cb) =>
-        socket.on('join-slideshow', (value) => {
-          cb(null, value)
-        }),
-      )()) as string
+      connectedRoom = ForceCastTo<string | undefined>(
+        await promisify((cb) =>
+          socket.on('join-slideshow', (value) => {
+            cb(null, value)
+          }),
+        )(),
+      )
     })
     expect(connectedRoom).to.equal('/')
   }
@@ -162,11 +167,13 @@ export class SlideshowSocketsTests extends WebSockets {
       url: 'http://127.0.0.1:2999/slideshow' + expectedPath,
     })
     await this.connectSocket(async (socket) => {
-      connectedRoom = (await promisify((cb) =>
-        socket.on('join-slideshow', (value) => {
-          cb(null, value)
-        }),
-      )()) as string
+      connectedRoom = ForceCastTo<string | undefined>(
+        await promisify((cb) =>
+          socket.on('join-slideshow', (value) => {
+            cb(null, value)
+          }),
+        )(),
+      )
     })
     expect(connectedRoom).to.equal(expectedPath)
   }
@@ -464,9 +471,9 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2,
     })
     await this.connectSocket(async (socket) => {
-      global.window.visualViewport = {
+      global.window.visualViewport = ForceCastTo<VisualViewport>({
         scale: 1.5,
-      } as unknown as VisualViewport
+      })
       global.document.body.dispatchEvent(event)
       await promisify((cb) =>
         socket.on('notify-done', () => {
@@ -484,9 +491,9 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2,
     })
     await this.connectSocket(async (socket) => {
-      global.window.visualViewport = {
+      global.window.visualViewport = ForceCastTo<VisualViewport>({
         scale: 1.5,
-      } as unknown as VisualViewport
+      })
       global.document.body.dispatchEvent(event)
       await promisify((cb) =>
         socket.on('notify-done', () => {
@@ -502,13 +509,13 @@ export class SlideshowSocketsTests extends WebSockets {
       clientX: global.window.innerWidth * (5 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    global.window.visualViewport = {
+    global.window.visualViewport = ForceCastTo<VisualViewport>({
       scale: 1,
-    } as unknown as VisualViewport
+    })
     await this.connectSocket(async (socket) => {
-      global.window.visualViewport = {
+      global.window.visualViewport = ForceCastTo<VisualViewport>({
         scale: 1.5,
-      } as unknown as VisualViewport
+      })
       global.document.body.dispatchEvent(event)
       await promisify((cb) =>
         socket.on('notify-done', () => {

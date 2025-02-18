@@ -5,8 +5,8 @@ import { suite, test } from '@testdeck/mocha'
 import type Sinon from 'sinon'
 import * as sinon from 'sinon'
 
-import type { Knex } from 'knex'
 import persistance, { Functions, Imports, isDictionary, isKnexOptions, type KnexOptions } from '../../utils/persistance'
+import { StubToKnex } from '../testutils/TypeGuards'
 
 @suite
 export class PersistanceIsKnexOptions {
@@ -1078,10 +1078,7 @@ export class PersistanceInitializeTests {
 
   before(): void {
     Imports.Initializer = undefined
-    this.StubKnex = sinon
-      .stub(Imports, 'knex')
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Dont' break on Knex.... yet
-      .returns(this.StubKnexInstance as unknown as Knex<{}, unknown>)
+    this.StubKnex = sinon.stub(Imports, 'knex').returns(StubToKnex(this.StubKnexInstance))
     this.StubEnvironment = sinon.stub(Functions, 'GetKnexConfig').resolves(this.FakeEnvironment)
   }
 
@@ -1092,7 +1089,7 @@ export class PersistanceInitializeTests {
 
   @test
   async 'it should return stored initializer when one is already created'(): Promise<void> {
-    const promise = Promise.resolve(this.StubKnexInstance as unknown as Knex)
+    const promise = Promise.resolve(StubToKnex(this.StubKnexInstance))
     Imports.Initializer = promise
     expect(await persistance.initialize()).to.equal(this.StubKnexInstance)
     expect(this.StubKnex?.called).to.equal(false)

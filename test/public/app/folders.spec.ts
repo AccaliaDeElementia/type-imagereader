@@ -11,6 +11,7 @@ import { PubSub } from '../../../public/scripts/app/pubsub'
 import type { Folder } from '../../../public/scripts/app/folders'
 import { Folders, isData, isFolder } from '../../../public/scripts/app/folders'
 import assert from 'assert'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -449,7 +450,7 @@ abstract class BaseFolderTests extends PubSub {
     })
     this.document = this.dom.window.document
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
@@ -721,7 +722,9 @@ export class FoldersBuildCardTests extends BaseFolderTests {
 
   before(): void {
     super.before()
-    this.FolderCard = (document.querySelector('#FolderCard') as unknown as HTMLTemplateElement).content
+    const template = document.querySelector<HTMLTemplateElement>('#FolderCard')
+    assert(template !== null)
+    this.FolderCard = template.content
     Folders.FolderCard = this.FolderCard
   }
 

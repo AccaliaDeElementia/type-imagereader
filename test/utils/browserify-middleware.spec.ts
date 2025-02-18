@@ -5,10 +5,10 @@ import { suite, test } from '@testdeck/mocha'
 import type Sinon from 'sinon'
 import * as sinon from 'sinon'
 
-import type { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import browserifyMiddleware, { Imports, Functions } from '../../utils/browserify-middleware'
+import { StubToRequest, StubToResponse } from '../testutils/TypeGuards'
 
 @suite
 export class BrowserifyMiddlewareGetPathsTests {
@@ -382,7 +382,7 @@ export class BrowserifyMiddlewareSendScriptTests {
     send: sinon.stub().returnsThis(),
   }
 
-  FakeResponse = this.StubResponse as unknown as Response
+  FakeResponse = StubToResponse(this.StubResponse)
   CompileAndCacheStub?: Sinon.SinonStub
 
   before(): void {
@@ -858,8 +858,8 @@ export class BrowserifyMiddlewareTests {
     render: sinon.stub().returnsThis(),
   }
 
-  FakeRequest = this.StubRequest as unknown as Request
-  FakeResponse = this.StubResponse as unknown as Response
+  FakeRequest = StubToRequest(this.StubRequest)
+  FakeResponse = StubToResponse(this.StubResponse)
 
   WatchAllFoldersStub?: Sinon.SinonStub
   SendScriptStub?: Sinon.SinonStub

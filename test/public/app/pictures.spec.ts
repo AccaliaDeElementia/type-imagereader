@@ -16,6 +16,7 @@ import type { PageSelector, Picture } from '../../../public/scripts/app/pictures
 import { Loading } from '../../../public/scripts/app/loading'
 import { Navigation } from '../../../public/scripts/app/navigation'
 import assert from 'assert'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -667,7 +668,7 @@ abstract class BaseAppPicturesTests extends PubSub {
     })
     this.document = this.dom.window.document
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
@@ -729,10 +730,10 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
     PubSub.Subscribe('Loading:Hide', () => {
       hidden = true
     })
-    const image = this.document.querySelector('#bigImage img') as unknown as HTMLElement
+    const image = this.document.querySelector<HTMLElement>('#bigImage img')
     const event = new this.dom.window.Event('load')
     expect(hidden).to.equal(false)
-    image.dispatchEvent(event)
+    image?.dispatchEvent(event)
     expect(hidden).to.equal(true)
   }
 
@@ -742,7 +743,8 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
     PubSub.Subscribe('Loading:Error', () => {
       hidden = true
     })
-    const image = this.document.querySelector('#bigImage img') as unknown as HTMLImageElement
+    const image = this.document.querySelector<HTMLImageElement>('#bigImage img')
+    assert(image !== null)
     const event = new this.dom.window.Event('error')
     image.src = 'foobar'
     expect(hidden).to.equal(false)
@@ -756,7 +758,8 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
     PubSub.Subscribe('Loading:Error', () => {
       hidden = true
     })
-    const image = this.document.querySelector('#bigImage img') as unknown as HTMLImageElement
+    const image = this.document.querySelector<HTMLImageElement>('#bigImage img')
+    assert(image !== null)
     const event = new this.dom.window.Event('error')
     expect(hidden).to.equal(false)
     image.dispatchEvent(event)

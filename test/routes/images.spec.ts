@@ -15,6 +15,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { getRouter, ImageData, ImageCache, Imports, Functions, CacheStorage } from '../../routes/images'
 import assert from 'assert'
+import { StubToRequest, StubToRequestHandler, StubToResponse, ForceCastTo } from '../testutils/TypeGuards'
 
 @suite
 export class ImageCacheTests {
@@ -45,7 +46,7 @@ export class ImageCacheTests {
       path: '/foo.png',
       width: 5,
       height: 5,
-      image: expected as unknown as Promise<ImageData>,
+      image: ForceCastTo<Promise<ImageData>>(expected),
     }
     expect(await cache.fetch('/foo.png', 5, 5)).to.equal(expected)
   }
@@ -59,7 +60,7 @@ export class ImageCacheTests {
       path: '/foo.png',
       width: 50,
       height: 50,
-      image: expected as unknown as Promise<ImageData>,
+      image: ForceCastTo<Promise<ImageData>>(expected),
     }
     expect(await cache.fetch('/foo.png', 5, 5)).to.equal(expected)
   }
@@ -73,7 +74,7 @@ export class ImageCacheTests {
       path: '/foo.png',
       width: 5,
       height: 5,
-      image: expected as unknown as Promise<ImageData>,
+      image: ForceCastTo<Promise<ImageData>>(expected),
     }
     await cache.fetch('/foo.png', 5, 5)
     expect(spy.called).to.equal(false)
@@ -88,7 +89,7 @@ export class ImageCacheTests {
       path: '/foo.png',
       width: 50,
       height: 50,
-      image: expected as unknown as Promise<ImageData>,
+      image: ForceCastTo<Promise<ImageData>>(expected),
     }
     await cache.fetch('/foo.png', 5, 5)
     expect(spy.called).to.equal(false)
@@ -103,14 +104,14 @@ export class ImageCacheTests {
         path: '/bar.png',
         width: i,
         height: i,
-        image: null as unknown as Promise<ImageData>,
+        image: ForceCastTo<Promise<ImageData>>(null),
       }
     }
     const expected = {
       path: '/foo.png',
       width: 5,
       height: 5,
-      image: Promise.resolve(null) as unknown as Promise<ImageData>,
+      image: ForceCastTo<Promise<ImageData>>(Promise.resolve(null)),
     }
     cache.items[10] = expected
     await cache.fetch('/foo.png', 5, 5)
@@ -122,7 +123,7 @@ export class ImageCacheTests {
 
   @test
   async 'it should create new cache item when not found'(): Promise<void> {
-    const expected = { Image: 55 } as unknown as ImageData
+    const expected = ForceCastTo<ImageData>({ Image: 55 })
     const spy = sinon.stub().resolves(expected)
     const cache = new ImageCache(spy)
     expect(await cache.fetch('/foo.png', 5, 5)).to.equal(expected)
@@ -169,7 +170,7 @@ export class ImageCacheTests {
         path: '/bar.png',
         width: i,
         height: i,
-        image: null as unknown as Promise<ImageData>,
+        image: ForceCastTo<Promise<ImageData>>(null),
       }
     }
     await cache.fetch('/foo.png', 5, 5)
@@ -394,7 +395,7 @@ export class ImagesRescaleImageTests {
   SharpStub?: Sinon.SinonStub
 
   before(): void {
-    this.SharpStub = sinon.stub(Imports, 'Sharp').returns(this.SharpInstanceStub as unknown as Sharp)
+    this.SharpStub = sinon.stub(Imports, 'Sharp').returns(ForceCastTo<Sharp>(this.SharpInstanceStub))
   }
 
   after(): void {
@@ -577,7 +578,7 @@ export class ImagesSendImageTests {
     send: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = this.ResponseStub as unknown as Response
+  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
 
   @test
   'it should set content-type for valid image'(): void {
@@ -696,13 +697,11 @@ interface MockedResponse {
   json: Sinon.SinonStub
 }
 
-type MockedRouter = (req: MockedRequest, resp: MockedResponse) => Promise<void>
-
 @suite
 export class ImagesGetRouterTests {
-  ApplicationFake = {} as unknown as Application
-  ServerFake = {} as unknown as Server
-  WebsocketsFake = {} as unknown as WebSocketServer
+  ApplicationFake = ForceCastTo<Application>({})
+  ServerFake = ForceCastTo<Server>({})
+  WebsocketsFake = ForceCastTo<WebSocketServer>({})
 
   RouterFake = {
     get: sinon.stub().returnsThis(),
@@ -732,8 +731,8 @@ export class ImagesGetRouterTests {
   SendImageStub?: Sinon.SinonStub
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
-    this.RouterStub = sinon.stub(Imports, 'Router').returns(this.RouterFake as unknown as Router)
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.RouterStub = sinon.stub(Imports, 'Router').returns(ForceCastTo<Router>(this.RouterFake))
     this.ReadImageStub = sinon.stub(Functions, 'ReadImage').resolves()
     this.RescaleImageStub = sinon.stub(Functions, 'RescaleImage').resolves()
     this.SendImageStub = sinon.stub(Functions, 'SendImage').resolves()
@@ -765,7 +764,7 @@ export class ImagesGetRouterTests {
 
   @test
   async 'it should create kiosk image cache'(): Promise<void> {
-    CacheStorage.kioskCache = null as unknown as ImageCache
+    CacheStorage.kioskCache = ForceCastTo<ImageCache>(null)
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(CacheStorage.kioskCache).to.not.equal(null)
     expect(CacheStorage.kioskCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
@@ -774,7 +773,7 @@ export class ImagesGetRouterTests {
 
   @test
   async 'it should create scaled image cache'(): Promise<void> {
-    CacheStorage.scaledCache = null as unknown as ImageCache
+    CacheStorage.scaledCache = ForceCastTo<ImageCache>(null)
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     expect(CacheStorage.scaledCache).to.not.equal(null)
     expect(CacheStorage.scaledCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
@@ -817,12 +816,12 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/full/*')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     this.RequestStub.params[0] = 'foo/bar.png'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -837,12 +836,12 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/full/*')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     this.RequestStub.params[0] = ''
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -857,14 +856,14 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/full/*')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
     this.ReadImageStub?.resolves(img)
 
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -882,7 +881,7 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/full/*')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
@@ -891,7 +890,7 @@ export class ImagesGetRouterTests {
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.body = 'REQUEST BODY'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.RescaleImageStub?.callCount).to.equal(0)
     expect(this.SendImageStub?.callCount).to.equal(0)
@@ -918,16 +917,16 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.params[0] = 'foo/bar.png'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -942,16 +941,16 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.params[0] = ''
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -966,17 +965,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.params.width = '1024'
     this.RequestStub.params.height = '768'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -993,15 +992,15 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -1018,17 +1017,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
-    this.RequestStub.params.width = undefined as unknown as string
-    await fn(this.RequestStub, this.ResponseStub)
+    this.RequestStub.params.width = ForceCastTo<string>(undefined)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1051,17 +1050,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.width = undefined
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1084,17 +1083,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.width = 'fish'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1117,17 +1116,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.width = '3.14159'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1150,17 +1149,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.width = '-100'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1183,17 +1182,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.width = '0'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1216,17 +1215,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.width = '0999'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1249,17 +1248,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
-    this.RequestStub.params.height = undefined as unknown as string
-    await fn(this.RequestStub, this.ResponseStub)
+    this.RequestStub.params.height = ForceCastTo<string>(undefined)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1282,17 +1281,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.height = undefined
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1315,17 +1314,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.height = 'fish'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1348,17 +1347,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.height = '3.14159'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1381,17 +1380,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.height = '-100'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1414,17 +1413,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.height = '0'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1447,17 +1446,17 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.scaledCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.params.height = '0999'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(0)
     expect(this.ResponseStub.status.callCount).to.equal(1)
@@ -1480,7 +1479,7 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
 
@@ -1490,7 +1489,7 @@ export class ImagesGetRouterTests {
 
     this.RequestStub.originalUrl = '/full/image.png'
     this.RequestStub.body = 'REQUEST BODY'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.RescaleImageStub?.callCount).to.equal(0)
     expect(this.SendImageStub?.callCount).to.equal(0)
@@ -1517,12 +1516,12 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/preview/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     this.RequestStub.params[0] = 'foo/bar.png'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -1537,12 +1536,12 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/preview/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     this.RequestStub.params[0] = ''
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ReadImageStub?.callCount).to.equal(1)
     expect(this.ReadImageStub?.firstCall.args).to.deep.equal(['/'])
@@ -1554,14 +1553,14 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/preview/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
     this.ReadImageStub?.resolves(img)
 
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.RescaleImageStub?.callCount).to.equal(1)
     expect(this.RescaleImageStub?.firstCall.args).to.have.lengthOf(4)
@@ -1577,14 +1576,14 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/preview/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
     this.ReadImageStub?.resolves(img)
 
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.SendImageStub?.callCount).to.equal(1)
     expect(this.SendImageStub?.firstCall.args).to.have.lengthOf(2)
@@ -1598,14 +1597,14 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/preview/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
     this.ReadImageStub?.resolves(img)
 
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -1618,7 +1617,7 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/preview/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
@@ -1627,7 +1626,7 @@ export class ImagesGetRouterTests {
 
     this.RequestStub.originalUrl = '/preview/image.png'
     this.RequestStub.body = 'REQUEST BODY'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.RescaleImageStub?.callCount).to.equal(0)
     expect(this.SendImageStub?.callCount).to.equal(0)
@@ -1654,16 +1653,16 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/kiosk/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.params[0] = 'foo/bar.png'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -1678,16 +1677,16 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/kiosk/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
     this.RequestStub.params[0] = ''
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(1)
     expect(spy.firstCall.args[0]).to.deep.equal('/')
@@ -1699,15 +1698,15 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/kiosk/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const spy = sinon.stub(CacheStorage.kioskCache, 'fetch')
-    const img = { image: Math.random() } as unknown as ImageData
+    const img = ForceCastTo<ImageData>({ image: Math.random() })
     spy.resolves(img)
 
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(spy.callCount).to.equal(1)
     expect(spy.firstCall.args).to.have.lengthOf(3)
@@ -1721,14 +1720,14 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/kiosk/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
     this.ReadImageStub?.resolves(img)
 
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.RescaleImageStub?.callCount).to.equal(1)
     expect(this.SendImageStub?.callCount).to.equal(1)
@@ -1743,14 +1742,14 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/kiosk/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
     const img = new ImageData()
     this.ReadImageStub?.resolves(img)
 
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(0)
@@ -1763,7 +1762,7 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/kiosk/*-image.webp')
-      .map((call) => call.args[1] as MockedRouter)[0]
+      .map((call) => StubToRequestHandler(call.args[1]))[0]
     assert(fn !== undefined, 'Router handler should be found')
     expect(fn).to.be.a('function')
 
@@ -1772,7 +1771,7 @@ export class ImagesGetRouterTests {
 
     this.RequestStub.originalUrl = '/kiosk/image.png'
     this.RequestStub.body = 'REQUEST BODY'
-    await fn(this.RequestStub, this.ResponseStub)
+    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
 
     expect(this.RescaleImageStub?.callCount).to.equal(0)
     expect(this.SendImageStub?.callCount).to.equal(0)

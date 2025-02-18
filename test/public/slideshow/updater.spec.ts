@@ -10,6 +10,7 @@ import { render } from 'pug'
 import { CyclicManager, CyclicUpdater } from '../../../public/scripts/slideshow/updater'
 import assert from 'assert'
 import { EventuallyRejects } from '../../testutils/EventuallyErrors'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -42,7 +43,7 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,

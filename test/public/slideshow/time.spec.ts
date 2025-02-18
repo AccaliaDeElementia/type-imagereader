@@ -8,6 +8,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import TimeUpdater from '../../../public/scripts/slideshow/time'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -34,7 +35,7 @@ export class SlideshowTimeTests {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,

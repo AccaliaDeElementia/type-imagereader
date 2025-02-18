@@ -5,18 +5,23 @@ import { suite, test } from '@testdeck/mocha'
 import type Sinon from 'sinon'
 import * as sinon from 'sinon'
 
-import type { Application, Router } from 'express'
-import type { Server } from 'http'
-import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 
 import { getRouter, Functions, Imports } from '../../routes/weather'
 import type { OpenWeatherData } from '../../routes/weather'
 import assert from 'assert'
+import {
+  IsVoidFunction,
+  StubToRouter,
+  StubToApplication,
+  StubToServer,
+  StubToWebSocketServer,
+  StubToFetchResponse,
+} from '../testutils/TypeGuards'
 
 @suite
 export class ImportsEnvironmentLookupTests {
-  clock = {} as unknown as Sinon.SinonFakeTimers
+  clock?: Sinon.SinonFakeTimers
   tz? = ''
 
   before(): void {
@@ -30,7 +35,7 @@ export class ImportsEnvironmentLookupTests {
   }
 
   after(): void {
-    this.clock.restore()
+    this.clock?.restore()
     process.env.TZ = this.tz
   }
 
@@ -847,7 +852,7 @@ export class WeatherFunctionsGetWeatherTests {
   before(): void {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    this.FetchStub = sinon.stub(Imports, 'fetch').resolves(this.FetchResult as unknown as globalThis.Response)
+    this.FetchStub = sinon.stub(Imports, 'fetch').resolves(StubToFetchResponse(this.FetchResult))
   }
 
   after(): void {
@@ -1198,9 +1203,9 @@ export class WeatherFunctionsUpdateWeatherTests {
 
 @suite
 export class WeatherRouterTests {
-  ApplicationFake = {} as unknown as Application
-  ServerFake = {} as unknown as Server
-  WebsocketsFake = {} as unknown as WebSocketServer
+  ApplicationFake = StubToApplication({})
+  ServerFake = StubToServer({})
+  WebsocketsFake = StubToWebSocketServer({})
 
   RouterFake = {
     get: sinon.stub().returnsThis(),
@@ -1220,7 +1225,7 @@ export class WeatherRouterTests {
   UpdateWeatherStub?: Sinon.SinonStub
 
   before(): void {
-    this.RouterStub = sinon.stub(Imports, 'Router').returns(this.RouterFake as unknown as Router)
+    this.RouterStub = sinon.stub(Imports, 'Router').returns(StubToRouter(this.RouterFake))
     this.SetIntervalStub = sinon.stub(Imports, 'setInterval')
     this.UpdateWeatherStub = sinon.stub(Functions, 'UpdateWeather').resolves()
   }
@@ -1260,7 +1265,8 @@ export class WeatherRouterTests {
     this.UpdateWeatherStub?.resetHistory()
     expect(this.SetIntervalStub?.callCount).to.equal(1)
     expect(this.SetIntervalStub?.firstCall.args).to.have.lengthOf(2)
-    const fn = this.SetIntervalStub?.firstCall.args[0] as () => void
+    const fn = this.SetIntervalStub?.firstCall.args[0]
+    assert(IsVoidFunction(fn))
     expect(this.UpdateWeatherStub?.called).to.equal(false)
     fn()
     expect(this.UpdateWeatherStub?.called).to.equal(true)
@@ -1281,7 +1287,8 @@ export class WeatherRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     this.UpdateWeatherStub?.resetHistory()
     this.UpdateWeatherStub?.rejects(new Error('FOO'))
-    const fn = this.SetIntervalStub?.firstCall.args[0] as () => void
+    const fn = this.SetIntervalStub?.firstCall.args[0]
+    assert(IsVoidFunction(fn))
     fn()
     await Promise.resolve()
     assert(true, 'should not get an exception nor break due to unhandled promise rejection')

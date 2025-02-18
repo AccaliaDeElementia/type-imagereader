@@ -3,12 +3,11 @@
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
+import { StubToKnex, StubToDebugger } from '../testutils/TypeGuards'
 
-import type { Knex } from 'knex'
 import persistence from '../../utils/persistance'
 
 import synchronize, { Functions, Imports, isRowCountResult } from '../../utils/syncfolders'
-import type { Debugger } from 'debug'
 
 @suite
 export class SyncFoldersIsRowCountResult {
@@ -232,10 +231,10 @@ export class SyncFoldersFindSyncItemsTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
     this.FsWalkerStub = sinon.stub(Imports, 'fsWalker').resolves()
     this.ChunkSyncItemsForInsertStub = sinon.stub(Functions, 'ChunkSyncItemsForInsert').returns({
       files: 0,
@@ -413,7 +412,7 @@ export class SyncFoldersFindSyncItemsTests {
 @suite
 export class SyncFoldersSyncNewPicturesTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = this.LoggerStub as unknown as Debugger
+  LoggerFake = StubToDebugger(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -430,7 +429,7 @@ export class SyncFoldersSyncNewPicturesTests {
     catch: sinon.stub(),
   }
 
-  KnexFnFake = this.KnexInstanceStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexInstanceStub)
 
   @test
   async 'it should select raw from pictures table'(): Promise<void> {
@@ -497,7 +496,7 @@ export class SyncFoldersSyncNewPicturesTests {
 @suite
 export class SyncFoldersSyncRemovedPicturesTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = this.LoggerStub as unknown as Debugger
+  LoggerFake = StubToDebugger(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -513,7 +512,7 @@ export class SyncFoldersSyncRemovedPicturesTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   @test
   async 'it should remove records from pictures table'(): Promise<void> {
@@ -553,7 +552,7 @@ export class SyncFoldersSyncRemovedPicturesTests {
 @suite
 export class SyncFoldersSyncRemovedBookmarksTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = this.LoggerStub as unknown as Debugger
+  LoggerFake = StubToDebugger(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -569,7 +568,7 @@ export class SyncFoldersSyncRemovedBookmarksTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   @test
   async 'it should remove records from pictures table'(): Promise<void> {
@@ -614,10 +613,10 @@ export class SyncFoldersSyncAllPicturesTests {
   LoggerStub = sinon.stub()
   DebugStub?: Sinon.SinonStub
 
-  KnexFake = { id: Math.random() } as unknown as Knex
+  KnexFake = StubToKnex({ id: Math.random() })
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
     this.SyncNewPicturesStub = sinon.stub(Functions, 'SyncNewPictures').resolves()
     this.SyncRemovedPicturesStub = sinon.stub(Functions, 'SyncRemovedPictures').resolves()
     this.SyncRemovedBookmarksStub = sinon.stub(Functions, 'SyncRemovedBookmarks').resolves()
@@ -665,7 +664,7 @@ export class SyncFoldersSyncAllPicturesTests {
 @suite
 export class SyncFoldersSyncNewFoldersTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = this.LoggerStub as unknown as Debugger
+  LoggerFake = StubToDebugger(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -682,7 +681,7 @@ export class SyncFoldersSyncNewFoldersTests {
     catch: sinon.stub(),
   }
 
-  KnexFnFake = this.KnexInstanceStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexInstanceStub)
 
   @test
   async 'it should select raw from folders table'(): Promise<void> {
@@ -742,7 +741,7 @@ export class SyncFoldersSyncNewFoldersTests {
 @suite
 export class SyncFoldersSyncRemovedFoldersTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = this.LoggerStub as unknown as Debugger
+  LoggerFake = StubToDebugger(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -758,7 +757,7 @@ export class SyncFoldersSyncRemovedFoldersTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   @test
   async 'it should remove records from folders table'(): Promise<void> {
@@ -798,7 +797,7 @@ export class SyncFoldersSyncRemovedFoldersTests {
 @suite
 export class SyncFoldersSyncMissingCoverImagesTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = this.LoggerStub as unknown as Debugger
+  LoggerFake = StubToDebugger(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -815,7 +814,7 @@ export class SyncFoldersSyncMissingCoverImagesTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   @test
   async 'it should operate on folders table'(): Promise<void> {
@@ -864,7 +863,7 @@ export class SyncFoldersSyncMissingCoverImagesTests {
 @suite
 export class SyncFoldersSyncFolderFirstImagesTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = this.LoggerStub as unknown as Debugger
+  LoggerFake = StubToDebugger(this.LoggerStub)
 
   InnerQueryBuilder = {
     select: sinon.stub().returnsThis(),
@@ -892,7 +891,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   ChunkStub?: Sinon.SinonStub
 
@@ -1045,10 +1044,10 @@ export class SyncFoldersSyncAllFoldersTests {
   LoggerStub = sinon.stub()
   DebugStub?: Sinon.SinonStub
 
-  KnexFake = { id: Math.random() } as unknown as Knex
+  KnexFake = StubToKnex({ id: Math.random() })
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
     this.SyncNewFoldersStub = sinon.stub(Functions, 'SyncNewFolders').resolves()
     this.SyncRemovedFoldersStub = sinon.stub(Functions, 'SyncRemovedFolders').resolves()
     this.SyncMissingCoverImagesStub = sinon.stub(Functions, 'SyncMissingCoverImages').resolves()
@@ -1109,7 +1108,7 @@ export class SyncFoldersGetAllFolderInfosTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexInstanceStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   @test
   async 'it should select all paths from folders table'(): Promise<void> {
@@ -1152,7 +1151,7 @@ export class SyncFoldersGetFolderInfosWithPictures {
   }
 
   KnexFnStub: Sinon.SinonStub & { raw?: Sinon.SinonStub } = sinon.stub().returns(this.KnexStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   before(): void {
     this.KnexFnStub.raw = sinon.stub()
@@ -1316,10 +1315,10 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
     this.GetFolderInfosWithPicturesStub = sinon.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
     this.GetAllFolderInfosStub = sinon.stub(Functions, 'GetAllFolderInfos').resolves({})
     this.CalculateFolderInfosStub = sinon.stub(Functions, 'CalculateFolderInfos').returns([])
@@ -1458,10 +1457,10 @@ export class SyncFoldersPruneEmptyFoldersTests {
   }
 
   KnexFnStub = sinon.stub().returns(this.KnexStub)
-  KnexFnFake = this.KnexFnStub as unknown as Knex
+  KnexFnFake = StubToKnex(this.KnexFnStub)
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
   }
 
   after(): void {
@@ -1513,10 +1512,8 @@ export class SyncFoldersSynchronizeTests {
   KnexFnStub = sinon.stub().returnsThis()
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(this.LoggerStub as unknown as Debugger)
-    this.PersistenceIntitializerStub = sinon
-      .stub(persistence, 'initialize')
-      .resolves(this.KnexFnStub as unknown as Knex)
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
+    this.PersistenceIntitializerStub = sinon.stub(persistence, 'initialize').resolves(StubToKnex(this.KnexFnStub))
     this.FindSyncItemsStub = sinon.stub(Functions, 'FindSyncItems').resolves(1)
     this.SyncAllPicturesStub = sinon.stub(Functions, 'SyncAllPictures').resolves()
     this.SyncAllFoldersStub = sinon.stub(Functions, 'SyncAllFolders').resolves()

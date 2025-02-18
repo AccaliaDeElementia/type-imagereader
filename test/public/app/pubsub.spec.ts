@@ -8,6 +8,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
+import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -38,7 +39,7 @@ class BaseAppPubSubTests extends PubSub {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
@@ -59,7 +60,7 @@ class BaseAppPubSubTests extends PubSub {
     global.document = this.existingDocument
 
     if (PubSub.timer != null) {
-      clearInterval(PubSub.timer as number)
+      clearInterval(PubSub.timer)
       PubSub.timer = undefined
     }
     this.clock.restore()
@@ -91,7 +92,7 @@ export class AppPubSubTests extends PubSub {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = this.dom.window as unknown as Window & typeof globalThis
+    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
