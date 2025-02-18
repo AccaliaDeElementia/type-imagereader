@@ -8,7 +8,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { AssertVoidFn, ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -434,7 +434,7 @@ export class PubSubStartDeferred extends BaseAppPubSubTests {
     const spy = sinon.stub(PubSub, 'ExecuteInterval')
     try {
       PubSub.StartDeferred()
-      this.setIntervalStub.firstCall.args[0]()
+      AssertVoidFn(this.setIntervalStub.firstCall.args[0])()
       expect(spy.called).to.equal(true)
     } finally {
       spy.restore()

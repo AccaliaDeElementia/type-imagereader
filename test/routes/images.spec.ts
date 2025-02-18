@@ -383,6 +383,13 @@ export class ImagesReadImageTests {
   }
 }
 
+interface SharpArgs {
+  width: unknown
+  height: unknown
+  fit: unknown
+  withoutEnlargement: unknown
+}
+
 @suite
 export class ImagesRescaleImageTests {
   SharpInstanceStub = {
@@ -485,7 +492,7 @@ export class ImagesRescaleImageTests {
     await Functions.RescaleImage(new ImageData(), 1280, 720)
     expect(this.SharpInstanceStub.resize.callCount).to.equal(1)
     expect(this.SharpInstanceStub.resize.firstCall.args).to.have.lengthOf(1)
-    const args = this.SharpInstanceStub.resize.firstCall.args[0]
+    const args = ForceCastTo<SharpArgs>(this.SharpInstanceStub.resize.firstCall.args[0])
     expect(args).to.have.all.keys('width', 'height', 'fit', 'withoutEnlargement')
     expect(args.width).to.equal(1280)
     expect(args.height).to.equal(720)

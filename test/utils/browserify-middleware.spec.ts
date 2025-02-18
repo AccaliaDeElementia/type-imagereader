@@ -8,7 +8,7 @@ import * as sinon from 'sinon'
 import { StatusCodes } from 'http-status-codes'
 
 import browserifyMiddleware, { Imports, Functions } from '../../utils/browserify-middleware'
-import { StubToRequest, StubToResponse } from '../testutils/TypeGuards'
+import { Cast, StubToRequest, StubToResponse } from '../testutils/TypeGuards'
 
 @suite
 export class BrowserifyMiddlewareGetPathsTests {
@@ -129,13 +129,13 @@ export class BrowserifyMiddlewareCompileBundleTests {
   before(): void {
     this.AccessStub = sinon.stub(Imports, 'access')
     this.AccessStub.resolves()
-    this.Browser.bundle.callsFake((fn) => {
+    this.Browser.bundle.callsFake((fn: (a: unknown, b: unknown) => void) => {
       fn(null, Buffer.from('browserified', 'utf-8'))
     })
     this.BrowserifyStub = sinon.stub(Imports, 'browserify')
     this.BrowserifyStub.returns(this.Browser)
     this.MinifyStub = sinon.stub(Imports, 'minify')
-    this.MinifyStub.callsFake((src) => ({ code: src }))
+    this.MinifyStub.callsFake((src: string) => ({ code: src }))
   }
 
   after(): void {
@@ -200,7 +200,7 @@ export class BrowserifyMiddlewareCompileBundleTests {
 
   @test
   async 'it should reject on generic bundle error'(): Promise<void> {
-    this.Browser.bundle.callsFake((fn) => {
+    this.Browser.bundle.callsFake((fn: (a: unknown, b: unknown) => void) => {
       fn('ERROR!', null)
     })
     await Functions.CompileBundle('/foo').then(
@@ -211,7 +211,7 @@ export class BrowserifyMiddlewareCompileBundleTests {
 
   @test
   async 'it should resolve to null on MODULE_NOT_FOUND'(): Promise<void> {
-    this.Browser.bundle.callsFake((fn) => {
+    this.Browser.bundle.callsFake((fn: (a: unknown, b: unknown) => void) => {
       fn(new ErrorWithCode('OOPS', 'MODULE_NOT_FOUND'), null)
     })
     const result = await Functions.CompileBundle('/foo')
@@ -220,7 +220,7 @@ export class BrowserifyMiddlewareCompileBundleTests {
 
   @test
   async 'it should resolve to null on ENOENT'(): Promise<void> {
-    this.Browser.bundle.callsFake((fn) => {
+    this.Browser.bundle.callsFake((fn: (a: unknown, b: unknown) => void) => {
       fn(new ErrorWithCode('OOPS', 'ENOENT'), null)
     })
     const result = await Functions.CompileBundle('/foo')
@@ -642,7 +642,10 @@ export class BrowserifyMiddlewareWatchFolderTests {
       },
     ])
     await Functions.WatchFolder('/foo', '/bar', false)
-    const fn = this.DebounceStub?.firstCall.args[1]
+    const fn = Cast(
+      this.DebounceStub?.lastCall.args[1],
+      (o: unknown): o is () => Promise<void> => typeof o === 'function',
+    )
     await fn()
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/bar/baz')).to.equal(true)
   }
@@ -656,7 +659,10 @@ export class BrowserifyMiddlewareWatchFolderTests {
       },
     ])
     await Functions.WatchFolder('/foo', '/bar', true)
-    const fn = this.DebounceStub?.firstCall.args[1]
+    const fn = Cast(
+      this.DebounceStub?.lastCall.args[1],
+      (o: unknown): o is () => Promise<void> => typeof o === 'function',
+    )
     await fn()
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/bar')).to.equal(true)
   }

@@ -43,9 +43,6 @@ export default [
     rules: {
       'max-lines': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/class-methods-use-this': 'off', //TODO: Convert to standard BDD spec to avoid class shenanigans.... until then this is the fix....
-      '@typescript-eslint/no-unsafe-call': 'off', // TODO: Sinon asserts throw this a lot..... figure out a better way to implement those and avoid disabling this error
-      '@typescript-eslint/no-unsafe-assignment': 'off', // TODO: Sinon asserts throw this a lot..... figure out a better way to implement those and avoid disabling this error
-      '@typescript-eslint/no-unsafe-member-access': 'off', // TODO: Sinon asserts throw this a lot..... figure out a better way to implement those and avoid disabling this error
     },
   },
   {

@@ -23,6 +23,8 @@ import {
   StubToRequest,
   StubToResponse,
   StubToRequestHandler,
+  AssertFn,
+  Cast,
 } from '../testutils/TypeGuards'
 
 @suite
@@ -632,7 +634,12 @@ export class SlideshowGetRoomAndIncrementImageTests {
     expect(this.GetCountsStub.firstCall.args[0]).to.equal(this.KnexFake)
     expect(this.GetCountsStub.firstCall.args[1]).to.equal('/path/')
     expect(this.GetCountsStub.firstCall.args[2]).to.equal(10)
-    expect(this.GetCountsStub.firstCall.args[3](4)).to.equal(3)
+    expect(
+      Cast(
+        this.GetCountsStub.firstCall.args[3],
+        (o: unknown): o is (_: number) => number => typeof o === 'function',
+      )(4),
+    ).to.equal(3)
     expect(this.GetImagesStub?.callCount).to.equal(2)
     expect(room.index).to.equal(99)
     expect(room.images).to.deep.equal(second)
@@ -675,7 +682,12 @@ export class SlideshowGetRoomAndIncrementImageTests {
     expect(this.GetCountsStub.firstCall.args[0]).to.equal(this.KnexFake)
     expect(this.GetCountsStub.firstCall.args[1]).to.equal('/path/')
     expect(this.GetCountsStub.firstCall.args[2]).to.equal(11)
-    expect(this.GetCountsStub.firstCall.args[3](4)).to.equal(3)
+    expect(
+      Cast(
+        this.GetCountsStub.firstCall.args[3],
+        (o: unknown): o is (_: number) => number => typeof o === 'function',
+      )(4),
+    ).to.equal(3)
     expect(this.GetImagesStub?.callCount).to.equal(1)
     expect(room.index).to.equal(29)
     expect(room.images).to.have.lengthOf(30)
@@ -726,7 +738,12 @@ export class SlideshowGetRoomAndIncrementImageTests {
     expect(this.GetCountsStub.firstCall.args[0]).to.equal(this.KnexFake)
     expect(this.GetCountsStub.firstCall.args[1]).to.equal('/path/')
     expect(this.GetCountsStub.firstCall.args[2]).to.equal(13)
-    expect(this.GetCountsStub.firstCall.args[3](4)).to.equal(5)
+    expect(
+      Cast(
+        this.GetCountsStub.firstCall.args[3],
+        (o: unknown): o is (_: number) => number => typeof o === 'function',
+      )(4),
+    ).to.equal(5)
     expect(this.GetImagesStub?.callCount).to.equal(2)
     expect(room.index).to.equal(0)
     expect(room.images).to.have.lengthOf(100)
@@ -1808,7 +1825,7 @@ export class SlideshowGetRouterTests {
     expect(this.IoStub.on.firstCall.args).to.have.lengthOf(2)
     expect(this.IoStub.on.firstCall.args[0]).to.equal('connection')
     expect(this.IoStub.on.firstCall.args[1]).to.be.a('function')
-    this.IoStub.on.firstCall.args[1](this.SocketFake)
+    AssertFn<unknown>(this.IoStub.on.firstCall.args[1])(this.SocketFake)
     expect(this.HandleSocketStub?.callCount).to.equal(1)
     expect(this.HandleSocketStub?.firstCall.args).to.have.lengthOf(3)
     expect(this.HandleSocketStub?.firstCall.args[0]).to.equal(this.KnexFake)
@@ -1823,7 +1840,7 @@ export class SlideshowGetRouterTests {
     expect(this.setIntervalStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.setIntervalStub?.firstCall.args[0]).to.be.a('function')
     expect(this.setIntervalStub?.firstCall.args[1]).to.equal(1000)
-    await this.setIntervalStub?.firstCall.args[0]()
+    await AssertPromiseVoidFn(this.setIntervalStub?.firstCall.args[0])()
     expect(this.TickCountdownStub?.callCount).to.equal(1)
     expect(this.TickCountdownStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.TickCountdownStub?.firstCall.args[0]).to.equal(this.KnexFake)
@@ -1834,7 +1851,7 @@ export class SlideshowGetRouterTests {
   async 'it should tolerate TickCountdown rejecting'(): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     this.TickCountdownStub?.rejects('FOO')
-    await this.setIntervalStub?.firstCall.args[0]()
+    await AssertPromiseVoidFn(this.setIntervalStub?.firstCall.args[0])()
     await Promise.resolve()
     assert(true, 'should not reject or fail because inner promise rejects')
   }

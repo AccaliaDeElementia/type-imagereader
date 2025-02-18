@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
-import { StubToKnex, StubToDebugger } from '../testutils/TypeGuards'
+import { StubToKnex, StubToDebugger, AssertThisFn, Cast, AssertFn } from '../testutils/TypeGuards'
 
 import persistence from '../../utils/persistance'
 
@@ -253,7 +253,7 @@ export class SyncFoldersFindSyncItemsTests {
   async 'it should create prefixed logger'(): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     expect(this.DebugStub?.callCount).to.equal(1)
-    const name = this.DebugStub?.firstCall.args[0]
+    const name = Cast(this.DebugStub?.firstCall.args[0], (o) => typeof o === 'string')
     expect(name)
       .to.be.a('string')
       .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'))
@@ -299,7 +299,10 @@ export class SyncFoldersFindSyncItemsTests {
   @test
   async 'it should chunk items for insert into syncitems'(): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
-    const callback = this.FsWalkerStub?.firstCall.args[1]
+    const callback = Cast(
+      this.FsWalkerStub?.firstCall.args[1],
+      (o): o is (_: unknown, __: number) => Promise<void> => typeof o === 'function',
+    )
     const items = [{ path: '/foo', isFile: false }]
     await callback(items, 0)
     expect(this.ChunkSyncItemsForInsertStub?.calledWith(items)).to.equal(true)
@@ -308,7 +311,10 @@ export class SyncFoldersFindSyncItemsTests {
   @test
   async 'it should insert chunked items for insert into syncitems'(): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
-    const callback = this.FsWalkerStub?.firstCall.args[1]
+    const callback = Cast(
+      this.FsWalkerStub?.firstCall.args[1],
+      (o): o is (_: unknown, __: number) => Promise<void> => typeof o === 'function',
+    )
     const items = [{ path: '/foo', isFile: false }]
     const chunks = [{ a: 1 }, { b: 2 }, { c: 3 }]
     this.ChunkSyncItemsForInsertStub?.returns({
@@ -327,7 +333,10 @@ export class SyncFoldersFindSyncItemsTests {
   @test
   async 'it should log status on first loop'(): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
-    const callback = this.FsWalkerStub?.firstCall.args[1]
+    const callback = Cast(
+      this.FsWalkerStub?.firstCall.args[1],
+      (o): o is (_: unknown, __: number) => Promise<void> => typeof o === 'function',
+    )
     const items = [{ path: '/foo', isFile: false }]
     this.ChunkSyncItemsForInsertStub?.returns({
       files: 3,
@@ -342,7 +351,10 @@ export class SyncFoldersFindSyncItemsTests {
   async 'it should log status on 101st loop'(): Promise<void> {
     await Functions.FindSyncItems(this.KnexFnFake)
     this.LoggerStub.resetHistory()
-    const callback = this.FsWalkerStub?.firstCall.args[1]
+    const callback = Cast(
+      this.FsWalkerStub?.firstCall.args[1],
+      (o): o is (_: unknown, __: number) => Promise<void> => typeof o === 'function',
+    )
     const items = [{ path: '/foo', isFile: false }]
     for (let i = 0; i < 100; i++) {
       await callback(items, 0)
@@ -359,7 +371,7 @@ export class SyncFoldersFindSyncItemsTests {
 
   @test
   async 'it should count all files in loop'(): Promise<void> {
-    this.FsWalkerStub?.callsFake(async (_, callback) => {
+    this.FsWalkerStub?.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
       const items = [{ path: '/foo', isFile: false }]
       for (let i = 1; i <= 100; i++) {
         this.ChunkSyncItemsForInsertStub?.returns({
@@ -376,7 +388,7 @@ export class SyncFoldersFindSyncItemsTests {
 
   @test
   async 'it should count all dirs in loop'(): Promise<void> {
-    this.FsWalkerStub?.callsFake(async (_, callback) => {
+    this.FsWalkerStub?.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
       const items = [{ path: '/foo', isFile: false }]
       for (let i = 1; i <= 100; i++) {
         this.ChunkSyncItemsForInsertStub?.returns({
@@ -393,7 +405,7 @@ export class SyncFoldersFindSyncItemsTests {
 
   @test
   async 'it should return count of files'(): Promise<void> {
-    this.FsWalkerStub?.callsFake(async (_, callback) => {
+    this.FsWalkerStub?.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
       const items = [{ path: '/foo', isFile: false }]
       for (let i = 1; i <= 100; i++) {
         this.ChunkSyncItemsForInsertStub?.returns({
@@ -468,7 +480,7 @@ export class SyncFoldersSyncNewPicturesTests {
   @test
   async 'it should construct nested select within insert call'(): Promise<void> {
     await Functions.SyncNewPictures(this.LoggerFake, this.KnexFnFake)
-    const fn = this.KnexInstanceStub.insert.firstCall.args[0]
+    const fn = AssertThisFn(this.KnexInstanceStub.insert.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args[0]).to.deep.equal([
@@ -536,7 +548,7 @@ export class SyncFoldersSyncRemovedPicturesTests {
   @test
   async 'it should construct inner query to detect removed images'(): Promise<void> {
     await Functions.SyncRemovedPictures(this.LoggerFake, this.KnexFnFake)
-    const fn = this.KnexInstanceStub.whereNotExists.firstCall.args[0]
+    const fn = AssertThisFn(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
@@ -592,7 +604,7 @@ export class SyncFoldersSyncRemovedBookmarksTests {
   @test
   async 'it should construct inner query to detect removed images'(): Promise<void> {
     await Functions.SyncRemovedBookmarks(this.LoggerFake, this.KnexFnFake)
-    const fn = this.KnexInstanceStub.whereNotExists.firstCall.args[0]
+    const fn = AssertThisFn(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
@@ -714,7 +726,7 @@ export class SyncFoldersSyncNewFoldersTests {
   @test
   async 'it should construct nested select within insert call'(): Promise<void> {
     await Functions.SyncNewFolders(this.LoggerFake, this.KnexFnFake)
-    const fn = this.KnexInstanceStub.insert.firstCall.args[0]
+    const fn = AssertThisFn(this.KnexInstanceStub.insert.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args[0]).to.deep.equal([
@@ -781,7 +793,7 @@ export class SyncFoldersSyncRemovedFoldersTests {
   @test
   async 'it should construct inner query to detect removed folders'(): Promise<void> {
     await Functions.SyncRemovedFolders(this.LoggerFake, this.KnexFnFake)
-    const fn = this.KnexInstanceStub.whereNotExists.firstCall.args[0]
+    const fn = AssertThisFn(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
@@ -834,7 +846,7 @@ export class SyncFoldersSyncMissingCoverImagesTests {
   async "it should only select folders where cover image doesn't exist in the pictures table"(): Promise<void> {
     await Functions.SyncMissingCoverImages(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexInstanceStub.whereNotExists.callCount).to.equal(1)
-    const fn = this.KnexInstanceStub.whereNotExists.firstCall.args[0]
+    const fn = AssertThisFn(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
@@ -922,7 +934,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   @test
   async 'it should select folder name in CTE'(): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
-    this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
+    AssertFn<unknown>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.select.callCount).to.equal(1)
     expect(this.InnerQueryBuilder.select.firstCall.args).to.have.lengthOf(1)
     expect(this.InnerQueryBuilder.select.firstCall.args[0]).to.equal('pictures.folder')
@@ -931,7 +943,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   @test
   async 'it should select minimum sortKey in CTE'(): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
-    this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
+    AssertFn<unknown>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.min.callCount).to.equal(1)
     expect(this.InnerQueryBuilder.min.firstCall.args).to.have.lengthOf(1)
     expect(this.InnerQueryBuilder.min.firstCall.args[0]).to.equal('pictures.sortKey as sortKey')
@@ -940,7 +952,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   @test
   async 'it should select from pictures table in CTE'(): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
-    this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
+    AssertFn<unknown>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.from.callCount).to.equal(1)
     expect(this.InnerQueryBuilder.from.firstCall.args).to.have.lengthOf(1)
     expect(this.InnerQueryBuilder.from.firstCall.args[0]).to.equal('pictures')
@@ -949,7 +961,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   @test
   async 'it should group by foldername in CTE'(): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
-    this.QueryBuilder.with.firstCall.args[1](this.InnerQueryBuilder)
+    AssertFn<unknown>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.groupBy.callCount).to.equal(1)
     expect(this.InnerQueryBuilder.groupBy.firstCall.args).to.have.lengthOf(1)
     expect(this.InnerQueryBuilder.groupBy.firstCall.args[0]).to.equal('pictures.folder')
@@ -1576,10 +1588,9 @@ export class SyncFoldersSynchronizeTests {
     await synchronize()
     expect(this.LoggerStub.secondCall.args).to.have.lengthOf(2)
     expect(this.LoggerStub.secondCall.args[0]).to.equal('Folder Synchronization Failed')
-    expect(this.LoggerStub.secondCall.args[1]).to.be.an('Error')
-    expect(this.LoggerStub.secondCall.args[1].message).to.equal(
-      'Found Zero images, refusing to process empty base folder',
-    )
+    const error = Cast(this.LoggerStub.secondCall.args[1], (e) => e instanceof Error)
+    expect(error).to.be.an('Error')
+    expect(error.message).to.equal('Found Zero images, refusing to process empty base folder')
   }
 
   @test

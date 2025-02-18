@@ -19,7 +19,7 @@ import {
   isDataWithBookmarks,
 } from '../../../public/scripts/app/bookmarks'
 import assert from 'assert'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast, ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -757,8 +757,10 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
 
-    const fn = this.PostJSONSpy.firstCall.args[2]
-    assert(fn !== undefined)
+    const fn = Cast(
+      this.PostJSONSpy.firstCall.args[2],
+      (o: unknown): o is (_: unknown) => unknown => typeof o === 'function',
+    )
     expect(fn(undefined)).to.equal(true)
     expect(fn(50)).to.equal(true)
     expect(fn('foo')).to.equal(true)
@@ -869,8 +871,10 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
 
-    const fn = this.PostJSONSpy.firstCall.args[2]
-    assert(fn !== undefined)
+    const fn = Cast(
+      this.PostJSONSpy.firstCall.args[2],
+      (o: unknown): o is (_: unknown) => unknown => typeof o === 'function',
+    )
     expect(fn(undefined)).to.equal(true)
     expect(fn(50)).to.equal(true)
     expect(fn('foo')).to.equal(true)
@@ -1125,8 +1129,10 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
 
     await waiter
 
-    const fn = this.PostJSONSpy.firstCall.args[2]
-    assert(fn !== undefined)
+    const fn = Cast(
+      this.PostJSONSpy.firstCall.args[2],
+      (o: unknown): o is (_: unknown) => unknown => typeof o === 'function',
+    )
     expect(fn(undefined)).to.equal(true)
     expect(fn(50)).to.equal(true)
     expect(fn('foo')).to.equal(true)

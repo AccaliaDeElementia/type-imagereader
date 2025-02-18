@@ -197,7 +197,7 @@ export class SlideshowSocketsTests extends WebSockets {
     await this.connectSocket(async (socket) => {
       WebSockets.launchId = undefined
       await promisify((cb) =>
-        socket.on('get-launchId', (fn) => {
+        socket.on('get-launchId', (fn: (o: unknown) => void) => {
           fn(3)
           cb(null, null)
         }),
@@ -219,7 +219,7 @@ export class SlideshowSocketsTests extends WebSockets {
       await this.connectSocket(async (socket) => {
         WebSockets.launchId = 7
         await promisify((cb) =>
-          socket.on('get-launchId', (fn) => {
+          socket.on('get-launchId', (fn: (o: unknown) => void) => {
             fn(7)
             cb(null, null)
           }),
@@ -245,7 +245,7 @@ export class SlideshowSocketsTests extends WebSockets {
         spy = sinon.stub(WebSockets, 'LocationReload')
         WebSockets.launchId = 7
         await promisify((cb) =>
-          socket.on('get-launchId', (fn) => {
+          socket.on('get-launchId', (fn: (o: unknown) => void) => {
             fn(42)
             cb(null, null)
           }),
@@ -426,7 +426,7 @@ export class SlideshowSocketsTests extends WebSockets {
         assignStub = sinon.stub(WebSockets, 'LocationAssign')
         global.document.body.dispatchEvent(event)
         await promisify((cb) =>
-          socket.on('goto-image', (fn) => {
+          socket.on('goto-image', (fn: (o: unknown) => void) => {
             fn(folder)
             cb(null, null)
           }),

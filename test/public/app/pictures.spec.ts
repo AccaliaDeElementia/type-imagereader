@@ -16,7 +16,7 @@ import type { PageSelector, Picture } from '../../../public/scripts/app/pictures
 import { Loading } from '../../../public/scripts/app/loading'
 import { Navigation } from '../../../public/scripts/app/navigation'
 import assert from 'assert'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast, ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -1458,7 +1458,8 @@ export class AppPicturesLoadCurrentPageImagesTests extends BaseAppPicturesTests 
 
   @test
   'it should add background image to active page(s)'(): void {
-    const cards = Array.prototype.slice.apply(this.tab?.querySelectorAll('.page:not(.hidden) .card'))
+    const cards = this.tab?.querySelectorAll<HTMLElement>('.page:not(.hidden) .card')
+    assert(cards != null)
     expect(cards).to.have.length(32)
     for (const card of cards) {
       expect(card.style.backgroundImage).to.equal('')
@@ -1471,7 +1472,8 @@ export class AppPicturesLoadCurrentPageImagesTests extends BaseAppPicturesTests 
 
   @test
   'it should not add background image to card with blank data attribute'(): void {
-    const cards = Array.prototype.slice.apply(this.tab?.querySelectorAll('.page:not(.hidden) .card'))
+    const cards = this.tab?.querySelectorAll<HTMLElement>('.page:not(.hidden) .card')
+    assert(cards != null)
     expect(cards).to.have.length(32)
     for (const card of cards) {
       card.setAttribute('data-backgroundImage', '')
@@ -1484,7 +1486,8 @@ export class AppPicturesLoadCurrentPageImagesTests extends BaseAppPicturesTests 
 
   @test
   'it should not add background image to card missing data attribute'(): void {
-    const cards = Array.prototype.slice.apply(this.tab?.querySelectorAll('.page:not(.hidden) .card'))
+    const cards = this.tab?.querySelectorAll<HTMLElement>('.page:not(.hidden) .card')
+    assert(cards != null)
     expect(cards).to.have.length(32)
     for (const card of cards) {
       card.removeAttribute('data-backgroundImage')
@@ -1625,8 +1628,10 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
     TestPics.modCount = 50
     await Pictures.LoadImage()
     expect(this.postJSONSpy.callCount).to.equal(1)
-    const fn = this.postJSONSpy.firstCall.args[2]
-    assert(fn !== undefined)
+    const fn = Cast(
+      this.postJSONSpy.firstCall.args[2],
+      (o: unknown): o is (_: unknown) => unknown => typeof o === 'function',
+    )
     expect(fn(undefined)).to.equal(true)
     expect(fn(50)).to.equal(true)
     expect(fn('foo')).to.equal(false)

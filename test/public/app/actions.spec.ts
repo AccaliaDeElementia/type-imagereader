@@ -430,7 +430,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
 
   @test
   'it should flag Left for left activation of d-pad'(): void {
-    this.testGamePad.buttons = Array(20).fill({ pressed: false })
+    this.testGamePad.buttons = ForceCastTo<GamepadButton[]>(Array(20).fill({ pressed: false }))
     this.testGamePad.buttons[14] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -471,7 +471,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
 
   @test
   'it should flag Right for right activation of d-pad'(): void {
-    this.testGamePad.buttons = Array(20).fill({ pressed: false })
+    this.testGamePad.buttons = ForceCastTo<GamepadButton[]>(Array(20).fill({ pressed: false }))
     this.testGamePad.buttons[15] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -512,7 +512,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
 
   @test
   'it should flag Down for down activation of d-pad'(): void {
-    this.testGamePad.buttons = Array(20).fill({ pressed: false })
+    this.testGamePad.buttons = ForceCastTo<GamepadButton[]>(Array(20).fill({ pressed: false }))
     this.testGamePad.buttons[13] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)
@@ -553,7 +553,7 @@ export class AppActionsReadGamepad extends BaseActionsTests {
 
   @test
   'it should flag Up for up activation of d-pad'(): void {
-    this.testGamePad.buttons = Array(20).fill({ pressed: false })
+    this.testGamePad.buttons = ForceCastTo<GamepadButton[]>(Array(20).fill({ pressed: false }))
     this.testGamePad.buttons[12] = { pressed: true, value: 1, touched: true }
     Actions.ReadGamepad()
     expect(this.actionGamepadListener.callCount).to.equal(0)

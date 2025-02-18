@@ -8,6 +8,12 @@ import { Net } from '../../../public/scripts/app/net'
 import { EventuallyRejects } from '../../testutils/EventuallyErrors'
 import { ForceCastTo } from '../../testutils/TypeGuards'
 
+interface TestResponse {
+  method: string
+  body: string
+  headers: { [key: string]: string }
+}
+
 @suite
 export class AppNetTests {
   static fetchStub: sinon.SinonStub
@@ -53,13 +59,13 @@ export class AppNetTests {
   @test
   async 'GetJSON calls fetch as GET request'(): Promise<void> {
     await Net.GetJSON('/some/path', (_): _ is unknown => true)
-    expect(AppNetTests.fetchStub.getCall(0).args[1].method).to.equal('GET')
+    expect(ForceCastTo<TestResponse>(AppNetTests.fetchStub.getCall(0).args[1]).method).to.equal('GET')
   }
 
   @test
   async 'GetJSON calls fetch With expected Headers'(): Promise<void> {
     await Net.GetJSON('/some/path', (_): _ is unknown => true)
-    const headers = AppNetTests.fetchStub.getCall(0).args[1].headers
+    const headers = ForceCastTo<TestResponse>(AppNetTests.fetchStub.getCall(0).args[1]).headers
     expect(headers).to.not.equal(undefined)
     expect(headers['Accept-Encoding']).to.equal('gzip, deflate, br')
     expect(headers.Accept).to.equal('application/json')
@@ -144,13 +150,13 @@ export class AppNetTests {
   @test
   async 'PostJSON calls fetch as POST request'(): Promise<void> {
     await Net.PostJSON('/some/path', {}, (_): _ is unknown => true)
-    expect(AppNetTests.fetchStub.getCall(0).args[1].method).to.equal('POST')
+    expect(ForceCastTo<TestResponse>(AppNetTests.fetchStub.getCall(0).args[1]).method).to.equal('POST')
   }
 
   @test
   async 'PostJSON calls fetch with expected Headers'(): Promise<void> {
     await Net.PostJSON('/some/path', {}, (_): _ is unknown => true)
-    const headers = AppNetTests.fetchStub.getCall(0).args[1].headers
+    const headers = ForceCastTo<TestResponse>(AppNetTests.fetchStub.getCall(0).args[1]).headers
     expect(headers).to.not.equal(undefined)
     expect(headers['Accept-Encoding']).to.equal('gzip, deflate, br')
     expect(headers.Accept).to.equal('application/json')
@@ -172,7 +178,7 @@ export class AppNetTests {
     ]
     for (let i = 0; i < matrix.length; i++) {
       await Net.PostJSON('/some/path', matrix[i], (_): _ is unknown => true)
-      const body = AppNetTests.fetchStub.getCall(i).args[1].body
+      const body = ForceCastTo<TestResponse>(AppNetTests.fetchStub.getCall(i).args[1]).body
       expect(body).to.equal(JSON.stringify(matrix[i]))
     }
   }

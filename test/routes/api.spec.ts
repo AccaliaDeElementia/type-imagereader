@@ -213,8 +213,8 @@ export class ApiGetRouterTests {
   @test
   async 'it should use same handler for `/listing/` and `/listing/*`'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
-    const fn1 = this.RouterStub.get.getCalls().find((call) => call.args[0] === '/listing')?.args[1]
-    const fn2 = this.RouterStub.get.getCalls().find((call) => call.args[0] === '/listing/*')?.args[1]
+    const fn1 = this.RouterStub.get.getCalls().find((call) => call.args[0] === '/listing')?.args[1] as unknown
+    const fn2 = this.RouterStub.get.getCalls().find((call) => call.args[0] === '/listing/*')?.args[1] as unknown
     assert(fn1 !== undefined)
     assert(fn2 !== undefined)
     expect(fn1).to.equal(fn2)
@@ -253,8 +253,8 @@ export class ApiGetRouterTests {
   @test
   async 'it should use same handler for `/bookmarks/` and `/bookmarks/*`'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.SocketServerFake)
-    const fn1 = this.RouterStub.get.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1]
-    const fn2 = this.RouterStub.get.getCalls().find((call) => call.args[0] === '/bookmarks/*')?.args[1]
+    const fn1 = this.RouterStub.get.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1] as unknown
+    const fn2 = this.RouterStub.get.getCalls().find((call) => call.args[0] === '/bookmarks/*')?.args[1] as unknown
     assert(fn1 !== undefined)
     assert(fn2 !== undefined)
     expect(fn1).to.equal(fn2)
@@ -1185,7 +1185,7 @@ export class ApiMarkUnreadRouteTests {
 
     await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
 
-    const fn = postFn.getCalls().find((call) => call.args[0] === '/mark/unread')?.args[1]
+    const fn = postFn.getCalls().find((call) => call.args[0] === '/mark/unread')?.args[1] as unknown
     this.RouteHandler = Cast(fn, (fn): fn is RequestHandler => typeof fn === 'function')
 
     InitializeStub.restore()
@@ -1338,7 +1338,7 @@ export class ApiGetBookmarksRouteTests {
 
     await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
 
-    const fn = getFn.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1]
+    const fn = getFn.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1] as unknown
     this.RouteHandler = Cast(fn, (fn): fn is RequestHandler => typeof fn === 'function')
 
     InitializeStub.restore()
@@ -1458,7 +1458,7 @@ export class ApiAddBookmarkRouteTests {
 
     await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
 
-    const fn = postFn.getCalls().find((call) => call.args[0] === '/bookmarks/add')?.args[1]
+    const fn = postFn.getCalls().find((call) => call.args[0] === '/bookmarks/add')?.args[1] as unknown
     this.RouteHandler = ForceCastTo<RequestHandler>(fn)
 
     InitializeStub.restore()
@@ -1613,7 +1613,7 @@ export class ApiRemoveBookmarkRouteTests {
 
     await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
 
-    const fn = postFn.getCalls().find((call) => call.args[0] === '/bookmarks/remove')?.args[1]
+    const fn = postFn.getCalls().find((call) => call.args[0] === '/bookmarks/remove')?.args[1] as unknown
     this.RouteHandler = StubToRequestHandler(fn)
 
     InitializeStub.restore()

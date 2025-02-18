@@ -111,6 +111,12 @@ export function AssertVoidFn(fn: unknown): () => void {
   if (IsVoidFunction(fn)) return fn
   throw new Error('fn is nto a Void Function')
 }
+
+export function AssertThisFn(fn: unknown): (this: unknown) => void {
+  if (IsVoidFunction(fn)) return fn
+  throw new Error('fn is nto a Void Function')
+}
+
 export function IsPromiseVoidFunction(fn: unknown): fn is () => Promise<void> {
   return typeof fn === 'function'
 }
@@ -139,6 +145,7 @@ export function AssertFn<T>(fn: unknown): (arg: T) => void {
   if (IsFn<T>(fn)) return fn
   throw new Error('fn is not a Fn<T>')
 }
+
 //eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- Dynamic type parameter for teting
 export function IsPromiseFn<T>(fn: unknown): fn is (arg: T) => Promise<void> {
   return typeof fn === 'function'

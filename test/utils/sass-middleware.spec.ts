@@ -9,7 +9,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import sassMiddleware, { Imports, Functions } from '../../utils/sass-middleware'
 import assert from 'assert'
-import { StubToResponse, StubToRequest } from '../testutils/TypeGuards'
+import { StubToResponse, StubToRequest, Cast } from '../testutils/TypeGuards'
 
 @suite
 export class SassMiddlewareCompileCssTests {
@@ -456,7 +456,10 @@ export class SassMiddlewareWatchFolderTests {
   async 'it log entry in debounced file'(): Promise<void> {
     this.WatchStub?.returns([{ filename: 'styles.sass', eventType: 'change' }])
     await Functions.WatchFolder('/foo', '/bar')
-    const fn = this.DebouncerStub?.lastCall.args[1]
+    const fn = Cast(
+      this.DebouncerStub?.lastCall.args[1],
+      (o: unknown): o is () => Promise<void> => typeof o === 'function',
+    )
     await fn()
     expect(this.LoggerStub?.calledWith('/bar/styles.sass needs recompiling, change')).to.equal(true)
   }
@@ -465,7 +468,10 @@ export class SassMiddlewareWatchFolderTests {
   async 'it compile and cache debounced file'(): Promise<void> {
     this.WatchStub?.returns([{ filename: 'styles.scss', eventType: 'change' }])
     await Functions.WatchFolder('/foo', '/bar')
-    const fn = this.DebouncerStub?.lastCall.args[1]
+    const fn = Cast(
+      this.DebouncerStub?.lastCall.args[1],
+      (o: unknown): o is () => Promise<void> => typeof o === 'function',
+    )
     await fn()
     expect(this.CompileAndCacheStub?.calledWith('/foo', '/bar/styles.scss')).to.equal(true)
   }

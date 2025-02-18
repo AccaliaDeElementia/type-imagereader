@@ -15,7 +15,7 @@ import type { Data } from '../../../public/scripts/app/navigation'
 import { Net } from '../../../public/scripts/app/net'
 import assert from 'assert'
 import { Pictures } from '../../../public/scripts/app/pictures'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast, ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -1750,7 +1750,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
     await Delay(5)
-    const payload = this.PostJSONStub.firstCall.args[1]
+    const payload = this.PostJSONStub.firstCall.args[1] as unknown
     expect(payload).to.deep.equal(path)
   }
 
@@ -1765,8 +1765,10 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
     await Delay(5)
-    const fn = this.PostJSONStub.firstCall.args[2]
-    assert(fn !== undefined)
+    const fn = Cast(
+      this.PostJSONStub.firstCall.args[2],
+      (o: unknown): o is (_: unknown) => unknown => typeof o === 'function',
+    )
     expect(fn(undefined)).to.equal(true)
     expect(fn(null)).to.equal(true)
     expect(fn(true)).to.equal(true)
@@ -1863,7 +1865,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
     await Delay(5)
-    const payload = this.PostJSONStub.firstCall.args[1]
+    const payload = this.PostJSONStub.firstCall.args[1] as unknown
     expect(payload).to.deep.equal(path)
   }
 
@@ -1878,8 +1880,10 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
     await Delay(5)
-    const fn = this.PostJSONStub.firstCall.args[2]
-    assert(fn !== undefined)
+    const fn = Cast(
+      this.PostJSONStub.firstCall.args[2],
+      (o: unknown): o is (_: unknown) => unknown => typeof o === 'function',
+    )
     expect(fn(undefined)).to.equal(true)
     expect(fn(null)).to.equal(true)
     expect(fn(true)).to.equal(true)

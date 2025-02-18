@@ -21,7 +21,7 @@ import { getRouter as getWeatherRouter } from '../routes/weather'
 
 import start, { Functions, Routers, Imports } from '../Server'
 import assert from 'assert'
-import { ForceCastTo } from './testutils/TypeGuards'
+import { AssertVoidFn, Cast, ForceCastTo } from './testutils/TypeGuards'
 
 @suite
 export class ServerCreateAppTests {
@@ -60,7 +60,7 @@ export class ServerCreateAppTests {
     expect(this.ExpressInstanceStub.listen.firstCall.args).to.have.lengthOf(2)
     expect(this.ExpressInstanceStub.listen.firstCall.args[0]).to.equal(65535)
     expect(this.ExpressInstanceStub.listen.firstCall.args[1]).to.be.a('function')
-    this.ExpressInstanceStub.listen.firstCall.args[1]()
+    AssertVoidFn(this.ExpressInstanceStub.listen.firstCall.args[1])()
     expect(server).to.equal(this.HttpServerInstanceFake)
   }
 
@@ -314,7 +314,10 @@ export class ServerConfigureLoggingAndErrorsTests {
   @test
   'it should add error handler'(): void {
     Functions.ConfigureLoggingAndErrors(this.AppFake)
-    const handler = this.AppStub.use.lastCall.args[0]
+    const handler = Cast(
+      this.AppStub.use.lastCall.args[0],
+      (o: unknown): o is (a: unknown, b: unknown, c: unknown, d: unknown) => void => typeof o === 'function',
+    )
     expect(handler).to.be.a('function')
     const err = new Error('FOO! AN ERROR!')
     handler(err, undefined, this.ResponseStub, undefined)
@@ -614,7 +617,10 @@ export class ServerStartTests {
     expect(this.AppStub.get.callCount).to.equal(1)
     expect(this.AppStub.get.firstCall.args).to.have.lengthOf(2)
     expect(this.AppStub.get.firstCall.args[0]).to.equal('/*')
-    const fn = this.AppStub.get.firstCall.args[1]
+    const fn = Cast(
+      this.AppStub.get.firstCall.args[1],
+      (o: unknown): o is (a: unknown, b: unknown, c: unknown) => void => typeof o === 'function',
+    )
     expect(fn).to.be.a('function')
     const resultStub = {
       set: sinon.stub(),
