@@ -66,7 +66,7 @@ export function isKnexOptions(obj: unknown): obj is KnexOptions {
   return true
 }
 
-export function isDictionary(obj: unknown): obj is { [key: string]: unknown } {
+export function isDictionary(obj: unknown): obj is Record<string, unknown> {
   if (obj == null || typeof obj !== 'object') return false
   return true
 }

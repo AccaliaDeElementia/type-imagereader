@@ -138,7 +138,7 @@ export class Functions {
       })
     let count = 0
     if (isRowCountResult(insertedpics)) {
-      count = insertedpics.rowCount
+      ;({ rowCount: count } = insertedpics)
     }
     if (insertedpics instanceof Array && insertedpics.length > 0 && typeof insertedpics[0] === 'number') {
       ;[count] = insertedpics
@@ -185,7 +185,7 @@ export class Functions {
       })
     let count = 0
     if (isRowCountResult(folders)) {
-      count = folders.rowCount
+      ;({ rowCount: count } = folders)
     }
     if (folders instanceof Array && folders.length > 0 && typeof folders[0] === 'number') {
       ;[count] = folders
@@ -241,9 +241,9 @@ export class Functions {
     await Functions.SyncFolderFirstImages(logger, knex)
   }
 
-  public static async GetAllFolderInfos(knex: Knex): Promise<{ [name: string]: FolderInfo }> {
+  public static async GetAllFolderInfos(knex: Knex): Promise<Record<string, FolderInfo>> {
     const rawFolders = (await knex('folders').select('path')) as SyncItem[]
-    const folders: { [name: string]: FolderInfo } = {}
+    const folders: Record<string, FolderInfo> = {}
     for (const folder of rawFolders) {
       folders[folder.path] = {
         path: folder.path,
@@ -263,7 +263,7 @@ export class Functions {
     return folderInfos
   }
 
-  public static CalculateFolderInfos(allFolders: { [key: string]: FolderInfo }, folders: FolderInfo[]): FolderInfo[] {
+  public static CalculateFolderInfos(allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] {
     for (const folder of folders) {
       const parts = folder.path.split('/')
       while (parts.length > 1) {

@@ -1274,7 +1274,7 @@ export class AppPicturesMakePaginatorItemTests extends BaseAppPicturesTests {
 export class AppPicturesMakePaginatorTests extends BaseAppPicturesTests {
   makeItemSpy: Sinon.SinonStub = sinon.stub()
   currentPageSpy: Sinon.SinonStub = sinon.stub()
-  pages: { [index: string]: PageSelector } = {}
+  pages: Record<string, PageSelector> = {}
   before(): void {
     super.before()
     this.makeItemSpy = sinon.stub(Pictures, 'MakePaginatorItem')

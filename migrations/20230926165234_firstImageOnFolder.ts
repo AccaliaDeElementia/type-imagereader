@@ -2,9 +2,12 @@
 
 import type { Knex } from 'knex'
 
+const MAX_STR_LENGTH = 8192
+const BATCH_SIZE = 1000
+
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.alterTable('folders', (table) => {
-    table.string('firstPicture', 8192)
+    table.string('firstPicture', MAX_STR_LENGTH)
   })
   const toUpdate = await knex
     .with('firsts', (qb) =>
@@ -25,9 +28,9 @@ export async function up(knex: Knex): Promise<void> {
     })
     .groupBy('pictures.folder')
     .orderBy('pictures.folder', 'pictures.path')
-  for (let i = 0; i < toUpdate.length; i += 1000) {
+  for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
     await knex('folders')
-      .insert(toUpdate.slice(i, i + 1000))
+      .insert(toUpdate.slice(i, i + BATCH_SIZE))
       .onConflict('path')
       .merge()
   }

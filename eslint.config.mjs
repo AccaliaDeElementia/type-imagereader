@@ -30,9 +30,8 @@ export default [
   {
     rules: {
       '@typescript-eslint/no-extraneous-class': 'off', //TODO: sort this out at some point...
-      '@typescript-eslint/consistent-indexed-object-style': 'off', //TODO: sort this out at some point...
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
-      '@typescript-eslint/prefer-destructuring': 'off', //TODO: Sort this rule out eventually
+      '@typescript-eslint/prefer-destructuring': 'off', //This hurts readability, at least as this project is designed
       '@typescript-eslint/no-floating-promises': 'error',
       'max-lines': 'off', //TODO: Sort this rule out eventually
       //'no-console': 'warn', // only set for debugging!
@@ -42,6 +41,7 @@ export default [
     files: ['test/**/*.js', 'test/**/*.ts'],
     rules: {
       'max-lines': 'off', //TODO: Sort this rule out eventually
+      '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/class-methods-use-this': 'off', //TODO: Convert to standard BDD spec to avoid class shenanigans.... until then this is the fix....
     },
   },

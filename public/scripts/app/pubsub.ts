@@ -14,11 +14,9 @@ interface IntervalMethod {
 }
 
 export class PubSub {
-  protected static subscribers: { [key: string]: SubscriberFunction[] } = {}
+  protected static subscribers: Record<string, SubscriberFunction[]> = {}
   protected static deferred: DeferredMethod[] = []
-  protected static intervals: {
-    [key: string]: DeferredMethod & IntervalMethod
-  } = {}
+  protected static intervals: Record<string, DeferredMethod & IntervalMethod> = {}
   protected static timer: NodeJS.Timeout | string | number | undefined
   protected static cycleTime = 10
   static Subscribe(topic: string, subscriber: SubscriberFunction): void {

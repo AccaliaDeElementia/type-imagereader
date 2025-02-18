@@ -40,7 +40,7 @@ function unknownToError(err: unknown, message: string): Error {
 }
 
 export class Functions {
-  public static browserified: { [key: string]: Promise<string | null> } = {}
+  public static browserified: Record<string, Promise<string | null>> = {}
   public static logger = debug('type-imagereader:browserify-middleware')
   public static debouncer = Debouncer.create()
 

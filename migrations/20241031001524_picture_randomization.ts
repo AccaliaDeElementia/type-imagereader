@@ -1,24 +1,27 @@
 import type { Knex } from 'knex'
 import { createHash } from 'crypto'
 
+const BATCH_SIZE = 1000
+const HASH_LENGTH = 100
+
 interface PictureWithPath {
   path: string
 }
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.alterTable('pictures', (table) => {
-    table.string('pathHash', 100)
+    table.string('pathHash', HASH_LENGTH)
   })
   await knex.schema.alterTable('syncitems', (table) => {
-    table.string('pathHash', 100)
+    table.string('pathHash', HASH_LENGTH)
   })
   const toUpdate = (await knex.select('path').from('pictures')).map(({ path }: PictureWithPath) => ({
     path,
     pathHash: createHash('sha512').update(path).digest('base64'),
   }))
-  for (let i = 0; i < toUpdate.length; i += 1000) {
+  for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
     await knex('pictures')
-      .insert(toUpdate.slice(i, i + 1000))
+      .insert(toUpdate.slice(i, i + BATCH_SIZE))
       .onConflict('path')
       .merge()
   }

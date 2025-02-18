@@ -46,7 +46,7 @@ function LogError(err: unknown, message: string, defaultError: string): Error {
 export class Functions {
   public static logger = debug('type-imagereader:sass-middleware')
   public static debouncer = Debouncer.create()
-  public static cache: { [key: string]: Promise<cssAndMap | null> } = {}
+  public static cache: Record<string, Promise<cssAndMap | null>> = {}
 
   public static async CompileCss(path: string, filename: string): Promise<cssAndMap> {
     try {
@@ -161,7 +161,7 @@ export default ({
     } catch (err) {
       let message = 'Internal Server Error'
       if (err instanceof Error) {
-        message = err.message
+        ;({ message } = err)
       }
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(message)
     }

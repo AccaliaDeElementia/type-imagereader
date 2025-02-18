@@ -35,7 +35,7 @@ interface ImageWithPath {
 type SocketCallback = (value: string | number | null) => void
 
 export class Config {
-  public static rooms: { [name: string]: SlideshowRoom } = {}
+  public static rooms: Record<string, SlideshowRoom> = {}
   public static countdownDuration = 60
   public static memorySize = 100
   public static launchId = -1
@@ -165,7 +165,7 @@ export class Functions {
   }
 
   public static async TickCountdown(knex: Knex, io: WebSocketServer): Promise<void> {
-    const newRooms: { [name: string]: SlideshowRoom } = {}
+    const newRooms: Record<string, SlideshowRoom> = {}
     for (const room of Object.values(Config.rooms)) {
       room.countdown--
       if (room.countdown <= -60 * Config.countdownDuration) {

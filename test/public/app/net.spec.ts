@@ -11,7 +11,7 @@ import { ForceCastTo } from '../../testutils/TypeGuards'
 interface TestResponse {
   method: string
   body: string
-  headers: { [key: string]: string }
+  headers: Record<string, string>
 }
 
 @suite

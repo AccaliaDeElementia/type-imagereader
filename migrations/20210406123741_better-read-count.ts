@@ -2,11 +2,13 @@
 
 import type { Knex } from 'knex'
 
+const DEFAULT_COUNT = 0
+
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.alterTable('folders', (table) => {
     table.dropColumn('seen')
-    table.integer('seenCount').notNullable().defaultTo(0)
-    table.integer('totalCount').notNullable().defaultTo(0)
+    table.integer('seenCount').notNullable().defaultTo(DEFAULT_COUNT)
+    table.integer('totalCount').notNullable().defaultTo(DEFAULT_COUNT)
   })
 }
 
