@@ -8,7 +8,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import { AssertVoidFn, ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -39,7 +39,7 @@ class BaseAppPubSubTests extends PubSub {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
@@ -92,7 +92,7 @@ export class AppPubSubTests extends PubSub {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
@@ -434,7 +434,7 @@ export class PubSubStartDeferred extends BaseAppPubSubTests {
     const spy = sinon.stub(PubSub, 'ExecuteInterval')
     try {
       PubSub.StartDeferred()
-      AssertVoidFn(this.setIntervalStub.firstCall.args[0])()
+      Cast<() => void>(this.setIntervalStub.firstCall.args[0])()
       expect(spy.called).to.equal(true)
     } finally {
       spy.restore()

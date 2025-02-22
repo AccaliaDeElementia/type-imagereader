@@ -12,7 +12,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { WebSockets } from '../../../public/scripts/slideshow/sockets'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 
 type Websocket = Socket
 
@@ -48,7 +48,7 @@ export class SlideshowSocketsTests extends WebSockets {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,
@@ -76,7 +76,7 @@ export class SlideshowSocketsTests extends WebSockets {
 
   async connectSocket(onConnect: OnWebsocketConnect): Promise<void> {
     const result = (async () => {
-      const socket = ForceCastTo<Websocket>(
+      const socket = Cast<Websocket>(
         await promisify((cb) =>
           this.socketServer.on('connection', (socket) => {
             cb(null, socket)
@@ -148,7 +148,7 @@ export class SlideshowSocketsTests extends WebSockets {
       url: 'http://127.0.0.1:2999/slideshow',
     })
     await this.connectSocket(async (socket) => {
-      connectedRoom = ForceCastTo<string | undefined>(
+      connectedRoom = Cast<string | undefined>(
         await promisify((cb) =>
           socket.on('join-slideshow', (value) => {
             cb(null, value)
@@ -167,7 +167,7 @@ export class SlideshowSocketsTests extends WebSockets {
       url: 'http://127.0.0.1:2999/slideshow' + expectedPath,
     })
     await this.connectSocket(async (socket) => {
-      connectedRoom = ForceCastTo<string | undefined>(
+      connectedRoom = Cast<string | undefined>(
         await promisify((cb) =>
           socket.on('join-slideshow', (value) => {
             cb(null, value)
@@ -471,7 +471,7 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2,
     })
     await this.connectSocket(async (socket) => {
-      global.window.visualViewport = ForceCastTo<VisualViewport>({
+      global.window.visualViewport = Cast<VisualViewport>({
         scale: 1.5,
       })
       global.document.body.dispatchEvent(event)
@@ -491,7 +491,7 @@ export class SlideshowSocketsTests extends WebSockets {
       clientY: global.window.innerHeight / 2,
     })
     await this.connectSocket(async (socket) => {
-      global.window.visualViewport = ForceCastTo<VisualViewport>({
+      global.window.visualViewport = Cast<VisualViewport>({
         scale: 1.5,
       })
       global.document.body.dispatchEvent(event)
@@ -509,11 +509,11 @@ export class SlideshowSocketsTests extends WebSockets {
       clientX: global.window.innerWidth * (5 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    global.window.visualViewport = ForceCastTo<VisualViewport>({
+    global.window.visualViewport = Cast<VisualViewport>({
       scale: 1,
     })
     await this.connectSocket(async (socket) => {
-      global.window.visualViewport = ForceCastTo<VisualViewport>({
+      global.window.visualViewport = Cast<VisualViewport>({
         scale: 1.5,
       })
       global.document.body.dispatchEvent(event)

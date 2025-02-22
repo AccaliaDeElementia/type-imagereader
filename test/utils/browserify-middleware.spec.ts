@@ -6,9 +6,10 @@ import type Sinon from 'sinon'
 import * as sinon from 'sinon'
 
 import { StatusCodes } from 'http-status-codes'
+import type { Request, Response } from 'express'
 
 import browserifyMiddleware, { Imports, Functions } from '../../utils/browserify-middleware'
-import { Cast, StubToRequest, StubToResponse } from '../testutils/TypeGuards'
+import { Cast } from '../testutils/TypeGuards'
 
 @suite
 export class BrowserifyMiddlewareGetPathsTests {
@@ -382,7 +383,7 @@ export class BrowserifyMiddlewareSendScriptTests {
     send: sinon.stub().returnsThis(),
   }
 
-  FakeResponse = StubToResponse(this.StubResponse)
+  FakeResponse = Cast<Response>(this.StubResponse)
   CompileAndCacheStub?: Sinon.SinonStub
 
   before(): void {
@@ -864,8 +865,8 @@ export class BrowserifyMiddlewareTests {
     render: sinon.stub().returnsThis(),
   }
 
-  FakeRequest = StubToRequest(this.StubRequest)
-  FakeResponse = StubToResponse(this.StubResponse)
+  FakeRequest = Cast<Request>(this.StubRequest)
+  FakeResponse = Cast<Response>(this.StubResponse)
 
   WatchAllFoldersStub?: Sinon.SinonStub
   SendScriptStub?: Sinon.SinonStub

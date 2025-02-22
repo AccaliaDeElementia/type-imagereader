@@ -11,7 +11,7 @@ import { PubSub } from '../../../public/scripts/app/pubsub'
 import type { Folder } from '../../../public/scripts/app/folders'
 import { Folders, isData, isFolder } from '../../../public/scripts/app/folders'
 import assert from 'assert'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -450,7 +450,7 @@ abstract class BaseFolderTests extends PubSub {
     })
     this.document = this.dom.window.document
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 

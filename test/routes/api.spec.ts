@@ -16,7 +16,7 @@ import { Functions, ModCount } from '../../routes/apiFunctions'
 
 import assert from 'assert'
 import type { Debugger } from 'debug'
-import { Cast, ForceCastTo, StubToKnex, StubToRequestHandler } from '../testutils/TypeGuards'
+import { Cast, StubToKnex } from '../testutils/TypeGuards'
 
 @suite
 export class ApiIsbodyDataTests {
@@ -158,9 +158,9 @@ export class ApiReadBodyTests {
 
 @suite
 export class ApiGetRouterTests {
-  ApplicationFake = ForceCastTo<Application>({ App: Math.random() })
-  ServerFake = ForceCastTo<Server>({ Server: Math.random() })
-  SocketServerFake = ForceCastTo<WebSocketServer>({ Sockets: Math.random() })
+  ApplicationFake = Cast<Application>({ App: Math.random() })
+  ServerFake = Cast<Server>({ Server: Math.random() })
+  SocketServerFake = Cast<WebSocketServer>({ Sockets: Math.random() })
   InitializeStub?: Sinon.SinonStub
 
   RouterStub = {
@@ -172,7 +172,7 @@ export class ApiGetRouterTests {
 
   before(): void {
     this.InitializeStub = sinon.stub(persistance, 'initialize').resolves()
-    this.MakeRouterStub = sinon.stub(Imports, 'Router').returns(ForceCastTo<Router>(this.RouterStub))
+    this.MakeRouterStub = sinon.stub(Imports, 'Router').returns(Cast<Router>(this.RouterStub))
   }
 
   after(): void {
@@ -282,7 +282,7 @@ export class ApiGetRootRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -291,7 +291,7 @@ export class ApiGetRootRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -303,17 +303,17 @@ export class ApiGetRootRouteTests {
     const getFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves()
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         get: getFn,
         post: sinon.stub(),
       }),
     )
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
-    this.RouteHandler = ForceCastTo<RequestHandler>(getFn.getCalls().find((call) => call.args[0] === '/')?.args[1])
+    this.RouteHandler = Cast<RequestHandler>(getFn.getCalls().find((call) => call.args[0] === '/')?.args[1])
 
     InitializeStub.restore()
     MakeRouterStub.restore()
@@ -391,7 +391,7 @@ export class ApiGetHealthcheckRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -400,7 +400,7 @@ export class ApiGetHealthcheckRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -412,19 +412,17 @@ export class ApiGetHealthcheckRouteTests {
     const getFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves()
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         get: getFn,
         post: sinon.stub(),
       }),
     )
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
-    this.RouteHandler = ForceCastTo<RequestHandler>(
-      getFn.getCalls().find((call) => call.args[0] === '/healthcheck')?.args[1],
-    )
+    this.RouteHandler = Cast<RequestHandler>(getFn.getCalls().find((call) => call.args[0] === '/healthcheck')?.args[1])
 
     InitializeStub.restore()
     MakeRouterStub.restore()
@@ -505,7 +503,7 @@ export class ApiGetListingRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -514,7 +512,7 @@ export class ApiGetListingRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -528,20 +526,18 @@ export class ApiGetListingRouteTests {
     const getFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(StubToKnex(this.KnexFake))
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         get: getFn,
         post: sinon.stub(),
       }),
     )
     this.GetListingStub = sinon.stub(Functions, 'GetListing').resolves()
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
-    this.RouteHandler = ForceCastTo<RequestHandler>(
-      getFn.getCalls().find((call) => call.args[0] === '/listing')?.args[1],
-    )
+    this.RouteHandler = Cast<RequestHandler>(getFn.getCalls().find((call) => call.args[0] === '/listing')?.args[1])
 
     InitializeStub.restore()
     MakeRouterStub.restore()
@@ -737,7 +733,7 @@ export class ApiNavigateLatestRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -746,7 +742,7 @@ export class ApiNavigateLatestRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -760,7 +756,7 @@ export class ApiNavigateLatestRouteTests {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(StubToKnex(this.KnexFake))
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         post: postFn,
         get: sinon.stub(),
       }),
@@ -770,11 +766,11 @@ export class ApiNavigateLatestRouteTests {
     this.IncrementModcountStub = sinon.stub(ModCount, 'Increment').returns(1)
     this.GetModcountStub = sinon.stub(ModCount, 'Get').returns(69)
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
-    this.RouteHandler = ForceCastTo<RequestHandler>(
+    this.RouteHandler = Cast<RequestHandler>(
       postFn.getCalls().find((call) => call.args[0] === '/navigate/latest')?.args[1],
     )
 
@@ -813,7 +809,7 @@ export class ApiNavigateLatestRouteTests {
   async 'it should return new modcount when validate passes'(): Promise<void> {
     this.ValidateModcountStub?.returns(true)
     this.IncrementModcountStub?.returns(5050)
-    const req = ForceCastTo<Request>({
+    const req = Cast<Request>({
       body: {
         path: '/image.png',
       },
@@ -995,7 +991,7 @@ export class ApiMarkReadRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -1004,7 +1000,7 @@ export class ApiMarkReadRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -1018,20 +1014,18 @@ export class ApiMarkReadRouteTests {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(StubToKnex(this.KnexFake))
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         post: postFn,
         get: sinon.stub(),
       }),
     )
     this.MarkFolderReadStub = sinon.stub(Functions, 'MarkFolderRead').resolves()
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
-    this.RouteHandler = ForceCastTo<RequestHandler>(
-      postFn.getCalls().find((call) => call.args[0] === '/mark/read')?.args[1],
-    )
+    this.RouteHandler = Cast<RequestHandler>(postFn.getCalls().find((call) => call.args[0] === '/mark/read')?.args[1])
 
     InitializeStub.restore()
     MakeRouterStub.restore()
@@ -1151,7 +1145,7 @@ export class ApiMarkUnreadRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -1160,7 +1154,7 @@ export class ApiMarkUnreadRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -1174,16 +1168,16 @@ export class ApiMarkUnreadRouteTests {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(StubToKnex(this.KnexFake))
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         post: postFn,
         get: sinon.stub(),
       }),
     )
     this.MarkFolderUnreadStub = sinon.stub(Functions, 'MarkFolderUnread').resolves()
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
     const fn = postFn.getCalls().find((call) => call.args[0] === '/mark/unread')?.args[1] as unknown
     this.RouteHandler = Cast(fn, (fn): fn is RequestHandler => typeof fn === 'function')
@@ -1304,7 +1298,7 @@ export class ApiGetBookmarksRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -1313,7 +1307,7 @@ export class ApiGetBookmarksRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -1327,16 +1321,16 @@ export class ApiGetBookmarksRouteTests {
     const getFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(StubToKnex(this.KnexFake))
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         get: getFn,
         post: sinon.stub(),
       }),
     )
     this.GetBookmarkStub = sinon.stub(Functions, 'GetBookmarks').resolves()
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
     const fn = getFn.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1] as unknown
     this.RouteHandler = Cast(fn, (fn): fn is RequestHandler => typeof fn === 'function')
@@ -1424,7 +1418,7 @@ export class ApiAddBookmarkRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -1433,7 +1427,7 @@ export class ApiAddBookmarkRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -1447,19 +1441,19 @@ export class ApiAddBookmarkRouteTests {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(StubToKnex(this.KnexFake))
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         post: postFn,
         get: sinon.stub(),
       }),
     )
     this.AddBookmarkStub = sinon.stub(Functions, 'AddBookmark').resolves()
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
     const fn = postFn.getCalls().find((call) => call.args[0] === '/bookmarks/add')?.args[1] as unknown
-    this.RouteHandler = ForceCastTo<RequestHandler>(fn)
+    this.RouteHandler = Cast<RequestHandler>(fn)
 
     InitializeStub.restore()
     MakeRouterStub.restore()
@@ -1579,7 +1573,7 @@ export class ApiRemoveBookmarkRouteTests {
     originalUrl: '/',
   }
 
-  RequestFake = ForceCastTo<Request>(this.RequestStub)
+  RequestFake = Cast<Request>(this.RequestStub)
 
   ResponseStub = {
     status: sinon.stub().returnsThis(),
@@ -1588,7 +1582,7 @@ export class ApiRemoveBookmarkRouteTests {
     end: sinon.stub().returnsThis(),
   }
 
-  ResponseFake = ForceCastTo<Response>(this.ResponseStub)
+  ResponseFake = Cast<Response>(this.ResponseStub)
 
   RouteHandler?: RequestHandler
 
@@ -1602,19 +1596,19 @@ export class ApiRemoveBookmarkRouteTests {
     const postFn = sinon.stub()
     const InitializeStub = sinon.stub(persistance, 'initialize').resolves(StubToKnex(this.KnexFake))
     const MakeRouterStub = sinon.stub(Imports, 'Router').returns(
-      ForceCastTo<Router>({
+      Cast<Router>({
         post: postFn,
         get: sinon.stub(),
       }),
     )
     this.RemoveBookmarkStub = sinon.stub(Functions, 'RemoveBookmark').resolves()
 
-    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(ForceCastTo<Debugger>(this.LoggerStub))
+    this.DebuggerStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
 
-    await getRouter(ForceCastTo<Application>(null), ForceCastTo<Server>(null), ForceCastTo<WebSocketServer>(null))
+    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
 
     const fn = postFn.getCalls().find((call) => call.args[0] === '/bookmarks/remove')?.args[1] as unknown
-    this.RouteHandler = StubToRequestHandler(fn)
+    this.RouteHandler = Cast<RequestHandler>(fn)
 
     InitializeStub.restore()
     MakeRouterStub.restore()

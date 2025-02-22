@@ -11,7 +11,7 @@ import { PubSub } from '../../../public/scripts/app/pubsub'
 import { WakeLock } from '../../../public/scripts/app/wakelock'
 import type { WakeLockSentinel } from '../../../public/scripts/app/wakelock'
 import assert from 'assert'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -34,7 +34,7 @@ class BaseTests extends PubSub {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
     PubSub.subscribers = {}

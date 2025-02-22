@@ -9,7 +9,7 @@ import type { Knex } from 'knex'
 
 import { Functions, ModCount, UriSafePath } from '../../routes/apiFunctions'
 import assert from 'assert'
-import { ForceCastTo, StubToKnex } from '../testutils/TypeGuards'
+import { Cast, StubToKnex } from '../testutils/TypeGuards'
 
 @suite
 export class ApiModCountTests {
@@ -1581,7 +1581,7 @@ export class ApiSetLatestPictureTests {
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
-    const knexInstance = ForceCastTo<KnexStub | undefined>(this.KnexStub.firstCall.returnValue)
+    const knexInstance = Cast<KnexStub | undefined>(this.KnexStub.firstCall.returnValue)
     assert(knexInstance !== undefined)
     expect(knexInstance.select.callCount).to.equal(1)
     expect(knexInstance.select.firstCall.args).to.deep.equal(['seen'])
@@ -1608,7 +1608,7 @@ export class ApiSetLatestPictureTests {
     await Functions.SetLatestPicture(this.KnexFake, '/foo/bar/image.pdf')
     expect(this.KnexStub.callCount).to.be.greaterThanOrEqual(2)
     expect(this.KnexStub.lastCall.args).to.deep.equal(['folders'])
-    const knexInstance = ForceCastTo<KnexStub | undefined>(this.KnexStub.lastCall.returnValue)
+    const knexInstance = Cast<KnexStub | undefined>(this.KnexStub.lastCall.returnValue)
     assert(knexInstance !== undefined)
     expect(knexInstance.update.callCount).to.equal(1)
     expect(knexInstance.update.firstCall.args).to.deep.equal([{ current: '/foo/bar/image.pdf' }])
@@ -1648,7 +1648,7 @@ export class ApiSetLatestPictureTests {
     expect(this.KnexStub.callCount).to.be.greaterThan(2)
     const call = this.KnexStub.getCalls().find((call) => call.args[0] === 'folders')
     assert(call !== undefined)
-    const returnValue = ForceCastTo<KnexStub>(call.returnValue)
+    const returnValue = Cast<KnexStub>(call.returnValue)
     expect(returnValue.increment.callCount).to.equal(1)
     expect(returnValue.increment.firstCall.args).to.deep.equal(['seenCount', 1])
     expect(this.GetPictureFoldersStub?.callCount).to.equal(1)
@@ -1666,7 +1666,7 @@ export class ApiSetLatestPictureTests {
     expect(this.KnexStub.callCount).to.be.greaterThan(2)
     const call = this.KnexStub.getCalls().filter((call) => call.args[0] === 'pictures')[1]
     assert(call !== undefined)
-    const returnValue = ForceCastTo<KnexStub>(call.returnValue)
+    const returnValue = Cast<KnexStub>(call.returnValue)
     expect(returnValue.update.callCount).to.equal(1)
     expect(returnValue.update.firstCall.args).to.deep.equal([{ seen: true }])
     expect(returnValue.where.callCount).to.equal(1)
@@ -1718,7 +1718,7 @@ export class ApiMarkFolderReadTests {
     await Functions.MarkFolderRead(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
-    const knex = ForceCastTo<KnexStubMarkFolder | undefined>(this.KnexStub.firstCall.returnValue)
+    const knex = Cast<KnexStubMarkFolder | undefined>(this.KnexStub.firstCall.returnValue)
     assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(1)
     expect(knex.update.firstCall.args).to.deep.equal([{ seen: true }])
@@ -1736,7 +1736,7 @@ export class ApiMarkFolderReadTests {
     await Functions.MarkFolderRead(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.secondCall.args).to.deep.equal(['folders'])
-    const knex = ForceCastTo<KnexStubMarkFolder | undefined>(this.KnexStub.secondCall.returnValue)
+    const knex = Cast<KnexStubMarkFolder | undefined>(this.KnexStub.secondCall.returnValue)
     assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(0)
     expect(knex.increment.callCount).to.equal(1)
@@ -1759,7 +1759,7 @@ export class ApiMarkFolderReadTests {
     await Functions.MarkFolderRead(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.thirdCall.args).to.deep.equal(['folders'])
-    const knex = ForceCastTo<KnexStubMarkFolder | undefined>(this.KnexStub.thirdCall.returnValue)
+    const knex = Cast<KnexStubMarkFolder | undefined>(this.KnexStub.thirdCall.returnValue)
     assert(knex !== undefined)
     expect(this.KnexRawStub.callCount).to.equal(1)
     expect(this.KnexRawStub.firstCall.args).to.deep.equal(['"totalCount"'])
@@ -1806,7 +1806,7 @@ export class ApiMarkFolderUnreadTests {
     await Functions.MarkFolderUnread(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(1)
     expect(this.KnexStub.firstCall.args).to.deep.equal(['pictures'])
-    const knex = ForceCastTo<KnexStubMarkFolder | undefined>(this.KnexStub.firstCall.returnValue)
+    const knex = Cast<KnexStubMarkFolder | undefined>(this.KnexStub.firstCall.returnValue)
     assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(1)
     expect(knex.update.firstCall.args).to.deep.equal([{ seen: false }])
@@ -1824,7 +1824,7 @@ export class ApiMarkFolderUnreadTests {
     await Functions.MarkFolderUnread(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.secondCall.args).to.deep.equal(['folders'])
-    const knex = ForceCastTo<KnexStubMarkFolder | undefined>(this.KnexStub.secondCall.returnValue)
+    const knex = Cast<KnexStubMarkFolder | undefined>(this.KnexStub.secondCall.returnValue)
     assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(0)
     expect(knex.increment.callCount).to.equal(1)
@@ -1845,7 +1845,7 @@ export class ApiMarkFolderUnreadTests {
     await Functions.MarkFolderUnread(this.KnexFake, '/foo/bar/baz/quux/')
     expect(this.KnexStub.callCount).to.equal(3)
     expect(this.KnexStub.thirdCall.args).to.deep.equal(['folders'])
-    const knex = ForceCastTo<KnexStubMarkFolder | undefined>(this.KnexStub.thirdCall.returnValue)
+    const knex = Cast<KnexStubMarkFolder | undefined>(this.KnexStub.thirdCall.returnValue)
     assert(knex !== undefined)
     expect(knex.update.callCount).to.equal(1)
     expect(knex.update.firstCall.args).to.deep.equal([{ seenCount: 0, current: null }])

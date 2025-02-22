@@ -16,7 +16,7 @@ import type { PageSelector, Picture } from '../../../public/scripts/app/pictures
 import { Loading } from '../../../public/scripts/app/loading'
 import { Navigation } from '../../../public/scripts/app/navigation'
 import assert from 'assert'
-import { Cast, ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -668,7 +668,7 @@ abstract class BaseAppPicturesTests extends PubSub {
     })
     this.document = this.dom.window.document
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 

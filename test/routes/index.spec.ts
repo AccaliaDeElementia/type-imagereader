@@ -9,8 +9,8 @@ import { StatusCodes } from 'http-status-codes'
 
 import { getRouter, Imports } from '../../routes/index'
 import assert from 'assert'
-import { ForceCastTo, StubToRequest, StubToResponse, StubToRequestHandler } from '../testutils/TypeGuards'
-import type { Application, Router } from 'express'
+import { Cast } from '../testutils/TypeGuards'
+import type { Application, Router, Request, Response } from 'express'
 import type { Server } from 'http'
 import type { Server as WebSocketServer } from 'socket.io'
 interface MockedRequest {
@@ -22,12 +22,12 @@ interface MockedResponse {
   render: Sinon.SinonStub
   redirect: Sinon.SinonStub
 }
-
+type RequestHandler = (req: Request, res: Response) => Promise<void>
 @suite
 export class ImagesGetRouterTests {
-  ApplicationFake = ForceCastTo<Application>({})
-  ServerFake = ForceCastTo<Server>({})
-  WebsocketsFake = ForceCastTo<WebSocketServer>({})
+  ApplicationFake = Cast<Application>({})
+  ServerFake = Cast<Server>({})
+  WebsocketsFake = Cast<WebSocketServer>({})
 
   RouterFake = {
     get: sinon.stub().returnsThis(),
@@ -46,7 +46,7 @@ export class ImagesGetRouterTests {
   RouterStub?: Sinon.SinonStub
 
   before(): void {
-    this.RouterStub = sinon.stub(Imports, 'Router').returns(ForceCastTo<Router>(this.RouterFake))
+    this.RouterStub = sinon.stub(Imports, 'Router').returns(Cast<Router>(this.RouterFake))
   }
 
   after(): void {
@@ -73,10 +73,10 @@ export class ImagesGetRouterTests {
     const fn = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
-    await fn(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await fn(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.redirect.callCount).to.equal(1)
     expect(this.ResponseStub.redirect.firstCall.args).to.deep.equal([StatusCodes.MOVED_TEMPORARILY, '/show'])
   }
@@ -99,13 +99,13 @@ export class ImagesGetRouterTests {
     const show = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/show')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(show !== undefined)
     expect(show).to.be.a('function')
     const showStar = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/show/*')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(showStar !== undefined)
     expect(showStar).to.be.a('function')
     expect(show).to.equal(showStar)
@@ -117,9 +117,9 @@ export class ImagesGetRouterTests {
     const show = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/show')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(show !== undefined)
-    await show(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await show(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(1)
     expect(this.ResponseStub.render.firstCall.args[0]).to.equal('app')
@@ -131,10 +131,10 @@ export class ImagesGetRouterTests {
     const show = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/show')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(show !== undefined)
     this.RequestStub.params = ['foo/bar/baz/']
-    await show(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await show(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(1)
     expect(this.ResponseStub.render.firstCall.args[0]).to.equal('app')
@@ -146,10 +146,10 @@ export class ImagesGetRouterTests {
     const show = this.RouterFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/show')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(show !== undefined)
     this.RequestStub.params = ['foo/../bar/']
-    await show(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await show(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
     expect(this.ResponseStub.render.callCount).to.equal(1)

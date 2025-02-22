@@ -18,7 +18,7 @@ describe('public/app/actions class GamepadButtons', () => {
     axes: [],
     buttons: [],
   }
-  let gamePad = Cast(testGamePad, (_): _ is Gamepad => true)
+  let gamePad = Cast<Gamepad>(testGamePad)
   let buttons: GamepadButtons = new GamepadButtons()
   beforeEach(() => {
     buttons = new GamepadButtons()
@@ -28,7 +28,7 @@ describe('public/app/actions class GamepadButtons', () => {
         .fill({ pressed: false, value: -9999, touched: false })
         .map(() => ({ pressed: false, value: 0, touched: false })),
     }
-    gamePad = Cast(testGamePad, (_): _ is Gamepad => true)
+    gamePad = Cast<Gamepad>(testGamePad)
   })
 
   afterEach(() => {

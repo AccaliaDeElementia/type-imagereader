@@ -34,7 +34,6 @@ export default [
       '@typescript-eslint/prefer-destructuring': 'off', //This hurts readability, at least as this project is designed
       '@typescript-eslint/no-floating-promises': 'error',
       'max-lines': 'off', //TODO: Sort this rule out eventually
-      'no-console': 'warn', // only set for debugging!
     },
   },
   {

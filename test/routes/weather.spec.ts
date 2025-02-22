@@ -6,22 +6,15 @@ import type Sinon from 'sinon'
 import * as sinon from 'sinon'
 
 import { StatusCodes } from 'http-status-codes'
-import type { Request, Response } from 'express'
+import type { Request, Response, Router, Application } from 'express'
+import type { Server } from 'http'
+import type { Server as WebSocketServer } from 'socket.io'
 
 import { getRouter, Functions, Imports } from '../../routes/weather'
 import type { OpenWeatherData } from '../../routes/weather'
 import assert from 'assert'
-import {
-  StubToRouter,
-  StubToApplication,
-  StubToServer,
-  StubToWebSocketServer,
-  StubToFetchResponse,
-  StubToRequestHandler,
-  ForceCastTo,
-  AssertPromiseVoidFn,
-} from '../testutils/TypeGuards'
-
+import { Cast } from '../testutils/TypeGuards'
+type RequestHandler = (req: Request, res: Response) => Promise<void>
 @suite
 export class ImportsEnvironmentLookupTests {
   clock?: Sinon.SinonFakeTimers
@@ -855,7 +848,7 @@ export class WeatherFunctionsGetWeatherTests {
   before(): void {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    this.FetchStub = sinon.stub(Imports, 'fetch').resolves(StubToFetchResponse(this.FetchResult))
+    this.FetchStub = sinon.stub(Imports, 'fetch').resolves(Cast<globalThis.Response>(this.FetchResult))
   }
 
   after(): void {
@@ -1206,9 +1199,9 @@ export class WeatherFunctionsUpdateWeatherTests {
 
 @suite
 export class WeatherRouterTests {
-  ApplicationFake = StubToApplication({})
-  ServerFake = StubToServer({})
-  WebsocketsFake = StubToWebSocketServer({})
+  ApplicationFake = Cast<Application>({})
+  ServerFake = Cast<Server>({})
+  WebsocketsFake = Cast<WebSocketServer>({})
 
   RouterFake = {
     get: sinon.stub().returnsThis(),
@@ -1228,7 +1221,7 @@ export class WeatherRouterTests {
   UpdateWeatherStub?: Sinon.SinonStub
 
   before(): void {
-    this.RouterStub = sinon.stub(Imports, 'Router').returns(StubToRouter(this.RouterFake))
+    this.RouterStub = sinon.stub(Imports, 'Router').returns(Cast<Router>(this.RouterFake))
     this.SetIntervalStub = sinon.stub(Imports, 'setInterval')
     this.UpdateWeatherStub = sinon.stub(Functions, 'UpdateWeather').resolves()
   }
@@ -1268,7 +1261,7 @@ export class WeatherRouterTests {
     this.UpdateWeatherStub?.resetHistory()
     expect(this.SetIntervalStub?.callCount).to.equal(1)
     expect(this.SetIntervalStub?.firstCall.args).to.have.lengthOf(2)
-    const fn = AssertPromiseVoidFn(this.SetIntervalStub?.firstCall.args[0])
+    const fn = Cast<() => Promise<void>>(this.SetIntervalStub?.firstCall.args[0])
     expect(this.UpdateWeatherStub?.called).to.equal(false)
     await fn()
     expect(this.UpdateWeatherStub?.called).to.equal(true)
@@ -1289,7 +1282,7 @@ export class WeatherRouterTests {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
     this.UpdateWeatherStub?.resetHistory()
     this.UpdateWeatherStub?.rejects(new Error('FOO'))
-    const fn = AssertPromiseVoidFn(this.SetIntervalStub?.firstCall.args[0])
+    const fn = Cast<() => Promise<void>>(this.SetIntervalStub?.firstCall.args[0])
     await fn()
     await Promise.resolve()
     assert(true, 'should not get an exception nor break due to unhandled promise rejection')
@@ -1306,9 +1299,9 @@ export class WeatherRouterTests {
   @test
   async 'it should send weather for / route'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    const fn = StubToRequestHandler(this.RouterFake.get.firstCall.args[1])
+    const fn = Cast<RequestHandler>(this.RouterFake.get.firstCall.args[1])
     expect(fn).to.be.a('function')
-    await fn(ForceCastTo<Request>(this.RequestStub), ForceCastTo<Response>(this.ResponseStub))
+    await fn(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
     expect(this.ResponseStub.json.callCount).to.equal(1)
@@ -1319,10 +1312,10 @@ export class WeatherRouterTests {
   @test
   async 'it should send error for error in / route'(): Promise<void> {
     await getRouter(this.ApplicationFake, this.ServerFake, this.WebsocketsFake)
-    const fn = StubToRequestHandler(this.RouterFake.get.firstCall.args[1])
+    const fn = Cast<RequestHandler>(this.RouterFake.get.firstCall.args[1])
     expect(fn).to.be.a('function')
     this.ResponseStub.status.onFirstCall().throws(new Error("I DON'T WANNA"))
-    await fn(ForceCastTo<Request>(this.RequestStub), ForceCastTo<Response>(this.ResponseStub))
+    await fn(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(2)
     expect(this.ResponseStub.status.secondCall.args).to.deep.equal([StatusCodes.INTERNAL_SERVER_ERROR])
     expect(this.ResponseStub.json.callCount).to.equal(1)

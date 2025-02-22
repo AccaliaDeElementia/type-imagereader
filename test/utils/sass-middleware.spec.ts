@@ -6,10 +6,11 @@ import type Sinon from 'sinon'
 import * as sinon from 'sinon'
 
 import { StatusCodes } from 'http-status-codes'
+import type { Request, Response } from 'express'
 
 import sassMiddleware, { Imports, Functions } from '../../utils/sass-middleware'
 import assert from 'assert'
-import { StubToResponse, StubToRequest, Cast } from '../testutils/TypeGuards'
+import { Cast } from '../testutils/TypeGuards'
 
 @suite
 export class SassMiddlewareCompileCssTests {
@@ -491,8 +492,8 @@ export class SassMiddlewareTests {
     send: sinon.stub().returnsThis(),
   }
 
-  FakeRequest = StubToRequest(this.StubRequest)
-  FakeResponse = StubToResponse(this.StubResponse)
+  FakeRequest = Cast<Request>(this.StubRequest)
+  FakeResponse = Cast<Response>(this.StubResponse)
 
   CompileAndCacheStub?: Sinon.SinonStub
   CompileFolderStub?: Sinon.SinonStub

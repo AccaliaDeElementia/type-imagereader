@@ -9,7 +9,7 @@ import { render } from 'pug'
 
 import { Functions, WeatherUpdater } from '../../../public/scripts/slideshow/weather'
 import OverlayUpdater from '../../../public/scripts/slideshow/overlay'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -51,7 +51,7 @@ export class SlideshowOverlayTests {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,

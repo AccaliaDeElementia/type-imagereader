@@ -3,11 +3,12 @@
 import { expect } from 'chai'
 import { suite, test } from '@testdeck/mocha'
 import Sinon, * as sinon from 'sinon'
-import { StubToKnex, StubToDebugger, AssertThisFn, Cast, AssertFn } from '../testutils/TypeGuards'
+import { StubToKnex, Cast } from '../testutils/TypeGuards'
 
 import persistence from '../../utils/persistance'
 
 import synchronize, { Functions, Imports, isRowCountResult } from '../../utils/syncfolders'
+import type { Debugger } from 'debug'
 
 @suite
 export class SyncFoldersIsRowCountResult {
@@ -234,7 +235,7 @@ export class SyncFoldersFindSyncItemsTests {
   KnexFnFake = StubToKnex(this.KnexFnStub)
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
     this.FsWalkerStub = sinon.stub(Imports, 'fsWalker').resolves()
     this.ChunkSyncItemsForInsertStub = sinon.stub(Functions, 'ChunkSyncItemsForInsert').returns({
       files: 0,
@@ -424,7 +425,7 @@ export class SyncFoldersFindSyncItemsTests {
 @suite
 export class SyncFoldersSyncNewPicturesTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = StubToDebugger(this.LoggerStub)
+  LoggerFake = Cast<Debugger>(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -480,7 +481,7 @@ export class SyncFoldersSyncNewPicturesTests {
   @test
   async 'it should construct nested select within insert call'(): Promise<void> {
     await Functions.SyncNewPictures(this.LoggerFake, this.KnexFnFake)
-    const fn = AssertThisFn(this.KnexInstanceStub.insert.firstCall.args[0])
+    const fn = Cast<(this: unknown) => void>(this.KnexInstanceStub.insert.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args[0]).to.deep.equal([
@@ -508,7 +509,7 @@ export class SyncFoldersSyncNewPicturesTests {
 @suite
 export class SyncFoldersSyncRemovedPicturesTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = StubToDebugger(this.LoggerStub)
+  LoggerFake = Cast<Debugger>(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -548,7 +549,7 @@ export class SyncFoldersSyncRemovedPicturesTests {
   @test
   async 'it should construct inner query to detect removed images'(): Promise<void> {
     await Functions.SyncRemovedPictures(this.LoggerFake, this.KnexFnFake)
-    const fn = AssertThisFn(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = Cast<(this: unknown) => void>(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
@@ -564,7 +565,7 @@ export class SyncFoldersSyncRemovedPicturesTests {
 @suite
 export class SyncFoldersSyncRemovedBookmarksTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = StubToDebugger(this.LoggerStub)
+  LoggerFake = Cast<Debugger>(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -604,7 +605,7 @@ export class SyncFoldersSyncRemovedBookmarksTests {
   @test
   async 'it should construct inner query to detect removed images'(): Promise<void> {
     await Functions.SyncRemovedBookmarks(this.LoggerFake, this.KnexFnFake)
-    const fn = AssertThisFn(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = Cast<(this: unknown) => void>(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
@@ -628,7 +629,7 @@ export class SyncFoldersSyncAllPicturesTests {
   KnexFake = StubToKnex({ id: Math.random() })
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
     this.SyncNewPicturesStub = sinon.stub(Functions, 'SyncNewPictures').resolves()
     this.SyncRemovedPicturesStub = sinon.stub(Functions, 'SyncRemovedPictures').resolves()
     this.SyncRemovedBookmarksStub = sinon.stub(Functions, 'SyncRemovedBookmarks').resolves()
@@ -676,7 +677,7 @@ export class SyncFoldersSyncAllPicturesTests {
 @suite
 export class SyncFoldersSyncNewFoldersTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = StubToDebugger(this.LoggerStub)
+  LoggerFake = Cast<Debugger>(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -726,7 +727,7 @@ export class SyncFoldersSyncNewFoldersTests {
   @test
   async 'it should construct nested select within insert call'(): Promise<void> {
     await Functions.SyncNewFolders(this.LoggerFake, this.KnexFnFake)
-    const fn = AssertThisFn(this.KnexInstanceStub.insert.firstCall.args[0])
+    const fn = Cast<(this: unknown) => void>(this.KnexInstanceStub.insert.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args[0]).to.deep.equal([
@@ -753,7 +754,7 @@ export class SyncFoldersSyncNewFoldersTests {
 @suite
 export class SyncFoldersSyncRemovedFoldersTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = StubToDebugger(this.LoggerStub)
+  LoggerFake = Cast<Debugger>(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -793,7 +794,7 @@ export class SyncFoldersSyncRemovedFoldersTests {
   @test
   async 'it should construct inner query to detect removed folders'(): Promise<void> {
     await Functions.SyncRemovedFolders(this.LoggerFake, this.KnexFnFake)
-    const fn = AssertThisFn(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = Cast<(this: unknown) => void>(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
@@ -809,7 +810,7 @@ export class SyncFoldersSyncRemovedFoldersTests {
 @suite
 export class SyncFoldersSyncMissingCoverImagesTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = StubToDebugger(this.LoggerStub)
+  LoggerFake = Cast<Debugger>(this.LoggerStub)
 
   KnexInnerInstanceStub = {
     select: sinon.stub().returnsThis(),
@@ -846,7 +847,7 @@ export class SyncFoldersSyncMissingCoverImagesTests {
   async "it should only select folders where cover image doesn't exist in the pictures table"(): Promise<void> {
     await Functions.SyncMissingCoverImages(this.LoggerFake, this.KnexFnFake)
     expect(this.KnexInstanceStub.whereNotExists.callCount).to.equal(1)
-    const fn = AssertThisFn(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = Cast<(this: unknown) => void>(this.KnexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(this.KnexInnerInstanceStub)
     expect(this.KnexInnerInstanceStub.select.callCount).to.equal(1)
     expect(this.KnexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
@@ -875,7 +876,7 @@ export class SyncFoldersSyncMissingCoverImagesTests {
 @suite
 export class SyncFoldersSyncFolderFirstImagesTests {
   LoggerStub: Sinon.SinonStub = sinon.stub()
-  LoggerFake = StubToDebugger(this.LoggerStub)
+  LoggerFake = Cast<Debugger>(this.LoggerStub)
 
   InnerQueryBuilder = {
     select: sinon.stub().returnsThis(),
@@ -934,7 +935,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   @test
   async 'it should select folder name in CTE'(): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
-    AssertFn<unknown>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
+    Cast<(o: unknown) => void>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.select.callCount).to.equal(1)
     expect(this.InnerQueryBuilder.select.firstCall.args).to.have.lengthOf(1)
     expect(this.InnerQueryBuilder.select.firstCall.args[0]).to.equal('pictures.folder')
@@ -943,7 +944,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   @test
   async 'it should select minimum sortKey in CTE'(): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
-    AssertFn<unknown>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
+    Cast<(o: unknown) => void>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.min.callCount).to.equal(1)
     expect(this.InnerQueryBuilder.min.firstCall.args).to.have.lengthOf(1)
     expect(this.InnerQueryBuilder.min.firstCall.args[0]).to.equal('pictures.sortKey as sortKey')
@@ -952,7 +953,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   @test
   async 'it should select from pictures table in CTE'(): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
-    AssertFn<unknown>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
+    Cast<(o: unknown) => void>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.from.callCount).to.equal(1)
     expect(this.InnerQueryBuilder.from.firstCall.args).to.have.lengthOf(1)
     expect(this.InnerQueryBuilder.from.firstCall.args[0]).to.equal('pictures')
@@ -961,7 +962,7 @@ export class SyncFoldersSyncFolderFirstImagesTests {
   @test
   async 'it should group by foldername in CTE'(): Promise<void> {
     await Functions.SyncFolderFirstImages(this.LoggerFake, this.KnexFnFake)
-    AssertFn<unknown>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
+    Cast<(o: unknown) => void>(this.QueryBuilder.with.firstCall.args[1])(this.InnerQueryBuilder)
     expect(this.InnerQueryBuilder.groupBy.callCount).to.equal(1)
     expect(this.InnerQueryBuilder.groupBy.firstCall.args).to.have.lengthOf(1)
     expect(this.InnerQueryBuilder.groupBy.firstCall.args[0]).to.equal('pictures.folder')
@@ -1059,7 +1060,7 @@ export class SyncFoldersSyncAllFoldersTests {
   KnexFake = StubToKnex({ id: Math.random() })
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
     this.SyncNewFoldersStub = sinon.stub(Functions, 'SyncNewFolders').resolves()
     this.SyncRemovedFoldersStub = sinon.stub(Functions, 'SyncRemovedFolders').resolves()
     this.SyncMissingCoverImagesStub = sinon.stub(Functions, 'SyncMissingCoverImages').resolves()
@@ -1330,7 +1331,7 @@ export class SyncFoldersUpdateFolderPictureCountsTests {
   KnexFnFake = StubToKnex(this.KnexFnStub)
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
     this.GetFolderInfosWithPicturesStub = sinon.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
     this.GetAllFolderInfosStub = sinon.stub(Functions, 'GetAllFolderInfos').resolves({})
     this.CalculateFolderInfosStub = sinon.stub(Functions, 'CalculateFolderInfos').returns([])
@@ -1472,7 +1473,7 @@ export class SyncFoldersPruneEmptyFoldersTests {
   KnexFnFake = StubToKnex(this.KnexFnStub)
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
   }
 
   after(): void {
@@ -1524,7 +1525,7 @@ export class SyncFoldersSynchronizeTests {
   KnexFnStub = sinon.stub().returnsThis()
 
   before(): void {
-    this.DebugStub = sinon.stub(Imports, 'debug').returns(StubToDebugger(this.LoggerStub))
+    this.DebugStub = sinon.stub(Imports, 'debug').returns(Cast<Debugger>(this.LoggerStub))
     this.PersistenceIntitializerStub = sinon.stub(persistence, 'initialize').resolves(StubToKnex(this.KnexFnStub))
     this.FindSyncItemsStub = sinon.stub(Functions, 'FindSyncItems').resolves(1)
     this.SyncAllPicturesStub = sinon.stub(Functions, 'SyncAllPictures').resolves()

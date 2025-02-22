@@ -14,7 +14,7 @@ import {
   Functions,
   isWeatherResults,
 } from '../../../public/scripts/slideshow/weather'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -341,7 +341,7 @@ export class SlideshowWeatherTests {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     Object.defineProperty(global, 'document', {
       configurable: true,

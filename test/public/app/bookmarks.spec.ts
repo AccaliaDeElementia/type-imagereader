@@ -19,7 +19,7 @@ import {
   isDataWithBookmarks,
 } from '../../../public/scripts/app/bookmarks'
 import assert from 'assert'
-import { Cast, ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 import { RejectString } from '../../testutils/Errors'
 
 const markup = `
@@ -586,7 +586,7 @@ abstract class BaseBookmarksTests extends PubSub {
     })
     this.document = this.dom.window.document
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
 
@@ -687,7 +687,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should use GetJSON when loading Bookmarks'(): Promise<void> {
     Bookmarks.Init()
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:LOAD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:LOAD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler(undefined)
     expect(this.GetJSONSpy.calledWith('/api/bookmarks')).to.equal(true)
@@ -696,7 +696,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should build bookmarks with undefined when loading Bookmarks results in blank results'(): Promise<void> {
     Bookmarks.Init()
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:LOAD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:LOAD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler(undefined)
     expect(this.BuildBookmarksSpy.firstCall.args[0]).to.deep.equal({
@@ -708,7 +708,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it should build bookmarks with results of loading Bookmarks'(): Promise<void> {
     Bookmarks.Init()
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:LOAD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:LOAD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     this.GetJSONSpy.resolves([true, false, 42, 3.1415926])
     await handler(undefined)
@@ -729,7 +729,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
     expect(this.PostJSONSpy.calledWith('/api/bookmarks/add')).to.equal(true)
@@ -743,9 +743,9 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
-    await handler(ForceCastTo<string>(42))
+    await handler(Cast<string>(42))
     expect(this.PostJSONSpy.called).to.equal(false)
   }
 
@@ -754,7 +754,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
 
@@ -775,7 +775,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
@@ -790,7 +790,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
@@ -806,7 +806,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
@@ -821,7 +821,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
@@ -844,7 +844,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
     expect(this.PostJSONSpy.calledWith('/api/bookmarks/remove')).to.equal(true)
@@ -858,9 +858,9 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
-    await handler(ForceCastTo<string>(42))
+    await handler(Cast<string>(42))
     expect(this.PostJSONSpy.called).to.equal(false)
   }
 
@@ -869,7 +869,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     await handler('/foo/bar/baz')
 
@@ -890,7 +890,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
@@ -905,7 +905,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
@@ -921,7 +921,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
@@ -936,7 +936,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     Bookmarks.Init()
     const successSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', successSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
@@ -952,7 +952,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   @test
   async 'it shhould tolerate PostJSON rejecting for Bookmarks:Load'(): Promise<void> {
     Bookmarks.Init()
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:LOAD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:LOAD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     this.GetJSONSpy.rejects('FOO')
     await handler('/foo/bar/baz')
@@ -967,7 +967,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     PubSub.Subscribe('Loading:Success', successSpy)
     const loadSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', loadSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:ADD']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     this.PostJSONSpy.rejects('FOO')
     await handler('/foo/bar/baz')
@@ -983,7 +983,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     PubSub.Subscribe('Loading:Success', successSpy)
     const loadSpy = sinon.stub()
     PubSub.Subscribe('Loading:Success', loadSpy)
-    const handler = ForceCastTo<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
+    const handler = Cast<SubscriberPromiseFunction | undefined>(PubSub.subscribers['BOOKMARKS:REMOVE']?.pop())
     assert(handler !== undefined, 'Handler must be found to have valid test')
     this.PostJSONSpy.rejects('FOO')
     await handler('/foo/bar/baz')

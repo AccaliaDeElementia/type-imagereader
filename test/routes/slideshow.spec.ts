@@ -11,22 +11,12 @@ import { getRouter, Config, Functions, Imports } from '../../routes/slideshow'
 
 import { Functions as apiFunctions } from '../../routes/apiFunctions'
 import persistance from '../../utils/persistance'
-import type { Application, Router } from 'express'
+import type { Application, Router, Request, Response } from 'express'
 import type { Server } from 'http'
 import type { Server as WebSocketServer, Socket as WebSocket } from 'socket.io'
 import assert from 'assert'
-import {
-  AssertPromiseFn,
-  AssertPromiseVoidFn,
-  ForceCastTo,
-  StubToKnex,
-  StubToRequest,
-  StubToResponse,
-  StubToRequestHandler,
-  AssertFn,
-  Cast,
-} from '../testutils/TypeGuards'
-
+import { StubToKnex, Cast } from '../testutils/TypeGuards'
+type RequestHandler = (req: Request, res: Response) => Promise<void>
 @suite
 export class SlideshowGetUnreadImageCount {
   KnexInstance = {
@@ -877,7 +867,7 @@ export class SlideshowTickCountdownTests {
     emit: sinon.stub().returnsThis(),
   }
 
-  IoFake = ForceCastTo<WebSocketServer>(this.IoStub)
+  IoFake = Cast<WebSocketServer>(this.IoStub)
 
   GetRoomStub?: Sinon.SinonStub
 
@@ -1074,7 +1064,7 @@ export class SlideshowHandleSocketTests {
     emit: sinon.stub().returnsThis(),
   }
 
-  IoFake = ForceCastTo<WebSocketServer>(this.IoStub)
+  IoFake = Cast<WebSocketServer>(this.IoStub)
 
   SocketStub = {
     emit: sinon.stub(),
@@ -1082,7 +1072,7 @@ export class SlideshowHandleSocketTests {
     on: sinon.stub(),
   }
 
-  SocketFake = ForceCastTo<WebSocket>(this.SocketStub)
+  SocketFake = Cast<WebSocket>(this.SocketStub)
 
   GetRoomStub?: Sinon.SinonStub
   SetLatestStub?: Sinon.SinonStub
@@ -1116,7 +1106,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'join-slideshow')
-      .map((call) => AssertPromiseFn<string>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: string) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn(roomname)
@@ -1143,7 +1133,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'get-launchId')
-      .map((call) => AssertPromiseFn<Sinon.SinonStub>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: Sinon.SinonStub) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const expected = Math.random() * 1000000
@@ -1167,7 +1157,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'join-slideshow')
-      .map((call) => AssertPromiseFn<string>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: string) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const expected = `/testRoom/${Math.random()}`
@@ -1182,7 +1172,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'join-slideshow')
-      .map((call) => AssertPromiseFn<string>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: string) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const expected = `/testRoom/${Math.random()}`
@@ -1199,7 +1189,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'join-slideshow')
-      .map((call) => AssertPromiseFn<string>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: string) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const expected = `/testRoom/${Math.random()}`
@@ -1222,7 +1212,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'prev-image')
-      .map((call) => AssertPromiseVoidFn(call.args[1]))[0]
+      .map((call) => Cast<undefined | (() => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
@@ -1239,7 +1229,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'prev-image')
-      .map((call) => AssertPromiseVoidFn(call.args[1]))[0]
+      .map((call) => Cast<undefined | (() => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
@@ -1258,7 +1248,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'prev-image')
-      .map((call) => AssertPromiseVoidFn(call.args[1]))[0]
+      .map((call) => Cast<undefined | (() => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
@@ -1282,7 +1272,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'next-image')
-      .map((call) => AssertPromiseVoidFn(call.args[1]))[0]
+      .map((call) => Cast<undefined | (() => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
@@ -1299,7 +1289,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'next-image')
-      .map((call) => AssertPromiseVoidFn(call.args[1]))[0]
+      .map((call) => Cast<undefined | (() => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
@@ -1318,7 +1308,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'next-image')
-      .map((call) => AssertPromiseVoidFn(call.args[1]))[0]
+      .map((call) => Cast<undefined | (() => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     await fn()
@@ -1342,7 +1332,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'goto-image')
-      .map((call) => AssertPromiseFn<Sinon.SinonStub>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: Sinon.SinonStub) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
@@ -1362,7 +1352,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'goto-image')
-      .map((call) => AssertPromiseFn<Sinon.SinonStub>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: Sinon.SinonStub) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
@@ -1381,7 +1371,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'goto-image')
-      .map((call) => AssertPromiseFn<Sinon.SinonStub>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: Sinon.SinonStub) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
@@ -1403,7 +1393,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'goto-image')
-      .map((call) => AssertPromiseFn<Sinon.SinonStub>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: Sinon.SinonStub) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
@@ -1422,7 +1412,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'goto-image')
-      .map((call) => AssertPromiseFn<Sinon.SinonStub>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: Sinon.SinonStub) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     expect(fn).to.be.a('function')
     const callback = sinon.stub()
@@ -1441,7 +1431,7 @@ export class SlideshowHandleSocketTests {
     const fn = this.SocketStub.on
       .getCalls()
       .filter((call) => call.args[0] === 'goto-image')
-      .map((call) => AssertPromiseFn<Sinon.SinonStub>(call.args[1]))[0]
+      .map((call) => Cast<undefined | ((o: Sinon.SinonStub) => Promise<void>)>(call.args[1]))[0]
     assert(fn !== undefined)
     const callback = sinon.stub()
     const room = { images: [], index: 0 }
@@ -1465,17 +1455,17 @@ interface FakeResponse {
 export class SlideshowGetRouterTests {
   KnexFake = StubToKnex({ Knex: Math.random() })
 
-  AppFake = ForceCastTo<Application>({ App: Math.random() })
+  AppFake = Cast<Application>({ App: Math.random() })
 
-  ServerFake = ForceCastTo<Server>({ Server: Math.random() })
+  ServerFake = Cast<Server>({ Server: Math.random() })
 
   IoStub = {
     on: sinon.stub().returnsThis(),
   }
 
-  IoFake = ForceCastTo<WebSocketServer>(this.IoStub)
+  IoFake = Cast<WebSocketServer>(this.IoStub)
 
-  SocketFake = ForceCastTo<WebSocket>({ Socket: Math.random() })
+  SocketFake = Cast<WebSocket>({ Socket: Math.random() })
 
   AppRouterStub = {
     get: sinon.stub(),
@@ -1501,7 +1491,7 @@ export class SlideshowGetRouterTests {
   before(): void {
     this.setIntervalStub = sinon.stub(Imports, 'setInterval')
     this.InitializeStub = sinon.stub(persistance, 'initialize').resolves(this.KnexFake)
-    this.RouterStub = sinon.stub(Imports, 'Router').returns(ForceCastTo<Router>(this.AppRouterStub))
+    this.RouterStub = sinon.stub(Imports, 'Router').returns(Cast<Router>(this.AppRouterStub))
     this.GetRoomStub = sinon.stub(Functions, 'GetRoomAndIncrementImage').resolves()
     this.HandleSocketStub = sinon.stub(Functions, 'HandleSocket')
     this.TickCountdownStub = sinon.stub(Functions, 'TickCountdown').resolves()
@@ -1547,10 +1537,10 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/launchId')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     Config.launchId = expected
     assert(handler !== undefined)
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.render.callCount).to.equal(0)
     expect(this.ResponseStub.json.callCount).to.equal(1)
@@ -1576,10 +1566,10 @@ export class SlideshowGetRouterTests {
   async 'it should tolerate handler for route / rejecting'(): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.AppRouterStub.get.secondCall.args[0]).to.equal('/')
-    const fn = StubToRequestHandler(this.AppRouterStub.get.secondCall.args[1])
+    const fn = Cast<RequestHandler>(this.AppRouterStub.get.secondCall.args[1])
     const spy = sinon.stub(Functions, 'RootRoute').rejects('FOO')
     try {
-      await fn(StubToRequest(null), StubToResponse(null))
+      await fn(Cast<Request>(null), Cast<Response>(null))
     } finally {
       spy.restore()
     }
@@ -1589,10 +1579,10 @@ export class SlideshowGetRouterTests {
   async 'it should tolerate handler for route /* rejecting'(): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     expect(this.AppRouterStub.get.thirdCall.args[0]).to.equal('/*')
-    const fn = StubToRequestHandler(this.AppRouterStub.get.thirdCall.args[1])
+    const fn = Cast<RequestHandler>(this.AppRouterStub.get.thirdCall.args[1])
     const spy = sinon.stub(Functions, 'RootRoute').rejects('FOO')
     try {
-      await fn(StubToRequest(null), StubToResponse(null))
+      await fn(Cast<Request>(null), Cast<Response>(null))
     } finally {
       spy.restore()
     }
@@ -1604,11 +1594,11 @@ export class SlideshowGetRouterTests {
     const fn = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     const fn2 = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/*')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(fn !== undefined)
     assert(fn2 !== undefined)
     expect(fn).to.equal(fn2)
@@ -1620,10 +1610,10 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/../bar/']
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.have.lengthOf(1)
     expect(this.ResponseStub.status.firstCall.args[0]).to.equal(StatusCodes.FORBIDDEN)
@@ -1635,10 +1625,10 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/../bar/']
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(2)
     expect(this.ResponseStub.render.firstCall.args[0]).to.equal('error')
@@ -1655,10 +1645,10 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = []
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.GetRoomStub?.callCount).to.equal(1)
     expect(this.GetRoomStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.GetRoomStub?.firstCall.args[0]).to.equal(this.KnexFake)
@@ -1671,10 +1661,10 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.GetRoomStub?.callCount).to.equal(1)
     expect(this.GetRoomStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.GetRoomStub?.firstCall.args[0]).to.equal(this.KnexFake)
@@ -1687,11 +1677,11 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.resolves({ images: [] })
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.have.lengthOf(1)
     expect(this.ResponseStub.status.firstCall.args[0]).to.equal(StatusCodes.NOT_FOUND)
@@ -1703,11 +1693,11 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.resolves({ images: [] })
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(2)
     expect(this.ResponseStub.render.firstCall.args[0]).to.equal('error')
@@ -1724,11 +1714,11 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.resolves({ images: [] })
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.have.lengthOf(1)
     expect(this.ResponseStub.status.firstCall.args[0]).to.equal(StatusCodes.NOT_FOUND)
@@ -1740,11 +1730,11 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.resolves({ images: [] })
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(2)
     expect(this.ResponseStub.render.firstCall.args[0]).to.equal('error')
@@ -1761,11 +1751,11 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.rejects(new Error('FOO'))
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(1)
     expect(this.ResponseStub.status.firstCall.args).to.have.lengthOf(1)
     expect(this.ResponseStub.status.firstCall.args[0]).to.equal(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -1777,12 +1767,12 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     const msg = new Error('FOO!')
     this.GetRoomStub?.rejects(msg)
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(2)
     expect(this.ResponseStub.render.firstCall.args[0]).to.equal('error')
@@ -1799,14 +1789,14 @@ export class SlideshowGetRouterTests {
     const handler = this.AppRouterStub.get
       .getCalls()
       .filter((call) => call.args[0] === '/')
-      .map((call) => StubToRequestHandler(call.args[1]))[0]
+      .map((call) => Cast<RequestHandler>(call.args[1]))[0]
     assert(handler !== undefined)
     this.RequestStub.params = ['foo/bar/']
     this.GetRoomStub?.resolves({
       images: [1],
       uriSafeImage: '/foo/bar/pngImage.gif',
     })
-    await handler(StubToRequest(this.RequestStub), StubToResponse(this.ResponseStub))
+    await handler(Cast<Request>(this.RequestStub), Cast<Response>(this.ResponseStub))
     expect(this.ResponseStub.status.callCount).to.equal(0)
     expect(this.ResponseStub.render.callCount).to.equal(1)
     expect(this.ResponseStub.render.firstCall.args).to.have.lengthOf(2)
@@ -1825,7 +1815,7 @@ export class SlideshowGetRouterTests {
     expect(this.IoStub.on.firstCall.args).to.have.lengthOf(2)
     expect(this.IoStub.on.firstCall.args[0]).to.equal('connection')
     expect(this.IoStub.on.firstCall.args[1]).to.be.a('function')
-    AssertFn<unknown>(this.IoStub.on.firstCall.args[1])(this.SocketFake)
+    Cast<(o: unknown) => void>(this.IoStub.on.firstCall.args[1])(this.SocketFake)
     expect(this.HandleSocketStub?.callCount).to.equal(1)
     expect(this.HandleSocketStub?.firstCall.args).to.have.lengthOf(3)
     expect(this.HandleSocketStub?.firstCall.args[0]).to.equal(this.KnexFake)
@@ -1840,7 +1830,7 @@ export class SlideshowGetRouterTests {
     expect(this.setIntervalStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.setIntervalStub?.firstCall.args[0]).to.be.a('function')
     expect(this.setIntervalStub?.firstCall.args[1]).to.equal(1000)
-    await AssertPromiseVoidFn(this.setIntervalStub?.firstCall.args[0])()
+    await Cast<() => Promise<void>>(this.setIntervalStub?.firstCall.args[0])()
     expect(this.TickCountdownStub?.callCount).to.equal(1)
     expect(this.TickCountdownStub?.firstCall.args).to.have.lengthOf(2)
     expect(this.TickCountdownStub?.firstCall.args[0]).to.equal(this.KnexFake)
@@ -1851,7 +1841,7 @@ export class SlideshowGetRouterTests {
   async 'it should tolerate TickCountdown rejecting'(): Promise<void> {
     await getRouter(this.AppFake, this.ServerFake, this.IoFake)
     this.TickCountdownStub?.rejects('FOO')
-    await AssertPromiseVoidFn(this.setIntervalStub?.firstCall.args[0])()
+    await Cast<() => Promise<void>>(this.setIntervalStub?.firstCall.args[0])()
     await Promise.resolve()
     assert(true, 'should not reject or fail because inner promise rejects')
   }

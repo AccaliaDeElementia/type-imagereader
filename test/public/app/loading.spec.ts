@@ -9,7 +9,7 @@ import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
 import { Loading } from '../../../public/scripts/app/loading'
-import { ForceCastTo } from '../../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 
 const markup = `
 html
@@ -37,7 +37,7 @@ export class AppLoadingTests extends PubSub {
       url: 'http://127.0.0.1:2999',
     })
     this.existingWindow = global.window
-    global.window = ForceCastTo<Window & typeof globalThis>(this.dom.window)
+    global.window = Cast<Window & typeof globalThis>(this.dom.window)
     this.existingDocument = global.document
     global.document = this.dom.window.document
     this.consoleError = sinon.stub(global.window.console, 'error')
