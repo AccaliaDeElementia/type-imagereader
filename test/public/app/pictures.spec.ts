@@ -473,21 +473,21 @@ export class PictureIsDatasWithPictures {
   }
 
   @test
-  'it should reject null cover object'(): void {
+  'it should accept null cover object'(): void {
     const obj = {
       cover: null,
       noMenu: true,
     }
-    expect(isDataWithPictures(obj)).to.equal(false)
+    expect(isDataWithPictures(obj)).to.equal(true)
   }
 
   @test
-  'it should reject undefined cover object'(): void {
+  'it should accept undefined cover object'(): void {
     const obj = {
       cover: undefined,
       noMenu: true,
     }
-    expect(isDataWithPictures(obj)).to.equal(false)
+    expect(isDataWithPictures(obj)).to.equal(true)
   }
 
   @test

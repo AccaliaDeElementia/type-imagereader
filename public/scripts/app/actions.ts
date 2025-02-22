@@ -24,22 +24,67 @@ interface ButtonGroups {
   target: string
   buttons: ButtonDefinition[][]
 }
-interface GamepadStatus {
-  A: boolean
-  B: boolean
-  X: boolean
-  Y: boolean
-  L: boolean
-  R: boolean
-  Left: boolean
-  Right: boolean
-  Up: boolean
-  Down: boolean
+
+export class GamepadButtons {
+  public Buttons: Record<string, number> = {
+    A: 0,
+    B: 1,
+    X: 3,
+    Y: 2,
+    L: 4,
+    R: 5,
+    Left: 14,
+    Right: 15,
+    Up: 12,
+    Down: 13,
+  }
+
+  public pressingNow = false
+  public pressedButtons: string[] = []
+
+  public Reset(): void {
+    this.pressedButtons = []
+    this.pressingNow = false
+  }
+
+  public static IsPressed(pad: Gamepad, button: number): boolean {
+    return pad.buttons[button]?.pressed ?? false
+  }
+
+  private SetButton(btn: string, pressed: boolean): boolean {
+    if (pressed && this.pressedButtons.find((v) => v === btn) == null) {
+      this.pressedButtons.push(btn)
+    }
+    return pressed
+  }
+
+  private ReadThumbAxis(pad: Gamepad): boolean {
+    const Xaxis = pad.axes[0] ?? 0
+    const Yaxis = pad.axes[1] ?? 0
+    const directions: Array<[string, boolean]> = [
+      ['Left', Xaxis < -0.5],
+      ['Right', Xaxis > 0.5],
+      ['Up', Yaxis < -0.5],
+      ['Down', Yaxis > 0.5],
+    ]
+    let result = false
+    for (const [direction, pressed] of directions) {
+      result ||= this.SetButton(direction, pressed)
+    }
+    return result
+  }
+
+  public Read(pad: Gamepad): boolean {
+    let result = false
+    for (const [name, id] of Object.entries(this.Buttons)) {
+      result ||= this.SetButton(name, GamepadButtons.IsPressed(pad, id))
+    }
+    result ||= this.ReadThumbAxis(pad)
+    this.pressingNow = result
+    return result
+  }
 }
 
-function EitherOr(a: boolean, b: boolean): boolean {
-  return a || b
-}
 export class Actions {
   static setInnerTextMaybe(node: HTMLElement | null, text: string): void {
     if (node != null) {
@@ -237,53 +282,7 @@ export class Actions {
     }
   }
 
-  protected static lastStatus: GamepadStatus = {
-    A: false,
-    B: false,
-    X: false,
-    Y: false,
-    L: false,
-    R: false,
-    Left: false,
-    Right: false,
-    Up: false,
-    Down: false,
-  }
-
-  public static ReadGamepadButton(pad: Gamepad, button: number): boolean {
-    return pad.buttons[button]?.pressed ?? false
-  }
-
-  public static GetGamepadStatus(pad: Gamepad): GamepadStatus {
-    const Xaxis = pad.axes[0] ?? 0
-    const Yaxis = pad.axes[1] ?? 0
-    return {
-      A: this.ReadGamepadButton(pad, 0),
-      B: this.ReadGamepadButton(pad, 1),
-      X: this.ReadGamepadButton(pad, 3),
-      Y: this.ReadGamepadButton(pad, 2),
-      L: this.ReadGamepadButton(pad, 4),
-      R: this.ReadGamepadButton(pad, 5),
-      Left: Xaxis < -0.5 || this.ReadGamepadButton(pad, 14),
-      Right: Xaxis > 0.5 || this.ReadGamepadButton(pad, 15),
-      Up: Yaxis < -0.5 || this.ReadGamepadButton(pad, 12),
-      Down: Yaxis > 0.5 || this.ReadGamepadButton(pad, 13),
-    }
-  }
-
-  public static FoldStatus(status: GamepadStatus): void {
-    this.lastStatus.A = EitherOr(this.lastStatus.A, status.A)
-    this.lastStatus.B = EitherOr(this.lastStatus.B, status.B)
-    this.lastStatus.Y = EitherOr(this.lastStatus.Y, status.Y)
-    this.lastStatus.X = EitherOr(this.lastStatus.X, status.X)
-    this.lastStatus.L = EitherOr(this.lastStatus.L, status.L)
-    this.lastStatus.R = EitherOr(this.lastStatus.R, status.R)
-
-    this.lastStatus.Left = EitherOr(this.lastStatus.Left, status.Left)
-    this.lastStatus.Right = EitherOr(this.lastStatus.Right, status.Right)
-    this.lastStatus.Up = EitherOr(this.lastStatus.Up, status.Up)
-    this.lastStatus.Down = EitherOr(this.lastStatus.Down, status.Down)
-  }
+  public static gamepads: GamepadButtons = new GamepadButtons()
 
   public static ReadGamepad(): void {
     if (document.hidden) return
@@ -291,37 +290,18 @@ export class Actions {
     if (gamepads == null || gamepads.length < 1) return
     for (const pad of gamepads) {
       if (pad == null) continue
-      const status = this.GetGamepadStatus(pad)
-      const pressing = Object.values(status)
-        .map((v) => v === true)
-        .reduce((a, b) => a || b, false)
-      const pressed = Object.values(this.lastStatus)
-        .map((v) => v === true)
-        .reduce((a, b) => a || b, false)
-      if (pressing) {
-        this.FoldStatus(status)
-      } else if (pressed) {
-        const buttons = Object.entries(this.lastStatus)
-          .filter(([_, val]) => val === true)
-          .map(([key, _]) => key)
-          .join('')
-        this.lastStatus.A = false
-        this.lastStatus.B = false
-        this.lastStatus.X = false
-        this.lastStatus.Y = false
-        this.lastStatus.L = false
-        this.lastStatus.R = false
-        this.lastStatus.Left = false
-        this.lastStatus.Right = false
-        this.lastStatus.Up = false
-        this.lastStatus.Down = false
-        Publish(`Action:Gamepad:${buttons}`)
-      }
+      this.gamepads.Read(pad)
+    }
+    if (!this.gamepads.pressingNow && this.gamepads.pressedButtons.length > 0) {
+      const buttons = this.gamepads.pressedButtons.join('')
+      this.gamepads.Reset()
+      Publish(`Action:Gamepad:${buttons}`)
     }
   }
 
   public static Init(): void {
     this.BuildActions()
+    this.gamepads.Reset()
 
     Subscribe('Navigate:Data', (data) => {
       if (

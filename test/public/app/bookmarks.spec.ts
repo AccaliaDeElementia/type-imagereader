@@ -20,6 +20,7 @@ import {
 } from '../../../public/scripts/app/bookmarks'
 import assert from 'assert'
 import { Cast, ForceCastTo } from '../../testutils/TypeGuards'
+import { RejectString } from '../../testutils/Errors'
 
 const markup = `
 html
@@ -824,8 +825,9 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
-    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing rejecting non error
-    this.PostJSONSpy.callsFake(async () => await Promise.reject('not an error'))
+    this.PostJSONSpy.callsFake(async () => {
+      await RejectString('not an error')
+    })
     await handler('/foo/bar/baz')
     await Delay()
     expect(spy.called).to.equal(false)
@@ -938,8 +940,9 @@ export class BookmarksInitTests extends BaseBookmarksTests {
     assert(handler !== undefined, 'Handler must be found to have valid test')
     const spy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:LOAD'] = [spy]
-    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing rejecting non error
-    this.PostJSONSpy.callsFake(async () => await Promise.reject('not an error'))
+    this.PostJSONSpy.callsFake(async () => {
+      await RejectString('not an error')
+    })
 
     await handler('/foo/bar/baz')
     await Delay()

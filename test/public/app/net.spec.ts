@@ -5,7 +5,7 @@ import { suite, test } from '@testdeck/mocha'
 import * as sinon from 'sinon'
 
 import { Net } from '../../../public/scripts/app/net'
-import { EventuallyRejects } from '../../testutils/EventuallyErrors'
+import { EventuallyRejects } from '../../testutils/Errors'
 import { ForceCastTo } from '../../testutils/TypeGuards'
 
 interface TestResponse {

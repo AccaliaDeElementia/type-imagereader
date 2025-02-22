@@ -9,6 +9,13 @@ export function Cast<T>(obj: unknown, isT: (o: unknown) => o is T): T {
   throw new Error('Object is not correct type to cast')
 }
 
+export function MakeCastFn<T>(isT: (obj: unknown) => obj is T): (obj: unknown) => T {
+  return (obj) => {
+    if (isT(obj)) return obj
+    throw new Error('Input object not correct type')
+  }
+}
+
 //eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Allow Knex Tests
 export function IsKnex(_: unknown): _ is Knex<{}, unknown> {
   return true

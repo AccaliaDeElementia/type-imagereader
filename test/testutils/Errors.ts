@@ -1,5 +1,10 @@
 import { expect } from 'chai'
 
+export async function RejectString(message: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing rejecting non error
+  await Promise.reject(message)
+}
+
 export async function EventuallyRejects(promise: Promise<unknown>): Promise<Error> {
   try {
     await promise

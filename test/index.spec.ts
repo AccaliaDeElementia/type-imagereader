@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import type Sinon from 'sinon'
 import * as sinon from 'sinon'
-import { EventuallyRejects } from './testutils/EventuallyErrors'
+import { EventuallyRejects } from './testutils/Errors'
 
 import { ImageReader } from '..'
 

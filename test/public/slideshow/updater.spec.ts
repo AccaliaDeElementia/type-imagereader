@@ -9,7 +9,7 @@ import { render } from 'pug'
 
 import { CyclicManager, CyclicUpdater } from '../../../public/scripts/slideshow/updater'
 import assert from 'assert'
-import { EventuallyRejects } from '../../testutils/EventuallyErrors'
+import { EventuallyRejects } from '../../testutils/Errors'
 import { ForceCastTo } from '../../testutils/TypeGuards'
 
 const markup = `

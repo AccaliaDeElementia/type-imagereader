@@ -59,14 +59,16 @@ function hasPictureArray(obj: object): boolean {
   }
   return true
 }
+function hasBaseAttributes(obj: object): boolean {
+  if ('modCount' in obj && typeof obj.modCount !== 'number') return false
+  if ('cover' in obj && !(typeof obj.cover === 'string' || obj.cover == null)) return false
+  if ('noMenu' in obj && typeof obj.noMenu !== 'boolean') return false
+  return true
+}
 
 export function isDataWithPictures(obj: unknown): obj is DataWithPictures {
   if (obj == null || typeof obj !== 'object') return false
-  if (!hasPictureArray(obj)) return false
-  if ('modCount' in obj && typeof obj.modCount !== 'number') return false
-  if ('cover' in obj && typeof obj.cover !== 'string') return false
-  if ('noMenu' in obj && typeof obj.noMenu !== 'boolean') return false
-  return true
+  return hasPictureArray(obj) && hasBaseAttributes(obj)
 }
 
 function setTextContent(selector: string, content: string): void {
