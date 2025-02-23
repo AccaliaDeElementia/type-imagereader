@@ -187,8 +187,7 @@ export class SassMiddlewareCompileCssTests {
   @test
   async 'it should log error message when non Error is thrown'(): Promise<void> {
     this.CompileAsyncStub?.callsFake(() => {
-      // eslint-disable-next-line @typescript-eslint/only-throw-error -- Deliberately throw non error to test error handling
-      throw 'SOMETHING BAD'
+      throw Cast<Error>('SOMETHING BAD')
     })
     await Functions.CompileCss('/foo', '/bar.css').catch(() => 0)
     expect(this.LoggingStub?.calledWith('Error Compiling /bar.css:')).to.equal(true)
@@ -211,8 +210,7 @@ export class SassMiddlewareCompileCssTests {
   @test
   async 'it should throw generic error when non Error is thrown'(): Promise<void> {
     this.CompileAsyncStub?.callsFake(() => {
-      // eslint-disable-next-line @typescript-eslint/only-throw-error -- Deliberately throw non error to test error handling
-      throw 'SOMETHING BAD'
+      throw Cast<Error>('SOMETHING BAD')
     })
     await Functions.CompileCss('/foo', '/bar.css').then(
       () => expect.fail('Test should have rejected the promise'),

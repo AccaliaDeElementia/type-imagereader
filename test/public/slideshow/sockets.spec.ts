@@ -104,7 +104,7 @@ export class SlideshowSocketsTests extends WebSockets {
 
   @test
   async 'it should reset LocationAssign'(): Promise<void> {
-    WebSockets.LocationAssign = undefined
+    WebSockets.LocationAssign = Cast<(url: string | URL) => void>(undefined)
     await this.connectSocket(async (socket) => {
       await promisify((cb) =>
         socket.on('join-slideshow', () => {
@@ -112,13 +112,13 @@ export class SlideshowSocketsTests extends WebSockets {
         }),
       )()
     })
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Testing function equality, cannot bind function
-    expect(WebSockets.LocationAssign).to.equal(this.dom.window.location.assign)
+    expect(WebSockets.LocationAssign).to.be.an('function')
+    expect(WebSockets.LocationAssign.name).to.equal('bound assign')
   }
 
   @test
   async 'it should reset LocationReload'(): Promise<void> {
-    WebSockets.LocationReload = undefined
+    WebSockets.LocationReload = Cast<() => void>(undefined)
     await this.connectSocket(async (socket) => {
       await promisify((cb) =>
         socket.on('join-slideshow', () => {
@@ -126,8 +126,8 @@ export class SlideshowSocketsTests extends WebSockets {
         }),
       )()
     })
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Testing function equality, cannot bind function
-    expect(WebSockets.LocationReload).to.equal(this.dom.window.location.reload)
+    expect(WebSockets.LocationReload).to.be.an('function')
+    expect(WebSockets.LocationReload.name).to.equal('bound reload')
   }
 
   @test

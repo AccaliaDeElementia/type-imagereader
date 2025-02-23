@@ -497,8 +497,7 @@ export class BrowserifyMiddlewareSendScriptTests {
 
   @test
   async 'it should set INTERNAL_SERVER_ERROR response when script rejects non Error'(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- Testing error handling with non errors being rejected
-    Functions.browserified['/foo'] = Promise.reject('SOMETHING BAD')
+    Functions.browserified['/foo'] = Promise.reject(Cast<Error>('SOMETHING BAD'))
     await Functions.SendScript('/root', '/foo', this.FakeResponse)
     expect(this.StubResponse.status.calledWith(StatusCodes.INTERNAL_SERVER_ERROR)).to.equal(true)
     expect(

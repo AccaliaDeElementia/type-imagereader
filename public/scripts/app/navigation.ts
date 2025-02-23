@@ -138,8 +138,7 @@ export class Navigation {
   }
 
   public static Init(): void {
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- allow unboind saving of browser function
-    this.LocationAssign = window.location.assign
+    this.LocationAssign = window.location.assign.bind(window.location)
     this.current.path = this.FolderPath
     this.LoadData().catch(() => null)
     Subscribe('Navigate:Load', (path): void => {
