@@ -2,7 +2,7 @@
 
 import { Publish, Subscribe } from './pubsub'
 
-import { isPicture, type Picture } from './pictures'
+import { isPicture, type Picture } from './picturemarkup'
 import { isHTMLElement, CloneNode } from './utils'
 
 export interface Folder {
