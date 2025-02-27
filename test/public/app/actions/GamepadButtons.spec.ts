@@ -10,11 +10,14 @@ interface TestGamepadButton {
   value: number
   touched: boolean
 }
+
+interface TestGamepad {
+  axes: Array<number | undefined>
+  buttons: TestGamepadButton[]
+}
+
 describe('public/app/actions class GamepadButtons', () => {
-  let testGamePad: {
-    axes: Array<number | undefined>
-    buttons: TestGamepadButton[]
-  } = {
+  let testGamePad: TestGamepad = {
     axes: [],
     buttons: [],
   }
@@ -66,7 +69,7 @@ describe('public/app/actions class GamepadButtons', () => {
     })
   })
 
-  describe('Read()', () => {
+  const ReadButtonTests = (): void => {
     const validButtons: Array<[string, number]> = [
       ['A', 0],
       ['B', 1],
@@ -79,7 +82,7 @@ describe('public/app/actions class GamepadButtons', () => {
       ['Up', 12],
       ['Down', 13],
     ]
-    validButtons.forEach(([btn, id]) => {
+    validButtons.forEach(([btn, id]: [string, number]): void => {
       it(`should register button press when ${btn} is pressed`, () => {
         assert(testGamePad.buttons[id] != null)
         testGamePad.buttons[id].pressed = true
@@ -128,6 +131,9 @@ describe('public/app/actions class GamepadButtons', () => {
         expect(buttons.pressedButtons).to.deep.equal([btn])
       })
     })
+  }
+
+  const ReadAxisTests = (): void => {
     const validAxis: Array<[string, Array<number | undefined>, boolean]> = [
       ['Left', [-10, 0], true],
       ['Left', [-1.5, 0], true],
@@ -169,7 +175,7 @@ describe('public/app/actions class GamepadButtons', () => {
       ['Down', [0, 0], false],
       ['Down', [0, undefined], false],
     ]
-    validAxis.forEach(([axis, values, expected]) => {
+    validAxis.forEach(([axis, values, expected]: [string, Array<number | undefined>, boolean]): void => {
       const pressed = expected ? [axis] : []
       it(`Should ${expected ? 'set' : 'not set'} ${axis} when axis is ${JSON.stringify(values)}`, () => {
         testGamePad.axes = values
@@ -179,5 +185,9 @@ describe('public/app/actions class GamepadButtons', () => {
         expect(buttons.pressedButtons).to.deep.equal(pressed)
       })
     })
+  }
+  describe('Read()', () => {
+    ReadButtonTests()
+    ReadAxisTests()
   })
 })

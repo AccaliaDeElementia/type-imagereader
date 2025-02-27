@@ -7,7 +7,7 @@ import * as sinon from 'sinon'
 
 import type { Knex } from 'knex'
 
-import { Functions, ModCount, UriSafePath } from '../../routes/apiFunctions'
+import { Functions, ModCount, type SiblingFolderSearch, UriSafePath } from '../../routes/apiFunctions'
 import assert from 'assert'
 import { Cast, StubToKnex } from '../testutils/TypeGuards'
 
@@ -461,7 +461,8 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should select from folders twice for asc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexStub.callCount).to.equal(2)
     expect(this.KnexStub.firstCall.args).to.have.lengthOf(1)
     expect(this.KnexStub.firstCall.args[0]).to.equal('folders')
@@ -471,7 +472,8 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should select from folders twice for desc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo', 'desc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexStub.callCount).to.equal(2)
     expect(this.KnexStub.firstCall.args).to.have.lengthOf(1)
     expect(this.KnexStub.firstCall.args[0]).to.equal('folders')
@@ -481,7 +483,8 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should select same colums both times for asc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.select.callCount).to.equal(1)
     expect(this.KnexFirstCall.select.firstCall.args).to.have.lengthOf(3)
     expect(this.KnexFirstCall.select.firstCall.args).to.include('path')
@@ -496,7 +499,8 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should select same colums both times for desc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo', 'desc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.select.callCount).to.equal(1)
     expect(this.KnexFirstCall.select.firstCall.args).to.have.lengthOf(3)
     expect(this.KnexFirstCall.select.firstCall.args).to.include('path')
@@ -511,7 +515,8 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should filter for same sort key for asc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.where.callCount).to.equal(1)
     expect(this.KnexFirstCall.andWhere.callCount).to.equal(2)
     const queries = [
@@ -541,7 +546,8 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should filter for same sort key for desc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.where.callCount).to.equal(1)
     expect(this.KnexFirstCall.andWhere.callCount).to.equal(2)
     const queries = [
@@ -571,9 +577,10 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should filter for only unread on same sortkey for desc'(): Promise<void> {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'unread' }
     const rawQuery = { raw: Math.random() }
     this.RawStub.returns(rawQuery)
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'unread')
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.where.callCount).to.equal(1)
     expect(this.KnexFirstCall.andWhere.callCount).to.equal(3)
     const queries = [
@@ -593,7 +600,8 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should filter for different sort key for asc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexSecondCall.where.callCount).to.equal(1)
     expect(this.KnexSecondCall.andWhere.callCount).to.equal(1)
     const queries = [this.KnexSecondCall.where.firstCall.args, this.KnexSecondCall.andWhere.firstCall.args]
@@ -613,7 +621,8 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should filter for different sort key for desc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexSecondCall.where.callCount).to.equal(1)
     expect(this.KnexSecondCall.andWhere.callCount).to.equal(1)
     const queries = [this.KnexSecondCall.where.firstCall.args, this.KnexSecondCall.andWhere.firstCall.args]
@@ -633,9 +642,10 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should filter for only unread on same sortkey for asc'(): Promise<void> {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'unread' }
     const rawQuery = { raw: Math.random() }
     this.RawStub.returns(rawQuery)
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'unread')
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.where.callCount).to.equal(1)
     expect(this.KnexFirstCall.andWhere.callCount).to.equal(3)
     const queries = [
@@ -655,86 +665,98 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should order properly for same sort key for asc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.orderBy.callCount).to.equal(1)
     expect(this.KnexFirstCall.orderBy.firstCall.args).to.deep.equal(['path', 'asc'])
   }
 
   @test
   async 'it should order properly for same sort key for desc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.orderBy.callCount).to.equal(1)
     expect(this.KnexFirstCall.orderBy.firstCall.args).to.deep.equal(['path', 'desc'])
   }
 
   @test
   async 'it should order properly for different sort key for asc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexSecondCall.orderBy.callCount).to.equal(1)
     expect(this.KnexSecondCall.orderBy.firstCall.args).to.deep.equal(['sortKey', 'asc'])
   }
 
   @test
   async 'it should order properly for different sort key for desc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexSecondCall.orderBy.callCount).to.equal(1)
     expect(this.KnexSecondCall.orderBy.firstCall.args).to.deep.equal(['sortKey', 'desc'])
   }
 
   @test
   async 'it should limit same sort key query for asc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.limit.callCount).to.equal(1)
     expect(this.KnexFirstCall.limit.firstCall.args).to.deep.equal([1])
   }
 
   @test
   async 'it should limit same sort key query for desc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexFirstCall.limit.callCount).to.equal(1)
     expect(this.KnexFirstCall.limit.firstCall.args).to.deep.equal([1])
   }
 
   @test
   async 'it should limit different sort key query for asc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexSecondCall.limit.callCount).to.equal(1)
     expect(this.KnexSecondCall.limit.firstCall.args).to.deep.equal([1])
   }
 
   @test
   async 'it should limit different sort key query for desc'(): Promise<void> {
-    await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(this.KnexSecondCall.limit.callCount).to.equal(1)
     expect(this.KnexSecondCall.limit.firstCall.args).to.deep.equal([1])
   }
 
   @test
   async 'it should union same sortkey and different sort key queries for asc'(): Promise<void> {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
     this.KnexFirstCall.limit.resolves([{ path: '100' }])
     this.KnexSecondCall.limit.resolves([{ path: '200' }])
-    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    const result = await Functions.GetDirectionFolder(this.KnexFake, spec)
     assert(result != null)
     expect(result.path).to.equal('100')
   }
 
   @test
   async 'it should union same sortkey and different sort key queries for desc'(): Promise<void> {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
     this.KnexFirstCall.limit.resolves([])
     this.KnexSecondCall.limit.resolves([{ path: '200' }])
-    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'desc', 'all')
+    const result = await Functions.GetDirectionFolder(this.KnexFake, spec)
     assert(result != null)
     expect(result.path).to.equal('200')
   }
 
   @test
   async 'it should resolve null when query finds no results'(): Promise<void> {
-    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    const result = await Functions.GetDirectionFolder(this.KnexFake, spec)
     expect(result).to.equal(null)
   }
 
   @test
   async 'it should resolve parsed result when query finds results'(): Promise<void> {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
     this.KnexSecondCall.limit.resolves([
       {
         path: '/foo/abcde0',
@@ -742,7 +764,7 @@ export class ApiGetDirectionFolderTests {
         firstPicture: '/foo/abcde0/otherImage.png',
       },
     ])
-    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const result = await Functions.GetDirectionFolder(this.KnexFake, spec)
     assert(result !== null)
     expect(Object.keys(result)).to.have.lengthOf(3)
     expect(result.name).to.equal('abcde0')
@@ -752,6 +774,7 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should resolve uri safe results when query finds results'(): Promise<void> {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
     this.KnexFirstCall.limit.resolves([
       {
         path: '/foo/abcde<0>',
@@ -759,7 +782,7 @@ export class ApiGetDirectionFolderTests {
         firstPicture: '/foo/abcde<0>/otherImage.png',
       },
     ])
-    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const result = await Functions.GetDirectionFolder(this.KnexFake, spec)
     assert(result !== null)
     expect(Object.keys(result)).to.have.lengthOf(3)
     expect(result.name).to.equal('abcde<0>')
@@ -769,6 +792,7 @@ export class ApiGetDirectionFolderTests {
 
   @test
   async 'it should resolve with current image as cover when set'(): Promise<void> {
+    const spec: SiblingFolderSearch = { path: '', sortKey: 'foo69420', direction: 'asc', type: 'all' }
     this.KnexSecondCall.limit.resolves([
       {
         path: '/foo/abcde0',
@@ -776,13 +800,14 @@ export class ApiGetDirectionFolderTests {
         firstPicture: '/foo/abcde0/otherImage.png',
       },
     ])
-    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const result = await Functions.GetDirectionFolder(this.KnexFake, spec)
     assert(result !== null)
     expect(result.cover).to.equal('/foo/abcde0/image.png')
   }
 
   @test
   async 'it should resolve with firstPicture as cover when current image not set'(): Promise<void> {
+    const spec: SiblingFolderSearch = { path: '', sortKey: 'foo69420', direction: 'asc', type: 'all' }
     this.KnexFirstCall.limit.resolves([
       {
         path: '/foo/abcde0',
@@ -790,7 +815,7 @@ export class ApiGetDirectionFolderTests {
         firstPicture: '/foo/abcde0/otherImage.png',
       },
     ])
-    const result = await Functions.GetDirectionFolder(this.KnexFake, '/foo/bar', 'foo69420', 'asc', 'all')
+    const result = await Functions.GetDirectionFolder(this.KnexFake, spec)
     assert(result !== null)
     expect(result.cover).to.equal('/foo/abcde0/otherImage.png')
   }
@@ -824,19 +849,33 @@ export class ApiGetNextFolderTests {
   @test
   async 'it should call pass path parameter to do actual query'(): Promise<void> {
     await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
-    expect(this.GetDirectionFolderStub?.firstCall.args[1]).to.equal('/foo')
+    const param = Cast<SiblingFolderSearch | undefined>(this.GetDirectionFolderStub?.firstCall.args[1])
+    assert(param != null)
+    expect(param.path).to.equal('/foo')
   }
 
   @test
   async 'it should call pass sortkey parameter to do actual query'(): Promise<void> {
     await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo90210')
-    expect(this.GetDirectionFolderStub?.firstCall.args[2]).to.equal('foo90210')
+    const param = Cast<SiblingFolderSearch | undefined>(this.GetDirectionFolderStub?.firstCall.args[1])
+    assert(param != null)
+    expect(param.sortKey).to.equal('foo90210')
   }
 
   @test
   async 'it should call pass asc as direction parameter to do actual query'(): Promise<void> {
     await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
-    expect(this.GetDirectionFolderStub?.firstCall.args[3]).to.equal('asc')
+    const param = Cast<SiblingFolderSearch | undefined>(this.GetDirectionFolderStub?.firstCall.args[1])
+    assert(param != null)
+    expect(param.direction).to.equal('asc')
+  }
+
+  @test
+  async 'it should call pass all as type parameter to do actual query'(): Promise<void> {
+    await Functions.GetNextFolder(this.KnexFake, '/foo', 'foo')
+    const param = Cast<SiblingFolderSearch | undefined>(this.GetDirectionFolderStub?.firstCall.args[1])
+    assert(param != null)
+    expect(param.type).to.equal('all')
   }
 
   @test
@@ -876,19 +915,33 @@ export class ApiGetPreviousFolderTests {
   @test
   async 'it should call pass path parameter to do actual query'(): Promise<void> {
     await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo')
-    expect(this.GetDirectionFolderStub?.firstCall.args[1]).to.equal('/foo')
+    const param = Cast<SiblingFolderSearch | undefined>(this.GetDirectionFolderStub?.firstCall.args[1])
+    assert(param != null)
+    expect(param.path).to.equal('/foo')
   }
 
   @test
   async 'it should call pass sortkey parameter to do actual query'(): Promise<void> {
     await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo90210')
-    expect(this.GetDirectionFolderStub?.firstCall.args[2]).to.equal('foo90210')
+    const param = Cast<SiblingFolderSearch | undefined>(this.GetDirectionFolderStub?.firstCall.args[1])
+    assert(param != null)
+    expect(param.sortKey).to.equal('foo90210')
   }
 
   @test
   async 'it should call pass desc as direction parameter to do actual query'(): Promise<void> {
     await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo')
-    expect(this.GetDirectionFolderStub?.firstCall.args[3]).to.equal('desc')
+    const param = Cast<SiblingFolderSearch | undefined>(this.GetDirectionFolderStub?.firstCall.args[1])
+    assert(param != null)
+    expect(param.direction).to.equal('desc')
+  }
+
+  @test
+  async 'it should call pass all as type parameter to do actual query'(): Promise<void> {
+    await Functions.GetPreviousFolder(this.KnexFake, '/foo', 'foo')
+    const param = Cast<SiblingFolderSearch | undefined>(this.GetDirectionFolderStub?.firstCall.args[1])
+    assert(param != null)
+    expect(param.type).to.equal('all')
   }
 
   @test
@@ -1414,12 +1467,9 @@ export class ApiGetListingTests {
     await Functions.GetListing(this.KnexFake, '/foo/bar/')
     const call = this.GetDirectionFolderStub?.firstCall
     assert(call !== undefined)
-    expect(call.args).to.have.lengthOf(5)
+    expect(call.args).to.have.lengthOf(2)
     expect(call.args[0]).to.equal(this.KnexFake)
-    expect(call.args[1]).to.equal('/foo/bar/')
-    expect(call.args[2]).to.equal('bar>-<')
-    expect(call.args[3]).to.equal('asc')
-    expect(call.args[4]).to.equal('unread')
+    expect(call.args[1]).to.deep.equal({ path: '/foo/bar/', sortKey: 'bar>-<', direction: 'asc', type: 'unread' })
   }
 
   @test
@@ -1434,12 +1484,9 @@ export class ApiGetListingTests {
     await Functions.GetListing(this.KnexFake, '/foo/bar/')
     const call = this.GetDirectionFolderStub?.secondCall
     assert(call !== undefined)
-    expect(call.args).to.have.lengthOf(5)
+    expect(call.args).to.have.lengthOf(2)
     expect(call.args[0]).to.equal(this.KnexFake)
-    expect(call.args[1]).to.equal('/foo/bar/')
-    expect(call.args[2]).to.equal('bar>-<')
-    expect(call.args[3]).to.equal('desc')
-    expect(call.args[4]).to.equal('unread')
+    expect(call.args[1]).to.deep.equal({ path: '/foo/bar/', sortKey: 'bar>-<', direction: 'desc', type: 'unread' })
   }
 
   @test

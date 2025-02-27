@@ -374,6 +374,17 @@ export class PubSubRemoveIntervalTests extends BaseAppPubSubTests {
   }
 
   @test
+  'Preserves other interval from map'(): void {
+    PubSub.intervals['Other Interval'] = {
+      method: () => null,
+      delayCycles: 0,
+      intervalCycles: 0,
+    }
+    PubSub.RemoveInterval('Test Interval')
+    expect(PubSub.intervals['Other Interval']).to.not.equal(undefined)
+  }
+
+  @test
   'Can remove non existing interval from map'(): void {
     expect(() => {
       PubSub.RemoveInterval('Test Interval')

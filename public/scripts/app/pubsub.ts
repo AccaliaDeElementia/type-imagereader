@@ -66,8 +66,12 @@ export class PubSub {
   }
 
   static RemoveInterval(name: string): void {
-    //eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- todo: rewrite intervals to support removbing intervals without delete
-    if (name in this.intervals) delete this.intervals[name]
+    const ivals: Record<string, DeferredMethod & IntervalMethod> = {}
+    for (const [k, v] of Object.entries(this.intervals)) {
+      if (k === name) continue
+      ivals[k] = v
+    }
+    this.intervals = ivals
   }
 
   static ExecuteInterval(): void {

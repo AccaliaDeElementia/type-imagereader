@@ -128,6 +128,13 @@ interface DbBookmark {
   folder: string
 }
 
+export interface SiblingFolderSearch {
+  path: string
+  sortKey: string
+  direction: 'asc' | 'desc'
+  type: 'all' | 'unread'
+}
+
 export class Functions {
   public static async GetChildFolders(knex: Knex, path: string): Promise<FolderWithCounts[]> {
     const data = await knex('folders')
@@ -162,13 +169,9 @@ export class Functions {
     }
   }
 
-  // eslint-disable-next-line  @typescript-eslint/max-params -- TODO: refactor to simplify call
   public static async GetDirectionFolder(
     knex: Knex,
-    path: string,
-    sortKey: string,
-    direction: 'asc' | 'desc',
-    type: 'all' | 'unread',
+    { path, sortKey, direction, type }: SiblingFolderSearch,
   ): Promise<Folder | null> {
     const comparer = direction === 'asc' ? '>' : '<'
     const folderpath = normalize(dirname(path) + sep)
@@ -199,11 +202,11 @@ export class Functions {
   }
 
   public static async GetPreviousFolder(knex: Knex, path: string, sortKey: string): Promise<Folder | null> {
-    return await Functions.GetDirectionFolder(knex, path, sortKey, 'desc', 'all')
+    return await Functions.GetDirectionFolder(knex, { path, sortKey, direction: 'desc', type: 'all' })
   }
 
   public static async GetNextFolder(knex: Knex, path: string, sortKey: string): Promise<Folder | null> {
-    return await Functions.GetDirectionFolder(knex, path, sortKey, 'asc', 'all')
+    return await Functions.GetDirectionFolder(knex, { path, sortKey, direction: 'asc', type: 'all' })
   }
 
   public static async GetPictures(knex: Knex, path: string): Promise<Picture[]> {
@@ -257,9 +260,19 @@ export class Functions {
       return null
     }
     const next = await Functions.GetNextFolder(knex, path, folder.sortKey)
-    const nextUnread = await Functions.GetDirectionFolder(knex, path, folder.sortKey, 'asc', 'unread')
+    const nextUnread = await Functions.GetDirectionFolder(knex, {
+      path,
+      sortKey: folder.sortKey,
+      direction: 'asc',
+      type: 'unread',
+    })
     const prev = await Functions.GetPreviousFolder(knex, path, folder.sortKey)
-    const prevUnread = await Functions.GetDirectionFolder(knex, path, folder.sortKey, 'desc', 'unread')
+    const prevUnread = await Functions.GetDirectionFolder(knex, {
+      path,
+      sortKey: folder.sortKey,
+      direction: 'desc',
+      type: 'unread',
+    })
     const children = await Functions.GetChildFolders(knex, path)
     const pictures = await Functions.GetPictures(knex, path)
     const bookmarks = await Functions.GetBookmarks(knex)

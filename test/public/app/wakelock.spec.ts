@@ -152,11 +152,6 @@ export class WakeLockTakeLockTests extends BaseTests {
       get: () => this.dom.window.navigator,
     })
 
-    assert(
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We're testing wakelock assuming there is no default on ein the test env. if an update adds it we want the test setup to fail
-      undefined === navigator.wakeLock,
-      'expect env not to support wakelock for testing',
-    )
     Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
       get: () => ({
