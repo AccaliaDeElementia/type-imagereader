@@ -42,30 +42,28 @@ export function isRowCountResult(obj: unknown): obj is RowCountResult {
   return 'rowCount' in obj && typeof obj.rowCount === 'number'
 }
 
-export class Imports {
-  public static logPrefix = 'type-imagereader:syncfolders'
-  public static debug = _debug
-  public static fsWalker = _fsWalker
+export const Imports = {
+  logPrefix: 'type-imagereader:syncfolders',
+  debug: _debug,
+  fsWalker: _fsWalker,
 }
 
-export class Functions {
-  public static padLength = 20
-  public static ToSortKey(key: string): string {
+export const Functions = {
+  padLength: 20,
+  ToSortKey: (key: string): string => {
     const zeroes = '0'.repeat(Functions.padLength)
     return `${wordsToNumbers(key.toLowerCase())}`.replace(/(\d+)/g, (num) =>
       num.length >= Functions.padLength ? num : `${zeroes}${num}`.slice(-Functions.padLength),
     )
-  }
-
-  public static Chunk<T>(arr: T[], size = 1000): T[][] {
+  },
+  Chunk: <T>(arr: T[], size = 1000): T[][] => {
     const res = []
     for (let i = 0; i < arr.length; i += size) {
       res.push(arr.slice(i, i + size))
     }
     return res
-  }
-
-  public static ChunkSyncItemsForInsert(items: DirEntryItem[]): SyncItemChunks {
+  },
+  ChunkSyncItemsForInsert: (items: DirEntryItem[]): SyncItemChunks => {
     let files = 0
     let dirs = 0
     const chunks = Functions.Chunk(
@@ -94,9 +92,8 @@ export class Functions {
       dirs,
       chunks,
     }
-  }
-
-  public static async FindSyncItems(knex: Knex): Promise<number> {
+  },
+  FindSyncItems: async (knex: Knex): Promise<number> => {
     const logger = Imports.debug(`${Imports.logPrefix}:findItems`)
     await knex('syncitems').del()
     await knex('syncitems').insert({
@@ -122,9 +119,8 @@ export class Functions {
     })
     logger(`Found all ${dirs} dirs and ${files} files`)
     return files
-  }
-
-  public static async SyncNewPictures(logger: Debugger, knex: Knex): Promise<void> {
+  },
+  SyncNewPictures: async (logger: Debugger, knex: Knex): Promise<void> => {
     const insertedpics = await knex
       .from(knex.raw('?? (??, ??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey', 'pathHash']))
       .insert(function (this: Knex) {
@@ -144,34 +140,30 @@ export class Functions {
       ;[count] = insertedpics
     }
     logger(`Added ${count} new pictures`)
-  }
-
-  public static async SyncRemovedPictures(logger: Debugger, knex: Knex): Promise<void> {
+  },
+  SyncRemovedPictures: async (logger: Debugger, knex: Knex): Promise<void> => {
     const deletedpics = await knex('pictures')
       .whereNotExists(function () {
         this.select('*').from('syncitems').whereRaw('syncitems.path = pictures.path')
       })
       .delete()
     logger(`Removed ${deletedpics} missing pictures`)
-  }
-
-  public static async SyncRemovedBookmarks(logger: Debugger, knex: Knex): Promise<void> {
+  },
+  SyncRemovedBookmarks: async (logger: Debugger, knex: Knex): Promise<void> => {
     const removedBookmarks = await knex('bookmarks')
       .whereNotExists(function () {
         this.select('*').from('pictures').whereRaw('pictures.path = bookmarks.path')
       })
       .delete()
     logger(`Removed ${removedBookmarks} missing bookmarks`)
-  }
-
-  public static async SyncAllPictures(knex: Knex): Promise<void> {
+  },
+  SyncAllPictures: async (knex: Knex): Promise<void> => {
     const logger = Imports.debug(`${Imports.logPrefix}:syncPictures`)
     await Functions.SyncNewPictures(logger, knex)
     await Functions.SyncRemovedPictures(logger, knex)
     await Functions.SyncRemovedBookmarks(logger, knex)
-  }
-
-  public static async SyncNewFolders(logger: Debugger, knex: Knex): Promise<void> {
+  },
+  SyncNewFolders: async (logger: Debugger, knex: Knex): Promise<void> => {
     const folders = await knex
       .from(knex.raw('?? (??, ??, ??)', ['folders', 'folder', 'path', 'sortKey']))
       .insert(function (this: Knex) {
@@ -191,18 +183,16 @@ export class Functions {
       ;[count] = folders
     }
     logger(`Added ${count} new folders`)
-  }
-
-  public static async SyncRemovedFolders(logger: Debugger, knex: Knex): Promise<void> {
+  },
+  SyncRemovedFolders: async (logger: Debugger, knex: Knex): Promise<void> => {
     const deletedfolders = await knex('folders')
       .whereNotExists(function () {
         this.select('*').from('syncitems').whereRaw('syncitems.path = folders.path')
       })
       .delete()
     logger(`Removed ${deletedfolders} missing folders`)
-  }
-
-  public static async SyncMissingCoverImages(logger: Debugger, knex: Knex): Promise<void> {
+  },
+  SyncMissingCoverImages: async (logger: Debugger, knex: Knex): Promise<void> => {
     const removedCoverImages = await knex('folders')
       .whereNotExists(function () {
         this.select('*').from('pictures').whereRaw('pictures.path = folders.current')
@@ -210,9 +200,8 @@ export class Functions {
       .whereRaw("folders.current <> ''")
       .update({ current: '' })
     logger(`Removed ${removedCoverImages} missing cover images`)
-  }
-
-  public static async SyncFolderFirstImages(logger: Debugger, knex: Knex): Promise<void> {
+  },
+  SyncFolderFirstImages: async (logger: Debugger, knex: Knex): Promise<void> => {
     const toUpdate = await knex
       .queryBuilder()
       .with('firsts', (qb) =>
@@ -231,17 +220,15 @@ export class Functions {
       await knex('folders').insert(aChunk).onConflict('path').merge()
     }
     logger(`Updated ${toUpdate.length} folder first-item images`)
-  }
-
-  public static async SyncAllFolders(knex: Knex): Promise<void> {
+  },
+  SyncAllFolders: async (knex: Knex): Promise<void> => {
     const logger = Imports.debug(`${Imports.logPrefix}:syncFolders`)
     await Functions.SyncNewFolders(logger, knex)
     await Functions.SyncRemovedFolders(logger, knex)
     await Functions.SyncMissingCoverImages(logger, knex)
     await Functions.SyncFolderFirstImages(logger, knex)
-  }
-
-  public static async GetAllFolderInfos(knex: Knex): Promise<Record<string, FolderInfo>> {
+  },
+  GetAllFolderInfos: async (knex: Knex): Promise<Record<string, FolderInfo>> => {
     const rawFolders = (await knex('folders').select('path')) as SyncItem[]
     const folders: Record<string, FolderInfo> = {}
     for (const folder of rawFolders) {
@@ -252,18 +239,16 @@ export class Functions {
       }
     }
     return folders
-  }
-
-  public static async GetFolderInfosWithPictures(knex: Knex): Promise<FolderInfo[]> {
+  },
+  GetFolderInfosWithPictures: async (knex: Knex): Promise<FolderInfo[]> => {
     const folderInfos: FolderInfo[] = await knex('pictures')
       .select('folder as path')
       .count('* as totalCount')
       .sum({ seenCount: knex.raw('CASE WHEN seen THEN 1 ELSE 0 END') })
       .groupBy('folder')
     return folderInfos
-  }
-
-  public static CalculateFolderInfos(allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] {
+  },
+  CalculateFolderInfos: (allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] => {
     for (const folder of folders) {
       const parts = folder.path.split('/')
       while (parts.length > 1) {
@@ -284,9 +269,8 @@ export class Functions {
       }
     }
     return Object.values(allFolders)
-  }
-
-  public static async UpdateFolderPictureCounts(knex: Knex): Promise<void> {
+  },
+  UpdateFolderPictureCounts: async (knex: Knex): Promise<void> => {
     const logger = Imports.debug(`${Imports.logPrefix}:updateSeen`)
     logger('Updating Seen Counts')
     const folderInfos = await Functions.GetFolderInfosWithPictures(knex)
@@ -299,13 +283,12 @@ export class Functions {
       await knex('folders').insert(aChunk).onConflict('path').merge()
     }
     logger(`Updated ${resultFolders.length} Folders Seen Counts`)
-  }
-
-  public static async PruneEmptyFolders(knex: Knex): Promise<void> {
+  },
+  PruneEmptyFolders: async (knex: Knex): Promise<void> => {
     const logger = Imports.debug(`${Imports.logPrefix}:pruneEmpty`)
     const deletedfolders = await knex('folders').where('totalCount', '=', 0).delete()
     logger(`Removed ${deletedfolders} empty folders`)
-  }
+  },
 }
 
 const synchronize = async (): Promise<void> => {

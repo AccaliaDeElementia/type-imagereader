@@ -82,11 +82,10 @@ function unhideTab(selector: string): void {
   document.querySelector(selector)?.parentElement?.classList.remove('hidden')
 }
 
-export class Folders {
-  static FolderCard: DocumentFragment | null = null
-
-  public static BuildCard(folder: Folder): HTMLElement | null {
-    const card = CloneNode(this.FolderCard, isHTMLElement)
+export const Folders = {
+  FolderCard: ((): DocumentFragment | null => null)(),
+  BuildCard: (folder: Folder): HTMLElement | null => {
+    const card = CloneNode(Folders.FolderCard, isHTMLElement)
     if (card == null) {
       return null
     }
@@ -112,9 +111,8 @@ export class Folders {
       Publish('Navigate:Load', folder.path)
     })
     return card
-  }
-
-  public static BuildFolders(data: Data): void {
+  },
+  BuildFolders: (data: Data): void => {
     for (const folder of document.querySelectorAll('#tabFolders .folders')) {
       folder.remove()
     }
@@ -129,13 +127,12 @@ export class Folders {
       hideTab('a[href="#tabFolders')
     }
     buildCards(data)
-  }
-
-  public static Init(): void {
-    this.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
+  },
+  Init: (): void => {
+    Folders.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
 
     Subscribe('Navigate:Data', (data) => {
-      if (isData(data)) this.BuildFolders(data)
+      if (isData(data)) Folders.BuildFolders(data)
     })
-  }
+  },
 }

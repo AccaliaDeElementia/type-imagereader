@@ -430,14 +430,13 @@ export class FolderIsDataTests {
   }
 }
 
-abstract class BaseFolderTests extends PubSub {
+abstract class BaseFolderTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   document: Document
   dom: JSDOM
 
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.document = global.document

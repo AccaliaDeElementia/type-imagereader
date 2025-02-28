@@ -34,22 +34,21 @@ interface ImageWithPath {
 
 type SocketCallback = (value: string | number | null) => void
 
-export class Config {
-  public static rooms: Record<string, SlideshowRoom> = {}
-  public static countdownDuration = 60
-  public static memorySize = 100
-  public static launchId = -1
+export const Config = {
+  rooms: ((): Record<string, SlideshowRoom> => ({}))(),
+  countdownDuration: 60,
+  memorySize: 100,
+  launchId: -1,
 }
 
-export class Imports {
-  public static setLatest = async (knex: Knex, path: string): Promise<string | null> =>
-    await api.SetLatestPicture(knex, path)
-  public static setInterval = setInterval
-  public static Router = Router
+export const Imports = {
+  setLatest: async (knex: Knex, path: string): Promise<string | null> => await api.SetLatestPicture(knex, path),
+  setInterval,
+  Router,
 }
 
-export class Functions {
-  public static async GetUnreadImageCount(knex: Knex, path: string): Promise<number> {
+export const Functions = {
+  GetUnreadImageCount: async (knex: Knex, path: string): Promise<number> => {
     const counts = await knex('pictures')
       .count({ count: 'path' })
       .where('path', 'like', `${path}%`)
@@ -58,22 +57,20 @@ export class Functions {
       return +counts[0].count
     }
     return 0
-  }
-
-  public static async GetImageCount(knex: Knex, path: string): Promise<number> {
+  },
+  GetImageCount: async (knex: Knex, path: string): Promise<number> => {
     const counts = await knex('pictures').count({ count: 'path' }).where('path', 'like', `${path}%`)
     if (counts[0]?.count != null) {
       return +counts[0].count
     }
     return 0
-  }
-
-  public static async GetCounts(
+  },
+  GetCounts: async (
     knex: Knex,
     path: string,
     currentPage: number | undefined = undefined,
     mutator = (page: number): number => page,
-  ): Promise<SlideshowPages> {
+  ): Promise<SlideshowPages> => {
     const unreadcount = await Functions.GetUnreadImageCount(knex, path)
     const allcount = await Functions.GetImageCount(knex, path)
     let pages = Math.ceil(allcount / Config.memorySize)
@@ -96,10 +93,9 @@ export class Functions {
       pages,
       page: currentPage,
     }
-  }
-
-  public static async GetImages(knex: Knex, path: string, page: number, count: number): Promise<string[]> {
-    return (
+  },
+  GetImages: async (knex: Knex, path: string, page: number, count: number): Promise<string[]> =>
+    (
       await knex('pictures')
         .select('path')
         .where('path', 'like', `${path}%`)
@@ -107,10 +103,8 @@ export class Functions {
         .orderBy('pathHash')
         .offset(page * count)
         .limit(count)
-    ).map((img: ImageWithPath) => img.path)
-  }
-
-  public static async MarkImageRead(knex: Knex, image: string): Promise<void> {
+    ).map((img: ImageWithPath) => img.path),
+  MarkImageRead: async (knex: Knex, image: string): Promise<void> => {
     const picture = (await knex('pictures').select('seen').where({
       seen: false,
       path: image,
@@ -126,9 +120,8 @@ export class Functions {
     }
     await knex('folders').increment('seenCount', 1).whereIn('path', folders)
     await knex('pictures').update({ seen: true }).where({ path: image })
-  }
-
-  public static async GetRoomAndIncrementImage(knex: Knex, name: string, increment = 0): Promise<SlideshowRoom> {
+  },
+  GetRoomAndIncrementImage: async (knex: Knex, name: string, increment = 0): Promise<SlideshowRoom> => {
     let room = Config.rooms[name]
     if (room == null) {
       const pages = await Functions.GetCounts(knex, name)
@@ -162,9 +155,8 @@ export class Functions {
       room.countdown = Config.countdownDuration
     }
     return room
-  }
-
-  public static async TickCountdown(knex: Knex, io: WebSocketServer): Promise<void> {
+  },
+  TickCountdown: async (knex: Knex, io: WebSocketServer): Promise<void> => {
     const newRooms: Record<string, SlideshowRoom> = {}
     for (const room of Object.values(Config.rooms)) {
       room.countdown--
@@ -183,9 +175,8 @@ export class Functions {
       }
     }
     Config.rooms = newRooms
-  }
-
-  public static HandleSocket(knex: Knex, io: WebSocketServer, socket: Socket): void {
+  },
+  HandleSocket: (knex: Knex, io: WebSocketServer, socket: Socket): void => {
     let socketRoom: string | null = null
 
     socket.on('get-launchId', (callback: SocketCallback) => {
@@ -221,9 +212,8 @@ export class Functions {
       const folder = await Imports.setLatest(knex, picture)
       callback(folder)
     })
-  }
-
-  public static async RootRoute(knex: Knex, req: Request, res: Response): Promise<void> {
+  },
+  RootRoute: async (knex: Knex, req: Request, res: Response): Promise<void> => {
     const folder = '/' + (req.params[0] ?? '')
     if (normalize(folder) !== folder) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
@@ -257,7 +247,7 @@ export class Functions {
         })
       },
     )
-  }
+  },
 }
 
 export async function getRouter(_: Application, __: Server, io: WebSocketServer): Promise<Router> {

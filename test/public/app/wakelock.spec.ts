@@ -18,12 +18,11 @@ html
   body
 `
 
-class BaseTests extends PubSub {
+class BaseTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
@@ -287,7 +286,7 @@ export class WakeLockTakeLockTests extends BaseTests {
 }
 
 @suite
-export class WakeLockReleaseLockTests extends PubSub {
+export class WakeLockReleaseLockTests {
   clock: sinon.SinonFakeTimers | undefined
   sentinelRelease: sinon.SinonStub = sinon.stub()
   sentinel: WakeLockSentinel = {

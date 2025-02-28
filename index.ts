@@ -12,13 +12,13 @@ const DEFAULT_PORT = 3030
 const MINIMUM_PORT = 0
 const MAXIMUM_PORT = 65535
 
-export class ImageReader {
-  static StartServer = start
-  static Synchronize = synchronize
-  static Interval?: ReturnType<typeof setInterval>
-  static SyncRunning = false
-  static SyncInterval = THREE_HOURS
-  static async Run(): Promise<void> {
+export const ImageReader = {
+  StartServer: start,
+  Synchronize: synchronize,
+  Interval: ((): number | NodeJS.Timer | undefined => undefined)(),
+  SyncRunning: false,
+  SyncInterval: THREE_HOURS,
+  Run: async (): Promise<void> => {
     const port = Number(!StringIsNullOrEmpty(process.env.PORT) ? process.env.PORT : DEFAULT_PORT)
     if (Number.isNaN(port)) {
       throw new Error(`Port ${port} (from env: ${process.env.PORT}) is not a number. Valid ports must be a number.`)
@@ -29,26 +29,26 @@ export class ImageReader {
     if (port < MINIMUM_PORT || port > MAXIMUM_PORT) {
       throw new Error(`Port ${port} is out of range. Valid ports must be between 0 and 65535.`)
     }
-    await this.StartServer(port)
+    await ImageReader.StartServer(port)
 
     if (process.env.SKIP_SYNC == null || (process.env.SKIP_SYNC !== '1' && process.env.SKIP_SYNC !== 'true')) {
       const doSync = async (): Promise<void> => {
-        if (this.SyncRunning) {
+        if (ImageReader.SyncRunning) {
           return
         }
-        this.SyncRunning = true
+        ImageReader.SyncRunning = true
         try {
-          await this.Synchronize()
+          await ImageReader.Synchronize()
         } finally {
-          this.SyncRunning = false
+          ImageReader.SyncRunning = false
         }
       }
       doSync().catch(() => null)
-      this.Interval = setInterval(() => {
+      ImageReader.Interval = setInterval(() => {
         doSync().catch(() => null)
-      }, this.SyncInterval)
+      }, ImageReader.SyncInterval)
     }
-  }
+  },
 }
 
 /* istanbul ignore if */

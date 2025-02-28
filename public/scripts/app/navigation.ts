@@ -97,66 +97,54 @@ export function isNoMenuPath(obj: unknown): obj is NoMenuPath {
   return true
 }
 
-export class Navigation {
-  public static get BaseUrl(): string {
-    return [
+export const Navigation = {
+  GetBaseUrl: (): string =>
+    [
       window.location.protocol,
       '//',
       window.location.hostname,
       window.location.port.length > 0 ? `:${window.location.port}` : '',
       window.location.pathname.split('/').slice(0, 2).join('/'),
-    ].join('')
-  }
-
-  public static get FolderPath(): string {
+    ].join(''),
+  GetFolderPath: (): string => {
     const path = window.location.pathname.replace(/^\/[^/]+/, '')
     return path.length > 0 ? path : '/'
-  }
-
-  public static LocationAssign?: (url: string | URL) => void
-
-  public static get IsMenuActive(): boolean {
+  },
+  LocationAssign: ((): undefined | ((url: string | URL) => void) => undefined)(),
+  IsMenuActive: (): boolean => {
     const mainMenu = document.querySelector('#mainMenu')
     return !(mainMenu?.classList.contains('hidden') ?? false)
-  }
-
-  public static get IsSuppressMenu(): boolean {
-    return new URLSearchParams(window.location.search).has('noMenu')
-  }
-
-  protected static current: Data = {
-    path: '',
-  }
-
-  public static NavigateTo(path: string | undefined, action: string): void {
+  },
+  IsSuppressMenu: (): boolean => new URLSearchParams(window.location.search).has('noMenu'),
+  current: ((): Data => ({ path: '' }))(),
+  NavigateTo: (path: string | undefined, action: string): void => {
     if (path == null || path.length < 1) {
       Publish('Loading:Error', `Action ${action} has no target`)
       return
     }
-    this.current = { path }
-    this.LoadData().catch(() => null)
-  }
-
-  public static Init(): void {
-    this.LocationAssign = window.location.assign.bind(window.location)
-    this.current.path = this.FolderPath
-    this.LoadData().catch(() => null)
+    Navigation.current = { path }
+    Navigation.LoadData().catch(() => null)
+  },
+  Init: (): void => {
+    Navigation.LocationAssign = window.location.assign.bind(window.location)
+    Navigation.current.path = Navigation.GetFolderPath()
+    Navigation.LoadData().catch(() => null)
     Subscribe('Navigate:Load', (path): void => {
       if (typeof path === 'string') {
-        this.current = { path }
+        Navigation.current = { path }
       } else if (isNoMenuPath(path)) {
-        this.current = path
+        Navigation.current = path
       }
-      this.LoadData().catch(() => null)
+      Navigation.LoadData().catch(() => null)
     })
     Subscribe('Navigate:Reload', () => {
-      this.LoadData().catch(() => null)
+      Navigation.LoadData().catch(() => null)
     })
     window.addEventListener('popstate', () => {
-      this.current = {
-        path: this.FolderPath,
+      Navigation.current = {
+        path: Navigation.GetFolderPath(),
       }
-      this.LoadData(true).catch(() => null)
+      Navigation.LoadData(true).catch(() => null)
     })
 
     Subscribe('Navigate:Data', (data: unknown): void => {
@@ -167,7 +155,7 @@ export class Navigation {
     Subscribe('Menu:Show', () => mainMenu?.classList.remove('hidden'))
     Subscribe('Menu:Hide', () => mainMenu?.classList.add('hidden'))
     mainMenu?.addEventListener('click', (event) => {
-      if (event.target === mainMenu && this.current.pictures != null && this.current.pictures.length > 0) {
+      if (event.target === mainMenu && Navigation.current.pictures != null && Navigation.current.pictures.length > 0) {
         Publish('Menu:Hide')
       }
     })
@@ -177,19 +165,19 @@ export class Navigation {
     })
 
     Subscribe('Action:Execute:PreviousFolder', () => {
-      const prev = Pictures.ShowUnreadOnly ? this.current.prevUnread : this.current.prev
-      this.NavigateTo(prev?.path, 'PreviousFolder')
+      const prev = Pictures.GetShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
+      Navigation.NavigateTo(prev?.path, 'PreviousFolder')
     })
     Subscribe('Action:Execute:NextFolder', () => {
-      const next = Pictures.ShowUnreadOnly ? this.current.nextUnread : this.current.next
-      this.NavigateTo(next?.path, 'NextFolder')
+      const next = Pictures.GetShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
+      Navigation.NavigateTo(next?.path, 'NextFolder')
     })
     Subscribe('Action:Execute:ParentFolder', () => {
-      this.NavigateTo(this.current.parent, 'ParentFolder')
+      Navigation.NavigateTo(Navigation.current.parent, 'ParentFolder')
     })
     Subscribe('Action:Execute:FirstUnfinished', () => {
-      const target = this.current.children?.find((child) => child.totalSeen < child.totalCount)
-      this.NavigateTo(target?.path, 'FirstUnfinished')
+      const target = Navigation.current.children?.find((child) => child.totalSeen < child.totalCount)
+      Navigation.NavigateTo(target?.path, 'FirstUnfinished')
     })
     Subscribe('Action:Execute:ShowMenu', () => {
       Publish('Menu:Show')
@@ -198,10 +186,10 @@ export class Navigation {
       Publish('Menu:Hide')
     })
     Subscribe('Action:Execute:MarkAllSeen', () => {
-      Net.PostJSON('/api/mark/read', { path: this.current.path }, (_: unknown): _ is unknown => true)
+      Net.PostJSON('/api/mark/read', { path: Navigation.current.path }, (_: unknown): _ is unknown => true)
         .then(
           async () => {
-            await this.LoadData(true)
+            await Navigation.LoadData(true)
           },
           (err: unknown) => {
             Publish('Loading:Error', err)
@@ -210,10 +198,10 @@ export class Navigation {
         .catch(() => null)
     })
     Subscribe('Action:Execute:MarkAllUnseen', () => {
-      Net.PostJSON('/api/mark/unread', { path: this.current.path }, (_: unknown): _ is unknown => true)
+      Net.PostJSON('/api/mark/unread', { path: Navigation.current.path }, (_: unknown): _ is unknown => true)
         .then(
           async () => {
-            await this.LoadData(true)
+            await Navigation.LoadData(true)
           },
           (err: unknown) => {
             Publish('Loading:Error', err)
@@ -222,7 +210,7 @@ export class Navigation {
         .catch(() => null)
     })
     Subscribe('Action:Execute:Slideshow', () => {
-      Navigation.LocationAssign?.call(window.location, `/slideshow${this.current.path}`)
+      Navigation.LocationAssign?.call(window.location, `/slideshow${Navigation.current.path}`)
     })
     Subscribe('Action:Execute:FullScreen', () => {
       if (document.fullscreenElement == null) {
@@ -260,27 +248,26 @@ export class Navigation {
     Subscribe('Action:Gamepad:A', () => {
       Publish('Action:Execute:FirstUnfinished')
     })
-  }
-
-  public static async LoadData(noHistory = false): Promise<void> {
+  },
+  LoadData: async (noHistory = false): Promise<void> => {
     try {
       Publish('Loading:Show')
-      this.current = await Net.GetJSON<Data>(`/api/listing${this.current.path}`, isData)
-      this.current.noMenu = this.IsSuppressMenu
+      Navigation.current = await Net.GetJSON<Data>(`/api/listing${Navigation.current.path}`, isData)
+      Navigation.current.noMenu = Navigation.IsSuppressMenu()
       for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
-        let name = this.current.name
+        let name = Navigation.current.name
         if (name == null || name.length < 1) {
-          name = this.current.path
+          name = Navigation.current.path
         }
         element.innerHTML = name
       }
       if (!noHistory) {
-        window.history.pushState({}, '', this.BaseUrl + this.current.path)
+        window.history.pushState({}, '', Navigation.GetBaseUrl() + Navigation.current.path)
       }
       Publish('Loading:Hide')
-      Publish('Navigate:Data', this.current)
+      Publish('Navigate:Data', Navigation.current)
     } catch (err) {
       Publish('Loading:Error', err)
     }
-  }
+  },
 }

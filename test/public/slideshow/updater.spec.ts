@@ -174,10 +174,11 @@ export class SlideshowUpdaterTests extends CyclicUpdater {
 }
 
 @suite
-export class SlideshowCyclicManagerTests extends CyclicManager {
+export class SlideshowCyclicManagerTests {
   clock: sinon.SinonFakeTimers
   constructor() {
-    super()
+    CyclicManager.timer = undefined
+    CyclicManager.updaters = []
     this.clock = sinon.useFakeTimers({
       shouldClearNativeTimers: false,
     })
@@ -189,6 +190,7 @@ export class SlideshowCyclicManagerTests extends CyclicManager {
       shouldClearNativeTimers: false,
     })
     CyclicManager.updaters = []
+    CyclicManager.timer = undefined
   }
 
   after(): void {

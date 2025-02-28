@@ -40,12 +40,7 @@ export class ImageData {
   }
 }
 
-export class Imports {
-  public static debug = debug
-  public static readFile = readFile
-  public static Sharp = Sharp
-  public static Router = Router
-}
+export const Imports = { debug, readFile, Sharp, Router }
 
 interface CacheItem {
   path: string

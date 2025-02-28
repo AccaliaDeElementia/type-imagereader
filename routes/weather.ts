@@ -59,16 +59,10 @@ function isSysValid(data: object): boolean {
   return true
 }
 
-export class Imports {
-  public static get appId(): string {
-    return process.env.OPENWEATHER_APPID ?? ''
-  }
-
-  public static get location(): string {
-    return encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
-  }
-
-  public static get nightNotBefore(): number {
+export const Imports = {
+  getAppId: (): string => process.env.OPENWEATHER_APPID ?? '',
+  getLocation: (): string => encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? ''),
+  getNightNotBefore: (): number => {
     const time = new Date()
     time.setMilliseconds(0)
     time.setSeconds(0)
@@ -84,9 +78,8 @@ export class Imports {
       }
     }
     return time.getTime()
-  }
-
-  public static get nightNotAfter(): number {
+  },
+  getNightNotAfter: (): number => {
     const time = new Date()
     time.setMilliseconds(0)
     time.setSeconds(0)
@@ -102,48 +95,42 @@ export class Imports {
       }
     }
     return time.getTime()
-  }
-
-  public static setInterval = setInterval
-  public static fetch = fetch
-  public static Router = Router
+  },
+  setInterval,
+  fetch,
+  Router,
 }
-
-export class Functions {
-  public static weather: WeatherResults = {
-    temp: undefined,
-    pressure: undefined,
-    humidity: undefined,
-    description: undefined,
-    icon: undefined,
-    sunrise: undefined,
-    sunset: undefined,
-  }
-
-  public static isOpenWeatherData(data: unknown): data is OpenWeatherData {
+const defaultWeather: WeatherResults = {
+  temp: undefined,
+  pressure: undefined,
+  humidity: undefined,
+  description: undefined,
+  icon: undefined,
+  sunrise: undefined,
+  sunset: undefined,
+}
+export const Functions = {
+  weather: defaultWeather,
+  isOpenWeatherData: (data: unknown): data is OpenWeatherData => {
     if (typeof data !== 'object' || data == null) return false
     if (!isMainValid(data)) return false
     if (!isWeatherValid(data)) return false
     return isSysValid(data)
-  }
-
-  public static async GetWeather(): Promise<OpenWeatherData> {
-    if (Imports.appId.length < 1) {
-      throw new Error('no OpewnWeather AppId Defined!')
-    }
-    if (Imports.location.length < 1) {
-      throw new Error('no OpewnWeather Location Defined!')
-    }
-    const response = await Imports.fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${Imports.location}&appid=${Imports.appId}`,
-    )
+  },
+  GetWeather: async (): Promise<OpenWeatherData> => {
+    const appId = Imports.getAppId()
+    const location = Imports.getLocation()
+    if (appId.length < 1) throw new Error('no OpewnWeather AppId Defined!')
+    if (location.length < 1) throw new Error('no OpewnWeather Location Defined!')
+    const response = await Imports.fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`)
     const data: unknown = await response.json()
-    if (!this.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
+    if (!Functions.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
     return data
-  }
-
-  public static async UpdateWeather(): Promise<WeatherResults> {
+  },
+  UpdateWeather: async (): Promise<WeatherResults> => {
     const weather = Functions.weather
+    const nightNotAfter = Imports.getNightNotAfter()
+    const nightNotBefore = Imports.getNightNotBefore()
     try {
       const data = await Functions.GetWeather()
       if (data.main != null) {
@@ -153,19 +140,19 @@ export class Functions {
       }
       weather.description = data.weather[0]?.main
       weather.icon = data.weather[0]?.icon
-      weather.sunrise = Math.min(1000 * data.sys.sunrise, Imports.nightNotAfter)
-      weather.sunset = Math.max(1000 * data.sys.sunset, Imports.nightNotBefore)
+      weather.sunrise = Math.min(1000 * data.sys.sunrise, nightNotAfter)
+      weather.sunset = Math.max(1000 * data.sys.sunset, nightNotBefore)
     } catch (_) {
       weather.temp = undefined
       weather.pressure = undefined
       weather.humidity = undefined
       weather.description = undefined
       weather.icon = undefined
-      weather.sunrise = Imports.nightNotAfter
-      weather.sunset = Imports.nightNotBefore
+      weather.sunrise = nightNotAfter
+      weather.sunset = nightNotBefore
     }
     return weather
-  }
+  },
 }
 
 // Export the base-router

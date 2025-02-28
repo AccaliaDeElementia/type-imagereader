@@ -15,14 +15,13 @@ html
   body
 `
 
-class BaseAppPubSubTests extends PubSub {
+class BaseAppPubSubTests {
   consoleWarn: sinon.SinonStub
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
   clock: sinon.SinonFakeTimers
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
@@ -68,14 +67,13 @@ class BaseAppPubSubTests extends PubSub {
 }
 
 @suite
-export class AppPubSubTests extends PubSub {
+export class AppPubSubTests {
   consoleWarn: sinon.SinonStub
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
   clock: sinon.SinonFakeTimers
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})

@@ -71,32 +71,28 @@ export function isDictionary(obj: unknown): obj is Record<string, unknown> {
   return true
 }
 
-export class Imports {
-  public static knex = knex
-  public static Initializer?: Promise<Knex>
-  public static readFile = readFile
-}
+const CreateInitializer = (): Promise<Knex> | undefined => undefined
+export const Imports = { knex, Initializer: CreateInitializer(), readFile }
 
-export class Functions {
-  public static get EnvironmentName(): string {
+export const Functions = {
+  getEnvironmentName: (): string => {
     if (process.env.DB_CLIENT == null || process.env.DB_CLIENT.length < 1) {
       return 'development'
     }
     return process.env.DB_CLIENT
-  }
-
-  public static async readConfigurationBlock(): Promise<KnexOptions> {
+  },
+  readConfigurationBlock: async (): Promise<KnexOptions> => {
     const content = await Imports.readFile(join(__dirname, '../knexfile.json'), { encoding: 'utf-8' })
     if (content.length < 1) throw new Error('Invalid Configuration Detected!')
     const data = JSON.parse(content) as unknown
     if (!isDictionary(data)) throw new Error('Invalid Configuration Detected!')
-    if (!(Functions.EnvironmentName in data)) throw new Error('Invalid Configuration Detected!')
-    const config = data[Functions.EnvironmentName]
+    const name = Functions.getEnvironmentName()
+    if (!(name in data)) throw new Error('Invalid Configuration Detected!')
+    const config = data[name]
     if (!isKnexOptions(config)) throw new Error('Invalid Configuration Detected!')
     return config
-  }
-
-  public static async GetKnexConfig(): Promise<KnexOptions> {
+  },
+  GetKnexConfig: async (): Promise<KnexOptions> => {
     const connection = await Functions.readConfigurationBlock()
     const keys: Array<'host' | 'database' | 'user' | 'password' | 'filename'> = [
       'host',
@@ -112,7 +108,7 @@ export class Functions {
       }
     })
     return connection
-  }
+  },
 }
 
 export default {

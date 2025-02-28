@@ -842,7 +842,7 @@ export class PersistanceReadConfigurationBlock {
   ReadFileStub?: sinon.SinonStub
 
   before(): void {
-    this.GetEnvironmentNameStub = sinon.stub(Functions, 'EnvironmentName').get(() => this.ConfigName)
+    this.GetEnvironmentNameStub = sinon.stub(Functions, 'getEnvironmentName').returns(this.ConfigName)
     this.ReadFileStub = sinon
       .stub(Imports, 'readFile')
       .callsFake(async () => await Promise.resolve(JSON.stringify(this.ConfigContent)))
@@ -1041,19 +1041,19 @@ export class PersistanceGetEnvironmentNameTests {
   @test
   'it should choose `development` when environment DB_CLIENT is not set'(): void {
     delete process.env.DB_CLIENT
-    expect(Functions.EnvironmentName).to.equal('development')
+    expect(Functions.getEnvironmentName()).to.equal('development')
   }
 
   @test
   'it should choose `development` when environment DB_CLIENT is blank'(): void {
     process.env.DB_CLIENT = ''
-    expect(Functions.EnvironmentName).to.equal('development')
+    expect(Functions.getEnvironmentName()).to.equal('development')
   }
 
   @test
   'it should choose DB_CLIENT when set'(): void {
     process.env.DB_CLIENT = 'FOO ENV'
-    expect(Functions.EnvironmentName).to.equal('FOO ENV')
+    expect(Functions.getEnvironmentName()).to.equal('FOO ENV')
   }
 }
 

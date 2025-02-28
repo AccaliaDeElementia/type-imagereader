@@ -28,12 +28,7 @@ interface cssAndMap {
 
 const sassExtension = /\.s[ca]ss$/
 
-export class Imports {
-  public static sass = sass
-  public static access = access
-  public static readdir = readdir
-  public static watch = watch
-}
+export const Imports = { sass, access, readdir, watch }
 
 function LogError(err: unknown, message: string, defaultError: string): Error {
   Functions.logger(message, err)
@@ -43,12 +38,12 @@ function LogError(err: unknown, message: string, defaultError: string): Error {
   return new Error(defaultError)
 }
 
-export class Functions {
-  public static logger = debug('type-imagereader:sass-middleware')
-  public static debouncer = Debouncer.create()
-  public static cache: Record<string, Promise<cssAndMap | null>> = {}
-
-  public static async CompileCss(path: string, filename: string): Promise<cssAndMap> {
+const createCache = (): Record<string, Promise<cssAndMap | null>> => ({})
+export const Functions = {
+  logger: debug('type-imagereader:sass-middleware'),
+  debouncer: Debouncer.create(),
+  cache: createCache(),
+  CompileCss: async (path: string, filename: string): Promise<cssAndMap> => {
     try {
       Functions.logger(`Begin compiling ${filename}`)
       const styles = await Imports.sass.compileAsync(join(path, filename), {
@@ -69,9 +64,8 @@ export class Functions {
     } catch (err) {
       throw LogError(err, `Error Compiling ${filename}:`, 'Unexpected Error Encountered Compiling CSS')
     }
-  }
-
-  public static async CompileAndCache(basePath: string, filename: string): Promise<boolean> {
+  },
+  CompileAndCache: async (basePath: string, filename: string): Promise<boolean> => {
     try {
       await Imports.access(join(basePath, filename))
       const key = filename.replace(sassExtension, '.css')
@@ -80,9 +74,8 @@ export class Functions {
     } catch (err) {
       return false
     }
-  }
-
-  public static async CompileFolder(basePath: string, path: string): Promise<void> {
+  },
+  CompileFolder: async (basePath: string, path: string): Promise<void> => {
     for (const dirinfo of await Imports.readdir(join(basePath, path), {
       withFileTypes: true,
     })) {
@@ -91,9 +84,8 @@ export class Functions {
         Functions.CompileAndCache(basePath, sassFile).catch(() => null)
       }
     }
-  }
-
-  public static async WatchFolder(basePath: string, path: string): Promise<void> {
+  },
+  WatchFolder: async (basePath: string, path: string): Promise<void> => {
     try {
       Functions.logger(`Watching ${path} for stylesheets`)
       const watcher = Imports.watch(join(basePath, path), { persistent: false })
@@ -109,7 +101,7 @@ export class Functions {
     } catch (err) {
       Functions.logger(`Watcher for ${path} exited unexpectedly`, err)
     }
-  }
+  },
 }
 
 export interface Options {

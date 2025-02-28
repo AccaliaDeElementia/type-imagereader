@@ -11,7 +11,6 @@ import { render } from 'pug'
 
 import { PubSub } from '../../../public/scripts/app/pubsub'
 import { isNoMenuPath, isData, Navigation } from '../../../public/scripts/app/navigation'
-import type { Data } from '../../../public/scripts/app/navigation'
 import { Net } from '../../../public/scripts/app/net'
 import assert from 'assert'
 import { Pictures } from '../../../public/scripts/app/pictures'
@@ -133,16 +132,6 @@ export class NavigationIsNoMenuPathTests {
       noMenu: false,
     }
     expect(isNoMenuPath(obj)).to.equal(true)
-  }
-}
-
-class TestNavigation extends Navigation {
-  public static get current(): Data {
-    return Navigation.current
-  }
-
-  public static set current(data: Data) {
-    Navigation.current = data
   }
 }
 
@@ -704,7 +693,7 @@ export class NavigationIsDataTests {
   }
 }
 
-abstract class BaseNavigationTests extends PubSub {
+abstract class BaseNavigationTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   document: Document
@@ -712,7 +701,6 @@ abstract class BaseNavigationTests extends PubSub {
   tabSelectedSpy: sinon.SinonStub
 
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.document = global.document
@@ -749,7 +737,7 @@ export class AppNavigationBaseUrlTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com/',
     })
-    expect(Navigation.BaseUrl).to.equal('http://type-imagereader.example.com/')
+    expect(Navigation.GetBaseUrl()).to.equal('http://type-imagereader.example.com/')
   }
 
   @test
@@ -757,7 +745,7 @@ export class AppNavigationBaseUrlTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'https://type-imagereader.example.com/',
     })
-    expect(Navigation.BaseUrl).to.equal('https://type-imagereader.example.com/')
+    expect(Navigation.GetBaseUrl()).to.equal('https://type-imagereader.example.com/')
   }
 
   @test
@@ -765,7 +753,7 @@ export class AppNavigationBaseUrlTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'https://type-imagereader.example.com:2999/',
     })
-    expect(Navigation.BaseUrl).to.equal('https://type-imagereader.example.com:2999/')
+    expect(Navigation.GetBaseUrl()).to.equal('https://type-imagereader.example.com:2999/')
   }
 
   @test
@@ -773,7 +761,7 @@ export class AppNavigationBaseUrlTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'https://type-imagereader.example.com/show/foo/bar/baz?quux',
     })
-    expect(Navigation.BaseUrl).to.equal('https://type-imagereader.example.com/show')
+    expect(Navigation.GetBaseUrl()).to.equal('https://type-imagereader.example.com/show')
   }
 }
 
@@ -784,7 +772,7 @@ export class AppNavigationFolderPathTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com',
     })
-    expect(Navigation.FolderPath).to.equal('/')
+    expect(Navigation.GetFolderPath()).to.equal('/')
   }
 
   @test
@@ -792,7 +780,7 @@ export class AppNavigationFolderPathTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com/',
     })
-    expect(Navigation.FolderPath).to.equal('/')
+    expect(Navigation.GetFolderPath()).to.equal('/')
   }
 
   @test
@@ -800,7 +788,7 @@ export class AppNavigationFolderPathTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com/show',
     })
-    expect(Navigation.FolderPath).to.equal('/')
+    expect(Navigation.GetFolderPath()).to.equal('/')
   }
 
   @test
@@ -808,7 +796,7 @@ export class AppNavigationFolderPathTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com/show/',
     })
-    expect(Navigation.FolderPath).to.equal('/')
+    expect(Navigation.GetFolderPath()).to.equal('/')
   }
 
   @test
@@ -816,7 +804,7 @@ export class AppNavigationFolderPathTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com/show/foo/bar/baz',
     })
-    expect(Navigation.FolderPath).to.equal('/foo/bar/baz')
+    expect(Navigation.GetFolderPath()).to.equal('/foo/bar/baz')
   }
 }
 
@@ -825,18 +813,18 @@ export class AppNavigationIsMenuActiveTests extends BaseNavigationTests {
   @test
   'it should return true for missing menu'(): void {
     this.document.querySelector('#mainMenu')?.remove()
-    expect(Navigation.IsMenuActive).to.equal(true)
+    expect(Navigation.IsMenuActive()).to.equal(true)
   }
 
   @test
   'it should return true for non hidden menu'(): void {
-    expect(Navigation.IsMenuActive).to.equal(true)
+    expect(Navigation.IsMenuActive()).to.equal(true)
   }
 
   @test
   'it should return false for hidden menu'(): void {
     this.document.querySelector('#mainMenu')?.classList.add('hidden')
-    expect(Navigation.IsMenuActive).to.equal(false)
+    expect(Navigation.IsMenuActive()).to.equal(false)
   }
 }
 
@@ -847,7 +835,7 @@ export class AppNavigationIsSuppressMenuTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com/?noMenu',
     })
-    expect(Navigation.IsSuppressMenu).to.equal(true)
+    expect(Navigation.IsSuppressMenu()).to.equal(true)
   }
 
   @test
@@ -857,7 +845,7 @@ export class AppNavigationIsSuppressMenuTests extends BaseNavigationTests {
       this.dom.reconfigure({
         url: 'http://type-imagereader.example.com/?noMenu=' + value,
       })
-      expect(Navigation.IsSuppressMenu).to.equal(true)
+      expect(Navigation.IsSuppressMenu()).to.equal(true)
     }
   }
 
@@ -866,7 +854,7 @@ export class AppNavigationIsSuppressMenuTests extends BaseNavigationTests {
     this.dom.reconfigure({
       url: 'http://type-imagereader.example.com/?',
     })
-    expect(Navigation.IsSuppressMenu).to.equal(false)
+    expect(Navigation.IsSuppressMenu()).to.equal(false)
   }
 }
 
@@ -878,11 +866,11 @@ export class AppnavigationLoadDataTests extends BaseNavigationTests {
 
   before(): void {
     super.before()
-    TestNavigation.current = {
+    Navigation.current = {
       path: '/foo/bar/baz',
     }
     this.GetJSONStub = sinon.stub(Net, 'GetJSON')
-    this.GetJSONStub.resolves(TestNavigation.current)
+    this.GetJSONStub.resolves(Navigation.current)
     this.PushStateStub = sinon.stub(this.dom.window.history, 'pushState')
     this.PublishSpy = sinon.stub()
     PubSub.Subscribe('Loading:Show', this.PublishSpy)
@@ -899,7 +887,7 @@ export class AppnavigationLoadDataTests extends BaseNavigationTests {
 
   @test
   async 'it should publish Loading:Show'(): Promise<void> {
-    TestNavigation.current = {
+    Navigation.current = {
       path: '/',
     }
     await Navigation.LoadData()
@@ -926,7 +914,7 @@ export class AppnavigationLoadDataTests extends BaseNavigationTests {
       url: 'http://type-imagereader.example.com/show/foo/bar/baz',
     })
     await Navigation.LoadData()
-    expect(TestNavigation.current.noMenu).to.equal(false)
+    expect(Navigation.current.noMenu).to.equal(false)
   }
 
   @test
@@ -935,7 +923,7 @@ export class AppnavigationLoadDataTests extends BaseNavigationTests {
       url: 'http://type-imagereader.example.com/show/foo/bar/baz?noMenu',
     })
     await Navigation.LoadData()
-    expect(TestNavigation.current.noMenu).to.equal(true)
+    expect(Navigation.current.noMenu).to.equal(true)
   }
 
   @test
@@ -1062,7 +1050,7 @@ export class AppnavigationLoadDataTests extends BaseNavigationTests {
   async 'it should publish Navigate:Data'(): Promise<void> {
     await Navigation.LoadData()
     expect(this.PublishSpy.callCount).to.equal(3)
-    expect(this.PublishSpy.calledWith(TestNavigation.current, 'NAVIGATE:DATA')).to.equal(true)
+    expect(this.PublishSpy.calledWith(Navigation.current, 'NAVIGATE:DATA')).to.equal(true)
   }
 
   @test
@@ -1111,14 +1099,14 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     this.NavigateToStub = sinon.stub(Navigation, 'NavigateTo')
     this.PostJSONStub = sinon.stub(Net, 'PostJSON')
     this.PostJSONStub.resolves({})
-    this.ShowUnreadOnlyGetStub = sinon.stub(Pictures, 'ShowUnreadOnly').get(() => false)
+    this.ShowUnreadOnlyGetStub = sinon.stub(Pictures, 'GetShowUnreadOnly').returns(false)
     this.RequestFullscreenStub = sinon.stub()
     this.RequestFullscreenStub.resolves()
     this.dom.window.document.body.requestFullscreen = this.RequestFullscreenStub
     this.ExitFullscreenStub = sinon.stub()
     this.ExitFullscreenStub.resolves()
     this.dom.window.document.exitFullscreen = this.ExitFullscreenStub
-    TestNavigation.current = {
+    Navigation.current = {
       path: '/',
     }
   }
@@ -1138,7 +1126,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
       url: 'http://type-imagereader.example.com/show/foo/bar/baz',
     })
     Navigation.Init()
-    expect(TestNavigation.current.path).to.equal('/foo/bar/baz')
+    expect(Navigation.current.path).to.equal('/foo/bar/baz')
   }
 
   @test
@@ -1183,7 +1171,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     handler('a string')
-    expect(TestNavigation.current).to.deep.equal({
+    expect(Navigation.current).to.deep.equal({
       path: 'a string',
     })
   }
@@ -1192,14 +1180,14 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   'Navigate:Load handler should clear current when called with string'(): void {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
-    TestNavigation.current = {
+    Navigation.current = {
       path: '/',
       name: 'WRONG NAME',
     }
     const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     handler('a string')
-    expect(TestNavigation.current).to.deep.equal({
+    expect(Navigation.current).to.deep.equal({
       path: 'a string',
     })
   }
@@ -1211,7 +1199,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
       noMenu: true,
     }
     Navigation.Init()
-    TestNavigation.current = {
+    Navigation.current = {
       path: '/',
       name: 'WRONG NAME',
     }
@@ -1219,7 +1207,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     handler(obj)
-    expect(TestNavigation.current).to.equal(obj)
+    expect(Navigation.current).to.equal(obj)
   }
 
   @test
@@ -1269,7 +1257,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
       url: 'http://type-imagereader.example.com/show/quux',
     })
     Navigation.Init()
-    TestNavigation.current = {
+    Navigation.current = {
       path: '/',
       name: 'WRONG NAME',
     }
@@ -1277,7 +1265,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
       state: {},
     })
     this.dom.window.dispatchEvent(popStateEvent)
-    expect(TestNavigation.current).to.deep.equal({
+    expect(Navigation.current).to.deep.equal({
       path: '/quux',
     })
   }
@@ -1372,7 +1360,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('.innerTarget')
     assert(target !== null, 'target must exist')
-    TestNavigation.current.pictures = [{}]
+    Navigation.current.pictures = [{}]
     const event = new this.dom.window.MouseEvent('click', { bubbles: true })
     target.dispatchEvent(event)
     expect(spy.callCount).to.equal(0)
@@ -1385,7 +1373,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
     assert(target !== null, 'target must exist')
-    TestNavigation.current.pictures = []
+    Navigation.current.pictures = []
     const event = new this.dom.window.MouseEvent('click')
     target.dispatchEvent(event)
     expect(spy.callCount).to.equal(0)
@@ -1398,7 +1386,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
     assert(target !== null, 'target must exist')
-    expect(TestNavigation.current.pictures).to.equal(undefined)
+    expect(Navigation.current.pictures).to.equal(undefined)
     const event = new this.dom.window.MouseEvent('click')
     target.dispatchEvent(event)
     expect(spy.callCount).to.equal(0)
@@ -1411,7 +1399,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
     assert(target !== null, 'target must exist')
-    TestNavigation.current.pictures = [{}]
+    Navigation.current.pictures = [{}]
     const event = new this.dom.window.MouseEvent('click')
     target.dispatchEvent(event)
     expect(spy.callCount).to.equal(1)
@@ -1424,7 +1412,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     PubSub.subscribers['MENU:SHOW'] = [spy]
     const target = this.document.querySelector('.menuButton')
     assert(target !== null, 'target must exist')
-    TestNavigation.current.pictures = [{}]
+    Navigation.current.pictures = [{}]
     const event = new this.dom.window.MouseEvent('click')
     target.dispatchEvent(event)
     expect(spy.callCount).to.equal(1)
@@ -1442,7 +1430,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.prev = {
+    Navigation.current.prev = {
       path: '/foo/bar/baz',
     }
     handler(undefined)
@@ -1455,10 +1443,10 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.prevUnread = {
+    Navigation.current.prevUnread = {
       path: '/foo/bar/baz',
     }
-    this.ShowUnreadOnlyGetStub.get(() => true)
+    this.ShowUnreadOnlyGetStub.callsFake(() => true)
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'PreviousFolder')).to.equal(true)
@@ -1469,8 +1457,8 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.prev = undefined
-    TestNavigation.current.prevUnread = {
+    Navigation.current.prev = undefined
+    Navigation.current.prevUnread = {
       path: '/foo/bar/baz',
     }
     handler(undefined)
@@ -1483,11 +1471,11 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.prev = {
+    Navigation.current.prev = {
       path: '/foo/bar/baz',
     }
-    TestNavigation.current.prevUnread = undefined
-    this.ShowUnreadOnlyGetStub.get(() => true)
+    Navigation.current.prevUnread = undefined
+    this.ShowUnreadOnlyGetStub.callsFake(() => true)
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'PreviousFolder')).to.equal(true)
@@ -1505,7 +1493,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.next = {
+    Navigation.current.next = {
       path: '/foo/bar/baz',
     }
     handler(undefined)
@@ -1518,10 +1506,10 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.nextUnread = {
+    Navigation.current.nextUnread = {
       path: '/foo/bar/baz',
     }
-    this.ShowUnreadOnlyGetStub.get(() => true)
+    this.ShowUnreadOnlyGetStub.callsFake(() => true)
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'NextFolder')).to.equal(true)
@@ -1532,8 +1520,8 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.next = undefined
-    TestNavigation.current.nextUnread = {
+    Navigation.current.next = undefined
+    Navigation.current.nextUnread = {
       path: '/foo/bar/baz',
     }
     handler(undefined)
@@ -1546,11 +1534,11 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.next = {
+    Navigation.current.next = {
       path: '/foo/bar/baz',
     }
-    TestNavigation.current.nextUnread = undefined
-    this.ShowUnreadOnlyGetStub.get(() => true)
+    Navigation.current.nextUnread = undefined
+    this.ShowUnreadOnlyGetStub.callsFake(() => true)
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'NextFolder')).to.equal(true)
@@ -1568,7 +1556,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.parent = '/foo/bar/baz'
+    Navigation.current.parent = '/foo/bar/baz'
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'ParentFolder')).to.equal(true)
@@ -1579,7 +1567,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.parent = undefined
+    Navigation.current.parent = undefined
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'ParentFolder')).to.equal(true)
@@ -1597,7 +1585,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.children = [
+    Navigation.current.children = [
       {
         name: 'baz',
         path: '/foo/bar/baz',
@@ -1621,7 +1609,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.children = [
+    Navigation.current.children = [
       {
         name: 'quux',
         path: '/foo/bar/quux',
@@ -1645,7 +1633,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.children = [
+    Navigation.current.children = [
       {
         name: 'quux',
         path: '/foo/bar/quux',
@@ -1669,7 +1657,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.children = []
+    Navigation.current.children = []
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'FirstUnfinished')).to.equal(true)
@@ -1680,7 +1668,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    TestNavigation.current.children = undefined
+    Navigation.current.children = undefined
     handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'FirstUnfinished')).to.equal(true)
@@ -1746,7 +1734,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const path = {
       path: '/foo/bar/baz/' + Math.random(),
     }
-    TestNavigation.current.path = path.path
+    Navigation.current.path = path.path
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
     await Delay(5)
@@ -1761,7 +1749,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const path = {
       path: '/foo/bar/baz/' + Math.random(),
     }
-    TestNavigation.current.path = path.path
+    Navigation.current.path = path.path
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
     await Delay(5)
@@ -1861,7 +1849,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const path = {
       path: '/foo/bar/baz/' + Math.random(),
     }
-    TestNavigation.current.path = path.path
+    Navigation.current.path = path.path
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
     await Delay(5)
@@ -1876,7 +1864,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const path = {
       path: '/foo/bar/baz/' + Math.random(),
     }
-    TestNavigation.current.path = path.path
+    Navigation.current.path = path.path
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
     await Delay(5)
@@ -1962,7 +1950,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const handler = PubSub.subscribers['ACTION:EXECUTE:SLIDESHOW']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     const path = '/foo/bar/baz/' + Math.random()
-    TestNavigation.current.path = path
+    Navigation.current.path = path
 
     const assignStub = sinon.stub(Navigation, 'LocationAssign')
     try {
@@ -2250,24 +2238,24 @@ export class AppNavigatorNavigateTo extends BaseNavigationTests {
   @test
   'it should tolerate LoadData rejecting'(): void {
     const path = '/foo/bar/baz/' + Math.random()
-    TestNavigation.current.path = '/'
+    Navigation.current.path = '/'
     this.LoadDataStub.rejects(new Error('FOO!'))
     Navigation.NavigateTo(path, 'TestCase')
-    expect(TestNavigation.current.path).to.equal(path)
+    expect(Navigation.current.path).to.equal(path)
   }
 
   @test
   'it should set current path'(): void {
     const path = '/foo/bar/baz/' + Math.random()
-    TestNavigation.current.path = '/'
+    Navigation.current.path = '/'
     Navigation.NavigateTo(path, 'TestCase')
-    expect(TestNavigation.current.path).to.equal(path)
+    expect(Navigation.current.path).to.equal(path)
   }
 
   @test
   'it should set load data'(): void {
     const path = '/foo/bar/baz/' + Math.random()
-    TestNavigation.current.path = '/'
+    Navigation.current.path = '/'
     Navigation.NavigateTo(path, 'TestCase')
     expect(this.LoadDataStub.called).to.equal(true)
     expect(this.LoadingErrorStub.called).to.equal(false)

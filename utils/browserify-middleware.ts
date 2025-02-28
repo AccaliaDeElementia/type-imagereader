@@ -16,13 +16,7 @@ import debug from 'debug'
 
 const isCompileableExtension = /\.[jt]s$/
 
-export class Imports {
-  public static access = access
-  public static watch = watch
-  public static readdir = readdir
-  public static browserify = browserify
-  public static minify = minify
-}
+export const Imports = { access, watch, readdir, browserify, minify }
 
 function isError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error
@@ -39,17 +33,16 @@ function unknownToError(err: unknown, message: string): Error {
   return new Error(message)
 }
 
-export class Functions {
-  public static browserified: Record<string, Promise<string | null>> = {}
-  public static logger = debug('type-imagereader:browserify-middleware')
-  public static debouncer = Debouncer.create()
-
-  public static GetPaths(path: string): string[] {
+const createCache = (): Record<string, Promise<string | null>> => ({})
+export const Functions = {
+  browserified: createCache(),
+  logger: debug('type-imagereader:browserify-middleware'),
+  debouncer: Debouncer.create(),
+  GetPaths: (path: string): string[] => {
     const exts = ['.js', '.ts', '']
     return exts.map((ext) => path.replace(isCompileableExtension, '') + ext)
-  }
-
-  public static GetSystemPath = async (basePath: string, path: string): Promise<string | null> => {
+  },
+  GetSystemPath: async (basePath: string, path: string): Promise<string | null> => {
     const test = async (testpath: string): Promise<boolean> =>
       await Imports.access(testpath)
         .then(() => true)
@@ -57,10 +50,9 @@ export class Functions {
     const candidates = Functions.GetPaths(path).map((candidate) => join(basePath, candidate))
     const exists = await Promise.all(candidates.map(async (candidate) => await test(candidate)))
     return candidates.find((_, i) => exists[i] === true) ?? null
-  }
-
-  public static async CompileBundle(path: string): Promise<string | null> {
-    return await Imports.access(path)
+  },
+  CompileBundle: async (path: string): Promise<string | null> =>
+    await Imports.access(path)
       .then(async (): Promise<string> => {
         const browser = Imports.browserify()
         browser.plugin('tsify')
@@ -80,10 +72,8 @@ export class Functions {
         } else {
           return await Promise.reject(unknownToError(err, 'Compile Error'))
         }
-      })
-  }
-
-  public static async CompileAndCache(basePath: string, mountedPath: string): Promise<void> {
+      }),
+  CompileAndCache: async (basePath: string, mountedPath: string): Promise<void> => {
     const realPath = await Functions.GetSystemPath(basePath, mountedPath)
     if (realPath == null || realPath.length < 1) return
     try {
@@ -98,9 +88,8 @@ export class Functions {
     } catch (err) {
       Functions.logger(`Compile for ${realPath} failed:`, err)
     }
-  }
-
-  public static async SendScript(basepath: string, path: string, res: Response): Promise<void> {
+  },
+  SendScript: async (basepath: string, path: string, res: Response): Promise<void> => {
     const renderError = (code: StatusCodes, err: Error | string): void => {
       if (err instanceof Error) {
         res.status(code).render('error', err)
@@ -127,9 +116,8 @@ export class Functions {
         renderError(StatusCodes.INTERNAL_SERVER_ERROR, err)
       }
     }
-  }
-
-  public static async WatchFolder(basePath: string, mountPath: string, isFolder: boolean): Promise<void> {
+  },
+  WatchFolder: async (basePath: string, mountPath: string, isFolder: boolean): Promise<void> => {
     try {
       Functions.logger(`Watching ${mountPath} for Scripts`)
       const watcher = Imports.watch(join(basePath, mountPath), {
@@ -150,9 +138,8 @@ export class Functions {
         Functions.logger(`Watcher for ${mountPath} exited unexpectedly`, err)
       }
     }
-  }
-
-  public static async WatchAllFolders(basePath: string, watchDirs: string[]): Promise<void> {
+  },
+  WatchAllFolders: async (basePath: string, watchDirs: string[]): Promise<void> => {
     for (const dir of watchDirs) {
       try {
         for (const dirinfo of await Imports.readdir(join(basePath, dir), {
@@ -178,7 +165,7 @@ export class Functions {
         }
       }
     }
-  }
+  },
 }
 
 export interface Options {

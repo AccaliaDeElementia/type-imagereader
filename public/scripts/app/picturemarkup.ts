@@ -58,28 +58,26 @@ export function isDataWithPictures(obj: unknown): obj is DataWithPictures {
   return hasPictureArray(obj) && hasBaseAttributes(obj)
 }
 
-export class PictureMarkup {
-  protected static pictures: Picture[]
-  protected static current: Picture | null
-  protected static mainImage: HTMLImageElement | null
-  protected static imageCard: HTMLTemplateElement | null
-  protected static pageSize = 32
-
-  public static Init(): void {
-    this.mainImage?.addEventListener('load', () => {
+export const PictureMarkup = {
+  pictures: ((): Picture[] => [])(),
+  current: ((): Picture | null => null)(),
+  mainImage: ((): HTMLImageElement | null => null)(),
+  imageCard: ((): HTMLTemplateElement | null => null)(),
+  pageSize: 32,
+  Init: (): void => {
+    PictureMarkup.mainImage?.addEventListener('load', () => {
       Publish('Loading:Hide')
     })
-    this.mainImage?.addEventListener('error', () => {
-      const src = this.mainImage?.getAttribute('src')
+    PictureMarkup.mainImage?.addEventListener('error', () => {
+      const src = PictureMarkup.mainImage?.getAttribute('src')
       if (src != null && src !== '') {
-        Publish('Loading:Error', `Main Image Failed to Load: ${this.current?.name}`)
+        Publish('Loading:Error', `Main Image Failed to Load: ${PictureMarkup.current?.name}`)
       }
     })
-  }
-
-  protected static ResetMarkup(): void {
-    this.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
-    this.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
+  },
+  ResetMarkup: (): void => {
+    PictureMarkup.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
+    PictureMarkup.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
     for (const existing of document.querySelectorAll('#tabImages .pages, #tabImages .page')) {
       existing.parentElement?.removeChild(existing)
     }
@@ -88,6 +86,6 @@ export class PictureMarkup {
         document.querySelector(`.statusBar.${bar} .${position}`)?.replaceChildren('')
       }
     }
-    this.mainImage?.setAttribute('src', '')
-  }
+    PictureMarkup.mainImage?.setAttribute('src', '')
+  },
 }

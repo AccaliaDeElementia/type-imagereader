@@ -38,175 +38,175 @@ export class ImportsEnvironmentLookupTests {
   @test
   'appId: it should return empty string when env undefined'(): void {
     delete process.env.OPENWEATHER_APPID
-    expect(Imports.appId).to.equal('')
+    expect(Imports.getAppId()).to.equal('')
   }
 
   @test
   'appId: it should return empty string when env empty'(): void {
     process.env.OPENWEATHER_APPID = ''
-    expect(Imports.appId).to.equal('')
+    expect(Imports.getAppId()).to.equal('')
   }
 
   @test
   'appId: it should return env string when set'(): void {
     process.env.OPENWEATHER_APPID = 'foo'
-    expect(Imports.appId).to.equal('foo')
+    expect(Imports.getAppId()).to.equal('foo')
   }
 
   @test
   'location: it should return empty string when env undefined'(): void {
     delete process.env.OPENWEATHER_LOCATION
-    expect(Imports.location).to.equal('')
+    expect(Imports.getLocation()).to.equal('')
   }
 
   @test
   'location: it should return empty string when env empty'(): void {
     process.env.OPENWEATHER_LOCATION = ''
-    expect(Imports.location).to.equal('')
+    expect(Imports.getLocation()).to.equal('')
   }
 
   @test
   'location: it should return env string when set'(): void {
     process.env.OPENWEATHER_LOCATION = 'foo'
-    expect(Imports.location).to.equal('foo')
+    expect(Imports.getLocation()).to.equal('foo')
   }
 
   @test
   'location: it should URI encode string when set'(): void {
     process.env.OPENWEATHER_LOCATION = 'foo bar'
-    expect(Imports.location).to.equal('foo%20bar')
+    expect(Imports.getLocation()).to.equal('foo%20bar')
   }
 
   @test
   'nightNotBefore: it should return default time when env undefined'(): void {
     delete process.env.NIGHT_NOT_BEFORE
-    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env blank'(): void {
     process.env.NIGHT_NOT_BEFORE = ''
-    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return configured time when env specifies hour only'(): void {
     process.env.NIGHT_NOT_BEFORE = '16'
-    expect(Imports.nightNotBefore).to.equal(946742400000) // 2000-01-01T16:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946742400000) // 2000-01-01T16:00:00.000
   }
 
   @test
   'nightNotBefore: it should return configured time when env specifies hour: only'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:'
-    expect(Imports.nightNotBefore).to.equal(946742400000) // 2000-01-01T16:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946742400000) // 2000-01-01T16:00:00.000
   }
 
   @test
   'nightNotBefore: it should return configured time when env specifies hour and minute'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:15'
-    expect(Imports.nightNotBefore).to.equal(946743300000) // 2000-01-01T16:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946743300000) // 2000-01-01T16:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has NaN hour'(): void {
     process.env.NIGHT_NOT_BEFORE = 'Foo:15'
-    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has negative hour'(): void {
     process.env.NIGHT_NOT_BEFORE = '-1:15'
-    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has out of range hour'(): void {
     process.env.NIGHT_NOT_BEFORE = '24:15'
-    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has NaN minute'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:Foo'
-    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has negative minute'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:-1'
-    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotBefore: it should return default time when env has out of range minute'(): void {
     process.env.NIGHT_NOT_BEFORE = '16:60'
-    expect(Imports.nightNotBefore).to.equal(946760400000) // 2000-01-01T21:00:00.000
+    expect(Imports.getNightNotBefore()).to.equal(946760400000) // 2000-01-01T21:00:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env undefined'(): void {
     delete process.env.NIGHT_NOT_AFTER
-    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env blank'(): void {
     process.env.NIGHT_NOT_AFTER = ''
-    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return requested time time when env has only hour'(): void {
     process.env.NIGHT_NOT_AFTER = '07'
-    expect(Imports.nightNotAfter).to.equal(946710000000) // 2000-01-01T07:00:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946710000000) // 2000-01-01T07:00:00.000
   }
 
   @test
   'nightNotAfter: it should return requested time time when env has only hour:'(): void {
     process.env.NIGHT_NOT_AFTER = '07:'
-    expect(Imports.nightNotAfter).to.equal(946710000000) // 2000-01-01T07:00:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946710000000) // 2000-01-01T07:00:00.000
   }
 
   @test
   'nightNotAfter: it should return requested time time when env has hour and minute'(): void {
     process.env.NIGHT_NOT_AFTER = '07:15'
-    expect(Imports.nightNotAfter).to.equal(946710900000) // 2000-01-01T07:00:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946710900000) // 2000-01-01T07:00:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has NaN Hour'(): void {
     process.env.NIGHT_NOT_AFTER = 'Foo:30'
-    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has negative Hour'(): void {
     process.env.NIGHT_NOT_AFTER = '-1:30'
-    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has out of range Hour'(): void {
     process.env.NIGHT_NOT_AFTER = '24:30'
-    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has NaN minute'(): void {
     process.env.NIGHT_NOT_AFTER = '06:Foo'
-    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has negative minute'(): void {
     process.env.NIGHT_NOT_AFTER = '06:-1'
-    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 
   @test
   'nightNotAfter: it should return default time when env has out of range minute'(): void {
     process.env.NIGHT_NOT_AFTER = '06:60'
-    expect(Imports.nightNotAfter).to.equal(946707300000) // 2000-01-01T06:15:00.000
+    expect(Imports.getNightNotAfter()).to.equal(946707300000) // 2000-01-01T06:15:00.000
   }
 }
 
@@ -981,8 +981,8 @@ export class WeatherFunctionsUpdateWeatherTests {
     Functions.weather.sunset = undefined
 
     this.GetWeatherStub = sinon.stub(Functions, 'GetWeather').resolves(this.weatherData)
-    this.NightNotAfterStub = sinon.stub(Imports, 'nightNotAfter').get(() => Number.MAX_SAFE_INTEGER)
-    this.NightNotBeforeStub = sinon.stub(Imports, 'nightNotBefore').get(() => 0)
+    this.NightNotAfterStub = sinon.stub(Imports, 'getNightNotAfter').returns(Number.MAX_SAFE_INTEGER)
+    this.NightNotBeforeStub = sinon.stub(Imports, 'getNightNotBefore').returns(0)
   }
 
   after(): void {
@@ -1118,7 +1118,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   @test
   async 'it should set sunrise from NightNotAfter when sunrise too late'(): Promise<void> {
     this.weatherData.sys.sunrise = 62
-    this.NightNotAfterStub.get(() => 42000)
+    this.NightNotAfterStub.returns(42000)
     await Functions.UpdateWeather()
     expect(Functions.weather.sunrise).to.equal(42000)
   }
@@ -1133,7 +1133,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   @test
   async 'it should set sunset from NightNotBefore when sunset too early'(): Promise<void> {
     this.weatherData.sys.sunset = 12
-    this.NightNotBeforeStub.get(() => 42000)
+    this.NightNotBeforeStub.returns(42000)
     await Functions.UpdateWeather()
     expect(Functions.weather.sunset).to.equal(42000)
   }
@@ -1181,7 +1181,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   @test
   async 'it should set sunrise to NightNotAfter on error'(): Promise<void> {
     Functions.weather.sunrise = 69
-    this.NightNotAfterStub.get(() => 314159)
+    this.NightNotAfterStub.returns(314159)
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
     expect(Functions.weather.sunrise).to.equal(314159)
@@ -1190,7 +1190,7 @@ export class WeatherFunctionsUpdateWeatherTests {
   @test
   async 'it should set sunset to NightNotBefore on error'(): Promise<void> {
     Functions.weather.sunset = 69
-    this.NightNotBeforeStub.get(() => 314159)
+    this.NightNotBeforeStub.returns(314159)
     this.GetWeatherStub?.rejects(new Error('ERROR! OH NOES!'))
     await Functions.UpdateWeather()
     expect(Functions.weather.sunset).to.equal(314159)

@@ -67,15 +67,13 @@ export function isDataBookmarkFolderArray(obj: unknown): obj is DataBookmarkFold
   return true
 }
 
-export class Bookmarks {
-  protected static bookmarkCard: DocumentFragment | undefined = undefined
-  protected static bookmarkFolder: DocumentFragment | undefined = undefined
-  protected static bookmarksTab: HTMLElement | null = null
-
-  public static BookmarkFolders: BookmarkFolder[] = []
-
-  public static GetFolder(openPath: string, bookmarkFolder: DataBookmarkFolder): HTMLElement | null {
-    let folder = this.BookmarkFolders.find((e) => e.name === bookmarkFolder.path)
+export const Bookmarks = {
+  bookmarkCard: ((): DocumentFragment | undefined => undefined)(),
+  bookmarkFolder: ((): DocumentFragment | undefined => undefined)(),
+  bookmarksTab: ((): HTMLElement | null => null)(),
+  BookmarkFolders: ((): BookmarkFolder[] => [])(),
+  GetFolder: (openPath: string, bookmarkFolder: DataBookmarkFolder): HTMLElement | null => {
+    let folder = Bookmarks.BookmarkFolders.find((e) => e.name === bookmarkFolder.path)
     if (folder == null) {
       const element = CloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
       if (element == null) {
@@ -89,7 +87,7 @@ export class Bookmarks {
       const title = element.querySelector<HTMLElement>('.title')
       if (title != null) title.innerText = decodeURI(bookmarkFolder.name)
       title?.addEventListener('click', () => {
-        for (const otherFolder of this.BookmarkFolders) {
+        for (const otherFolder of Bookmarks.BookmarkFolders) {
           otherFolder.element.classList.add('closed')
         }
         element.classList.remove('closed')
@@ -97,12 +95,11 @@ export class Bookmarks {
       if (bookmarkFolder.path === openPath) {
         element.classList.remove('closed')
       }
-      this.BookmarkFolders.push(folder)
+      Bookmarks.BookmarkFolders.push(folder)
     }
     return folder.element
-  }
-
-  public static BuildBookmark(bookmark: DataBookmark): HTMLElement | null {
+  },
+  BuildBookmark: (bookmark: DataBookmark): HTMLElement | null => {
     const card = CloneNode(Bookmarks.bookmarkCard, isHTMLElement)
     if (card == null) {
       return null
@@ -137,57 +134,54 @@ export class Bookmarks {
       event.stopPropagation()
     })
     return card
-  }
-
-  public static buildBookmarkNodes(data: DataWithBookmarks, openPath: string): void {
+  },
+  buildBookmarkNodes: (data: DataWithBookmarks, openPath: string): void => {
     for (const folder of data.bookmarks) {
-      const folderNode = this.GetFolder(openPath, folder)
+      const folderNode = Bookmarks.GetFolder(openPath, folder)
       if (folderNode == null) {
         continue
       }
       for (const bookmark of folder.bookmarks) {
-        const card = this.BuildBookmark(bookmark)
+        const card = Bookmarks.BuildBookmark(bookmark)
         if (card == null) {
           continue
         }
         folderNode.appendChild(card)
       }
     }
-  }
-
-  public static buildBookmarks(data: DataWithBookmarks): void {
-    if (this.bookmarksTab == null || this.bookmarkCard == null || this.bookmarkFolder == null) {
+  },
+  buildBookmarks: (data: DataWithBookmarks): void => {
+    if (Bookmarks.bookmarksTab == null || Bookmarks.bookmarkCard == null || Bookmarks.bookmarkFolder == null) {
       return
     }
 
     const openPath =
-      this.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') ?? data.path
+      Bookmarks.bookmarksTab.querySelector('.folder:not(.closed)')?.getAttribute('data-folderPath') ?? data.path
 
-    for (const existing of this.bookmarksTab.querySelectorAll('div.folder')) {
+    for (const existing of Bookmarks.bookmarksTab.querySelectorAll('div.folder')) {
       existing.remove()
     }
 
-    this.BookmarkFolders = []
-    this.buildBookmarkNodes(data, openPath)
-    this.BookmarkFolders.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
-    for (const folder of this.BookmarkFolders) {
-      this.bookmarksTab.appendChild(folder.element)
+    Bookmarks.BookmarkFolders = []
+    Bookmarks.buildBookmarkNodes(data, openPath)
+    Bookmarks.BookmarkFolders.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+    for (const folder of Bookmarks.BookmarkFolders) {
+      Bookmarks.bookmarksTab.appendChild(folder.element)
     }
-  }
-
-  public static Init(): void {
-    this.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
-    this.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
-    this.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
+  },
+  Init: (): void => {
+    Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
+    Bookmarks.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
+    Bookmarks.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
 
     Subscribe('Navigate:Data', (data) => {
-      if (isDataWithBookmarks(data)) this.buildBookmarks(data)
+      if (isDataWithBookmarks(data)) Bookmarks.buildBookmarks(data)
     })
 
     Subscribe('Bookmarks:Load', () => {
       Net.GetJSON<DataBookmarkFolder[]>('/api/bookmarks', isDataBookmarkFolderArray)
         .then((bookmarks) => {
-          this.buildBookmarks({ path: '', bookmarks })
+          Bookmarks.buildBookmarks({ path: '', bookmarks })
         })
         .catch(() => null)
     })
@@ -223,5 +217,5 @@ export class Bookmarks {
         })
         .catch(() => null)
     })
-  }
+  },
 }

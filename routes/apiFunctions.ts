@@ -54,6 +54,7 @@ interface Listing {
   modCount: number
 }
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- rewrite to make non static later
 export class ModCount {
   protected static modCount = ModCount.Reset()
 
@@ -79,27 +80,23 @@ export class ModCount {
   }
 }
 
-export class UriSafePath {
-  public static decode(uri: string): string {
-    return uri
+export const UriSafePath = {
+  decode: (uri: string): string =>
+    uri
       .split('/')
       .map((part) => decodeURIComponent(part))
-      .join('/')
-  }
-
-  public static encode(uri: string): string {
-    return uri
+      .join('/'),
+  encode: (uri: string): string =>
+    uri
       .split('/')
       .map((part) => encodeURIComponent(part))
-      .join('/')
-  }
-
-  public static encodeNullable(uri: string | null): string | null {
+      .join('/'),
+  encodeNullable: (uri: string | null): string | null => {
     if (uri == null || uri.length < 1) {
       return null
     }
     return UriSafePath.encode(uri)
-  }
+  },
 }
 
 interface DbChildFolder {
@@ -135,8 +132,8 @@ export interface SiblingFolderSearch {
   type: 'all' | 'unread'
 }
 
-export class Functions {
-  public static async GetChildFolders(knex: Knex, path: string): Promise<FolderWithCounts[]> {
+export const Functions = {
+  GetChildFolders: async (knex: Knex, path: string): Promise<FolderWithCounts[]> => {
     const data = await knex('folders')
       .select<DbChildFolder[]>('path', 'current', 'totalCount', 'seenCount', 'firstPicture')
       .where('folder', '=', path)
@@ -148,9 +145,8 @@ export class Functions {
       totalCount: i.totalCount,
       totalSeen: i.seenCount,
     }))
-  }
-
-  public static async GetFolder(knex: Knex, path: string): Promise<FolderWithParent | null> {
+  },
+  GetFolder: async (knex: Knex, path: string): Promise<FolderWithParent | null> => {
     const folder = (
       await knex('folders')
         .select<DbFolder[]>('path', 'folder', 'sortKey', 'current', 'firstPicture')
@@ -167,12 +163,11 @@ export class Functions {
       sortKey: folder.sortKey,
       cover: UriSafePath.encodeNullable(folder.current ?? folder.firstPicture),
     }
-  }
-
-  public static async GetDirectionFolder(
+  },
+  GetDirectionFolder: async (
     knex: Knex,
     { path, sortKey, direction, type }: SiblingFolderSearch,
-  ): Promise<Folder | null> {
+  ): Promise<Folder | null> => {
     const comparer = direction === 'asc' ? '>' : '<'
     const folderpath = normalize(dirname(path) + sep)
     const doSelect = (
@@ -199,17 +194,12 @@ export class Functions {
       path: UriSafePath.encode(folder.path),
       cover: UriSafePath.encodeNullable(folder.current ?? folder.firstPicture),
     }
-  }
-
-  public static async GetPreviousFolder(knex: Knex, path: string, sortKey: string): Promise<Folder | null> {
-    return await Functions.GetDirectionFolder(knex, { path, sortKey, direction: 'desc', type: 'all' })
-  }
-
-  public static async GetNextFolder(knex: Knex, path: string, sortKey: string): Promise<Folder | null> {
-    return await Functions.GetDirectionFolder(knex, { path, sortKey, direction: 'asc', type: 'all' })
-  }
-
-  public static async GetPictures(knex: Knex, path: string): Promise<Picture[]> {
+  },
+  GetPreviousFolder: async (knex: Knex, path: string, sortKey: string): Promise<Folder | null> =>
+    await Functions.GetDirectionFolder(knex, { path, sortKey, direction: 'desc', type: 'all' }),
+  GetNextFolder: async (knex: Knex, path: string, sortKey: string): Promise<Folder | null> =>
+    await Functions.GetDirectionFolder(knex, { path, sortKey, direction: 'asc', type: 'all' }),
+  GetPictures: async (knex: Knex, path: string): Promise<Picture[]> => {
     const pics = await knex('pictures')
       .select<DbPicture[]>('path', 'seen')
       .where('folder', '=', path)
@@ -220,9 +210,8 @@ export class Functions {
       index,
       seen: !!pic.seen,
     }))
-  }
-
-  public static async GetBookmarks(knex: Knex): Promise<BookmarkFolder[]> {
+  },
+  GetBookmarks: async (knex: Knex): Promise<BookmarkFolder[]> => {
     const bookmarks = await knex('bookmarks')
       .select<DbBookmark[]>('pictures.path', 'pictures.folder')
       .join('pictures', 'pictures.path', 'bookmarks.path')
@@ -252,9 +241,8 @@ export class Functions {
     results.push(folder)
     results.shift()
     return results
-  }
-
-  public static async GetListing(knex: Knex, path: string): Promise<Listing | null> {
+  },
+  GetListing: async (knex: Knex, path: string): Promise<Listing | null> => {
     const folder = await Functions.GetFolder(knex, path)
     if (folder == null) {
       return null
@@ -290,9 +278,8 @@ export class Functions {
       bookmarks,
       modCount: ModCount.Get(),
     }
-  }
-
-  public static GetPictureFolders(path: string): string[] {
+  },
+  GetPictureFolders: (path: string): string[] => {
     const results = []
     let parent = path
     while (parent !== sep) {
@@ -300,9 +287,8 @@ export class Functions {
       results.push(parent)
     }
     return results
-  }
-
-  public static async SetLatestPicture(knex: Knex, path: string): Promise<string | null> {
+  },
+  SetLatestPicture: async (knex: Knex, path: string): Promise<string | null> => {
     const folder = normalize(dirname(path) + sep)
     const picture = (await knex('pictures').select<DbPicture[]>('seen').where({ path }))[0]
     if (picture == null) {
@@ -314,9 +300,8 @@ export class Functions {
     }
     await knex('folders').update({ current: path }).where({ path: folder })
     return UriSafePath.encode(folder)
-  }
-
-  public static async MarkFolderRead(knex: Knex, path: string): Promise<void> {
+  },
+  MarkFolderRead: async (knex: Knex, path: string): Promise<void> => {
     const updates = await knex('pictures')
       .update({ seen: true })
       .where({ seen: false })
@@ -328,9 +313,8 @@ export class Functions {
         .where('path', 'like', `${path}%`)
         .orWhere({ path })
     }
-  }
-
-  public static async MarkFolderUnread(knex: Knex, path: string): Promise<void> {
+  },
+  MarkFolderUnread: async (knex: Knex, path: string): Promise<void> => {
     const updates = await knex('pictures')
       .update({ seen: false })
       .where({ seen: true })
@@ -339,13 +323,11 @@ export class Functions {
       await knex('folders').increment('seenCount', -updates).whereIn('path', Functions.GetPictureFolders(path))
       await knex('folders').update({ seenCount: 0, current: null }).where('path', 'like', `${path}%`).orWhere({ path })
     }
-  }
-
-  public static async AddBookmark(knex: Knex, path: string): Promise<void> {
+  },
+  AddBookmark: async (knex: Knex, path: string): Promise<void> => {
     await knex('bookmarks').insert({ path }).onConflict('path').ignore()
-  }
-
-  public static async RemoveBookmark(knex: Knex, path: string): Promise<void> {
+  },
+  RemoveBookmark: async (knex: Knex, path: string): Promise<void> => {
     await knex('bookmarks').where({ path }).delete()
-  }
+  },
 }

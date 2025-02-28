@@ -33,23 +33,17 @@ html
       div#tabBookmarks
 `
 
-class TestTabs extends Tabs {
-  public static get Tabs(): HTMLElement[] {
-    return Tabs.tabs
-  }
-
-  public static get TabNames(): string[] {
-    return Tabs.tabNames
-  }
-
-  public static Reset(): void {
+const TestTabs = {
+  getTabs: () => Tabs.tabs,
+  getTabNames: () => Tabs.tabNames,
+  Reset: (): void => {
     Tabs.tabs = []
     Tabs.tabNames = []
-  }
+  },
 }
 
 @suite
-export class AppTabsTests extends PubSub {
+export class AppTabsTests {
   consoleError: sinon.SinonStub
   existingWindow: Window & typeof globalThis
   existingDocument: Document
@@ -60,7 +54,6 @@ export class AppTabsTests extends PubSub {
   bookmarksScroll: sinon.SinonStub
   tabSelectedSpy: sinon.SinonStub
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
@@ -114,11 +107,11 @@ export class AppTabsTests extends PubSub {
   @test
   'Init(): All tabs discovered'(): void {
     TestTabs.Reset()
-    expect(TestTabs.Tabs).to.have.length(0)
-    expect(TestTabs.TabNames).to.have.length(0)
+    expect(TestTabs.getTabs()).to.have.length(0)
+    expect(TestTabs.getTabNames()).to.have.length(0)
     Tabs.Init()
-    expect(TestTabs.Tabs).to.have.length(4)
-    expect(TestTabs.TabNames).to.have.length(4)
+    expect(TestTabs.getTabs()).to.have.length(4)
+    expect(TestTabs.getTabNames()).to.have.length(4)
   }
 
   @test
@@ -192,36 +185,36 @@ export class AppTabsTests extends PubSub {
   @test
   'SelectTab() defaults to first tab when selecting non existant tab'(): void {
     Tabs.SelectTab('#TABDOESNOTEXIST')
-    expect(this.tabSelectedSpy.calledWith(TestTabs.TabNames[0])).to.equal(true)
+    expect(this.tabSelectedSpy.calledWith(TestTabs.getTabNames()[0])).to.equal(true)
   }
 
   @test
   'SelectTab() sets active css class on selected Tab'(): void {
-    Tabs.SelectTab(TestTabs.TabNames[2])
-    expect(TestTabs.Tabs[2]?.parentElement?.classList.contains('active')).to.equal(true)
+    Tabs.SelectTab(TestTabs.getTabNames()[2])
+    expect(TestTabs.getTabs()[2]?.parentElement?.classList.contains('active')).to.equal(true)
   }
 
   @test
   'SelectTab() removes active css class on non selected tab'(): void {
-    TestTabs.Tabs[2]?.parentElement?.classList.add('active')
-    Tabs.SelectTab(TestTabs.TabNames[1])
-    expect(TestTabs.Tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
+    TestTabs.getTabs()[2]?.parentElement?.classList.add('active')
+    Tabs.SelectTab(TestTabs.getTabNames()[1])
+    expect(TestTabs.getTabs()[2]?.parentElement?.classList.contains('active')).to.equal(false)
   }
 
   @test
   'SelectTab() removes active css class null href tab'(): void {
-    TestTabs.Tabs[2]?.parentElement?.classList.add('active')
-    TestTabs.Tabs[2]?.removeAttribute('href')
-    Tabs.SelectTab(TestTabs.TabNames[2])
-    expect(TestTabs.Tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
+    TestTabs.getTabs()[2]?.parentElement?.classList.add('active')
+    TestTabs.getTabs()[2]?.removeAttribute('href')
+    Tabs.SelectTab(TestTabs.getTabNames()[2])
+    expect(TestTabs.getTabs()[2]?.parentElement?.classList.contains('active')).to.equal(false)
   }
 
   @test
   'SelectTab() displays contected content on tab select'(): void {
-    Tabs.SelectTab(TestTabs.TabNames[1])
+    Tabs.SelectTab(TestTabs.getTabNames()[1])
     expect(
       this.dom.window.document
-        .querySelector<HTMLElement>(TestTabs.Tabs[1]?.getAttribute('href') ?? '')
+        .querySelector<HTMLElement>(TestTabs.getTabs()[1]?.getAttribute('href') ?? '')
         ?.style.getPropertyValue('display'),
     ).to.equal('block')
   }
@@ -249,9 +242,11 @@ export class AppTabsTests extends PubSub {
 
   @test
   'SelectTab() hides other tab content on tab select'(): void {
-    const content = this.dom.window.document.querySelector<HTMLElement>(TestTabs.Tabs[1]?.getAttribute('href') ?? '')
+    const content = this.dom.window.document.querySelector<HTMLElement>(
+      TestTabs.getTabs()[1]?.getAttribute('href') ?? '',
+    )
     content?.style.setProperty('display', 'block')
-    Tabs.SelectTab(TestTabs.TabNames[3])
+    Tabs.SelectTab(TestTabs.getTabNames()[3])
     expect(content?.style.getPropertyValue('display')).to.equal('none')
   }
 }

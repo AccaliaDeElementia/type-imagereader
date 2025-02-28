@@ -2,39 +2,35 @@
 
 import { Subscribe, Publish, Defer } from './pubsub'
 
-export class Loading {
-  protected static overlay: HTMLElement | null
-  protected static navbar: HTMLElement | null
-
-  static Init(): void {
-    this.overlay = document.querySelector<HTMLElement>('#loadingScreen')
-    this.navbar = document.querySelector<HTMLElement>('#navbar')
+export const Loading = {
+  overlay: ((): HTMLElement | null => null)(),
+  navbar: ((): HTMLElement | null => null)(),
+  Init: (): void => {
+    Loading.overlay = document.querySelector<HTMLElement>('#loadingScreen')
+    Loading.navbar = document.querySelector<HTMLElement>('#navbar')
 
     Subscribe('Loading:Error', (message) => {
       if (message != null) {
         window.console.error(message)
       }
-      this.navbar?.style.removeProperty('transition')
-      this.navbar?.style.setProperty('background-color', '#FF0000')
+      Loading.navbar?.style.removeProperty('transition')
+      Loading.navbar?.style.setProperty('background-color', '#FF0000')
       Defer(() => {
-        this.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
-        this.navbar?.style.removeProperty('background-color')
+        Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
+        Loading.navbar?.style.removeProperty('background-color')
       }, 100)
       Publish('Loading:Hide')
     })
     Subscribe('Loading:Success', () => {
-      this.navbar?.style.removeProperty('transition')
-      this.navbar?.style.setProperty('background-color', '#00AA00')
+      Loading.navbar?.style.removeProperty('transition')
+      Loading.navbar?.style.setProperty('background-color', '#00AA00')
       Defer(() => {
-        this.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
-        this.navbar?.style.removeProperty('background-color')
+        Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
+        Loading.navbar?.style.removeProperty('background-color')
       }, 100)
     })
-    Subscribe('Loading:Hide', () => this.overlay?.style.setProperty('display', 'none'))
-    Subscribe('Loading:Show', () => this.overlay?.style.setProperty('display', 'block'))
-  }
-
-  static get IsLoading(): boolean {
-    return this.overlay?.style.getPropertyValue('display') === 'block'
-  }
+    Subscribe('Loading:Hide', () => Loading.overlay?.style.setProperty('display', 'none'))
+    Subscribe('Loading:Show', () => Loading.overlay?.style.setProperty('display', 'block'))
+  },
+  IsLoading: (): boolean => Loading.overlay?.style.getPropertyValue('display') === 'block',
 }

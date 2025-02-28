@@ -4,7 +4,8 @@ import { io, type Socket } from 'socket.io-client'
 import type { DefaultEventsMap } from 'socket.io/dist/typed-events'
 type WebSocket = Socket<DefaultEventsMap, DefaultEventsMap>
 
-const handleKeys = (event: KeyboardEvent, socket: WebSocket): void => {
+export const handleKeys = (event: KeyboardEvent, socket: WebSocket | undefined): void => {
+  if (socket == null) return
   if (event.key.toUpperCase() === 'ARROWRIGHT') {
     socket.emit('next-image')
   } else if (event.key.toUpperCase() === 'ARROWLEFT') {
@@ -14,7 +15,8 @@ const handleKeys = (event: KeyboardEvent, socket: WebSocket): void => {
   }
 }
 
-const handleClick = (event: MouseEvent, socket: WebSocket, initialScale: number): void => {
+export const handleClick = (event: MouseEvent, socket: WebSocket | undefined, initialScale: number): void => {
+  if (socket == null) return
   if (window.visualViewport != null && window.visualViewport.scale > initialScale) {
     socket.emit('notify-done')
     return
@@ -30,7 +32,7 @@ const handleClick = (event: MouseEvent, socket: WebSocket, initialScale: number)
       socket.emit('next-image')
     } else {
       socket.emit('goto-image', (folder: string) => {
-        WebSockets.LocationAssign?.call(window.location, `/show${folder}?noMenu`)
+        WebSockets.LocationAssign.call(window.location, `/show${folder}?noMenu`)
         socket.emit('notify-done')
       })
     }
@@ -53,48 +55,52 @@ const doNewImage = (path: string): void => {
     elem.setAttribute('src', `/images/kiosk${path}-image.webp`)
   }
 }
-
-export class WebSockets {
-  protected static socket: WebSocket
-  protected static launchId: unknown = undefined
-  public static LocationAssign?: (url: string | URL) => void
-  public static LocationReload?: () => void
-  static connect(): void {
+export function DefaultLocationAssign(_: string | URL): void {
+  throw new Error('Should not call default value!')
+}
+export function DefaultLocationReload(): void {
+  throw new Error('Should not call default value!')
+}
+export const WebSockets = {
+  socket: ((): WebSocket | undefined => undefined)(),
+  launchId: ((): unknown => undefined)(),
+  LocationAssign: DefaultLocationAssign,
+  LocationReload: DefaultLocationReload,
+  connect: (): void => {
     WebSockets.launchId = undefined
     WebSockets.LocationAssign = window.location.assign.bind(window.location)
     WebSockets.LocationReload = window.location.reload.bind(window.location)
-    this.socket = io(new URL(window.location.href).origin)
+    WebSockets.socket = io(new URL(window.location.href).origin)
     let uri = window.location.pathname.replace(/^\/[^/]+/, '')
     if (uri.length < 1) {
       uri = '/'
     }
     const room = decodeURIComponent(uri)
-    this.socket.on('connect', () => {
-      this.socket.emit('join-slideshow', room)
-      this.socket.emit('get-launchId', (launchId: unknown) => {
+    WebSockets.socket.on('connect', () => {
+      WebSockets.socket?.emit('join-slideshow', room)
+      WebSockets.socket?.emit('get-launchId', (launchId: unknown) => {
         if (WebSockets.launchId === undefined) {
           WebSockets.launchId = launchId
         } else if (launchId !== WebSockets.launchId) {
           WebSockets.launchId = launchId
-          WebSockets.LocationReload?.call(window.location)
+          WebSockets.LocationReload.call(window.location)
         }
-        this.socket.emit('notify-done')
+        WebSockets.socket?.emit('notify-done')
       })
     })
-    this.socket.on('new-image', (path: string) => {
+    WebSockets.socket.on('new-image', (path: string) => {
       doNewImage(path)
-      this.socket.emit('notify-done')
+      WebSockets.socket?.emit('notify-done')
     })
     const initialScale = window.visualViewport != null ? window.visualViewport.scale : 1
     document.body.addEventListener('click', (event) => {
-      handleClick(event, this.socket, initialScale)
+      handleClick(event, WebSockets.socket, initialScale)
     })
     document.body.addEventListener('keyup', (event) => {
-      handleKeys(event, this.socket)
+      handleKeys(event, WebSockets.socket)
     })
-  }
-
-  protected static disconnect(): void {
-    this.socket.disconnect()
-  }
+  },
+  disconnect: (): void => {
+    WebSockets.socket?.disconnect()
+  },
 }

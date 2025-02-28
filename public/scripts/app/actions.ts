@@ -85,22 +85,179 @@ export class GamepadButtons {
   }
 }
 
-export class Actions {
-  static setInnerTextMaybe(node: HTMLElement | null, text: string): void {
+const ActionGroups: ButtonGroups[] = [
+  {
+    target: '#tabImages',
+    buttons: [
+      [
+        {
+          name: 'Previous Image',
+          image: 'fast_rewind',
+        },
+        {
+          name: 'Previous Unseen',
+          image: 'chevron_left',
+        },
+        {
+          name: 'Fullscreen',
+          image: 'fullscreen',
+        },
+        {
+          name: 'Next Unseen',
+          image: 'chevron_right',
+        },
+        {
+          name: 'Next Image',
+          image: 'fast_forward',
+        },
+      ],
+      [
+        {
+          name: 'Previous Folder',
+          image: 'first_page',
+        },
+        {
+          name: 'View Full Size',
+          image: 'open_in_new',
+        },
+        {
+          name: 'Parent Folder',
+          image: 'folder',
+        },
+        {
+          name: 'Bookmark',
+          image: 'bookmarks',
+        },
+        {
+          name: 'Next Folder',
+          image: 'last_page',
+        },
+      ],
+    ],
+  },
+  {
+    target: '#tabFolders',
+    buttons: [
+      [
+        {
+          name: 'Previous Folder',
+          image: 'first_page',
+        },
+        {
+          name: 'Mark All Seen',
+          image: 'check_box',
+        },
+        {
+          name: 'Fullscreen',
+          image: 'fullscreen',
+        },
+        {
+          name: 'Parent Folder',
+          image: 'folder',
+        },
+        {
+          name: 'Slideshow',
+          image: 'slideshow',
+        },
+        {
+          name: 'Mark All Unseen',
+          image: 'check_box_outline_blank',
+        },
+        {
+          name: 'Next Folder',
+          image: 'last_page',
+        },
+      ],
+    ],
+  },
+  {
+    target: '#tabActions',
+    buttons: [
+      [
+        {
+          name: 'First',
+          image: 'skip_previous',
+        },
+        {
+          name: 'Previous Image',
+          image: 'fast_rewind',
+        },
+        {
+          name: 'Fullscreen',
+          image: 'fullscreen',
+        },
+        {
+          name: 'Next Image',
+          image: 'fast_forward',
+        },
+        {
+          name: 'Last',
+          image: 'skip_next',
+        },
+      ],
+      [
+        {
+          name: 'Previous Folder',
+          image: 'first_page',
+        },
+        {
+          name: 'Previous Unseen',
+          image: 'chevron_left',
+        },
+        {
+          name: 'View Full Size',
+          image: 'open_in_new',
+        },
+        {
+          name: 'Next Unseen',
+          image: 'chevron_right',
+        },
+        {
+          name: 'Next Folder',
+          image: 'last_page',
+        },
+      ],
+      [
+        {
+          name: 'Mark All Seen',
+          image: 'check_box',
+        },
+        {
+          name: 'Parent Folder',
+          image: 'folder',
+        },
+        {
+          name: 'Bookmark',
+          image: 'bookmarks',
+        },
+        {
+          name: 'Slideshow',
+          image: 'slideshow',
+        },
+        {
+          name: 'Mark All Unseen',
+          image: 'check_box_outline_blank',
+        },
+      ],
+    ],
+  },
+]
+
+export const Actions = {
+  setInnerTextMaybe: (node: HTMLElement | null, text: string): void => {
     if (node != null) {
       node.innerText = text
     }
-  }
-
-  static createButtons(buttons: ButtonDefinition[]): HTMLElement {
+  },
+  createButtons: (buttons: ButtonDefinition[]): HTMLElement => {
     const result = document.createElement('div')
     result.classList.add('actions')
     for (const { name, image } of buttons) {
       const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
       const button = CloneNode(template, isHTMLElement)
       if (button == null) continue
-      this.setInnerTextMaybe(button.querySelector('i'), image)
-      this.setInnerTextMaybe(button.querySelector('h5'), name)
+      Actions.setInnerTextMaybe(button.querySelector('i'), image)
+      Actions.setInnerTextMaybe(button.querySelector('h5'), name)
       button.addEventListener('click', (event) => {
         Publish(`Action:Execute:${name.replace(/\s+/g, '')}`)
         event.preventDefault()
@@ -109,199 +266,38 @@ export class Actions {
       result.appendChild(button)
     }
     return result
-  }
-
-  public static ActionGroups: ButtonGroups[] = [
-    {
-      target: '#tabImages',
-      buttons: [
-        [
-          {
-            name: 'Previous Image',
-            image: 'fast_rewind',
-          },
-          {
-            name: 'Previous Unseen',
-            image: 'chevron_left',
-          },
-          {
-            name: 'Fullscreen',
-            image: 'fullscreen',
-          },
-          {
-            name: 'Next Unseen',
-            image: 'chevron_right',
-          },
-          {
-            name: 'Next Image',
-            image: 'fast_forward',
-          },
-        ],
-        [
-          {
-            name: 'Previous Folder',
-            image: 'first_page',
-          },
-          {
-            name: 'View Full Size',
-            image: 'open_in_new',
-          },
-          {
-            name: 'Parent Folder',
-            image: 'folder',
-          },
-          {
-            name: 'Bookmark',
-            image: 'bookmarks',
-          },
-          {
-            name: 'Next Folder',
-            image: 'last_page',
-          },
-        ],
-      ],
-    },
-    {
-      target: '#tabFolders',
-      buttons: [
-        [
-          {
-            name: 'Previous Folder',
-            image: 'first_page',
-          },
-          {
-            name: 'Mark All Seen',
-            image: 'check_box',
-          },
-          {
-            name: 'Fullscreen',
-            image: 'fullscreen',
-          },
-          {
-            name: 'Parent Folder',
-            image: 'folder',
-          },
-          {
-            name: 'Slideshow',
-            image: 'slideshow',
-          },
-          {
-            name: 'Mark All Unseen',
-            image: 'check_box_outline_blank',
-          },
-          {
-            name: 'Next Folder',
-            image: 'last_page',
-          },
-        ],
-      ],
-    },
-    {
-      target: '#tabActions',
-      buttons: [
-        [
-          {
-            name: 'First',
-            image: 'skip_previous',
-          },
-          {
-            name: 'Previous Image',
-            image: 'fast_rewind',
-          },
-          {
-            name: 'Fullscreen',
-            image: 'fullscreen',
-          },
-          {
-            name: 'Next Image',
-            image: 'fast_forward',
-          },
-          {
-            name: 'Last',
-            image: 'skip_next',
-          },
-        ],
-        [
-          {
-            name: 'Previous Folder',
-            image: 'first_page',
-          },
-          {
-            name: 'Previous Unseen',
-            image: 'chevron_left',
-          },
-          {
-            name: 'View Full Size',
-            image: 'open_in_new',
-          },
-          {
-            name: 'Next Unseen',
-            image: 'chevron_right',
-          },
-          {
-            name: 'Next Folder',
-            image: 'last_page',
-          },
-        ],
-        [
-          {
-            name: 'Mark All Seen',
-            image: 'check_box',
-          },
-          {
-            name: 'Parent Folder',
-            image: 'folder',
-          },
-          {
-            name: 'Bookmark',
-            image: 'bookmarks',
-          },
-          {
-            name: 'Slideshow',
-            image: 'slideshow',
-          },
-          {
-            name: 'Mark All Unseen',
-            image: 'check_box_outline_blank',
-          },
-        ],
-      ],
-    },
-  ]
-
-  public static BuildActions(): void {
-    for (const group of this.ActionGroups) {
+  },
+  ActionGroups,
+  BuildActions: (): void => {
+    for (const group of Actions.ActionGroups) {
       const existing = document.querySelectorAll(`${group.target} .actions`)
       for (const elem of existing) {
         elem.remove()
       }
       for (const row of group.buttons) {
-        const container = this.createButtons(row)
+        const container = Actions.createButtons(row)
         document.querySelector(group.target)?.appendChild(container)
       }
     }
-  }
-
-  public static gamepads: GamepadButtons = new GamepadButtons()
-
-  public static ReadGamepad(): void {
+  },
+  gamepads: ((): GamepadButtons => new GamepadButtons())(),
+  ReadGamepad: (): void => {
     if (document.hidden) return
     const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
     if (gamepads == null || gamepads.length < 1) return
     for (const pad of gamepads) {
       if (pad == null) continue
-      this.gamepads.Read(pad)
+      Actions.gamepads.Read(pad)
     }
-    if (!this.gamepads.pressingNow && this.gamepads.pressedButtons.length > 0) {
-      const buttons = this.gamepads.pressedButtons.join('')
-      this.gamepads.Reset()
+    if (!Actions.gamepads.pressingNow && Actions.gamepads.pressedButtons.length > 0) {
+      const buttons = Actions.gamepads.pressedButtons.join('')
+      Actions.gamepads.Reset()
       Publish(`Action:Gamepad:${buttons}`)
     }
-  }
-
-  public static Init(): void {
-    this.BuildActions()
-    this.gamepads.Reset()
+  },
+  Init: (): void => {
+    Actions.BuildActions()
+    Actions.gamepads.Reset()
 
     Subscribe('Navigate:Data', (data) => {
       if (
@@ -325,10 +321,10 @@ export class Actions {
       AddInterval(
         'ReadGamepad',
         () => {
-          this.ReadGamepad()
+          Actions.ReadGamepad()
         },
         20,
       )
     })
-  }
+  },
 }

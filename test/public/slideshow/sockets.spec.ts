@@ -11,8 +11,16 @@ import { Server as WebSocketServer } from 'socket.io'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
-import { WebSockets } from '../../../public/scripts/slideshow/sockets'
+import {
+  DefaultLocationAssign,
+  DefaultLocationReload,
+  handleClick,
+  handleKeys,
+  WebSockets,
+} from '../../../public/scripts/slideshow/sockets'
 import { Cast } from '../../testutils/TypeGuards'
+import { DefinitelyThrows } from '../../testutils/Errors'
+import { assert } from 'console'
 
 type Websocket = Socket
 
@@ -27,14 +35,13 @@ html
 `
 
 @suite(slow(250))
-export class SlideshowSocketsTests extends WebSockets {
+export class SlideshowSocketsTests {
   socketServer: WebSocketServer
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
 
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.socketServer = new WebSocketServer()
@@ -87,6 +94,21 @@ export class SlideshowSocketsTests extends WebSockets {
     })()
     WebSockets.connect()
     await result
+  }
+
+  @test
+  'it should throw for default location assign'(): void {
+    const e = DefinitelyThrows(() => {
+      DefaultLocationAssign('foo!')
+    })
+    expect(e.message).to.equal('Should not call default value!')
+  }
+  @test
+  'it should throw for default location relead'(): void {
+    const e = DefinitelyThrows(() => {
+      DefaultLocationReload()
+    })
+    expect(e.message).to.equal('Should not call default value!')
   }
 
   @test
@@ -379,6 +401,19 @@ export class SlideshowSocketsTests extends WebSockets {
   }
 
   @test
+  async 'click handler - Handler gracefully handles undefined socket'(): Promise<void> {
+    const event = new global.window.MouseEvent('click', {
+      clientX: global.window.innerWidth * (1 / 6),
+      clientY: global.window.innerHeight / 2,
+    })
+    await this.connectSocket(async (_) => {
+      handleClick(event, undefined, 1)
+      assert(true, 'We succeed if there is no error passing undefined socket')
+      await Promise.resolve()
+    })
+  }
+
+  @test
   async 'click handler - previous image active region navigates'(): Promise<void> {
     const event = new global.window.MouseEvent('click', {
       clientX: global.window.innerWidth * (1 / 6),
@@ -522,6 +557,18 @@ export class SlideshowSocketsTests extends WebSockets {
           cb(null, null)
         }),
       )()
+    })
+  }
+
+  @test
+  async 'keyup handler - Handler gracefully handles undefined socket'(): Promise<void> {
+    const event = new global.window.KeyboardEvent('keyup', {
+      key: 'A',
+    })
+    await this.connectSocket(async (_) => {
+      handleKeys(event, undefined)
+      assert(true, 'We succeed if there is no error passing undefined socket')
+      await Promise.resolve()
     })
   }
 

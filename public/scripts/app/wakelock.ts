@@ -7,43 +7,41 @@ export interface WakeLockSentinel {
   release: () => Promise<void>
 }
 
-export class WakeLock {
-  public static sentinel: WakeLockSentinel | null = null
-  public static timeout = 0
-  public static readonly wakeTime = 2 * 60 * 1000
-  public static Init(): void {
+export const WakeLock = {
+  sentinel: ((): WakeLockSentinel | null => null)(),
+  timeout: 0,
+  wakeTime: 2 * 60 * 1000,
+  Init: (): void => {
     Subscribe('Picture:LoadNew', () => {
-      this.TakeLock().catch(() => null)
+      WakeLock.TakeLock().catch(() => null)
     })
     AddInterval(
       'WakeLock:Release',
       () => {
-        this.ReleaseLock().catch(() => null)
+        WakeLock.ReleaseLock().catch(() => null)
       },
       30 * 1000,
     )
-  }
-
-  public static async TakeLock(): Promise<void> {
+  },
+  TakeLock: async (): Promise<void> => {
     try {
-      if (this.sentinel == null || this.sentinel.released) {
-        this.sentinel = await navigator.wakeLock.request('screen')
+      if (WakeLock.sentinel == null || WakeLock.sentinel.released) {
+        WakeLock.sentinel = await navigator.wakeLock.request('screen')
       }
-      this.timeout = Date.now() + this.wakeTime
+      WakeLock.timeout = Date.now() + WakeLock.wakeTime
     } catch {
-      this.sentinel = null
-      this.timeout = 0
+      WakeLock.sentinel = null
+      WakeLock.timeout = 0
     }
-  }
-
-  public static async ReleaseLock(): Promise<void> {
-    if (this.sentinel == null || this.timeout > Date.now()) return
-    this.timeout = 0
+  },
+  ReleaseLock: async (): Promise<void> => {
+    if (WakeLock.sentinel == null || WakeLock.timeout > Date.now()) return
+    WakeLock.timeout = 0
     try {
-      if (!this.sentinel.released) {
-        await this.sentinel.release()
+      if (!WakeLock.sentinel.released) {
+        await WakeLock.sentinel.release()
       }
     } catch {}
-    this.sentinel = null
-  }
+    WakeLock.sentinel = null
+  },
 }

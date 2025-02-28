@@ -37,25 +37,23 @@ export class CyclicUpdater {
   }
 }
 
-export class CyclicManager {
-  protected static updaters: CyclicUpdater[] = []
-  protected static timer: NodeJS.Timeout | number | undefined = undefined
-  static Add(...updaters: CyclicUpdater[]): void {
-    this.updaters.push(...updaters)
-  }
-
-  static Start(interval: number): void {
-    this.timer = setInterval(() => {
-      this.updaters.forEach((updater) => {
+export const CyclicManager = {
+  updaters: ((): CyclicUpdater[] => [])(),
+  timer: ((): NodeJS.Timeout | number | undefined => undefined)(),
+  Add: (...updaters: CyclicUpdater[]): void => {
+    CyclicManager.updaters.push(...updaters)
+  },
+  Start: (interval: number): void => {
+    CyclicManager.timer = setInterval(() => {
+      CyclicManager.updaters.forEach((updater) => {
         updater.trigger(interval).catch(() => null)
       })
     }, interval)
-  }
-
-  static Stop(): void {
-    if (this.timer != null) {
-      clearInterval(this.timer)
-      this.timer = undefined
+  },
+  Stop: (): void => {
+    if (CyclicManager.timer != null) {
+      clearInterval(CyclicManager.timer)
+      CyclicManager.timer = undefined
     }
-  }
+  },
 }

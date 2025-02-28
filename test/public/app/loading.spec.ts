@@ -19,13 +19,12 @@ html
 `
 
 @suite
-export class AppLoadingTests extends PubSub {
+export class AppLoadingTests {
   consoleError: sinon.SinonStub
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})
@@ -204,7 +203,7 @@ export class AppLoadingTests extends PubSub {
   'IsLoading is true when overlay is displayed as block element'(): void {
     const overlay = this.dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'block')
-    expect(Loading.IsLoading).to.equal(true)
+    expect(Loading.IsLoading()).to.equal(true)
   }
 
   @test
@@ -212,7 +211,7 @@ export class AppLoadingTests extends PubSub {
     const overlay = this.dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     for (const display of ['flex', 'none', 'inline-block']) {
       overlay?.style.setProperty('display', display)
-      expect(Loading.IsLoading).to.equal(false)
+      expect(Loading.IsLoading()).to.equal(false)
     }
   }
 }

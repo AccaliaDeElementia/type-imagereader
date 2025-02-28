@@ -26,32 +26,30 @@ function makeURI(width: number | undefined, height: number | undefined, img: Pic
 
 export type PageSelector = () => number
 
-export class Pictures extends PictureMarkup {
-  public static modCount = -1
-  protected static nextLoader: Promise<void> = Promise.resolve()
-  protected static nextPending = true
-  protected static initialScale = -1
-
-  public static Init(): void {
-    this.pictures = []
-    this.current = null
-    this.nextLoader = Promise.resolve()
-    this.nextPending = true
-    this.ResetMarkup()
-    super.Init()
+export const Pictures = {
+  modCount: -1,
+  nextLoader: Promise.resolve(),
+  nextPending: true,
+  initialScale: -1,
+  Init: (): void => {
+    PictureMarkup.pictures = []
+    PictureMarkup.current = null
+    Pictures.nextLoader = Promise.resolve()
+    Pictures.nextPending = true
+    PictureMarkup.ResetMarkup()
+    PictureMarkup.Init()
     Subscribe('Navigate:Data', (data) => {
-      if (isDataWithPictures(data)) this.LoadData(data)
+      if (isDataWithPictures(data)) Pictures.LoadData(data)
     })
-    this.InitActions()
-    this.InitMouse()
-    this.InitUnreadSelectorSlider()
-  }
-
-  public static InitActions(): void {
+    Pictures.InitActions()
+    Pictures.InitMouse()
+    Pictures.InitUnreadSelectorSlider()
+  },
+  InitActions: (): void => {
     const doIfNoMenu = (action: string) => () => {
-      if (!Navigation.IsMenuActive) {
+      if (!Navigation.IsMenuActive()) {
         Publish(`Action:Execute:${action}`)
-      } else if (this.pictures.length > 0) {
+      } else if (PictureMarkup.pictures.length > 0) {
         Publish('Action:Execute:HideMenu')
       }
     }
@@ -67,15 +65,15 @@ export class Pictures extends PictureMarkup {
     Subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ShowMenu'))
 
     const changeTo = (direction: NavigateTo): void => {
-      this.ChangePicture(this.GetPicture(direction))
+      Pictures.ChangePicture(Pictures.GetPicture(direction))
     }
 
     Subscribe('Action:Execute:Previous', () => {
-      const actualEvent = this.ShowUnreadOnly ? 'PreviousUnseen' : 'PreviousImage'
+      const actualEvent = Pictures.GetShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
       Publish(`Action:Execute:${actualEvent}`)
     })
     Subscribe('Action:Execute:Next', () => {
-      const actualEvent = this.ShowUnreadOnly ? 'NextUnseen' : 'NextImage'
+      const actualEvent = Pictures.GetShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
       Publish(`Action:Execute:${actualEvent}`)
     })
     Subscribe('Action:Execute:First', () => {
@@ -97,27 +95,26 @@ export class Pictures extends PictureMarkup {
       changeTo(NavigateTo.Last)
     })
 
-    Subscribe('Action:Execute:ViewFullSize', () => window.open(`/images/full${this.current?.path}`))
+    Subscribe('Action:Execute:ViewFullSize', () => window.open(`/images/full${PictureMarkup.current?.path}`))
     Subscribe('Action:Execute:Bookmark', () => {
-      Publish('Bookmarks:Add', this.current?.path)
+      Publish('Bookmarks:Add', PictureMarkup.current?.path)
     })
     Subscribe('Action:Gamepad:B', () => {
-      Publish('Bookmarks:Add', this.current?.path)
+      Publish('Bookmarks:Add', PictureMarkup.current?.path)
     })
 
     Subscribe('Pictures:SelectPage', () => {
-      this.LoadCurrentPageImages()
+      Pictures.LoadCurrentPageImages()
     })
-  }
-
-  protected static InitMouse(): void {
-    this.initialScale = window.visualViewport != null ? window.visualViewport.scale : -1
-    this.mainImage?.parentElement?.addEventListener('click', (evt) => {
-      if (window.visualViewport != null && this.initialScale < window.visualViewport.scale) {
+  },
+  InitMouse: (): void => {
+    Pictures.initialScale = window.visualViewport != null ? window.visualViewport.scale : -1
+    PictureMarkup.mainImage?.parentElement?.addEventListener('click', (evt) => {
+      if (window.visualViewport != null && Pictures.initialScale < window.visualViewport.scale) {
         Publish('Ignored Mouse Click', evt)
         return
       }
-      const target = this.mainImage?.parentElement?.getBoundingClientRect() ?? {
+      const target = PictureMarkup.mainImage?.parentElement?.getBoundingClientRect() ?? {
         left: 0,
         width: 0,
       }
@@ -134,9 +131,8 @@ export class Pictures extends PictureMarkup {
         Publish('Action:Execute:ShowMenu')
       }
     })
-  }
-
-  public static get CurrentPage(): number {
+  },
+  GetCurrentPage: (): number => {
     let i = -1
     if (document.querySelector('.pagination .page-item.active') !== null) {
       for (const elem of document.querySelectorAll('.pagination .page-item')) {
@@ -145,9 +141,8 @@ export class Pictures extends PictureMarkup {
       }
     }
     return i
-  }
-
-  public static SelectPage(index: number): void {
+  },
+  SelectPage: (index: number): void => {
     const links = document.querySelectorAll('.pagination .page-item')
     if (links.length === 0) {
       Publish('Pictures:SelectPage', 'Default Page Selected')
@@ -172,19 +167,17 @@ export class Pictures extends PictureMarkup {
       }
     })
     Publish('Pictures:SelectPage', `New Page ${index} Selected`)
-  }
-
-  public static LoadCurrentPageImages(): void {
+  },
+  LoadCurrentPageImages: (): void => {
     for (const card of document.querySelectorAll<HTMLElement>('#tabImages .page:not(.hidden) .card')) {
       const style = card.getAttribute('data-backgroundImage')
       if (style != null) {
         card.style.backgroundImage = style
       }
     }
-  }
-
-  public static MakePictureCard(picture: Picture): HTMLElement | undefined {
-    const card = CloneNode(this.imageCard, isHTMLElement)
+  },
+  MakePictureCard: (picture: Picture): HTMLElement | undefined => {
+    const card = CloneNode(PictureMarkup.imageCard, isHTMLElement)
     picture.element = card
     card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
     if (picture.seen) {
@@ -196,158 +189,152 @@ export class Pictures extends PictureMarkup {
       Publish('Menu:Hide')
     })
     return card
-  }
-
-  public static MakePicturesPage(pageNum: number, pictures: Picture[]): HTMLElement {
+  },
+  MakePicturesPage: (pageNum: number, pictures: Picture[]): HTMLElement => {
     const page = document.createElement('div')
     page.classList.add('page')
     for (const picture of pictures) {
-      const card = this.MakePictureCard(picture)
+      const card = Pictures.MakePictureCard(picture)
       if (card == null) continue
       picture.page = pageNum
       page.appendChild(card)
     }
     return page
-  }
-
-  public static MakePaginatorItem(label: string, selector: PageSelector): HTMLElement | undefined {
+  },
+  MakePaginatorItem: (label: string, selector: PageSelector): HTMLElement | undefined => {
     const pageItem = document.querySelector<HTMLTemplateElement>('#PaginatorItem')
     const item = CloneNode(pageItem, isHTMLElement)
     item?.querySelector('span')?.replaceChildren(document.createTextNode(label))
     item?.addEventListener('click', (e: Event) => {
-      this.SelectPage(selector())
+      Pictures.SelectPage(selector())
       e.preventDefault()
     })
     return item
-  }
-
-  public static MakePaginator(pageCount: number): HTMLElement | null {
+  },
+  MakePaginator: (pageCount: number): HTMLElement | null => {
     if (pageCount < 2) return null
     const paginator = CloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'), isHTMLElement)
     if (paginator === undefined) return null
     const domItems = paginator.querySelector('.pagination')
-    const firstItem = this.MakePaginatorItem('«', () => Math.max(this.CurrentPage - 1, 1))
+    const firstItem = Pictures.MakePaginatorItem('«', () => Math.max(Pictures.GetCurrentPage() - 1, 1))
     if (firstItem !== undefined) domItems?.appendChild(firstItem)
     for (let i = 1; i <= pageCount; i++) {
-      const item = this.MakePaginatorItem(`${i}`, () => i)
+      const item = Pictures.MakePaginatorItem(`${i}`, () => i)
       if (item !== undefined) domItems?.appendChild(item)
     }
-    const lastItem = this.MakePaginatorItem('»', () => Math.min(this.CurrentPage + 1, pageCount))
+    const lastItem = Pictures.MakePaginatorItem('»', () => Math.min(Pictures.GetCurrentPage() + 1, pageCount))
     if (lastItem !== undefined) domItems?.appendChild(lastItem)
     return paginator
-  }
-
-  public static MakeTab(): void {
-    const pageCount = Math.ceil(this.pictures.length / this.pageSize)
+  },
+  MakeTab: (): void => {
+    const pageCount = Math.ceil(PictureMarkup.pictures.length / PictureMarkup.pageSize)
     const tab = document.querySelector<HTMLElement>('#tabImages')
     const pages: HTMLElement[] = Array.from({ length: pageCount }).map((_, i) =>
-      this.MakePicturesPage(i + 1, this.pictures.slice(i * this.pageSize, (i + 1) * this.pageSize)),
+      Pictures.MakePicturesPage(
+        i + 1,
+        PictureMarkup.pictures.slice(i * PictureMarkup.pageSize, (i + 1) * PictureMarkup.pageSize),
+      ),
     )
-    const pagninator = this.MakePaginator(pageCount)
+    const pagninator = Pictures.MakePaginator(pageCount)
     if (pagninator != null) {
       tab?.appendChild(pagninator)
     }
     pages.forEach((page) => tab?.appendChild(page))
-  }
-
-  public static LoadNextImage(): void {
-    const next = this.GetPicture(this.ShowUnreadOnly ? NavigateTo.NextUnread : NavigateTo.Next)
+  },
+  LoadNextImage: (): void => {
+    const next = Pictures.GetPicture(Pictures.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
     if (next == null) {
-      this.nextPending = false
-      this.nextLoader = Promise.resolve()
+      Pictures.nextPending = false
+      Pictures.nextLoader = Promise.resolve()
     } else {
-      this.nextPending = true
-      this.nextLoader = fetch(makeURI(this.mainImage?.width, this.mainImage?.height, next)).then(
+      Pictures.nextPending = true
+      Pictures.nextLoader = fetch(makeURI(PictureMarkup.mainImage?.width, PictureMarkup.mainImage?.height, next)).then(
         () => {
-          this.nextPending = false
+          Pictures.nextPending = false
         },
         () => {
-          this.nextPending = false
+          Pictures.nextPending = false
         },
       )
     }
-  }
-
-  public static async LoadImage(): Promise<void> {
-    if (this.current == null) return
-    if (this.nextPending) {
+  },
+  LoadImage: async (): Promise<void> => {
+    if (PictureMarkup.current == null) return
+    if (Pictures.nextPending) {
       Publish('Loading:Show')
     }
     try {
-      this.current.seen = true
-      this.current.element?.classList.add('seen')
+      PictureMarkup.current.seen = true
+      PictureMarkup.current.element?.classList.add('seen')
       const newModCount = await Net.PostJSON<number | undefined>(
         '/api/navigate/latest',
-        { path: this.current.path, modCount: this.modCount },
+        { path: PictureMarkup.current.path, modCount: Pictures.modCount },
         (o) => typeof o === 'number' || o === undefined,
       )
       if (newModCount === undefined || newModCount < 0) {
         Publish('Navigate:Reload')
         return
       }
-      this.modCount = newModCount
-      await this.nextLoader
-      this.mainImage?.setAttribute('src', makeURI(this.mainImage.width, this.mainImage.height, this.current))
-      const index = this.current.index ?? 0
-      const displayTotal = this.pictures.length.toLocaleString()
+      Pictures.modCount = newModCount
+      await Pictures.nextLoader
+      PictureMarkup.mainImage?.setAttribute(
+        'src',
+        makeURI(PictureMarkup.mainImage.width, PictureMarkup.mainImage.height, PictureMarkup.current),
+      )
+      const index = PictureMarkup.current.index ?? 0
+      const displayTotal = PictureMarkup.pictures.length.toLocaleString()
       const displayIndex = (index + 1).toLocaleString()
-      const displayPercent = (Math.floor((1000 * (index + 1)) / this.pictures.length) / 10).toLocaleString()
-      setTextContent('.statusBar.bottom .center', this.current.name)
+      const displayPercent = (Math.floor((1000 * (index + 1)) / PictureMarkup.pictures.length) / 10).toLocaleString()
+      setTextContent('.statusBar.bottom .center', PictureMarkup.current.name)
       setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
       setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
-      this.SelectPage(this.current.page ?? 1)
-      this.LoadNextImage()
+      Pictures.SelectPage(PictureMarkup.current.page ?? 1)
+      Pictures.LoadNextImage()
       Publish('Picture:LoadNew')
     } catch (err) {
       Publish('Loading:Error', err)
     }
-  }
-
-  public static SetPicturesGetFirst(data: DataWithPictures): Picture | null {
-    if (this.mainImage == null) return null
+  },
+  SetPicturesGetFirst: (data: DataWithPictures): Picture | null => {
+    if (PictureMarkup.mainImage == null) return null
     const firstPic = data.pictures?.slice(0, 1)[0]
     if (data.pictures == null || firstPic === undefined) {
-      this.mainImage.classList.add('hidden')
+      PictureMarkup.mainImage.classList.add('hidden')
       Publish('Menu:Show')
       document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.add('hidden')
       return null
     }
-    this.mainImage.classList.remove('hidden')
+    PictureMarkup.mainImage.classList.remove('hidden')
     document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
-
-    this.pictures = data.pictures
-    this.modCount = data.modCount ?? -1
-    this.pictures.forEach((pic, i) => {
+    PictureMarkup.pictures = data.pictures
+    Pictures.modCount = data.modCount ?? -1
+    PictureMarkup.pictures.forEach((pic, i) => {
       pic.index = i
     })
     return firstPic
-  }
-
-  public static LoadData(data: DataWithPictures): void {
-    this.ResetMarkup()
-    const firstPic = this.SetPicturesGetFirst(data)
+  },
+  LoadData: (data: DataWithPictures): void => {
+    PictureMarkup.ResetMarkup()
+    const firstPic = Pictures.SetPicturesGetFirst(data)
     if (firstPic === null) return
 
-    const selected = this.pictures.find((picture) => picture.path === data.cover)
+    const selected = PictureMarkup.pictures.find((picture) => picture.path === data.cover)
     if (selected !== undefined) {
-      this.current = selected
+      PictureMarkup.current = selected
     } else {
-      this.current = firstPic
+      PictureMarkup.current = firstPic
     }
-    this.MakeTab()
+    Pictures.MakeTab()
     Publish('Tab:Select', 'Images')
-
-    if (this.pictures.every((img) => img.seen) && data.noMenu == null) {
+    if (PictureMarkup.pictures.every((img) => img.seen) && data.noMenu == null) {
       Publish('Menu:Show')
     } else {
       Publish('Menu:Hide')
     }
-
-    this.LoadImage().catch(() => null)
-  }
-
-  public static ChoosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[]): number {
-    if (this.pictures.length < 1) return -1
+    Pictures.LoadImage().catch(() => null)
+  },
+  ChoosePictureIndex: (navi: NavigateTo, current: number, unreads: Picture[]): number => {
+    if (PictureMarkup.pictures.length < 1) return -1
     switch (navi) {
       case NavigateTo.First:
         return 0
@@ -356,67 +343,59 @@ export class Pictures extends PictureMarkup {
       case NavigateTo.Previous:
         return current !== 0 ? current - 1 : -1
       case NavigateTo.Next:
-        return current < this.pictures.length - 1 ? current + 1 : -1
+        return current < PictureMarkup.pictures.length - 1 ? current + 1 : -1
       case NavigateTo.NextUnread:
         return unreads.shift()?.index ?? -1
       case NavigateTo.Last:
-        return this.pictures.length - 1
+        return PictureMarkup.pictures.length - 1
     }
-  }
-
-  public static GetPicture(navi: NavigateTo): Picture | undefined {
+  },
+  GetPicture: (navi: NavigateTo): Picture | undefined => {
     let index = -1
-    const current = this.current?.index
+    const current = PictureMarkup.current?.index
     if (current === undefined) {
       return undefined
     }
     const unreads = [
-      ...this.pictures.filter((image) => !image.seen && image.index !== undefined && image.index > current),
-      ...this.pictures.filter((image) => !image.seen && image.index !== undefined && image.index < current),
+      ...PictureMarkup.pictures.filter((image) => !image.seen && image.index !== undefined && image.index > current),
+      ...PictureMarkup.pictures.filter((image) => !image.seen && image.index !== undefined && image.index < current),
     ]
-    index = this.ChoosePictureIndex(navi, current, unreads)
-    return this.pictures[index]
-  }
-
-  public static ChangePicture(pic: Picture | undefined): void {
-    if (Loading.IsLoading) {
+    index = Pictures.ChoosePictureIndex(navi, current, unreads)
+    return PictureMarkup.pictures[index]
+  },
+  ChangePicture: (pic: Picture | undefined): void => {
+    if (Loading.IsLoading()) {
       return
     }
     if (pic != null) {
-      this.current = pic
-      this.LoadImage().catch(() => null)
+      PictureMarkup.current = pic
+      Pictures.LoadImage().catch(() => null)
       Publish('Menu:Hide')
     } else {
       Publish('Loading:Error', 'Change Picture called with No Picture to change to')
     }
-  }
-
-  public static get ShowUnreadOnly(): boolean {
-    return window.localStorage.ShowUnseenOnly === 'true'
-  }
-
-  protected static set ShowUnreadOnly(value: boolean) {
+  },
+  GetShowUnreadOnly: (): boolean => window.localStorage.ShowUnseenOnly === 'true',
+  SetShowUnreadOnly: (value: boolean) => {
     window.localStorage.ShowUnseenOnly = `${value}`
-  }
-
-  public static UpdateUnreadSelectorSlider(): void {
+  },
+  UpdateUnreadSelectorSlider: (): void => {
     const element = document.querySelector('.selectUnreadAll > div')
-    if (this.ShowUnreadOnly) {
+    if (Pictures.GetShowUnreadOnly()) {
       element?.classList.add('unread')
       element?.classList.remove('all')
     } else {
       element?.classList.remove('unread')
       element?.classList.add('all')
     }
-  }
-
-  public static InitUnreadSelectorSlider(): void {
-    this.UpdateUnreadSelectorSlider()
+  },
+  InitUnreadSelectorSlider: (): void => {
+    Pictures.UpdateUnreadSelectorSlider()
 
     document.querySelector('.selectUnreadAll')?.addEventListener('click', (evt) => {
-      this.ShowUnreadOnly = !this.ShowUnreadOnly
-      this.UpdateUnreadSelectorSlider()
+      Pictures.SetShowUnreadOnly(!Pictures.GetShowUnreadOnly())
+      Pictures.UpdateUnreadSelectorSlider()
       evt.preventDefault()
     })
-  }
+  },
 }

@@ -8,9 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'path'
 
-export class Imports {
-  public static Router = Router
-}
+export const Imports = { Router }
 
 export async function getRouter(_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
   const router = Imports.Router()

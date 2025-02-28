@@ -13,10 +13,7 @@ import { ModCount, UriSafePath, Functions } from './apiFunctions'
 
 import debug from 'debug'
 
-export class Imports {
-  public static Router = Router
-  public static debug = debug
-}
+export const Imports = { Router, debug }
 
 interface ReqWithBodyData {
   body: BodyData

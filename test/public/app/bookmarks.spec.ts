@@ -539,40 +539,13 @@ export class BookmarksisDataBookmarkFolderArrayTests {
 
 export type SubscriberPromiseFunction = (recievedData: string | undefined, actualTopic?: string) => Promise<void>
 
-class TestBookmarks extends Bookmarks {
-  public static get bookmarkCard(): DocumentFragment | undefined {
-    return Bookmarks.bookmarkCard
-  }
-
-  public static set bookmarkCard(card: DocumentFragment | undefined) {
-    Bookmarks.bookmarkCard = card
-  }
-
-  public static get bookmarkFolder(): DocumentFragment | undefined {
-    return Bookmarks.bookmarkFolder
-  }
-
-  public static set bookmarkFolder(folder: DocumentFragment | undefined) {
-    Bookmarks.bookmarkFolder = folder
-  }
-
-  public static get bookmarksTab(): HTMLElement | null {
-    return Bookmarks.bookmarksTab
-  }
-
-  public static set bookmarksTab(folder: HTMLElement | null) {
-    Bookmarks.bookmarksTab = folder
-  }
-}
-
-abstract class BaseBookmarksTests extends PubSub {
+abstract class BaseBookmarksTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   document: Document
   dom: JSDOM
 
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.document = global.document
@@ -592,8 +565,8 @@ abstract class BaseBookmarksTests extends PubSub {
     PubSub.subscribers = {}
     PubSub.deferred = []
 
-    TestBookmarks.bookmarkCard = undefined
-    TestBookmarks.bookmarkFolder = undefined
+    Bookmarks.bookmarkCard = undefined
+    Bookmarks.bookmarkFolder = undefined
   }
 
   after(): void {
@@ -610,7 +583,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
 
   before(): void {
     super.before()
-    TestBookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
+    Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     this.BuildBookmarksSpy = sinon.stub(Bookmarks, 'buildBookmarks')
     this.GetJSONSpy = sinon.stub(Net, 'GetJSON')
     this.GetJSONSpy.resolves()
@@ -627,23 +600,23 @@ export class BookmarksInitTests extends BaseBookmarksTests {
 
   @test
   'it should set bookmarkCard on init'(): void {
-    TestBookmarks.bookmarkCard = undefined
+    Bookmarks.bookmarkCard = undefined
     Bookmarks.Init()
-    expect(TestBookmarks.bookmarkCard).to.not.equal(undefined)
+    expect(Bookmarks.bookmarkCard).to.not.equal(undefined)
   }
 
   @test
   'it should set bookmarkFolder on init'(): void {
-    TestBookmarks.bookmarkFolder = undefined
+    Bookmarks.bookmarkFolder = undefined
     Bookmarks.Init()
-    expect(TestBookmarks.bookmarkFolder).to.not.equal(undefined)
+    expect(Bookmarks.bookmarkFolder).to.not.equal(undefined)
   }
 
   @test
   'it should set bookmarksTab on init'(): void {
-    TestBookmarks.bookmarksTab = null
+    Bookmarks.bookmarksTab = null
     Bookmarks.Init()
-    expect(TestBookmarks.bookmarksTab).to.not.equal(null)
+    expect(Bookmarks.bookmarksTab).to.not.equal(null)
   }
 
   @test
@@ -996,7 +969,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
 
   before(): void {
     super.before()
-    TestBookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
+    Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     this.BookmarksRemoveSpy = sinon.stub()
     PubSub.subscribers['BOOKMARKS:REMOVE'] = [this.BookmarksRemoveSpy]
     this.NavigateLoadSpy = sinon.stub()
@@ -1012,7 +985,7 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
 
   @test
   'it should return null if card template is missing'(): void {
-    TestBookmarks.bookmarkCard = undefined
+    Bookmarks.bookmarkCard = undefined
     const result = Bookmarks.BuildBookmark({
       name: '',
       path: 'foo',
@@ -1197,15 +1170,14 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
 export class BookmarksGetFolderTests extends BaseBookmarksTests {
   before(): void {
     super.before()
-    TestBookmarks.bookmarkFolder =
-      this.dom.window.document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
-    TestBookmarks.bookmarksTab = this.dom.window.document.querySelector<HTMLElement>('#tabBookmarks')
+    Bookmarks.bookmarkFolder = this.dom.window.document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
+    Bookmarks.bookmarksTab = this.dom.window.document.querySelector<HTMLElement>('#tabBookmarks')
     Bookmarks.BookmarkFolders = []
   }
 
   after(): void {
-    TestBookmarks.bookmarkFolder = undefined
-    TestBookmarks.bookmarksTab = null
+    Bookmarks.bookmarkFolder = undefined
+    Bookmarks.bookmarksTab = null
     super.after()
   }
 
@@ -1251,7 +1223,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
 
   @test
   'it should return null for folder when template is missing'(): void {
-    TestBookmarks.bookmarkFolder = undefined
+    Bookmarks.bookmarkFolder = undefined
 
     const result = Bookmarks.GetFolder('', {
       name: '/foo/bar/baz',
@@ -1296,7 +1268,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
 
   @test
   'it should not create title if element is missing from template'(): void {
-    TestBookmarks.bookmarkFolder?.querySelector('.title')?.remove()
+    Bookmarks.bookmarkFolder?.querySelector('.title')?.remove()
     const result = Bookmarks.GetFolder('', {
       name: '%7C',
       path: '',
@@ -1333,7 +1305,7 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
       path: '/bar/baz.png',
       bookmarks: [],
     })
-    const folder = TestBookmarks.BookmarkFolders[0]
+    const folder = Bookmarks.BookmarkFolders[0]
     assert(folder !== undefined, 'must have folder to be valid test')
     const title = result?.querySelector<HTMLElement>('.title')
     assert(title !== null && title !== undefined, 'must get a result to issue event to')
@@ -1351,14 +1323,14 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
         bookmarks: [],
       })
     }
-    const folder = TestBookmarks.BookmarkFolders[25]
+    const folder = Bookmarks.BookmarkFolders[25]
     assert(folder !== undefined, 'must have folder to be valid test')
     const title = folder.element.querySelector<HTMLElement>('.title')
     assert(title !== null, 'must get a result to issue event to')
     const evt = new this.dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
-    for (let i = 0; i < TestBookmarks.BookmarkFolders.length; i++) {
-      expect(TestBookmarks.BookmarkFolders[i]?.element.classList.contains('closed')).to.equal(i !== 25)
+    for (let i = 0; i < Bookmarks.BookmarkFolders.length; i++) {
+      expect(Bookmarks.BookmarkFolders[i]?.element.classList.contains('closed')).to.equal(i !== 25)
     }
   }
 }
@@ -1369,9 +1341,9 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   BuildBookmarkSpy = sinon.stub()
   before(): void {
     super.before()
-    TestBookmarks.bookmarkCard = this.document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
-    TestBookmarks.bookmarkFolder = this.document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
-    TestBookmarks.bookmarksTab = this.document.querySelector<HTMLElement>('#tabBookmarks')
+    Bookmarks.bookmarkCard = this.document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
+    Bookmarks.bookmarkFolder = this.document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
+    Bookmarks.bookmarksTab = this.document.querySelector<HTMLElement>('#tabBookmarks')
 
     this.GetFolderSpy = sinon.stub(Bookmarks, 'GetFolder')
     this.BuildBookmarkSpy = sinon.stub(Bookmarks, 'BuildBookmark')
@@ -1401,7 +1373,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
         },
       ],
     }
-    TestBookmarks.bookmarksTab = null
+    Bookmarks.bookmarksTab = null
     Bookmarks.buildBookmarks(data)
     expect(this.GetFolderSpy.called).to.equal(false)
     expect(this.BuildBookmarkSpy.called).to.equal(false)
@@ -1425,7 +1397,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
         },
       ],
     }
-    TestBookmarks.bookmarkCard = undefined
+    Bookmarks.bookmarkCard = undefined
     Bookmarks.buildBookmarks(data)
     expect(this.GetFolderSpy.called).to.equal(false)
     expect(this.BuildBookmarkSpy.called).to.equal(false)
@@ -1449,7 +1421,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
         },
       ],
     }
-    TestBookmarks.bookmarkFolder = undefined
+    Bookmarks.bookmarkFolder = undefined
     Bookmarks.buildBookmarks(data)
     expect(this.GetFolderSpy.called).to.equal(false)
     expect(this.BuildBookmarkSpy.called).to.equal(false)
@@ -1497,7 +1469,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     }
     const element = this.document.createElement('div')
     element.classList.add('folder')
-    TestBookmarks.bookmarksTab?.appendChild(element)
+    Bookmarks.bookmarksTab?.appendChild(element)
     Bookmarks.buildBookmarks(data)
     expect(this.GetFolderSpy.firstCall.args[0]).to.equal('/')
   }
@@ -1523,7 +1495,7 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     const element = this.document.createElement('div')
     element.classList.add('folder')
     element.setAttribute('data-folderPath', '/foo/bar/baz')
-    TestBookmarks.bookmarksTab?.appendChild(element)
+    Bookmarks.bookmarksTab?.appendChild(element)
     Bookmarks.buildBookmarks(data)
     expect(this.GetFolderSpy.firstCall.args[0]).to.equal('/foo/bar/baz')
   }
@@ -1552,10 +1524,10 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
         element.setAttribute('open', '')
       }
       element.setAttribute('data-folderPath', '/foo/bar/baz' + i)
-      TestBookmarks.bookmarksTab?.appendChild(element)
+      Bookmarks.bookmarksTab?.appendChild(element)
     }
     Bookmarks.buildBookmarks(data)
-    expect(TestBookmarks.bookmarksTab?.querySelectorAll('div.folder')).to.have.length(0)
+    expect(Bookmarks.bookmarksTab?.querySelectorAll('div.folder')).to.have.length(0)
   }
 
   @test
@@ -1736,8 +1708,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
         })
       }
     })
-    assert(TestBookmarks.bookmarksTab !== null, 'tab must exist')
-    const appendChildSpy = sinon.stub(TestBookmarks.bookmarksTab, 'appendChild')
+    assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
+    const appendChildSpy = sinon.stub(Bookmarks.bookmarksTab, 'appendChild')
     Bookmarks.buildBookmarks({
       path: '/',
       bookmarks: [

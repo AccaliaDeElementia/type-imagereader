@@ -18,20 +18,18 @@ const decodeResult = async <T>(response: Response, isT: (obj: unknown) => obj is
   return data
 }
 
-export class Net {
-  static async GetJSON<T>(path: string, isT: (obj: unknown) => obj is T): Promise<T> {
-    return await fetch(path, {
+export const Net = {
+  GetJSON: async <T>(path: string, isT: (obj: unknown) => obj is T): Promise<T> =>
+    await fetch(path, {
       headers: {
         'Accept-Encoding': 'gzip, deflate, br',
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       method: 'GET',
-    }).then(async (response) => await decodeResult<T>(response, isT))
-  }
-
-  static async PostJSON<T>(path: string, data: unknown, isT: (obj: unknown) => obj is T): Promise<T> {
-    return await fetch(path, {
+    }).then(async (response) => await decodeResult<T>(response, isT)),
+  PostJSON: async <T>(path: string, data: unknown, isT: (obj: unknown) => obj is T): Promise<T> =>
+    await fetch(path, {
       headers: {
         'Accept-Encoding': 'gzip, deflate, br',
         Accept: 'application/json',
@@ -39,6 +37,5 @@ export class Net {
       },
       method: 'POST',
       body: JSON.stringify(data),
-    }).then(async (response) => await decodeResult<T>(response, isT))
-  }
+    }).then(async (response) => await decodeResult<T>(response, isT)),
 }

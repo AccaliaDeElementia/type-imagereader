@@ -26,12 +26,11 @@ html
           h5 placeholder
 `
 
-class BaseActionsTests extends PubSub {
+class BaseActionsTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   dom: JSDOM
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.dom = new JSDOM('', {})

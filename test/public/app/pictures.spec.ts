@@ -11,7 +11,7 @@ import { render } from 'pug'
 
 import { Net } from '../../../public/scripts/app/net'
 import { Publish, PubSub, Subscribe } from '../../../public/scripts/app/pubsub'
-import { isDataWithPictures, isPicture } from '../../../public/scripts/app/picturemarkup'
+import { isDataWithPictures, isPicture, PictureMarkup } from '../../../public/scripts/app/picturemarkup'
 import type { Picture } from '../../../public/scripts/app/picturemarkup'
 import { NavigateTo, Pictures } from '../../../public/scripts/app/pictures'
 import type { PageSelector } from '../../../public/scripts/app/pictures'
@@ -549,104 +549,18 @@ export class PictureIsDatasWithPictures {
   }
 }
 
-class TestPics extends Pictures {
-  public static get pictures(): Picture[] {
-    return Pictures.pictures
-  }
-
-  public static set pictures(value: Picture[]) {
-    Pictures.pictures = value
-  }
-
-  public static get current(): Picture | null {
-    return Pictures.current
-  }
-
-  public static set current(value: Picture | null) {
-    Pictures.current = value
-  }
-
-  public static get mainImage(): HTMLImageElement | null {
-    return Pictures.mainImage
-  }
-
-  public static set mainImage(value: HTMLImageElement | null) {
-    Pictures.mainImage = value
-  }
-
-  public static get imageCard(): HTMLTemplateElement | null {
-    return Pictures.imageCard
-  }
-
-  public static get pageSize(): number {
-    return Pictures.pageSize
-  }
-
-  public static set pageSize(value: number) {
-    Pictures.pageSize = value
-  }
-
-  public static get modCount(): number {
-    return Pictures.modCount
-  }
-
-  public static set modCount(value: number) {
-    Pictures.modCount = value
-  }
-
-  public static get nextPending(): boolean {
-    return Pictures.nextPending
-  }
-
-  public static set nextPending(value: boolean) {
-    Pictures.nextPending = value
-  }
-
-  public static get nextLoader(): Promise<void> {
-    return Pictures.nextLoader
-  }
-
-  public static set nextLoader(value: Promise<void>) {
-    Pictures.nextLoader = value
-  }
-
-  public static Reset(): void {
-    Pictures.pictures = []
-    Pictures.current = null
-    Pictures.imageCard = null
-    Pictures.mainImage = null
-    Pictures.pageSize = 32
-    Pictures.modCount = -1
-    Pictures.nextPending = true
-    Pictures.nextLoader = Promise.resolve()
-  }
-
-  public static ResetMarkup(): void {
-    Pictures.ResetMarkup()
-  }
-
-  public static GetPicture(navi: NavigateTo): Picture | undefined {
-    return Pictures.GetPicture(navi)
-  }
-
-  public static ChangePicture(pic: Picture | undefined): void {
-    Pictures.ChangePicture(pic)
-  }
-
-  public static get ShowUnreadOnly(): boolean {
-    return Pictures.ShowUnreadOnly
-  }
-
-  public static set ShowUnreadOnly(value: boolean) {
-    Pictures.ShowUnreadOnly = value
-  }
-
-  public static UpdateUnreadSelectorSlider(): void {
-    Pictures.UpdateUnreadSelectorSlider()
-  }
+function ResetPictures(): void {
+  PictureMarkup.pictures = []
+  PictureMarkup.current = null
+  PictureMarkup.imageCard = null
+  PictureMarkup.mainImage = null
+  PictureMarkup.pageSize = 32
+  Pictures.modCount = -1
+  Pictures.nextPending = true
+  Pictures.nextLoader = Promise.resolve()
 }
 
-abstract class BaseAppPicturesTests extends PubSub {
+abstract class BaseAppPicturesTests {
   existingWindow: Window & typeof globalThis
   existingDocument: Document
   document: Document
@@ -655,7 +569,6 @@ abstract class BaseAppPicturesTests extends PubSub {
   visualViewport: TestVisualViewport | undefined
 
   constructor() {
-    super()
     this.existingWindow = global.window
     this.existingDocument = global.document
     this.document = global.document
@@ -682,7 +595,7 @@ abstract class BaseAppPicturesTests extends PubSub {
     PubSub.Subscribe('Tab:Selected', this.tabSelectedSpy)
     this.tabSelectedSpy.reset()
 
-    TestPics.Reset()
+    ResetPictures()
     Pictures.Init()
   }
 
@@ -708,22 +621,22 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
 
   @test
   'sets image defaults'(): void {
-    TestPics.Reset()
+    ResetPictures()
     Pictures.Init()
 
-    expect(TestPics.current).to.equal(null)
-    expect(TestPics.pictures).to.deep.equal([])
+    expect(PictureMarkup.current).to.equal(null)
+    expect(PictureMarkup.pictures).to.deep.equal([])
 
     const expectedImage = this.document.querySelector<HTMLElement>('#bigImage img')
     const expectedCard = this.document.querySelector<HTMLTemplateElement>('#ImageCard')
 
     expect(expectedImage).to.not.equal(undefined)
     expect(expectedImage).to.not.equal(null)
-    expect(TestPics.mainImage).to.equal(expectedImage)
+    expect(PictureMarkup.mainImage).to.equal(expectedImage)
 
     expect(expectedCard).to.not.equal(undefined)
     expect(expectedCard).to.not.equal(null)
-    expect(TestPics.imageCard).to.equal(expectedCard)
+    expect(PictureMarkup.imageCard).to.equal(expectedCard)
   }
 
   @test
@@ -788,32 +701,32 @@ export class AppPicturesResetTests extends BaseAppPicturesTests {
     const expectedImage = this.document.querySelector<HTMLElement>('#bigImage img')
     const expectedCard = this.document.querySelector<HTMLTemplateElement>('#ImageCard')
 
-    TestPics.ResetMarkup()
+    PictureMarkup.ResetMarkup()
 
     expect(expectedImage).to.not.equal(undefined)
     expect(expectedImage).to.not.equal(null)
-    expect(TestPics.mainImage).to.equal(expectedImage)
+    expect(PictureMarkup.mainImage).to.equal(expectedImage)
 
     expect(expectedCard).to.not.equal(undefined)
     expect(expectedCard).to.not.equal(null)
-    expect(TestPics.imageCard).to.equal(expectedCard)
+    expect(PictureMarkup.imageCard).to.equal(expectedCard)
   }
 
   @test
   'allows missing critical elements'(): void {
     this.document.querySelector<HTMLElement>('#bigImage img')?.remove()
     this.document.querySelector<HTMLTemplateElement>('#ImageCard')?.remove()
-    TestPics.ResetMarkup()
-    expect(TestPics.mainImage).to.equal(null)
-    expect(TestPics.imageCard).to.equal(null)
+    PictureMarkup.ResetMarkup()
+    expect(PictureMarkup.mainImage).to.equal(null)
+    expect(PictureMarkup.imageCard).to.equal(null)
   }
 
   @test
   'force clears big image source'(): void {
-    expect(TestPics.mainImage).to.not.equal(null)
-    TestPics.mainImage?.setAttribute('src', 'http://example.com/image.png')
-    TestPics.ResetMarkup()
-    expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
+    expect(PictureMarkup.mainImage).to.not.equal(null)
+    PictureMarkup.mainImage?.setAttribute('src', 'http://example.com/image.png')
+    PictureMarkup.ResetMarkup()
+    expect(PictureMarkup.mainImage?.getAttribute('src')).to.equal('')
   }
 
   @test
@@ -829,7 +742,7 @@ export class AppPicturesResetTests extends BaseAppPicturesTests {
         expect(text).to.equal('foobar')
       }
     }
-    TestPics.ResetMarkup()
+    PictureMarkup.ResetMarkup()
     for (const bar of ['top', 'bottom']) {
       for (const position of ['left', 'center', 'right']) {
         const text = this.document.querySelector<HTMLElement>(`.statusBar.${bar} .${position}`)?.innerHTML
@@ -848,7 +761,7 @@ export class AppPicturesResetTests extends BaseAppPicturesTests {
       tab?.appendChild(page)
     }
     expect(this.document.querySelectorAll('#tabImages .pages')).to.have.length(10)
-    TestPics.ResetMarkup()
+    PictureMarkup.ResetMarkup()
     expect(this.document.querySelectorAll('#tabImages .pages')).to.have.length(0)
   }
 }
@@ -857,7 +770,7 @@ export class AppPicturesResetTests extends BaseAppPicturesTests {
 export class AppPicturesCurrentPageTests extends BaseAppPicturesTests {
   @test
   'returns -1 for no pages'(): void {
-    expect(Pictures.CurrentPage).to.equal(-1)
+    expect(Pictures.GetCurrentPage()).to.equal(-1)
   }
 
   @test
@@ -870,7 +783,7 @@ export class AppPicturesCurrentPageTests extends BaseAppPicturesTests {
       pages.appendChild(page)
     }
     this.document.querySelector('body')?.appendChild(pages)
-    expect(Pictures.CurrentPage).to.equal(-1)
+    expect(Pictures.GetCurrentPage()).to.equal(-1)
   }
 
   @test
@@ -887,7 +800,7 @@ export class AppPicturesCurrentPageTests extends BaseAppPicturesTests {
       pages.appendChild(page)
     }
     this.document.querySelector('body')?.appendChild(pages)
-    expect(Pictures.CurrentPage).to.equal(activePage)
+    expect(Pictures.GetCurrentPage()).to.equal(activePage)
   }
 }
 
@@ -1128,7 +1041,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
     }
     PubSub.Subscribe('Pictures:Load', () => 0)
     PubSub.Subscribe('Menu:Hide', () => 0)
-    expect(TestPics.current).to.equal(null)
+    expect(PictureMarkup.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
     assert(card !== undefined)
     const event = new this.dom.window.MouseEvent('click')
@@ -1148,7 +1061,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
     PubSub.Subscribe('Menu:Hide', () => {
       executed = true
     })
-    expect(TestPics.current).to.equal(null)
+    expect(PictureMarkup.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
     assert(card !== undefined)
     const event = new this.dom.window.MouseEvent('click')
@@ -1164,7 +1077,7 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       seen: false,
     }
     PubSub.Subscribe('Menu:Hide', () => 0)
-    expect(TestPics.current).to.equal(null)
+    expect(PictureMarkup.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
     assert(card !== undefined)
     const event = new this.dom.window.MouseEvent('click')
@@ -1284,7 +1197,7 @@ export class AppPicturesMakePaginatorTests extends BaseAppPicturesTests {
       this.pages[title] = fn
       return this.dom.window.document.createElement('li')
     })
-    this.currentPageSpy = sinon.stub(Pictures, 'CurrentPage')
+    this.currentPageSpy = sinon.stub(Pictures, 'GetCurrentPage')
   }
 
   after(): void {
@@ -1334,7 +1247,7 @@ export class AppPicturesMakePaginatorTests extends BaseAppPicturesTests {
       [-12, 1],
     ]
     for (const [input, expected] of testCases) {
-      this.currentPageSpy.get(() => input)
+      this.currentPageSpy.returns(input)
       expect(selector()).to.equal(expected)
     }
   }
@@ -1353,7 +1266,7 @@ export class AppPicturesMakePaginatorTests extends BaseAppPicturesTests {
       [50, 50],
     ]
     for (const [input, expected] of testCases) {
-      this.currentPageSpy.get(() => input)
+      this.currentPageSpy.returns(input)
       expect(selector()).to.equal(expected)
     }
   }
@@ -1391,7 +1304,7 @@ export class AppPicturesMakeTabTests extends BaseAppPicturesTests {
       retval.classList.add('paginator')
       return retval
     })
-    TestPics.pictures = Array.from({ length: 32 }).map(
+    PictureMarkup.pictures = Array.from({ length: 32 }).map(
       (_: unknown, i: number): Picture => ({
         path: `/some/path/${i}.png`,
         name: `${i}.png`,
@@ -1416,7 +1329,7 @@ export class AppPicturesMakeTabTests extends BaseAppPicturesTests {
 
   @test
   'it should make pages according to pageSize'(): void {
-    TestPics.pageSize = 2
+    PictureMarkup.pageSize = 2
     Pictures.MakeTab()
     expect(this.makePicturesPageSpy.callCount).to.equal(16)
     expect(this.tab?.querySelectorAll('.page')).to.have.length(16)
@@ -1443,7 +1356,7 @@ export class AppPicturesLoadCurrentPageImagesTests extends BaseAppPicturesTests 
   tab: HTMLElement | null = null
   before(): void {
     super.before()
-    TestPics.pictures = Array.from({ length: 32 }).map(
+    PictureMarkup.pictures = Array.from({ length: 32 }).map(
       (_: unknown, i: number): Picture => ({
         path: `/some/path/${i}.png`,
         name: `${i}.png`,
@@ -1525,19 +1438,19 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   before(): void {
     super.before()
-    TestPics.pictures = Array.from({ length: this.totalCount }).map(
+    PictureMarkup.pictures = Array.from({ length: this.totalCount }).map(
       (_: unknown, i: number): Picture => ({
         path: `/some/path/${i}.png`,
         name: `${i}.png`,
         seen: false,
       }),
     )
-    this.current = TestPics.pictures[1250] ?? {
+    this.current = PictureMarkup.pictures[1250] ?? {
       path: '',
       name: '',
       seen: false,
     }
-    TestPics.current = this.current
+    PictureMarkup.current = this.current
 
     this.element = this.dom.window.document.createElement('div')
     this.current.element = this.element
@@ -1569,16 +1482,16 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should be noop when current image is null'(): Promise<void> {
-    TestPics.current = null
+    PictureMarkup.current = null
     await Pictures.LoadImage()
     expect(this.loadingShowSpy.called).to.equal(false)
   }
 
   @test
   async 'it should not await next loader when image is null'(): Promise<void> {
-    TestPics.current = null
+    PictureMarkup.current = null
     let awaited = false
-    TestPics.nextLoader = Delay(10).then(() => {
+    Pictures.nextLoader = Delay(10).then(() => {
       awaited = true
     })
     await Pictures.LoadImage()
@@ -1587,23 +1500,23 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should publish Loading:Show when next is pending'(): Promise<void> {
-    TestPics.nextPending = true
+    Pictures.nextPending = true
     await Pictures.LoadImage()
     expect(this.loadingShowSpy.called).to.equal(true)
   }
 
   @test
   async 'it should not publish Loading:Show when next is not pending'(): Promise<void> {
-    TestPics.nextPending = false
+    Pictures.nextPending = false
     await Pictures.LoadImage()
     expect(this.loadingShowSpy.called).to.equal(false)
   }
 
   @test
   async 'it should set seen on current picture'(): Promise<void> {
-    expect(TestPics.current?.seen).to.equal(false)
+    expect(PictureMarkup.current?.seen).to.equal(false)
     await Pictures.LoadImage()
-    expect(TestPics.current?.seen).to.equal(true)
+    expect(PictureMarkup.current?.seen).to.equal(true)
   }
 
   @test
@@ -1615,7 +1528,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should post to /api/navigate/latest'(): Promise<void> {
-    TestPics.modCount = 50
+    Pictures.modCount = 50
     await Pictures.LoadImage()
     expect(this.postJSONSpy.callCount).to.equal(1)
     expect(this.postJSONSpy.calledWith('/api/navigate/latest')).to.equal(true)
@@ -1627,7 +1540,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should accept number from PostJSON'(): Promise<void> {
-    TestPics.modCount = 50
+    Pictures.modCount = 50
     await Pictures.LoadImage()
     expect(this.postJSONSpy.callCount).to.equal(1)
     const fn = Cast(
@@ -1645,7 +1558,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   @test
   async 'it should await next loader when loading image'(): Promise<void> {
     let awaited = false
-    TestPics.nextLoader = Delay(10).then(() => {
+    Pictures.nextLoader = Delay(10).then(() => {
       awaited = true
     })
     await Pictures.LoadImage()
@@ -1654,27 +1567,27 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should set src on image'(): Promise<void> {
-    expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
+    expect(PictureMarkup.mainImage?.getAttribute('src')).to.equal('')
     await Pictures.LoadImage()
-    expect(TestPics.mainImage?.getAttribute('src')).to.equal('/images/scaled/0/0/some/path/1250.png-image.webp')
+    expect(PictureMarkup.mainImage?.getAttribute('src')).to.equal('/images/scaled/0/0/some/path/1250.png-image.webp')
   }
 
   @test
   async 'it should set src height on image'(): Promise<void> {
-    expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
-    assert(TestPics.mainImage !== null)
-    TestPics.mainImage.height = 512
+    expect(PictureMarkup.mainImage?.getAttribute('src')).to.equal('')
+    assert(PictureMarkup.mainImage !== null)
+    PictureMarkup.mainImage.height = 512
     await Pictures.LoadImage()
-    expect(TestPics.mainImage.getAttribute('src')).to.equal('/images/scaled/0/512/some/path/1250.png-image.webp')
+    expect(PictureMarkup.mainImage.getAttribute('src')).to.equal('/images/scaled/0/512/some/path/1250.png-image.webp')
   }
 
   @test
   async 'it should set src width on image'(): Promise<void> {
-    expect(TestPics.mainImage?.getAttribute('src')).to.equal('')
-    assert(TestPics.mainImage !== null)
-    TestPics.mainImage.width = 1024
+    expect(PictureMarkup.mainImage?.getAttribute('src')).to.equal('')
+    assert(PictureMarkup.mainImage !== null)
+    PictureMarkup.mainImage.width = 1024
     await Pictures.LoadImage()
-    expect(TestPics.mainImage.getAttribute('src')).to.equal('/images/scaled/1024/0/some/path/1250.png-image.webp')
+    expect(PictureMarkup.mainImage.getAttribute('src')).to.equal('/images/scaled/1024/0/some/path/1250.png-image.webp')
   }
 
   @test
@@ -1700,8 +1613,8 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should default to first image on missing index'(): Promise<void> {
-    assert(TestPics.current !== null, 'Current Image must be set for valid test')
-    TestPics.current.index = undefined
+    assert(PictureMarkup.current !== null, 'Current Image must be set for valid test')
+    PictureMarkup.current.index = undefined
     await Pictures.LoadImage()
     expect(this.bottomLeftText?.innerHTML).to.equal('(1/1,500)')
     expect(this.bottomCenterText?.innerHTML).to.equal('1250.png')
@@ -1716,8 +1629,8 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should select default page when current image omits page marker'(): Promise<void> {
-    assert(TestPics.current != null, 'Current Image must be set for valid test')
-    TestPics.current.page = undefined
+    assert(PictureMarkup.current != null, 'Current Image must be set for valid test')
+    PictureMarkup.current.page = undefined
     await Pictures.LoadImage()
     expect(this.selectPageSpy.calledWith(1)).to.equal(true)
   }
@@ -1752,7 +1665,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   async 'it should not await next loader navigate returns undefined modcount'(): Promise<void> {
     this.postJSONSpy.resolves()
     let awaited = false
-    TestPics.nextLoader = Delay(10).then(() => {
+    Pictures.nextLoader = Delay(10).then(() => {
       awaited = true
     })
     await Pictures.LoadImage()
@@ -1763,7 +1676,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   async 'it should not await next loader navigate returns negative modcount'(): Promise<void> {
     this.postJSONSpy.resolves(-1)
     let awaited = false
-    TestPics.nextLoader = Delay(10).then(() => {
+    Pictures.nextLoader = Delay(10).then(() => {
       awaited = true
     })
     await Pictures.LoadImage()
@@ -1794,7 +1707,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should get next picture when ShowUnreadOnly is not set'(): Promise<void> {
-    TestPics.ShowUnreadOnly = false
+    Pictures.SetShowUnreadOnly(false)
     await Pictures.LoadImage()
     expect(this.getPictureSpy.callCount).to.equal(1)
     expect(this.getPictureSpy.firstCall.args).to.deep.equal([NavigateTo.Next])
@@ -1802,7 +1715,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should get next unread picture when ShowUnreadOnly is set'(): Promise<void> {
-    TestPics.ShowUnreadOnly = true
+    Pictures.SetShowUnreadOnly(true)
     await Pictures.LoadImage()
     expect(this.getPictureSpy.callCount).to.equal(1)
     expect(this.getPictureSpy.firstCall.args).to.deep.equal([NavigateTo.NextUnread])
@@ -1810,19 +1723,19 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should not set next pending to false when there is no next image'(): Promise<void> {
-    TestPics.nextPending = true
+    Pictures.nextPending = true
     this.getPictureSpy.resolves(undefined)
     await Pictures.LoadImage()
-    expect(TestPics.nextPending).to.equal(false)
+    expect(Pictures.nextPending).to.equal(false)
   }
 
   @test
   async 'it should request expected next URI'(): Promise<void> {
-    TestPics.nextPending = false
+    Pictures.nextPending = false
     this.getPictureSpy.returns({ path: '/foo.png' })
-    assert(TestPics.mainImage !== null)
-    TestPics.mainImage.width = 1000
-    TestPics.mainImage.height = 900
+    assert(PictureMarkup.mainImage !== null)
+    PictureMarkup.mainImage.width = 1000
+    PictureMarkup.mainImage.height = 900
     await Pictures.LoadImage()
     expect(this.fetchStub.callCount).to.equal(1)
     expect(this.fetchStub.firstCall.args).to.have.lengthOf(1)
@@ -1831,39 +1744,39 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 
   @test
   async 'it should set next pending to false when there is next image'(): Promise<void> {
-    TestPics.nextPending = false
+    Pictures.nextPending = false
     this.getPictureSpy.resolves({ path: 'foo.png' })
     const delay = Delay(1)
     this.fetchStub.resolves(delay)
     await Pictures.LoadImage()
-    expect(TestPics.nextPending).to.equal(true)
+    expect(Pictures.nextPending).to.equal(true)
     await delay
   }
 
   @test
   async 'it should clear next pending when next fetch resolves'(): Promise<void> {
-    TestPics.nextPending = false
+    Pictures.nextPending = false
     this.getPictureSpy.resolves({ path: 'foo.png' })
     const delay = Delay(1)
     this.fetchStub.resolves(delay)
     await Pictures.LoadImage()
-    expect(TestPics.nextPending).to.equal(true)
+    expect(Pictures.nextPending).to.equal(true)
     await delay
-    expect(TestPics.nextPending).to.equal(false)
+    expect(Pictures.nextPending).to.equal(false)
   }
 
   @test
   async 'it should clear next pending when next fetch rejects'(): Promise<void> {
-    TestPics.nextPending = false
+    Pictures.nextPending = false
     this.getPictureSpy.resolves({ path: 'foo.png' })
     const delay = Delay(1).then(async () => {
       await Promise.reject(new Error('WAARIO!'))
     })
     this.fetchStub.resolves(delay)
     await Pictures.LoadImage()
-    expect(TestPics.nextPending).to.equal(true)
+    expect(Pictures.nextPending).to.equal(true)
     await delay.catch(() => null)
-    expect(TestPics.nextPending).to.equal(false)
+    expect(Pictures.nextPending).to.equal(false)
   }
 
   @test
@@ -1929,29 +1842,29 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
 
   @test
   'it should reset markup to clear tab'(): void {
-    TestPics.mainImage = null
+    PictureMarkup.mainImage = null
     const mainImage = this.dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(mainImage != null, 'MainImage must exist for test to be valid')
     Pictures.LoadData({})
-    expect(TestPics.mainImage).to.equal(mainImage)
+    expect(PictureMarkup.mainImage).to.equal(mainImage)
   }
 
   @test
   'it should hide main image with null pictures'(): void {
-    TestPics.mainImage?.classList.remove('hidden')
+    PictureMarkup.mainImage?.classList.remove('hidden')
     Pictures.LoadData({
       pictures: undefined,
     })
-    expect(TestPics.mainImage?.classList.contains('hidden')).to.equal(true)
+    expect(PictureMarkup.mainImage?.classList.contains('hidden')).to.equal(true)
   }
 
   @test
   'it should hide main image with empty pictures'(): void {
-    TestPics.mainImage?.classList.remove('hidden')
+    PictureMarkup.mainImage?.classList.remove('hidden')
     Pictures.LoadData({
       pictures: [],
     })
-    expect(TestPics.mainImage?.classList.contains('hidden')).to.equal(true)
+    expect(PictureMarkup.mainImage?.classList.contains('hidden')).to.equal(true)
   }
 
   @test
@@ -2027,11 +1940,11 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
 
   @test
   'it should remove hidden from main image when loading with pictures'(): void {
-    TestPics.mainImage?.classList.add('hidden')
+    PictureMarkup.mainImage?.classList.add('hidden')
     Pictures.LoadData({
       pictures: this.pictures,
     })
-    expect(TestPics.mainImage?.classList.contains('hidden')).to.equal(false)
+    expect(PictureMarkup.mainImage?.classList.contains('hidden')).to.equal(false)
   }
 
   @test
@@ -2047,11 +1960,11 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
 
   @test
   'it should save pictuers list when loading pictuers'(): void {
-    expect(TestPics.pictures).to.not.equal(this.pictures)
+    expect(PictureMarkup.pictures).to.not.equal(this.pictures)
     Pictures.LoadData({
       pictures: this.pictures,
     })
-    expect(TestPics.pictures).to.equal(this.pictures)
+    expect(PictureMarkup.pictures).to.equal(this.pictures)
   }
 
   @test
@@ -2060,7 +1973,7 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
       cover: '/some/path/42.png',
       pictures: this.pictures,
     })
-    expect(TestPics.current).to.equal(this.pictures[42])
+    expect(PictureMarkup.current).to.equal(this.pictures[42])
   }
 
   @test
@@ -2069,7 +1982,7 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
       cover: '/not/a/valid/path.png',
       pictures: this.pictures,
     })
-    expect(TestPics.current).to.equal(this.pictures[0])
+    expect(PictureMarkup.current).to.equal(this.pictures[0])
   }
 
   @test
@@ -2151,7 +2064,7 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
       pictures: this.pictures,
     })
     for (let i = 0; i < this.pictures.length; i++) {
-      expect(TestPics.pictures[i]?.index).to.equal(i)
+      expect(PictureMarkup.pictures[i]?.index).to.equal(i)
     }
   }
 }
@@ -2197,29 +2110,29 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
   @test
   'it should return undefined when there is no current picture'(): void {
     this.loadPictures()
-    TestPics.current = null
-    const pic = TestPics.GetPicture(NavigateTo.First)
+    PictureMarkup.current = null
+    const pic = Pictures.GetPicture(NavigateTo.First)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for navigateFirst on no pictures'(): void {
-    TestPics.current = this.pictures[0] ?? null
-    const pic = TestPics.GetPicture(NavigateTo.First)
+    PictureMarkup.current = this.pictures[0] ?? null
+    const pic = Pictures.GetPicture(NavigateTo.First)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return first picture on navigate first'(): void {
     this.loadPictures()
-    const pic = TestPics.GetPicture(NavigateTo.First)
+    const pic = Pictures.GetPicture(NavigateTo.First)
     expect(pic).to.equal(this.pictures[0])
   }
 
   @test
   'it should return expected for PreviousUnread with unread ahead and behind'(): void {
     this.loadPictures()
-    const pic = TestPics.GetPicture(NavigateTo.PreviousUnread)
+    const pic = Pictures.GetPicture(NavigateTo.PreviousUnread)
     expect(pic).to.equal(this.pictures[15])
   }
 
@@ -2229,7 +2142,7 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
     this.pictures.forEach((pic, i) => {
       pic.seen = i < 48
     })
-    const pic = TestPics.GetPicture(NavigateTo.PreviousUnread)
+    const pic = Pictures.GetPicture(NavigateTo.PreviousUnread)
     expect(pic).to.equal(this.pictures[63])
   }
 
@@ -2239,7 +2152,7 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
     this.pictures.forEach((pic, i) => {
       pic.seen = i > 0
     })
-    const pic = TestPics.GetPicture(NavigateTo.PreviousUnread)
+    const pic = Pictures.GetPicture(NavigateTo.PreviousUnread)
     expect(pic).to.equal(this.pictures[0])
   }
 
@@ -2249,114 +2162,114 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
     this.pictures.forEach((pic) => {
       pic.seen = true
     })
-    const pic = TestPics.GetPicture(NavigateTo.PreviousUnread)
+    const pic = Pictures.GetPicture(NavigateTo.PreviousUnread)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for no pictures on navigate previous'(): void {
-    TestPics.pictures = []
-    TestPics.current = this.pictures[31] ?? null
-    const pic = TestPics.GetPicture(NavigateTo.Previous)
+    PictureMarkup.pictures = []
+    PictureMarkup.current = this.pictures[31] ?? null
+    const pic = Pictures.GetPicture(NavigateTo.Previous)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for null current picture on navigate previous'(): void {
     this.loadPictures()
-    TestPics.current = null
-    const pic = TestPics.GetPicture(NavigateTo.Previous)
+    PictureMarkup.current = null
+    const pic = Pictures.GetPicture(NavigateTo.Previous)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for undefined current picture index on navigate previous'(): void {
     this.loadPictures()
-    assert(TestPics.current != null, 'current picture should have been set')
-    TestPics.current.index = undefined
-    const pic = TestPics.GetPicture(NavigateTo.Previous)
+    assert(PictureMarkup.current != null, 'current picture should have been set')
+    PictureMarkup.current.index = undefined
+    const pic = Pictures.GetPicture(NavigateTo.Previous)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for zero current picture index on navigate previous'(): void {
     this.loadPictures()
-    assert(TestPics.current != null, 'current picture should have been set')
-    TestPics.current.index = 0
-    const pic = TestPics.GetPicture(NavigateTo.Previous)
+    assert(PictureMarkup.current != null, 'current picture should have been set')
+    PictureMarkup.current.index = 0
+    const pic = Pictures.GetPicture(NavigateTo.Previous)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return expected for current picture index = 1 on navigate previous'(): void {
     this.loadPictures()
-    assert(TestPics.current != null, 'current picture should have been set')
-    TestPics.current.index = 1
-    const pic = TestPics.GetPicture(NavigateTo.Previous)
+    assert(PictureMarkup.current != null, 'current picture should have been set')
+    PictureMarkup.current.index = 1
+    const pic = Pictures.GetPicture(NavigateTo.Previous)
     expect(pic).to.equal(this.pictures[0])
   }
 
   @test
   'it should return expected for valid current picture index on navigate previous'(): void {
     this.loadPictures()
-    const pic = TestPics.GetPicture(NavigateTo.Previous)
+    const pic = Pictures.GetPicture(NavigateTo.Previous)
     expect(pic).to.equal(this.pictures[31])
   }
 
   @test
   'it should return undefined for no pictures on navigate next'(): void {
-    TestPics.pictures = []
-    TestPics.current = this.pictures[31] ?? null
-    const pic = TestPics.GetPicture(NavigateTo.Next)
+    PictureMarkup.pictures = []
+    PictureMarkup.current = this.pictures[31] ?? null
+    const pic = Pictures.GetPicture(NavigateTo.Next)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for null current picture on navigate next'(): void {
     this.loadPictures()
-    TestPics.current = null
-    const pic = TestPics.GetPicture(NavigateTo.Next)
+    PictureMarkup.current = null
+    const pic = Pictures.GetPicture(NavigateTo.Next)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for undefined current picture index on navigate next'(): void {
     this.loadPictures()
-    assert(TestPics.current != null, 'current picture should have been set')
-    TestPics.current.index = undefined
-    const pic = TestPics.GetPicture(NavigateTo.Next)
+    assert(PictureMarkup.current != null, 'current picture should have been set')
+    PictureMarkup.current.index = undefined
+    const pic = Pictures.GetPicture(NavigateTo.Next)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for maximum current picture index on navigate next'(): void {
     this.loadPictures()
-    assert(TestPics.current != null, 'current picture should have been set')
-    TestPics.current.index = this.pictures.length - 1
-    const pic = TestPics.GetPicture(NavigateTo.Next)
+    assert(PictureMarkup.current != null, 'current picture should have been set')
+    PictureMarkup.current.index = this.pictures.length - 1
+    const pic = Pictures.GetPicture(NavigateTo.Next)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return expected for current picture index = max - 1  on navigate next'(): void {
     this.loadPictures()
-    assert(TestPics.current != null, 'current picture should have been set')
-    TestPics.current.index = this.pictures.length - 2
-    const pic = TestPics.GetPicture(NavigateTo.Next)
+    assert(PictureMarkup.current != null, 'current picture should have been set')
+    PictureMarkup.current.index = this.pictures.length - 2
+    const pic = Pictures.GetPicture(NavigateTo.Next)
     expect(pic).to.equal(this.pictures[63])
   }
 
   @test
   'it should return expected for valid current picture index on navigate next'(): void {
     this.loadPictures()
-    const pic = TestPics.GetPicture(NavigateTo.Next)
+    const pic = Pictures.GetPicture(NavigateTo.Next)
     expect(pic).to.equal(this.pictures[33])
   }
 
   @test
   'it should return expected for NextUnread with unread ahead and behind'(): void {
     this.loadPictures()
-    const pic = TestPics.GetPicture(NavigateTo.NextUnread)
+    const pic = Pictures.GetPicture(NavigateTo.NextUnread)
     expect(pic).to.equal(this.pictures[48])
   }
 
@@ -2366,7 +2279,7 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
     this.pictures.forEach((pic, i) => {
       pic.seen = i >= 16
     })
-    const pic = TestPics.GetPicture(NavigateTo.NextUnread)
+    const pic = Pictures.GetPicture(NavigateTo.NextUnread)
     expect(pic).to.equal(this.pictures[0])
   }
 
@@ -2376,29 +2289,29 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
     this.pictures.forEach((pic) => {
       pic.seen = true
     })
-    const pic = TestPics.GetPicture(NavigateTo.NextUnread)
+    const pic = Pictures.GetPicture(NavigateTo.NextUnread)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for navigate last when there is no current picture'(): void {
     this.loadPictures()
-    TestPics.current = null
-    const pic = TestPics.GetPicture(NavigateTo.Last)
+    PictureMarkup.current = null
+    const pic = Pictures.GetPicture(NavigateTo.Last)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return undefined for navigateLast on no pictures'(): void {
-    TestPics.current = this.pictures[0] ?? null
-    const pic = TestPics.GetPicture(NavigateTo.Last)
+    PictureMarkup.current = this.pictures[0] ?? null
+    const pic = Pictures.GetPicture(NavigateTo.Last)
     expect(pic).to.equal(undefined)
   }
 
   @test
   'it should return first picture on navigate last'(): void {
     this.loadPictures()
-    const pic = TestPics.GetPicture(NavigateTo.Last)
+    const pic = Pictures.GetPicture(NavigateTo.Last)
     expect(pic).to.equal(this.pictures[63])
   }
 }
@@ -2420,9 +2333,9 @@ export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
 
   before(): void {
     super.before()
-    TestPics.current = null
+    PictureMarkup.current = null
     this.isLoadingSpy = sinon.stub(Loading, 'IsLoading')
-    this.isLoadingSpy.get(() => this.isLoading)
+    this.isLoadingSpy.callsFake(() => this.isLoading)
     this.isLoading = false
     this.loadImageSpy = sinon.stub(Pictures, 'LoadImage').resolves(undefined)
     Subscribe('Menu:Hide', this.menuHideSpy)
@@ -2438,8 +2351,8 @@ export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
   @test
   'it should cleanly abort when currently loading'(): void {
     this.isLoading = true
-    TestPics.ChangePicture(this.picture)
-    expect(TestPics.current).to.equal(null)
+    Pictures.ChangePicture(this.picture)
+    expect(PictureMarkup.current).to.equal(null)
     expect(this.loadImageSpy.called).to.equal(false)
     expect(this.loadingErrorSpy.called).to.equal(false)
     expect(this.menuHideSpy.called).to.equal(false)
@@ -2447,8 +2360,8 @@ export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
 
   @test
   'it should publish error when changing to empty picture'(): void {
-    TestPics.ChangePicture(undefined)
-    expect(TestPics.current).to.equal(null)
+    Pictures.ChangePicture(undefined)
+    expect(PictureMarkup.current).to.equal(null)
     expect(this.loadImageSpy.called).to.equal(false)
     expect(this.menuHideSpy.called).to.equal(false)
     expect(
@@ -2458,8 +2371,8 @@ export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
 
   @test
   'it should trigger full image load when changing to a valid image'(): void {
-    TestPics.ChangePicture(this.picture)
-    expect(TestPics.current).to.equal(this.picture)
+    Pictures.ChangePicture(this.picture)
+    expect(PictureMarkup.current).to.equal(this.picture)
     expect(this.loadImageSpy.called).to.equal(true)
     expect(this.menuHideSpy.called).to.equal(true)
     expect(this.loadingErrorSpy.called).to.equal(false)
@@ -2468,7 +2381,7 @@ export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
   @test
   'it should tolerate LoadImage rejecting'(): void {
     this.loadImageSpy.rejects(new Error('FOO!'))
-    TestPics.ChangePicture(this.picture)
+    Pictures.ChangePicture(this.picture)
     expect(this.loadImageSpy.called).to.equal(true)
     expect(this.menuHideSpy.called).to.equal(true)
     expect(this.loadingErrorSpy.called).to.equal(false)
@@ -2480,31 +2393,31 @@ export class AppPicturesGetSetShowUnreadOnly extends BaseAppPicturesTests {
   @test
   'it should default to showing all when local storage is not set'(): void {
     this.dom.window.localStorage.removeItem('ShowUnseenOnly')
-    expect(TestPics.ShowUnreadOnly).to.equal(false)
+    expect(Pictures.GetShowUnreadOnly()).to.equal(false)
   }
 
   @test
   'it should return false when local storage is set to invalid value'(): void {
     this.dom.window.localStorage.setItem('ShowUnseenOnly', 'HELLO')
-    expect(TestPics.ShowUnreadOnly).to.equal(false)
+    expect(Pictures.GetShowUnreadOnly()).to.equal(false)
   }
 
   @test
   'it should return false when local storage is set to false'(): void {
     this.dom.window.localStorage.setItem('ShowUnseenOnly', 'false')
-    expect(TestPics.ShowUnreadOnly).to.equal(false)
+    expect(Pictures.GetShowUnreadOnly()).to.equal(false)
   }
 
   @test
   'it should return true when local storage is set to true'(): void {
     this.dom.window.localStorage.setItem('ShowUnseenOnly', 'true')
-    expect(TestPics.ShowUnreadOnly).to.equal(true)
+    expect(Pictures.GetShowUnreadOnly()).to.equal(true)
   }
 
   @test
   'it should set localstorage to stringified bolean on set to true'(): void {
     this.dom.window.localStorage.removeItem('ShowUnseenOnly')
-    TestPics.ShowUnreadOnly = true
+    Pictures.SetShowUnreadOnly(true)
     const result = this.dom.window.localStorage.getItem('ShowUnseenOnly')
     expect(result).to.equal('true')
   }
@@ -2512,7 +2425,7 @@ export class AppPicturesGetSetShowUnreadOnly extends BaseAppPicturesTests {
   @test
   'it should set localstorage to stringified bolean on set to false'(): void {
     this.dom.window.localStorage.removeItem('ShowUnseenOnly')
-    TestPics.ShowUnreadOnly = false
+    Pictures.SetShowUnreadOnly(false)
     const result = this.dom.window.localStorage.getItem('ShowUnseenOnly')
     expect(result).to.equal('false')
   }
@@ -2526,7 +2439,7 @@ export class AppPicturesUpdateUnreadSelectorSlider extends BaseAppPicturesTests 
     const element = document.querySelector('.selectUnreadAll > div')
     element?.classList.add('unread')
     expect(element?.classList.contains('unread')).to.equal(true)
-    TestPics.UpdateUnreadSelectorSlider()
+    Pictures.UpdateUnreadSelectorSlider()
     expect(element?.classList.contains('unread')).to.equal(false)
   }
 
@@ -2536,7 +2449,7 @@ export class AppPicturesUpdateUnreadSelectorSlider extends BaseAppPicturesTests 
     const element = document.querySelector('.selectUnreadAll > div')
     element?.classList.remove('all')
     expect(element?.classList.contains('all')).to.equal(false)
-    TestPics.UpdateUnreadSelectorSlider()
+    Pictures.UpdateUnreadSelectorSlider()
     expect(element?.classList.contains('all')).to.equal(true)
   }
 
@@ -2546,7 +2459,7 @@ export class AppPicturesUpdateUnreadSelectorSlider extends BaseAppPicturesTests 
     const element = document.querySelector('.selectUnreadAll > div')
     element?.classList.remove('unread')
     expect(element?.classList.contains('unread')).to.equal(false)
-    TestPics.UpdateUnreadSelectorSlider()
+    Pictures.UpdateUnreadSelectorSlider()
     expect(element?.classList.contains('unread')).to.equal(true)
   }
 
@@ -2556,7 +2469,7 @@ export class AppPicturesUpdateUnreadSelectorSlider extends BaseAppPicturesTests 
     const element = document.querySelector('.selectUnreadAll > div')
     element?.classList.add('all')
     expect(element?.classList.contains('all')).to.equal(true)
-    TestPics.UpdateUnreadSelectorSlider()
+    Pictures.UpdateUnreadSelectorSlider()
     expect(element?.classList.contains('all')).to.equal(false)
   }
 }
@@ -2572,8 +2485,8 @@ export class AppPicturesInitUnreadSelectorSlider extends BaseAppPicturesTests {
     super.before()
     this.dom.window.localStorage.ShowUnseenOnly = 'false'
     this.UpdateUnreadSelectorSliderSpy = sinon.stub(Pictures, 'UpdateUnreadSelectorSlider')
-    this.GetShowUnreadOnly = sinon.stub(Pictures, 'ShowUnreadOnly')
-    this.GetShowUnreadOnly.get(() => this.ShowUnreadOnlyValue)
+    this.GetShowUnreadOnly = sinon.stub(Pictures, 'GetShowUnreadOnly')
+    this.GetShowUnreadOnly.callsFake(() => this.ShowUnreadOnlyValue)
     this.SliderDiv = this.dom.window.document.querySelector('.selectUnreadAll')
   }
 
@@ -2635,14 +2548,14 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
     super.before()
     this.dom.window.localStorage.ShowUnseenOnly = 'false'
     this.GetIsMenuActive = sinon.stub(Navigation, 'IsMenuActive')
-    this.GetIsMenuActive.get(() => this.IsMenuActiveValue)
-    this.GetShowUnreadOnly = sinon.stub(Pictures, 'ShowUnreadOnly')
-    this.GetShowUnreadOnly.get(() => this.ShowUnreadOnlyValue)
+    this.GetIsMenuActive.callsFake(() => this.IsMenuActiveValue)
+    this.GetShowUnreadOnly = sinon.stub(Pictures, 'GetShowUnreadOnly')
+    this.GetShowUnreadOnly.callsFake(() => this.ShowUnreadOnlyValue)
     this.StubChangePicture = sinon.stub(Pictures, 'ChangePicture')
     this.StubWindowOpen = sinon.stub(this.dom.window, 'open')
     this.StubPostJson = sinon.stub(Net, 'PostJSON')
     this.StubPostJson.resolves()
-    TestPics.pictures = Array(21)
+    PictureMarkup.pictures = Array(21)
       .fill(null)
       .map((_, i) => ({
         name: `${i}.jpg`,
@@ -2650,7 +2563,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
         seen: i >= 5 && i < 15,
         index: i,
       }))
-    TestPics.current = TestPics.pictures[10] ?? null
+    PictureMarkup.current = PictureMarkup.pictures[10] ?? null
   }
 
   after(): void {
@@ -2679,8 +2592,8 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   @test
   'it should not publish HideMenu for ArrowUp when no pictures'(): void {
     const spy = sinon.stub()
-    TestPics.pictures = []
-    TestPics.current = null
+    PictureMarkup.pictures = []
+    PictureMarkup.current = null
     Subscribe('Action:Execute:HideMenu', spy)
     expect(spy.called).to.equal(false)
     this.IsMenuActiveValue = true
@@ -2716,8 +2629,8 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   @test
   'it should not publish HideMenu for ArrowRight when no pictures'(): void {
     const spy = sinon.stub()
-    TestPics.pictures = []
-    TestPics.current = null
+    PictureMarkup.pictures = []
+    PictureMarkup.current = null
     Subscribe('Action:Execute:HideMenu', spy)
     expect(spy.called).to.equal(false)
     this.IsMenuActiveValue = true
@@ -2752,8 +2665,8 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   @test
   'it should not publish HideMenu for ArrowLeft when no pictures'(): void {
     const spy = sinon.stub()
-    TestPics.pictures = []
-    TestPics.current = null
+    PictureMarkup.pictures = []
+    PictureMarkup.current = null
     Subscribe('Action:Execute:HideMenu', spy)
     expect(spy.called).to.equal(false)
     this.IsMenuActiveValue = true
@@ -2788,8 +2701,8 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   @test
   'it should not publish HideMenu for ArrowDown when no pictures'(): void {
     const spy = sinon.stub()
-    TestPics.pictures = []
-    TestPics.current = null
+    PictureMarkup.pictures = []
+    PictureMarkup.current = null
     Subscribe('Action:Execute:HideMenu', spy)
     expect(spy.called).to.equal(false)
     this.IsMenuActiveValue = true
@@ -2841,7 +2754,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   'it should Load First picture on to Execute:First'(): void {
     Publish('Action:Execute:First')
     expect(this.StubChangePicture.called).to.equal(true)
-    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[0])
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(PictureMarkup.pictures[0])
   }
 
   @test
@@ -2853,7 +2766,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   'it should Load First picture on to Execute:PreviousImage'(): void {
     Publish('Action:Execute:PreviousImage')
     expect(this.StubChangePicture.called).to.equal(true)
-    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[9])
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(PictureMarkup.pictures[9])
   }
 
   @test
@@ -2865,7 +2778,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   'it should Load First picture on to Execute:PreviousUnseen'(): void {
     Publish('Action:Execute:PreviousUnseen')
     expect(this.StubChangePicture.called).to.equal(true)
-    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[4])
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(PictureMarkup.pictures[4])
   }
 
   @test
@@ -2902,7 +2815,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   'it should Load First picture on to Execute:NextImage'(): void {
     Publish('Action:Execute:NextImage')
     expect(this.StubChangePicture.called).to.equal(true)
-    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[11])
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(PictureMarkup.pictures[11])
   }
 
   @test
@@ -2914,7 +2827,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   'it should Load First picture on to Execute:NextUnseen'(): void {
     Publish('Action:Execute:NextUnseen')
     expect(this.StubChangePicture.called).to.equal(true)
-    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[15])
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(PictureMarkup.pictures[15])
   }
 
   @test
@@ -2926,7 +2839,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   'it should Load First picture on to Execute:Last'(): void {
     Publish('Action:Execute:Last')
     expect(this.StubChangePicture.called).to.equal(true)
-    expect(this.StubChangePicture.firstCall.args[0]).to.equal(TestPics.pictures[20])
+    expect(this.StubChangePicture.firstCall.args[0]).to.equal(PictureMarkup.pictures[20])
   }
 
   @test
@@ -2937,7 +2850,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   @test
   'it should open image when executing view full size'(): void {
     expect(this.StubWindowOpen.called).to.equal(false)
-    TestPics.current = {
+    PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
       name: 'Baz.jpg',
       seen: true,
@@ -2955,7 +2868,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   async 'it should post bookmarks add for Execute:Bookmark'(): Promise<void> {
     const spy = sinon.stub()
     Subscribe('Bookmarks:Add', spy)
-    TestPics.current = {
+    PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
       name: 'Baz.jpg',
       seen: true,
@@ -2971,7 +2884,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   async 'it should post expected payload for Execute:Bookmark'(): Promise<void> {
     const spy = sinon.stub()
     Subscribe('Bookmarks:Add', spy)
-    TestPics.current = {
+    PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
       name: 'Baz.jpg',
       seen: true,
@@ -2992,7 +2905,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   async 'it should post bookmarks add for Gamepad:B'(): Promise<void> {
     const spy = sinon.stub()
     Subscribe('Bookmarks:Add', spy)
-    TestPics.current = {
+    PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
       name: 'Baz.jpg',
       seen: true,
@@ -3008,7 +2921,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
   async 'it should post expected payload for Gamepad:B'(): Promise<void> {
     const spy = sinon.stub()
     Subscribe('Bookmarks:Add', spy)
-    TestPics.current = {
+    PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
       name: 'Baz.jpg',
       seen: true,
@@ -3047,11 +2960,11 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
     }
     this.visualViewport = this.myVisualViewport
     super.before()
-    const element = TestPics.mainImage?.parentElement
+    const element = PictureMarkup.mainImage?.parentElement
     assert(element != null)
     this.MainImageBoundingStub = sinon.stub(element, 'getBoundingClientRect')
     this.MainImageBoundingStub.returns(this.boundingRect)
-    this.ClickTarget = TestPics.mainImage?.parentElement ?? null
+    this.ClickTarget = PictureMarkup.mainImage?.parentElement ?? null
     PubSub.subscribers['LOADING:ERROR'] = [() => 0]
   }
 

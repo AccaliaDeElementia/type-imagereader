@@ -2,42 +2,40 @@
 
 import { Subscribe, Publish } from './pubsub'
 
-export class Tabs {
-  protected static tabs: HTMLElement[] = []
-  protected static tabNames: string[] = []
+export const Tabs = {
+  tabs: ((): HTMLElement[] => [])(),
+  tabNames: ((): string[] => [])(),
+  Init: (): void => {
+    Tabs.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
+    Tabs.tabNames = Tabs.tabs.map((tab) => tab.getAttribute('href')).filter((name) => name !== null)
 
-  public static Init(): void {
-    this.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
-    this.tabNames = this.tabs.map((tab) => tab.getAttribute('href')).filter((name) => name !== null)
-
-    for (const tab of this.tabs) {
+    for (const tab of Tabs.tabs) {
       tab.parentElement?.addEventListener('click', (evt) => {
-        this.SelectTab(tab.getAttribute('href') ?? '')
+        Tabs.SelectTab(tab.getAttribute('href') ?? '')
         evt.preventDefault()
         return false
       })
     }
 
     Subscribe('Tab:Select', (name) => {
-      if (typeof name === 'string') this.SelectTab(name)
+      if (typeof name === 'string') Tabs.SelectTab(name)
     })
-    this.SelectTab()
-  }
-
-  static SelectTab(href?: string): void {
+    Tabs.SelectTab()
+  },
+  SelectTab: (href?: string): void => {
     if (href != null && !href.startsWith('#')) {
       href = `#tab${href}`
     }
     const lowerHref = href?.toLowerCase()
-    if (href == null || !this.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
-      href = this.tabNames[0] ?? ''
+    if (href == null || !Tabs.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
+      href = Tabs.tabNames[0] ?? ''
     }
-    for (const tab of this.tabs) {
+    for (const tab of Tabs.tabs) {
       tab.parentElement?.classList.remove('active')
       href = setTabActive(tab, lowerHref) ?? href
     }
     Publish('Tab:Selected', href)
-  }
+  },
 }
 
 function setTabActive(tab: HTMLElement, activeHref: string | undefined): string | null {
