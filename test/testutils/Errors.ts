@@ -6,7 +6,7 @@ export async function EventuallyRejects(promise: Promise<unknown>): Promise<Erro
   } catch (e: unknown) {
     if (e instanceof Error) return e
     if (typeof e === 'string') return new Error(e)
-    return new Error(`An error of type ${typeof e} was rejected`)
+    return new Error(`An error of type ${typeof e} was rejected!`)
   }
   expect.fail('EventuallyRejects did not reject!')
 }
@@ -17,7 +17,7 @@ export function DefinitelyThrows(fn: () => unknown): Error {
   } catch (e: unknown) {
     if (e instanceof Error) return e
     if (typeof e === 'string') return new Error(e)
-    return new Error(`An error of type ${typeof e} was rejected`)
+    return new Error(`An error of type ${typeof e} was thrown!`)
   }
-  expect.fail('EventuallyRejects did not reject!')
+  expect.fail('DefinitelyThrows did not throw!')
 }
