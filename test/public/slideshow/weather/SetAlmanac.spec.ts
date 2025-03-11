@@ -6,7 +6,7 @@ import type { WeatherResults } from '../../../../contracts/weather'
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-describe('slideshow/weather SetAlmanac()', () => {
+describe('public/slideshow/weather SetAlmanac()', () => {
   let clocks: Sinon.SinonFakeTimers | null = null
   let weather: WeatherResults = {}
   beforeEach(() => {

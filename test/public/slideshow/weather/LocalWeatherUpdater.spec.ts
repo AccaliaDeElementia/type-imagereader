@@ -23,7 +23,7 @@ html
         span.desctext
         img.icon
 `
-describe('slideshow/weather LocalWeatherUpdater', () => {
+describe('public/slideshow/weather LocalWeatherUpdater', () => {
   let fetchWeatherStub = Sinon.stub()
   let showWeatherStub = Sinon.stub()
 

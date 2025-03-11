@@ -7,7 +7,7 @@ import Sinon from 'sinon'
 import { URL } from 'url'
 import { EventuallyRejects } from '../../../testutils/Errors'
 
-describe('slideshow/weather FetchWeather', () => {
+describe('public/slideshow/weather FetchWeather()', () => {
   let fetchStub = Sinon.stub()
 
   beforeEach(() => {

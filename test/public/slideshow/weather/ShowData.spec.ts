@@ -19,7 +19,7 @@ html
         img.icon
 `
 
-describe('slideshow/weather ShowData()', () => {
+describe('public/slideshow/weather ShowData()', () => {
   const baseWindow = global.window
   const baseDocument = global.document
   let dom = new JSDOM('')
