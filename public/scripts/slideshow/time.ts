@@ -30,4 +30,4 @@ const updateTime = async (): Promise<void> => {
   await Promise.resolve()
 }
 
-export default CyclicUpdater.create(updateTime, 100)
+export default new CyclicUpdater(updateTime, 100)

@@ -79,13 +79,13 @@ function SetAlmanac(weather: WeatherResults): void {
   almanac.sunset = Math.min(weather.sunset ?? Infinity, maxset)
 }
 
-export const LocalWeatherUpdater = CyclicUpdater.create(async () => {
+export const LocalWeatherUpdater = new CyclicUpdater(async () => {
   await Functions.FetchWeather('http://localhost:8080/').then((weather) =>
     Functions.ShowWeather(document.querySelector<HTMLElement>('.localweather'), weather),
   )
 }, 1000)
 
-export const WeatherUpdater = CyclicUpdater.create(async () => {
+export const WeatherUpdater = new CyclicUpdater(async () => {
   await Functions.FetchWeather('/weather')
     .then((weather) => Functions.ShowWeather(document.querySelector<HTMLElement>('.weather'), weather))
     .then(Functions.SetAlmanac)

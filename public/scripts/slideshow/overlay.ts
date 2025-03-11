@@ -28,4 +28,4 @@ const updateOverlay = async (): Promise<void> => {
   await Promise.resolve()
 }
 
-export default CyclicUpdater.create(updateOverlay, 100)
+export default new CyclicUpdater(updateOverlay, 100)
