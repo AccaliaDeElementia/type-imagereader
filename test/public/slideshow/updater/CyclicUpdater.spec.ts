@@ -1,6 +1,6 @@
 'use sanity'
 
-import { after, beforeEach, describe } from 'mocha'
+import { beforeEach, afterEach, before, after, describe } from 'mocha'
 import { CyclicUpdater, defaultUpdateFn } from '../../../../public/scripts/slideshow/updater'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
