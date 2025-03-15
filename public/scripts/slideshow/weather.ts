@@ -6,7 +6,6 @@ import { type WeatherResults, isWeatherResults } from '../../../contracts/weathe
 type HTMLElementish = HTMLElement | null | undefined
 type stringish = string | null | undefined
 export const Functions = {
-  fetch,
   FetchWeather,
   ShowData,
   ShowIcon,
@@ -15,7 +14,7 @@ export const Functions = {
 }
 
 async function FetchWeather(uri: string | URL): Promise<WeatherResults> {
-  const response = await Functions.fetch(uri)
+  const response = await window.fetch(uri)
   const data: unknown = await response.json()
   if (!isWeatherResults(data)) throw new Error('Invalid WeatherResponse Retrieved')
   return data

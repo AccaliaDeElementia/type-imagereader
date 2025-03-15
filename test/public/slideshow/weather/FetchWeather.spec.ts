@@ -5,18 +5,24 @@ import { expect } from 'chai'
 import { Functions } from '../../../../public/scripts/slideshow/weather'
 import Sinon from 'sinon'
 import { URL } from 'url'
+import { JSDOM } from 'jsdom'
 import { EventuallyRejects } from '../../../testutils/Errors'
+import { Cast } from '../../../testutils/TypeGuards'
 
 describe('public/slideshow/weather FetchWeather()', () => {
   let fetchStub = Sinon.stub()
 
+  const existingWindow = global.window
+  const dom = new JSDOM('<html></html>')
   beforeEach(() => {
-    fetchStub = Sinon.stub(Functions, 'fetch')
+    global.window = Cast<Window & typeof globalThis>(dom.window)
+    fetchStub = Sinon.stub()
     fetchStub.resolves({ json: async () => await Promise.resolve({}) })
+    dom.window.fetch = fetchStub
   })
 
   afterEach(() => {
-    fetchStub.restore()
+    global.window = existingWindow
   })
 
   it('should return expected data on success', async () => {

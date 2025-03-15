@@ -7,7 +7,7 @@ import * as sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
-import { Functions, WeatherUpdater } from '../../../public/scripts/slideshow/weather'
+import { WeatherUpdater } from '../../../public/scripts/slideshow/weather'
 import OverlayUpdater from '../../../public/scripts/slideshow/overlay'
 import { Cast } from '../../testutils/TypeGuards'
 
@@ -58,10 +58,11 @@ export class SlideshowOverlayTests {
       get: () => this.dom.window.document,
     })
 
-    this.fetchStub = sinon.stub().resolves({
+    this.fetchStub = sinon.stub()
+    this.dom.window.fetch = this.fetchStub
+    this.fetchStub.resolves({
       json: async () => await Promise.resolve(this.fetchData),
     })
-    Functions.fetch = this.fetchStub
 
     this.fetchData = {
       sunrise: -Infinity,
@@ -77,7 +78,6 @@ export class SlideshowOverlayTests {
       configurable: true,
       get: () => this.existingDocument,
     })
-    Functions.fetch = global.fetch
 
     this.clock?.restore()
     this.clock = undefined
