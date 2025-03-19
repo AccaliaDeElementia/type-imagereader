@@ -4,27 +4,39 @@ import { CyclicUpdater } from './updater'
 import { GetAlmanac } from './weather'
 
 const fadein = 15 * 60 * 1000
-const maxOpacity = 0.85 // in percent.
+const maxOpacity = 0.95 // in percent.
+
+export const Functions = {
+  GetOpacity: (offsetMs: number): number => {
+    if (offsetMs < 0) return 0
+    return Math.min(maxOpacity * (offsetMs / fadein), maxOpacity)
+  },
+  ShowHideKiosk: (overlay: HTMLElement, isKioskMode: boolean): void => {
+    if (isKioskMode) {
+      overlay.classList.add('hide')
+    } else {
+      overlay.classList.remove('hide')
+    }
+  },
+  CalculateOffset: (): number => {
+    const times = GetAlmanac()
+    const now = Date.now()
+    if (now < times.sunrise) {
+      return times.sunrise - now
+    } else if (now > times.sunset) {
+      return now - times.sunset
+    }
+    return 0
+  },
+}
 
 const updateOverlay = async (): Promise<void> => {
   const kioskMode = new URLSearchParams(window.location.search).has('kiosk')
   const overlay = document.querySelector<HTMLElement>('.overlay')
-
-  if (!kioskMode) return
-  overlay?.classList.remove('hide')
-
-  for (const elem of document.querySelectorAll('.pixel')) {
-    elem.classList.remove('hide')
-  }
-  const times = GetAlmanac()
-  const now = Date.now()
-  let offset = 0
-  if (now < times.sunrise) {
-    offset = times.sunrise - now
-  } else if (now > times.sunset) {
-    offset = now - times.sunset
-  }
-  overlay?.style.setProperty('opacity', `${Math.min(maxOpacity * (offset / fadein), maxOpacity)}`)
+  if (overlay == null) return
+  Functions.ShowHideKiosk(overlay, kioskMode)
+  const offset = Functions.CalculateOffset()
+  overlay.style.setProperty('opacity', `${Functions.GetOpacity(offset)}`)
   await Promise.resolve()
 }
 
