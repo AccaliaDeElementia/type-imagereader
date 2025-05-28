@@ -43,6 +43,12 @@ export default [
     },
   },
   {
+    files: ['test/public/slideshow/**/*.js', 'test/public/slideshow/**/*.ts'],
+    rules: {
+      'max-lines': 'error', //TODO: Sort this rule out eventually
+    },
+  },
+  {
     ignores: ['coverage/**', 'eslint.config.mjs'],
   },
 ]

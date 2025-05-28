@@ -1,3 +1,5 @@
+'use sanity'
+
 import { expect } from 'chai'
 import { beforeEach, describe, it } from 'mocha'
 import { GamepadButtons } from '../../../../public/scripts/app/actions'

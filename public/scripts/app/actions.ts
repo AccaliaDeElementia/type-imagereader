@@ -3,17 +3,7 @@
 import { Subscribe, Publish, AddInterval } from './pubsub'
 import { CloneNode, isHTMLElement } from './utils'
 
-interface NavigateData {
-  children?: unknown[]
-  pictures?: unknown[]
-}
-
-export function isNavigateData(obj: unknown): obj is NavigateData {
-  if (obj == null || typeof obj !== 'object') return false
-  if ('children' in obj && !(obj.children instanceof Array || obj.children === undefined)) return false
-  if ('pictures' in obj && !(obj.pictures instanceof Array || obj.pictures === undefined)) return false
-  return true
-}
+import { isListing } from '../../../contracts/listing'
 
 interface ButtonDefinition {
   name: string
@@ -301,7 +291,7 @@ export const Actions = {
 
     Subscribe('Navigate:Data', (data) => {
       if (
-        isNavigateData(data) &&
+        isListing(data) &&
         (data.pictures == null || data.pictures.length < 1) &&
         (data.children == null || data.children.length < 1)
       ) {
