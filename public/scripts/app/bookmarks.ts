@@ -132,11 +132,14 @@ export const Bookmarks = {
     })
 
     Subscribe('Bookmarks:Load', async () => {
-      await Net.GetJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder))
-        .then((bookmarks) => {
+      await Net.GetJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder)).then(
+        (bookmarks) => {
           Bookmarks.buildBookmarks({ name: '', parent: '', path: '', bookmarks })
-        })
-        .catch(() => null)
+        },
+        (err: unknown) => {
+          Publish('Loading:Error', err)
+        },
+      )
     })
 
     Subscribe('Bookmarks:Add', async (path) => {
@@ -146,13 +149,15 @@ export const Bookmarks = {
           if (!(err instanceof Error)) throw new Error('Non Error rejection!')
           if (err.message !== 'Empty JSON response recieved') throw err
         })
-        .then(() => {
-          Publish('Bookmarks:Load')
-        })
-        .then(() => {
-          Publish('Loading:Success')
-        })
-        .catch(() => null)
+        .then(
+          () => {
+            Publish('Bookmarks:Load')
+            Publish('Loading:Success')
+          },
+          (err: unknown) => {
+            Publish('Loading:Error', err)
+          },
+        )
     })
 
     Subscribe('Bookmarks:Remove', async (path) => {
@@ -162,13 +167,15 @@ export const Bookmarks = {
           if (!(err instanceof Error)) throw new Error('Non Error rejection!')
           if (err.message !== 'Empty JSON response recieved') throw err
         })
-        .then(() => {
-          Publish('Bookmarks:Load')
-        })
-        .then(() => {
-          Publish('Loading:Success')
-        })
-        .catch(() => null)
+        .then(
+          () => {
+            Publish('Bookmarks:Load')
+            Publish('Loading:Success')
+          },
+          (err: unknown) => {
+            Publish('Loading:Error', err)
+          },
+        )
     })
   },
 }
