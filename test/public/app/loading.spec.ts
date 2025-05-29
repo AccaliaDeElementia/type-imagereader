@@ -10,6 +10,7 @@ import { render } from 'pug'
 import { PubSub } from '../../../public/scripts/app/pubsub'
 import { Loading } from '../../../public/scripts/app/loading'
 import { Cast } from '../../testutils/TypeGuards'
+import assert from 'assert'
 
 const markup = `
 html
@@ -100,43 +101,64 @@ export class AppLoadingTests {
   }
 
   @test
-  'Publishing Loading:Error hides loading overlay'(): void {
+  async 'Publishing Loading:Error hides loading overlay'(): Promise<void> {
     let hidden = false
-    PubSub.Subscribe('Loading:Hide', () => {
+    PubSub.Subscribe('Loading:Hide', async () => {
       hidden = true
+      await Promise.resolve()
     })
-    PubSub.Publish('Loading:Error')
+    const subs = PubSub.subscribers['LOADING:ERROR']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
+    }
     expect(hidden).to.equal(true)
   }
 
   @test
-  'Publishing Loading:Error removes css transition style on navbar'(): void {
+  async 'Publishing Loading:Error removes css transition style on navbar'(): Promise<void> {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
-    PubSub.Publish('Loading:Error')
+    const subs = PubSub.subscribers['LOADING:ERROR']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
+    }
     expect(navbar?.style.getPropertyValue('transition')).to.equal('')
   }
 
   @test
-  'Publishing Loading:Error sets scary red background navbar'(): void {
+  async 'Publishing Loading:Error sets scary red background navbar'(): Promise<void> {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.removeProperty('background-color')
-    PubSub.Publish('Loading:Error')
+    const subs = PubSub.subscribers['LOADING:ERROR']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
+    }
     expect(navbar?.style.getPropertyValue('background-color')).to.equal('rgb(255, 0, 0)')
   }
 
   @test
-  'Publishing Loading:Error sets a deferred function'(): void {
+  async 'Publishing Loading:Error sets a deferred function'(): Promise<void> {
     expect(PubSub.deferred).to.have.length(0)
-    PubSub.Publish('Loading:Error')
+    const subs = PubSub.subscribers['LOADING:ERROR']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
+    }
     expect(PubSub.deferred).to.have.length(1)
   }
 
   @test
-  'Publishing Loading:Error defers transition definition'(): void {
+  async 'Publishing Loading:Error defers transition definition'(): Promise<void> {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.removeProperty('transition')
-    PubSub.Publish('Loading:Error')
+    const subs = PubSub.subscribers['LOADING:ERROR']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
+    }
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
@@ -144,10 +166,14 @@ export class AppLoadingTests {
   }
 
   @test
-  'Publishing Loading:Error deferres background-color change'(): void {
+  async 'Publishing Loading:Error deferres background-color change'(): Promise<void> {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.setProperty('background-color', '#FFFFFF')
-    PubSub.Publish('Loading:Error')
+    const subs = PubSub.subscribers['LOADING:ERROR']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
+    }
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
@@ -155,33 +181,49 @@ export class AppLoadingTests {
   }
 
   @test
-  'Publishing Loading:Success removes css transition style on navbar'(): void {
+  async 'Publishing Loading:Success removes css transition style on navbar'(): Promise<void> {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
-    PubSub.Publish('Loading:Success')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
+    }
     expect(navbar?.style.getPropertyValue('transition')).to.equal('')
   }
 
   @test
-  'Publishing Loading:Success sets soothing green background navbar'(): void {
+  async 'Publishing Loading:Success sets soothing green background navbar'(): Promise<void> {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.removeProperty('background-color')
-    PubSub.Publish('Loading:Success')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
+    }
     expect(navbar?.style.getPropertyValue('background-color')).to.equal('rgb(0, 170, 0)')
   }
 
   @test
-  'Publishing Loading:Success sets a deferred function'(): void {
+  async 'Publishing Loading:Success sets a deferred function'(): Promise<void> {
     expect(PubSub.deferred).to.have.length(0)
-    PubSub.Publish('Loading:Success')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
+    }
     expect(PubSub.deferred).to.have.length(1)
   }
 
   @test
-  'Publishing Loading:Success defers transition definition'(): void {
+  async 'Publishing Loading:Success defers transition definition'(): Promise<void> {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.removeProperty('transition')
-    PubSub.Publish('Loading:Success')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
+    }
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
@@ -189,10 +231,14 @@ export class AppLoadingTests {
   }
 
   @test
-  'Publishing Loading:Success deferres background-color change'(): void {
+  async 'Publishing Loading:Success deferres background-color change'(): Promise<void> {
     const navbar = this.dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.setProperty('background-color', '#FFFFFF')
-    PubSub.Publish('Loading:Success')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    for (const sub of subs) {
+      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
+    }
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })

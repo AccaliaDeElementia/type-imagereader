@@ -8,6 +8,7 @@ describe('public/slideshow/time FormatDate()', () => {
   const makeDate = (year: number, month: number, day: number): Date => {
     const now = new Date()
     now.setFullYear(year)
+    now.setDate(day)
     now.setMonth(month - 1)
     now.setDate(day)
     return now

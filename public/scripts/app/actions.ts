@@ -289,7 +289,7 @@ export const Actions = {
     Actions.BuildActions()
     Actions.gamepads.Reset()
 
-    Subscribe('Navigate:Data', (data) => {
+    Subscribe('Navigate:Data', async (data) => {
       if (
         isListing(data) &&
         (data.pictures == null || data.pictures.length < 1) &&
@@ -297,6 +297,7 @@ export const Actions = {
       ) {
         Publish('Tab:Select', 'Actions')
       }
+      await Promise.resolve()
     })
 
     document.addEventListener('keyup', (event) => {

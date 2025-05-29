@@ -642,8 +642,9 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
   @test
   'registers mainImage:load that publishes Loading:Hide'(): void {
     let hidden = false
-    PubSub.Subscribe('Loading:Hide', () => {
+    PubSub.Subscribe('Loading:Hide', async () => {
       hidden = true
+      await Promise.resolve()
     })
     const image = this.document.querySelector<HTMLElement>('#bigImage img')
     const event = new this.dom.window.Event('load')
@@ -655,8 +656,9 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
   @test
   'registers mainImage:error that publishes Loading:Error with src'(): void {
     let hidden = false
-    PubSub.Subscribe('Loading:Error', () => {
+    PubSub.Subscribe('Loading:Error', async () => {
       hidden = true
+      await Promise.resolve()
     })
     const image = this.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(image !== null)
@@ -670,8 +672,9 @@ export class AppPicturesInitTests extends BaseAppPicturesTests {
   @test
   'registers mainImage:error that doesn not publishes Loading:Error without src'(): void {
     let hidden = false
-    PubSub.Subscribe('Loading:Error', () => {
+    PubSub.Subscribe('Loading:Error', async () => {
       hidden = true
+      await Promise.resolve()
     })
     const image = this.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(image !== null)
@@ -850,7 +853,7 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
   @test
   'it does not publish error when called on no pages'(): void {
-    const publishSpy = sinon.stub()
+    const publishSpy = sinon.stub().resolves()
     Subscribe('Loading:Error', publishSpy)
     this.document.querySelector('.pagination')?.replaceChildren(this.document.createElement('div'))
     Pictures.SelectPage(0)
@@ -861,7 +864,7 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
   @test
   'it publishes select of default page when called on no pages'(): void {
-    const publishSpy = sinon.stub()
+    const publishSpy = sinon.stub().resolves()
     Subscribe('Pictures:SelectPage', publishSpy)
     this.document.querySelector('.pagination')?.replaceChildren(this.document.createElement('div'))
     Pictures.SelectPage(0)
@@ -873,7 +876,7 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
   @test
   'Publishes error when called on negative page'(): void {
-    const publishSpy = sinon.stub()
+    const publishSpy = sinon.stub().resolves()
     Subscribe('Loading:Error', publishSpy)
     Pictures.SelectPage(-1)
     expect(publishSpy.calledWithExactly('Invalid Page Index Selected', 'LOADING:ERROR')).to.equal(true)
@@ -881,7 +884,7 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
   @test
   'Publishes error when called on zero page'(): void {
-    const publishSpy = sinon.stub()
+    const publishSpy = sinon.stub().resolves()
     Subscribe('Loading:Error', publishSpy)
     Pictures.SelectPage(0)
     expect(publishSpy.calledWithExactly('Invalid Page Index Selected', 'LOADING:ERROR')).to.equal(true)
@@ -889,7 +892,7 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
   @test
   'Publishes error when called on huge page'(): void {
-    const publishSpy = sinon.stub()
+    const publishSpy = sinon.stub().resolves()
     Subscribe('Loading:Error', publishSpy)
     Pictures.SelectPage(this.totalpages + 1)
     expect(publishSpy.calledWithExactly('Invalid Page Index Selected', 'LOADING:ERROR')).to.equal(true)
@@ -897,7 +900,7 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
   @test
   'Does not publish error on valid page'(): void {
-    const publishSpy = sinon.stub()
+    const publishSpy = sinon.stub().resolves()
     Subscribe('Loading:Error', publishSpy)
     Pictures.SelectPage(this.activePage)
     expect(publishSpy.called).to.equal(false)
@@ -933,7 +936,7 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
   @test
   'Publishes notification that page has been selected'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.Subscribe('Pictures:SelectPage', spy)
     Pictures.SelectPage(this.nextPage)
     expect(spy.called).to.equal(true)
@@ -941,9 +944,9 @@ export class AppPicturesSelectPageTests extends BaseAppPicturesTests {
 
   @test
   'Does not publishes notification that page has been selected on error'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.Subscribe('Pictures:SelectPage', spy)
-    Subscribe('Loading:Error', sinon.stub())
+    Subscribe('Loading:Error', sinon.stub().resolves())
     Pictures.SelectPage(this.totalpages + 1)
     expect(spy.called).to.equal(false)
   }
@@ -1039,8 +1042,12 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       path: '/foo/bar/baz.jpg',
       seen: false,
     }
-    PubSub.Subscribe('Pictures:Load', () => 0)
-    PubSub.Subscribe('Menu:Hide', () => 0)
+    PubSub.Subscribe('Pictures:Load', async () => {
+      await Promise.resolve()
+    })
+    PubSub.Subscribe('Menu:Hide', async () => {
+      await Promise.resolve()
+    })
     expect(PictureMarkup.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
     assert(card !== undefined)
@@ -1057,9 +1064,12 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       seen: false,
     }
     let executed = false
-    PubSub.Subscribe('Pictures:Load', () => 0)
-    PubSub.Subscribe('Menu:Hide', () => {
+    PubSub.Subscribe('Pictures:Load', async () => {
+      await Promise.resolve()
+    })
+    PubSub.Subscribe('Menu:Hide', async () => {
       executed = true
+      await Promise.resolve()
     })
     expect(PictureMarkup.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
@@ -1076,7 +1086,9 @@ export class AppPicturesMakePictureCardTests extends BaseAppPicturesTests {
       path: '/foo/bar/baz.jpg',
       seen: false,
     }
-    PubSub.Subscribe('Menu:Hide', () => 0)
+    PubSub.Subscribe('Menu:Hide', async () => {
+      await Promise.resolve()
+    })
     expect(PictureMarkup.current).to.equal(null)
     const card = Pictures.MakePictureCard(pic)
     assert(card !== undefined)
@@ -1427,14 +1439,14 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
   postJSONSpy: Sinon.SinonStub = sinon.stub()
   selectPageSpy: Sinon.SinonStub = sinon.stub()
   getPictureSpy: sinon.SinonStub = sinon.stub()
-  loadingShowSpy: Sinon.SinonStub = sinon.stub()
-  loadingErrorSpy: Sinon.SinonStub = sinon.stub()
-  loadNewSpy: Sinon.SinonStub = sinon.stub()
+  loadingShowSpy: Sinon.SinonStub = sinon.stub().resolves()
+  loadingErrorSpy: Sinon.SinonStub = sinon.stub().resolves()
+  loadNewSpy: Sinon.SinonStub = sinon.stub().resolves()
   fetchStub: sinon.SinonStub = sinon.stub()
   bottomLeftText: HTMLElement | null = null
   bottomCenterText: HTMLElement | null = null
   bottomRightText: HTMLElement | null = null
-  reloadSpy: Sinon.SinonSpy = sinon.spy()
+  reloadSpy: Sinon.SinonStub = sinon.stub().resolves()
 
   before(): void {
     super.before()
@@ -1461,7 +1473,7 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
     this.fetchStub = sinon.stub(global, 'fetch').resolves()
     this.getPictureSpy = sinon.stub(Pictures, 'GetPicture').returns(undefined)
     this.selectPageSpy = sinon.stub(Pictures, 'SelectPage')
-    this.reloadSpy = sinon.spy()
+    this.reloadSpy = sinon.stub().resolves()
     Subscribe('Loading:Show', this.loadingShowSpy)
     Subscribe('Loading:Error', this.loadingErrorSpy)
     Subscribe('Picture:LoadNew', this.loadNewSpy)
@@ -1804,9 +1816,9 @@ export class AppPicturesLoadImageTests extends BaseAppPicturesTests {
 export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
   makeTabSpy: Sinon.SinonStub = sinon.stub()
   loadImageSpy: Sinon.SinonStub = sinon.stub()
-  menuShowSpy: Sinon.SinonStub = sinon.stub()
-  menuHideSpy: Sinon.SinonStub = sinon.stub()
-  tabSelectSpy: Sinon.SinonStub = sinon.stub()
+  menuShowSpy: Sinon.SinonStub = sinon.stub().resolves()
+  menuHideSpy: Sinon.SinonStub = sinon.stub().resolves()
+  tabSelectSpy: Sinon.SinonStub = sinon.stub().resolves()
   pictures: Picture[] = []
   before(): void {
     super.before()
@@ -2073,9 +2085,9 @@ export class AppPicturesLoadDataTests extends BaseAppPicturesTests {
 export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
   makeTabSpy: Sinon.SinonStub = sinon.stub()
   loadImageSpy: Sinon.SinonStub = sinon.stub()
-  menuShowSpy: Sinon.SinonStub = sinon.stub()
-  menuHideSpy: Sinon.SinonStub = sinon.stub()
-  tabSelectSpy: Sinon.SinonStub = sinon.stub()
+  menuShowSpy: Sinon.SinonStub = sinon.stub().resolves()
+  menuHideSpy: Sinon.SinonStub = sinon.stub().resolves()
+  tabSelectSpy: Sinon.SinonStub = sinon.stub().resolves()
   pictures: Picture[] = []
 
   before(): void {
@@ -2320,9 +2332,9 @@ export class AppPicturesGetPictureTests extends BaseAppPicturesTests {
 export class AppPicturesChangePictureTests extends BaseAppPicturesTests {
   isLoadingSpy: Sinon.SinonStub = sinon.stub()
   isLoading = false
-  loadImageSpy: Sinon.SinonStub = sinon.stub()
-  menuHideSpy: Sinon.SinonStub = sinon.stub()
-  loadingErrorSpy: Sinon.SinonStub = sinon.stub()
+  loadImageSpy: Sinon.SinonStub = sinon.stub().resolves()
+  menuHideSpy: Sinon.SinonStub = sinon.stub().resolves()
+  loadingErrorSpy: Sinon.SinonStub = sinon.stub().resolves()
 
   picture: Picture = {
     path: '/some/path/8472.png',
@@ -2965,7 +2977,11 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
     this.MainImageBoundingStub = sinon.stub(element, 'getBoundingClientRect')
     this.MainImageBoundingStub.returns(this.boundingRect)
     this.ClickTarget = PictureMarkup.mainImage?.parentElement ?? null
-    PubSub.subscribers['LOADING:ERROR'] = [() => 0]
+    PubSub.subscribers['LOADING:ERROR'] = [
+      async () => {
+        await Promise.resolve()
+      },
+    ]
   }
 
   after(): void {

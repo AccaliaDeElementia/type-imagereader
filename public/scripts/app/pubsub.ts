@@ -1,6 +1,6 @@
 'use sanity'
 
-export type SubscriberFunction = (recievedData: unknown, actualTopic?: string) => void
+export type SubscriberFunction = (recievedData: unknown, actualTopic?: string) => Promise<void>
 
 export type VoidMethod = () => void
 
@@ -42,7 +42,9 @@ export const PubSub = {
           window.console.warn(`PUBSUB: topic ${key} registered without subscribers!`)
         } else {
           subscribers.forEach((subscriber) => {
-            subscriber(data, searchTopic)
+            subscriber(data, searchTopic).catch((err: unknown) => {
+              window.console.error(`Subscriber for ${searchTopic} rejected with error:`, err)
+            })
           })
         }
       }

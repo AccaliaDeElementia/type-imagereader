@@ -42,7 +42,7 @@ function hasValidBookmarks(obj: object): boolean {
   return true
 }
 
-export function isBookmarkFolder(obj: unknown): obj is BookmarkFolder[] {
+export function isBookmarkFolder(obj: unknown): obj is BookmarkFolder {
   if (typeof obj !== 'object' || obj == null) return false
   if (!('name' in obj) || typeof obj.name !== 'string') return false
   if (!('path' in obj) || typeof obj.path !== 'string') return false
@@ -103,7 +103,7 @@ export function isPicture(obj: unknown): obj is Picture {
   return isApiPicture(obj) && isUIPicture(obj)
 }
 
-function isArrayT(obj: unknown, isT: (o: unknown) => boolean): boolean {
+export function isArray<T>(obj: unknown, isT: (o: unknown) => o is T): obj is T[] {
   if (!(obj instanceof Array)) return false
   if (obj.some((x) => !isT(x))) return false
   return true
@@ -129,9 +129,9 @@ function hasListingNestedFields(obj: object): boolean {
   if (!hasOptionalKey(obj, 'nextUnread', isFolder)) return false
   if (!hasOptionalKey(obj, 'prev', isFolder)) return false
   if (!hasOptionalKey(obj, 'prevUnread', isFolder)) return false
-  if (!hasOptionalKey(obj, 'children', (o) => isArrayT(o, isFolderWithCounts))) return false
-  if (!hasOptionalKey(obj, 'pictures', (o) => isArrayT(o, isPicture))) return false
-  if (!hasOptionalKey(obj, 'bookmarks', (o) => isArrayT(o, isBookmarkFolder))) return false
+  if (!hasOptionalKey(obj, 'children', (o) => isArray(o, isFolderWithCounts))) return false
+  if (!hasOptionalKey(obj, 'pictures', (o) => isArray(o, isPicture))) return false
+  if (!hasOptionalKey(obj, 'bookmarks', (o) => isArray(o, isBookmarkFolder))) return false
   return true
 }
 

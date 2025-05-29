@@ -55,7 +55,7 @@ describe('public/app/actions function ReadGamepad()', () => {
     })
     getTestGamepads.returns([testGamePad])
     gamepadsReadStub = sinon.stub(Actions.gamepads, 'Read').returns(false)
-    actionGamepadListener = sinon.stub()
+    actionGamepadListener = sinon.stub().resolves()
     PubSub.Subscribe('Action:Gamepad', actionGamepadListener)
   })
   afterEach(() => {

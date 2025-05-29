@@ -12,8 +12,8 @@ export const WakeLock = {
   timeout: 0,
   wakeTime: 2 * 60 * 1000,
   Init: (): void => {
-    Subscribe('Picture:LoadNew', () => {
-      WakeLock.TakeLock().catch(() => null)
+    Subscribe('Picture:LoadNew', async () => {
+      await WakeLock.TakeLock().catch(() => null)
     })
     AddInterval(
       'WakeLock:Release',

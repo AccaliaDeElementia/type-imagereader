@@ -4,75 +4,26 @@ import { Publish, Subscribe } from './pubsub'
 import { Net } from './net'
 import { CloneNode, isHTMLElement } from './utils'
 
-export interface DataBookmark {
-  name: string
-  path: string
-  folder: string
-}
+import {
+  type Bookmark,
+  type BookmarkFolder,
+  isBookmarkFolder,
+  isArray,
+  type Listing,
+  isListing,
+} from '../../../contracts/listing'
 
-interface DataBookmarkFolder {
-  name: string
-  path: string
-  bookmarks: DataBookmark[]
-}
-
-interface DataWithBookmarks {
-  path: string
-  bookmarks: DataBookmarkFolder[]
-}
-
-interface BookmarkFolder {
+interface WebBookmarkFolder {
   name: string
   element: HTMLElement
-}
-
-export function isDataBookmark(obj: unknown): obj is DataBookmark {
-  if (typeof obj !== 'object' || obj == null) return false
-  if (!('name' in obj) || typeof obj.name !== 'string') return false
-  if (!('path' in obj) || typeof obj.path !== 'string') return false
-  if (!('folder' in obj) || typeof obj.folder !== 'string') return false
-  return true
-}
-
-function hasValidBookmarks(obj: object): boolean {
-  if (!('bookmarks' in obj) || !(obj.bookmarks instanceof Array)) return false
-  for (const bookmark of obj.bookmarks as unknown[]) {
-    if (!isDataBookmark(bookmark)) return false
-  }
-  return true
-}
-
-export function isDataBookmarkFolder(obj: unknown): obj is DataBookmarkFolder[] {
-  if (typeof obj !== 'object' || obj == null) return false
-  if (!('name' in obj) || typeof obj.name !== 'string') return false
-  if (!('path' in obj) || typeof obj.path !== 'string') return false
-  return hasValidBookmarks(obj)
-}
-
-export function isDataWithBookmarks(obj: unknown): obj is DataWithBookmarks {
-  if (typeof obj !== 'object' || obj == null) return false
-  if (!('path' in obj) || typeof obj.path !== 'string') return false
-  if (!('bookmarks' in obj) || !(obj.bookmarks instanceof Array)) return false
-  for (const bookmark of obj.bookmarks as unknown[]) {
-    if (!isDataBookmarkFolder(bookmark)) return false
-  }
-  return true
-}
-
-export function isDataBookmarkFolderArray(obj: unknown): obj is DataBookmarkFolder[] {
-  if (typeof obj !== 'object' || !(obj instanceof Array)) return false
-  for (const folder of obj as unknown[]) {
-    if (!isDataBookmarkFolder(folder)) return false
-  }
-  return true
 }
 
 export const Bookmarks = {
   bookmarkCard: ((): DocumentFragment | undefined => undefined)(),
   bookmarkFolder: ((): DocumentFragment | undefined => undefined)(),
   bookmarksTab: ((): HTMLElement | null => null)(),
-  BookmarkFolders: ((): BookmarkFolder[] => [])(),
-  GetFolder: (openPath: string, bookmarkFolder: DataBookmarkFolder): HTMLElement | null => {
+  BookmarkFolders: ((): WebBookmarkFolder[] => [])(),
+  GetFolder: (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null => {
     let folder = Bookmarks.BookmarkFolders.find((e) => e.name === bookmarkFolder.path)
     if (folder == null) {
       const element = CloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
@@ -99,7 +50,7 @@ export const Bookmarks = {
     }
     return folder.element
   },
-  BuildBookmark: (bookmark: DataBookmark): HTMLElement | null => {
+  BuildBookmark: (bookmark: Bookmark): HTMLElement | null => {
     const card = CloneNode(Bookmarks.bookmarkCard, isHTMLElement)
     if (card == null) {
       return null
@@ -135,7 +86,8 @@ export const Bookmarks = {
     })
     return card
   },
-  buildBookmarkNodes: (data: DataWithBookmarks, openPath: string): void => {
+  buildBookmarkNodes: (data: Listing, openPath: string): void => {
+    if (data.bookmarks === undefined) return
     for (const folder of data.bookmarks) {
       const folderNode = Bookmarks.GetFolder(openPath, folder)
       if (folderNode == null) {
@@ -150,7 +102,7 @@ export const Bookmarks = {
       }
     }
   },
-  buildBookmarks: (data: DataWithBookmarks): void => {
+  buildBookmarks: (data: Listing): void => {
     if (Bookmarks.bookmarksTab == null || Bookmarks.bookmarkCard == null || Bookmarks.bookmarkFolder == null) {
       return
     }
@@ -174,21 +126,22 @@ export const Bookmarks = {
     Bookmarks.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     Bookmarks.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
 
-    Subscribe('Navigate:Data', (data) => {
-      if (isDataWithBookmarks(data)) Bookmarks.buildBookmarks(data)
+    Subscribe('Navigate:Data', async (data) => {
+      if (isListing(data)) Bookmarks.buildBookmarks(data)
+      await Promise.resolve()
     })
 
-    Subscribe('Bookmarks:Load', () => {
-      Net.GetJSON<DataBookmarkFolder[]>('/api/bookmarks', isDataBookmarkFolderArray)
+    Subscribe('Bookmarks:Load', async () => {
+      await Net.GetJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder))
         .then((bookmarks) => {
-          Bookmarks.buildBookmarks({ path: '', bookmarks })
+          Bookmarks.buildBookmarks({ name: '', parent: '', path: '', bookmarks })
         })
         .catch(() => null)
     })
 
-    Subscribe('Bookmarks:Add', (path) => {
+    Subscribe('Bookmarks:Add', async (path) => {
       if (typeof path !== 'string') return
-      Net.PostJSON('/api/bookmarks/add', { path }, (_: unknown): _ is unknown => true)
+      await Net.PostJSON('/api/bookmarks/add', { path }, (_: unknown): _ is unknown => true)
         .catch((err: unknown) => {
           if (!(err instanceof Error)) throw new Error('Non Error rejection!')
           if (err.message !== 'Empty JSON response recieved') throw err
@@ -202,9 +155,9 @@ export const Bookmarks = {
         .catch(() => null)
     })
 
-    Subscribe('Bookmarks:Remove', (path) => {
+    Subscribe('Bookmarks:Remove', async (path) => {
       if (typeof path !== 'string') return
-      Net.PostJSON('/api/bookmarks/remove', { path }, (_: unknown): _ is unknown => true)
+      await Net.PostJSON('/api/bookmarks/remove', { path }, (_: unknown): _ is unknown => true)
         .catch((err: unknown) => {
           if (!(err instanceof Error)) throw new Error('Non Error rejection!')
           if (err.message !== 'Empty JSON response recieved') throw err

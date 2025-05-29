@@ -129,16 +129,16 @@ export const Navigation = {
     Navigation.LocationAssign = window.location.assign.bind(window.location)
     Navigation.current.path = Navigation.GetFolderPath()
     Navigation.LoadData().catch(() => null)
-    Subscribe('Navigate:Load', (path): void => {
+    Subscribe('Navigate:Load', async (path) => {
       if (typeof path === 'string') {
         Navigation.current = { path }
       } else if (isNoMenuPath(path)) {
         Navigation.current = path
       }
-      Navigation.LoadData().catch(() => null)
+      await Navigation.LoadData().catch(() => null)
     })
-    Subscribe('Navigate:Reload', () => {
-      Navigation.LoadData().catch(() => null)
+    Subscribe('Navigate:Reload', async () => {
+      await Navigation.LoadData().catch(() => null)
     })
     window.addEventListener('popstate', () => {
       Navigation.current = {
@@ -147,13 +147,20 @@ export const Navigation = {
       Navigation.LoadData(true).catch(() => null)
     })
 
-    Subscribe('Navigate:Data', (data: unknown): void => {
+    Subscribe('Navigate:Data', async (data: unknown) => {
       window.console.log(data)
+      await Promise.resolve()
     })
 
     const mainMenu = document.querySelector('#mainMenu')
-    Subscribe('Menu:Show', () => mainMenu?.classList.remove('hidden'))
-    Subscribe('Menu:Hide', () => mainMenu?.classList.add('hidden'))
+    Subscribe('Menu:Show', async () => {
+      mainMenu?.classList.remove('hidden')
+      await Promise.resolve()
+    })
+    Subscribe('Menu:Hide', async () => {
+      mainMenu?.classList.add('hidden')
+      await Promise.resolve()
+    })
     mainMenu?.addEventListener('click', (event) => {
       if (event.target === mainMenu && Navigation.current.pictures != null && Navigation.current.pictures.length > 0) {
         Publish('Menu:Hide')
@@ -164,29 +171,35 @@ export const Navigation = {
       Publish('Menu:Show')
     })
 
-    Subscribe('Action:Execute:PreviousFolder', () => {
+    Subscribe('Action:Execute:PreviousFolder', async () => {
       const prev = Pictures.GetShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
       Navigation.NavigateTo(prev?.path, 'PreviousFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:NextFolder', () => {
+    Subscribe('Action:Execute:NextFolder', async () => {
       const next = Pictures.GetShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
       Navigation.NavigateTo(next?.path, 'NextFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:ParentFolder', () => {
+    Subscribe('Action:Execute:ParentFolder', async () => {
       Navigation.NavigateTo(Navigation.current.parent, 'ParentFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:FirstUnfinished', () => {
+    Subscribe('Action:Execute:FirstUnfinished', async () => {
       const target = Navigation.current.children?.find((child) => child.totalSeen < child.totalCount)
       Navigation.NavigateTo(target?.path, 'FirstUnfinished')
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:ShowMenu', () => {
+    Subscribe('Action:Execute:ShowMenu', async () => {
       Publish('Menu:Show')
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:HideMenu', () => {
+    Subscribe('Action:Execute:HideMenu', async () => {
       Publish('Menu:Hide')
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:MarkAllSeen', () => {
-      Net.PostJSON('/api/mark/read', { path: Navigation.current.path }, (_: unknown): _ is unknown => true)
+    Subscribe('Action:Execute:MarkAllSeen', async () => {
+      await Net.PostJSON('/api/mark/read', { path: Navigation.current.path }, (_: unknown): _ is unknown => true)
         .then(
           async () => {
             await Navigation.LoadData(true)
@@ -197,8 +210,8 @@ export const Navigation = {
         )
         .catch(() => null)
     })
-    Subscribe('Action:Execute:MarkAllUnseen', () => {
-      Net.PostJSON('/api/mark/unread', { path: Navigation.current.path }, (_: unknown): _ is unknown => true)
+    Subscribe('Action:Execute:MarkAllUnseen', async () => {
+      await Net.PostJSON('/api/mark/unread', { path: Navigation.current.path }, (_: unknown): _ is unknown => true)
         .then(
           async () => {
             await Navigation.LoadData(true)
@@ -209,10 +222,11 @@ export const Navigation = {
         )
         .catch(() => null)
     })
-    Subscribe('Action:Execute:Slideshow', () => {
+    Subscribe('Action:Execute:Slideshow', async () => {
       Navigation.LocationAssign?.call(window.location, `/slideshow${Navigation.current.path}`)
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:FullScreen', () => {
+    Subscribe('Action:Execute:FullScreen', async () => {
       if (document.fullscreenElement == null) {
         document.body.requestFullscreen({ navigationUI: 'hide' }).catch((err: unknown) => {
           Publish('Loading:Error', err)
@@ -222,31 +236,40 @@ export const Navigation = {
           Publish('Loading:Error', err)
         })
       }
+      await Promise.resolve()
     })
 
-    Subscribe('Action:Keypress:<Ctrl>ArrowUp', () => {
+    Subscribe('Action:Keypress:<Ctrl>ArrowUp', async () => {
       Publish('Action:Execute:ParentFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Keypress:<Ctrl>ArrowDown', () => {
+    Subscribe('Action:Keypress:<Ctrl>ArrowDown', async () => {
       Publish('Action:Execute:FirstUnfinished')
+      await Promise.resolve()
     })
-    Subscribe('Action:Keypress:<Ctrl>ArrowLeft', () => {
+    Subscribe('Action:Keypress:<Ctrl>ArrowLeft', async () => {
       Publish('Action:Execute:PreviousFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Keypress:<Ctrl>ArrowRight', () => {
+    Subscribe('Action:Keypress:<Ctrl>ArrowRight', async () => {
       Publish('Action:Execute:NextFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Gamepad:Down', () => {
+    Subscribe('Action:Gamepad:Down', async () => {
       Publish('Action:Execute:PreviousFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Gamepad:Up', () => {
+    Subscribe('Action:Gamepad:Up', async () => {
       Publish('Action:Execute:NextFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Gamepad:Y', () => {
+    Subscribe('Action:Gamepad:Y', async () => {
       Publish('Action:Execute:ParentFolder')
+      await Promise.resolve()
     })
-    Subscribe('Action:Gamepad:A', () => {
+    Subscribe('Action:Gamepad:A', async () => {
       Publish('Action:Execute:FirstUnfinished')
+      await Promise.resolve()
     })
   },
   LoadData: async (noHistory = false): Promise<void> => {

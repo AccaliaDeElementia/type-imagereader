@@ -92,16 +92,17 @@ export class AppTabsTests {
     }
     PubSub.subscribers = {}
     PubSub.deferred = []
+    this.tabSelectedSpy.resolves()
     PubSub.Subscribe('Tab:Selected', this.tabSelectedSpy)
     TestTabs.Reset()
     Tabs.Init()
-    this.tabSelectedSpy.reset()
-    this.actionsScroll.reset()
   }
 
   after(): void {
     global.window = this.existingWindow
     global.document = this.existingDocument
+    this.tabSelectedSpy.reset()
+    this.actionsScroll.reset()
   }
 
   @test

@@ -158,13 +158,13 @@ describe('public/app/actions function Init()', () => {
     ],
   ]
   navigateDataTestCases.forEach(([title, listing, expected]) => {
-    it(`should ${expected ? '' : 'not '}publish Tab:Select for ${title} listing on navigate`, () => {
+    it(`should ${expected ? '' : 'not '}publish Tab:Select for ${title} listing on navigate`, async () => {
       Actions.Init()
       const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
       assert(handler !== undefined, 'Navigate:Data handler must be defined')
-      const spy = sinon.stub()
+      const spy = sinon.stub().resolves()
       PubSub.subscribers['TAB:SELECT'] = [spy]
-      handler(listing)
+      await handler(listing)
       expect(spy.called).to.equal(expected)
       if (expected) {
         expect(spy.firstCall.args).to.deep.equal(['Actions', 'TAB:SELECT'])
@@ -200,7 +200,7 @@ describe('public/app/actions function Init()', () => {
       documentSpy.callsFake((_, h) => {
         handler = Cast<(o: unknown) => void>(h)
       })
-      const spy = sinon.stub()
+      const spy = sinon.stub().resolves()
       PubSub.subscribers['ACTION:KEYPRESS'] = [spy]
       try {
         Actions.Init()

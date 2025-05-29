@@ -17,8 +17,9 @@ export const Tabs = {
       })
     }
 
-    Subscribe('Tab:Select', (name) => {
+    Subscribe('Tab:Select', async (name) => {
       if (typeof name === 'string') Tabs.SelectTab(name)
+      await Promise.resolve()
     })
     Tabs.SelectTab()
   },

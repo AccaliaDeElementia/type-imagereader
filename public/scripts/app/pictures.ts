@@ -38,20 +38,22 @@ export const Pictures = {
     Pictures.nextPending = true
     PictureMarkup.ResetMarkup()
     PictureMarkup.Init()
-    Subscribe('Navigate:Data', (data) => {
+    Subscribe('Navigate:Data', async (data) => {
       if (isDataWithPictures(data)) Pictures.LoadData(data)
+      await Promise.resolve()
     })
     Pictures.InitActions()
     Pictures.InitMouse()
     Pictures.InitUnreadSelectorSlider()
   },
   InitActions: (): void => {
-    const doIfNoMenu = (action: string) => () => {
+    const doIfNoMenu = (action: string) => async () => {
       if (!Navigation.IsMenuActive()) {
         Publish(`Action:Execute:${action}`)
       } else if (PictureMarkup.pictures.length > 0) {
         Publish('Action:Execute:HideMenu')
       }
+      await Promise.resolve()
     }
     Subscribe('Action:Keypress:ArrowUp', doIfNoMenu('ShowMenu'))
     Subscribe('Action:Keypress:ArrowRight', doIfNoMenu('Next'))
@@ -68,43 +70,57 @@ export const Pictures = {
       Pictures.ChangePicture(Pictures.GetPicture(direction))
     }
 
-    Subscribe('Action:Execute:Previous', () => {
+    Subscribe('Action:Execute:Previous', async () => {
       const actualEvent = Pictures.GetShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
       Publish(`Action:Execute:${actualEvent}`)
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:Next', () => {
+    Subscribe('Action:Execute:Next', async () => {
       const actualEvent = Pictures.GetShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
       Publish(`Action:Execute:${actualEvent}`)
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:First', () => {
+    Subscribe('Action:Execute:First', async () => {
       changeTo(NavigateTo.First)
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:PreviousImage', () => {
+    Subscribe('Action:Execute:PreviousImage', async () => {
       changeTo(NavigateTo.Previous)
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:PreviousUnseen', () => {
+    Subscribe('Action:Execute:PreviousUnseen', async () => {
       changeTo(NavigateTo.PreviousUnread)
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:NextImage', () => {
+    Subscribe('Action:Execute:NextImage', async () => {
       changeTo(NavigateTo.Next)
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:NextUnseen', () => {
+    Subscribe('Action:Execute:NextUnseen', async () => {
       changeTo(NavigateTo.NextUnread)
+      await Promise.resolve()
     })
-    Subscribe('Action:Execute:Last', () => {
+    Subscribe('Action:Execute:Last', async () => {
       changeTo(NavigateTo.Last)
+      await Promise.resolve()
     })
 
-    Subscribe('Action:Execute:ViewFullSize', () => window.open(`/images/full${PictureMarkup.current?.path}`))
-    Subscribe('Action:Execute:Bookmark', () => {
-      Publish('Bookmarks:Add', PictureMarkup.current?.path)
+    Subscribe('Action:Execute:ViewFullSize', async () => {
+      window.open(`/images/full${PictureMarkup.current?.path}`)
+      await Promise.resolve()
     })
-    Subscribe('Action:Gamepad:B', () => {
+    Subscribe('Action:Execute:Bookmark', async () => {
       Publish('Bookmarks:Add', PictureMarkup.current?.path)
+      await Promise.resolve()
+    })
+    Subscribe('Action:Gamepad:B', async () => {
+      Publish('Bookmarks:Add', PictureMarkup.current?.path)
+      await Promise.resolve()
     })
 
-    Subscribe('Pictures:SelectPage', () => {
+    Subscribe('Pictures:SelectPage', async () => {
       Pictures.LoadCurrentPageImages()
+      await Promise.resolve()
     })
   },
   InitMouse: (): void => {

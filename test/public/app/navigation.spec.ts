@@ -705,7 +705,7 @@ abstract class BaseNavigationTests {
     this.existingDocument = global.document
     this.document = global.document
     this.dom = new JSDOM('', {})
-    this.tabSelectedSpy = sinon.stub()
+    this.tabSelectedSpy = sinon.stub().resolves()
   }
 
   before(): void {
@@ -720,13 +720,14 @@ abstract class BaseNavigationTests {
 
     PubSub.subscribers = {}
     PubSub.deferred = []
+    this.tabSelectedSpy.resolves()
     PubSub.Subscribe('Tab:Selected', this.tabSelectedSpy)
-    this.tabSelectedSpy.reset()
   }
 
   after(): void {
     global.window = this.existingWindow
     global.document = this.existingDocument
+    this.tabSelectedSpy.reset()
   }
 }
 
@@ -872,7 +873,7 @@ export class AppnavigationLoadDataTests extends BaseNavigationTests {
     this.GetJSONStub = sinon.stub(Net, 'GetJSON')
     this.GetJSONStub.resolves(Navigation.current)
     this.PushStateStub = sinon.stub(this.dom.window.history, 'pushState')
-    this.PublishSpy = sinon.stub()
+    this.PublishSpy = sinon.stub().resolves()
     PubSub.Subscribe('Loading:Show', this.PublishSpy)
     PubSub.Subscribe('Loading:Hide', this.PublishSpy)
     PubSub.Subscribe('Loading:Error', this.PublishSpy)
@@ -1153,31 +1154,29 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Navigate:Load handler should tolerate LoadData rejecting'(): void {
+  async 'Navigate:Load handler should tolerate LoadData rejecting'(): Promise<void> {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
     this.LoadDataStub.rejects(new Event('FOO!'))
     const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    expect(() => {
-      handler('a string')
-    }).to.not.throw()
+    await handler('a string').catch(() => expect.fail('Handler should not reject!'))
   }
 
   @test
-  'Navigate:Load handler should set path when called with string'(): void {
+  async 'Navigate:Load handler should set path when called with string'(): Promise<void> {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
     const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler('a string')
+    await handler('a string')
     expect(Navigation.current).to.deep.equal({
       path: 'a string',
     })
   }
 
   @test
-  'Navigate:Load handler should clear current when called with string'(): void {
+  async 'Navigate:Load handler should clear current when called with string'(): Promise<void> {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
     Navigation.current = {
@@ -1186,14 +1185,14 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     }
     const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler('a string')
+    await handler('a string')
     expect(Navigation.current).to.deep.equal({
       path: 'a string',
     })
   }
 
   @test
-  'Navigate:Load handler should set current when called with NoMenuPath'(): void {
+  async 'Navigate:Load handler should set current when called with NoMenuPath'(): Promise<void> {
     const obj = {
       path: 'a string',
       noMenu: true,
@@ -1206,17 +1205,17 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     this.LoadDataStub.resetHistory()
     const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(obj)
+    await handler(obj)
     expect(Navigation.current).to.equal(obj)
   }
 
   @test
-  'Navigate:Load handler should call LoadData with defaults'(): void {
+  async 'Navigate:Load handler should call LoadData with defaults'(): Promise<void> {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
     const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler('a string')
+    await handler('a string')
     expect(this.LoadDataStub.callCount).to.equal(1)
     expect(this.LoadDataStub.firstCall.args).to.deep.equal([])
   }
@@ -1229,24 +1228,22 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Navigate:Reload handler should tolerate LoadData rejecting'(): void {
+  async 'Navigate:Reload handler should tolerate LoadData rejecting'(): Promise<void> {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
     this.LoadDataStub.rejects(new Event('FOO!'))
     const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    expect(() => {
-      handler('a string')
-    }).to.not.throw()
+    await handler('a string').catch(() => expect.fail('Handler should not reject!'))
   }
 
   @test
-  'Navigate:Reload handler should call LoadData with defaults'(): void {
+  async 'Navigate:Reload handler should call LoadData with defaults'(): Promise<void> {
     Navigation.Init()
     this.LoadDataStub.resetHistory()
     const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler('a string')
+    await handler('a string')
     expect(this.LoadDataStub.callCount).to.equal(1)
     expect(this.LoadDataStub.firstCall.args).to.deep.equal([])
   }
@@ -1302,14 +1299,14 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Navigate:Data handler should log first argument'(): void {
+  async 'Navigate:Data handler should log first argument'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     const obj = {
       pi: 3.1415926,
     }
-    handler(obj)
+    await handler(obj)
     expect(this.consoleLog.callCount).to.equal(1)
     expect(this.consoleLog.firstCall.args).to.have.length(1)
     expect(this.consoleLog.firstCall.args.pop()).to.equal(obj)
@@ -1323,14 +1320,14 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Menu:Show handler should remove hidden class to main menu'(): void {
+  async 'Menu:Show handler should remove hidden class to main menu'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['MENU:SHOW']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     const mainMenu = this.document.querySelector('#mainMenu')
     assert(mainMenu !== null, 'mainMenu must exist')
     mainMenu.classList.add('hidden')
-    handler(undefined)
+    await handler(undefined)
     expect(mainMenu.classList.contains('hidden')).to.equal(false)
   }
 
@@ -1342,21 +1339,21 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Menu:Hide handler should add hidden class to main menu'(): void {
+  async 'Menu:Hide handler should add hidden class to main menu'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['MENU:HIDE']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     const mainMenu = this.document.querySelector('#mainMenu')
     assert(mainMenu !== null, 'mainMenu must exist')
     mainMenu.classList.remove('hidden')
-    handler(undefined)
+    await handler(undefined)
     expect(mainMenu.classList.contains('hidden')).to.equal(true)
   }
 
   @test
   '#mainMenu Click handler ignores click not targeting #mainMenu'(): void {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('.innerTarget')
     assert(target !== null, 'target must exist')
@@ -1369,7 +1366,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   @test
   '#mainMenu Click handler ignores click with empty pictures list'(): void {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
     assert(target !== null, 'target must exist')
@@ -1382,7 +1379,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   @test
   '#mainMenu Click handler ignores click with missing pictures list'(): void {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
     assert(target !== null, 'target must exist')
@@ -1395,7 +1392,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   @test
   '#mainMenu Click handler hides menu for direct click with pictures'(): void {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const target = this.document.querySelector('#mainMenu')
     assert(target !== null, 'target must exist')
@@ -1408,7 +1405,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   @test
   'menuButton Click handler showsmenu'(): void {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['MENU:SHOW'] = [spy]
     const target = this.document.querySelector('.menuButton')
     assert(target !== null, 'target must exist')
@@ -1426,20 +1423,20 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:PreviousFolder handler should NavigateTo previousFolder with ShowUnreadOnly unset'(): void {
+  async 'Action:Execute:PreviousFolder handler should NavigateTo previousFolder with ShowUnreadOnly unset'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     Navigation.current.prev = {
       path: '/foo/bar/baz',
     }
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'PreviousFolder')).to.equal(true)
   }
 
   @test
-  'Action:Execute:PreviousFolder handler should NavigateTo previousUnreadFolder with ShowUnreadOnly set'(): void {
+  async 'Action:Execute:PreviousFolder handler should NavigateTo previousUnreadFolder with ShowUnreadOnly set'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1447,13 +1444,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
       path: '/foo/bar/baz',
     }
     this.ShowUnreadOnlyGetStub.callsFake(() => true)
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'PreviousFolder')).to.equal(true)
   }
 
   @test
-  'Action:Execute:PreviousFolder handler should NavigateTo undefined previousFolder when node missing and with ShowUnreadOnly unset'(): void {
+  async 'Action:Execute:PreviousFolder handler should NavigateTo undefined previousFolder when node missing and with ShowUnreadOnly unset'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1461,13 +1458,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.current.prevUnread = {
       path: '/foo/bar/baz',
     }
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'PreviousFolder')).to.equal(true)
   }
 
   @test
-  'Action:Execute:PreviousFolder handler should NavigateTo undefined previousFolder when node missing and with ShowUnreadOnly set'(): void {
+  async 'Action:Execute:PreviousFolder handler should NavigateTo undefined previousFolder when node missing and with ShowUnreadOnly set'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1476,7 +1473,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     }
     Navigation.current.prevUnread = undefined
     this.ShowUnreadOnlyGetStub.callsFake(() => true)
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'PreviousFolder')).to.equal(true)
   }
@@ -1489,20 +1486,20 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:NextFolder handler should NavigateTo nextFolder with ShowUnreadOnly unset'(): void {
+  async 'Action:Execute:NextFolder handler should NavigateTo nextFolder with ShowUnreadOnly unset'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     Navigation.current.next = {
       path: '/foo/bar/baz',
     }
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'NextFolder')).to.equal(true)
   }
 
   @test
-  'Action:Execute:NextFolder handler should NavigateTo nextFolder with ShowUnreadOnly set'(): void {
+  async 'Action:Execute:NextFolder handler should NavigateTo nextFolder with ShowUnreadOnly set'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1510,13 +1507,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
       path: '/foo/bar/baz',
     }
     this.ShowUnreadOnlyGetStub.callsFake(() => true)
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'NextFolder')).to.equal(true)
   }
 
   @test
-  'Action:Execute:NextFolder handler should NavigateTo undefined nextFolder when node missing and with ShowUnreadOnly unset'(): void {
+  async 'Action:Execute:NextFolder handler should NavigateTo undefined nextFolder when node missing and with ShowUnreadOnly unset'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1524,13 +1521,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.current.nextUnread = {
       path: '/foo/bar/baz',
     }
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'NextFolder')).to.equal(true)
   }
 
   @test
-  'Action:Execute:NextFolder handler should NavigateTo undefined nextFolder when node missing and with ShowUnreadOnly set'(): void {
+  async 'Action:Execute:NextFolder handler should NavigateTo undefined nextFolder when node missing and with ShowUnreadOnly set'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1539,7 +1536,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     }
     Navigation.current.nextUnread = undefined
     this.ShowUnreadOnlyGetStub.callsFake(() => true)
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'NextFolder')).to.equal(true)
   }
@@ -1552,23 +1549,23 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:ParentFolder handler should NavigateTo parentFolder'(): void {
+  async 'Action:Execute:ParentFolder handler should NavigateTo parentFolder'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     Navigation.current.parent = '/foo/bar/baz'
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'ParentFolder')).to.equal(true)
   }
 
   @test
-  'Action:Execute:ParentFolder handler should NavigateTo undefined parentFolder when node missing'(): void {
+  async 'Action:Execute:ParentFolder handler should NavigateTo undefined parentFolder when node missing'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     Navigation.current.parent = undefined
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'ParentFolder')).to.equal(true)
   }
@@ -1581,7 +1578,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished'(): void {
+  async 'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1599,13 +1596,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
         totalSeen: 50,
       },
     ]
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'FirstUnfinished')).to.equal(true)
   }
 
   @test
-  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with some finished'(): void {
+  async 'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with some finished'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1623,13 +1620,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
         totalSeen: 50,
       },
     ]
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith('/foo/bar/baz', 'FirstUnfinished')).to.equal(true)
   }
 
   @test
-  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with all finished'(): void {
+  async 'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with all finished'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1647,29 +1644,29 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
         totalSeen: 100,
       },
     ]
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'FirstUnfinished')).to.equal(true)
   }
 
   @test
-  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with no children'(): void {
+  async 'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with no children'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     Navigation.current.children = []
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'FirstUnfinished')).to.equal(true)
   }
 
   @test
-  'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with undefined children'(): void {
+  async 'Action:Execute:FirstUnfinished handler should NavigateTo First Unfinished with undefined children'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
     assert(handler !== undefined, 'handler must have a value')
     Navigation.current.children = undefined
-    handler(undefined)
+    await handler(undefined)
     expect(this.NavigateToStub.callCount).to.equal(1)
     expect(this.NavigateToStub.calledWith(undefined, 'FirstUnfinished')).to.equal(true)
   }
@@ -1682,13 +1679,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:ShowMenu shoud publish Menu:Show'(): void {
+  async 'Action:Execute:ShowMenu shoud publish Menu:Show'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['MENU:SHOW'] = [spy]
     const handler = PubSub.subscribers['ACTION:EXECUTE:SHOWMENU']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -1700,13 +1697,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:HideMenu shoud publish Menu:Hide'(): void {
+  async 'Action:Execute:HideMenu shoud publish Menu:Hide'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['MENU:HIDE'] = [spy]
     const handler = PubSub.subscribers['ACTION:EXECUTE:HIDEMENU']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -1783,7 +1780,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     this.LoadDataStub.resetHistory()
     this.LoadDataStub.rejects('FOO')
     expect(this.PostJSONStub.callCount).to.equal(0)
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
@@ -1799,7 +1796,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     const err = new Error('oopsies')
     this.PostJSONStub.rejects(err)
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
@@ -1816,7 +1813,11 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     const err = new Error('oopsies')
     this.PostJSONStub.rejects(err)
-    PubSub.subscribers['LOADING:ERROR'] = [() => null]
+    PubSub.subscribers['LOADING:ERROR'] = [
+      async () => {
+        await Promise.resolve()
+      },
+    ]
     PubSub.Publish('Action:Execute:MarkAllSeen')
     // let the callback finish
     await Delay(5)
@@ -1899,7 +1900,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     const err = new Error('oopsies')
     this.PostJSONStub.rejects(err)
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
@@ -1915,7 +1916,11 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(this.PostJSONStub.callCount).to.equal(0)
     const err = new Error('oopsies')
     this.PostJSONStub.rejects(err)
-    PubSub.subscribers['LOADING:ERROR'] = [() => null]
+    PubSub.subscribers['LOADING:ERROR'] = [
+      async () => {
+        await Promise.resolve()
+      },
+    ]
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
     await Delay(5)
@@ -1928,7 +1933,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     this.LoadDataStub.resetHistory()
     this.LoadDataStub.rejects('FOO')
     expect(this.PostJSONStub.callCount).to.equal(0)
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     PubSub.Publish('Action:Execute:MarkAllUnseen')
     // let the callback finish
@@ -1945,7 +1950,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Execute:SlideShow shoud alter location'(): void {
+  async 'Action:Execute:SlideShow shoud alter location'(): Promise<void> {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:SLIDESHOW']?.pop()
     assert(handler !== undefined, 'handler must have a value')
@@ -1955,7 +1960,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     const assignStub = sinon.stub(Navigation, 'LocationAssign')
     try {
       expect(assignStub.called).to.equal(false)
-      handler(undefined)
+      await handler(undefined)
       expect(assignStub.calledWith('/slideshow' + path)).to.equal(true)
     } finally {
       assignStub.restore()
@@ -1970,18 +1975,18 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'it should execute requestFullscreen when no fullscreen element exists'(): void {
+  async 'it should execute requestFullscreen when no fullscreen element exists'(): Promise<void> {
     expect(this.dom.window.document.fullscreenElement == null).to.equal(true)
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FULLSCREEN']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(this.RequestFullscreenStub.called).to.equal(true)
     expect(this.ExitFullscreenStub.called).to.equal(false)
   }
 
   @test
-  'it should execute exitFullscreen when fullscreen element exists'(): void {
+  async 'it should execute exitFullscreen when fullscreen element exists'(): Promise<void> {
     Navigation.Init()
     const newFullscreenElement = Object.defineProperties(
       {},
@@ -2001,7 +2006,7 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(global.document.fullscreenElement == null).to.equal(false)
     const handler = PubSub.subscribers['ACTION:EXECUTE:FULLSCREEN']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(this.RequestFullscreenStub.called).to.equal(false)
     expect(this.ExitFullscreenStub.called).to.equal(true)
   }
@@ -2012,13 +2017,11 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     Navigation.Init()
     const handler = PubSub.subscribers['ACTION:EXECUTE:FULLSCREEN']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     const err = new Error('oops')
     this.RequestFullscreenStub.rejects(err)
-    handler(undefined)
-    // let the callback finish
-    await Delay(5)
+    await handler(undefined)
     expect(this.RequestFullscreenStub.called).to.equal(true)
     expect(this.ExitFullscreenStub.called).to.equal(false)
     expect(spy.called).to.equal(true)
@@ -2046,13 +2049,11 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
     expect(global.document.fullscreenElement == null).to.equal(false)
     const handler = PubSub.subscribers['ACTION:EXECUTE:FULLSCREEN']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['LOADING:ERROR'] = [spy]
     const err = new Error('oops')
     this.ExitFullscreenStub.rejects(err)
-    handler(undefined)
-    // let the callback finish
-    await Delay(5)
+    await handler(undefined)
     expect(this.RequestFullscreenStub.called).to.equal(false)
     expect(this.ExitFullscreenStub.called).to.equal(true)
     expect(spy.called).to.equal(true)
@@ -2067,13 +2068,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Keypress:<Ctrl>ArrowUp shoud publish Action:Execute:ParentFolder'(): void {
+  async 'Action:Keypress:<Ctrl>ArrowUp shoud publish Action:Execute:ParentFolder'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER'] = [spy]
     const handler = PubSub.subscribers['ACTION:KEYPRESS:<CTRL>ARROWUP']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -2085,13 +2086,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Keypress:<Ctrl>ArrowDown shoud publish Action:Execute:FirstUnfinished'(): void {
+  async 'Action:Keypress:<Ctrl>ArrowDown shoud publish Action:Execute:FirstUnfinished'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED'] = [spy]
     const handler = PubSub.subscribers['ACTION:KEYPRESS:<CTRL>ARROWDOWN']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -2103,13 +2104,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Keypress:<Ctrl>ArrowUp shoud publish Action:Execute:PreviousFolder'(): void {
+  async 'Action:Keypress:<Ctrl>ArrowUp shoud publish Action:Execute:PreviousFolder'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER'] = [spy]
     const handler = PubSub.subscribers['ACTION:KEYPRESS:<CTRL>ARROWLEFT']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -2121,13 +2122,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:Keypress:<Ctrl>ArrowUp shoud publish Action:Execute:NextFolder'(): void {
+  async 'Action:Keypress:<Ctrl>ArrowUp shoud publish Action:Execute:NextFolder'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER'] = [spy]
     const handler = PubSub.subscribers['ACTION:KEYPRESS:<CTRL>ARROWRIGHT']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -2139,13 +2140,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:GamePad:Down shoud publish Action:Execute:PreviousFolder'(): void {
+  async 'Action:GamePad:Down shoud publish Action:Execute:PreviousFolder'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER'] = [spy]
     const handler = PubSub.subscribers['ACTION:GAMEPAD:DOWN']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -2157,13 +2158,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:GamePad:Up shoud publish Action:Execute:NextFolder'(): void {
+  async 'Action:GamePad:Up shoud publish Action:Execute:NextFolder'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER'] = [spy]
     const handler = PubSub.subscribers['ACTION:GAMEPAD:UP']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -2175,13 +2176,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:GamePad:Y shoud publish Action:Execute:ParentFolder'(): void {
+  async 'Action:GamePad:Y shoud publish Action:Execute:ParentFolder'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER'] = [spy]
     const handler = PubSub.subscribers['ACTION:GAMEPAD:Y']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 
@@ -2193,13 +2194,13 @@ export class AppNavigaterInitTests extends BaseNavigationTests {
   }
 
   @test
-  'Action:GamePad:A shoud publish Action:Execute:FirstUnfinished'(): void {
+  async 'Action:GamePad:A shoud publish Action:Execute:FirstUnfinished'(): Promise<void> {
     Navigation.Init()
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED'] = [spy]
     const handler = PubSub.subscribers['ACTION:GAMEPAD:A']?.pop()
     assert(handler !== undefined, 'handler must have a value')
-    handler(undefined)
+    await handler(undefined)
     expect(spy.callCount).to.equal(1)
   }
 }
@@ -2212,7 +2213,7 @@ export class AppNavigatorNavigateTo extends BaseNavigationTests {
   before(): void {
     super.before()
     this.LoadDataStub = sinon.stub(Navigation, 'LoadData').resolves(undefined)
-    this.LoadingErrorStub = sinon.stub()
+    this.LoadingErrorStub = sinon.stub().resolves()
     PubSub.subscribers['LOADING:ERROR'] = [this.LoadingErrorStub]
   }
 

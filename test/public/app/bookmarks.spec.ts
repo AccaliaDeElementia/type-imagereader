@@ -3,7 +3,7 @@
 import { promisify } from 'util'
 
 import { expect } from 'chai'
-import { suite, test } from '@testdeck/mocha'
+import { test } from '@testdeck/mocha'
 import * as sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -11,13 +11,7 @@ import { render } from 'pug'
 
 import { Net } from '../../../public/scripts/app/net'
 import { PubSub } from '../../../public/scripts/app/pubsub'
-import {
-  Bookmarks,
-  isDataBookmark,
-  isDataBookmarkFolder,
-  isDataBookmarkFolderArray,
-  isDataWithBookmarks,
-} from '../../../public/scripts/app/bookmarks'
+import { Bookmarks } from '../../../public/scripts/app/bookmarks'
 import assert from 'assert'
 import { Cast } from '../../testutils/TypeGuards'
 
@@ -44,497 +38,6 @@ const Delay = async (ms = 10): Promise<void> => {
       cb(null, null)
     }, ms)
   })()
-}
-
-@suite
-export class BookmarksIsDataBookmarkTests {
-  @test
-  'it should reject null object'(): void {
-    const obj = null
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined'(): void {
-    const obj = undefined
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non object'(): void {
-    const obj = 0
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject null name'(): void {
-    const obj = {
-      name: null,
-      path: '',
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined name'(): void {
-    const obj = {
-      name: undefined,
-      path: '',
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing name'(): void {
-    const obj = {
-      path: '',
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non string name'(): void {
-    const obj = {
-      name: 0,
-      path: '',
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject null path'(): void {
-    const obj = {
-      name: '',
-      path: null,
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined path'(): void {
-    const obj = {
-      name: '',
-      path: undefined,
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing path'(): void {
-    const obj = {
-      name: '',
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non string path'(): void {
-    const obj = {
-      name: '',
-      path: 0,
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject null folder'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      folder: null,
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined folder'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      folder: undefined,
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing folder'(): void {
-    const obj = {
-      name: '',
-      path: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non string folder'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      folder: 0,
-    }
-    expect(isDataBookmark(obj)).to.equal(false)
-  }
-
-  @test
-  'it should accept minimum object'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      folder: '',
-    }
-    expect(isDataBookmark(obj)).to.equal(true)
-  }
-}
-
-@suite
-export class BookmarksIsDataBookmarkFolderTests {
-  @test
-  'it should reject null object'(): void {
-    const obj = null
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined object'(): void {
-    const obj = undefined
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject null name'(): void {
-    const obj = {
-      name: null,
-      path: '',
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined name'(): void {
-    const obj = {
-      name: undefined,
-      path: '',
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing name'(): void {
-    const obj = {
-      path: '',
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non string name'(): void {
-    const obj = {
-      name: 0,
-      path: '',
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject null path'(): void {
-    const obj = {
-      name: '',
-      path: null,
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined path'(): void {
-    const obj = {
-      name: '',
-      path: undefined,
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing path'(): void {
-    const obj = {
-      name: '',
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non string path'(): void {
-    const obj = {
-      name: '',
-      path: 0,
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject null bookmarks'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      bookmarks: null,
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined bookmarks'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      bookmarks: undefined,
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing'(): void {
-    const obj = {
-      name: '',
-      path: '',
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non array bookmarks'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      bookmarks: {},
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject with invalid Bookmark'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      bookmarks: [null],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(false)
-  }
-
-  @test
-  'it should accept base object'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      bookmarks: [],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(true)
-  }
-
-  @test
-  'it should accept object with valid Bookmark'(): void {
-    const obj = {
-      name: '',
-      path: '',
-      bookmarks: [
-        {
-          name: '',
-          path: '',
-          folder: '',
-        },
-      ],
-    }
-    expect(isDataBookmarkFolder(obj)).to.equal(true)
-  }
-}
-
-@suite
-export class BookmarkIsDataWithBookmarksTests {
-  @test
-  'it should reject null object'(): void {
-    const obj = null
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined object'(): void {
-    const obj = undefined
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non object object'(): void {
-    const obj = 42
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject null path object'(): void {
-    const obj = {
-      path: null,
-      bookmarks: [],
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined path object'(): void {
-    const obj = {
-      path: undefined,
-      bookmarks: [],
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing path object'(): void {
-    const obj = {
-      bookmarks: [],
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non string path object'(): void {
-    const obj = {
-      path: 42,
-      bookmarks: [],
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject null bookmarks object'(): void {
-    const obj = {
-      path: '',
-      bookmarks: null,
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined bookmarks object'(): void {
-    const obj = {
-      path: '',
-      bookmarks: undefined,
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject missing bookmarks object'(): void {
-    const obj = {
-      path: '',
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non array bookmarks object'(): void {
-    const obj = {
-      path: '',
-      bookmarks: {},
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject non bookmark folder in bookmarks array object'(): void {
-    const obj = {
-      path: '',
-      bookmarks: [null],
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(false)
-  }
-
-  @test
-  'it should accept base object'(): void {
-    const obj = {
-      path: '',
-      bookmarks: [],
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(true)
-  }
-
-  @test
-  'it should accept object with valid folder'(): void {
-    const obj = {
-      path: '',
-      bookmarks: [
-        {
-          name: '',
-          path: '',
-          bookmarks: [],
-        },
-      ],
-    }
-    expect(isDataWithBookmarks(obj)).to.equal(true)
-  }
-}
-
-@suite
-export class BookmarksisDataBookmarkFolderArrayTests {
-  @test
-  'it should reject non array'(): void {
-    const obj = 'null'
-    expect(isDataBookmarkFolderArray(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject empty object'(): void {
-    const obj = {}
-    expect(isDataBookmarkFolderArray(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject bad null'(): void {
-    const obj = [null]
-    expect(isDataBookmarkFolderArray(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject undefined'(): void {
-    const obj = undefined
-    expect(isDataBookmarkFolderArray(obj)).to.equal(false)
-  }
-
-  @test
-  'it should reject bad folder in array'(): void {
-    const obj = [null]
-    expect(isDataBookmarkFolderArray(obj)).to.equal(false)
-  }
-
-  @test
-  'it should accept base array'(): void {
-    const obj: unknown[] = []
-    expect(isDataBookmarkFolderArray(obj)).to.equal(true)
-  }
-
-  @test
-  'it should accept array with valid bookmarkfolder'(): void {
-    const obj: unknown[] = [
-      {
-        name: '',
-        path: '',
-        bookmarks: [],
-      },
-    ]
-    expect(isDataBookmarkFolderArray(obj)).to.equal(true)
-  }
 }
 
 export type SubscriberPromiseFunction = (recievedData: string | undefined, actualTopic?: string) => Promise<void>
@@ -575,7 +78,6 @@ abstract class BaseBookmarksTests {
   }
 }
 
-@suite
 export class BookmarksInitTests extends BaseBookmarksTests {
   BuildBookmarksSpy: sinon.SinonStub = sinon.stub()
   GetJSONSpy: sinon.SinonStub = sinon.stub()
@@ -626,7 +128,7 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 
   @test
-  'it should build bookmarks on Navigate:Data'(): void {
+  async 'it should build bookmarks on Navigate:Data'(): Promise<void> {
     Bookmarks.Init()
     const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
     assert(subscriberfn !== undefined)
@@ -635,18 +137,18 @@ export class BookmarksInitTests extends BaseBookmarksTests {
       path: 'this is my test data',
       bookmarks: [],
     }
-    subscriberfn(obj)
+    await subscriberfn(obj)
     expect(this.BuildBookmarksSpy.called).to.equal(true)
     expect(this.BuildBookmarksSpy.firstCall.args).to.deep.equal([obj])
   }
 
   @test
-  'it should not build bookmarks on invalid data to Navigate:Data'(): void {
+  async 'it should not build bookmarks on invalid data to Navigate:Data'(): Promise<void> {
     Bookmarks.Init()
     const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
     assert(subscriberfn !== undefined)
     expect(this.BuildBookmarksSpy.called).to.equal(false)
-    subscriberfn('this is my test data')
+    await subscriberfn('this is my test data')
     expect(this.BuildBookmarksSpy.called).to.equal(false)
   }
 
@@ -961,7 +463,6 @@ export class BookmarksInitTests extends BaseBookmarksTests {
   }
 }
 
-@suite
 export class BookmarksBuildCardTests extends BaseBookmarksTests {
   BookmarksRemoveSpy: sinon.SinonStub = sinon.stub()
   NavigateLoadSpy: sinon.SinonStub = sinon.stub()
@@ -1166,7 +667,6 @@ export class BookmarksBuildCardTests extends BaseBookmarksTests {
   }
 }
 
-@suite
 export class BookmarksGetFolderTests extends BaseBookmarksTests {
   before(): void {
     super.before()
@@ -1335,7 +835,6 @@ export class BookmarksGetFolderTests extends BaseBookmarksTests {
   }
 }
 
-@suite
 export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   GetFolderSpy = sinon.stub()
   BuildBookmarkSpy = sinon.stub()
@@ -1358,6 +857,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should bail when bookmarksTab is missing'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1382,6 +883,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should bail when bookmarkCard is missing'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1406,6 +909,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should bail when bookmarkFolder is missing'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1430,6 +935,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should use the current path when no open details exist'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1452,6 +959,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should use the current path when open details with no path exists'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1477,6 +986,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should use the openPath fron open details when path exists'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/foo/bar/baz/',
       bookmarks: [
         {
@@ -1503,6 +1014,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should remove existing details from bookmark tab'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1533,6 +1046,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should call GetFolder to retrieve folder for bookmarks'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1555,6 +1070,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should not call BuildBookmark if GetFolder fails'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1578,6 +1095,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should call BuildBookmark when GetFolder succeeds'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1603,6 +1122,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should not appendChild when BuildBookmark fails'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1628,6 +1149,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
   @test
   'it should appendChild when BuildBookmark succeeds'(): void {
     const data = {
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1675,6 +1198,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
       ]
     })
     Bookmarks.buildBookmarks({
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {
@@ -1711,6 +1236,8 @@ export class BookmarksBuildBookmarksTests extends BaseBookmarksTests {
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
     const appendChildSpy = sinon.stub(Bookmarks.bookmarksTab, 'appendChild')
     Bookmarks.buildBookmarks({
+      name: '',
+      parent: '',
       path: '/',
       bookmarks: [
         {

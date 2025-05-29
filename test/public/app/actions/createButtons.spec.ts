@@ -107,7 +107,11 @@ describe('public/app/actions function createButtons()', () => {
         image: 'icon',
       },
     ])
-    PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [() => 0]
+    PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [
+      async () => {
+        await Promise.resolve()
+      },
+    ]
     const button = container.children[0]
     const event = new dom.window.MouseEvent('click')
     const spy = sinon.stub(event, 'preventDefault')

@@ -115,7 +115,7 @@ export class AppPubSubTests {
 
   @test
   'Subscribe adds subscriber to list'(): void {
-    const fn = sinon.stub()
+    const fn = sinon.stub().resolves()
     const key = 'FOOBAR'
     PubSub.Subscribe(key, fn)
     expect(PubSub.subscribers[key]).to.deep.equal([fn])
@@ -124,8 +124,8 @@ export class AppPubSubTests {
 
   @test
   'Subscribe appends subscriber to list'(): void {
-    const fn = sinon.stub()
-    const fn2 = sinon.stub()
+    const fn = sinon.stub().resolves()
+    const fn2 = sinon.stub().resolves()
     const key = 'FOOBAR'
     PubSub.subscribers[key] = [fn]
     PubSub.Subscribe(key, fn2)
@@ -144,7 +144,7 @@ export class AppPubSubTests {
 
   @test
   'Publish Warns on publish with no subscribers, but with subscribvers to child event'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['Foo:Bar'] = [spy]
     PubSub.Publish('Foo', 'Baz')
     expect(this.consoleWarn.callCount).to.equal(1)
@@ -162,7 +162,7 @@ export class AppPubSubTests {
 
   @test
   'Publish publishes valid event'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     const topic = `FOO:${Math.random()}`
     const data = Math.random()
     PubSub.subscribers[topic] = [spy]
@@ -172,9 +172,9 @@ export class AppPubSubTests {
 
   @test
   'Publish publishes all for valid event'(): void {
-    const spy1 = sinon.stub()
-    const spy2 = sinon.stub()
-    const spy3 = sinon.stub()
+    const spy1 = sinon.stub().resolves()
+    const spy2 = sinon.stub().resolves()
+    const spy3 = sinon.stub().resolves()
     const topic = `FOO:${Math.random()}`
     const data = Math.random()
     PubSub.subscribers[topic] = [spy1, spy2, spy3]
@@ -189,9 +189,9 @@ export class AppPubSubTests {
 
   @test
   'Publish publishes hierarchy for valid event'(): void {
-    const spy1 = sinon.stub()
-    const spy2 = sinon.stub()
-    const spy3 = sinon.stub()
+    const spy1 = sinon.stub().resolves()
+    const spy2 = sinon.stub().resolves()
+    const spy3 = sinon.stub().resolves()
     const data = Math.random()
     PubSub.subscribers.FOO = [spy1]
     PubSub.subscribers['FOO:BAR'] = [spy2]

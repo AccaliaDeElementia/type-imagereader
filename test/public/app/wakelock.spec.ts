@@ -70,11 +70,11 @@ export class WakeLockInitTests extends BaseTests {
   }
 
   @test
-  'it should execute TakeLock on receiving Picture:LoadNew notification'(): void {
+  async 'it should execute TakeLock on receiving Picture:LoadNew notification'(): Promise<void> {
     WakeLock.Init()
     const fn = (PubSub.subscribers['PICTURE:LOADNEW'] ?? [])[0]
     assert(fn !== undefined)
-    fn(undefined)
+    await fn(undefined)
     expect(this.takeLockSpy.callCount).to.equal(1)
   }
 
@@ -84,8 +84,7 @@ export class WakeLockInitTests extends BaseTests {
     this.takeLockSpy.rejects('FOO')
     const fn = (PubSub.subscribers['PICTURE:LOADNEW'] ?? [])[0]
     assert(fn !== undefined)
-    fn(undefined)
-    await Promise.resolve()
+    await fn(undefined)
     expect(this.takeLockSpy.callCount).to.equal(1)
   }
 

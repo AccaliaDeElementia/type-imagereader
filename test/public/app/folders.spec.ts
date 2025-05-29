@@ -486,7 +486,7 @@ export class FoldersInitTests extends BaseFolderTests {
   }
 
   @test
-  'it should build folders on Navigate:Data'(): void {
+  async 'it should build folders on Navigate:Data'(): Promise<void> {
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.equal(undefined)
     Folders.Init()
     const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
@@ -496,7 +496,7 @@ export class FoldersInitTests extends BaseFolderTests {
       children: [],
       nonce: Math.random(),
     }
-    subscriberfn(data)
+    await subscriberfn(data)
     expect(this.BuildFoldersSpy.calledWith(data)).to.equal(true)
   }
 
@@ -532,7 +532,7 @@ export class FoldersBuildFoldersTests extends BaseFolderTests {
     super.before()
     this.BuildCardSpy = sinon.stub(Folders, 'BuildCard')
     this.BuildCardSpy.returns(this.document.createElement('div'))
-    this.TabSelectSpy = sinon.stub()
+    this.TabSelectSpy = sinon.stub().resolves()
     PubSub.subscribers['TAB:SELECT'] = [this.TabSelectSpy]
   }
 

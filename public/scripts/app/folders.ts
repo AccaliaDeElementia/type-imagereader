@@ -131,8 +131,9 @@ export const Folders = {
   Init: (): void => {
     Folders.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
 
-    Subscribe('Navigate:Data', (data) => {
+    Subscribe('Navigate:Data', async (data) => {
       if (isData(data)) Folders.BuildFolders(data)
+      await Promise.resolve()
     })
   },
 }
