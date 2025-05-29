@@ -125,7 +125,7 @@ describe('public/app/actions function createButtons()', () => {
         image: 'icon',
       },
     ])
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [spy]
     const button = container.children[0]
     const event = new dom.window.MouseEvent('click')
@@ -139,7 +139,7 @@ describe('public/app/actions function createButtons()', () => {
         image: 'icon',
       },
     ])
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:THISISNOTABUTTON'] = [spy]
     const button = container.children[0]
     const event = new dom.window.MouseEvent('click')

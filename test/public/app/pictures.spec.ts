@@ -2594,7 +2594,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should publish ShowMenu for ArrowUp when menu is not active'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:ShowMenu', spy)
     expect(spy.called).to.equal(false)
     Publish('Action:Keypress:ArrowUp')
@@ -2603,7 +2603,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should not publish HideMenu for ArrowUp when no pictures'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PictureMarkup.pictures = []
     PictureMarkup.current = null
     Subscribe('Action:Execute:HideMenu', spy)
@@ -2615,7 +2615,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should publish HideMenu for ArrowUp when menu is active'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:HideMenu', spy)
     expect(spy.called).to.equal(false)
     this.IsMenuActiveValue = true
@@ -2630,7 +2630,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should publish Next for ArrowRight when menu is not active'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:NEXT'] = []
     Subscribe('Action:Execute:Next', spy)
     expect(spy.called).to.equal(false)
@@ -2640,7 +2640,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should not publish HideMenu for ArrowRight when no pictures'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PictureMarkup.pictures = []
     PictureMarkup.current = null
     Subscribe('Action:Execute:HideMenu', spy)
@@ -2652,7 +2652,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should publish HideMenu for ArrowRight when menu is active'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:HideMenu', spy)
     expect(spy.called).to.equal(false)
     this.IsMenuActiveValue = true
@@ -2667,7 +2667,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should publish Previous for ArrowLeft when menu is not active'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:Previous', spy)
     expect(spy.called).to.equal(false)
     Publish('Action:Keypress:ArrowLeft')
@@ -2676,7 +2676,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should not publish HideMenu for ArrowLeft when no pictures'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PictureMarkup.pictures = []
     PictureMarkup.current = null
     Subscribe('Action:Execute:HideMenu', spy)
@@ -2688,7 +2688,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should publish HideMenu for ArrowLeft when menu is active'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:HideMenu', spy)
     expect(spy.called).to.equal(false)
     this.IsMenuActiveValue = true
@@ -2703,7 +2703,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should publish ShowMenu for ArrowDown when menu is not active'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:ShowMenu', spy)
     expect(spy.called).to.equal(false)
     Publish('Action:Keypress:ArrowDown')
@@ -2712,7 +2712,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should not publish HideMenu for ArrowDown when no pictures'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     PictureMarkup.pictures = []
     PictureMarkup.current = null
     Subscribe('Action:Execute:HideMenu', spy)
@@ -2724,7 +2724,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should publish HideMenu for ArrowDown when menu is active'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:HideMenu', spy)
     expect(spy.called).to.equal(false)
     this.IsMenuActiveValue = true
@@ -2739,7 +2739,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should execute PreviousUnseen when ShowUnreadOnly is true'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:PreviousUnseen', spy)
     expect(spy.called).to.equal(false)
     this.ShowUnreadOnlyValue = true
@@ -2749,7 +2749,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should execute PreviousImage when ShowUnreadOnly is false'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:PreviousImage', spy)
     expect(spy.called).to.equal(false)
     this.ShowUnreadOnlyValue = false
@@ -2800,7 +2800,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should execute NextUnseen when ShowUnreadOnly is true'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:NextUnseen', spy)
     expect(spy.called).to.equal(false)
     this.ShowUnreadOnlyValue = true
@@ -2810,7 +2810,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   'it should execute NextImage when ShowUnreadOnly is false'(): void {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:NextImage', spy)
     expect(spy.called).to.equal(false)
     this.ShowUnreadOnlyValue = false
@@ -2878,7 +2878,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   async 'it should post bookmarks add for Execute:Bookmark'(): Promise<void> {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Bookmarks:Add', spy)
     PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
@@ -2894,7 +2894,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   async 'it should post expected payload for Execute:Bookmark'(): Promise<void> {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Bookmarks:Add', spy)
     PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
@@ -2915,7 +2915,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   async 'it should post bookmarks add for Gamepad:B'(): Promise<void> {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Bookmarks:Add', spy)
     PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
@@ -2931,7 +2931,7 @@ export class AppPicturesInitActions extends BaseAppPicturesTests {
 
   @test
   async 'it should post expected payload for Gamepad:B'(): Promise<void> {
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Bookmarks:Add', spy)
     PictureMarkup.current = {
       path: '/Foo/Bar/Baz.jpg',
@@ -2992,7 +2992,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
   @test
   'it should ignore click with zero width image area'(): void {
     const evt = new this.dom.window.MouseEvent('click')
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     this.boundingRect.width = 0
     Subscribe('Ignored Mouse Click', spy)
     this.ClickTarget?.dispatchEvent(evt)
@@ -3002,7 +3002,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
   @test
   'it should ignore click with null width image bounding rect'(): void {
     const evt = new this.dom.window.MouseEvent('click')
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     this.MainImageBoundingStub.returns(null)
     Subscribe('Ignored Mouse Click', spy)
     this.ClickTarget?.dispatchEvent(evt)
@@ -3015,7 +3015,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: this.boundingRect.width / 4,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:Previous', spy)
     this.ClickTarget?.dispatchEvent(evt)
     expect(spy.called).to.equal(true)
@@ -3027,7 +3027,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: this.boundingRect.width / 4,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:Previous', spy)
     this.myVisualViewport.scale /= 2
     this.ClickTarget?.dispatchEvent(evt)
@@ -3040,7 +3040,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: this.boundingRect.width / 4,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Ignored Mouse Click', spy)
     this.myVisualViewport.scale *= 2
     this.ClickTarget?.dispatchEvent(evt)
@@ -3053,7 +3053,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: this.boundingRect.width / 2,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:ShowMenu', spy)
     this.ClickTarget?.dispatchEvent(evt)
     expect(spy.called).to.equal(true)
@@ -3065,7 +3065,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: this.boundingRect.width / 2,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     this.myVisualViewport.scale /= 2
     Subscribe('Action:Execute:ShowMenu', spy)
     this.ClickTarget?.dispatchEvent(evt)
@@ -3078,7 +3078,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: this.boundingRect.width / 2,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     this.myVisualViewport.scale *= 2
     Subscribe('Ignored Mouse Click', spy)
     this.ClickTarget?.dispatchEvent(evt)
@@ -3091,7 +3091,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: (3 * this.boundingRect.width) / 4,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:Next', spy)
     this.ClickTarget?.dispatchEvent(evt)
     expect(spy.called).to.equal(true)
@@ -3103,7 +3103,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: (3 * this.boundingRect.width) / 4,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Action:Execute:Next', spy)
     this.myVisualViewport.scale /= 2
     this.ClickTarget?.dispatchEvent(evt)
@@ -3116,7 +3116,7 @@ export class AppPicturesInitMouse extends BaseAppPicturesTests {
       clientX: (3 * this.boundingRect.width) / 4,
       clientY: this.boundingRect.height / 2,
     })
-    const spy = sinon.stub()
+    const spy = sinon.stub().resolves()
     Subscribe('Ignored Mouse Click', spy)
     this.myVisualViewport.scale *= 2
     this.ClickTarget?.dispatchEvent(evt)
