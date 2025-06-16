@@ -206,6 +206,42 @@ export class AppPubSubTests {
   }
 
   @test
+  'Publish allows subscriber method to reject gracefully'(): void {
+    const spy1 = sinon.stub().rejects()
+    const spy2 = sinon.stub().resolves()
+    const spy3 = sinon.stub().resolves()
+    const data = Math.random()
+    PubSub.subscribers.FOO = [spy1]
+    PubSub.subscribers['FOO:BAR'] = [spy2]
+    PubSub.subscribers['FOO:BAR:BAZ'] = [spy3]
+    PubSub.Publish('FOO:BAR:BAZ', data)
+    expect(spy1.calledWithExactly(data, 'FOO:BAR:BAZ')).to.equal(true)
+    expect(spy2.calledWithExactly(data, 'FOO:BAR:BAZ')).to.equal(true)
+    expect(spy3.calledWithExactly(data, 'FOO:BAR:BAZ')).to.equal(true)
+    expect(spy1.calledBefore(spy2)).to.equal(true)
+    expect(spy1.calledBefore(spy3)).to.equal(true)
+    expect(spy2.calledBefore(spy3)).to.equal(true)
+  }
+
+  @test
+  'Publish allows subscriber method to throw gracefully'(): void {
+    const spy1 = sinon.stub().throws('FOO!')
+    const spy2 = sinon.stub().resolves()
+    const spy3 = sinon.stub().resolves()
+    const data = Math.random()
+    PubSub.subscribers.FOO = [spy1]
+    PubSub.subscribers['FOO:BAR'] = [spy2]
+    PubSub.subscribers['FOO:BAR:BAZ'] = [spy3]
+    PubSub.Publish('FOO:BAR:BAZ', data)
+    expect(spy1.calledWithExactly(data, 'FOO:BAR:BAZ')).to.equal(true)
+    expect(spy2.calledWithExactly(data, 'FOO:BAR:BAZ')).to.equal(true)
+    expect(spy3.calledWithExactly(data, 'FOO:BAR:BAZ')).to.equal(true)
+    expect(spy1.calledBefore(spy2)).to.equal(true)
+    expect(spy1.calledBefore(spy3)).to.equal(true)
+    expect(spy2.calledBefore(spy3)).to.equal(true)
+  }
+
+  @test
   'Defer adds method to the list of defers'(): void {
     const spy = sinon.stub()
     PubSub.Defer(spy, 100)

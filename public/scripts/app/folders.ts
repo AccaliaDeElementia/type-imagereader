@@ -2,89 +2,18 @@
 
 import { Publish, Subscribe } from './pubsub'
 
-import { isPicture, type Picture } from './picturemarkup'
 import { isHTMLElement, CloneNode } from './utils'
-
-export interface Folder {
-  name: string
-  path: string
-  cover: string | null
-  totalSeen: number
-  totalCount: number
-}
-export interface Data {
-  children?: Folder[]
-  pictures?: Picture[]
-}
-
-function hasKeyAndIsNumber(obj: object, key: string): boolean {
-  const entries = Object.entries(obj)
-  const e = entries.find(([k]) => k === key)
-  return e != null && typeof e[1] === 'number'
-}
-
-function hasKeyAndIsString(obj: object, key: string): boolean {
-  const entries = Object.entries(obj)
-  const e = entries.find(([k]) => k === key)
-  return e != null && typeof e[1] === 'string'
-}
-
-export function isFolder(obj: unknown): obj is Folder {
-  if (obj == null || typeof obj !== 'object') return false
-  if (!hasKeyAndIsString(obj, 'name')) return false
-  if (!hasKeyAndIsString(obj, 'path')) return false
-  if (!('cover' in obj) || !(typeof obj.cover === 'string' || obj.cover === null)) return false
-  return hasKeyAndIsNumber(obj, 'totalSeen') && hasKeyAndIsNumber(obj, 'totalCount')
-}
-
-function hasValidChildren(obj: object): boolean {
-  if ('children' in obj) {
-    if (obj.children == null || !(obj.children instanceof Array)) return false
-    for (const child of obj.children as unknown[]) {
-      if (!isFolder(child)) return false
-    }
-  }
-  return true
-}
-
-function hasValidPictures(obj: object): boolean {
-  if ('pictures' in obj) {
-    if (obj.pictures == null || !(obj.pictures instanceof Array)) return false
-    for (const picture of obj.pictures as unknown[]) {
-      if (!isPicture(picture)) return false
-    }
-  }
-  return true
-}
-
-export function isData(obj: unknown): obj is Data {
-  if (obj == null || typeof obj !== 'object') return false
-  return hasValidChildren(obj) && hasValidPictures(obj)
-}
-
-function buildCards(data: Data): void {
-  if (data.children === undefined) return
-  const container: HTMLElement = document.createElement('div')
-  container.classList.add('folders')
-  document.querySelector('#tabFolders')?.appendChild(container)
-
-  for (const folder of data.children) {
-    const card = Folders.BuildCard(folder)
-    if (card == null) continue
-    container.appendChild(card)
-  }
-}
-
-function hideTab(selector: string): void {
-  document.querySelector(selector)?.parentElement?.classList.add('hidden')
-}
-function unhideTab(selector: string): void {
-  document.querySelector(selector)?.parentElement?.classList.remove('hidden')
-}
+import { type FolderWithCounts, isListing, type Listing } from '../../../contracts/listing'
 
 export const Folders = {
   FolderCard: ((): DocumentFragment | null => null)(),
-  BuildCard: (folder: Folder): HTMLElement | null => {
+  HideTab: (selector: string): void => {
+    document.querySelector(selector)?.parentElement?.classList.add('hidden')
+  },
+  UnhideTab: (selector: string): void => {
+    document.querySelector(selector)?.parentElement?.classList.remove('hidden')
+  },
+  BuildCard: (folder: FolderWithCounts): HTMLElement | null => {
     const card = CloneNode(Folders.FolderCard, isHTMLElement)
     if (card == null) {
       return null
@@ -112,27 +41,38 @@ export const Folders = {
     })
     return card
   },
-  BuildFolders: (data: Data): void => {
+  BuildAllCards(data: Listing): void {
+    if (data.children === undefined) return
+    const container: HTMLElement = document.createElement('div')
+    container.classList.add('folders')
+    document.querySelector('#tabFolders')?.appendChild(container)
+
+    for (const folder of data.children) {
+      const card = Folders.BuildCard(folder)
+      if (card == null) continue
+      container.appendChild(card)
+    }
+  },
+  BuildFolders: (data: Listing): void => {
     for (const folder of document.querySelectorAll('#tabFolders .folders')) {
       folder.remove()
     }
     const hasChildren = (data.children?.length ?? -1) > 0
     const hasPictures = (data.pictures?.length ?? -1) > 0
     if (hasChildren) {
-      unhideTab('a[href="#tabFolders')
+      Folders.UnhideTab('a[href="#tabFolders"]')
       if (!hasPictures) {
         Publish('Tab:Select', 'Folders')
       }
     } else {
-      hideTab('a[href="#tabFolders')
+      Folders.HideTab('a[href="#tabFolders"]')
     }
-    buildCards(data)
+    Folders.BuildAllCards(data)
   },
   Init: (): void => {
     Folders.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
-
     Subscribe('Navigate:Data', async (data) => {
-      if (isData(data)) Folders.BuildFolders(data)
+      if (isListing(data)) Folders.BuildFolders(data)
       await Promise.resolve()
     })
   },

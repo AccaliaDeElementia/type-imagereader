@@ -41,10 +41,15 @@ export const PubSub = {
         if (subscribers == null || subscribers.length < 1) {
           window.console.warn(`PUBSUB: topic ${key} registered without subscribers!`)
         } else {
+          const errorHandler = (err: unknown): void => {
+            window.console.error(`Subscriber for ${searchTopic} rejected with error:`, err)
+          }
           subscribers.forEach((subscriber) => {
-            subscriber(data, searchTopic).catch((err: unknown) => {
-              window.console.error(`Subscriber for ${searchTopic} rejected with error:`, err)
-            })
+            try {
+              subscriber(data, searchTopic).catch(errorHandler)
+            } catch (e: unknown) {
+              errorHandler(e)
+            }
           })
         }
       }
