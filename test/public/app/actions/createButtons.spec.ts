@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, describe, it } from 'mocha'
-import * as sinon from 'sinon'
+import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import Sinon from 'sinon'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Actions } from '../../../../public/scripts/app/actions'
@@ -42,6 +42,9 @@ describe('public/app/actions function createButtons()', () => {
   afterEach(() => {
     global.window = existingWindow
     global.document = existingDocument
+  })
+  after(() => {
+    Sinon.restore()
   })
   it('should return div element', () => {
     const result = Actions.createButtons([])
@@ -114,7 +117,7 @@ describe('public/app/actions function createButtons()', () => {
     ]
     const button = container.children[0]
     const event = new dom.window.MouseEvent('click')
-    const spy = sinon.stub(event, 'preventDefault')
+    const spy = Sinon.stub(event, 'preventDefault')
     button?.dispatchEvent(event)
     expect(spy.called).to.equal(true)
   })
@@ -125,7 +128,7 @@ describe('public/app/actions function createButtons()', () => {
         image: 'icon',
       },
     ])
-    const spy = sinon.stub().resolves()
+    const spy = Sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [spy]
     const button = container.children[0]
     const event = new dom.window.MouseEvent('click')
@@ -139,7 +142,7 @@ describe('public/app/actions function createButtons()', () => {
         image: 'icon',
       },
     ])
-    const spy = sinon.stub().resolves()
+    const spy = Sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:THISISNOTABUTTON'] = [spy]
     const button = container.children[0]
     const event = new dom.window.MouseEvent('click')

@@ -43,6 +43,9 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     fakeCalculateOffset?.restore()
     fakeShowHide?.restore()
   })
+  after(() => {
+    Sinon.restore()
+  })
   it('should be a CyclicUpdater', () => {
     expect(Updater).to.be.an.instanceOf(CyclicUpdater)
   })

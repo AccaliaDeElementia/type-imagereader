@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, describe, it } from 'mocha'
-import * as sinon from 'sinon'
+import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
@@ -36,9 +36,9 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
   let existingDocument: Document = global.document
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let bookmarksRemoveSpy = sinon.stub()
-  let navigateLoadSpy = sinon.stub()
-  let postJSONSpy = sinon.stub()
+  let bookmarksRemoveSpy = Sinon.stub()
+  let navigateLoadSpy = Sinon.stub()
+  let postJSONSpy = Sinon.stub()
 
   beforeEach(() => {
     existingWindow = global.window
@@ -51,8 +51,8 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    navigateLoadSpy = sinon.stub().resolves()
-    bookmarksRemoveSpy = sinon.stub().resolves()
+    navigateLoadSpy = Sinon.stub().resolves()
+    bookmarksRemoveSpy = Sinon.stub().resolves()
     PubSub.subscribers = {
       'NAVIGATE:LOAD': [navigateLoadSpy],
       'BOOKMARKS:REMOVE': [bookmarksRemoveSpy],
@@ -62,12 +62,15 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
-    postJSONSpy = sinon.stub(Net, 'PostJSON').resolves()
+    postJSONSpy = Sinon.stub(Net, 'PostJSON').resolves()
   })
   afterEach(() => {
     postJSONSpy.restore()
     global.window = existingWindow
     global.document = existingDocument
+  })
+  after(() => {
+    Sinon.restore()
   })
   it('should return null if card template is missing', () => {
     Bookmarks.bookmarkCard = undefined
@@ -118,7 +121,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
-    sinon.stub(evt, 'stopPropagation').callsFake(() => {
+    Sinon.stub(evt, 'stopPropagation').callsFake(() => {
       awaiter = Promise.resolve()
     })
     const button = result.querySelector('button')
@@ -156,7 +159,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
-    sinon.stub(evt, 'stopPropagation').callsFake(() => {
+    Sinon.stub(evt, 'stopPropagation').callsFake(() => {
       awaiter = Promise.resolve()
     })
     result.dispatchEvent(evt)

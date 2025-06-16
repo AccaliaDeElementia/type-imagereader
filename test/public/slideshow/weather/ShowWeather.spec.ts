@@ -52,6 +52,9 @@ describe('public/slideshow/weather ShowWeather()', () => {
       get: () => baseDocument,
     })
   })
+  after(() => {
+    Sinon.restore()
+  })
 
   it('should return input weather when null base provided', () => {
     const result = Functions.ShowWeather(null, weather)

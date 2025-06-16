@@ -15,6 +15,9 @@ describe('public/slideshow/overlay CalculateOffset()', () => {
   afterEach(() => {
     clock?.restore()
   })
+  after(() => {
+    Sinon.restore()
+  })
   const testCases: Array<[string, number]> = [
     ['2025-03-18T05:30:00.000Z', 900000],
     ['2025-03-18T05:44:00.000Z', 60000],

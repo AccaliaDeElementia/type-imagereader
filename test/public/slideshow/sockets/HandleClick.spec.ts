@@ -32,6 +32,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       configurable: true,
       get: () => existingDocument,
     })
+    Sinon.restore()
   })
   beforeEach(() => {
     fakeViewport.scale = 1

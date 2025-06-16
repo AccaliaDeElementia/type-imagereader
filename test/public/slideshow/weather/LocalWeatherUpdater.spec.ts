@@ -51,6 +51,9 @@ describe('public/slideshow/weather LocalWeatherUpdater', () => {
     fetchWeatherStub.restore()
     showWeatherStub.restore()
   })
+  after(() => {
+    Sinon.restore()
+  })
 
   it('should be an CyclicUpdater', () => {
     expect(LocalWeatherUpdater).to.be.an.instanceOf(CyclicUpdater)

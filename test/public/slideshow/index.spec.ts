@@ -25,6 +25,7 @@ describe('public/slideshow/index', () => {
     fakeSocketConnect?.restore()
     fakeCyclicStart?.restore()
     fakeCyclicAdd?.restore()
+    Sinon.restore()
   })
   it('should add cyclic updaters on initial load', () => {
     expect(fakeCyclicAdd?.callCount).to.equal(1)

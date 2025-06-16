@@ -65,6 +65,7 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
         configurable: true,
         get: () => existingDocument,
       })
+      Sinon.restore()
     })
     beforeEach(() => {
       updateFn.reset()

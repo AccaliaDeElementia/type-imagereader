@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, describe, it } from 'mocha'
-import * as sinon from 'sinon'
+import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import Sinon from 'sinon'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Actions } from '../../../../public/scripts/app/actions'
@@ -16,8 +16,8 @@ describe('public/app/actions function Init()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   const dom: JSDOM = new JSDOM('', {})
-  let BuildActionsSpy: sinon.SinonStub = sinon.stub()
-  let GamepadResetSpy: sinon.SinonStub = sinon.stub()
+  let BuildActionsSpy = Sinon.stub()
+  let GamepadResetSpy = Sinon.stub()
 
   beforeEach(() => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
@@ -25,14 +25,17 @@ describe('public/app/actions function Init()', () => {
     PubSub.subscribers = {}
     PubSub.deferred = []
     PubSub.intervals = {}
-    BuildActionsSpy = sinon.stub(Actions, 'BuildActions')
-    GamepadResetSpy = sinon.stub(Actions.gamepads, 'Reset')
+    BuildActionsSpy = Sinon.stub(Actions, 'BuildActions')
+    GamepadResetSpy = Sinon.stub(Actions.gamepads, 'Reset')
   })
   afterEach(() => {
     GamepadResetSpy.restore()
     BuildActionsSpy.restore()
     global.window = existingWindow
     global.document = existingDocument
+  })
+  after(() => {
+    Sinon.restore()
   })
   it('should build actions on init', () => {
     Actions.Init()
@@ -162,7 +165,7 @@ describe('public/app/actions function Init()', () => {
       Actions.Init()
       const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
       assert(handler !== undefined, 'Navigate:Data handler must be defined')
-      const spy = sinon.stub().resolves()
+      const spy = Sinon.stub().resolves()
       PubSub.subscribers['TAB:SELECT'] = [spy]
       await handler(listing)
       expect(spy.called).to.equal(expected)
@@ -172,7 +175,7 @@ describe('public/app/actions function Init()', () => {
     })
   })
   it('should add keyup event listener to document', () => {
-    const spy = sinon.stub(document, 'addEventListener')
+    const spy = Sinon.stub(document, 'addEventListener')
     try {
       Actions.Init()
       expect(spy.callCount).to.equal(1)
@@ -193,14 +196,14 @@ describe('public/app/actions function Init()', () => {
   ]
   keyUpTestCases.forEach(([event, expected]) => {
     it(`should prossess ${expected} keypress`, () => {
-      const documentSpy = sinon.stub(document, 'addEventListener')
+      const documentSpy = Sinon.stub(document, 'addEventListener')
       let handler: (o: unknown) => void = (_) => {
         expect.fail('Base Function should not be called!')
       }
       documentSpy.callsFake((_, h) => {
         handler = Cast<(o: unknown) => void>(h)
       })
-      const spy = sinon.stub().resolves()
+      const spy = Sinon.stub().resolves()
       PubSub.subscribers['ACTION:KEYPRESS'] = [spy]
       try {
         Actions.Init()
@@ -214,7 +217,7 @@ describe('public/app/actions function Init()', () => {
   })
 
   it('should add gamepadconnected event listener to window', () => {
-    const spy = sinon.stub(window, 'addEventListener')
+    const spy = Sinon.stub(window, 'addEventListener')
     try {
       Actions.Init()
       expect(spy.callCount).to.equal(1)
@@ -225,7 +228,7 @@ describe('public/app/actions function Init()', () => {
   })
 
   it('should add ReadGamepad interval when gamepadConnected event fires', () => {
-    const spy = sinon.stub(window, 'addEventListener')
+    const spy = Sinon.stub(window, 'addEventListener')
     try {
       Actions.Init()
       expect(PubSub.intervals.ReadGamepad).to.equal(undefined)
@@ -237,8 +240,8 @@ describe('public/app/actions function Init()', () => {
   })
 
   it('should ReadGamepad() when ReadGamepad interval fires', () => {
-    const spy = sinon.stub(window, 'addEventListener')
-    const readspy = sinon.stub(Actions, 'ReadGamepad')
+    const spy = Sinon.stub(window, 'addEventListener')
+    const readspy = Sinon.stub(Actions, 'ReadGamepad')
     try {
       Actions.Init()
       expect(PubSub.intervals.ReadGamepad).to.equal(undefined)

@@ -56,6 +56,9 @@ describe('public/slideshow/weather WeatherUpdater', () => {
     showWeatherStub.restore()
     setAlmanacStub.restore()
   })
+  after(() => {
+    Sinon.restore()
+  })
 
   it('should be an CyclicUpdater', () => {
     expect(WeatherUpdater).to.be.an.instanceOf(CyclicUpdater)

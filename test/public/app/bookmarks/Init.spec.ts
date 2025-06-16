@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, describe, it } from 'mocha'
-import * as sinon from 'sinon'
+import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
@@ -100,7 +100,7 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
   let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
-  let BuildBookmarksSpy: sinon.SinonStub = sinon.stub()
+  let BuildBookmarksSpy = Sinon.stub()
 
   beforeEach(() => {
     existingWindow = global.window
@@ -118,7 +118,7 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = sinon.stub(Bookmarks, 'buildBookmarks')
+    BuildBookmarksSpy = Sinon.stub(Bookmarks, 'buildBookmarks')
 
     Bookmarks.Init()
   })
@@ -126,6 +126,9 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
     BuildBookmarksSpy.restore()
     global.window = existingWindow
     global.document = existingDocument
+  })
+  after(() => {
+    Sinon.restore()
   })
   const testCases: Array<[string, unknown, boolean]> = [
     ['null', null, false],
@@ -149,9 +152,9 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
   let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
-  let BuildBookmarksSpy: sinon.SinonStub = sinon.stub()
-  let getJSONSpy: sinon.SinonStub = sinon.stub()
-  let loadingErrorSpy: sinon.SinonStub = sinon.stub()
+  let BuildBookmarksSpy = Sinon.stub()
+  let getJSONSpy = Sinon.stub()
+  let loadingErrorSpy = Sinon.stub()
 
   beforeEach(() => {
     existingWindow = global.window
@@ -162,7 +165,7 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    loadingErrorSpy = sinon.stub().resolves()
+    loadingErrorSpy = Sinon.stub().resolves()
     PubSub.subscribers = {
       'LOADING:ERROR': [loadingErrorSpy],
     }
@@ -172,8 +175,8 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = sinon.stub(Bookmarks, 'buildBookmarks')
-    getJSONSpy = sinon.stub(Net, 'GetJSON').resolves()
+    BuildBookmarksSpy = Sinon.stub(Bookmarks, 'buildBookmarks')
+    getJSONSpy = Sinon.stub(Net, 'GetJSON').resolves()
     Bookmarks.Init()
   })
   afterEach(() => {
@@ -181,6 +184,9 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     BuildBookmarksSpy.restore()
     global.window = existingWindow
     global.document = existingDocument
+  })
+  after(() => {
+    Sinon.restore()
   })
   it('should use Net.GetJSON to load bookmarks', async () => {
     const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
@@ -266,10 +272,10 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
   let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
-  let postJSONSpy: sinon.SinonStub = sinon.stub()
-  let bookmarksLoadSpy: sinon.SinonStub = sinon.stub()
-  let loadingErrorSpy: sinon.SinonStub = sinon.stub()
-  let loadingSuccessSpy: sinon.SinonStub = sinon.stub()
+  let postJSONSpy = Sinon.stub()
+  let bookmarksLoadSpy = Sinon.stub()
+  let loadingErrorSpy = Sinon.stub()
+  let loadingSuccessSpy = Sinon.stub()
 
   beforeEach(() => {
     existingWindow = global.window
@@ -280,9 +286,9 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    bookmarksLoadSpy = sinon.stub().resolves()
-    loadingErrorSpy = sinon.stub().resolves()
-    loadingSuccessSpy = sinon.stub().resolves()
+    bookmarksLoadSpy = Sinon.stub().resolves()
+    loadingErrorSpy = Sinon.stub().resolves()
+    loadingSuccessSpy = Sinon.stub().resolves()
     PubSub.subscribers = {
       'BOOKMARKS:LOAD': [bookmarksLoadSpy],
       'LOADING:ERROR': [loadingErrorSpy],
@@ -294,13 +300,16 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    postJSONSpy = sinon.stub(Net, 'PostJSON').resolves()
+    postJSONSpy = Sinon.stub(Net, 'PostJSON').resolves()
     Bookmarks.Init()
   })
   afterEach(() => {
     postJSONSpy.restore()
     global.window = existingWindow
     global.document = existingDocument
+  })
+  after(() => {
+    Sinon.restore()
   })
   const postDataCases: Array<[string, unknown, boolean]> = [
     ['null', null, false],
@@ -429,10 +438,10 @@ describe('public/app/bookmarks Init Bookmarks:Remove', () => {
   let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
-  let postJSONSpy: sinon.SinonStub = sinon.stub()
-  let bookmarksLoadSpy: sinon.SinonStub = sinon.stub()
-  let loadingErrorSpy: sinon.SinonStub = sinon.stub()
-  let loadingSuccessSpy: sinon.SinonStub = sinon.stub()
+  let postJSONSpy = Sinon.stub()
+  let bookmarksLoadSpy = Sinon.stub()
+  let loadingErrorSpy = Sinon.stub()
+  let loadingSuccessSpy = Sinon.stub()
 
   beforeEach(() => {
     existingWindow = global.window
@@ -443,9 +452,9 @@ describe('public/app/bookmarks Init Bookmarks:Remove', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    bookmarksLoadSpy = sinon.stub().resolves()
-    loadingErrorSpy = sinon.stub().resolves()
-    loadingSuccessSpy = sinon.stub().resolves()
+    bookmarksLoadSpy = Sinon.stub().resolves()
+    loadingErrorSpy = Sinon.stub().resolves()
+    loadingSuccessSpy = Sinon.stub().resolves()
     PubSub.subscribers = {
       'BOOKMARKS:LOAD': [bookmarksLoadSpy],
       'LOADING:ERROR': [loadingErrorSpy],
@@ -457,13 +466,16 @@ describe('public/app/bookmarks Init Bookmarks:Remove', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    postJSONSpy = sinon.stub(Net, 'PostJSON').resolves()
+    postJSONSpy = Sinon.stub(Net, 'PostJSON').resolves()
     Bookmarks.Init()
   })
   afterEach(() => {
     postJSONSpy.restore()
     global.window = existingWindow
     global.document = existingDocument
+  })
+  after(() => {
+    Sinon.restore()
   })
   const postDataCases: Array<[string, unknown, boolean]> = [
     ['null', null, false],

@@ -21,6 +21,9 @@ describe('public/slideshow/updater class CyclicManager', () => {
     fakeSetInterval?.restore()
     fakeClearInterval?.restore()
   })
+  after(() => {
+    Sinon.restore()
+  })
   describe('__triggerUpdaters()', () => {
     it('should handle updating zero updaters', async () => {
       await CyclicManager.__triggerUpdaters(10)

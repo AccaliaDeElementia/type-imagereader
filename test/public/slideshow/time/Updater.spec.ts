@@ -49,6 +49,9 @@ describe('public/slideshow/time FormatDate()', () => {
     fakeFormatDate?.restore()
     fakeFormatTime?.restore()
   })
+  after(() => {
+    Sinon.restore()
+  })
   it('should expose a CyclicUpdater', () => {
     expect(Updater).to.be.an.instanceOf(CyclicUpdater)
   })

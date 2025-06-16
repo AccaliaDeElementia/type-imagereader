@@ -16,6 +16,9 @@ describe('public/slideshow/weather SetAlmanac()', () => {
   afterEach(() => {
     clocks?.restore()
   })
+  after(() => {
+    Sinon.restore()
+  })
 
   it('should set sunrise when sunrise occurs after minimum value', () => {
     weather.sunrise = 1741093920000

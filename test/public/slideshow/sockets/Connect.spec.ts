@@ -54,6 +54,9 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       get: () => existingDocument,
     })
   })
+  after(() => {
+    Sinon.restore()
+  })
   it('should clear launchId prior to connect succeeding', () => {
     WebSockets.launchId = 'BAD PRIOR ID'
     WebSockets.connect()

@@ -14,6 +14,9 @@ describe('public/slideshow/sockets HandleGetLaunchId()', () => {
   afterEach(() => {
     fakeReload?.restore()
   })
+  after(() => {
+    Sinon.restore()
+  })
   it('should save launchId on call', () => {
     Functions.HandleGetLaunchId(8675309)
     expect(WebSockets.launchId).to.equal(8675309)

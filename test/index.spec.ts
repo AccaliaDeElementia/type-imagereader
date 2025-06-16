@@ -3,8 +3,7 @@
 import assert from 'assert'
 import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
-import type Sinon from 'sinon'
-import * as sinon from 'sinon'
+import Sinon from 'sinon'
 import { EventuallyRejects } from './testutils/Errors'
 
 import { ImageReader } from '..'
@@ -17,9 +16,9 @@ describe('/index.ts tests', (): void => {
   beforeEach(() => {
     delete process.env.PORT
     delete process.env.SKIP_SYNC
-    StartServerStub = sinon.stub(ImageReader, 'StartServer').resolves()
-    SynchronizeStub = sinon.stub(ImageReader, 'Synchronize').resolves()
-    ClockFake = sinon.useFakeTimers()
+    StartServerStub = Sinon.stub(ImageReader, 'StartServer').resolves()
+    SynchronizeStub = Sinon.stub(ImageReader, 'Synchronize').resolves()
+    ClockFake = Sinon.useFakeTimers()
   })
 
   afterEach(() => {
@@ -28,6 +27,9 @@ describe('/index.ts tests', (): void => {
     StartServerStub?.restore()
     SynchronizeStub?.restore()
     ClockFake?.restore()
+  })
+  after(() => {
+    Sinon.restore()
   })
 
   it('should reject when StartServer throws', async () => {

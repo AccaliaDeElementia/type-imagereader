@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { beforeEach, afterEach, describe, it } from 'mocha'
-import * as sinon from 'sinon'
+import Sinon from 'sinon'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Actions } from '../../../../public/scripts/app/actions'
@@ -28,7 +28,7 @@ describe('public/app/actions function BuildActions()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let GamepadResetSpy: sinon.SinonStub = sinon.stub()
+  let GamepadResetSpy = Sinon.stub()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -39,12 +39,15 @@ describe('public/app/actions function BuildActions()', () => {
     PubSub.subscribers = {}
     PubSub.deferred = []
     PubSub.intervals = {}
-    GamepadResetSpy = sinon.stub(Actions.gamepads, 'Reset')
+    GamepadResetSpy = Sinon.stub(Actions.gamepads, 'Reset')
   })
   afterEach(() => {
     GamepadResetSpy.restore()
     global.window = existingWindow
     global.document = existingDocument
+  })
+  after(() => {
+    Sinon.restore()
   })
   it('should return build actions for each tab', () => {
     Actions.BuildActions()
