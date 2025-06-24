@@ -113,11 +113,11 @@ export interface Listing {
   name: string
   path: string
   parent: string
-  cover?: string
-  next?: Folder
-  nextUnread?: Folder
-  prev?: Folder
-  prevUnread?: Folder
+  cover?: string | null
+  next?: Folder | null
+  nextUnread?: Folder | null
+  prev?: Folder | null
+  prevUnread?: Folder | null
   children?: FolderWithCounts[]
   pictures?: Picture[]
   bookmarks?: BookmarkFolder[]
@@ -125,10 +125,10 @@ export interface Listing {
   noMenu?: boolean
 }
 function hasListingNestedFields(obj: object): boolean {
-  if (!hasOptionalKey(obj, 'next', isFolder)) return false
-  if (!hasOptionalKey(obj, 'nextUnread', isFolder)) return false
-  if (!hasOptionalKey(obj, 'prev', isFolder)) return false
-  if (!hasOptionalKey(obj, 'prevUnread', isFolder)) return false
+  if (!hasOptionalKey(obj, 'next', (o) => o === null || isFolder(o))) return false
+  if (!hasOptionalKey(obj, 'nextUnread', (o) => o === null || isFolder(o))) return false
+  if (!hasOptionalKey(obj, 'prev', (o) => o === null || isFolder(o))) return false
+  if (!hasOptionalKey(obj, 'prevUnread', (o) => o === null || isFolder(o))) return false
   if (!hasOptionalKey(obj, 'children', (o) => isArray(o, isFolderWithCounts))) return false
   if (!hasOptionalKey(obj, 'pictures', (o) => isArray(o, isPicture))) return false
   if (!hasOptionalKey(obj, 'bookmarks', (o) => isArray(o, isBookmarkFolder))) return false
@@ -139,7 +139,7 @@ function hasListingFields(obj: object): boolean {
   if (!hasRequiredKey(obj, 'name', (o) => typeof o === 'string')) return false
   if (!hasRequiredKey(obj, 'path', (o) => typeof o === 'string')) return false
   if (!hasRequiredKey(obj, 'parent', (o) => typeof o === 'string')) return false
-  if (!hasOptionalKey(obj, 'cover', (o) => typeof o === 'string')) return false
+  if (!hasOptionalKey(obj, 'cover', (o) => o === null || typeof o === 'string')) return false
   if (!hasOptionalKey(obj, 'modCount', (o) => typeof o === 'number')) return false
   if (!hasOptionalKey(obj, 'noMenu', (o) => typeof o === 'boolean')) return false
   return true

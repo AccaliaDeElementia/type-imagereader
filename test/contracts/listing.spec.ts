@@ -1158,7 +1158,7 @@ describe('Contracts: isListing()', () => {
         parent: 'baz!',
         cover: null,
       },
-      false,
+      true,
     ],
     [
       'undefined cover',
@@ -1278,7 +1278,7 @@ describe('Contracts: isListing()', () => {
         parent: 'baz!',
         next: null,
       },
-      false,
+      true,
     ],
     [
       'undefined next',
@@ -1318,7 +1318,7 @@ describe('Contracts: isListing()', () => {
         parent: 'baz!',
         nextUnread: null,
       },
-      false,
+      true,
     ],
     [
       'undefined nextUnread',
@@ -1358,7 +1358,7 @@ describe('Contracts: isListing()', () => {
         parent: 'baz!',
         prev: null,
       },
-      false,
+      true,
     ],
     [
       'undefined prev',
@@ -1398,7 +1398,7 @@ describe('Contracts: isListing()', () => {
         parent: 'baz!',
         prevUnread: null,
       },
-      false,
+      true,
     ],
     [
       'undefined prevUnread',
