@@ -25,13 +25,13 @@ export const Navigation = {
   },
   IsSuppressMenu: (): boolean => new URLSearchParams(window.location.search).has('noMenu'),
   current: ((): Listing => ({ path: '', name: '', parent: '' }))(),
-  NavigateTo: (path: string | undefined, action: string): void => {
+  NavigateTo: async (path: string | undefined, action: string): Promise<void> => {
     if (path == null || path.length < 1) {
       Publish('Loading:Error', `Action ${action} has no target`)
       return
     }
     Navigation.current = { path, name: '', parent: '' }
-    Navigation.LoadData().catch(() => null)
+    await Navigation.LoadData().catch(() => null)
   },
   Init: (): void => {
     Navigation.LocationAssign = window.location.assign.bind(window.location)
@@ -83,22 +83,18 @@ export const Navigation = {
     })
     Subscribe('Action:Execute:PreviousFolder', async () => {
       const prev = Pictures.GetShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
-      Navigation.NavigateTo(prev?.path, 'PreviousFolder')
-      await Promise.resolve()
+      await Navigation.NavigateTo(prev?.path, 'PreviousFolder')
     })
     Subscribe('Action:Execute:NextFolder', async () => {
       const next = Pictures.GetShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
-      Navigation.NavigateTo(next?.path, 'NextFolder')
-      await Promise.resolve()
+      await Navigation.NavigateTo(next?.path, 'NextFolder')
     })
     Subscribe('Action:Execute:ParentFolder', async () => {
-      Navigation.NavigateTo(Navigation.current.parent, 'ParentFolder')
-      await Promise.resolve()
+      await Navigation.NavigateTo(Navigation.current.parent, 'ParentFolder')
     })
     Subscribe('Action:Execute:FirstUnfinished', async () => {
       const target = Navigation.current.children?.find((child) => child.totalSeen < child.totalCount)
-      Navigation.NavigateTo(target?.path, 'FirstUnfinished')
-      await Promise.resolve()
+      await Navigation.NavigateTo(target?.path, 'FirstUnfinished')
     })
     Subscribe('Action:Execute:ShowMenu', async () => {
       Publish('Menu:Show')

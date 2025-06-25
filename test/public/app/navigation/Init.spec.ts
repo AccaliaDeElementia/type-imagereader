@@ -533,6 +533,11 @@ describe('public/app/navigation function Init()', () => {
       expect(navigateToStub.firstCall.args[0]).to.equal(undefined)
       expect(navigateToStub.firstCall.args[1]).to.equal('PreviousFolder')
     })
+    it('should reject when NavigateTo rejects', async () => {
+      const err = new Error('FOO')
+      navigateToStub.rejects(err)
+      await expect(handler()).to.eventually.be.rejectedWith(err)
+    })
   })
   describe('Action:Execute:NextFolder message Handler', () => {
     let navigateToStub = Sinon.stub()
@@ -606,6 +611,11 @@ describe('public/app/navigation function Init()', () => {
       expect(navigateToStub.firstCall.args[0]).to.equal(undefined)
       expect(navigateToStub.firstCall.args[1]).to.equal('NextFolder')
     })
+    it('should reject when NavigateTo rejects', async () => {
+      const err = new Error('FOO')
+      navigateToStub.rejects(err)
+      await expect(handler()).to.eventually.be.rejectedWith(err)
+    })
   })
   describe('Action:Execute:ParentFolder message Handler', () => {
     let navigateToStub = Sinon.stub()
@@ -639,6 +649,11 @@ describe('public/app/navigation function Init()', () => {
       expect(navigateToStub.firstCall.args).to.have.lengthOf(2)
       expect(navigateToStub.firstCall.args[0]).to.equal(undefined)
       expect(navigateToStub.firstCall.args[1]).to.equal('ParentFolder')
+    })
+    it('should reject when NavigateTo rejects', async () => {
+      const err = new Error('FOO')
+      navigateToStub.rejects(err)
+      await expect(handler()).to.eventually.be.rejectedWith(err)
     })
   })
   describe('Action:Execute:FirstUnfinished message Handler', () => {
@@ -715,6 +730,11 @@ describe('public/app/navigation function Init()', () => {
       expect(navigateToStub.firstCall.args).to.have.lengthOf(2)
       expect(navigateToStub.firstCall.args[0]).to.equal(children[10].path)
       expect(navigateToStub.firstCall.args[1]).to.equal('FirstUnfinished')
+    })
+    it('should reject when NavigateTo rejects', async () => {
+      const err = new Error('FOO')
+      navigateToStub.rejects(err)
+      await expect(handler()).to.eventually.be.rejectedWith(err)
     })
   })
   describe('Action:Execute:MarkAllSeen Message Handler', () => {
