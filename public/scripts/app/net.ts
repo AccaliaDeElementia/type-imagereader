@@ -4,13 +4,13 @@ interface JSONError {
   error: string
 }
 
-function isError(obj: unknown): obj is JSONError {
+export function isError(obj: unknown): obj is JSONError {
   if (typeof obj !== 'object' || obj == null) return false
   if (!('error' in obj) || typeof obj.error !== 'string') return false
   return true
 }
 
-const decodeResult = async <T>(response: Response, isT: (obj: unknown) => obj is T): Promise<T> => {
+export async function decodeResult<T>(response: Response, isT: (obj: unknown) => obj is T): Promise<T> {
   if (response.headers.get('content-length') === '0') throw new Error('Empty JSON response recieved')
   const data = (await response.json()) as unknown
   if (isError(data)) throw new Error(data.error)
