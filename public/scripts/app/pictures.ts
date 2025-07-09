@@ -5,7 +5,7 @@ import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
 import { Loading } from './loading'
 import { Navigation } from './navigation'
-import { PictureMarkup, type Picture, type DataWithPictures, isDataWithPictures } from './picturemarkup'
+import { isListing, type Listing, type Picture } from '../../../contracts/listing'
 
 export enum NavigateTo {
   First,
@@ -31,26 +31,52 @@ export const Pictures = {
   nextLoader: Promise.resolve(),
   nextPending: true,
   initialScale: -1,
+  pictures: ((): Picture[] => [])(),
+  current: ((): Picture | null => null)(),
+  mainImage: ((): HTMLImageElement | null => null)(),
+  imageCard: ((): HTMLTemplateElement | null => null)(),
+  pageSize: 32,
   Init: (): void => {
-    PictureMarkup.pictures = []
-    PictureMarkup.current = null
+    Pictures.pictures = []
+    Pictures.current = null
     Pictures.nextLoader = Promise.resolve()
     Pictures.nextPending = true
-    PictureMarkup.ResetMarkup()
-    PictureMarkup.Init()
+    Pictures.ResetMarkup()
     Subscribe('Navigate:Data', async (data) => {
-      if (isDataWithPictures(data)) Pictures.LoadData(data)
+      if (isListing(data)) Pictures.LoadData(data)
       await Promise.resolve()
     })
     Pictures.InitActions()
     Pictures.InitMouse()
     Pictures.InitUnreadSelectorSlider()
   },
+  ResetMarkup: (): void => {
+    Pictures.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
+    Pictures.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
+    for (const existing of document.querySelectorAll('#tabImages .pages, #tabImages .page')) {
+      existing.parentElement?.removeChild(existing)
+    }
+    for (const bar of ['top', 'bottom']) {
+      for (const position of ['left', 'center', 'right']) {
+        document.querySelector(`.statusBar.${bar} .${position}`)?.replaceChildren('')
+      }
+    }
+    Pictures.mainImage?.setAttribute('src', '')
+    Pictures.mainImage?.addEventListener('load', () => {
+      Publish('Loading:Hide')
+    })
+    Pictures.mainImage?.addEventListener('error', () => {
+      const src = Pictures.mainImage?.getAttribute('src')
+      if (src != null && src !== '') {
+        Publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
+      }
+    })
+  },
   InitActions: (): void => {
     const doIfNoMenu = (action: string) => async () => {
       if (!Navigation.IsMenuActive()) {
         Publish(`Action:Execute:${action}`)
-      } else if (PictureMarkup.pictures.length > 0) {
+      } else if (Pictures.pictures.length > 0) {
         Publish('Action:Execute:HideMenu')
       }
       await Promise.resolve()
@@ -104,20 +130,20 @@ export const Pictures = {
       changeTo(NavigateTo.Last)
       await Promise.resolve()
     })
-
     Subscribe('Action:Execute:ViewFullSize', async () => {
-      window.open(`/images/full${PictureMarkup.current?.path}`)
+      if (Pictures.current != null) {
+        window.open(`/images/full${Pictures.current.path}`)
+      }
       await Promise.resolve()
     })
-    Subscribe('Action:Execute:Bookmark', async () => {
-      Publish('Bookmarks:Add', PictureMarkup.current?.path)
+    const addBookmark = async (): Promise<void> => {
+      if (Pictures.current != null) {
+        Publish('Bookmarks:Add', Pictures.current.path)
+      }
       await Promise.resolve()
-    })
-    Subscribe('Action:Gamepad:B', async () => {
-      Publish('Bookmarks:Add', PictureMarkup.current?.path)
-      await Promise.resolve()
-    })
-
+    }
+    Subscribe('Action:Execute:Bookmark', addBookmark)
+    Subscribe('Action:Gamepad:B', addBookmark)
     Subscribe('Pictures:SelectPage', async () => {
       Pictures.LoadCurrentPageImages()
       await Promise.resolve()
@@ -125,12 +151,12 @@ export const Pictures = {
   },
   InitMouse: (): void => {
     Pictures.initialScale = window.visualViewport != null ? window.visualViewport.scale : -1
-    PictureMarkup.mainImage?.parentElement?.addEventListener('click', (evt) => {
+    Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
       if (window.visualViewport != null && Pictures.initialScale < window.visualViewport.scale) {
         Publish('Ignored Mouse Click', evt)
         return
       }
-      const target = PictureMarkup.mainImage?.parentElement?.getBoundingClientRect() ?? {
+      const target = Pictures.mainImage?.parentElement?.getBoundingClientRect() ?? {
         left: 0,
         width: 0,
       }
@@ -193,7 +219,7 @@ export const Pictures = {
     }
   },
   MakePictureCard: (picture: Picture): HTMLElement | undefined => {
-    const card = CloneNode(PictureMarkup.imageCard, isHTMLElement)
+    const card = CloneNode(Pictures.imageCard, isHTMLElement)
     picture.element = card
     card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
     if (picture.seen) {
@@ -243,13 +269,10 @@ export const Pictures = {
     return paginator
   },
   MakeTab: (): void => {
-    const pageCount = Math.ceil(PictureMarkup.pictures.length / PictureMarkup.pageSize)
+    const pageCount = Math.ceil(Pictures.pictures.length / Pictures.pageSize)
     const tab = document.querySelector<HTMLElement>('#tabImages')
     const pages: HTMLElement[] = Array.from({ length: pageCount }).map((_, i) =>
-      Pictures.MakePicturesPage(
-        i + 1,
-        PictureMarkup.pictures.slice(i * PictureMarkup.pageSize, (i + 1) * PictureMarkup.pageSize),
-      ),
+      Pictures.MakePicturesPage(i + 1, Pictures.pictures.slice(i * Pictures.pageSize, (i + 1) * Pictures.pageSize)),
     )
     const pagninator = Pictures.MakePaginator(pageCount)
     if (pagninator != null) {
@@ -264,7 +287,7 @@ export const Pictures = {
       Pictures.nextLoader = Promise.resolve()
     } else {
       Pictures.nextPending = true
-      Pictures.nextLoader = fetch(makeURI(PictureMarkup.mainImage?.width, PictureMarkup.mainImage?.height, next)).then(
+      Pictures.nextLoader = fetch(makeURI(Pictures.mainImage?.width, Pictures.mainImage?.height, next)).then(
         () => {
           Pictures.nextPending = false
         },
@@ -275,16 +298,16 @@ export const Pictures = {
     }
   },
   LoadImage: async (): Promise<void> => {
-    if (PictureMarkup.current == null) return
+    if (Pictures.current == null) return
     if (Pictures.nextPending) {
       Publish('Loading:Show')
     }
     try {
-      PictureMarkup.current.seen = true
-      PictureMarkup.current.element?.classList.add('seen')
+      Pictures.current.seen = true
+      Pictures.current.element?.classList.add('seen')
       const newModCount = await Net.PostJSON<number | undefined>(
         '/api/navigate/latest',
-        { path: PictureMarkup.current.path, modCount: Pictures.modCount },
+        { path: Pictures.current.path, modCount: Pictures.modCount },
         (o) => typeof o === 'number' || o === undefined,
       )
       if (newModCount === undefined || newModCount < 0) {
@@ -293,56 +316,56 @@ export const Pictures = {
       }
       Pictures.modCount = newModCount
       await Pictures.nextLoader
-      PictureMarkup.mainImage?.setAttribute(
+      Pictures.mainImage?.setAttribute(
         'src',
-        makeURI(PictureMarkup.mainImage.width, PictureMarkup.mainImage.height, PictureMarkup.current),
+        makeURI(Pictures.mainImage.width, Pictures.mainImage.height, Pictures.current),
       )
-      const index = PictureMarkup.current.index ?? 0
-      const displayTotal = PictureMarkup.pictures.length.toLocaleString()
+      const index = Pictures.current.index ?? 0
+      const displayTotal = Pictures.pictures.length.toLocaleString()
       const displayIndex = (index + 1).toLocaleString()
-      const displayPercent = (Math.floor((1000 * (index + 1)) / PictureMarkup.pictures.length) / 10).toLocaleString()
-      setTextContent('.statusBar.bottom .center', PictureMarkup.current.name)
+      const displayPercent = (Math.floor((1000 * (index + 1)) / Pictures.pictures.length) / 10).toLocaleString()
+      setTextContent('.statusBar.bottom .center', Pictures.current.name)
       setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
       setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
-      Pictures.SelectPage(PictureMarkup.current.page ?? 1)
+      Pictures.SelectPage(Pictures.current.page ?? 1)
       Pictures.LoadNextImage()
       Publish('Picture:LoadNew')
     } catch (err) {
       Publish('Loading:Error', err)
     }
   },
-  SetPicturesGetFirst: (data: DataWithPictures): Picture | null => {
-    if (PictureMarkup.mainImage == null) return null
+  SetPicturesGetFirst: (data: Listing): Picture | null => {
+    if (Pictures.mainImage == null) return null
     const firstPic = data.pictures?.slice(0, 1)[0]
     if (data.pictures == null || firstPic === undefined) {
-      PictureMarkup.mainImage.classList.add('hidden')
+      Pictures.mainImage.classList.add('hidden')
       Publish('Menu:Show')
       document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.add('hidden')
       return null
     }
-    PictureMarkup.mainImage.classList.remove('hidden')
+    Pictures.mainImage.classList.remove('hidden')
     document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
-    PictureMarkup.pictures = data.pictures
+    Pictures.pictures = data.pictures
     Pictures.modCount = data.modCount ?? -1
-    PictureMarkup.pictures.forEach((pic, i) => {
+    Pictures.pictures.forEach((pic, i) => {
       pic.index = i
     })
     return firstPic
   },
-  LoadData: (data: DataWithPictures): void => {
-    PictureMarkup.ResetMarkup()
+  LoadData: (data: Listing): void => {
+    Pictures.ResetMarkup()
     const firstPic = Pictures.SetPicturesGetFirst(data)
     if (firstPic === null) return
 
-    const selected = PictureMarkup.pictures.find((picture) => picture.path === data.cover)
+    const selected = Pictures.pictures.find((picture) => picture.path === data.cover)
     if (selected !== undefined) {
-      PictureMarkup.current = selected
+      Pictures.current = selected
     } else {
-      PictureMarkup.current = firstPic
+      Pictures.current = firstPic
     }
     Pictures.MakeTab()
     Publish('Tab:Select', 'Images')
-    if (PictureMarkup.pictures.every((img) => img.seen) && data.noMenu == null) {
+    if (Pictures.pictures.every((img) => img.seen) && data.noMenu == null) {
       Publish('Menu:Show')
     } else {
       Publish('Menu:Hide')
@@ -350,7 +373,7 @@ export const Pictures = {
     Pictures.LoadImage().catch(() => null)
   },
   ChoosePictureIndex: (navi: NavigateTo, current: number, unreads: Picture[]): number => {
-    if (PictureMarkup.pictures.length < 1) return -1
+    if (Pictures.pictures.length < 1) return -1
     switch (navi) {
       case NavigateTo.First:
         return 0
@@ -359,32 +382,32 @@ export const Pictures = {
       case NavigateTo.Previous:
         return current !== 0 ? current - 1 : -1
       case NavigateTo.Next:
-        return current < PictureMarkup.pictures.length - 1 ? current + 1 : -1
+        return current < Pictures.pictures.length - 1 ? current + 1 : -1
       case NavigateTo.NextUnread:
         return unreads.shift()?.index ?? -1
       case NavigateTo.Last:
-        return PictureMarkup.pictures.length - 1
+        return Pictures.pictures.length - 1
     }
   },
   GetPicture: (navi: NavigateTo): Picture | undefined => {
     let index = -1
-    const current = PictureMarkup.current?.index
+    const current = Pictures.current?.index
     if (current === undefined) {
       return undefined
     }
     const unreads = [
-      ...PictureMarkup.pictures.filter((image) => !image.seen && image.index !== undefined && image.index > current),
-      ...PictureMarkup.pictures.filter((image) => !image.seen && image.index !== undefined && image.index < current),
+      ...Pictures.pictures.filter((image) => !image.seen && image.index !== undefined && image.index > current),
+      ...Pictures.pictures.filter((image) => !image.seen && image.index !== undefined && image.index < current),
     ]
     index = Pictures.ChoosePictureIndex(navi, current, unreads)
-    return PictureMarkup.pictures[index]
+    return Pictures.pictures[index]
   },
   ChangePicture: (pic: Picture | undefined): void => {
     if (Loading.IsLoading()) {
       return
     }
     if (pic != null) {
-      PictureMarkup.current = pic
+      Pictures.current = pic
       Pictures.LoadImage().catch(() => null)
       Publish('Menu:Hide')
     } else {
