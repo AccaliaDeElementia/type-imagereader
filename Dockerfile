@@ -8,11 +8,9 @@ ENV DEBIAN_FRONTEND noninteractive
 WORKDIR /app
 ADD . /app
 
-RUN mkdir /data \
-  && \
-  chown -R node:node /app \
-  && \
-  chown -R node:node /data
+RUN mkdir /data
+RUN chown node:node /app /app/*
+#RUN chown -R node:node /data
 
 USER node
 RUN /usr/local/bin/npm install
