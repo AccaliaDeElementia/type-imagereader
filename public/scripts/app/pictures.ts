@@ -43,8 +43,7 @@ export const Pictures = {
     Pictures.nextPending = true
     Pictures.ResetMarkup()
     Subscribe('Navigate:Data', async (data) => {
-      if (isListing(data)) Pictures.LoadData(data)
-      await Promise.resolve()
+      if (isListing(data)) await Pictures.LoadData(data)
     })
     Pictures.InitActions()
     Pictures.InitMouse()
@@ -92,8 +91,8 @@ export const Pictures = {
     Subscribe('Action:GamePad:RLeft', doIfNoMenu('PreviousImage'))
     Subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ShowMenu'))
 
-    const changeTo = (direction: NavigateTo): void => {
-      Pictures.ChangePicture(Pictures.GetPicture(direction))
+    const changeTo = async (direction: NavigateTo): Promise<void> => {
+      await Pictures.ChangePicture(Pictures.GetPicture(direction))
     }
 
     Subscribe('Action:Execute:Previous', async () => {
@@ -107,28 +106,22 @@ export const Pictures = {
       await Promise.resolve()
     })
     Subscribe('Action:Execute:First', async () => {
-      changeTo(NavigateTo.First)
-      await Promise.resolve()
+      await changeTo(NavigateTo.First)
     })
     Subscribe('Action:Execute:PreviousImage', async () => {
-      changeTo(NavigateTo.Previous)
-      await Promise.resolve()
+      await changeTo(NavigateTo.Previous)
     })
     Subscribe('Action:Execute:PreviousUnseen', async () => {
-      changeTo(NavigateTo.PreviousUnread)
-      await Promise.resolve()
+      await changeTo(NavigateTo.PreviousUnread)
     })
     Subscribe('Action:Execute:NextImage', async () => {
-      changeTo(NavigateTo.Next)
-      await Promise.resolve()
+      await changeTo(NavigateTo.Next)
     })
     Subscribe('Action:Execute:NextUnseen', async () => {
-      changeTo(NavigateTo.NextUnread)
-      await Promise.resolve()
+      await changeTo(NavigateTo.NextUnread)
     })
     Subscribe('Action:Execute:Last', async () => {
-      changeTo(NavigateTo.Last)
-      await Promise.resolve()
+      await changeTo(NavigateTo.Last)
     })
     Subscribe('Action:Execute:ViewFullSize', async () => {
       if (Pictures.current != null) {
@@ -227,7 +220,7 @@ export const Pictures = {
     }
     card?.querySelector('h5')?.replaceChildren(picture.name)
     card?.addEventListener('click', () => {
-      Pictures.ChangePicture(picture)
+      void Pictures.ChangePicture(picture)
       Publish('Menu:Hide')
     })
     return card
@@ -280,14 +273,14 @@ export const Pictures = {
     }
     pages.forEach((page) => tab?.appendChild(page))
   },
-  LoadNextImage: (): void => {
+  LoadNextImage: async (): Promise<void> => {
     const next = Pictures.GetPicture(Pictures.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
     if (next == null) {
       Pictures.nextPending = false
       Pictures.nextLoader = Promise.resolve()
     } else {
       Pictures.nextPending = true
-      Pictures.nextLoader = fetch(makeURI(Pictures.mainImage?.width, Pictures.mainImage?.height, next)).then(
+      Pictures.nextLoader = window.fetch(makeURI(Pictures.mainImage?.width, Pictures.mainImage?.height, next)).then(
         () => {
           Pictures.nextPending = false
         },
@@ -296,6 +289,7 @@ export const Pictures = {
         },
       )
     }
+    await Pictures.nextLoader
   },
   LoadImage: async (): Promise<void> => {
     if (Pictures.current == null) return
@@ -328,7 +322,7 @@ export const Pictures = {
       setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
       setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
       Pictures.SelectPage(Pictures.current.page ?? 1)
-      Pictures.LoadNextImage()
+      void Pictures.LoadNextImage().catch(() => 0)
       Publish('Picture:LoadNew')
     } catch (err) {
       Publish('Loading:Error', err)
@@ -352,7 +346,7 @@ export const Pictures = {
     })
     return firstPic
   },
-  LoadData: (data: Listing): void => {
+  LoadData: async (data: Listing): Promise<void> => {
     Pictures.ResetMarkup()
     const firstPic = Pictures.SetPicturesGetFirst(data)
     if (firstPic === null) return
@@ -365,12 +359,12 @@ export const Pictures = {
     }
     Pictures.MakeTab()
     Publish('Tab:Select', 'Images')
-    if (Pictures.pictures.every((img) => img.seen) && data.noMenu == null) {
+    if (Pictures.pictures.every((img) => img.seen) && (data.noMenu == null || !data.noMenu)) {
       Publish('Menu:Show')
     } else {
       Publish('Menu:Hide')
     }
-    Pictures.LoadImage().catch(() => null)
+    await Pictures.LoadImage().catch(() => null)
   },
   ChoosePictureIndex: (navi: NavigateTo, current: number, unreads: Picture[]): number => {
     if (Pictures.pictures.length < 1) return -1
@@ -380,7 +374,7 @@ export const Pictures = {
       case NavigateTo.PreviousUnread:
         return unreads.pop()?.index ?? -1
       case NavigateTo.Previous:
-        return current !== 0 ? current - 1 : -1
+        return current > 0 ? current - 1 : -1
       case NavigateTo.Next:
         return current < Pictures.pictures.length - 1 ? current + 1 : -1
       case NavigateTo.NextUnread:
@@ -402,13 +396,13 @@ export const Pictures = {
     index = Pictures.ChoosePictureIndex(navi, current, unreads)
     return Pictures.pictures[index]
   },
-  ChangePicture: (pic: Picture | undefined): void => {
+  ChangePicture: async (pic: Picture | undefined): Promise<void> => {
     if (Loading.IsLoading()) {
       return
     }
     if (pic != null) {
       Pictures.current = pic
-      Pictures.LoadImage().catch(() => null)
+      await Pictures.LoadImage().catch(() => null)
       Publish('Menu:Hide')
     } else {
       Publish('Loading:Error', 'Change Picture called with No Picture to change to')

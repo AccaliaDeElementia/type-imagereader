@@ -10,7 +10,7 @@ import assert from 'assert'
 import type { Picture } from '../../../../contracts/listing'
 import { Cast } from '../../../testutils/TypeGuards'
 
-describe('public/app/pictures function ResetMarkup()', () => {
+describe('public/app/pictures function InitActions()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
