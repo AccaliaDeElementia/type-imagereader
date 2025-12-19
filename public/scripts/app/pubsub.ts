@@ -29,6 +29,9 @@ export const PubSub = {
     }
   },
   Publish: (topic: string, data?: unknown): void => {
+    void PubSub.PublishAsync(topic, data)
+  },
+  PublishAsync: async (topic: string, data?: unknown): Promise<void> => {
     const searchTopic = topic.toUpperCase()
     const matchingTopics = Object.keys(PubSub.subscribers)
       .sort()
@@ -44,13 +47,15 @@ export const PubSub = {
           const errorHandler = (err: unknown): void => {
             window.console.error(`Subscriber for ${searchTopic} rejected with error:`, err)
           }
-          subscribers.forEach((subscriber) => {
-            try {
-              subscriber(data, searchTopic).catch(errorHandler)
-            } catch (e: unknown) {
-              errorHandler(e)
-            }
-          })
+          await Promise.all(
+            subscribers.map(async (subscriber) => {
+              try {
+                await subscriber(data, searchTopic).catch(errorHandler)
+              } catch (e: unknown) {
+                errorHandler(e)
+              }
+            }),
+          )
         }
       }
     }
@@ -80,12 +85,16 @@ export const PubSub = {
     PubSub.deferred
       .filter((delay) => delay.delayCycles <= 0)
       .forEach((delay) => {
-        delay.method()
+        try {
+          delay.method()
+        } catch {}
       })
     Object.values(PubSub.intervals).forEach((delay) => {
       if (delay.delayCycles <= 0) {
         delay.delayCycles = delay.intervalCycles
-        delay.method()
+        try {
+          delay.method()
+        } catch {}
       } else {
         delay.delayCycles--
       }
@@ -98,13 +107,13 @@ export const PubSub = {
       })
   },
   StartDeferred: (): void => {
-    PubSub.timer = setInterval((): void => {
+    PubSub.timer = window.setInterval((): void => {
       PubSub.ExecuteInterval()
     }, PubSub.cycleTime)
   },
   StopDeferred: (): void => {
     if (PubSub.timer != null) {
-      clearInterval(PubSub.timer)
+      window.clearInterval(PubSub.timer)
       PubSub.timer = undefined
     }
   },
