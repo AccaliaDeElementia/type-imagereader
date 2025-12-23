@@ -12,6 +12,12 @@ const DEFAULT_PORT = 3030
 const MINIMUM_PORT = 0
 const MAXIMUM_PORT = 65535
 
+const runIfNotSuppressed = async (triggerVar: string, fn: () => Promise<void>): Promise<void> => {
+  const envvar = `${process.env[triggerVar]}`.toLocaleUpperCase()
+  if (envvar === '1' || envvar === 'TRUE') return
+  await fn()
+}
+
 export const ImageReader = {
   StartServer: start,
   Synchronize: synchronize,
@@ -19,19 +25,20 @@ export const ImageReader = {
   SyncRunning: false,
   SyncInterval: THREE_HOURS,
   Run: async (): Promise<void> => {
-    const port = Number(!StringIsNullOrEmpty(process.env.PORT) ? process.env.PORT : DEFAULT_PORT)
-    if (Number.isNaN(port)) {
-      throw new Error(`Port ${port} (from env: ${process.env.PORT}) is not a number. Valid ports must be a number.`)
-    }
-    if (!Number.isInteger(port)) {
-      throw new Error(`Port ${port} is not integer. Valid ports must be integer between 0 and 65535.`)
-    }
-    if (port < MINIMUM_PORT || port > MAXIMUM_PORT) {
-      throw new Error(`Port ${port} is out of range. Valid ports must be between 0 and 65535.`)
-    }
-    await ImageReader.StartServer(port)
-
-    if (process.env.SKIP_SYNC == null || (process.env.SKIP_SYNC !== '1' && process.env.SKIP_SYNC !== 'true')) {
+    await runIfNotSuppressed('SKIP_SERVE', async () => {
+      const port = Number(!StringIsNullOrEmpty(process.env.PORT) ? process.env.PORT : DEFAULT_PORT)
+      if (Number.isNaN(port)) {
+        throw new Error(`Port ${port} (from env: ${process.env.PORT}) is not a number. Valid ports must be a number.`)
+      }
+      if (!Number.isInteger(port)) {
+        throw new Error(`Port ${port} is not integer. Valid ports must be integer between 0 and 65535.`)
+      }
+      if (port < MINIMUM_PORT || port > MAXIMUM_PORT) {
+        throw new Error(`Port ${port} is out of range. Valid ports must be between 0 and 65535.`)
+      }
+      await ImageReader.StartServer(port)
+    })
+    await runIfNotSuppressed('SKIP_SYNC', async () => {
       const doSync = async (): Promise<void> => {
         if (ImageReader.SyncRunning) {
           return
@@ -47,7 +54,8 @@ export const ImageReader = {
       ImageReader.Interval = setInterval(() => {
         doSync().catch(() => null)
       }, ImageReader.SyncInterval)
-    }
+      await Promise.resolve()
+    })
   },
 }
 

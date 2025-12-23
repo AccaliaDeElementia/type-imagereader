@@ -123,6 +123,30 @@ describe('/index.ts tests', (): void => {
     expect(SynchronizeStub?.called).to.equal(false)
   })
 
+  it('should run server if SKIP_SERVE is not set', async () => {
+    delete process.env.SKIP_SERVE
+    await ImageReader.Run()
+    expect(StartServerStub?.called).to.equal(true)
+  })
+
+  it('should run server if SKIP_SERVE is blank', async () => {
+    process.env.SKIP_SERVE = ''
+    await ImageReader.Run()
+    expect(StartServerStub?.called).to.equal(true)
+  })
+
+  it('should not run server if SKIP_SERVE is true', async () => {
+    process.env.SKIP_SERVE = 'true'
+    await ImageReader.Run()
+    expect(StartServerStub?.called).to.equal(false)
+  })
+
+  it('should not run server if SKIP_SERVE is 1', async () => {
+    process.env.SKIP_SERVE = '1'
+    await ImageReader.Run()
+    expect(StartServerStub?.called).to.equal(false)
+  })
+
   it('should run Synchronization again after SyncInterval miliseconds', async () => {
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
