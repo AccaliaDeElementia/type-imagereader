@@ -11,7 +11,8 @@ describe('public/slideshow/weather SetAlmanac()', () => {
   let weather: WeatherResults = {}
   beforeEach(() => {
     weather = {}
-    clocks = Sinon.useFakeTimers({ now: 1741134126910 })
+    const date = new Date(2024, 5, 12, 12, 0, 0, 0)
+    clocks = Sinon.useFakeTimers({ now: date.getTime() })
   })
   afterEach(() => {
     clocks?.restore()
@@ -21,38 +22,40 @@ describe('public/slideshow/weather SetAlmanac()', () => {
   })
 
   it('should set sunrise when sunrise occurs after minimum value', () => {
-    weather.sunrise = 1741093920000
+    const date = new Date(2024, 5, 12, 9, 0, 0, 0)
+    weather.sunrise = date.getTime()
     Functions.SetAlmanac(weather)
-    expect(GetAlmanac().sunrise).to.equal(1741093920000)
+    expect(GetAlmanac().sunrise).to.equal(date.getTime())
   })
 
   it('should set sunrise when sunrise at minimum time', () => {
-    weather.sunrise = 1741086900000
+    const date = new Date(2024, 5, 12, 6, 15, 0, 0)
+    weather.sunrise = date.getTime()
     Functions.SetAlmanac(weather)
-    expect(GetAlmanac().sunrise).to.equal(1741086900000)
+    expect(GetAlmanac().sunrise).to.equal(date.getTime())
   })
 
   it('should override sunrise when sunrise before minimum time', () => {
-    weather.sunrise = 1741086700000
+    weather.sunrise = new Date(2024, 5, 12, 5, 0, 0, 0).getTime()
     Functions.SetAlmanac(weather)
-    expect(GetAlmanac().sunrise).to.equal(1741086900000)
+    expect(GetAlmanac().sunrise).to.equal(new Date(2024, 5, 12, 6, 15, 0, 0).getTime())
   })
 
   it('should set sunset when sunset occurs before maximum value', () => {
-    weather.sunset = 1741093920000
+    weather.sunset = new Date(2024, 5, 12, 20, 40, 0, 0).getTime()
     Functions.SetAlmanac(weather)
-    expect(GetAlmanac().sunset).to.equal(1741093920000)
+    expect(GetAlmanac().sunset).to.equal(new Date(2024, 5, 12, 20, 40, 0, 0).getTime())
   })
 
   it('should set sunset when sunset at maximum time', () => {
-    weather.sunset = 1741140000000
+    weather.sunset = new Date(2024, 5, 12, 21, 0, 0, 0).getTime()
     Functions.SetAlmanac(weather)
-    expect(GetAlmanac().sunset).to.equal(1741140000000)
+    expect(GetAlmanac().sunset).to.equal(new Date(2024, 5, 12, 21, 0, 0, 0).getTime())
   })
 
   it('should override sunset when sunset after maximum time', () => {
-    weather.sunset = 1742096900000
+    weather.sunset = new Date(2024, 5, 12, 21, 14, 0, 0).getTime()
     Functions.SetAlmanac(weather)
-    expect(GetAlmanac().sunset).to.equal(1741140000000)
+    expect(GetAlmanac().sunset).to.equal(new Date(2024, 5, 12, 21, 0, 0, 0).getTime())
   })
 })
