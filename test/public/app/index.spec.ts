@@ -1,9 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { suite, test } from '@testdeck/mocha'
-import type Sinon from 'sinon'
-import * as sinon from 'sinon'
+import Sinon from 'sinon'
 
 import { Loading } from '../../../public/scripts/app/loading'
 import { WakeLock } from '../../../public/scripts/app/wakelock'
@@ -15,53 +13,48 @@ import { Bookmarks } from '../../../public/scripts/app/bookmarks'
 import { Navigation } from '../../../public/scripts/app/navigation'
 import { PubSub } from '../../../public/scripts/app/pubsub'
 
-@suite
-export class AppIndexTests {
-  loadingInitSpy: Sinon.SinonStub = sinon.stub()
-  actionsInitSpy: Sinon.SinonStub = sinon.stub()
-  tabsInitSpy: Sinon.SinonStub = sinon.stub()
-  foldersInitSpy: Sinon.SinonStub = sinon.stub()
-  picturesInitSpy: Sinon.SinonStub = sinon.stub()
-  bookmarksInitSpy: Sinon.SinonStub = sinon.stub()
-  navigationInitSpy: Sinon.SinonStub = sinon.stub()
-  pubsubDeferredSpy: Sinon.SinonStub = sinon.stub()
-  wakeLockInitSpy: Sinon.SinonStub = sinon.stub()
-
-  before(): void {
-    this.loadingInitSpy = sinon.stub(Loading, 'Init')
-    this.actionsInitSpy = sinon.stub(Actions, 'Init')
-    this.tabsInitSpy = sinon.stub(Tabs, 'Init')
-    this.foldersInitSpy = sinon.stub(Folders, 'Init')
-    this.picturesInitSpy = sinon.stub(Pictures, 'Init')
-    this.bookmarksInitSpy = sinon.stub(Bookmarks, 'Init')
-    this.navigationInitSpy = sinon.stub(Navigation, 'Init')
-    this.pubsubDeferredSpy = sinon.stub(PubSub, 'StartDeferred')
-    this.wakeLockInitSpy = sinon.stub(WakeLock, 'Init')
-  }
-
-  after(): void {
-    this.loadingInitSpy.restore()
-    this.actionsInitSpy.restore()
-    this.tabsInitSpy.restore()
-    this.foldersInitSpy.restore()
-    this.picturesInitSpy.restore()
-    this.bookmarksInitSpy.restore()
-    this.navigationInitSpy.restore()
-    this.pubsubDeferredSpy.restore()
-    this.wakeLockInitSpy.restore()
-  }
-
-  @test
-  async 'it inits all modules'(): Promise<void> {
+describe('public/app initialzation', () => {
+  let loadingInitSpy: Sinon.SinonStub = Sinon.stub()
+  let actionsInitSpy: Sinon.SinonStub = Sinon.stub()
+  let tabsInitSpy: Sinon.SinonStub = Sinon.stub()
+  let foldersInitSpy: Sinon.SinonStub = Sinon.stub()
+  let picturesInitSpy: Sinon.SinonStub = Sinon.stub()
+  let bookmarksInitSpy: Sinon.SinonStub = Sinon.stub()
+  let navigationInitSpy: Sinon.SinonStub = Sinon.stub()
+  let pubsubDeferredSpy: Sinon.SinonStub = Sinon.stub()
+  let wakeLockInitSpy: Sinon.SinonStub = Sinon.stub()
+  beforeEach(() => {
+    loadingInitSpy = Sinon.stub(Loading, 'Init')
+    actionsInitSpy = Sinon.stub(Actions, 'Init')
+    tabsInitSpy = Sinon.stub(Tabs, 'Init')
+    foldersInitSpy = Sinon.stub(Folders, 'Init')
+    picturesInitSpy = Sinon.stub(Pictures, 'Init')
+    bookmarksInitSpy = Sinon.stub(Bookmarks, 'Init')
+    navigationInitSpy = Sinon.stub(Navigation, 'Init')
+    pubsubDeferredSpy = Sinon.stub(PubSub, 'StartDeferred')
+    wakeLockInitSpy = Sinon.stub(WakeLock, 'Init')
+  })
+  afterEach(() => {
+    loadingInitSpy.restore()
+    actionsInitSpy.restore()
+    tabsInitSpy.restore()
+    foldersInitSpy.restore()
+    picturesInitSpy.restore()
+    bookmarksInitSpy.restore()
+    navigationInitSpy.restore()
+    pubsubDeferredSpy.restore()
+    wakeLockInitSpy.restore()
+  })
+  it('inits all modules', async () => {
     await import('../../../public/scripts/app/index')
-    expect(this.loadingInitSpy.called, 'Loading.Init() should be called').to.equal(true)
-    expect(this.actionsInitSpy.called, 'Actions.Init() should be called').to.equal(true)
-    expect(this.tabsInitSpy.called, 'Tabs.Init() should be called').to.equal(true)
-    expect(this.foldersInitSpy.called, 'Folders.Init() should be called').to.equal(true)
-    expect(this.picturesInitSpy.called, 'Pictures.Init() should be called').to.equal(true)
-    expect(this.bookmarksInitSpy.called, 'Bookmarks.Init() should be called').to.equal(true)
-    expect(this.navigationInitSpy.called, 'Navigatin.Init() should be called').to.equal(true)
-    expect(this.pubsubDeferredSpy.called, 'PubSub.StartDeferred() should be called').to.equal(true)
-    expect(this.wakeLockInitSpy.called, 'WaleLock.Init()  should be called').to.equal(true)
-  }
-}
+    expect(loadingInitSpy.called, 'Loading.Init() should be called').to.equal(true)
+    expect(actionsInitSpy.called, 'Actions.Init() should be called').to.equal(true)
+    expect(tabsInitSpy.called, 'Tabs.Init() should be called').to.equal(true)
+    expect(foldersInitSpy.called, 'Folders.Init() should be called').to.equal(true)
+    expect(picturesInitSpy.called, 'Pictures.Init() should be called').to.equal(true)
+    expect(bookmarksInitSpy.called, 'Bookmarks.Init() should be called').to.equal(true)
+    expect(navigationInitSpy.called, 'Navigatin.Init() should be called').to.equal(true)
+    expect(pubsubDeferredSpy.called, 'PubSub.StartDeferred() should be called').to.equal(true)
+    expect(wakeLockInitSpy.called, 'WaleLock.Init()  should be called').to.equal(true)
+  })
+})
