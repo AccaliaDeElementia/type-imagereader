@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "start": "DEBUG='type-imagereader:*' ts-node .",
     "pretest": "npm run build",
-    "test": "nyc mocha",
+    "test": "nyc --require chai --require chai-as-promised mocha",
     "knex": "knex --knexfile knexfile.json",
     "predev": "npm run build",
     "dev": "DEBUG='type-imagereader:*' SKIP_SYNC=1 ts-node ."
