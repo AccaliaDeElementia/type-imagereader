@@ -8,7 +8,7 @@ import { expect } from 'chai'
 import { afterEach, beforeEach, describe } from 'mocha'
 import Sinon from 'sinon'
 import { CyclicUpdater } from '../../../../public/scripts/slideshow/updater'
-import assert from 'assert'
+import assert from 'node:assert'
 
 const markup = `
 html

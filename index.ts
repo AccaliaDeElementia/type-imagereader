@@ -21,12 +21,12 @@ const runIfNotSuppressed = async (triggerVar: string, fn: () => Promise<void>): 
 export const ImageReader = {
   StartServer: start,
   Synchronize: synchronize,
-  Interval: ((): number | NodeJS.Timer | undefined => undefined)(),
+  Interval: ((): number | NodeJS.Timeout | undefined => undefined)(),
   SyncRunning: false,
   SyncInterval: THREE_HOURS,
   Run: async (): Promise<void> => {
     await runIfNotSuppressed('SKIP_SERVE', async () => {
-      const port = Number(!StringIsNullOrEmpty(process.env.PORT) ? process.env.PORT : DEFAULT_PORT)
+      const port = Number(StringIsNullOrEmpty(process.env.PORT) ? DEFAULT_PORT : process.env.PORT)
       if (Number.isNaN(port)) {
         throw new Error(`Port ${port} (from env: ${process.env.PORT}) is not a number. Valid ports must be a number.`)
       }

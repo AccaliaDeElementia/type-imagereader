@@ -1,9 +1,8 @@
 'use sanity'
 
-import { expect, use as chaiUse } from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import Sinon from 'sinon'
-import assert from 'assert'
+import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
@@ -11,7 +10,7 @@ import { Navigation } from '../../../../public/scripts/app/navigation'
 import { Cast } from '../../../testutils/TypeGuards'
 import { Net } from '../../../../public/scripts/app/net'
 import { isListing } from '../../../../contracts/listing'
-chaiUse(chaiAsPromised.default)
+import { EventuallyFullfills } from '../../../testutils/Errors'
 
 const markup = `
 html
@@ -147,11 +146,11 @@ describe('public/app/navigation function LoadData()', () => {
   })
   it('should tolerate missing title element', async () => {
     titleElement?.parentElement?.removeChild(titleElement)
-    await expect(Navigation.LoadData()).to.eventually.be.fulfilled
+    await EventuallyFullfills(Navigation.LoadData())
   })
   it('should tolerate missing brand element', async () => {
     brandElement?.parentElement?.removeChild(brandElement)
-    await expect(Navigation.LoadData()).to.eventually.be.fulfilled
+    await EventuallyFullfills(Navigation.LoadData())
   })
   it('should not push state when loading data with no history flag set true', async () => {
     await Navigation.LoadData(true)

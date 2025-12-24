@@ -3,8 +3,8 @@
 import persistance from './persistance'
 import _fsWalker from './fswalker'
 import wordsToNumbers from 'words-to-numbers'
-import posix from 'path'
-import { createHash } from 'crypto'
+import posix from 'node:path'
+import { createHash } from 'node:crypto'
 import type { Knex } from 'knex'
 
 import _debug from 'debug'
@@ -38,7 +38,7 @@ interface RowCountResult {
 }
 
 export function isRowCountResult(obj: unknown): obj is RowCountResult {
-  if (obj == null || typeof obj !== 'object') return false
+  if (obj === null || typeof obj !== 'object') return false
   return 'rowCount' in obj && typeof obj.rowCount === 'number'
 }
 
@@ -52,7 +52,7 @@ export const Functions = {
   padLength: 20,
   ToSortKey: (key: string): string => {
     const zeroes = '0'.repeat(Functions.padLength)
-    return `${wordsToNumbers(key.toLowerCase())}`.replace(/(\d+)/g, (num) =>
+    return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/g, (num) =>
       num.length >= Functions.padLength ? num : `${zeroes}${num}`.slice(-Functions.padLength),
     )
   },
@@ -69,15 +69,15 @@ export const Functions = {
     const chunks = Functions.Chunk(
       items.map((item) => {
         if (item.isFile) {
-          files++
+          files += 1
         } else {
-          dirs++
+          dirs += 1
         }
         let folder = posix.dirname(item.path)
         if (folder.length > 1) {
           folder += posix.sep
         }
-        const path = item.path + (!item.isFile ? posix.sep : '')
+        const path = item.path + (item.isFile ? '' : posix.sep)
         return {
           folder,
           path,
@@ -264,8 +264,8 @@ export const Functions = {
           }
           allFolders[parentPath] = parent
         }
-        parent.totalCount += +folder.totalCount
-        parent.seenCount += +folder.seenCount
+        parent.totalCount += folder.totalCount
+        parent.seenCount += folder.seenCount
       }
     }
     return Object.values(allFolders)

@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 import { NavigateTo, Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../public/scripts/app/navigation'
-import assert from 'assert'
+import assert from 'node:assert'
 import type { Picture } from '../../../../contracts/listing'
 import { Cast } from '../../../testutils/TypeGuards'
 

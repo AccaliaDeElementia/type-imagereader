@@ -1,4 +1,4 @@
-import { promisify } from 'util'
+import { promisify } from 'node:util'
 
 export async function Delay(ms: number): Promise<void> {
   await promisify((cb) => {

@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../testutils/TypeGuards'
-import assert from 'assert'
+import assert from 'node:assert'
 import { WakeLock } from '../../../../public/scripts/app/wakelock'
 
 describe('public/app/wakelock function Init()', () => {

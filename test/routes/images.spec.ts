@@ -9,12 +9,12 @@ import type { Debugger } from 'debug'
 import SharpType from 'sharp'
 import type { Sharp } from 'sharp'
 import type { Application, Response, Router, Request } from 'express'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 
 import { getRouter, ImageData, ImageCache, Imports, Functions, CacheStorage } from '../../routes/images'
-import assert from 'assert'
+import assert from 'node:assert'
 import { Cast } from '../testutils/TypeGuards'
 type RequestHandler = (req: Request, res: Response) => Promise<void>
 

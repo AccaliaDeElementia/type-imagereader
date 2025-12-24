@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
-import assert from 'assert'
+import assert from 'node:assert'
 
 describe('public/app/pictures function LoadData()', () => {
   let resetMarkupSpy = Sinon.stub()
@@ -30,7 +30,7 @@ describe('public/app/pictures function LoadData()', () => {
     }))
     Pictures.current = null
     resetMarkupSpy = Sinon.stub(Pictures, 'ResetMarkup')
-    setPicturesSpy = Sinon.stub(Pictures, 'SetPicturesGetFirst').callsFake((data) => data.pictures?.at(0) ?? null)
+    setPicturesSpy = Sinon.stub(Pictures, 'SetPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
     makeTabSpy = Sinon.stub(Pictures, 'MakeTab')
     loadImageSpy = Sinon.stub(Pictures, 'LoadImage').resolves()
   })

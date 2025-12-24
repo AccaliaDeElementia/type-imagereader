@@ -9,7 +9,7 @@ import { Cast } from '../../../testutils/TypeGuards'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Folders } from '../../../../public/scripts/app/folders'
-import assert from 'assert'
+import assert from 'node:assert'
 import Sinon from 'sinon'
 
 const markup = `
@@ -129,7 +129,7 @@ describe('public/app/folders function BuildCard()', () => {
       totalCount: 100,
       totalSeen: 0,
     })
-    expect(result?.style.backgroundImage).to.equal('url(/images/preview/path/foo/cover.png-image.webp)')
+    expect(result?.style.backgroundImage).to.equal('url("/images/preview/path/foo/cover.png-image.webp")')
   })
   it('should not set seen flag when read count iz zero', () => {
     const result = Folders.BuildCard({

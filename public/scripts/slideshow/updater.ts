@@ -29,7 +29,7 @@ export class CyclicUpdater {
       } catch (e) {
         window.console.error('CyclicUpdater update resulted in error:', e)
         this._failCount = Math.min(this._maxFails, this._failCount + 1)
-        this._countdown = Math.pow(2, this._failCount) * this.period
+        this._countdown = 2 ** this._failCount * this.period
       }
     }
   }

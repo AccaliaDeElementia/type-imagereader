@@ -5,7 +5,7 @@ import { CyclicManager, CyclicUpdater } from '../../../../public/scripts/slidesh
 import { Cast } from '../../../testutils/TypeGuards'
 import Sinon from 'sinon'
 import { expect } from 'chai'
-import { assert } from 'console'
+import { assert } from 'node:console'
 
 describe('public/slideshow/updater class CyclicManager', () => {
   let fakeSetInterval: Sinon.SinonStub | undefined = undefined

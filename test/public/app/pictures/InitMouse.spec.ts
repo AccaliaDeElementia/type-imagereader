@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
-import assert from 'assert'
+import assert from 'node:assert'
 import { Cast } from '../../../testutils/TypeGuards'
 
 interface TestVisualViewport {

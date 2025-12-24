@@ -21,15 +21,15 @@ export class Debouncer {
 
   debounce(key: string, callback: DebounceCallback): void {
     const counter = this.counters.find((c) => c.key === key)
-    if (counter != null) {
-      counter.counter = this.cycleCount
-      counter.callback = callback
-    } else {
+    if (counter == null) {
       this.counters.push({
         key,
         callback,
         counter: this.cycleCount,
       })
+    } else {
+      counter.counter = this.cycleCount
+      counter.callback = callback
     }
   }
 
@@ -42,11 +42,9 @@ export class Debouncer {
   }
 
   public static startTimers(): void {
-    if (this.timer === undefined) {
-      this.timer = setInterval(() => {
-        this.doCycle()
-      }, this.interval)
-    }
+    this.timer ??= setInterval(() => {
+      this.doCycle()
+    }, this.interval)
   }
 
   public static stopTimers(): void {

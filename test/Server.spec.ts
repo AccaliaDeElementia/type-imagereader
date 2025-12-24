@@ -8,7 +8,7 @@ import * as sinon from 'sinon'
 import type { Express, NextFunction } from 'express'
 import express from 'express'
 import morgan from 'morgan'
-import type { Server as HttpServer } from 'http'
+import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 
@@ -20,7 +20,7 @@ import { getRouter as getSlideshowRouter } from '../routes/slideshow'
 import { getRouter as getWeatherRouter } from '../routes/weather'
 
 import start, { Functions, Routers, Imports } from '../Server'
-import assert from 'assert'
+import assert from 'node:assert'
 import { Cast } from './testutils/TypeGuards'
 
 @suite

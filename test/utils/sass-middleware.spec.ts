@@ -9,7 +9,7 @@ import { StatusCodes } from 'http-status-codes'
 import type { Request, Response } from 'express'
 
 import sassMiddleware, { Imports, Functions } from '../../utils/sass-middleware'
-import assert from 'assert'
+import assert from 'node:assert'
 import { Cast } from '../testutils/TypeGuards'
 
 @suite

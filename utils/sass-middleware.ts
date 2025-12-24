@@ -4,8 +4,8 @@ import type { Request, Response, NextFunction } from 'express'
 
 import { StatusCodes } from 'http-status-codes'
 
-import { join, normalize } from 'path'
-import { readdir, watch, access } from 'fs/promises'
+import { join, normalize } from 'node:path'
+import { readdir, watch, access } from 'node:fs/promises'
 
 import sass from 'sass'
 
@@ -79,7 +79,7 @@ export const Functions = {
     for (const dirinfo of await Imports.readdir(join(basePath, path), {
       withFileTypes: true,
     })) {
-      if (sassExtension.test(dirinfo.name) && !/(^|\/)\./.test(dirinfo.name)) {
+      if (sassExtension.test(dirinfo.name) && !/(?:^|\/)\./.test(dirinfo.name)) {
         const sassFile = join(path, dirinfo.name)
         Functions.CompileAndCache(basePath, sassFile).catch(() => null)
       }
@@ -90,8 +90,8 @@ export const Functions = {
       Functions.logger(`Watching ${path} for stylesheets`)
       const watcher = Imports.watch(join(basePath, path), { persistent: false })
       for await (const event of watcher) {
-        if (event.filename == null) continue
-        if (!sassExtension.test(event.filename) || /(^|\/)\./.test(event.filename)) continue
+        if (event.filename === null) continue
+        if (!sassExtension.test(event.filename) || /(?:^|\/)\./.test(event.filename)) continue
         const sassFile = join(path, event.filename)
         Functions.debouncer.debounce(sassFile, async () => {
           Functions.logger(`${sassFile} needs recompiling, ${event.eventType}`)
@@ -118,7 +118,7 @@ export default ({
 
   const acceptRequest = (req: Request): boolean => {
     // ignore all requests that are not GET or don't have .css in them
-    if (req.method.toLowerCase() !== 'get' || !/\.css(\.map)?$/.test(req.path) || /(^|\/)\.[^.]/.test(req.path)) {
+    if (req.method.toLowerCase() !== 'get' || !/\.css(?:\.map)?$/.test(req.path) || /(?:^|\/)\.[^.]/.test(req.path)) {
       return false
     }
     return true
@@ -136,19 +136,17 @@ export default ({
     }
     try {
       const path = req.path.replace(/\.map$/, '')
-      if (Functions.cache[path] == null) {
+      if (Functions.cache[path] === undefined) {
         ;(await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.sass'))) ||
           (await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.scss')))
       }
       const styles = await Functions.cache[path]
-      if (styles == null) {
+      if (styles === null || styles === undefined) {
         res.status(StatusCodes.NOT_FOUND).send('NOT FOUND')
+      } else if (/\.map$/i.test(req.path)) {
+        res.status(StatusCodes.OK).set('Content-Type', 'application/json').json(styles.map)
       } else {
-        if (/\.map$/i.test(req.path)) {
-          res.status(StatusCodes.OK).set('Content-Type', 'application/json').json(styles.map)
-        } else {
-          res.status(StatusCodes.OK).set('Content-Type', 'text/css').send(styles.css)
-        }
+        res.status(StatusCodes.OK).set('Content-Type', 'text/css').send(styles.css)
       }
     } catch (err) {
       let message = 'Internal Server Error'

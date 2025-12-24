@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import { createHash } from 'crypto'
+import { createHash } from 'node:crypto'
 
 const BATCH_SIZE = 1000
 const HASH_LENGTH = 100

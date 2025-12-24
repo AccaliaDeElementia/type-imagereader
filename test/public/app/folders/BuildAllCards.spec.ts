@@ -8,7 +8,7 @@ import { render } from 'pug'
 import { Cast } from '../../../testutils/TypeGuards'
 
 import { Folders } from '../../../../public/scripts/app/folders'
-import assert from 'assert'
+import assert from 'node:assert'
 import Sinon from 'sinon'
 import type { Listing } from '../../../../contracts/listing'
 

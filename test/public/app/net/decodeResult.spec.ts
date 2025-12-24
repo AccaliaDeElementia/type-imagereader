@@ -1,10 +1,9 @@
 'use sanity'
 
-import { expect, use as chaiUse } from 'chai'
-import chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import { decodeResult } from '../../../../public/scripts/app/net'
 import { Cast } from '../../../testutils/TypeGuards'
-chaiUse(chaiAsPromised)
+import { EventuallyRejects } from '../../../testutils/Errors'
 
 describe('public/app/net function decodeResult()', () => {
   let response = Cast<Response>(null)
@@ -26,22 +25,26 @@ describe('public/app/net function decodeResult()', () => {
   })
   it('should reject for empty content', async () => {
     contentLengthFake = '0'
-    await expect(decodeResult(response, isUnknown)).to.eventually.be.rejectedWith('Empty JSON response recieved')
+    const err = await EventuallyRejects(decodeResult(response, isUnknown))
+    expect(err).to.be.an.instanceOf(Error)
+    expect(err.message).to.equal('Empty JSON response recieved')
   })
   it('should reject when data is an error', async () => {
     dataFake = { error: 'This is an Error! FOO!' }
-    await expect(decodeResult(response, isUnknown)).to.eventually.be.rejectedWith('This is an Error! FOO!')
+    const err = await EventuallyRejects(decodeResult(response, isUnknown))
+    expect(err).to.be.an.instanceOf(Error)
+    expect(err.message).to.equal('This is an Error! FOO!')
   })
   it('should reject when isT does not validate json result', async () => {
-    await expect(decodeResult(response, (_): _ is unknown => false)).to.eventually.be.rejectedWith(
-      'Invalid JSON object decoded',
-    )
+    const err = await EventuallyRejects(decodeResult(response, (_): _ is unknown => false))
+    expect(err).to.be.an.instanceOf(Error)
+    expect(err.message).to.equal('Invalid JSON object decoded')
   })
-  it('should reject for null result ecen if isT accepts nulla s valid', async () => {
+  it('should reject for null result even if isT accepts null as valid', async () => {
     dataFake = null
-    await expect(decodeResult(response, (_): _ is unknown => true)).to.eventually.be.rejectedWith(
-      'Invalid JSON object decoded',
-    )
+    const err = await EventuallyRejects(decodeResult(response, (_): _ is unknown => true))
+    expect(err).to.be.an.instanceOf(Error)
+    expect(err.message).to.equal('Invalid JSON object decoded')
   })
   it('should resolve to json data when data is valid', async () => {
     dataFake = { foo: 'bar', baz: Math.random() }

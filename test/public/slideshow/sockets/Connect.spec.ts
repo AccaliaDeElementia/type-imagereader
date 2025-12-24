@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha'
 import { Cast } from '../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import { expect } from 'chai'
-import assert from 'assert'
+import assert from 'node:assert'
 
 describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeEmit = Sinon.stub()

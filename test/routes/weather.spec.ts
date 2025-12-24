@@ -7,12 +7,12 @@ import * as sinon from 'sinon'
 
 import { StatusCodes } from 'http-status-codes'
 import type { Request, Response, Router, Application } from 'express'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
 import { getRouter, Functions, Imports } from '../../routes/weather'
 import type { OpenWeatherData } from '../../routes/weather'
-import assert from 'assert'
+import assert from 'node:assert'
 import { Cast } from '../testutils/TypeGuards'
 type RequestHandler = (req: Request, res: Response) => Promise<void>
 @suite

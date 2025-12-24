@@ -13,7 +13,7 @@ import { Net } from '../../../../public/scripts/app/net'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
 
-import assert from 'assert'
+import assert from 'node:assert'
 
 const markup = `
 html

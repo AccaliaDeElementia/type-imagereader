@@ -8,7 +8,7 @@ import * as sinon from 'sinon'
 import type { Knex } from 'knex'
 
 import { Functions, ModCount, type SiblingFolderSearch, UriSafePath } from '../../routes/apiFunctions'
-import assert from 'assert'
+import assert from 'node:assert'
 import { Cast, StubToKnex } from '../testutils/TypeGuards'
 
 @suite

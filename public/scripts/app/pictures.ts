@@ -25,7 +25,11 @@ function makeURI(width: number | undefined, height: number | undefined, img: Pic
 }
 
 export type PageSelector = () => number
-
+interface PictureCache {
+  size: number
+  next: Picture[]
+  prev: Picture[]
+}
 export const Pictures = {
   modCount: -1,
   nextLoader: Promise.resolve(),
@@ -36,11 +40,21 @@ export const Pictures = {
   mainImage: ((): HTMLImageElement | null => null)(),
   imageCard: ((): HTMLTemplateElement | null => null)(),
   pageSize: 32,
+  cache: ((): PictureCache => ({
+    size: 10,
+    next: [],
+    prev: [],
+  }))(),
   Init: (): void => {
     Pictures.pictures = []
     Pictures.current = null
     Pictures.nextLoader = Promise.resolve()
     Pictures.nextPending = true
+    Pictures.cache = {
+      size: 10,
+      next: [],
+      prev: [],
+    }
     Pictures.ResetMarkup()
     Subscribe('Navigate:Data', async (data) => {
       if (isListing(data)) await Pictures.LoadData(data)
@@ -143,7 +157,7 @@ export const Pictures = {
     })
   },
   InitMouse: (): void => {
-    Pictures.initialScale = window.visualViewport != null ? window.visualViewport.scale : -1
+    Pictures.initialScale = window.visualViewport == null ? -1 : window.visualViewport.scale
     Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
       if (window.visualViewport != null && Pictures.initialScale < window.visualViewport.scale) {
         Publish('Ignored Mouse Click', evt)
@@ -187,10 +201,10 @@ export const Pictures = {
       return
     }
     links.forEach((element: Element, i: number) => {
-      if (i !== index) {
-        element.classList.remove('active')
-      } else {
+      if (i === index) {
         element.classList.add('active')
+      } else {
+        element.classList.remove('active')
       }
     })
     const content = document.querySelectorAll('#tabImages .page')
@@ -352,10 +366,10 @@ export const Pictures = {
     if (firstPic === null) return
 
     const selected = Pictures.pictures.find((picture) => picture.path === data.cover)
-    if (selected !== undefined) {
-      Pictures.current = selected
-    } else {
+    if (selected === undefined) {
       Pictures.current = firstPic
+    } else {
+      Pictures.current = selected
     }
     Pictures.MakeTab()
     Publish('Tab:Select', 'Images')
@@ -384,7 +398,6 @@ export const Pictures = {
     }
   },
   GetPicture: (navi: NavigateTo): Picture | undefined => {
-    let index = -1
     const current = Pictures.current?.index
     if (current === undefined) {
       return undefined
@@ -393,19 +406,19 @@ export const Pictures = {
       ...Pictures.pictures.filter((image) => !image.seen && image.index !== undefined && image.index > current),
       ...Pictures.pictures.filter((image) => !image.seen && image.index !== undefined && image.index < current),
     ]
-    index = Pictures.ChoosePictureIndex(navi, current, unreads)
+    const index = Pictures.ChoosePictureIndex(navi, current, unreads)
     return Pictures.pictures[index]
   },
   ChangePicture: async (pic: Picture | undefined): Promise<void> => {
     if (Loading.IsLoading()) {
       return
     }
-    if (pic != null) {
+    if (pic == null) {
+      Publish('Loading:Error', 'Change Picture called with No Picture to change to')
+    } else {
       Pictures.current = pic
       await Pictures.LoadImage().catch(() => null)
       Publish('Menu:Hide')
-    } else {
-      Publish('Loading:Error', 'Change Picture called with No Picture to change to')
     }
   },
   GetShowUnreadOnly: (): boolean => window.localStorage.ShowUnseenOnly === 'true',

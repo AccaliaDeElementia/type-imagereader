@@ -2,9 +2,9 @@
 
 import { type Application, Router, type Request, type Response, type RequestHandler } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
-import type { Server } from 'http'
-import { normalize, join, extname } from 'path'
-import { readFile } from 'fs/promises'
+import type { Server } from 'node:http'
+import { normalize, join, extname } from 'node:path'
+import { readFile } from 'node:fs/promises'
 
 import Sharp from 'sharp'
 
@@ -12,7 +12,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
 
-const allowedExtensions = /^(jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
+const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
 export class ImageData {
   data: Buffer = Buffer.from('')

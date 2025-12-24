@@ -1,11 +1,11 @@
 'use sanity'
 
-import { readdir } from 'fs/promises'
-import type { Dirent } from 'fs'
-import { join, extname } from 'path'
-import assert from 'assert'
+import { readdir } from 'node:fs/promises'
+import type { Dirent } from 'node:fs'
+import { join, extname } from 'node:path'
+import assert from 'node:assert'
 
-const allowedExtensions = /^(jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
+const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
 async function fsWalker(
   root: string,

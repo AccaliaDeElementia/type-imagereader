@@ -7,7 +7,7 @@ import { render } from 'pug'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Loading } from '../../../../public/scripts/app/loading'
 import { Cast } from '../../../testutils/TypeGuards'
-import assert from 'assert'
+import assert from 'node:assert'
 const markup = `
 html
   body

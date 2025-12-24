@@ -1,11 +1,9 @@
 'use sanity'
 
-import { expect, use as chaiUse } from 'chai'
-import chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import { Net } from '../../../../public/scripts/app/net'
 import { Cast } from '../../../testutils/TypeGuards'
 import Sinon from 'sinon'
-chaiUse(chaiAsPromised)
 
 interface TestRequest {
   method: string

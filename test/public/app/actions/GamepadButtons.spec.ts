@@ -5,7 +5,7 @@ import { beforeEach, describe, it } from 'mocha'
 import { GamepadButtons } from '../../../../public/scripts/app/actions'
 
 import { Cast } from '../../../testutils/TypeGuards'
-import assert from 'assert'
+import assert from 'node:assert'
 
 interface TestGamepadButton {
   pressed: boolean

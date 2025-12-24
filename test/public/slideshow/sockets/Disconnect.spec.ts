@@ -10,7 +10,7 @@ import {
 import { beforeEach, describe, it } from 'mocha'
 import { Cast } from '../../../testutils/TypeGuards'
 import { expect } from 'chai'
-import assert from 'assert'
+import assert from 'node:assert'
 
 describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeDisconnect = Sinon.stub()

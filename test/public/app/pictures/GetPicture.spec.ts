@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { NavigateTo, Pictures } from '../../../../public/scripts/app/pictures'
 import { expect } from 'chai'
-import assert from 'assert'
+import assert from 'node:assert'
 
 describe('public/app/pictures function GetPicture()', () => {
   let choosePictureIndexSpy = Sinon.stub()

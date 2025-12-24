@@ -158,7 +158,7 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
         updater._countdown = -1
         updater._failCount = i
         await updater.trigger(0)
-        expect(updater._countdown).to.equal(10 * Math.pow(2, i + 1))
+        expect(updater._countdown).to.equal(10 * 2 ** (i + 1))
       }
     })
   })

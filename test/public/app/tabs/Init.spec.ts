@@ -8,7 +8,7 @@ import { render } from 'pug'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../testutils/TypeGuards'
 import { Tabs } from '../../../../public/scripts/app/tabs'
-import assert from 'assert'
+import assert from 'node:assert'
 
 const markup = `
 html
@@ -73,7 +73,7 @@ describe('public/app/tabs function Init()', () => {
   it('should select provided tab for Tab:Select event', async () => {
     Tabs.Init()
     selectTabSpy.resetHistory()
-    const fn = PubSub.subscribers['TAB:SELECT']?.at(0)
+    const fn = PubSub.subscribers['TAB:SELECT']?.[0]
     assert(fn != null)
     await fn('FOOBAR')
     expect(selectTabSpy.callCount).to.equal(1)
@@ -82,7 +82,7 @@ describe('public/app/tabs function Init()', () => {
   it('should ignore non string value for Tab:Select event', async () => {
     Tabs.Init()
     selectTabSpy.resetHistory()
-    const fn = PubSub.subscribers['TAB:SELECT']?.at(0)
+    const fn = PubSub.subscribers['TAB:SELECT']?.[0]
     assert(fn != null)
     await fn(null)
     expect(selectTabSpy.callCount).to.equal(0)

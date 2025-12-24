@@ -12,9 +12,9 @@ import { getRouter, Config, Functions, Imports } from '../../routes/slideshow'
 import { Functions as apiFunctions } from '../../routes/apiFunctions'
 import persistance from '../../utils/persistance'
 import type { Application, Router, Request, Response } from 'express'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 import type { Server as WebSocketServer, Socket as WebSocket } from 'socket.io'
-import assert from 'assert'
+import assert from 'node:assert'
 import { StubToKnex, Cast } from '../testutils/TypeGuards'
 type RequestHandler = (req: Request, res: Response) => Promise<void>
 @suite

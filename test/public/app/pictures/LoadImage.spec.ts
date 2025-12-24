@@ -11,7 +11,7 @@ import type { Picture } from '../../../../contracts/listing'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Net } from '../../../../public/scripts/app/net'
 import { Delay } from '../../../testutils/Utils'
-import assert from 'assert'
+import assert from 'node:assert'
 
 const markup = `
 html

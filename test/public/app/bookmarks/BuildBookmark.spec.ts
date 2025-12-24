@@ -11,7 +11,7 @@ import { Cast } from '../../../testutils/TypeGuards'
 import { Net } from '../../../../public/scripts/app/net'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
-import assert from 'assert'
+import assert from 'node:assert'
 import type { Bookmark } from '../../../../contracts/listing'
 
 const markup = `
@@ -105,7 +105,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
       folder: 'bar',
     })
     const style = result?.style.backgroundImage
-    expect(style).to.equal('url(/images/preview/foo/bar.png-image.webp)')
+    expect(style).to.equal('url("/images/preview/foo/bar.png-image.webp")')
   })
   it('should strip leading folder path from title in result card', () => {
     const result = Bookmarks.BuildBookmark({

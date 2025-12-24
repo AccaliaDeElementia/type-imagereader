@@ -8,10 +8,10 @@ import * as sinon from 'sinon'
 import { StatusCodes } from 'http-status-codes'
 
 import { getRouter, Imports } from '../../routes/index'
-import assert from 'assert'
+import assert from 'node:assert'
 import { Cast } from '../testutils/TypeGuards'
 import type { Application, Router, Request, Response } from 'express'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 interface MockedRequest {
   params: string[]

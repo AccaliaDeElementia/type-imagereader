@@ -90,6 +90,6 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
 
     expect(card.style.backgroundImage).to.equal('')
     Pictures.LoadCurrentPageImages()
-    expect(card.style.backgroundImage).to.equal('url(/images/preview.webp)')
+    expect(card.style.backgroundImage).to.equal('url("/images/preview.webp")')
   })
 })

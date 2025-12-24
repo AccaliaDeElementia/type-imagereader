@@ -10,7 +10,7 @@ import { Cast } from '../../../testutils/TypeGuards'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
 import Sinon from 'sinon'
-import assert from 'assert'
+import assert from 'node:assert'
 
 const markup = `
 html

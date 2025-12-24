@@ -5,7 +5,7 @@ import { isHTMLElement } from './markup'
 function hasOptionalKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {
   const entries = Object.entries(obj)
   const e = entries.find(([k]) => k === key)
-  return e === undefined || e[1] === undefined || isT(e[1])
+  return e?.[1] === undefined || isT(e[1])
 }
 
 function hasRequiredKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {

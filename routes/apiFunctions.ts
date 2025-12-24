@@ -1,6 +1,6 @@
 'use sanity'
 
-import { normalize, basename, dirname, extname, sep } from 'path'
+import { normalize, basename, dirname, extname, sep } from 'node:path'
 
 import type { Knex } from 'knex'
 
@@ -208,7 +208,7 @@ export const Functions = {
       name: basename(pic.path, extname(pic.path)),
       path: UriSafePath.encode(pic.path),
       index,
-      seen: !!pic.seen,
+      seen: pic.seen,
     }))
   },
   GetBookmarks: async (knex: Knex): Promise<BookmarkFolder[]> => {

@@ -3,9 +3,9 @@
 import type { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
-import { promisify } from 'util'
-import { join, normalize } from 'path'
-import { readdir, watch, access } from 'fs/promises'
+import { promisify } from 'node:util'
+import { join, normalize } from 'node:path'
+import { readdir, watch, access } from 'node:fs/promises'
 
 import browserify from 'browserify'
 import { minify } from 'terser'
@@ -110,10 +110,10 @@ export const Functions = {
     } catch (err: unknown) {
       if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
         renderError(StatusCodes.NOT_FOUND, `Not Found: ${path}`)
-      } else if (!(err instanceof Error)) {
-        renderError(StatusCodes.INTERNAL_SERVER_ERROR, 'INTERNAL SERVER ERROR')
-      } else {
+      } else if (err instanceof Error) {
         renderError(StatusCodes.INTERNAL_SERVER_ERROR, err)
+      } else {
+        renderError(StatusCodes.INTERNAL_SERVER_ERROR, 'INTERNAL SERVER ERROR')
       }
     }
   },

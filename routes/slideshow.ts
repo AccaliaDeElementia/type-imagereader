@@ -3,10 +3,10 @@
 import { Router } from 'express'
 import type { Application, Request, Response } from 'express'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 
-import { normalize, dirname } from 'path'
+import { normalize, dirname } from 'node:path'
 
 import persistance from '../utils/persistance'
 import { UriSafePath, Functions as api } from './apiFunctions'
@@ -116,7 +116,7 @@ export const Functions = {
     let path = image
     while (path !== '/') {
       path = dirname(path)
-      folders.push(`${path}${path !== '/' ? '/' : ''}`)
+      folders.push(`${path}${path === '/' ? '' : '/'}`)
     }
     await knex('folders').increment('seenCount', 1).whereIn('path', folders)
     await knex('pictures').update({ seen: true }).where({ path: image })

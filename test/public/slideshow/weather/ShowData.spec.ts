@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { Cast } from '../../../testutils/TypeGuards'
-import assert from 'assert'
+import assert from 'node:assert'
 
 const markup = `
 html

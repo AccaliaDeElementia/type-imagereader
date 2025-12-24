@@ -10,7 +10,7 @@ import { Actions } from '../../../../public/scripts/app/actions'
 import { Cast } from '../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import type { Listing } from '../../../../contracts/listing'
-import assert from 'assert'
+import assert from 'node:assert'
 
 describe('public/app/actions function Init()', () => {
   const existingWindow: Window & typeof globalThis = global.window

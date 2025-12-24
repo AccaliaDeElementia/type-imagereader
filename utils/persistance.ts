@@ -1,7 +1,7 @@
 'use sanity'
 
-import { readFile } from 'fs/promises'
-import { join } from 'path'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 import type { Knex } from 'knex'
 import knex from 'knex'

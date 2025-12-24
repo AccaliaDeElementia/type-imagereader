@@ -9,7 +9,7 @@ import TimeUpdater from '../../../public/scripts/slideshow/time'
 import OverlayUpdater from '../../../public/scripts/slideshow/overlay'
 import { WeatherUpdater, LocalWeatherUpdater } from '../../../public/scripts/slideshow/weather'
 import { CyclicManager } from '../../../public/scripts/slideshow/updater'
-import assert from 'assert'
+import assert from 'node:assert'
 
 describe('public/slideshow/index', () => {
   let fakeCyclicAdd: Sinon.SinonStub | undefined = undefined

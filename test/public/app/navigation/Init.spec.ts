@@ -1,9 +1,8 @@
 'use sanity'
 
-import { expect, use as chaiUse } from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import Sinon from 'sinon'
-import assert from 'assert'
+import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
@@ -12,7 +11,7 @@ import { Cast } from '../../../testutils/TypeGuards'
 import type { Listing } from '../../../../contracts/listing'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { Net } from '../../../../public/scripts/app/net'
-chaiUse(chaiAsPromised.default)
+import { EventuallyFullfills, EventuallyRejects } from '../../../testutils/Errors'
 
 const markup = `
 html
@@ -323,7 +322,7 @@ describe('public/app/navigation function Init()', () => {
       const handler = PubSub.subscribers['MENU:SHOW']?.pop()
       assert(handler !== undefined, 'handler must have a value')
       menuNode?.classList.add('hidden')
-      await expect(handler(undefined)).to.eventually.be.fulfilled
+      await EventuallyFullfills(handler(undefined))
     })
   })
   describe('Menu:Hide Message Handler', () => {
@@ -369,7 +368,7 @@ describe('public/app/navigation function Init()', () => {
       Navigation.Init()
       const handler = PubSub.subscribers['MENU:HIDE']?.pop()
       assert(handler !== undefined, 'handler must have a value')
-      await expect(handler(undefined)).to.eventually.be.fulfilled
+      await EventuallyFullfills(handler(undefined))
     })
   })
   describe('#mainMenu Click Handler', () => {
@@ -536,7 +535,7 @@ describe('public/app/navigation function Init()', () => {
     it('should reject when NavigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
-      await expect(handler()).to.eventually.be.rejectedWith(err)
+      expect(await EventuallyRejects(handler())).to.equal(err)
     })
   })
   describe('Action:Execute:NextFolder message Handler', () => {
@@ -614,7 +613,7 @@ describe('public/app/navigation function Init()', () => {
     it('should reject when NavigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
-      await expect(handler()).to.eventually.be.rejectedWith(err)
+      expect(await EventuallyRejects(handler())).to.equal(err)
     })
   })
   describe('Action:Execute:ParentFolder message Handler', () => {
@@ -653,7 +652,7 @@ describe('public/app/navigation function Init()', () => {
     it('should reject when NavigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
-      await expect(handler()).to.eventually.be.rejectedWith(err)
+      expect(await EventuallyRejects(handler())).to.equal(err)
     })
   })
   describe('Action:Execute:FirstUnfinished message Handler', () => {
@@ -734,7 +733,7 @@ describe('public/app/navigation function Init()', () => {
     it('should reject when NavigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
-      await expect(handler()).to.eventually.be.rejectedWith(err)
+      expect(await EventuallyRejects(handler())).to.equal(err)
     })
   })
   describe('Action:Execute:MarkAllSeen Message Handler', () => {
@@ -828,7 +827,7 @@ describe('public/app/navigation function Init()', () => {
     })
     it('should swallow exception when LoadData rejects', async () => {
       loadDataStub.rejects('FOO')
-      await expect(handler()).to.eventually.be.fulfilled
+      await EventuallyFullfills(handler())
     })
   })
   describe('Action:Execute:MarkAllUnseen Message Handler', () => {
@@ -922,7 +921,7 @@ describe('public/app/navigation function Init()', () => {
     })
     it('should swallow exception when LoadData rejects', async () => {
       loadDataStub.rejects('FOO')
-      await expect(handler()).to.eventually.be.fulfilled
+      await EventuallyFullfills(handler())
     })
   })
   describe('Action:Execute:Slideshow Message Handler', () => {

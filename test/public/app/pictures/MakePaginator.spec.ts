@@ -8,7 +8,7 @@ import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../testutils/TypeGuards'
 import { render } from 'pug'
-import assert from 'assert'
+import assert from 'node:assert'
 
 const markup = `
 html

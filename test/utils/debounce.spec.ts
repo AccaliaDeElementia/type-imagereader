@@ -5,7 +5,7 @@ import { suite, test } from '@testdeck/mocha'
 import * as sinon from 'sinon'
 
 import { Debouncer } from '../../utils/debounce'
-import assert from 'assert'
+import assert from 'node:assert'
 
 function IsDebouncerTests(_: Debouncer): _ is DebouncerTests {
   return true

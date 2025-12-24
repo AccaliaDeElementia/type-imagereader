@@ -5,6 +5,7 @@ import Sinon from 'sinon'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../public/scripts/app/navigation'
 import { Cast } from '../../../testutils/TypeGuards'
+import { EventuallyFullfills } from '../../../testutils/Errors'
 describe('public/app/navigation function NavigateTo()', () => {
   const errorSpy = Sinon.stub()
   let loadDataSpy = Sinon.stub()
@@ -60,6 +61,6 @@ describe('public/app/navigation function NavigateTo()', () => {
   })
   it('should swallow error when LoadData rejects', async () => {
     loadDataSpy.rejects('FOO')
-    await expect(Navigation.NavigateTo('/foo', 'FOO')).to.eventually.be.fulfilled
+    await EventuallyFullfills(Navigation.NavigateTo('/foo', 'FOO'))
   })
 })

@@ -6,7 +6,7 @@ import type Sinon from 'sinon'
 import * as sinon from 'sinon'
 
 import type { Application, Router, Request, Response } from 'express'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 import persistance from '../../utils/persistance'
@@ -14,7 +14,7 @@ import persistance from '../../utils/persistance'
 import { isReqWithBodyData, getRouter, Imports, ReadBody } from '../../routes/api'
 import { Functions, ModCount } from '../../routes/apiFunctions'
 
-import assert from 'assert'
+import assert from 'node:assert'
 import type { Debugger } from 'debug'
 import { Cast, StubToKnex } from '../testutils/TypeGuards'
 

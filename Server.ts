@@ -2,7 +2,7 @@
 
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
-import { join } from 'path'
+import { join } from 'node:path'
 import helmet from 'helmet'
 
 import express, { type Express, type Request, type Response, type NextFunction } from 'express'
@@ -10,7 +10,7 @@ import favicon from 'serve-favicon'
 import StatusCodes from 'http-status-codes'
 import 'express-async-errors'
 
-import type { Server as HttpServer } from 'http'
+import type { Server as HttpServer } from 'node:http'
 import { Server as WebSocketServer } from 'socket.io'
 
 import { getRouter as getApiRouter } from './routes/api'

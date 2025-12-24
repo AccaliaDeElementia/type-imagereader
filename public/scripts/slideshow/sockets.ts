@@ -28,14 +28,12 @@ export const Functions = {
       socket.emit('prev-image')
     } else if (x > (pageWidth * 2) / 3) {
       socket.emit('next-image')
+    } else if (new URLSearchParams(window.location.search).has('kiosk')) {
+      socket.emit('next-image')
     } else {
-      if (new URLSearchParams(window.location.search).has('kiosk')) {
-        socket.emit('next-image')
-      } else {
-        socket.emit('goto-image', (folder: string) => {
-          WebSockets.LocationAssign(`/show${folder}?noMenu`)
-        })
-      }
+      socket.emit('goto-image', (folder: string) => {
+        WebSockets.LocationAssign(`/show${folder}?noMenu`)
+      })
     }
   },
   DoNewImage: (path: string): void => {
@@ -80,7 +78,7 @@ function Connect(): void {
     WebSockets.socket?.emit('get-launchId', Functions.HandleGetLaunchId)
   })
   WebSockets.socket.on('new-image', Functions.DoNewImage)
-  const initialScale = window.visualViewport != null ? window.visualViewport.scale : 1
+  const initialScale = window.visualViewport == null ? 1 : window.visualViewport.scale
   document.body.addEventListener('click', (event) => {
     Functions.HandleClick(event, WebSockets.socket, initialScale)
   })

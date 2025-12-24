@@ -11,6 +11,10 @@ export async function EventuallyRejects(promise: Promise<unknown>): Promise<Erro
   expect.fail('EventuallyRejects did not reject!')
 }
 
+export async function EventuallyFullfills(promise: Promise<unknown>): Promise<void> {
+  await promise
+}
+
 export function DefinitelyThrows(fn: () => unknown): Error {
   try {
     fn()
