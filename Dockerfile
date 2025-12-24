@@ -1,4 +1,4 @@
-FROM docker.io/library/node:22.13
+FROM docker.io/library/node:24
 
 LABEL maintainer="docker@elementia.me"
 
