@@ -41,7 +41,7 @@ function LogError(err: unknown, message: string, defaultError: string): Error {
 const createCache = (): Record<string, Promise<cssAndMap | null>> => ({})
 export const Functions = {
   logger: debug('type-imagereader:sass-middleware'),
-  debouncer: Debouncer.create(),
+  debouncer: new Debouncer(),
   cache: createCache(),
   CompileCss: async (path: string, filename: string): Promise<cssAndMap> => {
     try {

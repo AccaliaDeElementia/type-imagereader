@@ -7,7 +7,7 @@ import type { Knex } from 'knex'
 import knex from 'knex'
 
 const initialize = async (): Promise<Knex> => {
-  const config = await Functions.GetKnexConfig()
+  const config = await Functions.getKnexConfig()
   const knexInstance = Imports.knex(config)
   await knexInstance.migrate.latest()
   return knexInstance
@@ -33,7 +33,7 @@ export interface KnexOptions {
 }
 
 function isConnectionValid(obj: object): boolean {
-  if (!('connection' in obj) || obj.connection == null || typeof obj.connection !== 'object') return false
+  if (!('connection' in obj) || !isDictionary(obj.connection)) return false
   const entries = Object.entries(obj.connection)
   for (const key of ['host', 'database', 'user', 'password', 'filename']) {
     const value = entries.find(([k]) => k === key)
@@ -44,31 +44,40 @@ function isConnectionValid(obj: object): boolean {
 
 function isPoolValid(obj: object): boolean {
   if (!('pool' in obj)) return true
-  if (obj.pool == null || typeof obj.pool !== 'object') return false
+  if (!isDictionary(obj.pool)) return false
   if (!('min' in obj.pool) || typeof obj.pool.min !== 'number') return false
   if (!('max' in obj.pool) || typeof obj.pool.max !== 'number') return false
+  if (obj.pool.min >= obj.pool.max) return false
   return true
 }
 
 function isMigrationsValid(obj: object): boolean {
-  if (!('migrations' in obj) || obj.migrations == null || typeof obj.migrations !== 'object') return false
+  if (!('migrations' in obj) || !isDictionary(obj.migrations)) return false
   if (!('tableName' in obj.migrations) || typeof obj.migrations.tableName !== 'string') return false
   return true
 }
 
-export function isKnexOptions(obj: unknown): obj is KnexOptions {
-  if (obj == null || typeof obj !== 'object') return false
+function isKnexOptions(obj: unknown): obj is KnexOptions {
+  if (!isDictionary(obj)) return false
   if (!('client' in obj) || typeof obj.client !== 'string') return false
-  if (!isConnectionValid(obj)) return false
+  if (!TypeGuards.isConnectionValid(obj)) return false
   if ('useNullAsDefault' in obj && typeof obj.useNullAsDefault !== 'boolean') return false
-  if (!isPoolValid(obj)) return false
-  if (!isMigrationsValid(obj)) return false
+  if (!TypeGuards.isPoolValid(obj)) return false
+  if (!TypeGuards.isMigrationsValid(obj)) return false
   return true
 }
 
-export function isDictionary(obj: unknown): obj is Record<string, unknown> {
-  if (obj == null || typeof obj !== 'object') return false
+function isDictionary(obj: unknown): obj is Record<string, unknown> {
+  if (obj == null || typeof obj !== 'object' || obj instanceof Array) return false
   return true
+}
+
+export const TypeGuards = {
+  isDictionary,
+  isKnexOptions,
+  isMigrationsValid,
+  isPoolValid,
+  isConnectionValid,
 }
 
 const CreateInitializer = (): Promise<Knex> | undefined => undefined
@@ -92,7 +101,7 @@ export const Functions = {
     if (!isKnexOptions(config)) throw new Error('Invalid Configuration Detected!')
     return config
   },
-  GetKnexConfig: async (): Promise<KnexOptions> => {
+  getKnexConfig: async (): Promise<KnexOptions> => {
     const connection = await Functions.readConfigurationBlock()
     const keys: Array<'host' | 'database' | 'user' | 'password' | 'filename'> = [
       'host',

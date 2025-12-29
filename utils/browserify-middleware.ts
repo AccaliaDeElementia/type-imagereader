@@ -37,7 +37,7 @@ const createCache = (): Record<string, Promise<string | null>> => ({})
 export const Functions = {
   browserified: createCache(),
   logger: debug('type-imagereader:browserify-middleware'),
-  debouncer: Debouncer.create(),
+  debouncer: new Debouncer(),
   GetPaths: (path: string): string[] => {
     const exts = ['.js', '.ts', '']
     return exts.map((ext) => path.replace(isCompileableExtension, '') + ext)
