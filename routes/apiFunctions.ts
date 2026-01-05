@@ -53,32 +53,30 @@ interface Listing {
   bookmarks: BookmarkFolder[]
   modCount: number
 }
-
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- rewrite to make non static later
-export class ModCount {
-  protected static modCount = ModCount.Reset()
-
-  protected static Reset(): number {
-    this.modCount = Math.floor(Math.random() * 1e10)
-    return this.modCount
-  }
-
-  public static Get(): number {
-    return this.modCount
-  }
-
-  public static Validate(incoming: number): boolean {
-    return this.modCount === incoming
-  }
-
-  public static Increment(): number {
-    if (this.modCount >= Number.MAX_SAFE_INTEGER - 1) {
-      this.modCount = 0
-    }
-    this.modCount++
-    return this.modCount
-  }
+interface ModCountType {
+  _modCount: number
+  _Reset: () => number
+  Get: () => number
+  Validate: (incoming: number) => boolean
+  Increment: () => number
 }
+export const ModCount: ModCountType = {
+  _modCount: -1,
+  _Reset: (): number => {
+    ModCount._modCount = Math.floor(Math.random() * 1e10)
+    return ModCount._modCount
+  },
+  Get: (): number => ModCount._modCount,
+  Validate: (incoming: number): boolean => ModCount._modCount === incoming,
+  Increment: (): number => {
+    if (ModCount._modCount >= Number.MAX_SAFE_INTEGER - 1) {
+      ModCount._modCount = 0
+    }
+    ModCount._modCount += 1
+    return ModCount._modCount
+  },
+}
+ModCount._Reset()
 
 export const UriSafePath = {
   decode: (uri: string): string =>

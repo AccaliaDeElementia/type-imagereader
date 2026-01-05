@@ -1,12 +1,12 @@
 'use sanity'
 
 import { Router } from 'express'
-import type { Application, Request, Response, RequestHandler } from 'express'
+import type { Application, Request, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 
-interface WeatherResults {
+export interface WeatherResults {
   temp: number | undefined
   pressure: number | undefined
   humidity: number | undefined
@@ -60,8 +60,6 @@ function isSysValid(data: object): boolean {
 }
 
 export const Imports = {
-  getAppId: (): string => process.env.OPENWEATHER_APPID ?? '',
-  getLocation: (): string => encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? ''),
   getNightNotBefore: (): number => {
     const time = new Date()
     time.setMilliseconds(0)
@@ -96,8 +94,6 @@ export const Imports = {
     }
     return time.getTime()
   },
-  setInterval,
-  fetch,
   Router,
 }
 const defaultWeather: WeatherResults = {
@@ -118,11 +114,11 @@ export const Functions = {
     return isSysValid(data)
   },
   GetWeather: async (): Promise<OpenWeatherData> => {
-    const appId = Imports.getAppId()
-    const location = Imports.getLocation()
+    const appId = process.env.OPENWEATHER_APPID ?? ''
     if (appId.length < 1) throw new Error('no OpewnWeather AppId Defined!')
+    const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
     if (location.length < 1) throw new Error('no OpewnWeather Location Defined!')
-    const response = await Imports.fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`)
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`)
     const data: unknown = await response.json()
     if (!Functions.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
     return data
@@ -159,36 +155,17 @@ export const Functions = {
 export async function getRouter(_app: Application, _server: Server, _sockets: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
 
-  const handleErrors =
-    (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
-    async (req: Request, res: Response) => {
-      try {
-        await action(req, res)
-      } catch (e) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          error: {
-            code: 'E_INTERNAL_ERROR',
-            message: 'Internal Server Error',
-          },
-        })
-      }
-    }
+  router.get('/', (_: Request, res: Response): void => {
+    res.status(StatusCodes.OK).json(Functions.weather)
+  })
 
-  router.get(
-    '/',
-    handleErrors(async (_, res) => {
-      res.status(StatusCodes.OK).json(Functions.weather)
-      await Promise.resolve()
-    }),
-  )
-
-  Imports.setInterval(
+  setInterval(
     () => {
-      Functions.UpdateWeather().catch(() => null)
+      void Functions.UpdateWeather()
     },
     10 * 60 * 1000,
   )
-  Functions.UpdateWeather().catch(() => null)
+  void Functions.UpdateWeather()
 
   await Promise.resolve()
   return router

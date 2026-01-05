@@ -15,10 +15,11 @@ import debug from 'debug'
 const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
 export class ImageData {
-  data: Buffer = Buffer.from('')
+  static defaultData = Buffer.from('')
+  data: Buffer = ImageData.defaultData
   extension: string | null = null
   code: string | null = null
-  statusCode = 500
+  statusCode = Number.NaN
   message: string | null = null
   path = ''
 
@@ -42,7 +43,7 @@ export class ImageData {
 
 export const Imports = { debug, readFile, Sharp, Router }
 
-interface CacheItem {
+export interface CacheItem {
   path: string
   width: number
   height: number
@@ -197,7 +198,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         logger(e)
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           error: {
-            code: 'EINTERNALERROR',
+            code: 'E_INTERNAL_ERROR',
             message: 'Internal Server Error',
           },
         })

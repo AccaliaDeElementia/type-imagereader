@@ -44,7 +44,6 @@ export default [
       'preserve-caught-error': 'off',
       'max-lines': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
-      '@typescript-eslint/class-methods-use-this': 'off', //TODO: Convert to standard BDD spec to avoid class shenanigans.... until then this is the fix....
     },
   },
   {

@@ -43,26 +43,31 @@ export const Config = {
 
 export const Imports = {
   setLatest: async (knex: Knex, path: string): Promise<string | null> => await api.SetLatestPicture(knex, path),
-  setInterval,
   Router,
 }
-
+export interface HandleSocketState {
+  roomName: string | null
+}
 export const Functions = {
   GetUnreadImageCount: async (knex: Knex, path: string): Promise<number> => {
     const counts = await knex('pictures')
       .count({ count: 'path' })
       .where('path', 'like', `${path}%`)
       .andWhere('seen', '=', false)
-    if (counts[0]?.count != null) {
-      return +counts[0].count
-    }
+    try {
+      if (counts[0]?.count != null) {
+        return +counts[0].count
+      }
+    } catch {}
     return 0
   },
   GetImageCount: async (knex: Knex, path: string): Promise<number> => {
     const counts = await knex('pictures').count({ count: 'path' }).where('path', 'like', `${path}%`)
-    if (counts[0]?.count != null) {
-      return +counts[0].count
-    }
+    try {
+      if (counts[0]?.count != null) {
+        return +counts[0].count
+      }
+    } catch {}
     return 0
   },
   GetCounts: async (
@@ -157,53 +162,57 @@ export const Functions = {
     return room
   },
   TickCountdown: async (knex: Knex, io: WebSocketServer): Promise<void> => {
-    const newRooms: Record<string, SlideshowRoom> = {}
-    for (const room of Object.values(Config.rooms)) {
-      room.countdown--
-      if (room.countdown <= -60 * Config.countdownDuration) {
-        continue
+    try {
+      const newRooms: Record<string, SlideshowRoom> = {}
+      for (const room of Object.values(Config.rooms)) {
+        room.countdown--
+        if (room.countdown <= -60 * Config.countdownDuration) {
+          continue
+        }
+        newRooms[room.path] = room
+        const sockets = io.of('/').adapter.rooms.get(room.path)
+        if ((sockets?.size ?? 0) < 1) {
+          continue
+        }
+        if (room.countdown <= 0) {
+          room.countdown = Config.countdownDuration
+          await Functions.GetRoomAndIncrementImage(knex, room.path, 1)
+          io.to(room.path).emit('new-image', room.uriSafeImage)
+        }
       }
-      newRooms[room.path] = room
-      const sockets = io.of('/').adapter.rooms.get(room.path)
-      if ((sockets?.size ?? 0) < 1) {
-        continue
-      }
-      if (room.countdown <= 0) {
-        room.countdown = Config.countdownDuration
-        await Functions.GetRoomAndIncrementImage(knex, room.path, 1)
-        io.to(room.path).emit('new-image', room.uriSafeImage)
-      }
-    }
-    Config.rooms = newRooms
+      Config.rooms = newRooms
+    } catch {}
   },
-  HandleSocket: (knex: Knex, io: WebSocketServer, socket: Socket): void => {
-    let socketRoom: string | null = null
-
+  HandleSocket: (knex: Knex, io: WebSocketServer, socket: Socket): HandleSocketState => {
+    const state: HandleSocketState = {
+      roomName: null,
+    }
     socket.on('get-launchId', (callback: SocketCallback) => {
       callback(Config.launchId)
     })
-    socket.on('join-slideshow', async (roomName: string) => {
-      socketRoom = roomName
+    socket.on('join-slideshow', async (roomName?: string) => {
+      if (roomName == null || roomName.length < 1) return
+      state.roomName = roomName
       await socket.join(roomName)
-      const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom)
+      const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
       socket.emit('new-image', room.uriSafeImage)
     })
     socket.on('prev-image', async () => {
-      if (socketRoom == null) return
-      const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom, -1)
+      if (state.roomName == null) return
+      const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, -1)
       io.to(room.path).emit('new-image', room.uriSafeImage)
     })
     socket.on('next-image', async () => {
-      if (socketRoom == null) return
-      const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom, 1)
+      if (state.roomName == null) return
+      const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, 1)
       io.to(room.path).emit('new-image', room.uriSafeImage)
     })
     socket.on('goto-image', async (callback: SocketCallback) => {
-      if (socketRoom == null) {
+      if (state.roomName == null) {
         callback(null)
         return
       }
-      const room = await Functions.GetRoomAndIncrementImage(knex, socketRoom)
+      const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
       const picture = room.images[room.index]
       if (picture == null) {
         callback(null)
@@ -212,10 +221,11 @@ export const Functions = {
       const folder = await Imports.setLatest(knex, picture)
       callback(folder)
     })
+    return state
   },
   RootRoute: async (knex: Knex, req: Request, res: Response): Promise<void> => {
     const folder = '/' + (req.params[0] ?? '')
-    if (normalize(folder) !== folder) {
+    if (normalize(folder) !== folder || folder.startsWith('/~')) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
         title: 'ERROR',
         code: 'E_NO_TRAVERSE',
@@ -259,7 +269,7 @@ export async function getRouter(_: Application, __: Server, io: WebSocketServer)
   router.get('/launchId', (_, res) => res.json({ launchId: Config.launchId }))
 
   const handler = (req: Request, res: Response): void => {
-    Functions.RootRoute(knex, req, res).catch(() => null)
+    void Functions.RootRoute(knex, req, res)
   }
   router.get('/', handler)
   router.get('/*', handler)
@@ -267,8 +277,8 @@ export async function getRouter(_: Application, __: Server, io: WebSocketServer)
   io.on('connection', (socket) => {
     Functions.HandleSocket(knex, io, socket)
   })
-  Imports.setInterval(() => {
-    Functions.TickCountdown(knex, io).catch(() => null)
+  setInterval(() => {
+    void Functions.TickCountdown(knex, io)
   }, 1000)
 
   return router

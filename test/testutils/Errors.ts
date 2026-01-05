@@ -1,4 +1,5 @@
-import { expect } from 'chai'
+import { expect, assert } from 'chai'
+import { Cast } from './TypeGuards'
 
 export async function EventuallyRejects(promise: Promise<unknown>): Promise<Error> {
   try {
@@ -24,4 +25,8 @@ export function DefinitelyThrows(fn: () => unknown): Error {
     return new Error(`An error of type ${typeof e} was thrown!`)
   }
   expect.fail('DefinitelyThrows did not throw!')
+}
+
+export function AlwaysFails<T>(message = 'Assertion Failed', _: T | null = null): T {
+  return Cast<T>(() => assert.fail(message))
 }

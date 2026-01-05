@@ -15,7 +15,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
 
   const rootRoute = (req: Request, res: Response): void => {
     const folder = '/' + (req.params[0] ?? '')
-    if (normalize(folder) !== folder) {
+    if (normalize(folder) !== folder || folder.startsWith('/~')) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
         error: {
           title: 'ERROR',
