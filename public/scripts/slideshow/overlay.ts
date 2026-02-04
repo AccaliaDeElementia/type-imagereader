@@ -13,9 +13,9 @@ export const Functions = {
   },
   ShowHideKiosk: (overlay: HTMLElement, isKioskMode: boolean): void => {
     if (isKioskMode) {
-      overlay.classList.add('hide')
-    } else {
       overlay.classList.remove('hide')
+    } else {
+      overlay.classList.add('hide')
     }
   },
   CalculateOffset: (): number => {
