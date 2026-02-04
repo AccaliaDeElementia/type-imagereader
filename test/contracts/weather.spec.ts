@@ -152,4 +152,43 @@ describe('Contracts: IsWeatherResults()', () => {
       expect(isWeatherResults(value)).to.equal(expected)
     })
   })
+  it('should accept weather from local env service', () => {
+    const data = {
+      sun: { next_rising: '2026-01-27T07:02:59.514047-05:00', next_setting: '2026-01-26T16:44:06.756438-05:00' },
+      temp: 15.3937702178955,
+      pressure: 1006.80096435547,
+      humidity: 31.0599937438965,
+      description: '',
+      icon: '',
+      ENV: {
+        temperature: 15.3937702178955,
+        temperature_unit: '\u00b0C',
+        humidity: 31.0599937438965,
+        humidity_unit: '%',
+        pressure: 1006.80096435547,
+        pressure_unit: 'hPa',
+        eCO2: 985.933349609375,
+        eCO2_unit: 'ppm',
+      },
+      WEATHER: {
+        weather: 'Snowy',
+        temperature: -10.6,
+        temperature_unit: '\u00b0C',
+        humidity: 81,
+        humidity_unit: '%',
+        cloud_coverage: 100.0,
+        cloud_coverage_unit: '%',
+        uv_index: 1.7,
+        pressure: 1007.3,
+        pressure_unit: 'hPa',
+        wind_bearing: 2.3,
+        wind_speed: 36.0,
+        wind_speed_unit: 'km/h',
+        visibility: 1.61,
+        visibility_unit: 'km',
+        precipitation: 0,
+      },
+    }
+    expect(isWeatherResults(data)).to.equal(true)
+  })
 })
