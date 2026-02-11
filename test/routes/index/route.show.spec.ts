@@ -11,7 +11,7 @@ import { Cast } from '../../testutils/TypeGuards'
 describe('routes/index route /', () => {
   let routeFn: (_: Request, __: Response) => void = Sinon.stub()
   let routeAltFn: (_: Request, __: Response) => void = Sinon.stub()
-  let requestStub = { params: [] as string[] }
+  let requestStub = { params: { path: [] as string | string[] | undefined } }
   let requestFake = Cast<Request>(requestStub)
   let resposeStub = { render: Sinon.stub(), status: Sinon.stub().returnsThis() }
   let responseFake = Cast<Response>(resposeStub)
@@ -28,17 +28,17 @@ describe('routes/index route /', () => {
         routerStub.get.getCalls().find((c) => c.args[0] === '/show')?.args[1],
       )
       routeAltFn = Cast<(_: Request, __: Response) => void>(
-        routerStub.get.getCalls().find((c) => c.args[0] === '/show/*')?.args[1],
+        routerStub.get.getCalls().find((c) => c.args[0] === '/show/*path')?.args[1],
       )
     } finally {
       getRouterStub?.restore()
     }
-    requestStub = { params: [] as string[] }
+    requestStub = { params: { path: undefined } }
     requestFake = Cast<Request>(requestStub)
     resposeStub = { render: Sinon.stub(), status: Sinon.stub().returnsThis() }
     responseFake = Cast<Response>(resposeStub)
   })
-  it("should alias same handler for both '/show' and '/show/*' routes", () => {
+  it("should alias same handler for both '/show' and '/show/*path' routes", () => {
     expect(routeFn).to.equal(routeAltFn)
   })
   const errorData = {
@@ -73,7 +73,7 @@ describe('routes/index route /', () => {
   ]
   errorTests.forEach(([title, path, validationFn]) => {
     it(`should ${title} for '${path}'`, () => {
-      requestStub.params = [path]
+      requestStub.params.path = path.split(/\//g)
       routeFn(requestFake, responseFake)
       validationFn()
     })
@@ -82,27 +82,27 @@ describe('routes/index route /', () => {
   successPaths.forEach((path) => {
     it(`should render for '${path}'`, () => {
       if (path === undefined) {
-        requestStub.params = []
+        requestStub.params.path = undefined
       } else {
-        requestStub.params = [path]
+        requestStub.params.path = path.split(/\//g)
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.render.callCount).to.equal(1)
     })
     it(`should render app for '${path}'`, () => {
       if (path === undefined) {
-        requestStub.params = []
+        requestStub.params.path = undefined
       } else {
-        requestStub.params = [path]
+        requestStub.params.path = path.split(/\//g)
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.render.firstCall.args).to.deep.equal(['app'])
     })
     it(`should not set explicit status '${path}'`, () => {
       if (path === undefined) {
-        requestStub.params = []
+        requestStub.params.path = undefined
       } else {
-        requestStub.params = [path]
+        requestStub.params.path = path.split(/\//g)
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.status.callCount).to.equal(0)

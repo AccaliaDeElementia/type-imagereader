@@ -47,18 +47,18 @@ describe('routes/api function getRouter()', () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
     expect(routerStub.get.calledWith('/')).to.equal(true)
   })
-  it('should attach handler for get `/listing/*`', async () => {
+  it('should attach handler for get `/listing/*path`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
-    expect(routerStub.get.calledWith('/listing/*')).to.equal(true)
+    expect(routerStub.get.calledWith('/listing/*path')).to.equal(true)
   })
   it('should attach handler for get `/listing`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
     expect(routerStub.get.calledWith('/listing')).to.equal(true)
   })
-  it('should use same handler for `/listing/` and `/listing/*`', async () => {
+  it('should use same handler for `/listing/` and `/listing/*path`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
     const fn1 = routerStub.get.getCalls().find((call) => call.args[0] === '/listing')?.args[1] as unknown
-    const fn2 = routerStub.get.getCalls().find((call) => call.args[0] === '/listing/*')?.args[1] as unknown
+    const fn2 = routerStub.get.getCalls().find((call) => call.args[0] === '/listing/*path')?.args[1] as unknown
     assert(fn1 !== undefined)
     assert(fn2 !== undefined)
     expect(fn1).to.equal(fn2)
@@ -75,18 +75,18 @@ describe('routes/api function getRouter()', () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
     expect(routerStub.post.calledWith('/mark/unread')).to.equal(true)
   })
-  it('should attach handler for get `/bookmarks/*`', async () => {
+  it('should attach handler for get `/bookmarks/*path`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
-    expect(routerStub.get.calledWith('/bookmarks/*')).to.equal(true)
+    expect(routerStub.get.calledWith('/bookmarks/*path')).to.equal(true)
   })
   it('should attach handler for get `/bookmarks/`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
     expect(routerStub.get.calledWith('/bookmarks')).to.equal(true)
   })
-  it('should use same handler for `/bookmarks/` and `/bookmarks/*`', async () => {
+  it('should use same handler for `/bookmarks/` and `/bookmarks/*path`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
     const fn1 = routerStub.get.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1] as unknown
-    const fn2 = routerStub.get.getCalls().find((call) => call.args[0] === '/bookmarks/*')?.args[1] as unknown
+    const fn2 = routerStub.get.getCalls().find((call) => call.args[0] === '/bookmarks/*path')?.args[1] as unknown
     assert(fn1 !== undefined)
     assert(fn2 !== undefined)
     expect(fn1).to.equal(fn2)

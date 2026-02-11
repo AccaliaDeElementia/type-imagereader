@@ -7,6 +7,7 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'node:path'
+import { ReqParamToString } from '../utils/helpers'
 
 export const Imports = { Router }
 
@@ -14,7 +15,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   const router = Imports.Router()
 
   const rootRoute = (req: Request, res: Response): void => {
-    const folder = '/' + (req.params[0] ?? '')
+    const folder = '/' + ReqParamToString(req.params.path)
     if (normalize(folder) !== folder || folder.startsWith('/~')) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
         error: {
@@ -31,7 +32,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     res.redirect(StatusCodes.MOVED_TEMPORARILY, '/show')
   })
   router.get('/show', rootRoute)
-  router.get('/show/*', rootRoute)
+  router.get('/show/*path', rootRoute)
 
   await Promise.resolve()
 

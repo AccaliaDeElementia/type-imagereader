@@ -16,7 +16,7 @@ type RequestHandler = (req: Request, res: Response) => Promise<void>
 
 describe('routes/api route GET /listing', () => {
   let requestStub = {
-    params: [] as string[],
+    params: { path: undefined as string | string[] | undefined },
     body: { Body: -1 },
     originalUrl: '/',
   }
@@ -35,7 +35,7 @@ describe('routes/api route GET /listing', () => {
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
-      params: [] as string[],
+      params: { path: undefined },
       body: { Body: -1 },
       originalUrl: '/',
     }
@@ -86,48 +86,60 @@ describe('routes/api route GET /listing', () => {
     expect(responseStub.json.firstCall.args[0]).to.equal(listing)
   })
   it('should call GetListingStub with Knex from initialize', async () => {
-    requestStub.params = []
+    requestStub.params = { path: undefined }
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
     expect(getListingStub.firstCall.args[0]).to.equal(knexFake)
   })
   it('should call GetListingStub to retrieve implicit root listing', async () => {
-    requestStub.params = []
+    requestStub.params = { path: undefined }
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
     expect(getListingStub.firstCall.args[1]).to.equal('/')
   })
   it('should call GetListingStub to retrieve empty path listing', async () => {
-    requestStub.params = ['']
+    requestStub.params = { path: '' }
+    await routeHandler(requestFake, responseFake)
+    expect(getListingStub.callCount).to.equal(1)
+    expect(getListingStub.firstCall.args[1]).to.equal('/')
+  })
+  it('should call GetListingStub to retrieve empty array path listing', async () => {
+    requestStub.params = { path: [] }
+    await routeHandler(requestFake, responseFake)
+    expect(getListingStub.callCount).to.equal(1)
+    expect(getListingStub.firstCall.args[1]).to.equal('/')
+  })
+  it('should call GetListingStub to retrieve array empty path listing', async () => {
+    requestStub.params = { path: [''] }
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
     expect(getListingStub.firstCall.args[1]).to.equal('/')
   })
   it('should call GetListingStub to retrieve explicit root listing', async () => {
-    requestStub.params = ['/']
+    requestStub.params.path = ['/']
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
     expect(getListingStub.firstCall.args[1]).to.equal('/')
   })
   it('should call GetListingStub to retrieve web path listing', async () => {
-    requestStub.params = ['foo/a bar/baz']
+    requestStub.params.path = ['foo', 'a bar', 'baz']
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
     expect(getListingStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
   })
   it('should not retrieve listing directory traversal attempt', async () => {
-    requestStub.params = ['/foo/../bar/']
+    requestStub.params.path = ['', 'foo', '..', 'bar', '']
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(0)
   })
   it('should return status FORBIDDEN for directory traversal attempt', async () => {
-    requestStub.params = ['/foo/../bar/']
+    requestStub.params.path = ['', 'foo', '..', 'bar', '']
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
   })
   it('should json error for directory traversal attempt', async () => {
-    requestStub.params = ['/foo/../bar/']
+    requestStub.params.path = ['', 'foo', '..', 'bar', '']
     const err = {
       error: {
         code: 'E_NO_TRAVERSE',

@@ -12,6 +12,7 @@ import persistance from '../utils/persistance'
 import { ModCount, UriSafePath, Functions } from './apiFunctions'
 
 import debug from 'debug'
+import { ReqParamToString } from '../utils/helpers'
 
 export const Imports = { Router, debug }
 
@@ -93,7 +94,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   )
 
   const listing = handleErrors(async (req, res) => {
-    let path: string | null = req.params[0] != null && req.params[0].length > 0 ? req.params[0] : '/'
+    let path: string | null = ReqParamToString(req.params.path, '/')
     path = parsePath(path, res)
     if (path === null) {
       return
@@ -112,7 +113,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     res.status(StatusCodes.OK).json(folder)
   })
 
-  router.get('/listing/*', listing)
+  router.get('/listing/*path', listing)
   router.get('/listing', listing)
 
   router.post(
@@ -166,7 +167,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     res.json(await Functions.GetBookmarks(knex))
   })
 
-  router.get('/bookmarks/*', getBookmarks)
+  router.get('/bookmarks/*path', getBookmarks)
 
   router.get('/bookmarks', getBookmarks)
 

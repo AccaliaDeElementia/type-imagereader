@@ -12,6 +12,7 @@ import persistance from '../utils/persistance'
 import { UriSafePath, Functions as api } from './apiFunctions'
 
 import type { Knex } from 'knex'
+import { ReqParamToString } from '../utils/helpers'
 
 interface SlideshowPages {
   pages: number
@@ -224,7 +225,7 @@ export const Functions = {
     return state
   },
   RootRoute: async (knex: Knex, req: Request, res: Response): Promise<void> => {
-    const folder = '/' + (req.params[0] ?? '')
+    const folder = '/' + ReqParamToString(req.params.path)
     if (normalize(folder) !== folder || folder.startsWith('/~')) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
         title: 'ERROR',
@@ -272,7 +273,7 @@ export async function getRouter(_: Application, __: Server, io: WebSocketServer)
     void Functions.RootRoute(knex, req, res)
   }
   router.get('/', handler)
-  router.get('/*', handler)
+  router.get('/*path', handler)
 
   io.on('connection', (socket) => {
     Functions.HandleSocket(knex, io, socket)

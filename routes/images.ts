@@ -11,6 +11,7 @@ import Sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
+import { ReqParamToString } from '../utils/helpers'
 
 const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
@@ -206,18 +207,18 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     }
 
   router.get(
-    '/full/*',
+    '/full/*path',
     handleErrors(async (req, res) => {
-      const filename = `/${req.params[0]}`
+      const filename = `/${ReqParamToString(req.params.path)}`
       const image = await Functions.ReadImage(filename)
       Functions.SendImage(image, res)
     }),
   )
 
   router.get(
-    '/scaled/:width/:height/*-image.webp',
+    '/scaled/:width/:height/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${req.params[0]}`
+      const filename = `/${ReqParamToString(req.params.path)}`
       if (req.params.width == null) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be provided')
         return
@@ -242,9 +243,9 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   )
 
   router.get(
-    '/preview/*-image.webp',
+    '/preview/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${req.params[0]}`
+      const filename = `/${ReqParamToString(req.params.path)}`
       const image = await Functions.ReadImage(filename)
       await Functions.RescaleImage(image, 240, 320, false)
       Functions.SendImage(image, res)
@@ -252,9 +253,9 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   )
 
   router.get(
-    '/kiosk/*-image.webp',
+    '/kiosk/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${req.params[0]}`
+      const filename = `/${ReqParamToString(req.params.path)}`
       const image = await CacheStorage.kioskCache.fetch(filename, 1280, 800)
       Functions.SendImage(image, res)
     }),

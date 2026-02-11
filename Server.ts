@@ -8,7 +8,6 @@ import helmet from 'helmet'
 import express, { type Express, type Request, type Response, type NextFunction } from 'express'
 import favicon from 'serve-favicon'
 import StatusCodes from 'http-status-codes'
-import 'express-async-errors'
 
 import type { Server as HttpServer } from 'node:http'
 import { Server as WebSocketServer } from 'socket.io'
@@ -108,7 +107,6 @@ export const Functions = {
 
 export default async function start(port: number): Promise<{ app: Express; server: HttpServer }> {
   const [app, server, websockets] = Functions.CreateApp(port)
-
   Functions.ConfigureBaseApp(app)
   await Functions.RegisterRouters(app, server, websockets)
   Functions.ConfigureLoggingAndErrors(app)
@@ -118,7 +116,6 @@ export default async function start(port: number): Promise<{ app: Express; serve
     res.set('X-Clacks-Overhead', 'GNU Terry Pratchett')
     next()
   })
-
   Debouncer.startTimers()
 
   return { app, server }

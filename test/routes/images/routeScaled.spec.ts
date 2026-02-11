@@ -12,7 +12,7 @@ import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
 
 interface ReqParams {
-  '0': string
+  path: string | string[] | undefined
   width?: unknown
   height?: unknown
 }
@@ -23,7 +23,7 @@ interface Req {
   originalUrl: string
 }
 
-describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
+describe('routes/images route /scaled/:width/:height/*path-image.webp', () => {
   const defaultKioskCache = CacheStorage.kioskCache
   const defaultScaledCache = CacheStorage.scaledCache
   let applicationFake = Cast<Application>({})
@@ -31,7 +31,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   let websocketsFake = Cast<WebSocketServer>({})
   let requestStub: Req = {
     params: {
-      '0': '',
+      path: '',
       width: 0,
       height: 0,
     },
@@ -66,13 +66,13 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     const fn = routerFake.get
       .getCalls()
-      .filter((call) => call.args[0] === '/scaled/:width/:height/*-image.webp')
+      .filter((call) => call.args[0] === '/scaled/:width/:height/*path-image.webp')
       .map((call) => call.args[1] as unknown)[0]
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
     fetchImageStub = Sinon.stub(CacheStorage.scaledCache, 'fetch').resolves()
     sendImageStub = Sinon.stub(Functions, 'SendImage').resolves()
     requestStub = {
-      params: [''],
+      params: { path: undefined },
       body: '',
       originalUrl: '',
     }
@@ -109,7 +109,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     it(`should ${title} on success`, async () => {
       const img = new ImageData()
       fetchImageStub.resolves(img)
-      requestStub.params = { '0': 'full/image/test.png', width: '123', height: '456' }
+      requestStub.params = { path: ['full', 'image', 'test.png'], width: '123', height: '456' }
       await router(requestFake, responseFake)
       validationFn(img)
     })
@@ -119,24 +119,24 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   const eHeightMissing = 'height parameter must be provided'
   const eHeightBad = 'height parameter must be positive integer'
   const validationErrors: Array<[string, ReqParams, string]> = [
-    ['missing width', { '0': '', height: '10' }, eWidthMissing],
-    ['null width', { '0': '', width: null, height: '10' }, eWidthMissing],
-    ['undefined width', { '0': '', width: undefined, height: '10' }, eWidthMissing],
-    ['blank width', { '0': '', width: '', height: '10' }, eWidthBad],
-    ['non number width', { '0': '', width: 'foo', height: '10' }, eWidthBad],
-    ['leading zeros width', { '0': '', width: '0100', height: '10' }, eWidthBad],
-    ['decimal width', { '0': '', width: '3.14159', height: '10' }, eWidthBad],
-    ['negative width', { '0': '', width: '-100', height: '10' }, eWidthBad],
-    ['zero width', { '0': '', width: '0', height: '10' }, eWidthBad],
-    ['missing height', { '0': '', width: '10' }, eHeightMissing],
-    ['null height', { '0': '', height: null, width: '10' }, eHeightMissing],
-    ['undefined height', { '0': '', height: undefined, width: '10' }, eHeightMissing],
-    ['blank height', { '0': '', height: '', width: '10' }, eHeightBad],
-    ['non number height', { '0': '', height: 'foo', width: '10' }, eHeightBad],
-    ['leading zeros height', { '0': '', height: '0100', width: '10' }, eHeightBad],
-    ['decimal height', { '0': '', height: '3.14159', width: '10' }, eHeightBad],
-    ['zero height', { '0': '', height: '0', width: '10' }, eHeightBad],
-    ['negative height', { '0': '', height: '-100', width: '10' }, eHeightBad],
+    ['missing width', { path: '', height: '10' }, eWidthMissing],
+    ['null width', { path: '', width: null, height: '10' }, eWidthMissing],
+    ['undefined width', { path: '', width: undefined, height: '10' }, eWidthMissing],
+    ['blank width', { path: '', width: '', height: '10' }, eWidthBad],
+    ['non number width', { path: '', width: 'foo', height: '10' }, eWidthBad],
+    ['leading zeros width', { path: '', width: '0100', height: '10' }, eWidthBad],
+    ['decimal width', { path: '', width: '3.14159', height: '10' }, eWidthBad],
+    ['negative width', { path: '', width: '-100', height: '10' }, eWidthBad],
+    ['zero width', { path: '', width: '0', height: '10' }, eWidthBad],
+    ['missing height', { path: '', width: '10' }, eHeightMissing],
+    ['null height', { path: '', height: null, width: '10' }, eHeightMissing],
+    ['undefined height', { path: '', height: undefined, width: '10' }, eHeightMissing],
+    ['blank height', { path: '', height: '', width: '10' }, eHeightBad],
+    ['non number height', { path: '', height: 'foo', width: '10' }, eHeightBad],
+    ['leading zeros height', { path: '', height: '0100', width: '10' }, eHeightBad],
+    ['decimal height', { path: '', height: '3.14159', width: '10' }, eHeightBad],
+    ['zero height', { path: '', height: '0', width: '10' }, eHeightBad],
+    ['negative height', { path: '', height: '-100', width: '10' }, eHeightBad],
   ]
   const validationTests: Array<[string, (msg: string) => void]> = [
     ['not fetch image', () => expect(fetchImageStub.callCount).to.equal(0)],
@@ -166,7 +166,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   ): void => {
     it(title, async () => {
       requestStub.params = params
-      requestStub.params[0] = 'foo/bar/baz.txt'
+      requestStub.params.path = 'foo/bar/baz.txt'.split(/\//g)
       requestStub.originalUrl = '/full/image.png'
       requestStub.body = 'REQUEST BODY'
       await router(requestFake, responseFake)
@@ -217,7 +217,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     validation: (e: Error) => void,
   ): void => {
     it(`should ${errorTitle} when ${triggerName}`, async () => {
-      requestStub.params = { '0': 'foo/bar/baz.txt', height: '10', width: '10' }
+      requestStub.params = { path: ['foo', 'bar', 'baz.txt'], height: '10', width: '10' }
       requestStub.originalUrl = '/full/image.png'
       requestStub.body = 'REQUEST BODY'
       const err = new Error('FOO')

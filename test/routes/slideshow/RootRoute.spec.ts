@@ -8,7 +8,9 @@ import { Functions } from '../../../routes/slideshow'
 
 describe('routes/slideshow function RootRoute', () => {
   let reqStub = {
-    params: ['path'],
+    params: {
+      path: [''],
+    },
   }
   let resStub = {
     status: Sinon.stub().returnsThis(),
@@ -24,7 +26,7 @@ describe('routes/slideshow function RootRoute', () => {
   let getRoomError = new Error('Error Fetching Room!')
   beforeEach(() => {
     reqStub = {
-      params: ['path'],
+      params: { path: [] },
     }
     resStub = {
       status: Sinon.stub().returnsThis(),
@@ -115,9 +117,9 @@ describe('routes/slideshow function RootRoute', () => {
         getRoomStub.resolves(roomData)
       }
       if (path === undefined) {
-        reqStub.params = []
+        reqStub.params = { path: [] }
       } else {
-        reqStub.params = [path]
+        reqStub.params = { path: path.split(/\//g) }
       }
       const successData = {
         title: `/${path}`,

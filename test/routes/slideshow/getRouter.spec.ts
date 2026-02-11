@@ -58,7 +58,7 @@ describe('routes/slideshow function getRouter', () => {
     initializeStub.restore()
     createRouterStub.restore()
   })
-  const routes = ['/launchId', '/', '/*']
+  const routes = ['/launchId', '/', '/*path']
   it('should set launch Id to current time', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     expect(Config.launchId).to.equal(3141592)
@@ -81,11 +81,12 @@ describe('routes/slideshow function getRouter', () => {
     ['send launchId', '/launchId', () => expect(getArgs(responseStub.json)[0]).to.deep.equal({ launchId: 3141592 })],
     ['call RootRoute', '/', () => expect(rootRouteStub.callCount).to.equal(1)],
     ['call RootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
-    ['call RootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
-    ['call RootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
-    ['call RootRoute with knex', '/*', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
-    ['call RootRoute with knex', '/*', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
-    ['call RootRoute with knex', '/*', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
+    ['call RootRoute with request', '/', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
+    ['call RootRoute with response', '/', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
+    ['call RootRoute', '/*path', () => expect(rootRouteStub.callCount).to.equal(1)],
+    ['call RootRoute with knex', '/*path', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
+    ['call RootRoute with request', '/*path', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
+    ['call RootRoute with response', '/*path', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
   ]
   routeTests.forEach(([title, path, validationFn]) => {
     it(`should ${title} for ${path}`, async () => {
