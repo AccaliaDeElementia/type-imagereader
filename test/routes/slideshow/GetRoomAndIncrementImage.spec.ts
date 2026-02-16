@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../testutils/TypeGuards'
 import { expect } from 'chai'
-import { Config, Functions } from '../../../routes/slideshow'
+import { Config, Functions, type SlideshowRoom } from '../../../routes/slideshow'
 import { Delay } from '../../testutils/Utils'
 
 describe('routes/slideshow function GetRoomAndIncrementImage()', () => {
@@ -55,17 +55,13 @@ describe('routes/slideshow function GetRoomAndIncrementImage()', () => {
     await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
     expect(Config.rooms['/images!/']).to.not.equal(undefined)
   })
+
   it('it should not overwrite room object when race condition hits first fetch', async () => {
     const promise = Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
     const room = {
       countdown: 90,
       path: 'foo',
-      pages: {
-        pages: 0,
-        page: 0,
-        unread: 0,
-        all: 0,
-      },
+      pages,
       images: [],
       index: 0,
       uriSafeImage: '',
@@ -74,119 +70,29 @@ describe('routes/slideshow function GetRoomAndIncrementImage()', () => {
     await promise
     expect(Config.rooms['/images!/']).to.equal(room)
   })
-  it('it should reset countdown timer object when race condition hits first fetch', async () => {
-    const promise = Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
-    const room = {
-      countdown: -99,
-      path: 'foo',
-      pages: {
-        pages: 0,
-        page: 0,
-        unread: 0,
-        all: 0,
-      },
-      images: [],
-      index: 0,
-      uriSafeImage: '',
-    }
-    Config.rooms['/images!/'] = room
-    await promise
-    expect(room.countdown).to.not.equal(-99)
-  })
-  it('it should reset room path when race condition hits first fetch', async () => {
-    const promise = Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
-    const room = {
-      countdown: 90,
-      path: 'foo',
-      pages: {
-        pages: 0,
-        page: 0,
-        unread: 0,
-        all: 0,
-      },
-      images: [],
-      index: 0,
-      uriSafeImage: '',
-    }
-    Config.rooms['/images!/'] = room
-    await promise
-    expect(room.path).to.equal('/images!/')
-  })
-  it('it should reset pages subobject when race condition hits first fetch', async () => {
-    const promise = Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
-    const room = {
-      countdown: 90,
-      path: 'foo',
-      pages: {
-        pages: 0,
-        page: 0,
-        unread: 0,
-        all: 0,
-      },
-      images: [],
-      index: 0,
-      uriSafeImage: '',
-    }
-    Config.rooms['/images!/'] = room
-    await promise
-    expect(room.pages).to.equal(pages)
-  })
-  it('it should reset images array when race condition hits first fetch', async () => {
-    const promise = Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
-    const room = {
-      countdown: 90,
-      path: 'foo',
-      pages: {
-        pages: 0,
-        page: 0,
-        unread: 0,
-        all: 0,
-      },
-      images: [],
-      index: 0,
-      uriSafeImage: '',
-    }
-    Config.rooms['/images!/'] = room
-    await promise
-    expect(room.images).to.equal(stockImages)
-  })
-  it('it should reset index when race condition hits first fetch', async () => {
-    const promise = Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
-    const room = {
-      countdown: 90,
-      path: 'foo',
-      pages: {
-        pages: 0,
-        page: 0,
-        unread: 0,
-        all: 0,
-      },
-      images: [],
-      index: 100,
-      uriSafeImage: '',
-    }
-    Config.rooms['/images!/'] = room
-    await promise
-    expect(room.index).to.equal(0)
-  })
-  it('it should reset uriSafeImage when race condition hits first fetch', async () => {
-    const promise = Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
-    const room = {
-      countdown: 90,
-      path: 'foo',
-      pages: {
-        pages: 0,
-        page: 0,
-        unread: 0,
-        all: 0,
-      },
-      images: [],
-      index: 0,
-      uriSafeImage: 'pan galactic gargleblaster',
-    }
-    Config.rooms['/images!/'] = room
-    await promise
-    expect(room.uriSafeImage).to.equal(undefined)
+  const raceConditions: Array<[string, (_: SlideshowRoom) => unknown, () => unknown]> = [
+    ['reset countdown timer', (r) => r.countdown, () => 60],
+    ['reset room path', (r) => r.path, () => '/images!/'],
+    ['reset pages subobject', (r) => r.pages, () => pages],
+    ['reset images array', (r) => r.images, () => stockImages],
+    ['reset index', (r) => r.index, () => 0],
+    ['reset uriSafeImage', (r) => r.uriSafeImage, () => undefined],
+  ]
+  raceConditions.forEach(([title, extractor, getExpected]) => {
+    it(`should ${title} when race condition hits first call`, async () => {
+      const promise = Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
+      const room = {
+        countdown: -99,
+        path: 'foo',
+        pages: { pages: 0, page: 0, unread: 0, all: 0 },
+        images: [],
+        index: 100,
+        uriSafeImage: 'pan galactic gargleblaster',
+      }
+      Config.rooms['/images!/'] = room
+      await promise
+      expect(extractor(room)).to.equal(getExpected())
+    })
   })
   it('it should resolve to created room', async () => {
     const result = await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')

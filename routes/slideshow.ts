@@ -20,7 +20,7 @@ interface SlideshowPages {
   unread: number
   all: number
 }
-interface SlideshowRoom {
+export interface SlideshowRoom {
   countdown: number
   pages: SlideshowPages
   index: number
