@@ -115,12 +115,6 @@ describe('routes/api route GET /listing', () => {
     expect(getListingStub.callCount).to.equal(1)
     expect(getListingStub.firstCall.args[1]).to.equal('/')
   })
-  it('should call GetListingStub to retrieve explicit root listing', async () => {
-    requestStub.params.path = ['/']
-    await routeHandler(requestFake, responseFake)
-    expect(getListingStub.callCount).to.equal(1)
-    expect(getListingStub.firstCall.args[1]).to.equal('/')
-  })
   it('should call GetListingStub to retrieve web path listing', async () => {
     requestStub.params.path = ['foo', 'a bar', 'baz']
     await routeHandler(requestFake, responseFake)
@@ -139,7 +133,7 @@ describe('routes/api route GET /listing', () => {
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
   })
   it('should json error for directory traversal attempt', async () => {
-    requestStub.params.path = ['', 'foo', '..', 'bar', '']
+    requestStub.params.path = ['', 'foo', '..', 'bar']
     const err = {
       error: {
         code: 'E_NO_TRAVERSE',

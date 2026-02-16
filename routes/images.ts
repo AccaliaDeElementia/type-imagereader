@@ -13,7 +13,7 @@ import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 import { ReqParamToString } from '../utils/helpers'
 
-const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
+const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/iv
 
 export class ImageData {
   static defaultData = Buffer.from('')
@@ -109,7 +109,8 @@ export const Functions = {
       return // Image already has an error
     }
     try {
-      image.data = await Imports.Sharp(image.data, { animated })
+      const before = image.data
+      const after = await Imports.Sharp(image.data, { animated })
         .rotate()
         .resize({
           width,
@@ -119,7 +120,10 @@ export const Functions = {
         })
         .webp()
         .toBuffer()
-      image.extension = 'webp'
+      if (before === image.data) {
+        image.data = after
+        image.extension = 'webp'
+      }
     } catch (e) {
       // Do nothing.... we tried
     }

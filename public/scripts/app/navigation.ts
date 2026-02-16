@@ -15,7 +15,7 @@ export const Navigation = {
       window.location.pathname.split('/').slice(0, 2).join('/'),
     ].join(''),
   GetFolderPath: (): string => {
-    const path = window.location.pathname.replace(/^\/[^/]+/, '')
+    const path = window.location.pathname.replace(/^\/[^\/]+/v, '')
     return path.length > 0 ? path : '/'
   },
   LocationAssign: ((): undefined | ((url: string | URL) => void) => undefined)(),
@@ -179,17 +179,21 @@ export const Navigation = {
   LoadData: async (noHistory = false): Promise<void> => {
     try {
       Publish('Loading:Show')
-      Navigation.current = await Net.GetJSON<Listing>(`/api/listing${Navigation.current.path}`, isListing)
-      Navigation.current.noMenu = Navigation.IsSuppressMenu()
-      for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
-        let name = Navigation.current.name
-        if (name.length < 1) {
-          name = Navigation.current.path
+      const origLocation = Navigation.current
+      const newLocation = await Net.GetJSON<Listing>(`/api/listing${Navigation.current.path}`, isListing)
+      if (origLocation === Navigation.current) {
+        Navigation.current = newLocation
+        Navigation.current.noMenu = Navigation.IsSuppressMenu()
+        for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
+          let name = Navigation.current.name
+          if (name.length < 1) {
+            name = Navigation.current.path
+          }
+          element.innerHTML = name
         }
-        element.innerHTML = name
-      }
-      if (!noHistory) {
-        window.history.pushState({}, '', Navigation.GetBaseUrl() + Navigation.current.path)
+        if (!noHistory) {
+          window.history.pushState({}, '', Navigation.GetBaseUrl() + Navigation.current.path)
+        }
       }
       Publish('Loading:Hide')
       Publish('Navigate:Data', Navigation.current)

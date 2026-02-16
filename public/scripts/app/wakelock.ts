@@ -26,7 +26,11 @@ export const WakeLock = {
   TakeLock: async (): Promise<void> => {
     try {
       if (WakeLock.sentinel == null || WakeLock.sentinel.released) {
-        WakeLock.sentinel = await navigator.wakeLock.request('screen')
+        const orig = WakeLock.sentinel
+        const sentinel = await navigator.wakeLock.request('screen')
+        if (orig === WakeLock.sentinel) {
+          WakeLock.sentinel = sentinel
+        }
       }
       WakeLock.timeout = Date.now() + WakeLock.wakeTime
     } catch {
@@ -36,12 +40,15 @@ export const WakeLock = {
   },
   ReleaseLock: async (): Promise<void> => {
     if (WakeLock.sentinel == null || WakeLock.timeout > Date.now()) return
+    const orig = WakeLock.sentinel
     WakeLock.timeout = 0
     try {
       if (!WakeLock.sentinel.released) {
         await WakeLock.sentinel.release()
       }
     } catch {}
-    WakeLock.sentinel = null
+    if (WakeLock.sentinel === orig) {
+      WakeLock.sentinel = null
+    }
   },
 }

@@ -249,9 +249,8 @@ export const Actions = {
       Actions.setInnerTextMaybe(button.querySelector('i'), image)
       Actions.setInnerTextMaybe(button.querySelector('h5'), name)
       button.addEventListener('click', (event) => {
-        Publish(`Action:Execute:${name.replace(/\s+/g, '')}`)
+        Publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
         event.preventDefault()
-        return false
       })
       result.appendChild(button)
     }

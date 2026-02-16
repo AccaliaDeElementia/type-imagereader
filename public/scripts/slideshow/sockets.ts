@@ -37,7 +37,7 @@ export const Functions = {
     }
   },
   DoNewImage: (path: string): void => {
-    if (/[.]gif$/i.test(path)) {
+    if (/[.]gif$/iv.test(path)) {
       for (const elem of document.querySelectorAll('img.bottomImage')) {
         elem.classList.add('hide')
         elem.removeAttribute('src')
@@ -53,7 +53,7 @@ export const Functions = {
     }
   },
   ParseRoomName: (): string => {
-    let uri = window.location.pathname.replace(/^\/[^/]+/, '')
+    let uri = window.location.pathname.replace(/^\/[^\/]+/v, '')
     if (uri.length < 1) {
       uri = '/'
     }

@@ -47,7 +47,7 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     expect(debugStub.callCount).to.equal(1)
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'), 'Logger should be prefixed')
+      .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
       .and.satisfy((msg: string) => msg.endsWith(':updateSeen'), 'Logger should be suffixed with `updateSeen`')
   })
   it('should use knex to get folders with pictures counts', async () => {

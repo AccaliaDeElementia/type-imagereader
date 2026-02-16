@@ -47,7 +47,7 @@ export const ImageReader = {
         try {
           await ImageReader.Synchronize()
         } finally {
-          ImageReader.SyncRunning = false
+          ImageReader.SyncRunning &&= false
         }
       }
       doSync().catch(() => null)

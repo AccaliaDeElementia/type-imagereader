@@ -14,7 +14,7 @@ import { Debouncer } from './debounce'
 
 import debug from 'debug'
 
-const isCompileableExtension = /\.[jt]s$/
+const isCompileableExtension = /\.[jt]s$/v
 
 export const Imports = { access, watch, readdir, browserify, minify }
 
@@ -61,8 +61,10 @@ export const Functions = {
         })
         browser.transform('brfs')
         browser.add(path)
-        const source = await promisify(browser.bundle.bind(browser))()
-        return source.toString()
+        const sourcefn = promisify((cb: (err: unknown, src: Buffer) => void) => {
+          browser.bundle(cb)
+        })
+        return (await sourcefn()).toString()
       })
       .then(async (src) => await Imports.minify(src))
       .then((minified) => minified.code ?? null)

@@ -158,9 +158,10 @@ describe('/index.ts tests', (): void => {
   })
 
   it('should skip Synchronization if a previous run is still running', async () => {
-    ImageReader.SyncInterval = 100
-    await ImageReader.Run()
+    await ImageReader.Run() // Setup the timers
+    expect(ImageReader.SyncRunning).to.equal(false) // Assert there is no existing running sync
     SynchronizeStub?.resetHistory()
+    ImageReader.SyncInterval = 100
     ImageReader.SyncRunning = true
     ClockFake?.tick(101)
     expect(SynchronizeStub?.called).to.equal(false)

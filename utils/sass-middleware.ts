@@ -26,7 +26,7 @@ interface cssAndMap {
   map: sourceMap
 }
 
-const sassExtension = /\.s[ca]ss$/
+const sassExtension = /\.s[ca]ss$/v
 
 export const Imports = { sass, access, readdir, watch }
 
@@ -79,7 +79,7 @@ export const Functions = {
     for (const dirinfo of await Imports.readdir(join(basePath, path), {
       withFileTypes: true,
     })) {
-      if (sassExtension.test(dirinfo.name) && !/(?:^|\/)\./.test(dirinfo.name)) {
+      if (sassExtension.test(dirinfo.name) && !/(?:^|\/)\./v.test(dirinfo.name)) {
         const sassFile = join(path, dirinfo.name)
         Functions.CompileAndCache(basePath, sassFile).catch(() => null)
       }
@@ -91,7 +91,7 @@ export const Functions = {
       const watcher = Imports.watch(join(basePath, path), { persistent: false })
       for await (const event of watcher) {
         if (event.filename === null) continue
-        if (!sassExtension.test(event.filename) || /(?:^|\/)\./.test(event.filename)) continue
+        if (!sassExtension.test(event.filename) || /(?:^|\/)\./v.test(event.filename)) continue
         const sassFile = join(path, event.filename)
         Functions.debouncer.debounce(sassFile, async () => {
           Functions.logger(`${sassFile} needs recompiling, ${event.eventType}`)
@@ -118,7 +118,7 @@ export default ({
 
   const acceptRequest = (req: Request): boolean => {
     // ignore all requests that are not GET or don't have .css in them
-    if (req.method.toLowerCase() !== 'get' || !/\.css(?:\.map)?$/.test(req.path) || /(?:^|\/)\.[^.]/.test(req.path)) {
+    if (req.method.toLowerCase() !== 'get' || !/\.css(?:\.map)?$/v.test(req.path) || /(?:^|\/)\.[^.]/v.test(req.path)) {
       return false
     }
     return true
@@ -135,15 +135,15 @@ export default ({
       return
     }
     try {
-      const path = req.path.replace(/\.map$/, '')
+      const path = req.path.replace(/\.map$/v, '')
       if (Functions.cache[path] === undefined) {
-        ;(await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.sass'))) ||
-          (await Functions.CompileAndCache(mountPath, path.replace(/\.css$/, '.scss')))
+        ;(await Functions.CompileAndCache(mountPath, path.replace(/\.css$/v, '.sass'))) ||
+          (await Functions.CompileAndCache(mountPath, path.replace(/\.css$/v, '.scss')))
       }
       const styles = await Functions.cache[path]
       if (styles === null || styles === undefined) {
         res.status(StatusCodes.NOT_FOUND).send('NOT FOUND')
-      } else if (/\.map$/i.test(req.path)) {
+      } else if (/\.map$/iv.test(req.path)) {
         res.status(StatusCodes.OK).set('Content-Type', 'application/json').json(styles.map)
       } else {
         res.status(StatusCodes.OK).set('Content-Type', 'text/css').send(styles.css)

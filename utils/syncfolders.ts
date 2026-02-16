@@ -52,7 +52,7 @@ export const Functions = {
   padLength: 20,
   ToSortKey: (key: string): string => {
     const zeroes = '0'.repeat(Functions.padLength)
-    return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/g, (num) =>
+    return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/gv, (num) =>
       num.length >= Functions.padLength ? num : `${zeroes}${num}`.slice(-Functions.padLength),
     )
   },
@@ -254,7 +254,7 @@ export const Functions = {
       while (parts.length > 1) {
         // don't loop all the way to zero to avoid double counting the root
         parts.pop()
-        const parentPath = parts.join('/') + '/'
+        const parentPath = `${parts.join('/')}/`
         let { [parentPath]: parent } = allFolders
         if (parent === undefined) {
           parent = {

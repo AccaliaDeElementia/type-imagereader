@@ -33,7 +33,7 @@ describe('utils/syncfolders function PruneEmptyFolders()', () => {
     expect(debugStub.callCount).to.equal(1)
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'), 'Logger should be prefixed')
+      .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
       .and.satisfy((msg: string) => msg.endsWith(':pruneEmpty'), 'Logger should be suffixed with `pruneEmpty`')
   })
   it('should use knex to delete folders with total count=0', async () => {

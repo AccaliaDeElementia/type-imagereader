@@ -19,7 +19,7 @@ const months = [
 ]
 
 export const Functions = {
-  FormatTime: (now: Date): string => `${('00' + now.getHours()).slice(-2)}:${('00' + now.getMinutes()).slice(-2)}`,
+  FormatTime: (now: Date): string => `${`00${now.getHours()}`.slice(-2)}:${`00${now.getMinutes()}`.slice(-2)}`,
   FormatDate: (now: Date): string => `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`,
 }
 

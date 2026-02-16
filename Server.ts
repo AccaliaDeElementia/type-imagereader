@@ -23,6 +23,8 @@ import browserifyMiddleware from './utils/browserify-middleware'
 
 import { Debouncer } from './utils/debounce'
 
+import debug from 'debug'
+
 export const Imports = {
   dirname: __dirname,
   express,
@@ -33,6 +35,7 @@ export const Imports = {
   sassMiddleware,
   browserifyMiddleware,
   WebSocketServer,
+  logger: debug('type-imagereader:Server'),
 }
 
 export const Routers = {
@@ -46,7 +49,9 @@ export const Routers = {
 export const Functions = {
   CreateApp: (port: number): [Express, HttpServer, WebSocketServer] => {
     const app = Imports.express()
-    const server = app.listen(port, () => null)
+    const server = app.listen(port, () => {
+      Imports.logger('Error listening to requested socket!')
+    })
     const websockets = new Imports.WebSocketServer(server)
     return [app, server, websockets]
   },

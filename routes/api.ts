@@ -74,7 +74,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       })
       return null
     }
-    return normalize('/' + path)
+    return normalize(`/${path}`)
   }
 
   router.get(
@@ -94,12 +94,12 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   )
 
   const listing = handleErrors(async (req, res) => {
-    let path: string | null = ReqParamToString(req.params.path, '/')
+    let path: string | null = `${ReqParamToString(req.params.path)}/`
     path = parsePath(path, res)
     if (path === null) {
       return
     }
-    const folder = await Functions.GetListing(knex, normalize(path + '/'))
+    const folder = await Functions.GetListing(knex, normalize(`${path}/`))
     if (folder == null) {
       res.status(StatusCodes.NOT_FOUND).json({
         error: {
@@ -145,7 +145,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
-        await Functions.MarkFolderRead(knex, normalize(path + '/'))
+        await Functions.MarkFolderRead(knex, normalize(`${path}/`))
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -157,7 +157,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
-        await Functions.MarkFolderUnread(knex, normalize(path + '/'))
+        await Functions.MarkFolderUnread(knex, normalize(`${path}/`))
         res.status(StatusCodes.OK).end()
       }
     }),

@@ -52,7 +52,7 @@ describe('public/app/actions function BuildActions()', () => {
   it('should return build actions for each tab', () => {
     Actions.BuildActions()
     for (const { target, buttons } of Actions.ActionGroups) {
-      const result = dom.window.document.querySelectorAll(target + ' .actions')
+      const result = dom.window.document.querySelectorAll(`${target} .actions`)
       expect(result).to.have.length(buttons.length, `${target} should have ${buttons.length} rows`)
       for (let i = 0; i < buttons.length; i++) {
         expect(result[i]).to.be.instanceOf(dom.window.HTMLDivElement, `${target} row ${i} should have expected type`)
@@ -68,7 +68,7 @@ describe('public/app/actions function BuildActions()', () => {
     Actions.BuildActions()
     Actions.BuildActions()
     for (const { target, buttons } of Actions.ActionGroups) {
-      const result = dom.window.document.querySelectorAll(target + ' .actions')
+      const result = dom.window.document.querySelectorAll(`${target} .actions`)
       expect(result).to.have.length(buttons.length, `${target} should have ${buttons.length} rows`)
       for (let i = 0; i < buttons.length; i++) {
         expect(result[i]).to.be.instanceOf(dom.window.HTMLDivElement, `${target} row ${i} should have expected type`)

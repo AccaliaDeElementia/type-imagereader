@@ -73,7 +73,7 @@ describe('routes/index route /', () => {
   ]
   errorTests.forEach(([title, path, validationFn]) => {
     it(`should ${title} for '${path}'`, () => {
-      requestStub.params.path = path.split(/\//g)
+      requestStub.params.path = path.split(/\//gv)
       routeFn(requestFake, responseFake)
       validationFn()
     })
@@ -84,7 +84,7 @@ describe('routes/index route /', () => {
       if (path === undefined) {
         requestStub.params.path = undefined
       } else {
-        requestStub.params.path = path.split(/\//g)
+        requestStub.params.path = path.split(/\//gv)
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.render.callCount).to.equal(1)
@@ -93,7 +93,7 @@ describe('routes/index route /', () => {
       if (path === undefined) {
         requestStub.params.path = undefined
       } else {
-        requestStub.params.path = path.split(/\//g)
+        requestStub.params.path = path.split(/\//gv)
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.render.firstCall.args).to.deep.equal(['app'])
@@ -102,7 +102,7 @@ describe('routes/index route /', () => {
       if (path === undefined) {
         requestStub.params.path = undefined
       } else {
-        requestStub.params.path = path.split(/\//g)
+        requestStub.params.path = path.split(/\//gv)
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.status.callCount).to.equal(0)

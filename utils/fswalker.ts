@@ -5,7 +5,7 @@ import type { Dirent } from 'node:fs'
 import { join, extname } from 'node:path'
 import assert from 'node:assert'
 
-const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
+const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/iv
 
 async function fsWalker(
   root: string,

@@ -42,6 +42,48 @@ export const Config = {
   launchId: -1,
 }
 
+export const SocketHandlers = {
+  getLaunchId: (callback: SocketCallback) => {
+    callback(Config.launchId)
+  },
+  joinSlideshow: async (
+    roomName: string | undefined | null,
+    state: HandleSocketState,
+    socket: Socket,
+    knex: Knex,
+  ): Promise<void> => {
+    if (roomName == null || roomName.length < 1) return
+    state.roomName = roomName
+    await socket.join(roomName)
+    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
+    socket.emit('new-image', room.uriSafeImage)
+  },
+  prevImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
+    if (state.roomName == null) return
+    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, -1)
+    io.to(room.path).emit('new-image', room.uriSafeImage)
+  },
+  nextImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
+    if (state.roomName == null) return
+    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, 1)
+    io.to(room.path).emit('new-image', room.uriSafeImage)
+  },
+  gotoImage: async (callback: SocketCallback, state: HandleSocketState, knex: Knex) => {
+    if (state.roomName == null) {
+      callback(null)
+      return
+    }
+    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
+    const picture = room.images[room.index]
+    if (picture == null) {
+      callback(null)
+      return
+    }
+    const folder = await Imports.setLatest(knex, picture)
+    callback(folder)
+  },
+}
+
 export const Imports = {
   setLatest: async (knex: Knex, path: string): Promise<string | null> => await api.SetLatestPicture(knex, path),
   Router,
@@ -74,7 +116,7 @@ export const Functions = {
   GetCounts: async (
     knex: Knex,
     path: string,
-    currentPage: number | undefined = undefined,
+    currentPage?: number,
     mutator = (page: number): number => page,
   ): Promise<SlideshowPages> => {
     const unreadcount = await Functions.GetUnreadImageCount(knex, path)
@@ -139,7 +181,16 @@ export const Functions = {
         index: 0,
         uriSafeImage: undefined,
       }
-      Config.rooms[name] = room
+      if (Config.rooms[name] == null) {
+        Config.rooms[name] = room
+      } else {
+        Config.rooms[name].countdown = room.countdown
+        Config.rooms[name].path = room.path
+        Config.rooms[name].pages = room.pages
+        Config.rooms[name].images = room.images
+        Config.rooms[name].index = room.index
+        Config.rooms[name].uriSafeImage = room.uriSafeImage
+      }
     } else {
       room.index += increment
       if (room.index < 0) {
@@ -164,6 +215,7 @@ export const Functions = {
   },
   TickCountdown: async (knex: Knex, io: WebSocketServer): Promise<void> => {
     try {
+      const roomsToUpdate: SlideshowRoom[] = []
       const newRooms: Record<string, SlideshowRoom> = {}
       for (const room of Object.values(Config.rooms)) {
         room.countdown--
@@ -176,12 +228,17 @@ export const Functions = {
           continue
         }
         if (room.countdown <= 0) {
-          room.countdown = Config.countdownDuration
-          await Functions.GetRoomAndIncrementImage(knex, room.path, 1)
-          io.to(room.path).emit('new-image', room.uriSafeImage)
+          roomsToUpdate.push(room)
         }
       }
       Config.rooms = newRooms
+      await Promise.all(
+        roomsToUpdate.map(async (room) => {
+          room.countdown = Config.countdownDuration
+          await Functions.GetRoomAndIncrementImage(knex, room.path, 1)
+          io.to(room.path).emit('new-image', room.uriSafeImage)
+        }),
+      )
     } catch {}
   },
   HandleSocket: (knex: Knex, io: WebSocketServer, socket: Socket): HandleSocketState => {
@@ -189,43 +246,24 @@ export const Functions = {
       roomName: null,
     }
     socket.on('get-launchId', (callback: SocketCallback) => {
-      callback(Config.launchId)
+      SocketHandlers.getLaunchId(callback)
     })
-    socket.on('join-slideshow', async (roomName?: string) => {
-      if (roomName == null || roomName.length < 1) return
-      state.roomName = roomName
-      await socket.join(roomName)
-      const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
-      socket.emit('new-image', room.uriSafeImage)
+    socket.on('join-slideshow', (roomName?: string) => {
+      void SocketHandlers.joinSlideshow(roomName, state, socket, knex)
     })
-    socket.on('prev-image', async () => {
-      if (state.roomName == null) return
-      const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, -1)
-      io.to(room.path).emit('new-image', room.uriSafeImage)
+    socket.on('prev-image', () => {
+      void SocketHandlers.prevImage(state, io, knex)
     })
-    socket.on('next-image', async () => {
-      if (state.roomName == null) return
-      const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, 1)
-      io.to(room.path).emit('new-image', room.uriSafeImage)
+    socket.on('next-image', () => {
+      void SocketHandlers.nextImage(state, io, knex)
     })
-    socket.on('goto-image', async (callback: SocketCallback) => {
-      if (state.roomName == null) {
-        callback(null)
-        return
-      }
-      const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
-      const picture = room.images[room.index]
-      if (picture == null) {
-        callback(null)
-        return
-      }
-      const folder = await Imports.setLatest(knex, picture)
-      callback(folder)
+    socket.on('goto-image', (callback: SocketCallback) => {
+      void SocketHandlers.gotoImage(callback, state, knex)
     })
     return state
   },
   RootRoute: async (knex: Knex, req: Request, res: Response): Promise<void> => {
-    const folder = '/' + ReqParamToString(req.params.path)
+    const folder = `/${ReqParamToString(req.params.path)}`
     if (normalize(folder) !== folder || folder.startsWith('/~')) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
         title: 'ERROR',

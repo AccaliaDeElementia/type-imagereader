@@ -119,7 +119,7 @@ describe('routes/slideshow function RootRoute', () => {
       if (path === undefined) {
         reqStub.params = { path: [] }
       } else {
-        reqStub.params = { path: path.split(/\//g) }
+        reqStub.params = { path: path.split(/\//gv) }
       }
       const successData = {
         title: `/${path}`,

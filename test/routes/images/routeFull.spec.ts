@@ -124,7 +124,7 @@ describe('routes/images route /full/*path', () => {
     validation: (path: string, data: ImageData) => void,
   ): void => {
     it(`should ${title} for path '${path}' on success`, async () => {
-      requestStub.params.path = path.split(/\//g)
+      requestStub.params.path = path.split(/\//gv)
       const img = new ImageData()
       readImageStub.resolves(img)
       await router(requestFake, responseFake)

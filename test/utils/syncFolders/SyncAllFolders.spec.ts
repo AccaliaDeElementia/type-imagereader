@@ -35,7 +35,7 @@ describe('utils/syncfolders function SyncAllFolders()', () => {
     expect(debugStub.callCount).to.equal(1)
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'), 'Logger should be prefixed')
+      .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
       .and.satisfy((msg: string) => msg.endsWith(':syncFolders'), 'Logger should be suffixed with `syncPictures`')
   })
   it('should call SyncNewPictures', async () => {

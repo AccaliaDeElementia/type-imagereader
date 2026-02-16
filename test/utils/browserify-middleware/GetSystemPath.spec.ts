@@ -45,14 +45,14 @@ describe('utils/browserify-middleware function GetSystemPath()', () => {
   })
   it('resolves to .ts if no .js matches', async () => {
     accessStub.callsFake(async (path: string) => {
-      ;/\.js$/i.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve()
+      ;/\.js$/iv.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve()
     })
     const result = await Functions.GetSystemPath('/foo', 'bar')
     expect(result).to.equal('/foo/bar.ts')
   })
   it('resolves to path if no .js/.ts matches', async () => {
     accessStub.callsFake(async (path: string) => {
-      ;/\.[jt]s$/.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve()
+      ;/\.[jt]s$/v.test(path) ? await Promise.reject(new Error('ERROR')) : await Promise.resolve()
     })
     const result = await Functions.GetSystemPath('/foo', 'bar')
     expect(result).to.equal('/foo/bar')

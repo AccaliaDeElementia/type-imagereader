@@ -44,6 +44,7 @@ export default [
       'preserve-caught-error': 'off',
       'max-lines': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
+      '@typescript-eslint/strict-void-return': 'off', // TODO: Remove this rule once the typescript defs for mocha get updated to mark the callback as optionally awaitable
     },
   },
   {

@@ -166,7 +166,7 @@ describe('routes/images route /scaled/:width/:height/*path-image.webp', () => {
   ): void => {
     it(title, async () => {
       requestStub.params = params
-      requestStub.params.path = 'foo/bar/baz.txt'.split(/\//g)
+      requestStub.params.path = 'foo/bar/baz.txt'.split(/\//gv)
       requestStub.originalUrl = '/full/image.png'
       requestStub.body = 'REQUEST BODY'
       await router(requestFake, responseFake)
