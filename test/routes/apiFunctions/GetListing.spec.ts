@@ -18,13 +18,13 @@ describe('routes/apiFunctions function GetListing', () => {
   beforeEach(() => {
     ModCount._modCount = 32_768
     knexFake = StubToKnex({ Knex: Math.random() })
-    getFolderStub = Sinon.stub(Functions, 'GetFolder').resolves()
-    getDirectionFolderStub = Sinon.stub(Functions, 'GetDirectionFolder').resolves()
-    getNextFolderStub = Sinon.stub(Functions, 'GetNextFolder').resolves()
-    getPreviousFolderStub = Sinon.stub(Functions, 'GetPreviousFolder').resolves()
-    getChildFoldersStub = Sinon.stub(Functions, 'GetChildFolders').resolves()
-    getPicturesStub = Sinon.stub(Functions, 'GetPictures').resolves()
-    getBookmarksStub = Sinon.stub(Functions, 'GetBookmarks').resolves()
+    getFolderStub = Sinon.stub(Functions, 'GetFolder').resolves(null)
+    getDirectionFolderStub = Sinon.stub(Functions, 'GetDirectionFolder').resolves(null)
+    getNextFolderStub = Sinon.stub(Functions, 'GetNextFolder').resolves(null)
+    getPreviousFolderStub = Sinon.stub(Functions, 'GetPreviousFolder').resolves(null)
+    getChildFoldersStub = Sinon.stub(Functions, 'GetChildFolders').resolves([])
+    getPicturesStub = Sinon.stub(Functions, 'GetPictures').resolves([])
+    getBookmarksStub = Sinon.stub(Functions, 'GetBookmarks').resolves([])
   })
   afterEach(() => {
     getFolderStub.restore()

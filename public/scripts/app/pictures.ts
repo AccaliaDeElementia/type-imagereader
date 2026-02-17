@@ -21,7 +21,7 @@ function setTextContent(selector: string, content: string): void {
 }
 
 function makeURI(width: number | undefined, height: number | undefined, img: Picture): string {
-  return `/images/scaled/${width}/${height}${img.path}-image.webp`
+  return '/images/scaled/' + width + '/' + height + img.path + '-image.webp'
 }
 
 export async function updateModCount(): Promise<boolean> {
@@ -34,9 +34,7 @@ export async function updateModCount(): Promise<boolean> {
   if (newModCount === undefined || newModCount < 0) {
     return false
   }
-  if (Pictures.modCount !== newModCount) {
-    Pictures.modCount = newModCount
-  }
+  Pictures.modCount = newModCount
   return true
 }
 
@@ -301,9 +299,7 @@ export const Pictures = {
     if (pagninator != null) {
       tab?.appendChild(pagninator)
     }
-    pages.forEach((page) => {
-      tab?.appendChild(page)
-    })
+    pages.forEach((page) => tab?.appendChild(page))
   },
   LoadNextImage: async (): Promise<void> => {
     const next = Pictures.GetPicture(Pictures.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
@@ -331,11 +327,16 @@ export const Pictures = {
     try {
       Pictures.current.seen = true
       Pictures.current.element?.classList.add('seen')
-      const validModcount = await updateModCount()
-      if (!validModcount) {
+      const newModCount = await Net.PostJSON<number | undefined>(
+        '/api/navigate/latest',
+        { path: Pictures.current.path, modCount: Pictures.modCount },
+        (o) => typeof o === 'number' || o === undefined,
+      )
+      if (newModCount === undefined || newModCount < 0) {
         Publish('Navigate:Reload')
         return
       }
+      Pictures.modCount = newModCount
       await Pictures.nextLoader
       Pictures.mainImage?.setAttribute(
         'src',

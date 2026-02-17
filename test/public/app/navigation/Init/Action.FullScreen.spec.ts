@@ -73,26 +73,46 @@ describe('public/app/navigation message handler Action:Execute:Fullscreen', () =
     Sinon.restore()
   })
   it('should execute requestFullscreen when no fullscreen element exists', async () => {
+    Object.defineProperty(dom.window.document, 'fullscreenElement', {
+      writable: true,
+      value: null,
+    })
     await handler()
     expect(requestFullscreenStub.callCount).to.equal(1)
     expect(exitFullscreenStub.callCount).to.equal(0)
   })
   it('should request fullscreen without navigationUI', async () => {
+    Object.defineProperty(dom.window.document, 'fullscreenElement', {
+      writable: true,
+      value: null,
+    })
     await handler()
     expect(requestFullscreenStub.firstCall.args).to.have.lengthOf(1)
     expect(requestFullscreenStub.firstCall.args[0]).to.deep.equal({ navigationUI: 'hide' })
   })
   it('should not publish Loading:Error when requestFullscreen resolves', async () => {
+    Object.defineProperty(dom.window.document, 'fullscreenElement', {
+      writable: true,
+      value: null,
+    })
     requestFullscreenStub.resolves()
     await handler()
     expect(errorSpy.called).to.equal(false)
   })
   it('should publish Loading:Error when requestFullscreen rejects', async () => {
+    Object.defineProperty(dom.window.document, 'fullscreenElement', {
+      writable: true,
+      value: null,
+    })
     requestFullscreenStub.rejects('FOO')
     await handler()
     expect(errorSpy.called).to.equal(true)
   })
   it('should pass exception to Loading:Error when requestFullscreen rejects', async () => {
+    Object.defineProperty(dom.window.document, 'fullscreenElement', {
+      writable: true,
+      value: null,
+    })
     const err = new Error('FOO')
     requestFullscreenStub.rejects(err)
     await handler()

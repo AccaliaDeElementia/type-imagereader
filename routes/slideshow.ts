@@ -52,30 +52,30 @@ export const SocketHandlers = {
     socket: Socket,
     knex: Knex,
   ): Promise<void> => {
-    if (roomName == null || roomName.length < 1) return
+    if (roomName === null || roomName === undefined || roomName.length < 1) return
     state.roomName = roomName
     await socket.join(roomName)
     const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
     socket.emit('new-image', room.uriSafeImage)
   },
   prevImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
-    if (state.roomName == null) return
+    if (state.roomName === null) return
     const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, -1)
     io.to(room.path).emit('new-image', room.uriSafeImage)
   },
   nextImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
-    if (state.roomName == null) return
+    if (state.roomName === null) return
     const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, 1)
     io.to(room.path).emit('new-image', room.uriSafeImage)
   },
   gotoImage: async (callback: SocketCallback, state: HandleSocketState, knex: Knex) => {
-    if (state.roomName == null) {
+    if (state.roomName === null) {
       callback(null)
       return
     }
     const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
     const picture = room.images[room.index]
-    if (picture == null) {
+    if (picture === undefined) {
       callback(null)
       return
     }
@@ -98,7 +98,7 @@ export const Functions = {
       .where('path', 'like', `${path}%`)
       .andWhere('seen', '=', false)
     try {
-      if (counts[0]?.count != null) {
+      if (counts[0]?.count !== undefined) {
         return +counts[0].count
       }
     } catch {}
@@ -107,7 +107,7 @@ export const Functions = {
   GetImageCount: async (knex: Knex, path: string): Promise<number> => {
     const counts = await knex('pictures').count({ count: 'path' }).where('path', 'like', `${path}%`)
     try {
-      if (counts[0]?.count != null) {
+      if (counts[0]?.count !== undefined) {
         return +counts[0].count
       }
     } catch {}
@@ -125,7 +125,7 @@ export const Functions = {
     if (unreadcount > 0) {
       pages = Math.ceil(unreadcount / Config.memorySize)
       currentPage = 0
-    } else if (currentPage == null) {
+    } else if (currentPage === undefined) {
       currentPage = Math.floor(Math.random() * pages)
     } else {
       currentPage = mutator(currentPage)
@@ -157,7 +157,7 @@ export const Functions = {
       seen: false,
       path: image,
     })) as string[] | undefined | null
-    if (picture == null || picture.length <= 0) {
+    if (picture === null || picture === undefined || picture.length <= 0) {
       return
     }
     const folders = []
@@ -171,7 +171,7 @@ export const Functions = {
   },
   GetRoomAndIncrementImage: async (knex: Knex, name: string, increment = 0): Promise<SlideshowRoom> => {
     let room = Config.rooms[name]
-    if (room == null) {
+    if (room === undefined) {
       const pages = await Functions.GetCounts(knex, name)
       room = {
         countdown: Config.countdownDuration,
@@ -181,7 +181,7 @@ export const Functions = {
         index: 0,
         uriSafeImage: undefined,
       }
-      if (Config.rooms[name] == null) {
+      if (Config.rooms[name] === undefined) {
         Config.rooms[name] = room
       } else {
         Config.rooms[name].countdown = room.countdown
@@ -204,7 +204,7 @@ export const Functions = {
       }
     }
     const image = room.images[room.index]
-    if (image != null) {
+    if (image !== undefined) {
       await Functions.MarkImageRead(knex, image)
     }
     room.uriSafeImage = UriSafePath.encode(room.images[room.index] ?? '')

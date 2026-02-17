@@ -135,7 +135,7 @@ export const Functions = {
   },
   SendImage: (image: ImageData, res: Response): void => {
     const aMonth = 1000 * 60 * 60 * 24 * 30
-    if (image.code != null) {
+    if (image.code !== null) {
       res.status(image.statusCode).json({
         error: {
           code: image.code,
@@ -223,7 +223,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     '/scaled/:width/:height/*path-image.webp',
     handleErrors(async (req, res) => {
       const filename = `/${ReqParamToString(req.params.path)}`
-      if (req.params.width == null) {
+      if (req.params.width === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be provided')
         return
       }
@@ -232,7 +232,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be positive integer')
         return
       }
-      if (req.params.height == null) {
+      if (req.params.height === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be provided')
         return
       }

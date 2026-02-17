@@ -384,6 +384,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
           element: dom.window.document.createElement('details'),
         },
       ]
+      return null
     })
     Bookmarks.buildBookmarks({
       name: '',
@@ -418,6 +419,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
           element: dom.window.document.createElement('details'),
         })
       }
+      return null
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
     const appendChildSpy = Sinon.stub(Bookmarks.bookmarksTab, 'appendChild')

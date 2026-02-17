@@ -72,7 +72,7 @@ describe('public/app/pictures function MakePicturesPage()', () => {
       path: '',
       seen: false,
     }
-    makePictureCardSpy.returns(null)
+    makePictureCardSpy.returns(undefined)
     Pictures.MakePicturesPage(69, [pic])
     expect(pic.page).to.equal(undefined)
   })

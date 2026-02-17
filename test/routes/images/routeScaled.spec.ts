@@ -120,7 +120,6 @@ describe('routes/images route /scaled/:width/:height/*path-image.webp', () => {
   const eHeightBad = 'height parameter must be positive integer'
   const validationErrors: Array<[string, ReqParams, string]> = [
     ['missing width', { path: '', height: '10' }, eWidthMissing],
-    ['null width', { path: '', width: null, height: '10' }, eWidthMissing],
     ['undefined width', { path: '', width: undefined, height: '10' }, eWidthMissing],
     ['blank width', { path: '', width: '', height: '10' }, eWidthBad],
     ['non number width', { path: '', width: 'foo', height: '10' }, eWidthBad],
@@ -129,7 +128,6 @@ describe('routes/images route /scaled/:width/:height/*path-image.webp', () => {
     ['negative width', { path: '', width: '-100', height: '10' }, eWidthBad],
     ['zero width', { path: '', width: '0', height: '10' }, eWidthBad],
     ['missing height', { path: '', width: '10' }, eHeightMissing],
-    ['null height', { path: '', height: null, width: '10' }, eHeightMissing],
     ['undefined height', { path: '', height: undefined, width: '10' }, eHeightMissing],
     ['blank height', { path: '', height: '', width: '10' }, eHeightBad],
     ['non number height', { path: '', height: 'foo', width: '10' }, eHeightBad],

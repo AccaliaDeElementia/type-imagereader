@@ -1,9 +1,6 @@
 'use sanity'
 
-import { Subscribe, Publish, AddInterval } from './pubsub'
 import { CloneNode, isHTMLElement } from './utils'
-
-import { isListing } from '../../../contracts/listing'
 
 interface ButtonDefinition {
   name: string
@@ -240,7 +237,7 @@ export const Actions = {
     }
   },
   createButtons: (buttons: ButtonDefinition[]): HTMLElement => {
-    const result = document.createElement('div')
+        const result = document.createElement('div')
     result.classList.add('actions')
     for (const { name, image } of buttons) {
       const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
@@ -249,7 +246,6 @@ export const Actions = {
       Actions.setInnerTextMaybe(button.querySelector('i'), image)
       Actions.setInnerTextMaybe(button.querySelector('h5'), name)
       button.addEventListener('click', (event) => {
-        Publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
         event.preventDefault()
       })
       result.appendChild(button)
@@ -258,63 +254,11 @@ export const Actions = {
   },
   ActionGroups,
   BuildActions: (): void => {
-    for (const group of Actions.ActionGroups) {
-      const existing = document.querySelectorAll(`${group.target} .actions`)
-      for (const elem of existing) {
-        elem.remove()
-      }
-      for (const row of group.buttons) {
-        const container = Actions.createButtons(row)
-        document.querySelector(group.target)?.appendChild(container)
-      }
-    }
+    
   },
   gamepads: ((): GamepadButtons => new GamepadButtons())(),
   ReadGamepad: (): void => {
-    if (document.hidden) return
-    const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
-    if (gamepads == null || gamepads.length < 1) return
-    for (const pad of gamepads) {
-      if (pad == null) continue
-      Actions.gamepads.Read(pad)
-    }
-    if (!Actions.gamepads.pressingNow && Actions.gamepads.pressedButtons.length > 0) {
-      const buttons = Actions.gamepads.pressedButtons.join('')
-      Actions.gamepads.Reset()
-      Publish(`Action:Gamepad:${buttons}`)
-    }
   },
   Init: (): void => {
-    Actions.BuildActions()
-    Actions.gamepads.Reset()
-
-    Subscribe('Navigate:Data', async (data) => {
-      if (
-        isListing(data) &&
-        (data.pictures == null || data.pictures.length < 1) &&
-        (data.children == null || data.children.length < 1)
-      ) {
-        Publish('Tab:Select', 'Actions')
-      }
-      await Promise.resolve()
-    })
-
-    document.addEventListener('keyup', (event) => {
-      const key =
-        (event.ctrlKey ? '<CTRL>' : '') +
-        (event.altKey ? '<ALT>' : '') +
-        (event.shiftKey ? '<SHIFT>' : '') +
-        event.key.toUpperCase()
-      Publish(`Action:Keypress:${key}`, key)
-    })
-    window.addEventListener('gamepadconnected', () => {
-      AddInterval(
-        'ReadGamepad',
-        () => {
-          Actions.ReadGamepad()
-        },
-        20,
-      )
-    })
   },
 }

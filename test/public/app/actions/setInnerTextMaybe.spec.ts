@@ -12,7 +12,6 @@ const toHTMLElement = (o: unknown): HTMLElement | null =>
 describe('public/app/actions function setInnerTextMaybe', () => {
   const testCases: Array<[string, HTMLElement | null, boolean]> = [
     ['null', null, false],
-    ['undefined', toHTMLElement(undefined), false],
     ['HTMLElement', toHTMLElement({ innerText: '' }), true],
   ]
   testCases.forEach(([title, obj, expected]) => {

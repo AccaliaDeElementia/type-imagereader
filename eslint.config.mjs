@@ -29,7 +29,6 @@ export default [
   },
   {
     rules: {
-      eqeqeq: 'off',
       'no-plusplus': 'off',
       'no-await-in-loop': 'off',
       'no-param-reassign': 'off',
@@ -39,8 +38,20 @@ export default [
     },
   },
   {
+    files: ['public/scripts/**/*.js', 'public/scripts/**/*.ts'],
+    rules: {
+      'require-unicode-regexp': 'off',
+      eqeqeq: 'off',
+      'max-lines': 'off',
+      'prefer-template': 'off',
+      'require-atomic-updates': 'off',
+      '@typescript-eslint/strict-void-return': 'off',
+    },
+  },
+  {
     files: ['test/**/*.js', 'test/**/*.ts'],
     rules: {
+      eqeqeq: 'off',
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/strict-void-return': 'off', // TODO: Remove this rule once the typescript defs for mocha get updated to mark the callback as optionally awaitable
     },

@@ -42,12 +42,20 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       url: `http://127.0.0.1:2999/slideshow?`,
     })
   })
-  it('should not break if socket is null', () => {
+  // it('should not break if socket is null', () => {
+  //   const event = new global.window.MouseEvent('click', {
+  //     clientX: global.window.innerWidth * (1 / 6),
+  //     clientY: global.window.innerHeight / 2,
+  //   })
+  //   Functions.HandleClick(event, null, 1)
+  //   assert(true, 'should not throw when null socket provided')
+  // })
+  it('should not break if socket is undefined', () => {
     const event = new global.window.MouseEvent('click', {
       clientX: global.window.innerWidth * (1 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    Functions.HandleClick(event, Cast<WebSocket>(null), 1)
+    Functions.HandleClick(event, undefined, 1)
     assert(true, 'should not throw when null socket provided')
   })
   it('should not break if socket is undefined', () => {

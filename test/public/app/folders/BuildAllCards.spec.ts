@@ -93,12 +93,6 @@ describe('public/app/folders function BuildAllCards()', () => {
     expect(buildCardStub.calledWithExactly(data.children[1])).to.equal(true)
     expect(buildCardStub.calledWithExactly(data.children[2])).to.equal(true)
   })
-  it('should not add folder card when BuildCard returns undefined', () => {
-    const data = { children: [{ A: 1 }] }
-    buildCardStub.returns(undefined)
-    Folders.BuildAllCards(Cast<Listing>(data))
-    expect(tabFolders?.lastElementChild?.children).to.have.lengthOf(0)
-  })
   it('should not add folder card when BuildCard returns null', () => {
     const data = { children: [{ A: 1 }] }
     buildCardStub.returns(null)

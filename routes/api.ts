@@ -26,8 +26,8 @@ interface BodyData {
 }
 
 export function isReqWithBodyData(obj: unknown): obj is ReqWithBodyData {
-  if (obj == null || typeof obj !== 'object') return false
-  if (!('body' in obj) || obj.body == null || typeof obj.body !== 'object') return false
+  if (obj === null || typeof obj !== 'object') return false
+  if (!('body' in obj) || obj.body === null || typeof obj.body !== 'object') return false
   if ('modCount' in obj.body && typeof obj.body.modCount !== 'number') return false
   if (!('path' in obj.body) || typeof obj.body.path !== 'string') return false
   return true
@@ -100,7 +100,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       return
     }
     const folder = await Functions.GetListing(knex, normalize(`${path}/`))
-    if (folder == null) {
+    if (folder === null) {
       res.status(StatusCodes.NOT_FOUND).json({
         error: {
           code: 'E_NOT_FOUND',
@@ -123,7 +123,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const incomingModCount = body.modCount ?? Number.NaN
       let response = -1
       const path = parsePath(UriSafePath.decode(body.path), res)
-      if (path == null) {
+      if (path === null) {
         return
       }
       if (incomingModCount === -1) {

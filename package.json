@@ -13,8 +13,8 @@
     "pretest": "npm run build",
     "test": "nyc mocha",
     "knex": "knex --knexfile knexfile.json",
-    "predev": "npm run build",
-    "dev": "DEBUG='type-imagereader:*' SKIP_SYNC=1 ts-node ."
+    "pr edev": "npm run build",
+    "dev": "DEBUG='*' SKIP_SYNC=1 ts-node ."
   },
   "repository": {
     "type": "git",

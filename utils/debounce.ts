@@ -20,7 +20,7 @@ export class Debouncer {
   }
   debounce(key: string, callback: DebounceCallback): void {
     const counter = this._counters.find((c) => c.key === key)
-    if (counter == null) {
+    if (counter === undefined) {
       this._counters.push({
         key,
         callback,

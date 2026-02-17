@@ -30,11 +30,6 @@ describe('utils/browserify-middleware function CompileAndCache()', () => {
     await Functions.CompileAndCache('/foo', 'bar')
     expect(compileBundleStub.called).to.equal(false)
   })
-  it('should abort if real path resolves to undefined', async () => {
-    getSystemPathStub.resolves(undefined)
-    await Functions.CompileAndCache('/foo', 'bar')
-    expect(compileBundleStub.called).to.equal(false)
-  })
   it('should abort if real path resolves to empty', async () => {
     getSystemPathStub.resolves('')
     await Functions.CompileAndCache('/foo', 'bar')

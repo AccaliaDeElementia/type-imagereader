@@ -83,7 +83,7 @@ describe('public/app/pictures function LoadNextImage()', () => {
   })
   it('should clear nextPending on no next image', async () => {
     Pictures.nextPending = true
-    getPictureStub.returns(null)
+    getPictureStub.returns(undefined)
     const promise = Pictures.LoadNextImage()
     expect(Pictures.nextPending).to.equal(false)
     await promise
@@ -103,7 +103,7 @@ describe('public/app/pictures function LoadNextImage()', () => {
     expect(Pictures.nextPending).to.equal(false)
   })
   it('should not fetch on no next image', async () => {
-    getPictureStub.returns(null)
+    getPictureStub.returns(undefined)
     await Pictures.LoadNextImage()
     expect(fetchStub.callCount).to.equal(0)
   })
