@@ -27,7 +27,7 @@ interface SyncItemChunks {
   chunks: SyncItem[][]
 }
 
-interface FolderInfo {
+export interface FolderInfo {
   path: string
   totalCount: number
   seenCount: number
