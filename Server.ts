@@ -8,7 +8,6 @@ import helmet from 'helmet'
 import express, { type Express, type Request, type Response, type NextFunction } from 'express'
 import favicon from 'serve-favicon'
 import StatusCodes from 'http-status-codes'
-import 'express-async-errors'
 
 import type { Server as HttpServer } from 'node:http'
 import { Server as WebSocketServer } from 'socket.io'

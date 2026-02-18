@@ -18,7 +18,7 @@ describe('routes/images route /preview/*-image.webp', () => {
   let serverFake = Cast<Server>({})
   let websocketsFake = Cast<WebSocketServer>({})
   let requestStub = {
-    params: [''],
+    params: { path: undefined as string | string[] | undefined },
     body: '',
     originalUrl: '',
   }
@@ -51,14 +51,14 @@ describe('routes/images route /preview/*-image.webp', () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     const fn = routerFake.get
       .getCalls()
-      .filter((call) => call.args[0] === '/preview/*-image.webp')
+      .filter((call) => call.args[0] === '/preview/*path-image.webp')
       .map((call) => call.args[1] as unknown)[0]
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
     readImageStub = Sinon.stub(Functions, 'ReadImage').resolves()
     rescaleImageStub = Sinon.stub(Functions, 'RescaleImage').resolves()
     sendImageStub = Sinon.stub(Functions, 'SendImage').resolves()
     requestStub = {
-      params: [''],
+      params: { path: undefined },
       body: '',
       originalUrl: '',
     }
@@ -96,10 +96,17 @@ describe('routes/images route /preview/*-image.webp', () => {
     ['send to response with SendImage()', () => expect(sendImageStub.firstCall.args[1]).to.equal(responseFake)],
   ]
   successTests.forEach(([title, validationFn]) => {
-    it(`should ${title} for success`, async () => {
+    it(`should ${title} for success by string`, async () => {
       const img = new ImageData()
       readImageStub.resolves(img)
-      requestStub.params[0] = 'foo/bar.png'
+      requestStub.params.path = 'foo/bar.png'
+      await router(requestFake, responseFake)
+      validationFn(img)
+    })
+    it(`should ${title} for success by string array`, async () => {
+      const img = new ImageData()
+      readImageStub.resolves(img)
+      requestStub.params.path = ['foo', 'bar.png']
       await router(requestFake, responseFake)
       validationFn(img)
     })
@@ -144,7 +151,7 @@ describe('routes/images route /preview/*-image.webp', () => {
     validation: (e: Error) => void,
   ): void => {
     it(`should ${errorTitle} when ${triggerName}`, async () => {
-      requestStub.params = ['foo/bar/baz.txt']
+      requestStub.params.path = 'foo/bar/baz.txt'
       requestStub.originalUrl = '/preview/image.png'
       requestStub.body = 'REQUEST BODY'
       const err = new Error('FOO')

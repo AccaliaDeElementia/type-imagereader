@@ -2,10 +2,9 @@
 
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../testutils/TypeGuards'
-import { assert, expect } from 'chai'
-import { type HandleSocketState, Functions, Imports } from '../../../routes/slideshow'
+import { expect } from 'chai'
+import { type HandleSocketState, Functions, Imports, SocketHandlers } from '../../../routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
-import { AlwaysFails } from '../../testutils/Errors'
 
 describe('routes/slideshow socket goto-image', () => {
   let knexFake = StubToKnex({})
@@ -13,7 +12,6 @@ describe('routes/slideshow socket goto-image', () => {
   let serverFake = Cast<WebSocketServer>(ioStub)
   let socketStub = { on: Sinon.stub() }
   let socketFake = Cast<Socket>(socketStub)
-  let handlerFn = AlwaysFails<(_: (_: string | null) => void) => Promise<void>>('Should be overwritten in beforeEach!')
   let socketState: HandleSocketState = { roomName: null }
   let folder = { path: '/foo/bar' }
   let roomData = { images: [folder], index: -1 }
@@ -27,12 +25,6 @@ describe('routes/slideshow socket goto-image', () => {
     socketStub = { on: Sinon.stub() }
     socketFake = Cast<Socket>(socketStub)
     socketState = Functions.HandleSocket(knexFake, serverFake, socketFake)
-    const fn = socketStub.on
-      .getCalls()
-      .filter((call) => call.args[0] === 'goto-image')
-      .map((call) => call.args[1] as unknown)[0]
-    assert.isFunction(fn)
-    handlerFn = Cast<(callback: (path: string | null) => void) => Promise<void>>(fn)
     folder = { path: '/foo/bar' }
     roomData = { images: [folder], index: -1 }
     getRoomStub = Sinon.stub(Functions, 'GetRoomAndIncrementImage')
@@ -65,7 +57,7 @@ describe('routes/slideshow socket goto-image', () => {
       socketState.roomName = room
       roomData.index = index
       const spy = Sinon.stub()
-      await handlerFn(spy)
+      await SocketHandlers.gotoImage(spy, socketState, knexFake)
       validationFn(spy)
     })
   })

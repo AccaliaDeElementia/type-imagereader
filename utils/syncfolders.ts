@@ -246,6 +246,11 @@ export const Functions = {
       .count('* as totalCount')
       .sum({ seenCount: knex.raw('CASE WHEN seen THEN 1 ELSE 0 END') })
       .groupBy('folder')
+    // force the total count to be a number in case postgres is silly
+    for (const info of folderInfos) {
+      info.totalCount = Number.parseInt(`${info.totalCount}`, 10)
+      info.seenCount = Number.parseInt(`${info.seenCount}`, 10)
+    }
     return folderInfos
   },
   CalculateFolderInfos: (allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] => {

@@ -2,17 +2,15 @@
 
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../testutils/TypeGuards'
-import { assert, expect } from 'chai'
-import { type HandleSocketState, Functions } from '../../../routes/slideshow'
+import { expect } from 'chai'
+import { type HandleSocketState, Functions, SocketHandlers } from '../../../routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
-import { AlwaysFails } from '../../testutils/Errors'
 
 describe('routes/slideshow socket join-slideshow()', () => {
   let knexFake = StubToKnex({})
   let serverFake = Cast<WebSocketServer>({})
   let socketStub = { on: Sinon.stub(), join: Sinon.stub().resolves(), emit: Sinon.stub() }
   let socketFake = Cast<Socket>(socketStub)
-  let handlerFn = AlwaysFails<(_: string | null | undefined) => Promise<void>>('Should be overwritten in beforeEach!')
   let socketState: HandleSocketState = { roomName: null }
   let roomData = {
     uriSafeImage: '/foo/bar/quux.png',
@@ -25,12 +23,6 @@ describe('routes/slideshow socket join-slideshow()', () => {
     socketFake = Cast<Socket>(socketStub)
     socketState = Functions.HandleSocket(knexFake, serverFake, socketFake)
     socketState.roomName = 'NO_ROOM' // assign sentical value to test against later
-    const fn = socketStub.on
-      .getCalls()
-      .filter((call) => call.args[0] === 'join-slideshow')
-      .map((call) => call.args[1] as unknown)[0]
-    assert.isFunction(fn)
-    handlerFn = Cast<(_: string | null | undefined) => Promise<void>>(fn)
     roomData = {
       uriSafeImage: '/foo/quux.png',
     }
@@ -66,7 +58,7 @@ describe('routes/slideshow socket join-slideshow()', () => {
   ]
   tests.forEach(([title, room, validationFn]) => {
     it(`should ${title}`, async () => {
-      await handlerFn(room)
+      await SocketHandlers.joinSlideshow(room, socketState, socketFake, knexFake)
       validationFn()
     })
   })

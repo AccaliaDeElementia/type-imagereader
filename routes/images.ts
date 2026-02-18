@@ -11,6 +11,7 @@ import Sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
+import { ReqParamToString } from '../utils/helpers'
 
 const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
@@ -108,7 +109,8 @@ export const Functions = {
       return // Image already has an error
     }
     try {
-      image.data = await Imports.Sharp(image.data, { animated })
+      const before = image.data
+      const after = await Imports.Sharp(image.data, { animated })
         .rotate()
         .resize({
           width,
@@ -118,7 +120,10 @@ export const Functions = {
         })
         .webp()
         .toBuffer()
-      image.extension = 'webp'
+      if (before === image.data) {
+        image.data = after
+        image.extension = 'webp'
+      }
     } catch (e) {
       // Do nothing.... we tried
     }
@@ -130,7 +135,7 @@ export const Functions = {
   },
   SendImage: (image: ImageData, res: Response): void => {
     const aMonth = 1000 * 60 * 60 * 24 * 30
-    if (image.code != null) {
+    if (image.code !== null) {
       res.status(image.statusCode).json({
         error: {
           code: image.code,
@@ -206,19 +211,19 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     }
 
   router.get(
-    '/full/*',
+    '/full/*path',
     handleErrors(async (req, res) => {
-      const filename = `/${req.params[0]}`
+      const filename = `/${ReqParamToString(req.params.path)}`
       const image = await Functions.ReadImage(filename)
       Functions.SendImage(image, res)
     }),
   )
 
   router.get(
-    '/scaled/:width/:height/*-image.webp',
+    '/scaled/:width/:height/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${req.params[0]}`
-      if (req.params.width == null) {
+      const filename = `/${ReqParamToString(req.params.path)}`
+      if (req.params.width === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be provided')
         return
       }
@@ -227,7 +232,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be positive integer')
         return
       }
-      if (req.params.height == null) {
+      if (req.params.height === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be provided')
         return
       }
@@ -242,9 +247,9 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   )
 
   router.get(
-    '/preview/*-image.webp',
+    '/preview/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${req.params[0]}`
+      const filename = `/${ReqParamToString(req.params.path)}`
       const image = await Functions.ReadImage(filename)
       await Functions.RescaleImage(image, 240, 320, false)
       Functions.SendImage(image, res)
@@ -252,9 +257,9 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   )
 
   router.get(
-    '/kiosk/*-image.webp',
+    '/kiosk/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${req.params[0]}`
+      const filename = `/${ReqParamToString(req.params.path)}`
       const image = await CacheStorage.kioskCache.fetch(filename, 1280, 800)
       Functions.SendImage(image, res)
     }),

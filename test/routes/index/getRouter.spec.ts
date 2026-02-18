@@ -25,7 +25,7 @@ describe('routes/index function getRouter()', () => {
     const result = await getRouter(applicationFake, serverFake, socketsFake)
     expect(result).to.equal(routerStub)
   })
-  const endpoints = ['/', '/show', '/show/*']
+  const endpoints = ['/', '/show', '/show/*path']
   it('should register expected number of endpoints', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     expect(routerStub.get.callCount).to.equal(endpoints.length)

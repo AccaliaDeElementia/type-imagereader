@@ -11,7 +11,7 @@ import { Cast } from '../../testutils/TypeGuards'
 describe('routes/index route /', () => {
   let routeFn: (_: Request, __: Response) => void = Sinon.stub()
   let routeAltFn: (_: Request, __: Response) => void = Sinon.stub()
-  let requestStub = { params: [] as string[] }
+  let requestStub = { params: { path: undefined as string[] | string | undefined } }
   let requestFake = Cast<Request>(requestStub)
   let resposeStub = { render: Sinon.stub(), status: Sinon.stub().returnsThis() }
   let responseFake = Cast<Response>(resposeStub)
@@ -28,17 +28,17 @@ describe('routes/index route /', () => {
         routerStub.get.getCalls().find((c) => c.args[0] === '/show')?.args[1],
       )
       routeAltFn = Cast<(_: Request, __: Response) => void>(
-        routerStub.get.getCalls().find((c) => c.args[0] === '/show/*')?.args[1],
+        routerStub.get.getCalls().find((c) => c.args[0] === '/show/*path')?.args[1],
       )
     } finally {
       getRouterStub?.restore()
     }
-    requestStub = { params: [] as string[] }
+    requestStub = { params: { path: undefined } }
     requestFake = Cast<Request>(requestStub)
     resposeStub = { render: Sinon.stub(), status: Sinon.stub().returnsThis() }
     responseFake = Cast<Response>(resposeStub)
   })
-  it("should alias same handler for both '/show' and '/show/*' routes", () => {
+  it("should alias same handler for both '/show' and '/show/*path' routes", () => {
     expect(routeFn).to.equal(routeAltFn)
   })
   const errorData = {
@@ -73,36 +73,36 @@ describe('routes/index route /', () => {
   ]
   errorTests.forEach(([title, path, validationFn]) => {
     it(`should ${title} for '${path}'`, () => {
-      requestStub.params = [path]
+      requestStub.params.path = path
       routeFn(requestFake, responseFake)
       validationFn()
     })
   })
-  const successPaths: Array<string | undefined> = [undefined, '', 'foo/~bar', 'this/is/a/valid/path']
+  const successPaths: Array<string | string[] | undefined> = [
+    undefined,
+    '',
+    'foo/~bar',
+    'this/is/a/valid/path',
+    ['this', 'is', 'also', 'a', 'valid', 'path'],
+  ]
   successPaths.forEach((path) => {
-    it(`should render for '${path}'`, () => {
+    it(`should render for '${JSON.stringify(path)}'`, () => {
       if (path === undefined) {
-        requestStub.params = []
-      } else {
-        requestStub.params = [path]
+        requestStub.params.path = path
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.render.callCount).to.equal(1)
     })
-    it(`should render app for '${path}'`, () => {
+    it(`should render app for '${JSON.stringify(path)}'`, () => {
       if (path === undefined) {
-        requestStub.params = []
-      } else {
-        requestStub.params = [path]
+        requestStub.params.path = path
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.render.firstCall.args).to.deep.equal(['app'])
     })
-    it(`should not set explicit status '${path}'`, () => {
+    it(`should not set explicit status '${JSON.stringify(path)}'`, () => {
       if (path === undefined) {
-        requestStub.params = []
-      } else {
-        requestStub.params = [path]
+        requestStub.params.path = path
       }
       routeFn(requestFake, responseFake)
       expect(resposeStub.status.callCount).to.equal(0)

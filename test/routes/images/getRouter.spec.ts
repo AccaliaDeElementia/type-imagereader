@@ -83,13 +83,18 @@ describe('routes/images export getRouter()', () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(CacheStorage.kioskCache).to.not.equal(CacheStorage.scaledCache)
   })
-  const routes = ['/full/*', '/scaled/:width/:height/*-image.webp', '/preview/*-image.webp', '/kiosk/*-image.webp']
+  const routes = [
+    '/full/*path',
+    '/scaled/:width/:height/*path-image.webp',
+    '/preview/*path-image.webp',
+    '/kiosk/*path-image.webp',
+  ]
   it('should register only expected router count', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(routerFake.get.callCount).to.equal(routes.length)
   })
   routes.forEach((route) => {
-    it('should register only expected router count', async () => {
+    it(`should register expected router: ${route}`, async () => {
       await getRouter(applicationFake, serverFake, websocketsFake)
       expect(routerFake.get.calledWith(route)).to.equal(true)
     })

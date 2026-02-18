@@ -12,6 +12,7 @@ import persistance from '../utils/persistance'
 import { ModCount, UriSafePath, Functions } from './apiFunctions'
 
 import debug from 'debug'
+import { ReqParamToString } from '../utils/helpers'
 
 export const Imports = { Router, debug }
 
@@ -25,8 +26,8 @@ interface BodyData {
 }
 
 export function isReqWithBodyData(obj: unknown): obj is ReqWithBodyData {
-  if (obj == null || typeof obj !== 'object') return false
-  if (!('body' in obj) || obj.body == null || typeof obj.body !== 'object') return false
+  if (obj === null || typeof obj !== 'object') return false
+  if (!('body' in obj) || obj.body === null || typeof obj.body !== 'object') return false
   if ('modCount' in obj.body && typeof obj.body.modCount !== 'number') return false
   if (!('path' in obj.body) || typeof obj.body.path !== 'string') return false
   return true
@@ -73,7 +74,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       })
       return null
     }
-    return normalize('/' + path)
+    return normalize(`/${path}`)
   }
 
   router.get(
@@ -93,13 +94,13 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   )
 
   const listing = handleErrors(async (req, res) => {
-    let path: string | null = req.params[0] != null && req.params[0].length > 0 ? req.params[0] : '/'
+    let path: string | null = `/${ReqParamToString(req.params.path)}`
     path = parsePath(path, res)
     if (path === null) {
       return
     }
-    const folder = await Functions.GetListing(knex, normalize(path + '/'))
-    if (folder == null) {
+    const folder = await Functions.GetListing(knex, normalize(`${path}/`))
+    if (folder === null) {
       res.status(StatusCodes.NOT_FOUND).json({
         error: {
           code: 'E_NOT_FOUND',
@@ -112,7 +113,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     res.status(StatusCodes.OK).json(folder)
   })
 
-  router.get('/listing/*', listing)
+  router.get('/listing/*path', listing)
   router.get('/listing', listing)
 
   router.post(
@@ -122,7 +123,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const incomingModCount = body.modCount ?? Number.NaN
       let response = -1
       const path = parsePath(UriSafePath.decode(body.path), res)
-      if (path == null) {
+      if (path === null) {
         return
       }
       if (incomingModCount === -1) {
@@ -144,7 +145,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
-        await Functions.MarkFolderRead(knex, normalize(path + '/'))
+        await Functions.MarkFolderRead(knex, normalize(`${path}/`))
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -156,7 +157,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
-        await Functions.MarkFolderUnread(knex, normalize(path + '/'))
+        await Functions.MarkFolderUnread(knex, normalize(`${path}/`))
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -166,7 +167,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     res.json(await Functions.GetBookmarks(knex))
   })
 
-  router.get('/bookmarks/*', getBookmarks)
+  router.get('/bookmarks/*path', getBookmarks)
 
   router.get('/bookmarks', getBookmarks)
 

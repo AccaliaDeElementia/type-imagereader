@@ -18,7 +18,7 @@ describe('routes/images route /full/*', () => {
   let serverFake = Cast<Server>({})
   let websocketsFake = Cast<WebSocketServer>({})
   let requestStub = {
-    params: [''],
+    params: { path: undefined as string | string[] | undefined },
     body: '',
     originalUrl: '',
   }
@@ -50,13 +50,13 @@ describe('routes/images route /full/*', () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     const fn = routerFake.get
       .getCalls()
-      .filter((call) => call.args[0] === '/full/*')
+      .filter((call) => call.args[0] === '/full/*path')
       .map((call) => call.args[1] as unknown)[0]
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
     readImageStub = Sinon.stub(Functions, 'ReadImage').resolves()
     sendImageStub = Sinon.stub(Functions, 'SendImage').resolves()
     requestStub = {
-      params: [''],
+      params: { path: undefined },
       body: '',
       originalUrl: '',
     }
@@ -91,7 +91,6 @@ describe('routes/images route /full/*', () => {
     ['ReadImage() throws', (err) => readImageStub.throws(err)],
     ['ReadImage() rejects', (err) => readImageStub.rejects(err)],
     ['SendImage() throws', (err) => sendImageStub.throws(err)],
-    ['SendImage() throws', (err) => sendImageStub.throws(err)],
   ]
   const errorTests: Array<[string, (err: Error) => void]> = [
     ['call response status() to set status', () => expect(responseStub.status.callCount).to.equal(1)],
@@ -124,7 +123,7 @@ describe('routes/images route /full/*', () => {
     validation: (path: string, data: ImageData) => void,
   ): void => {
     it(`should ${title} for path '${path}' on success`, async () => {
-      requestStub.params[0] = path
+      requestStub.params.path = path
       const img = new ImageData()
       readImageStub.resolves(img)
       await router(requestFake, responseFake)
@@ -143,7 +142,7 @@ describe('routes/images route /full/*', () => {
     validation: (e: Error) => void,
   ): void => {
     it(`should ${errorTitle} when ${triggerName}`, async () => {
-      requestStub.params[0] = 'foo/bar/baz.txt'
+      requestStub.params.path = 'foo/bar/baz.txt'
       requestStub.originalUrl = '/full/image.png'
       requestStub.body = 'REQUEST BODY'
       const err = new Error('FOO')

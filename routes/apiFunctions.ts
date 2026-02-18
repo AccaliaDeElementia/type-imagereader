@@ -89,8 +89,8 @@ export const UriSafePath = {
       .split('/')
       .map((part) => encodeURIComponent(part))
       .join('/'),
-  encodeNullable: (uri: string | null): string | null => {
-    if (uri == null || uri.length < 1) {
+  encodeNullable: (uri: string | null | undefined): string | null => {
+    if (uri === null || uri === undefined || uri.length < 1) {
       return null
     }
     return UriSafePath.encode(uri)
@@ -151,7 +151,7 @@ export const Functions = {
         .where('path', '=', path)
         .limit(1)
     )[0]
-    if (folder == null) {
+    if (folder === undefined) {
       return null
     }
     return {
@@ -184,7 +184,7 @@ export const Functions = {
       query.andWhere('sortKey', comparer, sortKey).orderBy('sortKey', direction),
     )
     const folder = [...eqlFolders, ...neqFolders][0]
-    if (folder == null) {
+    if (folder === undefined) {
       return null
     }
     return {
@@ -242,7 +242,7 @@ export const Functions = {
   },
   GetListing: async (knex: Knex, path: string): Promise<Listing | null> => {
     const folder = await Functions.GetFolder(knex, path)
-    if (folder == null) {
+    if (folder === null) {
       return null
     }
     const next = await Functions.GetNextFolder(knex, path, folder.sortKey)
@@ -289,7 +289,7 @@ export const Functions = {
   SetLatestPicture: async (knex: Knex, path: string): Promise<string | null> => {
     const folder = normalize(dirname(path) + sep)
     const picture = (await knex('pictures').select<DbPicture[]>('seen').where({ path }))[0]
-    if (picture == null) {
+    if (picture === undefined) {
       return null
     }
     if (!picture.seen) {
