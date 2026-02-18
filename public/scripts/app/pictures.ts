@@ -21,7 +21,7 @@ function setTextContent(selector: string, content: string): void {
 }
 
 function makeURI(width: number | undefined, height: number | undefined, img: Picture): string {
-  return '/images/scaled/' + width + '/' + height + img.path + '-image.webp'
+  return `/images/scaled/${width}/${height}${img.path}-image.webp`
 }
 
 export type PageSelector = () => number

@@ -259,7 +259,7 @@ export const Functions = {
       while (parts.length > 1) {
         // don't loop all the way to zero to avoid double counting the root
         parts.pop()
-        const parentPath = parts.join('/') + '/'
+        const parentPath = `${parts.join('/')}/`
         let { [parentPath]: parent } = allFolders
         if (parent === undefined) {
           parent = {

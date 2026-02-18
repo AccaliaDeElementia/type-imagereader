@@ -9,6 +9,7 @@
     "prettyCheck": "prettier . --write --log-level=warn",
     "prelint": "npm run prettyCheck",
     "lint": "eslint .",
+    "lintfix": "eslint . --fix",
     "start": "DEBUG='type-imagereader:*' ts-node .",
     "pretest": "npm run build",
     "test": "nyc mocha",

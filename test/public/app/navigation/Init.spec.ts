@@ -944,10 +944,10 @@ describe('public/app/navigation function Init()', () => {
       expect(locationAssignSpy.callCount).to.equal(1)
     })
     it('should alter location to expected path when invoked', async () => {
-      const path = '/foo/' + Math.random()
+      const path = `/foo/${Math.random()}`
       Navigation.current.path = path
       await handler()
-      expect(locationAssignSpy.firstCall.args[0]).to.equal('/slideshow' + path)
+      expect(locationAssignSpy.firstCall.args[0]).to.equal(`/slideshow${path}`)
     })
     it('should pass expected this value when invoked', async () => {
       await handler()

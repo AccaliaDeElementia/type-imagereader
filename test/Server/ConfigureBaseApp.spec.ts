@@ -88,7 +88,7 @@ describe('Server function ConfigureBaseApp', () => {
   })
   it('should configure favicon with extended encodings', () => {
     Functions.ConfigureBaseApp(appFake)
-    expect(faviconStub.firstCall.args[0]).to.equal(Imports.dirname + '/public/images/favicon.ico')
+    expect(faviconStub.firstCall.args[0]).to.equal(`${Imports.dirname}/public/images/favicon.ico`)
   })
   it('should app.use result of favicon', () => {
     const favicon = {}

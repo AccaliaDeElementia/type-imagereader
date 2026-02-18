@@ -79,8 +79,8 @@ describe('public/app/pictures function MakePicturesPage()', () => {
   it('should add all cards to built page', () => {
     const pics = Array.from({ length: 50 }).map(
       (_, i): Picture => ({
-        name: '' + i,
-        path: '' + i,
+        name: `${i}`,
+        path: `${i}`,
         seen: false,
       }),
     )

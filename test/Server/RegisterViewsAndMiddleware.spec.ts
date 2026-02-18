@@ -42,7 +42,7 @@ describe('Server function RegisterRouters', () => {
   it('should set views path', () => {
     Functions.RegisterViewsAndMiddleware(appFake)
     const args = appStub.set.getCalls().find((c) => c.args[0] === 'views')?.args as unknown[] | undefined
-    expect(args?.[1]).to.equal(Imports.dirname + '/views')
+    expect(args?.[1]).to.equal(`${Imports.dirname}/views`)
   })
   it('should set view engine', () => {
     Functions.RegisterViewsAndMiddleware(appFake)
@@ -76,7 +76,7 @@ describe('Server function RegisterRouters', () => {
     it('should set sassMiddleware mount path', () => {
       expect(sassMiddlewareStub.firstCall.args).to.deep.equal([
         {
-          mountPath: Imports.dirname + '/public',
+          mountPath: `${Imports.dirname}/public`,
           watchdir: '/stylesheets',
         },
       ])
@@ -135,7 +135,7 @@ describe('Server function RegisterRouters', () => {
     it('should set browserifyMiddleware mount path', () => {
       expect(browerifyMiddlewareStub.firstCall.args).to.deep.equal([
         {
-          basePath: Imports.dirname + '/public',
+          basePath: `${Imports.dirname}/public`,
           watchPaths: ['/scripts', '/bundles'],
         },
       ])
@@ -183,7 +183,7 @@ describe('Server function RegisterRouters', () => {
     })
     it('should configure serve static middleware with public path', () => {
       Functions.RegisterViewsAndMiddleware(appFake)
-      expect(staticStub.firstCall.args).to.deep.equal([Imports.dirname + '/public'])
+      expect(staticStub.firstCall.args).to.deep.equal([`${Imports.dirname}/public`])
     })
     it('should register serve static function as middleware', () => {
       const fn = Sinon.stub()

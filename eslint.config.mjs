@@ -33,7 +33,6 @@ export default [
       'no-plusplus': 'off',
       'no-await-in-loop': 'off',
       'no-param-reassign': 'off',
-      'prefer-template': 'off',
       'require-atomic-updates': 'off',
       'require-unicode-regexp': 'off',
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually

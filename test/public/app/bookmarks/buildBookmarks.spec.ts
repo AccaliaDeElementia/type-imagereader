@@ -234,7 +234,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       if (i === 12) {
         element.setAttribute('open', '')
       }
-      element.setAttribute('data-folderPath', '/foo/bar/baz' + i)
+      element.setAttribute('data-folderPath', `/foo/bar/baz${i}`)
       Bookmarks.bookmarksTab?.appendChild(element)
     }
     Bookmarks.buildBookmarks(data)
@@ -414,7 +414,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       Bookmarks.BookmarkFolders = []
       for (let i = 1; i <= 100; i++) {
         Bookmarks.BookmarkFolders.push({
-          name: 'Z' + (101 - i),
+          name: `Z${101 - i}`,
           element: dom.window.document.createElement('details'),
         })
       }

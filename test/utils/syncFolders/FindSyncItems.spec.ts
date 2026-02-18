@@ -44,7 +44,7 @@ describe('utils/syncfolders function FindSyncItems()', () => {
     const name = Cast(debugStub.firstCall.args[0], (o) => typeof o === 'string')
     expect(name)
       .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(Imports.logPrefix + ':'))
+      .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`))
     expect(name)
       .to.be.a('string')
       .and.satisfy((msg: string) => msg.endsWith(':findItems'))
