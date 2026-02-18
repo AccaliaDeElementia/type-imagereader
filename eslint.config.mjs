@@ -45,7 +45,6 @@ export default [
     files: ['test/**/*.js', 'test/**/*.ts'],
     rules: {
       'preserve-caught-error': 'off',
-      'max-lines': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
     },
   },
