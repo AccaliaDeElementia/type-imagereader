@@ -251,7 +251,6 @@ export const Actions = {
       button.addEventListener('click', (event) => {
         Publish(`Action:Execute:${name.replace(/\s+/g, '')}`)
         event.preventDefault()
-        return false
       })
       result.appendChild(button)
     }

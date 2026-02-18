@@ -38,12 +38,12 @@ export default [
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/prefer-destructuring': 'off', //This hurts readability, at least as this project is designed
       '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/strict-void-return': 'off',
     },
   },
   {
     files: ['test/**/*.js', 'test/**/*.ts'],
     rules: {
+      '@typescript-eslint/strict-void-return': 'off',
       'preserve-caught-error': 'off',
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
     },

@@ -61,7 +61,9 @@ export const Functions = {
         })
         browser.transform('brfs')
         browser.add(path)
-        const source = await promisify(browser.bundle.bind(browser))()
+        const source = await promisify((cb: (err: unknown, res: Buffer) => void) => {
+          browser.bundle(cb)
+        })()
         return source.toString()
       })
       .then(async (src) => await Imports.minify(src))

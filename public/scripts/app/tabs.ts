@@ -13,7 +13,6 @@ export const Tabs = {
       tab.parentElement?.addEventListener('click', (evt) => {
         Tabs.SelectTab(tab.getAttribute('href') ?? '')
         evt.preventDefault()
-        return false
       })
     }
 

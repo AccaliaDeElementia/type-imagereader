@@ -285,7 +285,9 @@ export const Pictures = {
     if (pagninator != null) {
       tab?.appendChild(pagninator)
     }
-    pages.forEach((page) => tab?.appendChild(page))
+    pages.forEach((page) => {
+      tab?.appendChild(page)
+    })
   },
   LoadNextImage: async (): Promise<void> => {
     const next = Pictures.GetPicture(Pictures.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)

@@ -22,9 +22,11 @@ import sassMiddleware from './utils/sass-middleware'
 import browserifyMiddleware from './utils/browserify-middleware'
 
 import { Debouncer } from './utils/debounce'
+import debug from 'debug'
 
 export const Imports = {
   dirname: __dirname,
+  logger: debug('type-imagereader:Server'),
   express,
   cookieParser,
   favicon,
@@ -46,7 +48,12 @@ export const Routers = {
 export const Functions = {
   CreateApp: (port: number): [Express, HttpServer, WebSocketServer] => {
     const app = Imports.express()
-    const server = app.listen(port, () => null)
+    const server = app.listen(port, (err) => {
+      if (err !== undefined) {
+        Imports.logger('Error encountered creating server')
+        Imports.logger(err)
+      }
+    })
     const websockets = new Imports.WebSocketServer(server)
     return [app, server, websockets]
   },
