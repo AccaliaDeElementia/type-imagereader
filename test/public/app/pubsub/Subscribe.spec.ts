@@ -25,7 +25,7 @@ describe('public/app/pubsub function Subscribe()', () => {
   })
   it('should append subscriber to subscriber list', () => {
     PubSub.subscribers['FOOBAR:BAZ'] = []
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i += 1) {
       PubSub.subscribers['FOOBAR:BAZ'].push(Sinon.stub().resolves())
     }
     PubSub.Subscribe('Foobar:Baz', subscriber)

@@ -209,7 +209,7 @@ export const Functions = {
       const roomsToUpdate: SlideshowRoom[] = []
       const newRooms: Record<string, SlideshowRoom> = {}
       for (const room of Object.values(Config.rooms)) {
-        room.countdown--
+        room.countdown -= 1
         if (room.countdown <= -60 * Config.countdownDuration) {
           continue
         }

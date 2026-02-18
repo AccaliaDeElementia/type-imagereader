@@ -66,14 +66,14 @@ describe('public/app/folders function BuildAllCards()', () => {
     Sinon.restore()
   })
   it('should handle undefined listing', () => {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i += 1) {
       tabFolders?.appendChild(dom.window.document.createElement('div'))
     }
     Folders.BuildAllCards(Cast<Listing>({ children: undefined }))
     expect(tabFolders?.children).to.have.lengthOf(5)
   })
   it('should handle empty listing', () => {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i += 1) {
       tabFolders?.appendChild(dom.window.document.createElement('div'))
     }
     Folders.BuildAllCards(Cast<Listing>({ children: [] }))

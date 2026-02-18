@@ -30,11 +30,10 @@ export default [
   {
     rules: {
       eqeqeq: 'off',
-      'no-plusplus': 'off',
       'no-await-in-loop': 'off',
       'no-param-reassign': 'off',
       'require-atomic-updates': 'off',
-      'require-unicode-regexp': 'off',
+      'require-unicode-regexp': 'off', // TODO: Requires updating to newer version of js than browserify supports at present
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
       '@typescript-eslint/prefer-destructuring': 'off', //This hurts readability, at least as this project is designed
       '@typescript-eslint/no-floating-promises': 'error',

@@ -165,7 +165,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     expect(folder.element.classList.contains('closed')).to.equal(false)
   })
   it('should have on click handler to close others', () => {
-    for (let i = 1; i <= 50; i++) {
+    for (let i = 1; i <= 50; i += 1) {
       Bookmarks.GetFolder('/foo', {
         name: `/bar${i}`,
         path: `/bar${i}/baz${i}.png`,
@@ -178,7 +178,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     assert(title !== null, 'must get a result to issue event to')
     const evt = new dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
-    for (let i = 0; i < Bookmarks.BookmarkFolders.length; i++) {
+    for (let i = 0; i < Bookmarks.BookmarkFolders.length; i += 1) {
       expect(Bookmarks.BookmarkFolders[i]?.element.classList.contains('closed')).to.equal(i !== 25)
     }
   })

@@ -51,7 +51,7 @@ export class Debouncer {
         const callbacksDue = debouncer._counters.filter((counter) => counter.counter === 0)
         debouncer._counters = debouncer._counters.filter((counter) => counter.counter > 0)
         debouncer._counters.forEach((counter) => {
-          counter.counter--
+          counter.counter -= 1
         })
         await Promise.all(
           callbacksDue.map(async ({ key, callback }) => {

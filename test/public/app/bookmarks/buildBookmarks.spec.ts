@@ -229,7 +229,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
         },
       ],
     }
-    for (let i = 1; i <= 25; i++) {
+    for (let i = 1; i <= 25; i += 1) {
       const element = dom.window.document.createElement('div.folder')
       if (i === 12) {
         element.setAttribute('open', '')
@@ -412,7 +412,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
   it('should add elements from BookmarkFolders', () => {
     getFolderSpy.callsFake(() => {
       Bookmarks.BookmarkFolders = []
-      for (let i = 1; i <= 100; i++) {
+      for (let i = 1; i <= 100; i += 1) {
         Bookmarks.BookmarkFolders.push({
           name: `Z${101 - i}`,
           element: dom.window.document.createElement('details'),

@@ -165,7 +165,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
   })
   it('should append bookmark card to folder node', () => {
     const folder = dom.window.document.createElement('div')
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i += 1) {
       folder.appendChild(dom.window.document.createElement('div'))
     }
     getFolderSpy.returns(folder)
@@ -191,7 +191,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
   })
   it('should not append node to folder node when bookmark card creation fails', () => {
     const folder = dom.window.document.createElement('div')
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i += 1) {
       folder.appendChild(dom.window.document.createElement('div'))
     }
     getFolderSpy.returns(folder)

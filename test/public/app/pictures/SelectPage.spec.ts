@@ -40,7 +40,7 @@ describe('public/app/pictures function SelectPage()', () => {
     const result = []
     const pages = dom.window.document.createElement('div')
     pages.classList.add('pagination')
-    for (let i = 1; i <= count; i++) {
+    for (let i = 1; i <= count; i += 1) {
       const page = dom.window.document.createElement('div')
       page.classList.add('page-item')
       pages.appendChild(page)
@@ -53,7 +53,7 @@ describe('public/app/pictures function SelectPage()', () => {
     const result = []
     const pages = dom.window.document.createElement('div')
     pages.id = 'tabImages'
-    for (let i = 1; i <= count; i++) {
+    for (let i = 1; i <= count; i += 1) {
       const page = dom.window.document.createElement('div')
       page.classList.add('page')
       pages.appendChild(page)

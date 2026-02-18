@@ -185,7 +185,7 @@ export const Pictures = {
     let i = -1
     if (document.querySelector('.pagination .page-item.active') !== null) {
       for (const elem of document.querySelectorAll('.pagination .page-item')) {
-        i++
+        i += 1
         if (elem.classList.contains('active')) break
       }
     }
@@ -267,7 +267,7 @@ export const Pictures = {
     const domItems = paginator.querySelector('.pagination')
     const firstItem = Pictures.MakePaginatorItem('«', () => Math.max(Pictures.GetCurrentPage() - 1, 1))
     if (firstItem !== undefined) domItems?.appendChild(firstItem)
-    for (let i = 1; i <= pageCount; i++) {
+    for (let i = 1; i <= pageCount; i += 1) {
       const item = Pictures.MakePaginatorItem(`${i}`, () => i)
       if (item !== undefined) domItems?.appendChild(item)
     }

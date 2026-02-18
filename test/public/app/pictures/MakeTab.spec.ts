@@ -77,7 +77,7 @@ describe('public/app/pictures function MakeTab()', () => {
     Pictures.pageSize = 10
     Pictures.MakeTab()
     expect(makePicturesPageSpy.callCount).to.equal(4)
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i += 1) {
       const call = makePicturesPageSpy.getCall(i)
       expect(call.args).to.have.lengthOf(2)
       expect(call.args[0]).to.equal(i + 1)

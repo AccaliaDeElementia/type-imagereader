@@ -33,7 +33,7 @@ describe('public/app/pictures function GetCurrentPage()', () => {
     const result = []
     const pages = dom.window.document.createElement('div')
     pages.classList.add('pagination')
-    for (let i = 1; i <= count; i++) {
+    for (let i = 1; i <= count; i += 1) {
       const page = dom.window.document.createElement('div')
       page.classList.add('page-item')
       pages.appendChild(page)

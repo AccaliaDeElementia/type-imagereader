@@ -96,13 +96,13 @@ export const PubSub = {
           delay.method()
         } catch {}
       } else {
-        delay.delayCycles--
+        delay.delayCycles -= 1
       }
     })
     PubSub.deferred = PubSub.deferred
       .filter((method) => method.delayCycles > 0)
       .map((method) => {
-        method.delayCycles--
+        method.delayCycles -= 1
         return method
       })
   },

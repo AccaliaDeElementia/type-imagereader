@@ -54,7 +54,7 @@ describe('public/app/actions function BuildActions()', () => {
     for (const { target, buttons } of Actions.ActionGroups) {
       const result = dom.window.document.querySelectorAll(`${target} .actions`)
       expect(result).to.have.length(buttons.length, `${target} should have ${buttons.length} rows`)
-      for (let i = 0; i < buttons.length; i++) {
+      for (let i = 0; i < buttons.length; i += 1) {
         expect(result[i]).to.be.instanceOf(dom.window.HTMLDivElement, `${target} row ${i} should have expected type`)
         expect(result[i]?.children).to.have.length(
           buttons[i]?.length ?? -1,
@@ -70,7 +70,7 @@ describe('public/app/actions function BuildActions()', () => {
     for (const { target, buttons } of Actions.ActionGroups) {
       const result = dom.window.document.querySelectorAll(`${target} .actions`)
       expect(result).to.have.length(buttons.length, `${target} should have ${buttons.length} rows`)
-      for (let i = 0; i < buttons.length; i++) {
+      for (let i = 0; i < buttons.length; i += 1) {
         expect(result[i]).to.be.instanceOf(dom.window.HTMLDivElement, `${target} row ${i} should have expected type`)
         expect(result[i]?.children).to.have.length(
           buttons[i]?.length ?? -1,

@@ -154,7 +154,7 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
     it('should exponentially decay countdown when update fails', async () => {
       updateFn.rejects(new Error('FOO'))
       updater.period = 10
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 5; i += 1) {
         updater._countdown = -1
         updater._failCount = i
         await updater.trigger(0)

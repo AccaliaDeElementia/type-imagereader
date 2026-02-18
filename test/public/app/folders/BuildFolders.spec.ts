@@ -54,7 +54,7 @@ describe('public/app/folders function BuildFolders()', () => {
     Sinon.restore()
   })
   it('should remove all existing folder cards on call', () => {
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 20; i += 1) {
       const e = dom.window.document.createElement('div')
       e.classList.add('folders')
       tabFolders?.appendChild(e)

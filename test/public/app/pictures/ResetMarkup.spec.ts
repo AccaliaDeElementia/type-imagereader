@@ -99,7 +99,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   it('should remove existing .pages from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
     assert(tab != null)
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('pages')
       tab.appendChild(node)
@@ -110,7 +110,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   it('should remove existing .page nodes from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
     assert(tab != null)
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('page')
       tab.appendChild(node)
@@ -121,7 +121,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   it('should preserve existing non .page nodes from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
     assert(tab != null)
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('foo')
       tab.appendChild(node)

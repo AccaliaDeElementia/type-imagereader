@@ -104,7 +104,7 @@ describe('routes/apiFunctions function GetPictures', () => {
     })
     knexInstance.orderBy.resolves(data)
     const result = await Functions.GetPictures(knexFake, '/foo/bar/')
-    for (let i = 0; i < result.length; i++) {
+    for (let i = 0; i < result.length; i += 1) {
       expect(result[i]?.index).to.equal(i)
     }
   })

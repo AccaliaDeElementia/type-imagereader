@@ -130,7 +130,7 @@ describe('utils/syncfolders function FindSyncItems()', () => {
       (o): o is (_: unknown, __: number) => Promise<void> => typeof o === 'function',
     )
     const items = [{ path: '/foo', isFile: false }]
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 100; i += 1) {
       await callback(items, 0)
     }
     chunkSyncItemsForInsertStub.returns({
@@ -145,7 +145,7 @@ describe('utils/syncfolders function FindSyncItems()', () => {
   it('should count all files in loop', async () => {
     fsWalkerStub.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
       const items = [{ path: '/foo', isFile: false }]
-      for (let i = 1; i <= 100; i++) {
+      for (let i = 1; i <= 100; i += 1) {
         chunkSyncItemsForInsertStub.returns({
           files: i,
           dirs: 0,
@@ -160,7 +160,7 @@ describe('utils/syncfolders function FindSyncItems()', () => {
   it('should count all dirs in loop', async () => {
     fsWalkerStub.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
       const items = [{ path: '/foo', isFile: false }]
-      for (let i = 1; i <= 100; i++) {
+      for (let i = 1; i <= 100; i += 1) {
         chunkSyncItemsForInsertStub.returns({
           files: 0,
           dirs: i,
@@ -175,7 +175,7 @@ describe('utils/syncfolders function FindSyncItems()', () => {
   it('should return count of files', async () => {
     fsWalkerStub.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
       const items = [{ path: '/foo', isFile: false }]
-      for (let i = 1; i <= 100; i++) {
+      for (let i = 1; i <= 100; i += 1) {
         chunkSyncItemsForInsertStub.returns({
           files: i,
           dirs: 0,

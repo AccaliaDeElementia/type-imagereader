@@ -84,12 +84,12 @@ describe('public/app/pubsub function PublishAsync()', () => {
   })
   it('should publish to all subscribers in order', async () => {
     assert(PubSub.subscribers['FOO:BAR'] != null)
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
     }
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')
     expect(subscriber.callCount).to.equal(1)
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 10; i += 1) {
       const prior = Cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i - 1])
       const current = Cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i])
       expect(current.callCount).to.equal(1)
@@ -120,7 +120,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   })
   it('should tolerate one subscriber rejecting', async () => {
     assert(PubSub.subscribers['FOO:BAR'] != null)
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
     }
     subscriber.rejects('foo rejects!')
@@ -132,7 +132,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   })
   it('should tolerate one subscriber throwing', async () => {
     assert(PubSub.subscribers['FOO:BAR'] != null)
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
     }
     subscriber.throws('foo throws!')

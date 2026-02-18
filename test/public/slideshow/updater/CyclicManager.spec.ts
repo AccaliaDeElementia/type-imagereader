@@ -87,7 +87,7 @@ describe('public/slideshow/updater class CyclicManager', () => {
       const updaters = Array.from({ length: 5 }).map(makeUpdater)
       CyclicManager.Add(...updaters)
       expect(CyclicManager.__updaters).to.have.length(5)
-      for (let i = 0; i < updaters.length; i++) {
+      for (let i = 0; i < updaters.length; i += 1) {
         expect(CyclicManager.__updaters[i]).to.equal(updaters[i])
       }
     })
@@ -96,7 +96,7 @@ describe('public/slideshow/updater class CyclicManager', () => {
       const updaters = Array.from({ length: 5 }).map(makeUpdater)
       CyclicManager.Add(...updaters)
       expect(CyclicManager.__updaters).to.have.length(10)
-      for (let i = 0; i < updaters.length; i++) {
+      for (let i = 0; i < updaters.length; i += 1) {
         expect(CyclicManager.__updaters[i + 5]).to.equal(updaters[i])
       }
     })

@@ -145,19 +145,19 @@ describe('public/app/pictures function MakePaginator()', () => {
   })
   it('should create specific page elements', () => {
     const nodes = Array.from({ length: 8 }).map(() => dom.window.document.createElement('div'))
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 7; i += 1) {
       makePageItemSpy.onCall(i).returns(nodes[i])
     }
     const result = Pictures.MakePaginator(7)
     const pages = result?.querySelector('.pagination')
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 7; i += 1) {
       expect(makePageItemSpy.getCall(i).args[0]).to.equal(`${i}`)
       expect(pages?.children[i]).to.equal(nodes[i])
     }
   })
   it('should select specific page for middle pages', () => {
     Pictures.MakePaginator(7)
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 7; i += 1) {
       const fn = Cast<(() => number) | null>(makePageItemSpy.getCall(i).args[1])
       assert(fn != null)
       expect(fn()).to.equal(i)
