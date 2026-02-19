@@ -84,21 +84,21 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should tolerate missing mainImage node', () => {
     const node = dom.window.document.querySelector('#bigImage')
-    assert(node != null)
+    assert(node !== null)
     node.parentElement?.removeChild(node)
     Pictures.ResetMarkup()
     expect(Pictures.mainImage).to.equal(null)
   })
   it('should tolerate missing imageCard node', () => {
     const node = dom.window.document.querySelector('#ImageCard')
-    assert(node != null)
+    assert(node !== null)
     node.parentElement?.removeChild(node)
     Pictures.ResetMarkup()
     expect(Pictures.imageCard).to.equal(null)
   })
   it('should remove existing .pages from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab != null)
+    assert(tab !== null)
     for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('pages')
@@ -109,7 +109,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should remove existing .page nodes from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab != null)
+    assert(tab !== null)
     for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('page')
@@ -120,7 +120,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should preserve existing non .page nodes from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab != null)
+    assert(tab !== null)
     for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('foo')
@@ -140,7 +140,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   positions.forEach(([x, y]) => {
     it(`should clear ${x} ${y} status bar label`, () => {
       const node = dom.window.document.querySelector(`.statusBar.${x} .${y}`)
-      assert(node != null)
+      assert(node !== null)
       node.innerHTML = '<span>FOO</span>'
       Pictures.ResetMarkup()
       expect(node.innerHTML).to.equal('')
@@ -148,14 +148,14 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should clear src of mainImage', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img != null)
+    assert(img !== null)
     img.src = 'https://127.0.0.1:42069/blaze.gif'
     Pictures.ResetMarkup()
     expect(img.src).to.equal('http://127.0.0.1:2999/') // not blank due to how jsdom handles URIs
   })
   it('should publish Loading:Hide on mainImage load event', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img != null)
+    assert(img !== null)
     const evt = new dom.window.Event('load')
     Pictures.ResetMarkup()
     expect(loadingHideSpy.called).to.equal(false)
@@ -164,7 +164,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should publish Loading:Error on mainImage error event with src set', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img != null)
+    assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
     Pictures.ResetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
@@ -174,7 +174,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should not publish Loading:Error on mainImage error event with src empty', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img != null)
+    assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
     Pictures.ResetMarkup()
     img.setAttribute('src', '')
@@ -183,7 +183,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should publish expected error message when load fails and no current image', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img != null)
+    assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
     Pictures.ResetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
@@ -193,7 +193,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should publish expected error message when load fails and invalid current image', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img != null)
+    assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
     Pictures.ResetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
@@ -203,7 +203,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   it('should publish expected error message when load fails', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img != null)
+    assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
     Pictures.ResetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')

@@ -56,7 +56,7 @@ export const CyclicManager = {
     }, interval)
   },
   Stop: (): void => {
-    if (CyclicManager.__timer != null) {
+    if (CyclicManager.__timer !== undefined) {
       clearInterval(CyclicManager.__timer)
       CyclicManager.__timer = undefined
     }

@@ -7,6 +7,7 @@ import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
 import { Cast } from '../../../testutils/TypeGuards'
+import { HasValue } from '../../../../utils/helpers'
 
 interface TestVisualViewport {
   scale: number
@@ -53,7 +54,7 @@ describe('public/app/pictures function InitMouse()', () => {
       right: 0,
     }
     const tgt = Pictures.mainImage?.parentElement
-    assert(tgt != null)
+    assert(HasValue(tgt))
     getBoundingSpy = Sinon.stub(tgt, 'getBoundingClientRect').callsFake(() => Cast<DOMRect>(boundingRect))
     ignoreClickSpy.resetHistory()
     executePreviousSpy.resetHistory()
@@ -66,7 +67,7 @@ describe('public/app/pictures function InitMouse()', () => {
       'ACTION:EXECUTE:SHOWMENU': [executeMenuSpy],
     }
 
-    assert(Pictures.mainImage != null)
+    assert(Pictures.mainImage !== null)
   })
   afterEach(() => {
     getBoundingSpy.restore()

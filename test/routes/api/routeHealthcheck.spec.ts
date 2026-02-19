@@ -55,7 +55,7 @@ describe('routes/api route GET /healthcheck', () => {
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       getFn.getCalls().find((call) => call.args[0] === '/healthcheck')?.args[1],
-      (fn): fn is RequestHandler => fn != null,
+      (fn): fn is RequestHandler => fn !== null,
     )
     InitializeStub.restore()
     MakeRouterStub.restore()

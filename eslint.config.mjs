@@ -29,7 +29,6 @@ export default [
   },
   {
     rules: {
-      eqeqeq: 'off',
       'no-await-in-loop': 'off',
       'no-param-reassign': 'off',
       'require-atomic-updates': 'off',

@@ -9,6 +9,7 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../testutils/TypeGuards'
 import { Tabs } from '../../../../public/scripts/app/tabs'
 import assert from 'node:assert'
+import { HasValue } from '../../../../utils/helpers'
 
 const markup = `
 html
@@ -74,7 +75,7 @@ describe('public/app/tabs function Init()', () => {
     Tabs.Init()
     selectTabSpy.resetHistory()
     const fn = PubSub.subscribers['TAB:SELECT']?.[0]
-    assert(fn != null)
+    assert(fn !== undefined)
     await fn('FOOBAR')
     expect(selectTabSpy.callCount).to.equal(1)
     expect(selectTabSpy.firstCall.args).to.deep.equal(['FOOBAR'])
@@ -83,7 +84,7 @@ describe('public/app/tabs function Init()', () => {
     Tabs.Init()
     selectTabSpy.resetHistory()
     const fn = PubSub.subscribers['TAB:SELECT']?.[0]
-    assert(fn != null)
+    assert(fn !== undefined)
     await fn(null)
     expect(selectTabSpy.callCount).to.equal(0)
   })
@@ -100,7 +101,7 @@ describe('public/app/tabs function Init()', () => {
     })
     it(`should add click handler to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
-      assert(elem != null)
+      assert(HasValue(elem))
       const spy = Sinon.stub(elem, 'addEventListener')
       try {
         Tabs.Init()

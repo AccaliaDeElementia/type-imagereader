@@ -37,7 +37,7 @@ describe('routes/weather function getNightNotBefore()', () => {
   ]
   tests.forEach(([title, env, expected]) => {
     it(`should return ${title}`, () => {
-      if (env != null) {
+      if (env !== undefined) {
         process.env.NIGHT_NOT_BEFORE = env
       }
       const result = Imports.getNightNotBefore()

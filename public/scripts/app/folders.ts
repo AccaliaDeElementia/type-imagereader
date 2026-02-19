@@ -4,6 +4,7 @@ import { Publish, Subscribe } from './pubsub'
 
 import { isHTMLElement, CloneNode } from './utils'
 import { type FolderWithCounts, isListing, type Listing } from '../../../contracts/listing'
+import { HasValue, StringishHasValue } from '../../../utils/helpers'
 
 export const Folders = {
   FolderCard: ((): DocumentFragment | null => null)(),
@@ -15,10 +16,10 @@ export const Folders = {
   },
   BuildCard: (folder: FolderWithCounts): HTMLElement | null => {
     const card = CloneNode(Folders.FolderCard, isHTMLElement)
-    if (card == null) {
+    if (card === undefined) {
       return null
     }
-    if (folder.cover != null && folder.cover.length > 0) {
+    if (StringishHasValue(folder.cover)) {
       card.querySelector('i')?.remove()
       card.style.backgroundImage = `url("/images/preview${folder.cover}-image.webp")`
     }
@@ -31,11 +32,11 @@ export const Folders = {
     const percentSeen = (100 * folder.totalSeen) / folder.totalCount
 
     const header = card.querySelector('h5')
-    if (header != null) header.innerText = folder.name
+    if (header !== null) header.innerText = folder.name
     const progress = card.querySelector<HTMLDivElement>('div.text')
-    if (progress != null) progress.innerText = `${txtSeen}/${txtCount}`
+    if (progress !== null) progress.innerText = `${txtSeen}/${txtCount}`
     const slider = card.querySelector<HTMLDivElement>('div.slider')
-    if (slider != null) slider.style.width = `${percentSeen.toFixed(2)}%`
+    if (slider !== null) slider.style.width = `${percentSeen.toFixed(2)}%`
     card.addEventListener('click', () => {
       Publish('Navigate:Load', folder.path)
     })
@@ -49,7 +50,7 @@ export const Folders = {
 
     for (const folder of data.children) {
       const card = Folders.BuildCard(folder)
-      if (card == null) continue
+      if (!HasValue(card)) continue
       container.appendChild(card)
     }
   },

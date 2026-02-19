@@ -46,7 +46,7 @@ describe('public/slideshow/index', () => {
     expect(fakeCyclicAdd?.firstCall.args).to.contain(LocalWeatherUpdater)
   })
   it('should start CyclicManager after adding Cyclic Updaters', () => {
-    assert(fakeCyclicAdd != null)
+    assert(fakeCyclicAdd !== undefined)
     expect(fakeCyclicStart?.calledAfter(fakeCyclicAdd)).to.equal(true)
   })
   it('should start CyclicManager on initial load', () => {
@@ -59,7 +59,7 @@ describe('public/slideshow/index', () => {
     expect(fakeSocketConnect?.callCount).to.equal(1)
   })
   it('should connect to Websockets after starting Cyclic Manager', () => {
-    assert(fakeCyclicStart != null)
+    assert(fakeCyclicStart !== undefined)
     expect(fakeSocketConnect?.calledAfter(fakeCyclicStart)).to.equal(true)
   })
 })

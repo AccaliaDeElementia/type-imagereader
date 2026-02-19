@@ -257,7 +257,7 @@ describe('public/app/pictures function LoadImage()', () => {
     expect(selectPageSpy.calledWith(40)).to.equal(true)
   })
   it('should select default page when current image omits page marker', async () => {
-    assert(Pictures.current != null, 'Current Image must be set for valid test')
+    assert(Pictures.current !== null, 'Current Image must be set for valid test')
     Pictures.current.page = undefined
     await Pictures.LoadImage()
     expect(selectPageSpy.calledWith(1)).to.equal(true)

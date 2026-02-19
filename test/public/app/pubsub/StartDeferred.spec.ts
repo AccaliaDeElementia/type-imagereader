@@ -7,6 +7,7 @@ import { JSDOM } from 'jsdom'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
 import { Cast } from '../../../testutils/TypeGuards'
+import { HasValue } from '../../../../utils/helpers'
 
 describe('public/app/pubsub function StartDeferred()', () => {
   const existingWindow = global.window
@@ -40,7 +41,7 @@ describe('public/app/pubsub function StartDeferred()', () => {
   it('should call executeInterval with interval fn', () => {
     PubSub.StartDeferred()
     const fn = setIntervalSpy.firstCall.args[0] as unknown
-    assert(fn != null)
+    assert(HasValue(fn))
     Cast<() => void>(fn)()
     expect(executeIntervalSpy.callCount).to.equal(1)
   })

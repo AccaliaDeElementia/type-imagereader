@@ -25,9 +25,9 @@ export const Bookmarks = {
   BookmarkFolders: ((): WebBookmarkFolder[] => [])(),
   GetFolder: (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null => {
     let folder = Bookmarks.BookmarkFolders.find((e) => e.name === bookmarkFolder.path)
-    if (folder == null) {
+    if (folder === undefined) {
       const element = CloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
-      if (element == null) {
+      if (element === undefined) {
         return null
       }
       folder = {
@@ -36,7 +36,7 @@ export const Bookmarks = {
       }
       element.setAttribute('data-folderPath', bookmarkFolder.path)
       const title = element.querySelector<HTMLElement>('.title')
-      if (title != null) title.innerText = decodeURI(bookmarkFolder.name)
+      if (title !== null) title.innerText = decodeURI(bookmarkFolder.name)
       title?.addEventListener('click', () => {
         for (const otherFolder of Bookmarks.BookmarkFolders) {
           otherFolder.element.classList.add('closed')
@@ -52,7 +52,7 @@ export const Bookmarks = {
   },
   BuildBookmark: (bookmark: Bookmark): HTMLElement | null => {
     const card = CloneNode(Bookmarks.bookmarkCard, isHTMLElement)
-    if (card == null) {
+    if (card === undefined) {
       return null
     }
 
@@ -90,12 +90,12 @@ export const Bookmarks = {
     if (data.bookmarks === undefined) return
     for (const folder of data.bookmarks) {
       const folderNode = Bookmarks.GetFolder(openPath, folder)
-      if (folderNode == null) {
+      if (folderNode === null) {
         continue
       }
       for (const bookmark of folder.bookmarks) {
         const card = Bookmarks.BuildBookmark(bookmark)
-        if (card == null) {
+        if (card === null) {
           continue
         }
         folderNode.appendChild(card)
@@ -103,7 +103,11 @@ export const Bookmarks = {
     }
   },
   buildBookmarks: (data: Listing): void => {
-    if (Bookmarks.bookmarksTab == null || Bookmarks.bookmarkCard == null || Bookmarks.bookmarkFolder == null) {
+    if (
+      Bookmarks.bookmarksTab === null ||
+      Bookmarks.bookmarkCard === undefined ||
+      Bookmarks.bookmarkFolder === undefined
+    ) {
       return
     }
 

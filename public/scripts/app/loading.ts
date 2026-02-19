@@ -1,5 +1,6 @@
 'use sanity'
 
+import { HasValue } from '../../../utils/helpers'
 import { Subscribe, Publish, Defer } from './pubsub'
 
 export const Loading = {
@@ -10,7 +11,7 @@ export const Loading = {
     Loading.navbar = document.querySelector<HTMLElement>('#navbar')
 
     Subscribe('Loading:Error', async (message) => {
-      if (message != null) {
+      if (HasValue(message)) {
         window.console.error(message)
       }
       Loading.navbar?.style.removeProperty('transition')

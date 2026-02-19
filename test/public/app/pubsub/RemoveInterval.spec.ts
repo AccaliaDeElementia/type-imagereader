@@ -48,7 +48,7 @@ describe('public/app/pubsub function RemoveInterval()', () => {
     expect(PubSub.intervals).to.have.any.keys('QUUX')
   })
   it('should not call method on removing interval even if the interval is expired', () => {
-    assert(PubSub.intervals.FOOBAR != null)
+    assert(PubSub.intervals.FOOBAR !== undefined)
     PubSub.intervals.FOOBAR.delayCycles = -1
     const spy = Cast<Sinon.SinonSpy>(PubSub.intervals.FOOBAR.method)
     PubSub.RemoveInterval('FOOBAR')

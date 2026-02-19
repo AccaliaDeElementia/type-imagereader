@@ -5,6 +5,7 @@ import { join } from 'node:path'
 
 import type { Knex } from 'knex'
 import knex from 'knex'
+import { StringishHasValue } from './helpers'
 
 const initialize = async (): Promise<Knex> => {
   const config = await Functions.getKnexConfig()
@@ -37,7 +38,7 @@ function isConnectionValid(obj: object): boolean {
   const entries = Object.entries(obj.connection)
   for (const key of ['host', 'database', 'user', 'password', 'filename']) {
     const value = entries.find(([k]) => k === key)
-    if (value != null && typeof value[1] !== 'string') return false
+    if (value !== undefined && typeof value[1] !== 'string') return false
   }
   return true
 }
@@ -68,7 +69,7 @@ function isKnexOptions(obj: unknown): obj is KnexOptions {
 }
 
 function isDictionary(obj: unknown): obj is Record<string, unknown> {
-  if (obj == null || typeof obj !== 'object' || obj instanceof Array) return false
+  if (obj === null || typeof obj !== 'object' || obj instanceof Array) return false
   return true
 }
 
@@ -85,7 +86,7 @@ export const Imports = { knex, Initializer: CreateInitializer(), readFile }
 
 export const Functions = {
   getEnvironmentName: (): string => {
-    if (process.env.DB_CLIENT == null || process.env.DB_CLIENT.length < 1) {
+    if (!StringishHasValue(process.env.DB_CLIENT)) {
       return 'development'
     }
     return process.env.DB_CLIENT

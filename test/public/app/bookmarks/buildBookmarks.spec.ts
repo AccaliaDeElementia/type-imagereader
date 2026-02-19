@@ -46,7 +46,9 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     global.document = dom.window.document
 
     getFolderSpy = Sinon.stub(Bookmarks, 'GetFolder').returns(dom.window.document.createElement('div'))
-    buildBookmarkSpy = Sinon.stub(Bookmarks, 'BuildBookmark').returns(dom.window.document.createElement('div'))
+    buildBookmarkSpy = Sinon.stub(Bookmarks, 'BuildBookmark')
+      .returns(dom.window.document.createElement('div'))
+      .returns(null)
 
     PubSub.subscribers = {}
     PubSub.deferred = []

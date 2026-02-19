@@ -134,7 +134,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   it('should handle new-image message with Functions.DoNewImage()', () => {
     WebSockets.connect()
     const call = fakeOn.getCalls().find((c) => c.args[0] === 'new-image')
-    assert(call != null)
+    assert(call !== undefined)
     expect(call.args[1]).to.equal(Functions.DoNewImage)
   })
   it('should add a document level onclick event handler', () => {

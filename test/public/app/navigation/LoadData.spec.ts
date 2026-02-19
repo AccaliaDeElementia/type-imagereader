@@ -43,9 +43,9 @@ describe('public/app/navigation function LoadData()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     titleElement = dom.window.document.querySelector('head title')
-    assert(titleElement != null)
+    assert(titleElement !== null)
     brandElement = dom.window.document.querySelector('a.navbar-brand')
-    assert(brandElement != null)
+    assert(brandElement !== null)
     historySpy = Sinon.stub(dom.window.history, 'pushState')
 
     loadingErrorSpy.resolves()

@@ -30,6 +30,6 @@ function isValidSunData(obj: object): boolean {
 }
 
 export function isWeatherResults(obj: unknown): obj is WeatherResults {
-  if (obj == null || typeof obj !== 'object' || obj instanceof Array) return false
+  if (obj === null || typeof obj !== 'object' || obj instanceof Array) return false
   return isValidTemps(obj) && isValidDescriptions(obj) && isValidSunData(obj)
 }

@@ -28,25 +28,25 @@ describe('routes/apiFunctions function GetPreviousFolder', () => {
   it('should call pass path parameter to do actual query', async () => {
     await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
     const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
-    assert(param != null)
+    assert(param !== undefined)
     expect(param.path).to.equal('/foo')
   })
   it('should call pass sortkey parameter to do actual query', async () => {
     await Functions.GetPreviousFolder(knexFake, '/foo', 'foo90210')
     const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
-    assert(param != null)
+    assert(param !== undefined)
     expect(param.sortKey).to.equal('foo90210')
   })
   it('should call pass desc as direction parameter to do actual query', async () => {
     await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
     const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
-    assert(param != null)
+    assert(param !== undefined)
     expect(param.direction).to.equal('desc')
   })
   it('should call pass all as type parameter to do actual query', async () => {
     await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
     const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
-    assert(param != null)
+    assert(param !== undefined)
     expect(param.type).to.equal('all')
   })
   it('should resolve as result of actual query', async () => {

@@ -8,5 +8,13 @@ export function ReqParamToString(input: string | string[] | undefined, defaultVa
   if (input instanceof Array) {
     input = input.join('/')
   }
-  return input.length > 0 ? input : defaultValue
+  return input.length > ZERO_LENGTH ? input : defaultValue
+}
+
+export function StringishHasValue(str: string | null | undefined): str is string {
+  return str !== null && str !== undefined && str.length > ZERO_LENGTH
+}
+
+export function HasValue<T>(obj: T | null | undefined): obj is T {
+  return obj !== null && obj !== undefined
 }

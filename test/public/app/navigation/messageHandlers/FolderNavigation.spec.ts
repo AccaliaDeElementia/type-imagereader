@@ -88,7 +88,7 @@ describe('public/app/navigation function Init()', () => {
       Navigation.current.prev = previousFolder
       Navigation.current.prevUnread = previousUnreadFolder
       const h = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
-      assert(h != null)
+      assert(h !== undefined)
       handler = h
     })
     afterEach(() => {
@@ -166,7 +166,7 @@ describe('public/app/navigation function Init()', () => {
       Navigation.current.next = nextFolder
       Navigation.current.nextUnread = nextUnreadFolder
       const h = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
-      assert(h != null)
+      assert(h !== undefined)
       handler = h
     })
     afterEach(() => {
@@ -223,7 +223,7 @@ describe('public/app/navigation function Init()', () => {
       parentFolder = `/Foo ${Math.random()}`
       Navigation.current.parent = parentFolder
       const h = PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER']?.pop()
-      assert(h != null)
+      assert(h !== undefined)
       handler = h
     })
     afterEach(() => {
@@ -270,7 +270,7 @@ describe('public/app/navigation function Init()', () => {
         }))
       Navigation.current.children = children
       const h = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
-      assert(h != null)
+      assert(h !== undefined)
       handler = h
     })
     afterEach(() => {
@@ -300,7 +300,7 @@ describe('public/app/navigation function Init()', () => {
       expect(navigateToStub.firstCall.args[1]).to.equal('FirstUnfinished')
     })
     it('should navigate to unfinished child folder', async () => {
-      assert(children[10] != null)
+      assert(children[10] !== undefined)
       children[10].totalCount = 100
       children[10].totalSeen = 10
       await handler()
@@ -310,13 +310,13 @@ describe('public/app/navigation function Init()', () => {
       expect(navigateToStub.firstCall.args[1]).to.equal('FirstUnfinished')
     })
     it('should navigate to first unfinished child folder', async () => {
-      assert(children[10] != null)
+      assert(children[10] !== undefined)
       children[10].totalCount = 100
       children[10].totalSeen = 10
-      assert(children[11] != null)
+      assert(children[11] !== undefined)
       children[11].totalCount = 100
       children[11].totalSeen = 10
-      assert(children[19] != null)
+      assert(children[19] !== undefined)
       children[19].totalCount = 100
       children[19].totalSeen = 10
       await handler()

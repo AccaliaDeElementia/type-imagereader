@@ -13,6 +13,7 @@ import { minify } from 'terser'
 import { Debouncer } from './debounce'
 
 import debug from 'debug'
+import { StringishHasValue } from './helpers'
 
 const isCompileableExtension = /\.[jt]s$/
 
@@ -77,7 +78,7 @@ export const Functions = {
       }),
   CompileAndCache: async (basePath: string, mountedPath: string): Promise<void> => {
     const realPath = await Functions.GetSystemPath(basePath, mountedPath)
-    if (realPath == null || realPath.length < 1) return
+    if (!StringishHasValue(realPath)) return
     try {
       const paths = Functions.GetPaths(mountedPath)
       Functions.logger(`Begin compiling ${realPath}`)
@@ -100,14 +101,14 @@ export const Functions = {
       }
     }
     try {
-      if (Functions.browserified[path] == null) {
+      if (Functions.browserified[path] === undefined) {
         await Functions.CompileAndCache(basepath, path)
       }
       const code = await Functions.browserified[path]
-      if (code == null || code.length < 1) {
-        renderError(StatusCodes.NOT_FOUND, `Not Found: ${path}`)
-      } else {
+      if (StringishHasValue(code)) {
         res.status(StatusCodes.OK).contentType('application/javascript').send(code)
+      } else {
+        renderError(StatusCodes.NOT_FOUND, `Not Found: ${path}`)
       }
     } catch (err: unknown) {
       if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
@@ -126,7 +127,7 @@ export const Functions = {
         persistent: false,
       })
       for await (const event of watcher) {
-        if (event.filename == null) continue
+        if (event.filename === null) continue
         const scriptFile = isFolder ? mountPath : join(mountPath, event.filename)
         Functions.debouncer.debounce(scriptFile, async () => {
           Functions.logger(`${scriptFile} needs recompiling. ${event.eventType}`)
@@ -176,7 +177,7 @@ export interface Options {
 }
 
 export default (options: Options): ((req: Request, res: Response, next: NextFunction) => Promise<void>) => {
-  if (options.watchPaths != null && options.watchPaths.length > 0) {
+  if (options.watchPaths !== undefined && options.watchPaths.length > 0) {
     Functions.WatchAllFolders(options.basePath, options.watchPaths).catch(() => null)
   }
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {

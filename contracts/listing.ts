@@ -21,7 +21,7 @@ export interface Bookmark {
 }
 
 export function isBookmark(obj: unknown): obj is Bookmark {
-  if (obj == null || typeof obj !== 'object' || obj instanceof Array) return false
+  if (obj === null || typeof obj !== 'object' || obj instanceof Array) return false
   if (!('name' in obj) || typeof obj.name !== 'string') return false
   if (!('path' in obj) || typeof obj.path !== 'string') return false
   if (!('folder' in obj) || typeof obj.folder !== 'string') return false
@@ -43,7 +43,7 @@ function hasValidBookmarks(obj: object): boolean {
 }
 
 export function isBookmarkFolder(obj: unknown): obj is BookmarkFolder {
-  if (typeof obj !== 'object' || obj == null) return false
+  if (typeof obj !== 'object' || obj === null) return false
   if (!('name' in obj) || typeof obj.name !== 'string') return false
   if (!('path' in obj) || typeof obj.path !== 'string') return false
   return hasValidBookmarks(obj)
@@ -61,7 +61,7 @@ export interface FolderWithCounts extends Folder {
 }
 
 export function isFolder(obj: unknown): obj is Folder {
-  if (obj == null || typeof obj !== 'object') return false
+  if (obj === null || typeof obj !== 'object') return false
   if (!hasRequiredKey(obj, 'name', (o) => typeof o === 'string')) return false
   if (!hasRequiredKey(obj, 'path', (o) => typeof o === 'string')) return false
   if (!('cover' in obj) || !(typeof obj.cover === 'string' || obj.cover === null)) return false
@@ -99,7 +99,7 @@ function isUIPicture(obj: object): boolean {
 }
 
 export function isPicture(obj: unknown): obj is Picture {
-  if (obj == null || typeof obj !== 'object') return false
+  if (obj === null || typeof obj !== 'object') return false
   return isApiPicture(obj) && isUIPicture(obj)
 }
 
@@ -146,6 +146,6 @@ function hasListingFields(obj: object): boolean {
 }
 
 export function isListing(obj: unknown): obj is Listing {
-  if (obj == null || typeof obj !== 'object') return false
+  if (obj === null || typeof obj !== 'object') return false
   return hasListingFields(obj) && hasListingNestedFields(obj)
 }

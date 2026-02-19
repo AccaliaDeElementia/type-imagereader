@@ -72,7 +72,7 @@ describe('routes/api route POST /navigate/latest', () => {
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       postFn.getCalls().find((call) => call.args[0] === '/navigate/latest')?.args[1],
-      (fn): fn is RequestHandler => fn != null,
+      (fn): fn is RequestHandler => fn !== null,
     )
     InitializeStub.restore()
     MakeRouterStub.restore()

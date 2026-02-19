@@ -2,6 +2,7 @@
 
 import { CyclicUpdater } from './updater'
 import { type WeatherResults, isWeatherResults } from '../../../contracts/weather'
+import { HasValue, StringishHasValue } from '../../../utils/helpers'
 
 type HTMLElementish = HTMLElement | null | undefined
 type stringish = string | null | undefined
@@ -21,8 +22,8 @@ async function FetchWeather(uri: string | URL): Promise<WeatherResults> {
 }
 
 function ShowData(container: HTMLElementish, element: HTMLElementish, text: stringish): void {
-  if (container == null || element == null) return
-  if (text == null || text.length < 1) {
+  if (!HasValue(container) || !HasValue(element)) return
+  if (!StringishHasValue(text)) {
     container.style.setProperty('display', 'none')
     return
   }
@@ -31,8 +32,8 @@ function ShowData(container: HTMLElementish, element: HTMLElementish, text: stri
 }
 
 function ShowIcon(element: HTMLElementish, icon: stringish): void {
-  if (element == null) return
-  if (icon == null || icon.length < 1) {
+  if (!HasValue(element)) return
+  if (!StringishHasValue(icon)) {
     element.style.setProperty('display', 'none')
     return
   }
@@ -41,7 +42,7 @@ function ShowIcon(element: HTMLElementish, icon: stringish): void {
 }
 
 function ShowWeather(base: HTMLElementish, weather: WeatherResults): WeatherResults {
-  if (base == null) return weather
+  if (!HasValue(base)) return weather
   const temp = typeof weather.temp === 'number' ? `${weather.temp.toFixed(1)}°C` : null
   Functions.ShowData(base, base.querySelector<HTMLElement>('.temp'), temp)
   const desc = base.querySelector<HTMLElement>('.desc')

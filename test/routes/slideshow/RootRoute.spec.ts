@@ -108,7 +108,7 @@ describe('routes/slideshow function RootRoute', () => {
   ]
   tests.forEach(([title, path, images, validationFn]) => {
     it(`should ${title} for '/${path}'`, async () => {
-      if (images == null) {
+      if (images === null) {
         getRoomStub.rejects(getRoomError)
       } else {
         roomData.images = images

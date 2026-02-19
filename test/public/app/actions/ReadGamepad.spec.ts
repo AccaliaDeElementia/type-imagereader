@@ -75,7 +75,7 @@ describe('public/app/actions function ReadGamepad()', () => {
   })
   it('should accept an null of gamepads', () => {
     getTestGamepads.resetBehavior()
-    getTestGamepads.returns(null)
+    getTestGamepads.returns(undefined)
     expect(() => {
       Actions.ReadGamepad()
     }).to.not.throw()

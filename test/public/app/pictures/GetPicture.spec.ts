@@ -59,7 +59,7 @@ describe('public/app/pictures function GetPicture()', () => {
       expect(choosePictureIndexSpy.firstCall.args[0]).to.equal(navi)
     })
     it(`${title}: should pass current index to ChoosePictureIndex`, () => {
-      assert(Pictures.current != null)
+      assert(Pictures.current !== null)
       Pictures.current.index = 77
       Pictures.GetPicture(navi)
       expect(choosePictureIndexSpy.firstCall.args[1]).to.equal(77)
@@ -72,21 +72,21 @@ describe('public/app/pictures function GetPicture()', () => {
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal([])
     })
     it(`${title}: should pass expected unread array to ChoosePictureIndex when current before all unread`, () => {
-      assert(Pictures.current != null)
+      assert(Pictures.current !== null)
       Pictures.current.index = 3
       Pictures.GetPicture(navi)
       const pics = Pictures.pictures.slice(16, 32)
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal(pics)
     })
     it(`${title}: should pass expected unread array to ChoosePictureIndex when current after all unread`, () => {
-      assert(Pictures.current != null)
+      assert(Pictures.current !== null)
       Pictures.current.index = 45
       Pictures.GetPicture(navi)
       const pics = Pictures.pictures.slice(16, 32)
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal(pics)
     })
     it(`${title}: should pass expected unread array to ChoosePictureIndex when current between all unread`, () => {
-      assert(Pictures.current != null)
+      assert(Pictures.current !== null)
       for (const pic of Pictures.pictures) {
         pic.seen = !pic.seen
       }
@@ -96,7 +96,7 @@ describe('public/app/pictures function GetPicture()', () => {
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal(pics)
     })
     it(`${title}: should pass expected unread array to ChoosePictureIndex when current inside unread chunk`, () => {
-      assert(Pictures.current != null)
+      assert(Pictures.current !== null)
       Pictures.current.index = 24
       Pictures.GetPicture(navi)
       const pics = [...Pictures.pictures.slice(25, 32), ...Pictures.pictures.slice(16, 24)]
@@ -104,7 +104,7 @@ describe('public/app/pictures function GetPicture()', () => {
     })
     it('should return selected index picture', () => {
       const pic = Pictures.pictures[5]
-      assert(pic != null)
+      assert(pic !== undefined)
       choosePictureIndexSpy.returns(5)
       const result = Pictures.GetPicture(navi)
       expect(result).to.deep.equal(pic)

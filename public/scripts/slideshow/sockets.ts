@@ -2,6 +2,7 @@
 
 import { io, type Socket } from 'socket.io-client'
 import type { DefaultEventsMap } from 'socket.io/dist/typed-events'
+import { HasValue } from '../../../utils/helpers'
 export type WebSocket = Socket<DefaultEventsMap, DefaultEventsMap>
 
 export const Imports = {
@@ -10,7 +11,7 @@ export const Imports = {
 
 export const Functions = {
   HandleKeys: (event: KeyboardEvent, socket: WebSocket | undefined): void => {
-    if (socket == null) return
+    if (!HasValue(socket)) return
     if (event.key.toUpperCase() === 'ARROWRIGHT') {
       socket.emit('next-image')
     } else if (event.key.toUpperCase() === 'ARROWLEFT') {
@@ -18,8 +19,8 @@ export const Functions = {
     }
   },
   HandleClick: (event: MouseEvent, socket: WebSocket | undefined, initialScale: number): void => {
-    if (socket == null) return
-    if (window.visualViewport != null && window.visualViewport.scale > initialScale) {
+    if (!HasValue(socket)) return
+    if (HasValue(window.visualViewport) && window.visualViewport.scale > initialScale) {
       return
     }
     const pageWidth = window.innerWidth
@@ -78,7 +79,7 @@ function Connect(): void {
     WebSockets.socket?.emit('get-launchId', Functions.HandleGetLaunchId)
   })
   WebSockets.socket.on('new-image', Functions.DoNewImage)
-  const initialScale = window.visualViewport == null ? 1 : window.visualViewport.scale
+  const initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : 1
   document.body.addEventListener('click', (event) => {
     Functions.HandleClick(event, WebSockets.socket, initialScale)
   })

@@ -23,11 +23,11 @@ export const Tabs = {
     Tabs.SelectTab()
   },
   SelectTab: (href?: string): void => {
-    if (href != null && !href.startsWith('#')) {
+    if (href !== undefined && !href.startsWith('#')) {
       href = `#tab${href}`
     }
     const lowerHref = href?.toLowerCase()
-    if (href == null || !Tabs.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
+    if (href === undefined || !Tabs.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
       href = Tabs.tabNames[0] ?? ''
     }
     for (const tab of Tabs.tabs) {
@@ -41,7 +41,7 @@ export const Tabs = {
 function setTabActive(tab: HTMLElement, activeHref: string | undefined): string | null {
   const tabHref = tab.getAttribute('href')
   let href = null
-  if (tabHref == null) return null
+  if (tabHref === null) return null
   const content = document.querySelector<HTMLElement>(tabHref)
   if (tabHref.toLowerCase() === activeHref) {
     href = tabHref

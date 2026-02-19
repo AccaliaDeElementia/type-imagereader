@@ -97,7 +97,7 @@ describe('public/app/pictures function InitActions()', () => {
       Pictures.InitActions()
       const subscriberName = `Action:Execute:${expected}`.toUpperCase()
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
-      assert(fn != null)
+      assert(fn !== undefined)
       isMenuActiveSpy.returns(false)
       const spy = Sinon.stub().resolves()
       PubSub.subscribers[`Action:Execute:${expected}`.toUpperCase()] = [spy]
@@ -110,7 +110,7 @@ describe('public/app/pictures function InitActions()', () => {
       Pictures.pictures = [Cast<Picture>({})]
       const subscriberName = `Action:Execute:HideMenu`.toUpperCase()
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
-      assert(fn != null)
+      assert(fn !== undefined)
       isMenuActiveSpy.returns(true)
       const spy = Sinon.stub().resolves()
       PubSub.subscribers[`Action:Execute:HideMenu`.toUpperCase()] = [spy]
@@ -122,7 +122,7 @@ describe('public/app/pictures function InitActions()', () => {
       Pictures.InitActions()
       Pictures.pictures = []
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
-      assert(fn != null)
+      assert(fn !== undefined)
       isMenuActiveSpy.returns(true)
       const spy = Sinon.stub().resolves()
       PubSub.subscribers[`Action:Execute:`.toUpperCase()] = [spy]
@@ -134,7 +134,7 @@ describe('public/app/pictures function InitActions()', () => {
     it(`should navigate in expected direction for ${action}`, async () => {
       Pictures.InitActions()
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
-      assert(fn != null)
+      assert(fn !== undefined)
       await fn(undefined)
       expect(getPictureSpy.callCount).to.equal(1)
       expect(getPictureSpy.firstCall.args).to.deep.equal([direction])
@@ -142,7 +142,7 @@ describe('public/app/pictures function InitActions()', () => {
     it(`should change to fetched picture for ${action}`, async () => {
       Pictures.InitActions()
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
-      assert(fn != null)
+      assert(fn !== undefined)
       await fn(undefined)
       expect(changePictureSpy.callCount).to.equal(1)
       expect(changePictureSpy.firstCall.args).to.have.lengthOf(1)
@@ -152,7 +152,7 @@ describe('public/app/pictures function InitActions()', () => {
   it('should translate Action:Execute:Previous as PreviousUnseen when ShowUnreadOnly is set', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:PREVIOUS']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:PREVIOUSUNSEEN'] = [spy]
     getShowUnreadOnly.returns(true)
@@ -162,7 +162,7 @@ describe('public/app/pictures function InitActions()', () => {
   it('should translate Action:Execute:Previous as PreviousImage when ShowUnreadOnly is unset', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:PREVIOUS']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:PREVIOUSIMAGE'] = [spy]
     getShowUnreadOnly.returns(false)
@@ -172,7 +172,7 @@ describe('public/app/pictures function InitActions()', () => {
   it('should translate Action:Execute:Next as NextUnseen when ShowUnreadOnly is set', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:NEXT']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:NEXTUNSEEN'] = [spy]
     getShowUnreadOnly.returns(true)
@@ -182,7 +182,7 @@ describe('public/app/pictures function InitActions()', () => {
   it('should translate Action:Execute:Next as NextImage when ShowUnreadOnly is unset', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:NEXT']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:NEXTIMAGE'] = [spy]
     getShowUnreadOnly.returns(false)
@@ -192,7 +192,7 @@ describe('public/app/pictures function InitActions()', () => {
   it('should open new window when Action:Execute:ViewFullSize', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:VIEWFULLSIZE']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     Pictures.current = { path: '/this/is/my/foo', name: 'foo', seen: false }
     await fn(undefined)
     expect(windowOpenSpy.callCount).to.equal(1)
@@ -201,7 +201,7 @@ describe('public/app/pictures function InitActions()', () => {
   it('should ignore Action:Execute:ViewFullSize when no current image', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:VIEWFULLSIZE']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     Pictures.current = null
     await fn(undefined)
     expect(windowOpenSpy.callCount).to.equal(0)
@@ -209,7 +209,7 @@ describe('public/app/pictures function InitActions()', () => {
   it('should add current image as bookmark for Action:Execute:Bookmark', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:BOOKMARK']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     Pictures.current = { path: '/this/is/my/foo', name: 'foo', seen: false }
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['BOOKMARKS:ADD'] = [spy]
@@ -220,7 +220,7 @@ describe('public/app/pictures function InitActions()', () => {
   it('should ignore Action:Execute:Bookmark when no current image', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:BOOKMARK']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     Pictures.current = null
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['BOOKMARKS:ADD'] = [spy]
@@ -230,15 +230,15 @@ describe('public/app/pictures function InitActions()', () => {
   it('should use same handler for Action:Execute:Bookmark and Action:Gamepad:B', () => {
     Pictures.InitActions()
     const fn1 = PubSub.subscribers['ACTION:EXECUTE:BOOKMARK']?.pop()
-    assert(fn1 != null)
+    assert(fn1 !== undefined)
     const fn2 = PubSub.subscribers['ACTION:GAMEPAD:B']?.pop()
-    assert(fn2 != null)
+    assert(fn2 !== undefined)
     expect(fn1).to.equal(fn2)
   })
   it('should load images for Pictures:SelectPage', async () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['PICTURES:SELECTPAGE']?.pop()
-    assert(fn != null)
+    assert(fn !== undefined)
     await fn(undefined)
     expect(loadCurrentPageSpy.callCount).to.equal(1)
   })

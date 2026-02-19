@@ -22,7 +22,7 @@ export const PubSub = {
   Subscribe: (topic: string, subscriber: SubscriberFunction): void => {
     topic = topic.toUpperCase()
     const subs = PubSub.subscribers[topic]
-    if (subs == null) {
+    if (subs === undefined) {
       PubSub.subscribers[topic] = [subscriber]
     } else {
       subs.push(subscriber)
@@ -41,7 +41,7 @@ export const PubSub = {
     } else {
       for (const key of matchingTopics) {
         const subscribers = PubSub.subscribers[key]
-        if (subscribers == null || subscribers.length < 1) {
+        if (subscribers === undefined || subscribers.length < 1) {
           window.console.warn(`PUBSUB: topic ${key} registered without subscribers!`)
         } else {
           const errorHandler = (err: unknown): void => {
@@ -112,7 +112,7 @@ export const PubSub = {
     }, PubSub.cycleTime)
   },
   StopDeferred: (): void => {
-    if (PubSub.timer != null) {
+    if (PubSub.timer !== undefined) {
       window.clearInterval(PubSub.timer)
       PubSub.timer = undefined
     }

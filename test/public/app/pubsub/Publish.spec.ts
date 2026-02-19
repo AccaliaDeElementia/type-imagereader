@@ -83,7 +83,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
     expect(subscriber.firstCall.args).to.deep.equal(['Quux', 'FOO:BAR:BAZ:XYZZY'])
   })
   it('should publish to all subscribers in order', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] != null)
+    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
     }
@@ -119,7 +119,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
     expect(abcde.calledAfter(abcd)).to.equal(true)
   })
   it('should tolerate one subscriber rejecting', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] != null)
+    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
     }
@@ -131,7 +131,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
     }
   })
   it('should tolerate one subscriber throwing', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] != null)
+    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
     }

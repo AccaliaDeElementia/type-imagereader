@@ -68,7 +68,7 @@ describe('public/app/navigation function Init()', () => {
       errorSpy = Sinon.stub().resolves()
       PubSub.subscribers['LOADING:ERROR'] = [errorSpy]
       const h = PubSub.subscribers['ACTION:EXECUTE:MARKALLSEEN']?.pop()
-      assert(h != null)
+      assert(h !== undefined)
       handler = h
     })
     afterEach(() => {
@@ -162,7 +162,7 @@ describe('public/app/navigation function Init()', () => {
       errorSpy = Sinon.stub().resolves()
       PubSub.subscribers['LOADING:ERROR'] = [errorSpy]
       const h = PubSub.subscribers['ACTION:EXECUTE:MARKALLUNSEEN']?.pop()
-      assert(h != null)
+      assert(h !== undefined)
       handler = h
     })
     afterEach(() => {
@@ -252,7 +252,7 @@ describe('public/app/navigation function Init()', () => {
       Navigation.Init()
       locationAssignSpy = Sinon.stub(Navigation, 'LocationAssign')
       const h = PubSub.subscribers['ACTION:EXECUTE:SLIDESHOW']?.pop()
-      assert(h != null)
+      assert(h !== undefined)
       handler = h
     })
     afterEach(() => {
@@ -287,7 +287,7 @@ describe('public/app/navigation function Init()', () => {
       dom.window.document.body.requestFullscreen = requestFullscreenStub
       dom.window.document.exitFullscreen = exitFullscreenStub
       const h = PubSub.subscribers['ACTION:EXECUTE:FULLSCREEN']?.pop()
-      assert(h != null)
+      assert(h !== undefined)
       handler = h
       errorSpy.resolves()
       PubSub.subscribers['LOADING:ERROR'] = [errorSpy]
@@ -382,7 +382,7 @@ describe('public/app/navigation function Init()', () => {
         const spy = Sinon.stub().resolves()
         PubSub.subscribers[to.toUpperCase()] = [spy]
         const handler = PubSub.subscribers[from.toUpperCase()]?.pop()
-        assert(handler != null)
+        assert(handler !== undefined)
         await handler(undefined)
         expect(spy.callCount).to.equal(1)
       })

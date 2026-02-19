@@ -55,7 +55,7 @@ describe('routes/api route GET /', () => {
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       getFn.getCalls().find((call) => call.args[0] === '/')?.args[1],
-      (fn): fn is RequestHandler => fn != null,
+      (fn): fn is RequestHandler => fn !== null,
     )
     InitializeStub.restore()
     MakeRouterStub.restore()

@@ -33,7 +33,7 @@ export const Functions = {
 const updateOverlay = async (): Promise<void> => {
   const kioskMode = new URLSearchParams(window.location.search).has('kiosk')
   const overlay = document.querySelector<HTMLElement>('.overlay')
-  if (overlay == null) return
+  if (overlay === null) return
   Functions.ShowHideKiosk(overlay, kioskMode)
   const offset = Functions.CalculateOffset()
   overlay.style.setProperty('opacity', `${Functions.GetOpacity(offset)}`)

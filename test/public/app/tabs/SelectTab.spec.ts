@@ -47,16 +47,16 @@ describe('public/app/tabs function SelectTab()', () => {
     global.document = dom.window.document
     consoleError = Sinon.stub(global.window.console, 'error')
     const actions = dom.window.document.getElementById('tabActions')
-    assert(actions != null)
+    assert(actions !== null)
     actions.scroll = actionsScroll
     const folders = dom.window.document.getElementById('tabFolders')
-    assert(folders != null)
+    assert(folders !== null)
     folders.scroll = foldersScroll
     const images = dom.window.document.getElementById('tabImages')
-    assert(images != null)
+    assert(images !== null)
     images.scroll = imagesScroll
     const bookmarks = dom.window.document.getElementById('tabBookmarks')
-    assert(bookmarks != null)
+    assert(bookmarks !== null)
     bookmarks.scroll = bookmarksScroll
     tabSelectedSpy.resolves()
     PubSub.subscribers = {
@@ -149,14 +149,14 @@ describe('public/app/tabs function SelectTab()', () => {
   })
   it('should display connected content on tab select', () => {
     const elem = dom.window.document.getElementById('tabImages')
-    assert(elem != null)
+    assert(elem !== null)
     elem.style.display = 'none'
     Tabs.SelectTab('Images')
     expect(elem.style.getPropertyValue('display')).to.equal('block')
   })
   it('should hide other content on tab select', () => {
     const elem = dom.window.document.getElementById('tabFolders')
-    assert(elem != null)
+    assert(elem !== null)
     elem.style.display = 'block'
     Tabs.SelectTab('Images')
     expect(elem.style.getPropertyValue('display')).to.equal('none')

@@ -4,6 +4,7 @@ import { Pictures } from './pictures'
 import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
 import { isListing, type Listing } from '../../../contracts/listing'
+import { HasValue, StringishHasValue } from '../../../utils/helpers'
 
 export const Navigation = {
   GetBaseUrl: (): string =>
@@ -26,7 +27,7 @@ export const Navigation = {
   IsSuppressMenu: (): boolean => new URLSearchParams(window.location.search).has('noMenu'),
   current: ((): Listing => ({ path: '', name: '', parent: '' }))(),
   NavigateTo: async (path: string | undefined, action: string): Promise<void> => {
-    if (path == null || path.length < 1) {
+    if (!StringishHasValue(path)) {
       Publish('Loading:Error', `Action ${action} has no target`)
       return
     }
@@ -59,7 +60,7 @@ export const Navigation = {
       Navigation.LoadData(true).catch(() => null)
     })
     Subscribe('Navigate:Data', async (data: unknown) => {
-      if (data != null && data !== '') {
+      if (HasValue(data) && data !== '') {
         window.console.log(data)
       }
       await Promise.resolve()
@@ -74,7 +75,11 @@ export const Navigation = {
       await Promise.resolve()
     })
     mainMenu?.addEventListener('click', (event) => {
-      if (event.target === mainMenu && Navigation.current.pictures != null && Navigation.current.pictures.length > 0) {
+      if (
+        event.target === mainMenu &&
+        Navigation.current.pictures !== undefined &&
+        Navigation.current.pictures.length > 0
+      ) {
         Publish('Menu:Hide')
       }
     })
@@ -133,12 +138,12 @@ export const Navigation = {
       await Promise.resolve()
     })
     Subscribe('Action:Execute:FullScreen', async () => {
-      if (document.fullscreenElement == null) {
-        await document.body.requestFullscreen({ navigationUI: 'hide' }).catch((err: unknown) => {
+      if (HasValue(document.fullscreenElement)) {
+        await document.exitFullscreen().catch((err: unknown) => {
           Publish('Loading:Error', err)
         })
       } else {
-        await document.exitFullscreen().catch((err: unknown) => {
+        await document.body.requestFullscreen({ navigationUI: 'hide' }).catch((err: unknown) => {
           Publish('Loading:Error', err)
         })
       }

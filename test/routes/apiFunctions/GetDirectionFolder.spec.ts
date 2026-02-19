@@ -280,7 +280,7 @@ describe('routes/apiFunctions function GetDirectionFolder', () => {
     knexFirstCall.limit.resolves([{ path: '100' }])
     knexSecondCall.limit.resolves([{ path: '200' }])
     const result = await Functions.GetDirectionFolder(knexFake, spec)
-    assert(result != null)
+    assert(result !== null)
     expect(result.path).to.equal('100')
   })
   it('should union same sortkey and different sort key queries for desc', async () => {
@@ -288,7 +288,7 @@ describe('routes/apiFunctions function GetDirectionFolder', () => {
     knexFirstCall.limit.resolves([])
     knexSecondCall.limit.resolves([{ path: '200' }])
     const result = await Functions.GetDirectionFolder(knexFake, spec)
-    assert(result != null)
+    assert(result !== null)
     expect(result.path).to.equal('200')
   })
   it('should resolve null when query finds no results', async () => {

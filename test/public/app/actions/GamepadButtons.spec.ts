@@ -55,17 +55,17 @@ describe('public/app/actions class GamepadButtons', () => {
 
   describe('IsPressed()', () => {
     it('should return false when requested button is not pressed', () => {
-      assert(testGamePad.buttons[7] != null)
+      assert(testGamePad.buttons[7] !== undefined)
       testGamePad.buttons[7].pressed = false
       expect(GamepadButtons.IsPressed(gamePad, 7)).to.equal(false)
     })
     it('should return false when requested button is not extant', () => {
-      assert(testGamePad.buttons[777] == null)
+      assert(testGamePad.buttons[777] === undefined)
       expect(GamepadButtons.IsPressed(gamePad, 777)).to.equal(false)
     })
 
     it('should return true when requested button is pressed', () => {
-      assert(testGamePad.buttons[7] != null)
+      assert(testGamePad.buttons[7] !== undefined)
       testGamePad.buttons[7].pressed = true
       expect(GamepadButtons.IsPressed(gamePad, 7)).to.equal(true)
     })
@@ -86,7 +86,7 @@ describe('public/app/actions class GamepadButtons', () => {
     ]
     validButtons.forEach(([btn, id]: [string, number]): void => {
       it(`should register button press when ${btn} is pressed`, () => {
-        assert(testGamePad.buttons[id] != null)
+        assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = true
         const pressed = buttons.Read(gamePad)
         expect(pressed).to.equal(true)
@@ -95,7 +95,7 @@ describe('public/app/actions class GamepadButtons', () => {
       })
 
       it(`should not duplicate button press when ${btn} is pressed`, () => {
-        assert(testGamePad.buttons[id] != null)
+        assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = true
         buttons.pressedButtons.push(btn)
         const pressed = buttons.Read(gamePad)
@@ -105,7 +105,7 @@ describe('public/app/actions class GamepadButtons', () => {
       })
 
       it(`should not remove non pressed buttons when ${btn} is pressed`, () => {
-        assert(testGamePad.buttons[id] != null)
+        assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = true
         buttons.pressedButtons.push('Q')
         const pressed = buttons.Read(gamePad)
@@ -115,7 +115,7 @@ describe('public/app/actions class GamepadButtons', () => {
       })
 
       it(`should not register button press when ${btn} is not`, () => {
-        assert(testGamePad.buttons[id] != null)
+        assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = false
         const pressed = buttons.Read(gamePad)
         expect(pressed).to.equal(false)
@@ -124,7 +124,7 @@ describe('public/app/actions class GamepadButtons', () => {
       })
 
       it(`should not duplicate button press when ${btn} is pressed`, () => {
-        assert(testGamePad.buttons[id] != null)
+        assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = true
         buttons.pressedButtons.push(btn)
         const pressed = buttons.Read(gamePad)

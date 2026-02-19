@@ -138,7 +138,7 @@ describe('public/app/pictures function Init()', () => {
     it(`should ${expected ? 'load data' : 'ignore'} ${name} in Navigate:Load handler`, async () => {
       Pictures.Init()
       const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-      assert(handler != null)
+      assert(handler !== undefined)
       await handler(data)
       expect(loadDataSpy.called).to.equal(expected)
     })

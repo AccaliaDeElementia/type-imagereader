@@ -5,7 +5,7 @@ interface JSONError {
 }
 
 export function isError(obj: unknown): obj is JSONError {
-  if (typeof obj !== 'object' || obj == null) return false
+  if (typeof obj !== 'object' || obj === null) return false
   if (!('error' in obj) || typeof obj.error !== 'string') return false
   return true
 }
@@ -14,7 +14,7 @@ export async function decodeResult<T>(response: Response, isT: (obj: unknown) =>
   if (response.headers.get('content-length') === '0') throw new Error('Empty JSON response recieved')
   const data = (await response.json()) as unknown
   if (isError(data)) throw new Error(data.error)
-  if (!isT(data) || data == null) throw new Error('Invalid JSON object decoded')
+  if (!isT(data) || data === null) throw new Error('Invalid JSON object decoded')
   return data
 }
 

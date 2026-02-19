@@ -6,6 +6,7 @@ import { Publish, Subscribe } from './pubsub'
 import { Loading } from './loading'
 import { Navigation } from './navigation'
 import { isListing, type Listing, type Picture } from '../../../contracts/listing'
+import { HasValue, StringishHasValue } from '../../../utils/helpers'
 
 export enum NavigateTo {
   First,
@@ -80,7 +81,7 @@ export const Pictures = {
     })
     Pictures.mainImage?.addEventListener('error', () => {
       const src = Pictures.mainImage?.getAttribute('src')
-      if (src != null && src !== '') {
+      if (StringishHasValue(src)) {
         Publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
       }
     })
@@ -138,13 +139,13 @@ export const Pictures = {
       await changeTo(NavigateTo.Last)
     })
     Subscribe('Action:Execute:ViewFullSize', async () => {
-      if (Pictures.current != null) {
+      if (Pictures.current !== null) {
         window.open(`/images/full${Pictures.current.path}`)
       }
       await Promise.resolve()
     })
     const addBookmark = async (): Promise<void> => {
-      if (Pictures.current != null) {
+      if (Pictures.current !== null) {
         Publish('Bookmarks:Add', Pictures.current.path)
       }
       await Promise.resolve()
@@ -157,9 +158,9 @@ export const Pictures = {
     })
   },
   InitMouse: (): void => {
-    Pictures.initialScale = window.visualViewport == null ? -1 : window.visualViewport.scale
+    Pictures.initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : -1
     Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
-      if (window.visualViewport != null && Pictures.initialScale < window.visualViewport.scale) {
+      if (HasValue(window.visualViewport) && Pictures.initialScale < window.visualViewport.scale) {
         Publish('Ignored Mouse Click', evt)
         return
       }
@@ -220,7 +221,7 @@ export const Pictures = {
   LoadCurrentPageImages: (): void => {
     for (const card of document.querySelectorAll<HTMLElement>('#tabImages .page:not(.hidden) .card')) {
       const style = card.getAttribute('data-backgroundImage')
-      if (style != null) {
+      if (style !== null) {
         card.style.backgroundImage = style
       }
     }
@@ -244,7 +245,7 @@ export const Pictures = {
     page.classList.add('page')
     for (const picture of pictures) {
       const card = Pictures.MakePictureCard(picture)
-      if (card == null) continue
+      if (card === undefined) continue
       picture.page = pageNum
       page.appendChild(card)
     }
@@ -282,7 +283,7 @@ export const Pictures = {
       Pictures.MakePicturesPage(i + 1, Pictures.pictures.slice(i * Pictures.pageSize, (i + 1) * Pictures.pageSize)),
     )
     const pagninator = Pictures.MakePaginator(pageCount)
-    if (pagninator != null) {
+    if (pagninator !== null) {
       tab?.appendChild(pagninator)
     }
     pages.forEach((page) => {
@@ -291,7 +292,7 @@ export const Pictures = {
   },
   LoadNextImage: async (): Promise<void> => {
     const next = Pictures.GetPicture(Pictures.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
-    if (next == null) {
+    if (next === undefined) {
       Pictures.nextPending = false
       Pictures.nextLoader = Promise.resolve()
     } else {
@@ -308,7 +309,7 @@ export const Pictures = {
     await Pictures.nextLoader
   },
   LoadImage: async (): Promise<void> => {
-    if (Pictures.current == null) return
+    if (Pictures.current === null) return
     if (Pictures.nextPending) {
       Publish('Loading:Show')
     }
@@ -345,9 +346,9 @@ export const Pictures = {
     }
   },
   SetPicturesGetFirst: (data: Listing): Picture | null => {
-    if (Pictures.mainImage == null) return null
+    if (Pictures.mainImage === null) return null
     const firstPic = data.pictures?.slice(0, 1)[0]
-    if (data.pictures == null || firstPic === undefined) {
+    if (data.pictures === undefined || firstPic === undefined) {
       Pictures.mainImage.classList.add('hidden')
       Publish('Menu:Show')
       document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.add('hidden')
@@ -375,7 +376,7 @@ export const Pictures = {
     }
     Pictures.MakeTab()
     Publish('Tab:Select', 'Images')
-    if (Pictures.pictures.every((img) => img.seen) && (data.noMenu == null || !data.noMenu)) {
+    if (Pictures.pictures.every((img) => img.seen) && (data.noMenu === undefined || !data.noMenu)) {
       Publish('Menu:Show')
     } else {
       Publish('Menu:Hide')
@@ -415,7 +416,7 @@ export const Pictures = {
     if (Loading.IsLoading()) {
       return
     }
-    if (pic == null) {
+    if (pic === undefined) {
       Publish('Loading:Error', 'Change Picture called with No Picture to change to')
     } else {
       Pictures.current = pic

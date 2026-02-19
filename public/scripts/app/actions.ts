@@ -4,6 +4,7 @@ import { Subscribe, Publish, AddInterval } from './pubsub'
 import { CloneNode, isHTMLElement } from './utils'
 
 import { isListing } from '../../../contracts/listing'
+import { HasValue } from '../../../utils/helpers'
 
 interface ButtonDefinition {
   name: string
@@ -42,7 +43,7 @@ export class GamepadButtons {
   }
 
   private SetButton(btn: string, pressed: boolean): boolean {
-    if (pressed && this.pressedButtons.find((v) => v === btn) == null) {
+    if (pressed && this.pressedButtons.find((v) => v === btn) === undefined) {
       this.pressedButtons.push(btn)
     }
     return pressed
@@ -235,7 +236,7 @@ const ActionGroups: ButtonGroups[] = [
 
 export const Actions = {
   setInnerTextMaybe: (node: HTMLElement | null, text: string): void => {
-    if (node != null) {
+    if (HasValue(node)) {
       node.innerText = text
     }
   },
@@ -245,7 +246,7 @@ export const Actions = {
     for (const { name, image } of buttons) {
       const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
       const button = CloneNode(template, isHTMLElement)
-      if (button == null) continue
+      if (button === undefined) continue
       Actions.setInnerTextMaybe(button.querySelector('i'), image)
       Actions.setInnerTextMaybe(button.querySelector('h5'), name)
       button.addEventListener('click', (event) => {
@@ -273,9 +274,9 @@ export const Actions = {
   ReadGamepad: (): void => {
     if (document.hidden) return
     const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
-    if (gamepads == null || gamepads.length < 1) return
+    if (gamepads === undefined || gamepads.length < 1) return
     for (const pad of gamepads) {
-      if (pad == null) continue
+      if (pad === null) continue
       Actions.gamepads.Read(pad)
     }
     if (!Actions.gamepads.pressingNow && Actions.gamepads.pressedButtons.length > 0) {
@@ -291,8 +292,8 @@ export const Actions = {
     Subscribe('Navigate:Data', async (data) => {
       if (
         isListing(data) &&
-        (data.pictures == null || data.pictures.length < 1) &&
-        (data.children == null || data.children.length < 1)
+        (data.pictures === undefined || data.pictures.length < 1) &&
+        (data.children === undefined || data.children.length < 1)
       ) {
         Publish('Tab:Select', 'Actions')
       }
