@@ -66,6 +66,18 @@ describe('public/app/pictures function MakePicturesPage()', () => {
     expect(makePictureCardSpy.firstCall.args).to.have.lengthOf(1)
     expect(makePictureCardSpy.firstCall.args[0]).to.equal(pic)
   })
+  it('should save card to picture on success', () => {
+    const picture: Picture = {
+      name: 'foo',
+      path: '/foo/bar/baz.jpg',
+      seen: false,
+    }
+    const card = dom.window.document.createElement('div')
+    makePictureCardSpy.returns(card)
+    Pictures.MakePicturesPage(69, [picture])
+    expect(picture).to.have.any.keys('element')
+    expect(picture.element).to.equal(card)
+  })
   it('should not set page number when card creation fails', () => {
     const pic: Picture = {
       name: '',

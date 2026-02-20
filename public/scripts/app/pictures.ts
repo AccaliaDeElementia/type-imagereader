@@ -228,7 +228,6 @@ export const Pictures = {
   },
   MakePictureCard: (picture: Picture): HTMLElement | undefined => {
     const card = CloneNode(Pictures.imageCard, isHTMLElement)
-    picture.element = card
     card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
     if (picture.seen) {
       card?.classList.add('seen')
@@ -246,6 +245,7 @@ export const Pictures = {
     for (const picture of pictures) {
       const card = Pictures.MakePictureCard(picture)
       if (card === undefined) continue
+      picture.element = card
       picture.page = pageNum
       page.appendChild(card)
     }
@@ -345,6 +345,11 @@ export const Pictures = {
       Publish('Loading:Error', err)
     }
   },
+  SetPictureIdices: (): void => {
+    for (const [pic, i] of Pictures.pictures.map((pic, i): [Picture, number] => [pic, i])) {
+      pic.index = i
+    }
+  },
   SetPicturesGetFirst: (data: Listing): Picture | null => {
     if (Pictures.mainImage === null) return null
     const firstPic = data.pictures?.slice(0, 1)[0]
@@ -358,9 +363,7 @@ export const Pictures = {
     document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
     Pictures.pictures = data.pictures
     Pictures.modCount = data.modCount ?? -1
-    Pictures.pictures.forEach((pic, i) => {
-      pic.index = i
-    })
+    Pictures.SetPictureIdices()
     return firstPic
   },
   LoadData: async (data: Listing): Promise<void> => {

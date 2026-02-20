@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../testutils/TypeGuards'
 import { expect } from 'chai'
-import { type HandleSocketState, Functions, Imports, SocketHandlers } from '../../../routes/slideshow'
+import { HandleSocketState, Functions, Imports, SocketHandlers } from '../../../routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 describe('routes/slideshow socket goto-image', () => {
@@ -12,7 +12,7 @@ describe('routes/slideshow socket goto-image', () => {
   let serverFake = Cast<WebSocketServer>(ioStub)
   let socketStub = { on: Sinon.stub() }
   let socketFake = Cast<Socket>(socketStub)
-  let socketState: HandleSocketState = { roomName: null }
+  let socketState = new HandleSocketState()
   let folder = { path: '/foo/bar' }
   let roomData = { images: [folder], index: -1 }
   let getRoomStub = Sinon.stub().resolves(roomData)

@@ -20,10 +20,10 @@ export const PubSub = {
   timer: ((): NodeJS.Timeout | string | number | undefined => undefined)(),
   cycleTime: 10,
   Subscribe: (topic: string, subscriber: SubscriberFunction): void => {
-    topic = topic.toUpperCase()
-    const subs = PubSub.subscribers[topic]
+    const target = topic.toUpperCase()
+    const subs = PubSub.subscribers[target]
     if (subs === undefined) {
-      PubSub.subscribers[topic] = [subscriber]
+      PubSub.subscribers[target] = [subscriber]
     } else {
       subs.push(subscriber)
     }
@@ -89,7 +89,7 @@ export const PubSub = {
           delay.method()
         } catch {}
       })
-    Object.values(PubSub.intervals).forEach((delay) => {
+    for (const delay of Object.values(PubSub.intervals)) {
       if (delay.delayCycles <= 0) {
         delay.delayCycles = delay.intervalCycles
         try {
@@ -98,13 +98,14 @@ export const PubSub = {
       } else {
         delay.delayCycles -= 1
       }
-    })
-    PubSub.deferred = PubSub.deferred
-      .filter((method) => method.delayCycles > 0)
-      .map((method) => {
-        method.delayCycles -= 1
-        return method
-      })
+    }
+    const newDeferred = []
+    for (const method of PubSub.deferred) {
+      if (method.delayCycles <= 0) continue
+      method.delayCycles -= 1
+      newDeferred.push(method)
+    }
+    PubSub.deferred = newDeferred
   },
   StartDeferred: (): void => {
     PubSub.timer = window.setInterval((): void => {

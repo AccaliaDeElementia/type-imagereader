@@ -6,7 +6,8 @@ export function StringIsNullOrEmpty(str: string | null | undefined): boolean {
 export function ReqParamToString(input: string | string[] | undefined, defaultValue = ''): string {
   if (input === undefined) return defaultValue
   if (input instanceof Array) {
-    input = input.join('/')
+    const mergedinput = input.join('/')
+    return mergedinput.length > ZERO_LENGTH ? mergedinput : defaultValue
   }
   return input.length > ZERO_LENGTH ? input : defaultValue
 }

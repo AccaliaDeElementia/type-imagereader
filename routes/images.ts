@@ -40,6 +40,31 @@ export class ImageData {
     result.path = path
     return result
   }
+
+  async Rescale(width: number, height: number, animated: boolean): Promise<void> {
+    if (this.code !== null) {
+      return // Image already has an error
+    }
+    try {
+      const before = this.data
+      const after = await Imports.Sharp(this.data, { animated })
+        .rotate()
+        .resize({
+          width,
+          height,
+          fit: Sharp.fit.inside,
+          withoutEnlargement: true,
+        })
+        .webp()
+        .toBuffer()
+      if (before === this.data) {
+        this.data = after
+        this.extension = 'webp'
+      }
+    } catch (e) {
+      // Do nothing.... we tried
+    }
+  }
 }
 
 export const Imports = { debug, readFile, Sharp, Router }
@@ -105,28 +130,7 @@ export const Functions = {
     }
   },
   RescaleImage: async (image: ImageData, width: number, height: number, animated = true): Promise<void> => {
-    if (image.code !== null) {
-      return // Image already has an error
-    }
-    try {
-      const before = image.data
-      const after = await Imports.Sharp(image.data, { animated })
-        .rotate()
-        .resize({
-          width,
-          height,
-          fit: Sharp.fit.inside,
-          withoutEnlargement: true,
-        })
-        .webp()
-        .toBuffer()
-      if (before === image.data) {
-        image.data = after
-        image.extension = 'webp'
-      }
-    } catch (e) {
-      // Do nothing.... we tried
-    }
+    await image.Rescale(width, height, animated)
   },
   ReadAndRescaleImage: async (path: string, width: number, height: number, animated = true): Promise<ImageData> => {
     const image = await Functions.ReadImage(path)

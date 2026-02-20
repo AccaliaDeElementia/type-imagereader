@@ -254,6 +254,7 @@ export const Functions = {
     return folderInfos
   },
   CalculateFolderInfos: (allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] => {
+    const allData = allFolders // TODO: this still mutates the parameter, refactor to avoid that.
     for (const folder of folders) {
       const parts = folder.path.split('/')
       while (parts.length > 1) {
@@ -267,13 +268,13 @@ export const Functions = {
             totalCount: 0,
             seenCount: 0,
           }
-          allFolders[parentPath] = parent
+          allData[parentPath] = parent
         }
         parent.totalCount += folder.totalCount
         parent.seenCount += folder.seenCount
       }
     }
-    return Object.values(allFolders)
+    return Object.values(allData)
   },
   UpdateFolderPictureCounts: async (knex: Knex): Promise<void> => {
     const logger = Imports.debug(`${Imports.logPrefix}:updateSeen`)

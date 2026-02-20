@@ -23,18 +23,19 @@ export const Tabs = {
     Tabs.SelectTab()
   },
   SelectTab: (href?: string): void => {
+    let target = href
     if (href !== undefined && !href.startsWith('#')) {
-      href = `#tab${href}`
+      target = `#tab${href}`
     }
-    const lowerHref = href?.toLowerCase()
-    if (href === undefined || !Tabs.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
-      href = Tabs.tabNames[0] ?? ''
+    const lowerHref = target?.toLowerCase()
+    if (target === undefined || !Tabs.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
+      target = Tabs.tabNames[0] ?? ''
     }
     for (const tab of Tabs.tabs) {
       tab.parentElement?.classList.remove('active')
-      href = setTabActive(tab, lowerHref) ?? href
+      target = setTabActive(tab, lowerHref) ?? target
     }
-    Publish('Tab:Selected', href)
+    Publish('Tab:Selected', target)
   },
 }
 

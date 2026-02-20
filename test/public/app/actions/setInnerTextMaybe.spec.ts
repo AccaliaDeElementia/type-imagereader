@@ -1,24 +1,44 @@
 'use sanity'
 
-import { expect } from 'chai'
+import { assert, expect } from 'chai'
 import { describe, it } from 'mocha'
 import { Actions } from '../../../../public/scripts/app/actions'
-
+import { JSDOM } from 'jsdom'
 import { Cast } from '../../../testutils/TypeGuards'
-
-const toHTMLElement = (o: unknown): HTMLElement | null =>
-  Cast<HTMLElement | null>(o, (_): _ is HTMLElement | null => true)
+import { DoesNotThrow } from '../../../testutils/Errors'
 
 describe('public/app/actions function setInnerTextMaybe', () => {
-  const testCases: Array<[string, HTMLElement | null, boolean]> = [
-    ['null', null, false],
-    ['undefined', toHTMLElement(undefined), false],
-    ['HTMLElement', toHTMLElement({ innerText: '' }), true],
-  ]
-  testCases.forEach(([title, obj, expected]) => {
-    it(`should ${expected ? '' : 'not '} set innerText for ${title}`, () => {
-      Actions.setInnerTextMaybe(obj, 'foo')
-      expect(obj?.innerText).to.equal(expected ? 'foo' : undefined)
+  const existingWindow: Window & typeof globalThis = global.window
+  const existingDocument: Document = global.document
+  const dom: JSDOM = new JSDOM('<html><body><div><span class="foo"></span></div></div></html>', {})
+
+  let divNode = Cast<HTMLDivElement>(null)
+  let spanNode = Cast<HTMLSpanElement>(null)
+  beforeEach(() => {
+    global.window = Cast<Window & typeof globalThis>(dom.window)
+    global.document = dom.window.document
+    const div = dom.window.document.querySelector('div')
+    assert(div !== null)
+    divNode = div
+    const span = dom.window.document.querySelector('span')
+    assert(span !== null)
+    spanNode = span
+  })
+  afterEach(() => {
+    global.window = existingWindow
+    global.document = existingDocument
+  })
+  it('should handle no mathcing node to set text', () => {
+    DoesNotThrow(() => {
+      Actions.setInnerTextMaybe(divNode, '.xyzzy', 'foo')
     })
+  })
+  it('should set inner text for matching node by node name', () => {
+    Actions.setInnerTextMaybe(divNode, 'span', 'foo')
+    expect(spanNode.innerText).to.equal('foo')
+  })
+  it('should set inner text for matching node by class', () => {
+    Actions.setInnerTextMaybe(divNode, '.foo', 'foo')
+    expect(spanNode.innerText).to.equal('foo')
   })
 })

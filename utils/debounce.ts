@@ -46,20 +46,19 @@ export class Debouncer {
     }
   }
   public static async _doCycle(): Promise<void> {
+    const callbacksDue: DebounceCounter[] = []
+    for (const debouncer of this._debouncers.flat()) {
+      callbacksDue.push(...debouncer._counters.filter((counter) => counter.counter === 0))
+      debouncer._counters = debouncer._counters.filter((counter) => counter.counter > 0)
+      for (const counter of debouncer._counters) {
+        counter.counter -= 1
+      }
+    }
     await Promise.all(
-      this._debouncers.flatMap(async (debouncer) => {
-        const callbacksDue = debouncer._counters.filter((counter) => counter.counter === 0)
-        debouncer._counters = debouncer._counters.filter((counter) => counter.counter > 0)
-        debouncer._counters.forEach((counter) => {
-          counter.counter -= 1
+      callbacksDue.map(async ({ key, callback }) => {
+        await callback().catch((err: unknown) => {
+          logger(`DebounceCallback for ${key} failed`, err)
         })
-        await Promise.all(
-          callbacksDue.map(async ({ key, callback }) => {
-            await callback().catch((err: unknown) => {
-              logger(`DebounceCallback for ${key} failed`, err)
-            })
-          }),
-        )
       }),
     )
   }

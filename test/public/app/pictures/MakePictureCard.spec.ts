@@ -7,7 +7,6 @@ import { JSDOM } from 'jsdom'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../testutils/TypeGuards'
-import type { Picture } from '../../../../contracts/listing'
 
 describe('public/app/pictures function MakePictureCard()', () => {
   const existingWindow = global.window
@@ -56,16 +55,6 @@ describe('public/app/pictures function MakePictureCard()', () => {
       seen: false,
     })
     expect(card).to.be.instanceOf(dom.window.HTMLElement)
-  })
-  it('should save card to input object on success', () => {
-    const picture: Picture = {
-      name: 'foo',
-      path: '/foo/bar/baz.jpg',
-      seen: false,
-    }
-    const card = Pictures.MakePictureCard(picture)
-    expect(picture).to.have.any.keys('element')
-    expect(picture.element).to.equal(card)
   })
   it('should set background image data attribute on success', () => {
     const card = Pictures.MakePictureCard({

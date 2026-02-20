@@ -6,6 +6,7 @@ import Sinon from 'sinon'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
+import type { Picture } from '../../../../contracts/listing'
 
 describe('public/app/pictures function LoadData()', () => {
   let resetMarkupSpy = Sinon.stub()
@@ -130,9 +131,9 @@ describe('public/app/pictures function LoadData()', () => {
     expect(Pictures.current).to.equal(Pictures.pictures[32])
   })
   it('should hide menu when no images are read', async () => {
-    Pictures.pictures.forEach((pic) => {
+    for (const pic of Pictures.pictures) {
       pic.seen = false
-    })
+    }
     await Pictures.LoadData({
       name: '',
       parent: '',
@@ -143,9 +144,9 @@ describe('public/app/pictures function LoadData()', () => {
     expect(menuShowSpy.callCount).to.equal(0)
   })
   it('should hide menu when some images are read', async () => {
-    Pictures.pictures.forEach((pic, i) => {
-      pic.seen = i >= 16 && i < 32
-    })
+    for (const [pic, idx] of Pictures.pictures.map((pic, idx): [Picture, number] => [pic, idx])) {
+      pic.seen = idx >= 16 && idx < 32
+    }
     await Pictures.LoadData({
       name: '',
       parent: '',
@@ -156,9 +157,9 @@ describe('public/app/pictures function LoadData()', () => {
     expect(menuShowSpy.callCount).to.equal(0)
   })
   it('should hide menu when most images are read', async () => {
-    Pictures.pictures.forEach((pic) => {
+    for (const pic of Pictures.pictures) {
       pic.seen = true
-    })
+    }
     const pic = Pictures.pictures[63]
     assert(pic !== undefined, 'Test image must exist')
     pic.seen = false
@@ -172,9 +173,9 @@ describe('public/app/pictures function LoadData()', () => {
     expect(menuShowSpy.callCount).to.equal(0)
   })
   it('should show menu when all images are read', async () => {
-    Pictures.pictures.forEach((pic) => {
+    for (const pic of Pictures.pictures) {
       pic.seen = true
-    })
+    }
     await Pictures.LoadData({
       name: '',
       parent: '',
@@ -185,9 +186,9 @@ describe('public/app/pictures function LoadData()', () => {
     expect(menuShowSpy.callCount).to.equal(1)
   })
   it('should show menu when all images are read and noMenu option is not selected', async () => {
-    Pictures.pictures.forEach((pic) => {
+    for (const pic of Pictures.pictures) {
       pic.seen = true
-    })
+    }
     await Pictures.LoadData({
       name: '',
       parent: '',
@@ -199,9 +200,9 @@ describe('public/app/pictures function LoadData()', () => {
     expect(menuShowSpy.callCount).to.equal(1)
   })
   it('should hide menu when all images are read and noMenu option is selected', async () => {
-    Pictures.pictures.forEach((pic) => {
+    for (const pic of Pictures.pictures) {
       pic.seen = false
-    })
+    }
     await Pictures.LoadData({
       name: '',
       parent: '',

@@ -53,9 +53,9 @@ export const SocketHandlers = {
     knex: Knex,
   ): Promise<void> => {
     if (roomName === null || roomName === undefined || roomName.length < 1) return
-    state.roomName = roomName
+    state.SetName(roomName)
     await socket.join(roomName)
-    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
+    const room = await Functions.GetRoomAndIncrementImage(knex, roomName)
     socket.emit('new-image', room.uriSafeImage)
   },
   prevImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
@@ -88,8 +88,14 @@ export const Imports = {
   setLatest: async (knex: Knex, path: string): Promise<string | null> => await api.SetLatestPicture(knex, path),
   Router,
 }
-export interface HandleSocketState {
+export class HandleSocketState {
   roomName: string | null
+  constructor() {
+    this.roomName = null
+  }
+  SetName(name: string): void {
+    this.roomName = name
+  }
 }
 export const Functions = {
   GetUnreadImageCount: async (knex: Knex, path: string): Promise<number> => {
@@ -122,24 +128,23 @@ export const Functions = {
     const unreadcount = await Functions.GetUnreadImageCount(knex, path)
     const allcount = await Functions.GetImageCount(knex, path)
     let pages = Math.ceil(allcount / Config.memorySize)
+    let resultPage = currentPage ?? Math.floor(Math.random() * pages)
     if (unreadcount > 0) {
       pages = Math.ceil(unreadcount / Config.memorySize)
-      currentPage = 0
-    } else if (currentPage === undefined) {
-      currentPage = Math.floor(Math.random() * pages)
-    } else {
-      currentPage = mutator(currentPage)
-      if (currentPage < 0) {
-        currentPage = pages - 1
-      } else if (currentPage >= pages) {
-        currentPage = 0
+      resultPage = 0
+    } else if (currentPage !== undefined) {
+      resultPage = mutator(currentPage)
+      if (resultPage < 0) {
+        resultPage = pages - 1
+      } else if (resultPage >= pages) {
+        resultPage = 0
       }
     }
     return {
       unread: unreadcount,
       all: allcount,
       pages,
-      page: currentPage,
+      page: resultPage,
     }
   },
   GetImages: async (knex: Knex, path: string, page: number, count: number): Promise<string[]> =>
@@ -220,12 +225,12 @@ export const Functions = {
         }
         if (room.countdown <= 0) {
           roomsToUpdate.push(room)
+          room.countdown = Config.countdownDuration
         }
       }
       Config.rooms = newRooms
       await Promise.all(
         roomsToUpdate.map(async (room) => {
-          room.countdown = Config.countdownDuration
           await Functions.GetRoomAndIncrementImage(knex, room.path, 1)
           io.to(room.path).emit('new-image', room.uriSafeImage)
         }),
@@ -233,9 +238,7 @@ export const Functions = {
     } catch {}
   },
   HandleSocket: (knex: Knex, io: WebSocketServer, socket: Socket): HandleSocketState => {
-    const state: HandleSocketState = {
-      roomName: null,
-    }
+    const state = new HandleSocketState()
     socket.on('get-launchId', (callback: SocketCallback) => {
       SocketHandlers.getLaunchId(callback)
     })

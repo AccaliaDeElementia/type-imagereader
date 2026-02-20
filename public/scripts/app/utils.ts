@@ -16,10 +16,7 @@ export function CloneNode<T extends HTMLElement>(
   source: T | DocumentFragment | undefined | null,
   isT: (obj: Element | null) => obj is T,
 ): T | undefined {
-  if (HasValue(source) && isHTMLTemplateElement(source)) {
-    source = source.content
-  }
-  const clone = source?.cloneNode(true)
+  const clone = (HasValue(source) && isHTMLTemplateElement(source) ? source.content : source)?.cloneNode(true)
   if (!isElement(clone)) return undefined
   const elem = clone.firstElementChild
   return isT(elem) ? elem : undefined

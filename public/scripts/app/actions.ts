@@ -235,10 +235,10 @@ const ActionGroups: ButtonGroups[] = [
 ]
 
 export const Actions = {
-  setInnerTextMaybe: (node: HTMLElement | null, text: string): void => {
-    if (HasValue(node)) {
-      node.innerText = text
-    }
+  setInnerTextMaybe: (elem: HTMLElement, selector: string, text: string): void => {
+    const node = elem.querySelector<HTMLElement>(selector)
+    if (!HasValue(node)) return
+    node.innerText = text
   },
   createButtons: (buttons: ButtonDefinition[]): HTMLElement => {
     const result = document.createElement('div')
@@ -247,8 +247,8 @@ export const Actions = {
       const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
       const button = CloneNode(template, isHTMLElement)
       if (button === undefined) continue
-      Actions.setInnerTextMaybe(button.querySelector('i'), image)
-      Actions.setInnerTextMaybe(button.querySelector('h5'), name)
+      Actions.setInnerTextMaybe(button, 'i', image)
+      Actions.setInnerTextMaybe(button, 'h5', name)
       button.addEventListener('click', (event) => {
         Publish(`Action:Execute:${name.replace(/\s+/g, '')}`)
         event.preventDefault()

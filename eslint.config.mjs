@@ -30,7 +30,6 @@ export default [
   {
     rules: {
       'no-await-in-loop': 'off',
-      'no-param-reassign': 'off',
       'require-atomic-updates': 'off',
       'require-unicode-regexp': 'off', // TODO: Requires updating to newer version of js than browserify supports at present
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
@@ -41,15 +40,8 @@ export default [
   {
     files: ['test/**/*.js', 'test/**/*.ts'],
     rules: {
-      '@typescript-eslint/strict-void-return': 'off',
-      'preserve-caught-error': 'off',
+      '@typescript-eslint/strict-void-return': 'off', // TODO: Enable once Mocha updates typedefintions to not conflict with this rule
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
-    },
-  },
-  {
-    files: ['test/public/slideshow/**/*.js', 'test/public/slideshow/**/*.ts'],
-    rules: {
-      'max-lines': 'error', //TODO: Sort this rule out eventually
     },
   },
   {
