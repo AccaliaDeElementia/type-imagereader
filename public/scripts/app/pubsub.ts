@@ -1,5 +1,7 @@
 'use sanity'
 
+import { HasValues } from '../../../utils/helpers'
+
 export type SubscriberFunction = (recievedData: unknown, actualTopic?: string) => Promise<void>
 
 export type VoidMethod = () => void
@@ -13,12 +15,16 @@ interface IntervalMethod {
   intervalCycles: number
 }
 
+const PUBLISH_CYCLE_TIME = 10 // ms
+const MINIMUM_CYCLE_COUNT = 1
+const CYCLES_DUE_AT = 0
+const INCREMENT_CYCLES = 1
 export const PubSub = {
   subscribers: ((): Record<string, SubscriberFunction[]> => ({}))(),
   deferred: ((): DeferredMethod[] => [])(),
   intervals: ((): Record<string, DeferredMethod & IntervalMethod> => ({}))(),
   timer: ((): NodeJS.Timeout | string | number | undefined => undefined)(),
-  cycleTime: 10,
+  cycleTime: PUBLISH_CYCLE_TIME,
   Subscribe: (topic: string, subscriber: SubscriberFunction): void => {
     const target = topic.toUpperCase()
     const subs = PubSub.subscribers[target]
@@ -36,14 +42,10 @@ export const PubSub = {
     const matchingTopics = Object.keys(PubSub.subscribers)
       .sort()
       .filter((key) => key === searchTopic || searchTopic.startsWith(`${key}:`))
-    if (matchingTopics.length === 0) {
-      window.console.warn(`PUBSUB: topic ${topic} published without subscribers`, data)
-    } else {
+    if (HasValues(matchingTopics)) {
       for (const key of matchingTopics) {
         const subscribers = PubSub.subscribers[key]
-        if (subscribers === undefined || subscribers.length < 1) {
-          window.console.warn(`PUBSUB: topic ${key} registered without subscribers!`)
-        } else {
+        if (HasValues(subscribers)) {
           const errorHandler = (err: unknown): void => {
             window.console.error(`Subscriber for ${searchTopic} rejected with error:`, err)
           }
@@ -56,21 +58,25 @@ export const PubSub = {
               }
             }),
           )
+        } else {
+          window.console.warn(`PUBSUB: topic ${key} registered without subscribers!`)
         }
       }
+    } else {
+      window.console.warn(`PUBSUB: topic ${topic} published without subscribers`, data)
     }
   },
   Defer: (method: VoidMethod, delayMs: number): void => {
     PubSub.deferred.push({
       method,
-      delayCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), 1),
+      delayCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), MINIMUM_CYCLE_COUNT),
     })
   },
   AddInterval: (name: string, method: VoidMethod, delayMs: number): void => {
     PubSub.intervals[name] = {
       method,
-      intervalCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), 1),
-      delayCycles: 0,
+      intervalCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), MINIMUM_CYCLE_COUNT),
+      delayCycles: CYCLES_DUE_AT,
     }
   },
   RemoveInterval: (name: string): void => {
@@ -83,26 +89,26 @@ export const PubSub = {
   },
   ExecuteInterval: (): void => {
     PubSub.deferred
-      .filter((delay) => delay.delayCycles <= 0)
+      .filter((delay) => delay.delayCycles <= CYCLES_DUE_AT)
       .forEach((delay) => {
         try {
           delay.method()
         } catch {}
       })
     for (const delay of Object.values(PubSub.intervals)) {
-      if (delay.delayCycles <= 0) {
+      if (delay.delayCycles <= CYCLES_DUE_AT) {
         delay.delayCycles = delay.intervalCycles
         try {
           delay.method()
         } catch {}
       } else {
-        delay.delayCycles -= 1
+        delay.delayCycles -= INCREMENT_CYCLES
       }
     }
     const newDeferred = []
     for (const method of PubSub.deferred) {
-      if (method.delayCycles <= 0) continue
-      method.delayCycles -= 1
+      if (method.delayCycles <= CYCLES_DUE_AT) continue
+      method.delayCycles -= INCREMENT_CYCLES
       newDeferred.push(method)
     }
     PubSub.deferred = newDeferred

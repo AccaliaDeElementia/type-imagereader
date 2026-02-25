@@ -10,6 +10,12 @@ import type { Knex } from 'knex'
 import _debug from 'debug'
 import type { Debugger } from 'debug'
 
+const ZERO = 0
+const ONE = 1
+const NUMBER_PAD_LENGTH = 20
+const DEFAULT_CHUNK_SIZE = 1000
+const LOGGING_INTERVAL = 100
+
 interface DirEntryItem {
   path: string
   isFile: boolean
@@ -49,14 +55,14 @@ export const Imports = {
 }
 
 export const Functions = {
-  padLength: 20,
+  padLength: NUMBER_PAD_LENGTH,
   ToSortKey: (key: string): string => {
     const zeroes = '0'.repeat(Functions.padLength)
     return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/g, (num) =>
       num.length >= Functions.padLength ? num : `${zeroes}${num}`.slice(-Functions.padLength),
     )
   },
-  Chunk: <T>(arr: T[], size = 1000): T[][] => {
+  Chunk: <T>(arr: T[], size = DEFAULT_CHUNK_SIZE): T[][] => {
     const res = []
     for (let i = 0; i < arr.length; i += size) {
       res.push(arr.slice(i, i + size))
@@ -64,17 +70,17 @@ export const Functions = {
     return res
   },
   ChunkSyncItemsForInsert: (items: DirEntryItem[]): SyncItemChunks => {
-    let files = 0
-    let dirs = 0
+    let files = ZERO
+    let dirs = ZERO
     const chunks = Functions.Chunk(
       items.map((item) => {
         if (item.isFile) {
-          files += 1
+          files += ONE
         } else {
-          dirs += 1
+          dirs += ONE
         }
         let folder = posix.dirname(item.path)
-        if (folder.length > 1) {
+        if (folder.length > ONE) {
           folder += posix.sep
         }
         const path = item.path + (item.isFile ? '' : posix.sep)
@@ -102,9 +108,9 @@ export const Functions = {
       isFile: false,
       sortKey: '',
     })
-    let dirs = 0
-    let files = 0
-    let counter = 0
+    let dirs = ZERO
+    let files = ZERO
+    let counter = ZERO
     await Imports.fsWalker('/data', async (items: DirEntryItem[], pending: number) => {
       const { files: chunkFiles, dirs: chunkDirs, chunks } = Functions.ChunkSyncItemsForInsert(items)
       files += chunkFiles
@@ -112,10 +118,10 @@ export const Functions = {
       for (const chunk of chunks) {
         await knex('syncitems').insert(chunk)
       }
-      if (counter === 0) {
+      if (counter === ZERO) {
         logger(`Found ${dirs} dirs (${pending} pending) and ${files} files`)
       }
-      counter = (counter + 1) % 100
+      counter = (counter + ONE) % LOGGING_INTERVAL
     })
     logger(`Found all ${dirs} dirs and ${files} files`)
     return files
@@ -132,11 +138,11 @@ export const Functions = {
             'pictures.path': null,
           })
       })
-    let count = 0
+    let count = ZERO
     if (isRowCountResult(insertedpics)) {
       ;({ rowCount: count } = insertedpics)
     }
-    if (insertedpics instanceof Array && insertedpics.length > 0 && typeof insertedpics[0] === 'number') {
+    if (insertedpics instanceof Array && insertedpics.length > ZERO && typeof insertedpics[ZERO] === 'number') {
       ;[count] = insertedpics
     }
     logger(`Added ${count} new pictures`)
@@ -175,11 +181,11 @@ export const Functions = {
             'folders.path': null,
           })
       })
-    let count = 0
+    let count = ZERO
     if (isRowCountResult(folders)) {
       ;({ rowCount: count } = folders)
     }
-    if (folders instanceof Array && folders.length > 0 && typeof folders[0] === 'number') {
+    if (folders instanceof Array && folders.length > ZERO && typeof folders[ZERO] === 'number') {
       ;[count] = folders
     }
     logger(`Added ${count} new folders`)
@@ -234,8 +240,8 @@ export const Functions = {
     for (const folder of rawFolders) {
       folders[folder.path] = {
         path: folder.path,
-        totalCount: 0,
-        seenCount: 0,
+        totalCount: ZERO,
+        seenCount: ZERO,
       }
     }
     return folders
@@ -257,7 +263,7 @@ export const Functions = {
     const allData = allFolders // TODO: this still mutates the parameter, refactor to avoid that.
     for (const folder of folders) {
       const parts = folder.path.split('/')
-      while (parts.length > 1) {
+      while (parts.length > ONE) {
         // don't loop all the way to zero to avoid double counting the root
         parts.pop()
         const parentPath = `${parts.join('/')}/`
@@ -265,8 +271,8 @@ export const Functions = {
         if (parent === undefined) {
           parent = {
             path: parentPath,
-            totalCount: 0,
-            seenCount: 0,
+            totalCount: ZERO,
+            seenCount: ZERO,
           }
           allData[parentPath] = parent
         }
@@ -292,7 +298,7 @@ export const Functions = {
   },
   PruneEmptyFolders: async (knex: Knex): Promise<void> => {
     const logger = Imports.debug(`${Imports.logPrefix}:pruneEmpty`)
-    const deletedfolders = await knex('folders').where('totalCount', '=', 0).delete()
+    const deletedfolders = await knex('folders').where('totalCount', '=', ZERO).delete()
     logger(`Removed ${deletedfolders} empty folders`)
   },
 }
@@ -303,7 +309,7 @@ const synchronize = async (): Promise<void> => {
   const knex = await persistance.initialize()
   try {
     const foundPics = await Functions.FindSyncItems(knex)
-    if (foundPics < 1) {
+    if (foundPics <= ZERO) {
       throw new Error('Found Zero images, refusing to process empty base folder')
     }
     await Functions.SyncAllPictures(knex)

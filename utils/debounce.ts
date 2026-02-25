@@ -5,6 +5,12 @@ const logger = debug('type-imagereader:debounce')
 
 type DebounceCallback = () => Promise<void>
 
+const MINIMUM_CYCLES = 1
+const DEFAULT_INTERVAL = 100
+
+const ZERO = 0
+const ONE = 1
+
 interface DebounceCounter {
   key: string
   callback: DebounceCallback
@@ -12,10 +18,10 @@ interface DebounceCounter {
 }
 
 export class Debouncer {
-  public _cycleCount = 1
+  public _cycleCount = MINIMUM_CYCLES
   public _counters: DebounceCounter[] = []
-  public constructor(timeoutMs = 100) {
-    this._cycleCount = Math.max(Math.ceil(timeoutMs / Debouncer._interval), 1)
+  public constructor(timeoutMs = DEFAULT_INTERVAL) {
+    this._cycleCount = Math.max(Math.ceil(timeoutMs / Debouncer._interval), MINIMUM_CYCLES)
     Debouncer._debouncers.push(this)
   }
   debounce(key: string, callback: DebounceCallback): void {
@@ -33,7 +39,7 @@ export class Debouncer {
   }
   public static _debouncers: Debouncer[] = []
   public static _timer?: ReturnType<typeof setInterval>
-  public static _interval = 100
+  public static _interval = DEFAULT_INTERVAL
   public static startTimers(): void {
     this._timer ??= setInterval(() => {
       void this._doCycle()
@@ -48,10 +54,10 @@ export class Debouncer {
   public static async _doCycle(): Promise<void> {
     const callbacksDue: DebounceCounter[] = []
     for (const debouncer of this._debouncers.flat()) {
-      callbacksDue.push(...debouncer._counters.filter((counter) => counter.counter === 0))
-      debouncer._counters = debouncer._counters.filter((counter) => counter.counter > 0)
+      callbacksDue.push(...debouncer._counters.filter((counter) => counter.counter === ZERO))
+      debouncer._counters = debouncer._counters.filter((counter) => counter.counter > ZERO)
       for (const counter of debouncer._counters) {
-        counter.counter -= 1
+        counter.counter -= ONE
       }
     }
     await Promise.all(

@@ -3,13 +3,15 @@
 import { CyclicUpdater } from './updater'
 import { GetAlmanac } from './weather'
 
-const fadein = 15 * 60 * 1000
-const maxOpacity = 0.95 // in percent.
-
+const FADE_IN_TIME = 900_000 // 15 minutes
+const MAX_OPACITY = 0.95 // in percent.
+const MIN_OPACITY = 0
+const MIN_OFFSET = 0
+const UPDATE_INTERVAL = 100
 export const Functions = {
   GetOpacity: (offsetMs: number): number => {
-    if (offsetMs < 0) return 0
-    return Math.min(maxOpacity * (offsetMs / fadein), maxOpacity)
+    if (offsetMs < MIN_OFFSET) return MIN_OPACITY
+    return Math.min(MAX_OPACITY * (offsetMs / FADE_IN_TIME), MAX_OPACITY)
   },
   ShowHideKiosk: (overlay: HTMLElement, isKioskMode: boolean): void => {
     if (isKioskMode) {
@@ -26,7 +28,7 @@ export const Functions = {
     } else if (now > times.sunset) {
       return now - times.sunset
     }
-    return 0
+    return MIN_OFFSET
   },
 }
 
@@ -40,4 +42,4 @@ const updateOverlay = async (): Promise<void> => {
   await Promise.resolve()
 }
 
-export default new CyclicUpdater(updateOverlay, 100)
+export default new CyclicUpdater(updateOverlay, UPDATE_INTERVAL)

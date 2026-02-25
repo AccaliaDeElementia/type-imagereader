@@ -40,10 +40,10 @@ function ShowIcon(element: HTMLElementish, icon: stringish): void {
   element.style.setProperty('display', 'inline-block')
   element.setAttribute('src', `https://openweathermap.org/img/w/${icon}.png`)
 }
-
+const DECIMAL_PLACES = 1
 function ShowWeather(base: HTMLElementish, weather: WeatherResults): WeatherResults {
   if (!HasValue(base)) return weather
-  const temp = typeof weather.temp === 'number' ? `${weather.temp.toFixed(1)}°C` : null
+  const temp = typeof weather.temp === 'number' ? `${weather.temp.toFixed(DECIMAL_PLACES)}°C` : null
   Functions.ShowData(base, base.querySelector<HTMLElement>('.temp'), temp)
   const desc = base.querySelector<HTMLElement>('.desc')
   const desctext = desc?.querySelector<HTMLElement>('.desctext')
@@ -65,28 +65,36 @@ const almanac: SunTimes = {
 
 export const GetAlmanac = (): SunTimes => almanac
 
+const ZERO_TIME = 0
+const DEFAULT_SUNRISE_HOUR = 6
+const DEFAULT_SUNRISE_MINUTE = 15
+const DEFAULT_SUNSET_HOUR = 21
+const DEFAULT_SUNSET_MINUTE = 0
+
 function SetAlmanac(weather: WeatherResults): void {
   const today = new Date()
-  today.setMilliseconds(0)
-  today.setSeconds(0)
-  today.setHours(6)
-  today.setMinutes(15)
+  today.setMilliseconds(ZERO_TIME)
+  today.setSeconds(ZERO_TIME)
+  today.setHours(DEFAULT_SUNRISE_HOUR)
+  today.setMinutes(DEFAULT_SUNRISE_MINUTE)
   const minrise = today.getTime()
-  today.setHours(21)
-  today.setMinutes(0)
+  today.setHours(DEFAULT_SUNSET_HOUR)
+  today.setMinutes(DEFAULT_SUNSET_MINUTE)
   const maxset = today.getTime()
   almanac.sunrise = Math.max(weather.sunrise ?? -Infinity, minrise)
   almanac.sunset = Math.min(weather.sunset ?? Infinity, maxset)
 }
 
+const LOCAL_WEATHER_UPDATE_INTERVAL = 1_000
 export const LocalWeatherUpdater = new CyclicUpdater(async () => {
   await Functions.FetchWeather('http://localhost:8080/').then((weather) =>
     Functions.ShowWeather(document.querySelector<HTMLElement>('.localweather'), weather),
   )
-}, 1000)
+}, LOCAL_WEATHER_UPDATE_INTERVAL)
 
+const REMOTE_WEATHER_UPDATE_INTERVAL = 60_000
 export const WeatherUpdater = new CyclicUpdater(async () => {
   await Functions.FetchWeather('/weather')
     .then((weather) => Functions.ShowWeather(document.querySelector<HTMLElement>('.weather'), weather))
     .then(Functions.SetAlmanac)
-}, 60 * 1000)
+}, REMOTE_WEATHER_UPDATE_INTERVAL)

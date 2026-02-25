@@ -2,12 +2,16 @@
 
 import { io, type Socket } from 'socket.io-client'
 import type { DefaultEventsMap } from 'socket.io/dist/typed-events'
-import { HasValue } from '../../../utils/helpers'
+import { HasValue, StringishHasValue } from '../../../utils/helpers'
 export type WebSocket = Socket<DefaultEventsMap, DefaultEventsMap>
 
 export const Imports = {
   io,
 }
+
+const LEFT_THIRD = 0.3333333333333333
+const RIGHT_THIRD = 0.6666666666666666
+const DEFAULT_ZOOM = 1
 
 export const Functions = {
   HandleKeys: (event: KeyboardEvent, socket: WebSocket | undefined): void => {
@@ -25,9 +29,9 @@ export const Functions = {
     }
     const pageWidth = window.innerWidth
     const x = event.clientX
-    if (x < pageWidth / 3) {
+    if (x < pageWidth * LEFT_THIRD) {
       socket.emit('prev-image')
-    } else if (x > (pageWidth * 2) / 3) {
+    } else if (x > pageWidth * RIGHT_THIRD) {
       socket.emit('next-image')
     } else if (new URLSearchParams(window.location.search).has('kiosk')) {
       socket.emit('next-image')
@@ -55,7 +59,7 @@ export const Functions = {
   },
   ParseRoomName: (): string => {
     let uri = window.location.pathname.replace(/^\/[^/]+/, '')
-    if (uri.length < 1) {
+    if (!StringishHasValue(uri)) {
       uri = '/'
     }
     return decodeURIComponent(uri)
@@ -79,7 +83,7 @@ function Connect(): void {
     WebSockets.socket?.emit('get-launchId', Functions.HandleGetLaunchId)
   })
   WebSockets.socket.on('new-image', Functions.DoNewImage)
-  const initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : 1
+  const initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
   document.body.addEventListener('click', (event) => {
     Functions.HandleClick(event, WebSockets.socket, initialScale)
   })

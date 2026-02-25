@@ -3,6 +3,15 @@
 import { normalize, basename, dirname, extname, sep } from 'node:path'
 
 import type { Knex } from 'knex'
+import { StringishHasValue } from '../utils/helpers'
+
+export const INVALID_MOD_COUNT = -1
+const MAXIMUM_MOD_COUNT = Number.MAX_SAFE_INTEGER + INVALID_MOD_COUNT
+const RESET_MOD_COUNT = 0
+const INCREMENT_SINGLE = 1
+const MODCOUNT_INITIAL_MAGNITUDE = 1e10
+const LIMIT_SINGLE_RECORD = 1
+const ZERO_COUNT = 0
 
 export interface Bookmark {
   name: string
@@ -61,18 +70,18 @@ interface ModCountType {
   Increment: () => number
 }
 export const ModCount: ModCountType = {
-  _modCount: -1,
+  _modCount: INVALID_MOD_COUNT,
   _Reset: (): number => {
-    ModCount._modCount = Math.floor(Math.random() * 1e10)
+    ModCount._modCount = Math.floor(Math.random() * MODCOUNT_INITIAL_MAGNITUDE)
     return ModCount._modCount
   },
   Get: (): number => ModCount._modCount,
   Validate: (incoming: number): boolean => ModCount._modCount === incoming,
   Increment: (): number => {
-    if (ModCount._modCount >= Number.MAX_SAFE_INTEGER - 1) {
-      ModCount._modCount = 0
+    if (ModCount._modCount >= MAXIMUM_MOD_COUNT) {
+      ModCount._modCount = RESET_MOD_COUNT
     }
-    ModCount._modCount += 1
+    ModCount._modCount += INCREMENT_SINGLE
     return ModCount._modCount
   },
 }
@@ -90,7 +99,7 @@ export const UriSafePath = {
       .map((part) => encodeURIComponent(part))
       .join('/'),
   encodeNullable: (uri: string | null | undefined): string | null => {
-    if (uri === null || uri === undefined || uri.length < 1) {
+    if (!StringishHasValue(uri)) {
       return null
     }
     return UriSafePath.encode(uri)
@@ -149,8 +158,8 @@ export const Functions = {
       await knex('folders')
         .select<DbFolder[]>('path', 'folder', 'sortKey', 'current', 'firstPicture')
         .where('path', '=', path)
-        .limit(1)
-    )[0]
+        .limit(LIMIT_SINGLE_RECORD)
+    ).shift()
     if (folder === undefined) {
       return null
     }
@@ -175,7 +184,7 @@ export const Functions = {
       if (type === 'unread') {
         query = query.andWhere('totalCount', '>', knex.raw('"seenCount"'))
       }
-      return filter(query).limit(1)
+      return filter(query).limit(LIMIT_SINGLE_RECORD)
     }
     const eqlFolders = await doSelect((query) =>
       query.andWhere('sortKey', '=', sortKey).andWhere('path', comparer, path).orderBy('path', direction),
@@ -183,7 +192,7 @@ export const Functions = {
     const neqFolders = await doSelect((query) =>
       query.andWhere('sortKey', comparer, sortKey).orderBy('sortKey', direction),
     )
-    const folder = [...eqlFolders, ...neqFolders][0]
+    const folder = [...eqlFolders, ...neqFolders].shift()
     if (folder === undefined) {
       return null
     }
@@ -288,12 +297,12 @@ export const Functions = {
   },
   SetLatestPicture: async (knex: Knex, path: string): Promise<string | null> => {
     const folder = normalize(dirname(path) + sep)
-    const picture = (await knex('pictures').select<DbPicture[]>('seen').where({ path }))[0]
+    const picture = (await knex('pictures').select<DbPicture[]>('seen').where({ path })).shift()
     if (picture === undefined) {
       return null
     }
     if (!picture.seen) {
-      await knex('folders').increment('seenCount', 1).whereIn('path', Functions.GetPictureFolders(path))
+      await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Functions.GetPictureFolders(path))
       await knex('pictures').update({ seen: true }).where({ path })
     }
     await knex('folders').update({ current: path }).where({ path: folder })
@@ -304,7 +313,7 @@ export const Functions = {
       .update({ seen: true })
       .where({ seen: false })
       .andWhere('folder', 'like', `${path}%`)
-    if (updates > 0) {
+    if (updates > ZERO_COUNT) {
       await knex('folders').increment('seenCount', updates).whereIn('path', Functions.GetPictureFolders(path))
       await knex('folders')
         .update({ seenCount: knex.raw('"totalCount"') })
@@ -317,9 +326,12 @@ export const Functions = {
       .update({ seen: false })
       .where({ seen: true })
       .andWhere('folder', 'like', `${path}%`)
-    if (updates > 0) {
+    if (updates > ZERO_COUNT) {
       await knex('folders').increment('seenCount', -updates).whereIn('path', Functions.GetPictureFolders(path))
-      await knex('folders').update({ seenCount: 0, current: null }).where('path', 'like', `${path}%`).orWhere({ path })
+      await knex('folders')
+        .update({ seenCount: ZERO_COUNT, current: null })
+        .where('path', 'like', `${path}%`)
+        .orWhere({ path })
     }
   },
   AddBookmark: async (knex: Knex, path: string): Promise<void> => {

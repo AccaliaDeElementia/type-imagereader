@@ -4,14 +4,18 @@ import { isHTMLElement } from './markup'
 
 function hasOptionalKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {
   const entries = Object.entries(obj)
-  const e = entries.find(([k]) => k === key)
-  return e?.[1] === undefined || isT(e[1])
+  const e = entries.find(([k]) => k === key) as [string, unknown] | undefined
+  if (e === undefined) return true
+  const [, value] = e
+  return value === undefined || isT(value)
 }
 
 function hasRequiredKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {
   const entries = Object.entries(obj)
-  const e = entries.find(([k]) => k === key)
-  return e !== undefined && isT(e[1])
+  const e = entries.find(([k]) => k === key) as [string, unknown] | undefined
+  if (e === undefined) return false
+  const [, value] = e
+  return isT(value)
 }
 
 export interface Bookmark {

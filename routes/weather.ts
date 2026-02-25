@@ -5,6 +5,11 @@ import type { Application, Request, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
+import { StringishHasValue } from '../utils/helpers'
+
+const KELVIN_TO_CELCIUS_OFFSET = -273.15
+const SECONDS_TO_MILLISECONDS_MULTIPLE = 1000
+const UPDATE_INTERVAL = 600_000 // Ten Minutes in Milliseconds
 
 export interface WeatherResults {
   temp: number | undefined
@@ -59,38 +64,59 @@ function isSysValid(data: object): boolean {
   return true
 }
 
+const DEFAULT_MILLISECONDS = 0
+const DEFAULT_SECONDS = 0
+const DEFAULT_DAWN_MINUTES = 15
+const DEFAULT_DAWN_HOUR = 6
+const DEFAULT_DUSK_MINUTES = 0
+const DEFAULT_DUSK_HOUR = 21
+interface timeCode {
+  hour: number
+  minute: number
+}
+const MIN_HOUR = 0
+const MAX_HOUR = 23
+const MIN_MINUTES = 0
+const MAX_MINUTES = 59
+function StringToTimeCode(input: string | undefined): timeCode | undefined {
+  if (input === undefined) return undefined
+  const [iHour, iMinute] = input.split(':')
+  if (StringishHasValue(iHour)) {
+    const hour = Number.parseInt(iHour, 10)
+    let minute = MIN_MINUTES
+    if (StringishHasValue(iMinute)) {
+      minute = Number.parseInt(iMinute, 10)
+    }
+    if (hour >= MIN_HOUR && hour <= MAX_HOUR && minute >= MIN_MINUTES && minute <= MAX_MINUTES) {
+      return { hour, minute }
+    }
+  }
+  return undefined
+}
 export const Imports = {
   getNightNotBefore: (): number => {
     const time = new Date()
-    time.setMilliseconds(0)
-    time.setSeconds(0)
-    time.setMinutes(0)
-    time.setHours(21)
-    const env = (process.env.NIGHT_NOT_BEFORE ?? '').split(':')
-    if (env[0] !== undefined && env[0] !== '') {
-      const hour = +env[0]
-      const minute = +(env[1] ?? '0')
-      if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-        time.setMinutes(minute)
-        time.setHours(hour)
-      }
+    time.setMilliseconds(DEFAULT_MILLISECONDS)
+    time.setSeconds(DEFAULT_SECONDS)
+    time.setMinutes(DEFAULT_DUSK_MINUTES)
+    time.setHours(DEFAULT_DUSK_HOUR)
+    const code = StringToTimeCode(process.env.NIGHT_NOT_BEFORE)
+    if (code !== undefined) {
+      time.setHours(code.hour)
+      time.setMinutes(code.minute)
     }
     return time.getTime()
   },
   getNightNotAfter: (): number => {
     const time = new Date()
-    time.setMilliseconds(0)
-    time.setSeconds(0)
-    time.setMinutes(15)
-    time.setHours(6)
-    const env = (process.env.NIGHT_NOT_AFTER ?? '').split(':')
-    if (env[0] !== undefined && env[0] !== '') {
-      const hour = +env[0]
-      const minute = +(env[1] ?? '0')
-      if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-        time.setMinutes(minute)
-        time.setHours(hour)
-      }
+    time.setMilliseconds(DEFAULT_MILLISECONDS)
+    time.setSeconds(DEFAULT_SECONDS)
+    time.setMinutes(DEFAULT_DAWN_MINUTES)
+    time.setHours(DEFAULT_DAWN_HOUR)
+    const code = StringToTimeCode(process.env.NIGHT_NOT_AFTER)
+    if (code !== undefined) {
+      time.setHours(code.hour)
+      time.setMinutes(code.minute)
     }
     return time.getTime()
   },
@@ -114,10 +140,10 @@ export const Functions = {
     return isSysValid(data)
   },
   GetWeather: async (): Promise<OpenWeatherData> => {
-    const appId = process.env.OPENWEATHER_APPID ?? ''
-    if (appId.length < 1) throw new Error('no OpewnWeather AppId Defined!')
+    const appId = process.env.OPENWEATHER_APPID
+    if (!StringishHasValue(appId)) throw new Error('no OpewnWeather AppId Defined!')
     const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
-    if (location.length < 1) throw new Error('no OpewnWeather Location Defined!')
+    if (!StringishHasValue(location)) throw new Error('no OpewnWeather Location Defined!')
     const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`)
     const data: unknown = await response.json()
     if (!Functions.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
@@ -130,14 +156,15 @@ export const Functions = {
     try {
       const data = await Functions.GetWeather()
       if (data.main !== undefined) {
-        weather.temp = data.main.temp - 273.15
+        weather.temp = data.main.temp + KELVIN_TO_CELCIUS_OFFSET
         weather.pressure = data.main.pressure
         weather.humidity = data.main.humidity
       }
-      weather.description = data.weather[0]?.main
-      weather.icon = data.weather[0]?.icon
-      weather.sunrise = Math.min(1000 * data.sys.sunrise, nightNotAfter)
-      weather.sunset = Math.max(1000 * data.sys.sunset, nightNotBefore)
+      const fristForecast = data.weather.shift()
+      weather.description = fristForecast?.main
+      weather.icon = fristForecast?.icon
+      weather.sunrise = Math.min(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunrise, nightNotAfter)
+      weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, nightNotBefore)
     } catch (_) {
       weather.temp = undefined
       weather.pressure = undefined
@@ -159,12 +186,9 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
     res.status(StatusCodes.OK).json(Functions.weather)
   })
 
-  setInterval(
-    () => {
-      void Functions.UpdateWeather()
-    },
-    10 * 60 * 1000,
-  )
+  setInterval(() => {
+    void Functions.UpdateWeather()
+  }, UPDATE_INTERVAL)
   void Functions.UpdateWeather()
 
   await Promise.resolve()

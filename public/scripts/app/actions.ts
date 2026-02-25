@@ -4,7 +4,7 @@ import { Subscribe, Publish, AddInterval } from './pubsub'
 import { CloneNode, isHTMLElement } from './utils'
 
 import { isListing } from '../../../contracts/listing'
-import { HasValue } from '../../../utils/helpers'
+import { HasValue, HasValues } from '../../../utils/helpers'
 
 interface ButtonDefinition {
   name: string
@@ -16,18 +16,34 @@ interface ButtonGroups {
   buttons: ButtonDefinition[][]
 }
 
+const BUTTON_A = 0
+const BUTTON_B = 1
+const BUTTON_X = 3
+const BUTTON_Y = 2
+const BUTTON_L = 4
+const BUTTON_R = 5
+const BUTTON_LEFT = 14
+const BUTTON_RIGHT = 15
+const BUTTON_UP = 12
+const BUTTON_DOWN = 13
+const AXIS_X = 0
+const AXIS_Y = 1
+const AXIS_CENTERED = 0
+const AXIS_ACTIVATION_THRESHOLD = 0.5
+const POLLING_INTERVAL = 20
+
 export class GamepadButtons {
   public Buttons: Record<string, number> = {
-    A: 0,
-    B: 1,
-    X: 3,
-    Y: 2,
-    L: 4,
-    R: 5,
-    Left: 14,
-    Right: 15,
-    Up: 12,
-    Down: 13,
+    A: BUTTON_A,
+    B: BUTTON_B,
+    X: BUTTON_X,
+    Y: BUTTON_Y,
+    L: BUTTON_L,
+    R: BUTTON_R,
+    Left: BUTTON_LEFT,
+    Right: BUTTON_RIGHT,
+    Up: BUTTON_UP,
+    Down: BUTTON_DOWN,
   }
 
   public pressingNow = false
@@ -50,13 +66,13 @@ export class GamepadButtons {
   }
 
   private ReadThumbAxis(pad: Gamepad): boolean {
-    const Xaxis = pad.axes[0] ?? 0
-    const Yaxis = pad.axes[1] ?? 0
+    const Xaxis = pad.axes[AXIS_X] ?? AXIS_CENTERED
+    const Yaxis = pad.axes[AXIS_Y] ?? AXIS_CENTERED
     const directions: Array<[string, boolean]> = [
-      ['Left', Xaxis < -0.5],
-      ['Right', Xaxis > 0.5],
-      ['Up', Yaxis < -0.5],
-      ['Down', Yaxis > 0.5],
+      ['Left', Xaxis < -AXIS_ACTIVATION_THRESHOLD],
+      ['Right', Xaxis > AXIS_ACTIVATION_THRESHOLD],
+      ['Up', Yaxis < -AXIS_ACTIVATION_THRESHOLD],
+      ['Down', Yaxis > AXIS_ACTIVATION_THRESHOLD],
     ]
     let result = false
     for (const [direction, pressed] of directions) {
@@ -274,12 +290,12 @@ export const Actions = {
   ReadGamepad: (): void => {
     if (document.hidden) return
     const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
-    if (gamepads === undefined || gamepads.length < 1) return
+    if (gamepads === undefined || !HasValues(gamepads)) return
     for (const pad of gamepads) {
       if (pad === null) continue
       Actions.gamepads.Read(pad)
     }
-    if (!Actions.gamepads.pressingNow && Actions.gamepads.pressedButtons.length > 0) {
+    if (!Actions.gamepads.pressingNow && HasValues(Actions.gamepads.pressedButtons)) {
       const buttons = Actions.gamepads.pressedButtons.join('')
       Actions.gamepads.Reset()
       Publish(`Action:Gamepad:${buttons}`)
@@ -290,11 +306,7 @@ export const Actions = {
     Actions.gamepads.Reset()
 
     Subscribe('Navigate:Data', async (data) => {
-      if (
-        isListing(data) &&
-        (data.pictures === undefined || data.pictures.length < 1) &&
-        (data.children === undefined || data.children.length < 1)
-      ) {
+      if (isListing(data) && !HasValues(data.pictures) && !HasValues(data.children)) {
         Publish('Tab:Select', 'Actions')
       }
       await Promise.resolve()
@@ -314,7 +326,7 @@ export const Actions = {
         () => {
           Actions.ReadGamepad()
         },
-        20,
+        POLLING_INTERVAL,
       )
     })
   },

@@ -4,15 +4,16 @@ import { readdir } from 'node:fs/promises'
 import type { Dirent } from 'node:fs'
 import { join, extname } from 'node:path'
 import assert from 'node:assert'
+import { HasValues } from './helpers'
 
-const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
+const allowedExtensions = /^\.(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
 async function fsWalker(
   root: string,
   eachItem: (items: Array<{ path: string; isFile: boolean }>, queuelength: number) => Promise<void>,
 ): Promise<void> {
   const queue = ['/']
-  while (queue.length > 0) {
+  while (HasValues(queue)) {
     const current = queue.shift()
     assert(current !== undefined)
     const items: Dirent[] = await fsWalker.fn.readdir(join(root, current), {
@@ -22,7 +23,7 @@ async function fsWalker(
     await eachItem(
       items
         .filter((item) =>
-          item.isDirectory() ? !item.name.startsWith('.') : allowedExtensions.test(extname(item.name).slice(1)),
+          item.isDirectory() ? !item.name.startsWith('.') : allowedExtensions.test(extname(item.name)),
         )
         .map((item) => {
           const path = join(current, item.name)

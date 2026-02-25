@@ -4,7 +4,10 @@ import { Publish, Subscribe } from './pubsub'
 
 import { isHTMLElement, CloneNode } from './utils'
 import { type FolderWithCounts, isListing, type Listing } from '../../../contracts/listing'
-import { HasValue, StringishHasValue } from '../../../utils/helpers'
+import { HasValue, HasValues, StringishHasValue } from '../../../utils/helpers'
+
+const PERCENT_MULT = 100
+const FIXED_DECIMAL_PLACES = 2
 
 export const Folders = {
   FolderCard: ((): DocumentFragment | null => null)(),
@@ -29,14 +32,14 @@ export const Folders = {
 
     const txtSeen = folder.totalSeen.toLocaleString()
     const txtCount = folder.totalCount.toLocaleString()
-    const percentSeen = (100 * folder.totalSeen) / folder.totalCount
+    const percentSeen = (PERCENT_MULT * folder.totalSeen) / folder.totalCount
 
     const header = card.querySelector('h5')
     if (header !== null) header.innerText = folder.name
     const progress = card.querySelector<HTMLDivElement>('div.text')
     if (progress !== null) progress.innerText = `${txtSeen}/${txtCount}`
     const slider = card.querySelector<HTMLDivElement>('div.slider')
-    if (slider !== null) slider.style.width = `${percentSeen.toFixed(2)}%`
+    if (slider !== null) slider.style.width = `${percentSeen.toFixed(FIXED_DECIMAL_PLACES)}%`
     card.addEventListener('click', () => {
       Publish('Navigate:Load', folder.path)
     })
@@ -58,8 +61,8 @@ export const Folders = {
     for (const folder of document.querySelectorAll('#tabFolders .folders')) {
       folder.remove()
     }
-    const hasChildren = (data.children?.length ?? -1) > 0
-    const hasPictures = (data.pictures?.length ?? -1) > 0
+    const hasChildren = HasValues(data.children)
+    const hasPictures = HasValues(data.pictures)
     if (hasChildren) {
       Folders.UnhideTab('a[href="#tabFolders"]')
       if (!hasPictures) {

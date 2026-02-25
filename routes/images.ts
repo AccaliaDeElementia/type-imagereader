@@ -13,6 +13,14 @@ import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 import { ReqParamToString } from '../utils/helpers'
 
+const CACHE_SIZE = 25
+const ONE_MONTH = 2_592_000_000
+const ZERO = 0
+const PREVIEW_WIDTH = 240
+const PREVIEW_HEIGHT = 320
+const KIOSK_WIDTH = 1280
+const KIOSK_HEIGHT = 800
+
 const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
 
 export class ImageData {
@@ -80,7 +88,7 @@ type CacheCreator = (path: string, width: number, height: number) => Promise<Ima
 
 export class ImageCache {
   public items: CacheItem[] = []
-  public static cacheSize = 25
+  public static cacheSize = CACHE_SIZE
   public cacheFunction: CacheCreator
 
   constructor(cacheFn: CacheCreator) {
@@ -88,26 +96,20 @@ export class ImageCache {
   }
 
   public async fetch(path: string, width: number, height: number): Promise<ImageData> {
-    let [i, item] = this.items.reduce(
-      ([idx, accumulator]: [number, CacheItem | null], current, i) =>
-        current.path === path && current.width >= width && current.height >= height ? [i, current] : [idx, accumulator],
-      [-1, null],
-    )
-    if (i >= 0 && item !== null) {
-      this.items.splice(i, 1)
-      this.items.unshift(item)
-      return await item.image
-    } else {
+    let item = this.items.find((entry) => entry.path === path && entry.width >= width && entry.height >= height)
+    if (item === undefined) {
       item = {
         path,
         width,
         height,
         image: this.cacheFunction(path, width, height),
       }
-      if (this.items.length >= ImageCache.cacheSize) {
-        this.items = this.items.slice(0, ImageCache.cacheSize - 1)
-      }
-      this.items.unshift(item)
+    } else {
+      this.items = this.items.filter((entry) => entry !== item)
+    }
+    this.items.unshift(item)
+    if (this.items.length >= ImageCache.cacheSize) {
+      this.items = this.items.filter((_, i) => i < ImageCache.cacheSize)
     }
     return await item.image
   }
@@ -118,8 +120,12 @@ export const Functions = {
     if (normalize(path) !== path) {
       return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
     }
-    const ext = extname(path).slice(1)
-    if (!allowedExtensions.test(ext)) {
+    const regexResult = /^(?:\.)?(?<ext>.+)/.exec(extname(path))
+    if (regexResult === null) {
+      return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
+    }
+    const ext = regexResult.groups?.ext
+    if (ext === undefined || !allowedExtensions.test(ext)) {
       return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
     }
     try {
@@ -138,7 +144,6 @@ export const Functions = {
     return image
   },
   SendImage: (image: ImageData, res: Response): void => {
-    const aMonth = 1000 * 60 * 60 * 24 * 30
     if (image.code !== null) {
       res.status(image.statusCode).json({
         error: {
@@ -151,8 +156,8 @@ export const Functions = {
     }
     res
       .set('Content-Type', `image/${image.extension}`)
-      .set('Cache-Control', `public, max-age=${aMonth}`)
-      .set('Expires', new Date(Date.now() + aMonth).toUTCString())
+      .set('Cache-Control', `public, max-age=${ONE_MONTH}`)
+      .set('Expires', new Date(Date.now() + ONE_MONTH).toUTCString())
       .send(image.data)
   },
 }
@@ -223,6 +228,12 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     }),
   )
 
+  const parseNumberParam = (val: string): number | undefined => {
+    const n = Number.parseInt(val, 10)
+    if (!Number.isInteger(n) || `${n}` !== val || n <= ZERO) return undefined
+    return n
+  }
+
   router.get(
     '/scaled/:width/:height/*path-image.webp',
     handleErrors(async (req, res) => {
@@ -231,8 +242,8 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be provided')
         return
       }
-      const width = +req.params.width
-      if (!Number.isInteger(width) || `${width}` !== req.params.width || width < 1) {
+      const width = parseNumberParam(ReqParamToString(req.params.width))
+      if (width === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be positive integer')
         return
       }
@@ -240,8 +251,8 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be provided')
         return
       }
-      const height = +req.params.height
-      if (!Number.isInteger(height) || `${height}` !== req.params.height || height < 1) {
+      const height = parseNumberParam(ReqParamToString(req.params.height))
+      if (height === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be positive integer')
         return
       }
@@ -255,7 +266,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     handleErrors(async (req, res) => {
       const filename = `/${ReqParamToString(req.params.path)}`
       const image = await Functions.ReadImage(filename)
-      await Functions.RescaleImage(image, 240, 320, false)
+      await Functions.RescaleImage(image, PREVIEW_WIDTH, PREVIEW_HEIGHT, false)
       Functions.SendImage(image, res)
     }),
   )
@@ -264,7 +275,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     '/kiosk/*path-image.webp',
     handleErrors(async (req, res) => {
       const filename = `/${ReqParamToString(req.params.path)}`
-      const image = await CacheStorage.kioskCache.fetch(filename, 1280, 800)
+      const image = await CacheStorage.kioskCache.fetch(filename, KIOSK_WIDTH, KIOSK_HEIGHT)
       Functions.SendImage(image, res)
     }),
   )

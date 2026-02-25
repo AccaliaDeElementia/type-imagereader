@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 import type { Knex } from 'knex'
 import knex from 'knex'
-import { StringishHasValue } from './helpers'
+import { StringishHasValue, StringIsNullOrEmpty } from './helpers'
 
 const initialize = async (): Promise<Knex> => {
   const config = await Functions.getKnexConfig()
@@ -37,8 +37,10 @@ function isConnectionValid(obj: object): boolean {
   if (!('connection' in obj) || !isDictionary(obj.connection)) return false
   const entries = Object.entries(obj.connection)
   for (const key of ['host', 'database', 'user', 'password', 'filename']) {
-    const value = entries.find(([k]) => k === key)
-    if (value !== undefined && typeof value[1] !== 'string') return false
+    const entry = entries.find(([k]) => k === key)
+    if (entry === undefined) continue
+    const [, value] = entry
+    if (typeof value !== 'string') return false
   }
   return true
 }
@@ -93,7 +95,7 @@ export const Functions = {
   },
   readConfigurationBlock: async (): Promise<KnexOptions> => {
     const content = await Imports.readFile(join(__dirname, '../knexfile.json'), { encoding: 'utf-8' })
-    if (content.length < 1) throw new Error('Invalid Configuration Detected!')
+    if (StringIsNullOrEmpty(content)) throw new Error('Invalid Configuration Detected!')
     const data = JSON.parse(content) as unknown
     if (!isDictionary(data)) throw new Error('Invalid Configuration Detected!')
     const name = Functions.getEnvironmentName()

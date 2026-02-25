@@ -2,6 +2,9 @@
 
 import { Subscribe, Publish } from './pubsub'
 
+const DEFAULT_TAB = 0
+const SCROLL_TOP = 0
+
 export const Tabs = {
   tabs: ((): HTMLElement[] => [])(),
   tabNames: ((): string[] => [])(),
@@ -29,7 +32,7 @@ export const Tabs = {
     }
     const lowerHref = target?.toLowerCase()
     if (target === undefined || !Tabs.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
-      target = Tabs.tabNames[0] ?? ''
+      target = Tabs.tabNames[DEFAULT_TAB] ?? ''
     }
     for (const tab of Tabs.tabs) {
       tab.parentElement?.classList.remove('active')
@@ -49,7 +52,7 @@ function setTabActive(tab: HTMLElement, activeHref: string | undefined): string 
     tab.parentElement?.classList.add('active')
     content?.style.setProperty('display', 'block')
     content?.scroll({
-      top: 0,
+      top: SCROLL_TOP,
       behavior: 'smooth',
     })
   } else {

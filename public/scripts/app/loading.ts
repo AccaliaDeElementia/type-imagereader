@@ -3,6 +3,7 @@
 import { HasValue } from '../../../utils/helpers'
 import { Subscribe, Publish, Defer } from './pubsub'
 
+const ANIMATION_RESET_DELAY = 100
 export const Loading = {
   overlay: ((): HTMLElement | null => null)(),
   navbar: ((): HTMLElement | null => null)(),
@@ -20,7 +21,7 @@ export const Loading = {
       Defer(() => {
         Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
         Loading.navbar?.style.removeProperty('background-color')
-      }, 100)
+      }, ANIMATION_RESET_DELAY)
       Publish('Loading:Hide')
     })
     Subscribe('Loading:Success', async () => {
@@ -30,7 +31,7 @@ export const Loading = {
       Defer(() => {
         Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
         Loading.navbar?.style.removeProperty('background-color')
-      }, 100)
+      }, ANIMATION_RESET_DELAY)
     })
     Subscribe('Loading:Hide', async () => {
       Loading.overlay?.style.setProperty('display', 'none')

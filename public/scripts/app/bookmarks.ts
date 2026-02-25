@@ -18,6 +18,10 @@ interface WebBookmarkFolder {
   element: HTMLElement
 }
 
+const DEFAULT_MOD_COUNT = -1
+const SORT_BEFORE = -1
+const SORT_AFTER = 1
+const SORT_EQUAL = 0
 export const Bookmarks = {
   bookmarkCard: ((): DocumentFragment | undefined => undefined)(),
   bookmarkFolder: ((): DocumentFragment | undefined => undefined)(),
@@ -70,7 +74,7 @@ export const Bookmarks = {
         '/api/navigate/latest',
         {
           path: bookmark.path,
-          modCount: -1,
+          modCount: DEFAULT_MOD_COUNT,
         },
         (_: unknown): _ is unknown => true,
       ).then(
@@ -120,7 +124,9 @@ export const Bookmarks = {
 
     Bookmarks.BookmarkFolders = []
     Bookmarks.buildBookmarkNodes(data, openPath)
-    Bookmarks.BookmarkFolders.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+    Bookmarks.BookmarkFolders.sort((a, b) =>
+      a.name < b.name ? SORT_BEFORE : a.name > b.name ? SORT_AFTER : SORT_EQUAL,
+    )
     for (const folder of Bookmarks.BookmarkFolders) {
       Bookmarks.bookmarksTab.appendChild(folder.element)
     }

@@ -4,20 +4,22 @@ import { Pictures } from './pictures'
 import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
 import { isListing, type Listing } from '../../../contracts/listing'
-import { HasValue, StringishHasValue } from '../../../utils/helpers'
+import { HasValue, HasValues, StringishHasValue } from '../../../utils/helpers'
 
 export const Navigation = {
-  GetBaseUrl: (): string =>
-    [
+  GetBaseUrl: (): string => {
+    const [pathA, pathB] = window.location.pathname.split('/')
+    return [
       window.location.protocol,
       '//',
       window.location.hostname,
-      window.location.port.length > 0 ? `:${window.location.port}` : '',
-      window.location.pathname.split('/').slice(0, 2).join('/'),
-    ].join(''),
+      StringishHasValue(window.location.port) ? `:${window.location.port}` : '',
+      [pathA, pathB].join('/'),
+    ].join('')
+  },
   GetFolderPath: (): string => {
     const path = window.location.pathname.replace(/^\/[^/]+/, '')
-    return path.length > 0 ? path : '/'
+    return StringishHasValue(path) ? path : '/'
   },
   LocationAssign: ((): undefined | ((url: string | URL) => void) => undefined)(),
   IsMenuActive: (): boolean => {
@@ -75,11 +77,7 @@ export const Navigation = {
       await Promise.resolve()
     })
     mainMenu?.addEventListener('click', (event) => {
-      if (
-        event.target === mainMenu &&
-        Navigation.current.pictures !== undefined &&
-        Navigation.current.pictures.length > 0
-      ) {
+      if (event.target === mainMenu && HasValues(Navigation.current.pictures)) {
         Publish('Menu:Hide')
       }
     })
@@ -188,7 +186,7 @@ export const Navigation = {
       Navigation.current.noMenu = Navigation.IsSuppressMenu()
       for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
         let name = Navigation.current.name
-        if (name.length < 1) {
+        if (!StringishHasValue(name)) {
           name = Navigation.current.path
         }
         element.innerHTML = name

@@ -18,8 +18,11 @@ const months = [
   'December',
 ]
 
+const DIGITS_TO_KEEP = 2
+const TIME_UPDATE_INTERVAL = 100
 export const Functions = {
-  FormatTime: (now: Date): string => `${`00${now.getHours()}`.slice(-2)}:${`00${now.getMinutes()}`.slice(-2)}`,
+  FormatTime: (now: Date): string =>
+    `${`00${now.getHours()}`.slice(-DIGITS_TO_KEEP)}:${`00${now.getMinutes()}`.slice(-DIGITS_TO_KEEP)}`,
   FormatDate: (now: Date): string => `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`,
 }
 
@@ -30,4 +33,4 @@ const updateTime = async (): Promise<void> => {
   await Promise.resolve()
 }
 
-export default new CyclicUpdater(updateTime, 100)
+export default new CyclicUpdater(updateTime, TIME_UPDATE_INTERVAL)

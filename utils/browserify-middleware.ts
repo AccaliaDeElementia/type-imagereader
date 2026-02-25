@@ -13,8 +13,9 @@ import { minify } from 'terser'
 import { Debouncer } from './debounce'
 
 import debug from 'debug'
-import { StringishHasValue } from './helpers'
+import { HasValues, StringishHasValue } from './helpers'
 
+const ECMA_VERSION = 14
 const isCompileableExtension = /\.[jt]s$/
 
 export const Imports = { access, watch, readdir, browserify, minify }
@@ -58,7 +59,7 @@ export const Functions = {
         const browser = Imports.browserify()
         browser.plugin('tsify')
         browser.plugin('common-shakeify', {
-          ecmaVersion: 14,
+          ecmaVersion: ECMA_VERSION,
         })
         browser.transform('brfs')
         browser.add(path)
@@ -177,7 +178,7 @@ export interface Options {
 }
 
 export default (options: Options): ((req: Request, res: Response, next: NextFunction) => Promise<void>) => {
-  if (options.watchPaths !== undefined && options.watchPaths.length > 0) {
+  if (HasValues(options.watchPaths)) {
     Functions.WatchAllFolders(options.basePath, options.watchPaths).catch(() => null)
   }
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {

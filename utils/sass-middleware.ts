@@ -13,6 +13,8 @@ import { Debouncer } from './debounce'
 
 import debug from 'debug'
 
+const DEFAULT_VERSION = 0
+
 interface sourceMap {
   version: number
   file: string
@@ -54,7 +56,7 @@ export const Functions = {
       return {
         css: styles.css,
         map: {
-          version: +(styles.sourceMap?.version ?? 0),
+          version: +(styles.sourceMap?.version ?? DEFAULT_VERSION),
           file: filename,
           names: styles.sourceMap?.names ?? [],
           sources: styles.sourceMap?.sources ?? [],

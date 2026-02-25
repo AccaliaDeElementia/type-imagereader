@@ -9,7 +9,7 @@ import { normalize } from 'node:path'
 
 import persistance from '../utils/persistance'
 
-import { ModCount, UriSafePath, Functions } from './apiFunctions'
+import { ModCount, UriSafePath, Functions, INVALID_MOD_COUNT } from './apiFunctions'
 
 import debug from 'debug'
 import { ReqParamToString } from '../utils/helpers'
@@ -126,7 +126,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       if (path === null) {
         return
       }
-      if (incomingModCount === -1) {
+      if (incomingModCount === INVALID_MOD_COUNT) {
         await Functions.SetLatestPicture(knex, path)
       } else if (ModCount.Validate(incomingModCount)) {
         response = ModCount.Increment()

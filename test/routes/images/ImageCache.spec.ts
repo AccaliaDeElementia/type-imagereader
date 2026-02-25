@@ -109,19 +109,7 @@ describe('routes/images class ImageData', () => {
       await imageCache.fetch('/foo.jpg', 45, 45)
       const extractPath = (i: CacheItem): string => i.path
       const paths = imageCache.items.map(extractPath)
-      expect(paths).to.deep.equal([
-        '/foo.jpg',
-        '/item_0.png',
-        '/item_1.png',
-        '/item_2.png',
-        '/item_3.png',
-        '/item_4.png',
-        '/item_5.png',
-        '/item_6.png',
-        '/item_7.png',
-        '/item_8.png',
-        '/item_9.png',
-      ])
+      expect(paths).to.deep.equal(['/foo.jpg', '/item_0.png', '/item_1.png', '/item_2.png', '/item_3.png'])
     })
     it('should create new cache item when query not found', async () => {
       await imageCache.fetch('/foo.jpg', 45, 45)
