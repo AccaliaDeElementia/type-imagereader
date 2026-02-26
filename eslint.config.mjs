@@ -29,7 +29,7 @@ export default [
   },
   {
     rules: {
-      'no-await-in-loop': 'off',
+      'no-await-in-loop': 'warn',
       'require-atomic-updates': 'off',
       'require-unicode-regexp': 'off', // TODO: Requires updating to newer version of js than browserify supports at present
       '@typescript-eslint/prefer-destructuring': 'off', //This hurts readability, at least as this project is designed
@@ -39,6 +39,7 @@ export default [
   {
     files: ['test/**/*.js', 'test/**/*.ts'],
     rules: {
+      'no-await-in-loop': 'off',
       '@typescript-eslint/strict-void-return': 'off', // TODO: Enable once Mocha updates typedefintions to not conflict with this rule
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
     },

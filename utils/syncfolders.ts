@@ -69,6 +69,12 @@ export const Functions = {
     }
     return res
   },
+  ExecChunksSynchronously: async <T>(chunks: T[][], execFn: (chunk: T[]) => Promise<void>) => {
+    for (const chunk of chunks) {
+      //eslint-disable-next-line no-await-in-loop -- Deliberately doing this synchronously
+      await execFn(chunk)
+    }
+  },
   ChunkSyncItemsForInsert: (items: DirEntryItem[]): SyncItemChunks => {
     let files = ZERO
     let dirs = ZERO
@@ -115,9 +121,9 @@ export const Functions = {
       const { files: chunkFiles, dirs: chunkDirs, chunks } = Functions.ChunkSyncItemsForInsert(items)
       files += chunkFiles
       dirs += chunkDirs
-      for (const chunk of chunks) {
+      await Functions.ExecChunksSynchronously(chunks, async (chunk) => {
         await knex('syncitems').insert(chunk)
-      }
+      })
       if (counter === ZERO) {
         logger(`Found ${dirs} dirs (${pending} pending) and ${files} files`)
       }
@@ -222,9 +228,9 @@ export const Functions = {
       })
       .groupBy('pictures.folder')
       .orderBy('pictures.folder', 'pictures.path')
-    for (const aChunk of Functions.Chunk(toUpdate)) {
-      await knex('folders').insert(aChunk).onConflict('path').merge()
-    }
+    await Functions.ExecChunksSynchronously(Functions.Chunk(toUpdate), async (chunk) => {
+      await knex('folders').insert(chunk).onConflict('path').merge()
+    })
     logger(`Updated ${toUpdate.length} folder first-item images`)
   },
   SyncAllFolders: async (knex: Knex): Promise<void> => {
@@ -291,9 +297,9 @@ export const Functions = {
     logger(`Found ${Object.keys(allFolders).length} Folders in the DB`)
     const resultFolders = Functions.CalculateFolderInfos(allFolders, folderInfos)
     logger(`Calculated ${resultFolders.length} Folders Seen Counts`)
-    for (const aChunk of Functions.Chunk(resultFolders)) {
-      await knex('folders').insert(aChunk).onConflict('path').merge()
-    }
+    await Functions.ExecChunksSynchronously(Functions.Chunk(resultFolders), async (chunk) => {
+      await knex('folders').insert(chunk).onConflict('path').merge()
+    })
     logger(`Updated ${resultFolders.length} Folders Seen Counts`)
   },
   PruneEmptyFolders: async (knex: Knex): Promise<void> => {

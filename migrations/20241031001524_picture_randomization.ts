@@ -20,6 +20,7 @@ export async function up(knex: Knex): Promise<void> {
     pathHash: createHash('sha512').update(path).digest('base64'),
   }))
   for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
+    // eslint-disable-next-line no-await-in-loop -- One time setup should nto run in parallel
     await knex('pictures')
       .insert(toUpdate.slice(i, i + BATCH_SIZE))
       .onConflict('path')

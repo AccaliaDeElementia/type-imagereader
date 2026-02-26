@@ -144,31 +144,33 @@ export const Functions = {
     }
   },
   WatchAllFolders: async (basePath: string, watchDirs: string[]): Promise<void> => {
-    for (const dir of watchDirs) {
-      try {
-        for (const dirinfo of await Imports.readdir(join(basePath, dir), {
-          withFileTypes: true,
-        })) {
-          if (dirinfo.name.startsWith('.')) {
-            continue
+    await Promise.all(
+      watchDirs.map(async (dir) => {
+        try {
+          for (const dirinfo of await Imports.readdir(join(basePath, dir), {
+            withFileTypes: true,
+          })) {
+            if (dirinfo.name.startsWith('.')) {
+              continue
+            }
+            const target = join(dir, dirinfo.name)
+            if (isCompileableExtension.test(dirinfo.name) || dirinfo.isDirectory()) {
+              Functions.CompileAndCache(basePath, target).catch(() => null)
+            }
+            if (dirinfo.isDirectory()) {
+              Functions.WatchFolder(basePath, target, true).catch(() => null)
+            }
           }
-          const target = join(dir, dirinfo.name)
-          if (isCompileableExtension.test(dirinfo.name) || dirinfo.isDirectory()) {
-            Functions.CompileAndCache(basePath, target).catch(() => null)
-          }
-          if (dirinfo.isDirectory()) {
-            Functions.WatchFolder(basePath, target, true).catch(() => null)
+          Functions.WatchFolder(basePath, dir, false).catch(() => null)
+        } catch (err: unknown) {
+          if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
+            Functions.logger(`${dir} does not exist to precompile scripts`, err.message)
+          } else {
+            Functions.logger(`Unexpected Error while precompiling ${dir} scripts`, err)
           }
         }
-        Functions.WatchFolder(basePath, dir, false).catch(() => null)
-      } catch (err: unknown) {
-        if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
-          Functions.logger(`${dir} does not exist to precompile scripts`, err.message)
-        } else {
-          Functions.logger(`Unexpected Error while precompiling ${dir} scripts`, err)
-        }
-      }
-    }
+      }),
+    )
   },
 }
 

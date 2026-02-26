@@ -29,6 +29,7 @@ export async function up(knex: Knex): Promise<void> {
     .groupBy('pictures.folder')
     .orderBy('pictures.folder', 'pictures.path')
   for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
+    // eslint-disable-next-line no-await-in-loop -- One time setup should nto run in parallel
     await knex('folders')
       .insert(toUpdate.slice(i, i + BATCH_SIZE))
       .onConflict('path')

@@ -43,13 +43,14 @@ export const PubSub = {
       .sort()
       .filter((key) => key === searchTopic || searchTopic.startsWith(`${key}:`))
     if (HasValues(matchingTopics)) {
+      const allSubscribers = []
       for (const key of matchingTopics) {
         const subscribers = PubSub.subscribers[key]
         if (HasValues(subscribers)) {
           const errorHandler = (err: unknown): void => {
             window.console.error(`Subscriber for ${searchTopic} rejected with error:`, err)
           }
-          await Promise.all(
+          allSubscribers.push(
             subscribers.map(async (subscriber) => {
               try {
                 await subscriber(data, searchTopic).catch(errorHandler)
@@ -61,6 +62,9 @@ export const PubSub = {
         } else {
           window.console.warn(`PUBSUB: topic ${key} registered without subscribers!`)
         }
+      }
+      if (HasValues(allSubscribers)) {
+        await Promise.all(allSubscribers.flat())
       }
     } else {
       window.console.warn(`PUBSUB: topic ${topic} published without subscribers`, data)
