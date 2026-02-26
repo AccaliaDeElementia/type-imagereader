@@ -48,10 +48,10 @@ describe('routes/images route /full/*', () => {
     loggerStub = Sinon.stub()
     debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(applicationFake, serverFake, websocketsFake)
-    const fn = routerFake.get
+    const [fn] = routerFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/full/*path')
-      .map((call) => call.args[1] as unknown)[0]
+      .map((call) => call.args[1] as unknown)
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
     readImageStub = Sinon.stub(Functions, 'ReadImage').resolves()
     sendImageStub = Sinon.stub(Functions, 'SendImage').resolves()

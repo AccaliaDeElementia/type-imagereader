@@ -156,7 +156,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
       path: '/bar/baz.png',
       bookmarks: [],
     })
-    const folder = Bookmarks.BookmarkFolders[0]
+    const [folder] = Bookmarks.BookmarkFolders
     assert(folder !== undefined, 'must have folder to be valid test')
     const title = result?.querySelector<HTMLElement>('.title')
     assert(title !== null && title !== undefined, 'must get a result to issue event to')
@@ -172,7 +172,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
         bookmarks: [],
       })
     }
-    const folder = Bookmarks.BookmarkFolders[25]
+    const folder = Bookmarks.BookmarkFolders.find((_, i) => i === 25)
     assert(folder !== undefined, 'must have folder to be valid test')
     const title = folder.element.querySelector<HTMLElement>('.title')
     assert(title !== null, 'must get a result to issue event to')

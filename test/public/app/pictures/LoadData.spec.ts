@@ -160,7 +160,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = true
     }
-    const pic = Pictures.pictures[63]
+    const pic = Pictures.pictures.find((_, i) => i === 63)
     assert(pic !== undefined, 'Test image must exist')
     pic.seen = false
     await Pictures.LoadData({

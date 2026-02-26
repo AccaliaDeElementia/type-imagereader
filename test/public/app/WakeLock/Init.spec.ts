@@ -38,7 +38,7 @@ describe('public/app/wakelock function Init()', () => {
   })
   it('should execute TakeLock on receiving Picture:LoadNew notification', async () => {
     WakeLock.Init()
-    const fn = (PubSub.subscribers['PICTURE:LOADNEW'] ?? [])[0]
+    const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
     assert(fn !== undefined)
     await fn(undefined)
     expect(takeLockSpy.callCount).to.equal(1)
@@ -46,7 +46,7 @@ describe('public/app/wakelock function Init()', () => {
   it('should tolerate TakeLock rejecting on receiving Picture:LoadNew notification', async () => {
     WakeLock.Init()
     takeLockSpy.rejects('FOO')
-    const fn = (PubSub.subscribers['PICTURE:LOADNEW'] ?? [])[0]
+    const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
     assert(fn !== undefined)
     await fn(undefined)
     expect(takeLockSpy.callCount).to.equal(1)

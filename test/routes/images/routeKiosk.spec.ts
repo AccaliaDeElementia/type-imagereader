@@ -48,10 +48,10 @@ describe('routes/images route /kiosk/*-image.webp', () => {
     loggerStub = Sinon.stub()
     debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(applicationFake, serverFake, websocketsFake)
-    const fn = routerFake.get
+    const [fn] = routerFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/kiosk/*path-image.webp')
-      .map((call) => call.args[1] as unknown)[0]
+      .map((call) => call.args[1] as unknown)
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
     fetchImageStub = Sinon.stub(CacheStorage.kioskCache, 'fetch').resolves()
     sendImageStub = Sinon.stub(Functions, 'SendImage').resolves()

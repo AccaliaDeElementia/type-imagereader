@@ -83,7 +83,7 @@ describe('public/app/actions function createButtons()', () => {
         image: expected,
       },
     ])
-    const result = container.children[0]
+    const [result] = container.children
     expect(result).to.be.instanceOf(dom.window.HTMLElement)
     const text = result?.querySelector('i')
     expect(text).to.be.instanceOf(dom.window.HTMLElement)
@@ -97,7 +97,7 @@ describe('public/app/actions function createButtons()', () => {
         image: 'icon',
       },
     ])
-    const result = container.children[0]
+    const [result] = container.children
     expect(result).to.be.instanceOf(dom.window.HTMLElement)
     const text = result?.querySelector('h5')
     expect(text).to.be.instanceOf(dom.window.HTMLElement)
@@ -115,7 +115,7 @@ describe('public/app/actions function createButtons()', () => {
         await Promise.resolve()
       },
     ]
-    const button = container.children[0]
+    const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     const spy = Sinon.stub(event, 'preventDefault')
     button?.dispatchEvent(event)
@@ -130,7 +130,7 @@ describe('public/app/actions function createButtons()', () => {
     ])
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [spy]
-    const button = container.children[0]
+    const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     button?.dispatchEvent(event)
     expect(spy.called).to.equal(true)
@@ -144,7 +144,7 @@ describe('public/app/actions function createButtons()', () => {
     ])
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:THISISNOTABUTTON'] = [spy]
-    const button = container.children[0]
+    const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     button?.dispatchEvent(event)
     expect(spy.called).to.equal(true)

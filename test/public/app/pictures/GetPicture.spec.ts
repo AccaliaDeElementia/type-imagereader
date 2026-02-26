@@ -102,19 +102,19 @@ describe('public/app/pictures function GetPicture()', () => {
       const pics = [...Pictures.pictures.slice(25, 32), ...Pictures.pictures.slice(16, 24)]
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal(pics)
     })
-    it('should return selected index picture', () => {
-      const pic = Pictures.pictures[5]
+    it(`${title}: should return selected index picture`, () => {
+      const [, , , , , pic] = Pictures.pictures
       assert(pic !== undefined)
       choosePictureIndexSpy.returns(5)
       const result = Pictures.GetPicture(navi)
       expect(result).to.deep.equal(pic)
     })
-    it('should return undefined for negative index picture', () => {
+    it(`${title}: should return undefined for negative index picture`, () => {
       choosePictureIndexSpy.returns(-9)
       const result = Pictures.GetPicture(navi)
       expect(result).to.equal(undefined)
     })
-    it('should return undefiend for out of bounds index', () => {
+    it(`${title}: should return undefiend for out of bounds index`, () => {
       choosePictureIndexSpy.returns(65535)
       const result = Pictures.GetPicture(navi)
       expect(result).to.equal(undefined)

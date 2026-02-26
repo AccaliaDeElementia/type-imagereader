@@ -31,7 +31,13 @@ export default [
     rules: {
       'require-atomic-updates': 'off',
       'require-unicode-regexp': 'off', // TODO: Requires updating to newer version of js than browserify supports at present
-      '@typescript-eslint/prefer-destructuring': 'off', //This hurts readability, at least as this project is designed
+      '@typescript-eslint/prefer-destructuring': [
+        'error',
+        {
+          array: true, // This makes sense and is good. avoids a lot of magic numbers too
+          object: false, // This really hurts readability IMO. at the very least it bends my brain so dont enable this yet
+        },
+      ],
       '@typescript-eslint/no-floating-promises': 'error',
     },
   },
