@@ -60,9 +60,11 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     })
     const subs = PubSub.subscribers['LOADING:ERROR']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:ERROR')
+      }),
+    )
     expect(hidden).to.equal(true)
   })
   it('should remove css transition style on navbar', async () => {
@@ -70,9 +72,11 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
     const subs = PubSub.subscribers['LOADING:ERROR']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:ERROR')
+      }),
+    )
     expect(navbar?.style.getPropertyValue('transition')).to.equal('')
   })
   it('should set scary red background navbar', async () => {
@@ -80,18 +84,22 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     navbar?.style.removeProperty('background-color')
     const subs = PubSub.subscribers['LOADING:ERROR']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:ERROR')
+      }),
+    )
     expect(navbar?.style.getPropertyValue('background-color')).to.equal('rgb(255, 0, 0)')
   })
   it('should set a deferred function', async () => {
     expect(PubSub.deferred).to.have.length(0)
     const subs = PubSub.subscribers['LOADING:ERROR']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:ERROR')
+      }),
+    )
     expect(PubSub.deferred).to.have.length(1)
   })
   it('should defer transition definition', async () => {
@@ -99,9 +107,11 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     navbar?.style.removeProperty('transition')
     const subs = PubSub.subscribers['LOADING:ERROR']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:ERROR')
+      }),
+    )
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
@@ -112,9 +122,11 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     navbar?.style.setProperty('background-color', '#FFFFFF')
     const subs = PubSub.subscribers['LOADING:ERROR']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:ERROR') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:ERROR')
+      }),
+    )
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })

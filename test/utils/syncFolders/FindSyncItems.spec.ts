@@ -130,9 +130,13 @@ describe('utils/syncfolders function FindSyncItems()', () => {
       (o): o is (_: unknown, __: number) => Promise<void> => typeof o === 'function',
     )
     const items = [{ path: '/foo', isFile: false }]
-    for (let i = 0; i < 100; i += 1) {
-      await callback(items, 0)
-    }
+    await Promise.all(
+      Array(100)
+        .fill(undefined)
+        .map(async () => {
+          await callback(items, 0)
+        }),
+    )
     chunkSyncItemsForInsertStub.returns({
       files: 3,
       dirs: 9,
@@ -142,47 +146,65 @@ describe('utils/syncfolders function FindSyncItems()', () => {
     expect(loggerStub.callCount).to.equal(2)
     expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).to.equal(true)
   })
+  const ChainableFileCounter = async (
+    prev: Promise<void>,
+    callback: (a: unknown, b: number) => Promise<void>,
+    files: number,
+  ): Promise<void> => {
+    const items = [{ path: '/foo', isFile: false }]
+    chunkSyncItemsForInsertStub.returns({
+      files,
+      dirs: 0,
+      chunks: [],
+    })
+    await callback(items, 0)
+    await prev
+  }
   it('should count all files in loop', async () => {
     fsWalkerStub.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
-      const items = [{ path: '/foo', isFile: false }]
+      let chain = Promise.resolve()
       for (let i = 1; i <= 100; i += 1) {
-        chunkSyncItemsForInsertStub.returns({
-          files: i,
-          dirs: 0,
-          chunks: [],
-        })
-        await callback(items, 0)
+        chain = ChainableFileCounter(chain, callback, i)
       }
+      await chain
     })
+
     await Functions.FindSyncItems(knexFnFake)
     expect(loggerStub.calledWith('Found all 0 dirs and 5050 files')).to.equal(true)
   })
+
+  const ChainableDirCounter = async (
+    prev: Promise<void>,
+    callback: (a: unknown, b: number) => Promise<void>,
+    dirs: number,
+  ): Promise<void> => {
+    const items = [{ path: '/foo', isFile: false }]
+    chunkSyncItemsForInsertStub.returns({
+      files: 0,
+      dirs,
+      chunks: [],
+    })
+    await callback(items, 0)
+    await prev
+  }
   it('should count all dirs in loop', async () => {
     fsWalkerStub.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
-      const items = [{ path: '/foo', isFile: false }]
+      let chain = Promise.resolve()
       for (let i = 1; i <= 100; i += 1) {
-        chunkSyncItemsForInsertStub.returns({
-          files: 0,
-          dirs: i,
-          chunks: [],
-        })
-        await callback(items, 0)
+        chain = ChainableDirCounter(chain, callback, i)
       }
+      await chain
     })
     await Functions.FindSyncItems(knexFnFake)
     expect(loggerStub.calledWith('Found all 5050 dirs and 0 files')).to.equal(true)
   })
   it('should return count of files', async () => {
     fsWalkerStub.callsFake(async (_, callback: (a: unknown, b: number) => Promise<void>) => {
-      const items = [{ path: '/foo', isFile: false }]
+      let chain = Promise.resolve()
       for (let i = 1; i <= 100; i += 1) {
-        chunkSyncItemsForInsertStub.returns({
-          files: i,
-          dirs: 0,
-          chunks: [],
-        })
-        await callback(items, 0)
+        chain = ChainableFileCounter(chain, callback, i)
       }
+      await chain
     })
     const result = await Functions.FindSyncItems(knexFnFake)
     expect(result).to.equal(5050)

@@ -42,9 +42,11 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
     const subs = PubSub.subscribers['LOADING:SUCCESS']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
     expect(navbar?.style.getPropertyValue('transition')).to.equal('')
   })
   it('should set soothing green background navbar', async () => {
@@ -52,18 +54,22 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     navbar?.style.removeProperty('background-color')
     const subs = PubSub.subscribers['LOADING:SUCCESS']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
     expect(navbar?.style.getPropertyValue('background-color')).to.equal('rgb(0, 170, 0)')
   })
   it('should set a deferred function', async () => {
     expect(PubSub.deferred).to.have.length(0)
     const subs = PubSub.subscribers['LOADING:SUCCESS']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
     expect(PubSub.deferred).to.have.length(1)
   })
   it('should defer transition definition', async () => {
@@ -71,9 +77,11 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     navbar?.style.removeProperty('transition')
     const subs = PubSub.subscribers['LOADING:SUCCESS']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
@@ -84,9 +92,11 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     navbar?.style.setProperty('background-color', '#FFFFFF')
     const subs = PubSub.subscribers['LOADING:SUCCESS']
     assert(subs !== undefined)
-    for (const sub of subs) {
-      await sub(undefined, 'LOADING:SUCCESS') // execute all subscribers manually
-    }
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })

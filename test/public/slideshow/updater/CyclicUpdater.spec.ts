@@ -151,15 +151,23 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
       await updater.trigger(0)
       expect(updater._failCount).to.equal(50)
     })
-    it('should exponentially decay countdown when update fails', async () => {
-      updateFn.rejects(new Error('FOO'))
-      updater.period = 10
-      for (let i = 0; i < 5; i += 1) {
+    const expectedDelays: Array<[number, number]> = [
+      [0, 20],
+      [1, 40],
+      [2, 80],
+      [3, 160],
+      [4, 320],
+      [5, 640],
+    ]
+    expectedDelays.forEach(([failCount, expectedDelay]) => {
+      it(`should set countdown of ${expectedDelay} for failed trigger after ${failCount} prior fails`, async () => {
+        updateFn.rejects(new Error('FOO'))
+        updater.period = 10
         updater._countdown = -1
-        updater._failCount = i
+        updater._failCount = failCount
         await updater.trigger(0)
-        expect(updater._countdown).to.equal(10 * 2 ** (i + 1))
-      }
+        expect(updater._countdown).to.equal(expectedDelay)
+      })
     })
   })
 })
