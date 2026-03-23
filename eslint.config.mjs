@@ -29,7 +29,7 @@ export default [
   },
   {
     rules: {
-      'require-atomic-updates': 'warn',
+      'require-atomic-updates': 'error',
       'require-unicode-regexp': 'off', // TODO: Requires updating to newer version of js than browserify supports at present
       '@typescript-eslint/prefer-destructuring': [
         'error',
