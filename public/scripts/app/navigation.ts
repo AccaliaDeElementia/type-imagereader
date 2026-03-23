@@ -182,7 +182,9 @@ export const Navigation = {
   LoadData: async (noHistory = false): Promise<void> => {
     try {
       Publish('Loading:Show')
-      Navigation.current = await Net.GetJSON<Listing>(`/api/listing${Navigation.current.path}`, isListing)
+      const path = Navigation.current.path
+      // eslint-disable-next-line require-atomic-updates -- Navigation.current is intentionally replaced with the fetched result
+      Navigation.current = await Net.GetJSON<Listing>(`/api/listing${path}`, isListing)
       Navigation.current.noMenu = Navigation.IsSuppressMenu()
       for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
         let name = Navigation.current.name

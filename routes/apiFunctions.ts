@@ -3,7 +3,7 @@
 import { normalize, basename, dirname, extname, sep } from 'node:path'
 
 import type { Knex } from 'knex'
-import { StringishHasValue } from '../utils/helpers'
+import { EscapeLikeWildcards, StringishHasValue } from '../utils/helpers'
 
 export const INVALID_MOD_COUNT = -1
 const MAXIMUM_MOD_COUNT = Number.MAX_SAFE_INTEGER + INVALID_MOD_COUNT
@@ -312,12 +312,12 @@ export const Functions = {
     const updates = await knex('pictures')
       .update({ seen: true })
       .where({ seen: false })
-      .andWhere('folder', 'like', `${path}%`)
+      .andWhere('folder', 'like', `${EscapeLikeWildcards(path)}%`)
     if (updates > ZERO_COUNT) {
       await knex('folders').increment('seenCount', updates).whereIn('path', Functions.GetPictureFolders(path))
       await knex('folders')
         .update({ seenCount: knex.raw('"totalCount"') })
-        .where('path', 'like', `${path}%`)
+        .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
         .orWhere({ path })
     }
   },
@@ -325,12 +325,12 @@ export const Functions = {
     const updates = await knex('pictures')
       .update({ seen: false })
       .where({ seen: true })
-      .andWhere('folder', 'like', `${path}%`)
+      .andWhere('folder', 'like', `${EscapeLikeWildcards(path)}%`)
     if (updates > ZERO_COUNT) {
       await knex('folders').increment('seenCount', -updates).whereIn('path', Functions.GetPictureFolders(path))
       await knex('folders')
         .update({ seenCount: ZERO_COUNT, current: null })
-        .where('path', 'like', `${path}%`)
+        .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
         .orWhere({ path })
     }
   },

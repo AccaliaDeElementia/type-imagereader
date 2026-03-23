@@ -46,5 +46,19 @@ describe('LockResource', () => {
       lock.Release()
       expect(lock.Take()).to.equal(true)
     })
+
+    it('should not set _locked to false when lock is already free', () => {
+      const lock = new LockResource()
+      lock.Release()
+      expect(lock._locked).to.equal(false)
+    })
+
+    it('should not set _locked to false when lock was already released', () => {
+      const lock = new LockResource()
+      lock.Take()
+      lock.Release()
+      lock.Release()
+      expect(lock._locked).to.equal(false)
+    })
   })
 })

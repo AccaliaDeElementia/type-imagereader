@@ -50,7 +50,7 @@ function isPoolValid(obj: object): boolean {
   if (!isDictionary(obj.pool)) return false
   if (!('min' in obj.pool) || typeof obj.pool.min !== 'number') return false
   if (!('max' in obj.pool) || typeof obj.pool.max !== 'number') return false
-  if (obj.pool.min >= obj.pool.max) return false
+  if (obj.pool.min > obj.pool.max) return false
   return true
 }
 

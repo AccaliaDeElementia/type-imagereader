@@ -29,7 +29,9 @@ export const WakeLock = {
   TakeLock: async (): Promise<void> => {
     try {
       if (WakeLock.sentinel === null || WakeLock.sentinel.released) {
-        WakeLock.sentinel = await navigator.wakeLock.request('screen')
+        const lock = await navigator.wakeLock.request('screen')
+        // eslint-disable-next-line require-atomic-updates -- sentinel is intentionally set to the newly acquired lock
+        WakeLock.sentinel = lock
       }
       WakeLock.timeout = Date.now() + WakeLock.wakeTime
     } catch {
@@ -38,13 +40,15 @@ export const WakeLock = {
     }
   },
   ReleaseLock: async (): Promise<void> => {
-    if (WakeLock.sentinel === null || WakeLock.timeout > Date.now()) return
+    const sentinel = WakeLock.sentinel
+    if (sentinel === null || WakeLock.timeout > Date.now()) return
     WakeLock.timeout = RELEASED_TIMEOUT
     try {
-      if (!WakeLock.sentinel.released) {
-        await WakeLock.sentinel.release()
+      if (!sentinel.released) {
+        await sentinel.release()
       }
     } catch {}
+    // eslint-disable-next-line require-atomic-updates -- sentinel is intentionally nulled after the lock is released
     WakeLock.sentinel = null
   },
 }

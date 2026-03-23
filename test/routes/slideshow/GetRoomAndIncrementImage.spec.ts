@@ -55,6 +55,23 @@ describe('routes/slideshow function GetRoomAndIncrementImage()', () => {
     const result = await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
     expect(result).to.equal(Config.rooms['/images!/'])
   })
+  it('it should not overwrite a room populated by a concurrent call during async initialization', async () => {
+    const concurrentRoom = {
+      countdown: Config.countdownDuration,
+      path: '/images!/',
+      pages: { unread: 0, all: 0, pages: 0, page: 0 },
+      images: ['/concurrentImage.png'],
+      index: 0,
+      uriSafeImage: undefined,
+    }
+    getCountsStub.callsFake(async () => {
+      // Simulate a concurrent call completing and populating Config.rooms before this one finishes
+      Config.rooms['/images!/'] = concurrentRoom
+      return await Promise.resolve(pages)
+    })
+    await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
+    expect(Config.rooms['/images!/']).to.equal(concurrentRoom)
+  })
   it('it should set expected countdown duration on new room', async () => {
     Config.countdownDuration = 69
     const room = await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')

@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../testutils/TypeGuards'
 import { expect } from 'chai'
-import { Config, Functions } from '../../../routes/slideshow'
+import { Config, Functions, Imports } from '../../../routes/slideshow'
 import type { Server as WebSocketServer } from 'socket.io'
 
 describe('routes/slideshow function TickCountdown()', () => {
@@ -18,6 +18,7 @@ describe('routes/slideshow function TickCountdown()', () => {
   }
   let ioFake = Cast<WebSocketServer>(ioStub)
   let getRoomStub = Sinon.stub()
+  let loggerStub = Sinon.stub()
   beforeEach(() => {
     knexFake = StubToKnex({ knex: Math.random() })
     ioStub = {
@@ -34,9 +35,11 @@ describe('routes/slideshow function TickCountdown()', () => {
     Config.rooms = {}
     Config.countdownDuration = 60
     getRoomStub = Sinon.stub(Functions, 'GetRoomAndIncrementImage')
+    loggerStub = Sinon.stub(Imports, 'logger')
   })
   afterEach(() => {
     getRoomStub.restore()
+    loggerStub.restore()
   })
   it('should accept empty room list', async () => {
     await Functions.TickCountdown(knexFake, ioFake)
@@ -96,10 +99,28 @@ describe('routes/slideshow function TickCountdown()', () => {
     ['not emit due room, empty clients', 1, new Set(), () => expect(ioStub.to.callCount).to.equal(0)],
     ['not emit due room, with clients, no images', 1, clients, () => expect(ioStub.to.callCount).to.equal(0)],
     ['emit due room, with clients', 1, clients, () => expect(ioStub.to.callCount).to.equal(1), ['/an/image.png']],
-    ['emit to selected room', -99, clients, () => expect(ioStub.to.firstCall.args).to.deep.equal(['/Room']), ['/an/image.png']],
+    [
+      'emit to selected room',
+      -99,
+      clients,
+      () => expect(ioStub.to.firstCall.args).to.deep.equal(['/Room']),
+      ['/an/image.png'],
+    ],
     ['emit single message', -99, clients, () => expect(ioStub.emit.callCount).to.equal(1), ['/an/image.png']],
-    ['emit new-image message', -99, clients, () => expect(ioStub.emit.firstCall.args[0]).to.equal('new-image'), ['/an/image.png']],
-    ['emit new image path', -99, clients, () => expect(ioStub.emit.firstCall.args[1]).to.equal('/an/image.png'), ['/an/image.png']],
+    [
+      'emit new-image message',
+      -99,
+      clients,
+      () => expect(ioStub.emit.firstCall.args[0]).to.equal('new-image'),
+      ['/an/image.png'],
+    ],
+    [
+      'emit new image path',
+      -99,
+      clients,
+      () => expect(ioStub.emit.firstCall.args[1]).to.equal('/an/image.png'),
+      ['/an/image.png'],
+    ],
   ]
   tests.forEach(([title, countdown, clients, validationFn, images = []]) => {
     it(`should ${title}`, async () => {
@@ -120,5 +141,26 @@ describe('routes/slideshow function TickCountdown()', () => {
       await Functions.TickCountdown(knexFake, ioFake)
       validationFn()
     })
+  })
+  it('should log when an error is thrown', async () => {
+    const err = new Error('TICK FAILED')
+    getRoomStub.rejects(err)
+    Config.rooms['/Room'] = {
+      countdown: -99,
+      path: '/Room',
+      images: ['/an/image.png'],
+      index: 0,
+      uriSafeImage: '/an/image.png',
+      pages: { unread: 0, all: 0, pages: 0, page: 0 },
+    }
+    ioStub.get.returns(new Set(['/']))
+    await Functions.TickCountdown(knexFake, ioFake)
+    expect(loggerStub.callCount).to.equal(1)
+    expect(loggerStub.firstCall.args[0]).to.equal('TickCountdown error')
+    expect(loggerStub.firstCall.args[1]).to.equal(err)
+  })
+  it('should not log when no error occurs', async () => {
+    await Functions.TickCountdown(knexFake, ioFake)
+    expect(loggerStub.callCount).to.equal(0)
   })
 })

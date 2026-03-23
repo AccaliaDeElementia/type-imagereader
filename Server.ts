@@ -117,8 +117,8 @@ export default async function start(port: number): Promise<{ app: Express; serve
 
   Functions.ConfigureBaseApp(app)
   await Functions.RegisterRouters(app, server, websockets)
-  Functions.ConfigureLoggingAndErrors(app)
   Functions.RegisterViewsAndMiddleware(app)
+  Functions.ConfigureLoggingAndErrors(app)
 
   app.get('/*', (_, res, next) => {
     res.set('X-Clacks-Overhead', 'GNU Terry Pratchett')

@@ -139,14 +139,11 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
     expect(queryBuilder.groupBy.firstCall.args).to.have.lengthOf(1)
     expect(queryBuilder.groupBy.firstCall.args[0]).to.equal('pictures.folder')
   })
-  it('should order by foldername and full path', async () => {
+  it('should order by foldername', async () => {
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
     expect(queryBuilder.orderBy.callCount).to.equal(1)
     expect(queryBuilder.orderBy.firstCall.args).to.have.lengthOf(1)
-    expect(queryBuilder.orderBy.firstCall.args[0]).to.deep.equal([
-      { column: 'pictures.folder' },
-      { column: 'pictures.path' },
-    ])
+    expect(queryBuilder.orderBy.firstCall.args[0]).to.deep.equal([{ column: 'pictures.folder' }])
   })
   it('should chunk results for batched update', async () => {
     const results = { toUpdate: Math.random() }

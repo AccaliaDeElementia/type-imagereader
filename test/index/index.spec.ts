@@ -6,12 +6,13 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '../testutils/Errors'
 
-import { ImageReader } from '../..'
+import { ImageReader, Imports } from '../..'
 
 describe('/index.ts tests', (): void => {
   let StartServerStub: Sinon.SinonStub | undefined = undefined
   let SynchronizeStub: Sinon.SinonStub | undefined = undefined
   let ClockFake: Sinon.SinonFakeTimers | undefined = undefined
+  let LoggerStub: Sinon.SinonStub | undefined = undefined
 
   beforeEach(() => {
     delete process.env.PORT
@@ -19,6 +20,7 @@ describe('/index.ts tests', (): void => {
     StartServerStub = Sinon.stub(ImageReader, 'StartServer').resolves()
     SynchronizeStub = Sinon.stub(ImageReader, 'Synchronize').resolves()
     ClockFake = Sinon.useFakeTimers()
+    LoggerStub = Sinon.stub(Imports, 'logger')
   })
 
   afterEach(() => {
@@ -27,6 +29,7 @@ describe('/index.ts tests', (): void => {
     StartServerStub?.restore()
     SynchronizeStub?.restore()
     ClockFake?.restore()
+    LoggerStub?.restore()
   })
   after(() => {
     Sinon.restore()
@@ -161,6 +164,7 @@ describe('/index.ts tests', (): void => {
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
     SynchronizeStub?.resetHistory()
+    // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
     ImageReader.SyncLock._locked = true
     ClockFake?.tick(101)
     expect(SynchronizeStub?.called).to.equal(false)
@@ -187,5 +191,38 @@ describe('/index.ts tests', (): void => {
     ClockFake?.tick(105)
     await Promise.resolve()
     assert(true, 'should not throw or reject because inner promise rejects')
+  })
+
+  it('should log when initial sync rejects', async () => {
+    const err = new Error('SYNC FAILED')
+    SynchronizeStub?.rejects(err)
+    await ImageReader.Run()
+    expect(LoggerStub?.callCount).to.equal(1)
+    expect(LoggerStub?.firstCall.args[0]).to.equal('sync error')
+    expect(LoggerStub?.firstCall.args[1]).to.equal(err)
+  })
+
+  it('should not log when initial sync resolves', async () => {
+    await ImageReader.Run()
+    expect(LoggerStub?.callCount).to.equal(0)
+  })
+
+  it('should log when interval sync rejects', async () => {
+    const err = new Error('INTERVAL SYNC FAILED')
+    ImageReader.SyncInterval = 100
+    await ImageReader.Run()
+    SynchronizeStub?.rejects(err)
+    await ClockFake?.tickAsync(101)
+    expect(LoggerStub?.callCount).to.equal(1)
+    expect(LoggerStub?.firstCall.args[0]).to.equal('sync interval error')
+    expect(LoggerStub?.firstCall.args[1]).to.equal(err)
+  })
+
+  it('should not log when interval sync resolves', async () => {
+    ImageReader.SyncInterval = 100
+    await ImageReader.Run()
+    ClockFake?.tick(101)
+    await Promise.resolve()
+    expect(LoggerStub?.callCount).to.equal(0)
   })
 })

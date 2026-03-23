@@ -47,6 +47,10 @@ export function HasSetValues<T>(setLike: SetLike<T> | null | undefined): setLike
   return setLike !== null && setLike !== undefined && setLike.size > ZERO_LENGTH
 }
 
+export function EscapeLikeWildcards(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_')
+}
+
 const PERCENT_MULT = 1000
 const PERCENT_DIV = 10
 const INDEX_OFFSET = 1

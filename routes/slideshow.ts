@@ -5,6 +5,7 @@ import type { Application, Request, Response } from 'express'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
+import debug from 'debug'
 
 import { normalize, dirname } from 'node:path'
 
@@ -17,6 +18,7 @@ import {
   HasSetValues,
   HasValue,
   HasValues,
+  EscapeLikeWildcards,
   ReqParamToString,
   StringishHasValue,
   ZERO_COUNT,
@@ -43,9 +45,12 @@ interface ImageWithPath {
 
 type SocketCallback = (value: string | number | null) => void
 
+const logger = debug('type-imagereader:slideshow')
+
 const DEFAULT_LAUNCH_ID = -1
 const DEFAULT_MEMORY_SIZE = 100
 const DEFAULT_COUNTDOWN_DURATION = 60
+const ABANDONED_ROOM_PRUNE_THRESHOLD = 3_600
 const TICK_COUNTDOWN_INTERVAL = 1000 // one second in Millis
 
 export const Config = {
@@ -98,6 +103,7 @@ export const SocketHandlers = {
 }
 
 export const Imports = {
+  logger,
   setLatest: async (knex: Knex, path: string): Promise<string | null> => await api.SetLatestPicture(knex, path),
   Router,
 }
@@ -114,7 +120,7 @@ export const Functions = {
   GetUnreadImageCount: async (knex: Knex, path: string): Promise<number> => {
     const counts = await knex('pictures')
       .count({ count: 'path' })
-      .where('path', 'like', `${path}%`)
+      .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
       .andWhere('seen', '=', false)
     try {
       const count = counts.shift()?.count
@@ -125,7 +131,9 @@ export const Functions = {
     return ZERO_COUNT
   },
   GetImageCount: async (knex: Knex, path: string): Promise<number> => {
-    const counts = await knex('pictures').count({ count: 'path' }).where('path', 'like', `${path}%`)
+    const counts = await knex('pictures')
+      .count({ count: 'path' })
+      .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
     try {
       const count = counts.shift()?.count
       if (HasValue(count)) {
@@ -146,6 +154,9 @@ export const Functions = {
     let resultPage = currentPage ?? Math.floor(Math.random() * pages)
     if (unreadcount > ZERO_COUNT) {
       pages = Math.ceil(unreadcount / Config.memorySize)
+      // Always anchor to page 0 for unread images. As images are viewed they are
+      // marked seen and drop out of the unread ordering, shifting remaining unseen
+      // images toward page 0. Applying a page mutator here would skip those images.
       resultPage = ZERO_COUNT
     } else if (currentPage !== undefined) {
       resultPage = mutator(currentPage)
@@ -166,9 +177,9 @@ export const Functions = {
     (
       await knex('pictures')
         .select('path')
-        .where('path', 'like', `${path}%`)
+        .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
         .orderBy('seen')
-        .orderBy('pathHash')
+        .orderBy('pathHash') // pseudo-random but stable order across pages and restarts
         .offset(page * count)
         .limit(count)
     ).map((img: ImageWithPath) => img.path),
@@ -205,7 +216,7 @@ export const Functions = {
         index: ZERO_COUNT,
         uriSafeImage: undefined,
       }
-      Config.rooms[name] = room
+      Config.rooms[name] ??= room
     } else {
       room.index += increment
       if (room.index < ZERO_COUNT) {
@@ -234,7 +245,7 @@ export const Functions = {
       const newRooms: Record<string, SlideshowRoom> = {}
       for (const room of Object.values(Config.rooms)) {
         room.countdown += ALTER_COUNTER.DECREMENT
-        if (room.countdown <= -DEFAULT_COUNTDOWN_DURATION * Config.countdownDuration) {
+        if (room.countdown <= -ABANDONED_ROOM_PRUNE_THRESHOLD) {
           continue
         }
         newRooms[room.path] = room
@@ -256,7 +267,9 @@ export const Functions = {
           }
         }),
       )
-    } catch {}
+    } catch (err) {
+      Imports.logger('TickCountdown error', err)
+    }
   },
   HandleSocket: (knex: Knex, io: WebSocketServer, socket: Socket): HandleSocketState => {
     const state = new HandleSocketState()

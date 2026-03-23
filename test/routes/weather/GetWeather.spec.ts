@@ -43,12 +43,12 @@ describe('routes/weather function GetWeather', () => {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
     const err = await EventuallyRejects(Functions.GetWeather())
-    expect(err.message).to.equal('no OpewnWeather AppId Defined!')
+    expect(err.message).to.equal('no OpenWeather AppId Defined!')
   })
   it('should reject missing location', async () => {
     delete process.env.OPENWEATHER_LOCATION
     const err = await EventuallyRejects(Functions.GetWeather())
-    expect(err.message).to.equal('no OpewnWeather Location Defined!')
+    expect(err.message).to.equal('no OpenWeather Location Defined!')
   })
   it('should reject when fetch fails', async () => {
     const err = new Error('FOO')

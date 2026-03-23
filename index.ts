@@ -3,9 +3,15 @@
 // force reading from .env before any imports fire
 import 'dotenv/config'
 
+import debug from 'debug'
+
 import synchronize from './utils/syncfolders'
 import start from './Server'
 import { StringIsNullOrEmpty } from './utils/helpers'
+
+export const Imports = {
+  logger: debug('type-imagereader:sync'),
+}
 
 const THREE_HOURS = 10_800_000
 const DEFAULT_PORT = 3030
@@ -51,7 +57,9 @@ export async function RunSync(): Promise<void> {
   ImageReader.Interval = Functions.setInterval(async () => {
     try {
       await Functions.ActuallyRunSyncForReal()
-    } catch {}
+    } catch (err) {
+      Imports.logger('sync interval error', err)
+    }
   }, ImageReader.SyncInterval)
   await promise.catch(() => null)
 }
@@ -85,9 +93,13 @@ export const ImageReader = {
           ImageReader.SyncLock.Release()
         }
       }
-      doSync().catch(() => null)
+      doSync().catch((err: unknown) => {
+        Imports.logger('sync error', err)
+      })
       ImageReader.Interval = setInterval(() => {
-        doSync().catch(() => null)
+        doSync().catch((err: unknown) => {
+          Imports.logger('sync interval error', err)
+        })
       }, ImageReader.SyncInterval)
       await Promise.resolve()
     })

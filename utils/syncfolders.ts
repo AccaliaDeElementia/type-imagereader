@@ -227,7 +227,7 @@ export const Functions = {
         'firsts.sortKey': 'pictures.sortKey',
       })
       .groupBy('pictures.folder')
-      .orderBy([{ column: 'pictures.folder' }, { column: 'pictures.path' }])
+      .orderBy([{ column: 'pictures.folder' }])
     await Functions.ExecChunksSynchronously(Functions.Chunk(toUpdate), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').merge()
     })
@@ -241,7 +241,7 @@ export const Functions = {
     await Functions.SyncFolderFirstImages(logger, knex)
   },
   GetAllFolderInfos: async (knex: Knex): Promise<Record<string, FolderInfo>> => {
-    const rawFolders = (await knex('folders').select('path')) as SyncItem[]
+    const rawFolders = (await knex('folders').select('path')) as Array<{ path: string }>
     const folders: Record<string, FolderInfo> = {}
     for (const folder of rawFolders) {
       folders[folder.path] = {
@@ -266,14 +266,16 @@ export const Functions = {
     return folderInfos
   },
   CalculateFolderInfos: (allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] => {
-    const allData = allFolders // TODO: this still mutates the parameter, refactor to avoid that.
+    const allData: Record<string, FolderInfo> = Object.fromEntries(
+      Object.entries(allFolders).map(([key, val]) => [key, { ...val }]),
+    )
     for (const folder of folders) {
       const parts = folder.path.split('/')
       while (parts.length > ONE) {
         // don't loop all the way to zero to avoid double counting the root
         parts.pop()
         const parentPath = `${parts.join('/')}/`
-        let { [parentPath]: parent } = allFolders
+        let { [parentPath]: parent } = allData
         if (parent === undefined) {
           parent = {
             path: parentPath,

@@ -23,7 +23,7 @@ describe('utils/persistance function isPoolValid()', () => {
     ['undefined max value', { min: 2, max: undefined }, false],
     ['non number max value', { min: 2, max: '6' }, false],
     ['max less than min', { min: 6, max: 2 }, false],
-    ['max equal min', { min: 6, max: 6 }, false],
+    ['max equal min', { min: 6, max: 6 }, true],
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {

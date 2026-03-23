@@ -20,15 +20,17 @@ export async function LoadImage(): Promise<void> {
   try {
     Pictures.current.seen = true
     Pictures.current.element?.classList.add('seen')
+    const modCount = Pictures.modCount
     const newModCount = await Net.PostJSON<number | undefined>(
       '/api/navigate/latest',
-      { path: Pictures.current.path, modCount: Pictures.modCount },
+      { path: Pictures.current.path, modCount },
       (o) => typeof o === 'number' || o === undefined,
     )
     if (newModCount === undefined || newModCount < MINIMUM_MOD_COUNT) {
       Publish('Navigate:Reload')
       return
     }
+    // eslint-disable-next-line require-atomic-updates -- modCount is intentionally updated with the server response
     Pictures.modCount = newModCount
     await Pictures.nextLoader
     Pictures.mainImage?.setAttribute(

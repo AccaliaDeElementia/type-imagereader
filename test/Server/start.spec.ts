@@ -66,6 +66,10 @@ describe('Server function RegisterRouters', () => {
       validationFn()
     })
   })
+  it('should register views before configuring logging', async () => {
+    await start(65535)
+    expect(registerViewsStub.calledBefore(configureLoggingStub)).to.equal(true)
+  })
   it('should return app', async () => {
     const { app } = await start(1024)
     expect(app).to.equal(appFake)

@@ -141,9 +141,9 @@ export const Functions = {
   },
   GetWeather: async (): Promise<OpenWeatherData> => {
     const appId = process.env.OPENWEATHER_APPID
-    if (!StringishHasValue(appId)) throw new Error('no OpewnWeather AppId Defined!')
+    if (!StringishHasValue(appId)) throw new Error('no OpenWeather AppId Defined!')
     const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
-    if (!StringishHasValue(location)) throw new Error('no OpewnWeather Location Defined!')
+    if (!StringishHasValue(location)) throw new Error('no OpenWeather Location Defined!')
     const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`)
     const data: unknown = await response.json()
     if (!Functions.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
@@ -160,9 +160,9 @@ export const Functions = {
         weather.pressure = data.main.pressure
         weather.humidity = data.main.humidity
       }
-      const fristForecast = data.weather.shift()
-      weather.description = fristForecast?.main
-      weather.icon = fristForecast?.icon
+      const [firstForecast] = data.weather
+      weather.description = firstForecast?.main
+      weather.icon = firstForecast?.icon
       weather.sunrise = Math.min(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunrise, nightNotAfter)
       weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, nightNotBefore)
     } catch (_) {

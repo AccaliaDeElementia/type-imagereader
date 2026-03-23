@@ -54,8 +54,7 @@ export class ImageData {
       return // Image already has an error
     }
     try {
-      const before = this.data
-      const after = await Imports.Sharp(this.data, { animated })
+      this.data = await Imports.Sharp(this.data, { animated })
         .rotate()
         .resize({
           width,
@@ -65,10 +64,7 @@ export class ImageData {
         })
         .webp()
         .toBuffer()
-      if (before === this.data) {
-        this.data = after
-        this.extension = 'webp'
-      }
+      this.extension = 'webp'
     } catch (e) {
       // Do nothing.... we tried
     }
