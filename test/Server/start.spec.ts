@@ -7,7 +7,6 @@ import start, { Functions } from '../../Server'
 import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
-import { Debouncer } from '../../utils/debounce'
 
 describe('Server function RegisterRouters', () => {
   let appStub = { get: Sinon.stub() }
@@ -19,7 +18,6 @@ describe('Server function RegisterRouters', () => {
   let registerRoutersStub = Sinon.stub()
   let configureLoggingStub = Sinon.stub()
   let registerViewsStub = Sinon.stub()
-  let debouncerStartStub = Sinon.stub()
   beforeEach(() => {
     appStub = { get: Sinon.stub() }
     appFake = Cast<Express>(appStub)
@@ -30,7 +28,6 @@ describe('Server function RegisterRouters', () => {
     registerRoutersStub = Sinon.stub(Functions, 'RegisterRouters').resolves()
     configureLoggingStub = Sinon.stub(Functions, 'ConfigureLoggingAndErrors')
     registerViewsStub = Sinon.stub(Functions, 'RegisterViewsAndMiddleware')
-    debouncerStartStub = Sinon.stub(Debouncer, 'startTimers')
   })
   afterEach(() => {
     createAppStub.restore()
@@ -38,7 +35,6 @@ describe('Server function RegisterRouters', () => {
     registerRoutersStub.restore()
     configureLoggingStub.restore()
     registerViewsStub.restore()
-    debouncerStartStub.restore()
   })
   const baseTests: Array<[string, () => void]> = [
     ['create app', () => expect(createAppStub.callCount).to.equal(1)],
@@ -57,8 +53,6 @@ describe('Server function RegisterRouters', () => {
     ['register views', () => expect(registerViewsStub.callCount).to.equal(1)],
     ['register views with correct args', () => expect(registerViewsStub.firstCall.args).to.have.lengthOf(1)],
     ['register views with app', () => expect(registerViewsStub.firstCall.args[0]).to.equal(appFake)],
-    ['start timers', () => expect(debouncerStartStub.callCount).to.equal(1)],
-    ['start timers with no options', () => expect(debouncerStartStub.firstCall.args).to.deep.equal([])],
   ]
   baseTests.forEach(([title, validationFn]) => {
     it(`should ${title}`, async () => {

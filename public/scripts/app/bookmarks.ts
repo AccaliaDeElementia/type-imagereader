@@ -61,7 +61,7 @@ export const Bookmarks = {
     }
 
     const title = card.querySelector<HTMLElement>('.title')
-    title?.replaceChildren(bookmark.path.replace(/.*\/(?<name>[^/]+)$/, '$<name>'))
+    title?.replaceChildren(bookmark.path.replace(/.*\/(?<name>[^\/]+)$/v, '$<name>'))
 
     card.style.backgroundImage = `url("/images/preview${bookmark.path}-image.webp")`
     const button = card.querySelector('button')

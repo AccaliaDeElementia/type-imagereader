@@ -6,7 +6,7 @@ import { join, extname } from 'node:path'
 import assert from 'node:assert'
 import { HasValues } from './helpers'
 
-const allowedExtensions = /^\.(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
+const allowedExtensions = /^\.(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/iv
 
 async function processQueueItem(
   root: string,

@@ -21,7 +21,7 @@ const PREVIEW_HEIGHT = 320
 const KIOSK_WIDTH = 1280
 const KIOSK_HEIGHT = 800
 
-const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/i
+const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/iv
 
 export class ImageData {
   static defaultData = Buffer.from('')
@@ -116,7 +116,7 @@ export const Functions = {
     if (normalize(path) !== path) {
       return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
     }
-    const regexResult = /^(?:\.)?(?<ext>.+)/.exec(extname(path))
+    const regexResult = /^(?:\.)?(?<ext>.+)/v.exec(extname(path))
     if (regexResult === null) {
       return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
     }

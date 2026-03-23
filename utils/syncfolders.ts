@@ -58,7 +58,7 @@ export const Functions = {
   padLength: NUMBER_PAD_LENGTH,
   ToSortKey: (key: string): string => {
     const zeroes = '0'.repeat(Functions.padLength)
-    return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/g, (num) =>
+    return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/gv, (num) =>
       num.length >= Functions.padLength ? num : `${zeroes}${num}`.slice(-Functions.padLength),
     )
   },

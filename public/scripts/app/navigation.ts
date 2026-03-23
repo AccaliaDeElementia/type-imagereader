@@ -18,7 +18,7 @@ export const Navigation = {
     ].join('')
   },
   GetFolderPath: (): string => {
-    const path = window.location.pathname.replace(/^\/[^/]+/, '')
+    const path = window.location.pathname.replace(/^\/[^\/]+/v, '')
     return StringishHasValue(path) ? path : '/'
   },
   LocationAssign: ((): undefined | ((url: string | URL) => void) => undefined)(),

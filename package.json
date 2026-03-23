@@ -4,7 +4,9 @@
   "description": "A typscript powered web based image and comic reader pulling from local files",
   "scripts": {
     "prebuild": "npm run lint",
-    "build": "tsc --build tsconfig.json",
+    "build:client": "ts-node scripts/build-client.ts",
+    "build:sass": "ts-node scripts/build-sass.ts",
+    "build": "npm run build:client && npm run build:sass && tsc --build tsconfig.json",
     "pretty": "prettier . --write",
     "prettyCheck": "prettier . --write --log-level=warn",
     "prelint": "npm run prettyCheck",
@@ -16,6 +18,8 @@
     "knex": "knex --knexfile knexfile.json",
     "predev": "npm run build",
     "dev": "DEBUG='type-imagereader:*' SKIP_SYNC=1 ts-node .",
+    "dev:watch": "ts-node scripts/build-client.ts watch",
+    "dev:sass": "ts-node scripts/build-sass.ts watch",
     "scan": "DEBUG='type-imagereader:*' SKIP_SERVE=1 ts-node ."
   },
   "repository": {
@@ -29,9 +33,6 @@
   },
   "homepage": "https://github.com/AccaliaDeElementia/type-imagereader#readme",
   "dependencies": {
-    "brfs": "^2.0.2",
-    "browserify": "^17.0.1",
-    "common-shakeify": "^1.1.2",
     "cookie-parser": "^1.4.7",
     "debug": "^4.4.3",
     "dotenv": "^17.3.1",
@@ -45,22 +46,18 @@
     "pg": "^8.18.0",
     "postgresql": "0.0.1",
     "pug": "^3.0.3",
-    "sass": "^1.97.3",
     "serve-favicon": "^2.5.1",
     "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
-    "terser": "^5.46.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "tsify": "^5.0.4",
     "typescript": "^5.9.3",
     "words-to-numbers": "^1.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@types/browserify": "^12.0.40",
     "@types/chai": "^5.2.3",
     "@types/chai-as-promised": "^8.0.2",
     "@types/command-line-args": "^5.2.3",
@@ -82,6 +79,8 @@
     "@typescript-eslint/parser": "^8.56.0",
     "chai": "^6.2.2",
     "command-line-args": "^6.0.1",
+    "esbuild": "^0.27.4",
+    "sass": "^1.97.3",
     "eslint": "^9.39.2",
     "eslint-config-love": "^150.0.0",
     "eslint-config-prettier": "^10.1.8",
@@ -115,7 +114,8 @@
       "**/*.spec.ts",
       "test/testutils/**/*.ts",
       "knexfile.ts",
-      "test.ts"
+      "test.ts",
+      "scripts/**"
     ],
     "reporter": [
       "lcov",

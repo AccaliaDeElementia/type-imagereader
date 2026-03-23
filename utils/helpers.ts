@@ -48,7 +48,7 @@ export function HasSetValues<T>(setLike: SetLike<T> | null | undefined): setLike
 }
 
 export function EscapeLikeWildcards(s: string): string {
-  return s.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_')
+  return s.replace(/\\/gv, '\\\\').replace(/%/gv, '\\%').replace(/_/gv, '\\_')
 }
 
 const PERCENT_MULT = 1000

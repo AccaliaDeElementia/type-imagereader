@@ -18,10 +18,6 @@ import { getRouter as getRootRouter } from './routes/index'
 import { getRouter as getSlideshowRouter } from './routes/slideshow'
 import { getRouter as getWeatherRouter } from './routes/weather'
 
-import sassMiddleware from './utils/sass-middleware'
-import browserifyMiddleware from './utils/browserify-middleware'
-
-import { Debouncer } from './utils/debounce'
 import debug from 'debug'
 
 export const Imports = {
@@ -32,8 +28,6 @@ export const Imports = {
   favicon,
   morgan,
   helmet,
-  sassMiddleware,
-  browserifyMiddleware,
   WebSocketServer,
 }
 
@@ -61,7 +55,7 @@ export const Functions = {
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
     app.use(Imports.cookieParser())
-    app.use(Imports.favicon(join(__dirname, 'public', 'images', 'favicon.ico')))
+    app.use(Imports.favicon(join(__dirname, 'dist', 'images', 'favicon.ico')))
   },
   ConfigureLoggingAndErrors: (app: Express): void => {
     switch (process.env.NODE_ENV) {
@@ -90,25 +84,7 @@ export const Functions = {
     app.set('views', join(__dirname, 'views'))
     app.set('view engine', 'pug')
 
-    const sassMiddleware = Imports.sassMiddleware({
-      mountPath: join(__dirname, 'public'),
-      watchdir: '/stylesheets',
-    })
-    app.use((req, res, next) => {
-      sassMiddleware(req, res, next).catch(() => {
-        next()
-      })
-    })
-    const browserifyMiddleware = Imports.browserifyMiddleware({
-      basePath: join(__dirname, 'public'),
-      watchPaths: ['/scripts', '/bundles'],
-    })
-    app.use((req, res, next) => {
-      browserifyMiddleware(req, res, next).catch(() => {
-        next()
-      })
-    })
-    app.use(express.static(join(__dirname, 'public')))
+    app.use(express.static(join(__dirname, 'dist')))
   },
 }
 
@@ -124,8 +100,6 @@ export default async function start(port: number): Promise<{ app: Express; serve
     res.set('X-Clacks-Overhead', 'GNU Terry Pratchett')
     next()
   })
-
-  Debouncer.startTimers()
 
   return { app, server }
 }

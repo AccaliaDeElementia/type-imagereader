@@ -266,7 +266,7 @@ export const Actions = {
       Actions.setInnerTextMaybe(button, 'i', image)
       Actions.setInnerTextMaybe(button, 'h5', name)
       button.addEventListener('click', (event) => {
-        Publish(`Action:Execute:${name.replace(/\s+/g, '')}`)
+        Publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
         event.preventDefault()
       })
       result.appendChild(button)

@@ -30,7 +30,7 @@ export default [
   {
     rules: {
       'require-atomic-updates': 'error',
-      'require-unicode-regexp': 'off', // TODO: Requires updating to newer version of js than browserify supports at present
+      'require-unicode-regexp': 'error',
       '@typescript-eslint/prefer-destructuring': [
         'error',
         {
@@ -49,6 +49,6 @@ export default [
     },
   },
   {
-    ignores: ['coverage/**', 'eslint.config.mjs'],
+    ignores: ['coverage/**', 'eslint.config.mjs', 'scripts/**', 'dist/scripts/app.js', 'dist/scripts/slideshow.js'],
   },
 ]
