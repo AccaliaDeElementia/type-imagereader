@@ -7,7 +7,7 @@ import synchronize from './utils/syncfolders'
 import start from './Server'
 import { StringIsNullOrEmpty } from './utils/helpers'
 
-const THREE_HOURS = 1_080_000
+const THREE_HOURS = 10_800_000
 const DEFAULT_PORT = 3030
 const MINIMUM_PORT = 0
 const MAXIMUM_PORT = 65535
@@ -18,11 +18,49 @@ const runIfNotSuppressed = async (triggerVar: string, fn: () => Promise<void>): 
   await fn()
 }
 
+export class LockResource {
+  _locked: boolean
+  constructor() {
+    this._locked = false
+  }
+  Take(): boolean {
+    if (this._locked) return false
+    this._locked = true
+    return true
+  }
+  Release(): void {
+    if (!this._locked) return
+    this._locked = false
+  }
+}
+
+export const Functions = {
+  setInterval: setInterval as (fn: () => Promise<void>, interval: number) => number | NodeJS.Timeout,
+  ActuallyRunSyncForReal: async (): Promise<void> => {
+    if (!ImageReader.SyncLock.Take()) return
+    try {
+      await ImageReader.Synchronize()
+    } finally {
+      ImageReader.SyncLock.Release()
+    }
+  },
+}
+
+export async function RunSync(): Promise<void> {
+  const promise = Functions.ActuallyRunSyncForReal()
+  ImageReader.Interval = Functions.setInterval(async () => {
+    try {
+      await Functions.ActuallyRunSyncForReal()
+    } catch {}
+  }, ImageReader.SyncInterval)
+  await promise.catch(() => null)
+}
+
 export const ImageReader = {
   StartServer: start,
   Synchronize: synchronize,
   Interval: ((): number | NodeJS.Timeout | undefined => undefined)(),
-  SyncRunning: false,
+  SyncLock: new LockResource(),
   SyncInterval: THREE_HOURS,
   Run: async (): Promise<void> => {
     await runIfNotSuppressed('SKIP_SERVE', async () => {
@@ -40,14 +78,11 @@ export const ImageReader = {
     })
     await runIfNotSuppressed('SKIP_SYNC', async () => {
       const doSync = async (): Promise<void> => {
-        if (ImageReader.SyncRunning) {
-          return
-        }
-        ImageReader.SyncRunning = true
+        if (!ImageReader.SyncLock.Take()) return
         try {
           await ImageReader.Synchronize()
         } finally {
-          ImageReader.SyncRunning = false
+          ImageReader.SyncLock.Release()
         }
       }
       doSync().catch(() => null)

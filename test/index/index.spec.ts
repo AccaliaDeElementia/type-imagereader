@@ -4,9 +4,9 @@ import assert from 'node:assert'
 import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { EventuallyRejects } from './testutils/Errors'
+import { EventuallyRejects } from '../testutils/Errors'
 
-import { ImageReader } from '..'
+import { ImageReader } from '../..'
 
 describe('/index.ts tests', (): void => {
   let StartServerStub: Sinon.SinonStub | undefined = undefined
@@ -23,7 +23,7 @@ describe('/index.ts tests', (): void => {
 
   afterEach(() => {
     ImageReader.Interval = undefined
-    ImageReader.SyncRunning = false
+    ImageReader.SyncLock._locked = false
     StartServerStub?.restore()
     SynchronizeStub?.restore()
     ClockFake?.restore()
@@ -161,7 +161,7 @@ describe('/index.ts tests', (): void => {
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
     SynchronizeStub?.resetHistory()
-    ImageReader.SyncRunning = true
+    ImageReader.SyncLock._locked = true
     ClockFake?.tick(101)
     expect(SynchronizeStub?.called).to.equal(false)
   })
@@ -170,14 +170,14 @@ describe('/index.ts tests', (): void => {
     SynchronizeStub?.throws(new Error('FOO!'))
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
-    expect(ImageReader.SyncRunning).to.equal(false)
+    expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
   it('should reset sync running if Synchronization rejects', async () => {
     SynchronizeStub?.rejects(new Error('FOO!'))
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
-    expect(ImageReader.SyncRunning).to.equal(false)
+    expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
   it('should tolerate Synchronization rejects in interval', async () => {

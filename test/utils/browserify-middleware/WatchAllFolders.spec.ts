@@ -41,8 +41,8 @@ describe('utils/browserify-middleware function WatchAllFolders()', () => {
   })
   it('should watch each folder in the list of watchdirs', async () => {
     await Functions.WatchAllFolders('/foo', ['/bar', '/baz'])
-    expect(watchFolderStub.calledWith('/foo', '/bar', false)).to.equal(true)
-    expect(watchFolderStub.calledWith('/foo', '/baz', false)).to.equal(true)
+    expect(watchFolderStub.calledWith('/foo', '/bar')).to.equal(true)
+    expect(watchFolderStub.calledWith('/foo', '/baz')).to.equal(true)
     expect(loggerStub.called).to.equal(false)
   })
   it('should ignore dotfiles when scanning for scripts to compile', async () => {
@@ -119,7 +119,7 @@ describe('utils/browserify-middleware function WatchAllFolders()', () => {
       },
     ])
     await Functions.WatchAllFolders('/foo', ['/bar'])
-    expect(watchFolderStub.calledWith('/foo', '/bar/application', true)).to.equal(true)
+    expect(watchFolderStub.calledWith('/foo', '/bar/application')).to.equal(true)
     expect(loggerStub.called).to.equal(false)
   })
   it('should complain about folder not existing when erroring with MODULE_NOT_FOUND', async () => {

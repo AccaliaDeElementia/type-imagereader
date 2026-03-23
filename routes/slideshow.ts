@@ -251,7 +251,9 @@ export const Functions = {
       await Promise.all(
         roomsToUpdate.map(async (room) => {
           await Functions.GetRoomAndIncrementImage(knex, room.path, ALTER_COUNTER.INCREMENT)
-          io.to(room.path).emit('new-image', room.uriSafeImage)
+          if (HasValues(room.images)) {
+            io.to(room.path).emit('new-image', room.uriSafeImage)
+          }
         }),
       )
     } catch {}

@@ -121,7 +121,7 @@ export const Functions = {
       }
     }
   },
-  WatchFolder: async (basePath: string, mountPath: string, isFolder: boolean): Promise<void> => {
+  WatchFolder: async (basePath: string, mountPath: string): Promise<void> => {
     try {
       Functions.logger(`Watching ${mountPath} for Scripts`)
       const watcher = Imports.watch(join(basePath, mountPath), {
@@ -129,7 +129,7 @@ export const Functions = {
       })
       for await (const event of watcher) {
         if (event.filename === null) continue
-        const scriptFile = isFolder ? mountPath : join(mountPath, event.filename)
+        const scriptFile = join(mountPath, event.filename)
         Functions.debouncer.debounce(scriptFile, async () => {
           Functions.logger(`${scriptFile} needs recompiling. ${event.eventType}`)
           await Functions.CompileAndCache(basePath, scriptFile)
@@ -158,10 +158,10 @@ export const Functions = {
               Functions.CompileAndCache(basePath, target).catch(() => null)
             }
             if (dirinfo.isDirectory()) {
-              Functions.WatchFolder(basePath, target, true).catch(() => null)
+              Functions.WatchFolder(basePath, target).catch(() => null)
             }
           }
-          Functions.WatchFolder(basePath, dir, false).catch(() => null)
+          Functions.WatchFolder(basePath, dir).catch(() => null)
         } catch (err: unknown) {
           if (isErrorWithCode(err, 'MODULE_NOT_FOUND', 'ENOENT')) {
             Functions.logger(`${dir} does not exist to precompile scripts`, err.message)

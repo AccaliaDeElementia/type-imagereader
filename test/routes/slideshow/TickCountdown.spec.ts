@@ -44,7 +44,7 @@ describe('routes/slideshow function TickCountdown()', () => {
     expect(getRoomStub.callCount).to.equal(0)
   })
   const clients = new Set(['/'])
-  const tests: Array<[string, number, unknown, () => void]> = [
+  const tests: Array<[string, number, unknown, () => void, string[]?]> = [
     ['remove expired room, no clients', -3599, null, () => expect(Config.rooms).to.not.have.any.keys('/Room')],
     ['remove expired room, nil clients', -3599, undefined, () => expect(Config.rooms).to.not.have.any.keys('/Room')],
     ['remove expired room, empty clients', -3599, new Set(), () => expect(Config.rooms).to.not.have.any.keys('/Room')],
@@ -94,18 +94,19 @@ describe('routes/slideshow function TickCountdown()', () => {
     ['not emit due room, no clients', 1, null, () => expect(ioStub.to.callCount).to.equal(0)],
     ['not emit due room, nil clients', 1, undefined, () => expect(ioStub.to.callCount).to.equal(0)],
     ['not emit due room, empty clients', 1, new Set(), () => expect(ioStub.to.callCount).to.equal(0)],
-    ['emit due room, with clients', 1, clients, () => expect(ioStub.to.callCount).to.equal(1)],
-    ['emit to selected room', -99, clients, () => expect(ioStub.to.firstCall.args).to.deep.equal(['/Room'])],
-    ['emit single message', -99, clients, () => expect(ioStub.emit.callCount).to.equal(1)],
-    ['emit new-image message', -99, clients, () => expect(ioStub.emit.firstCall.args[0]).to.equal('new-image')],
-    ['emit new image path', -99, clients, () => expect(ioStub.emit.firstCall.args[1]).to.equal('/an/image.png')],
+    ['not emit due room, with clients, no images', 1, clients, () => expect(ioStub.to.callCount).to.equal(0)],
+    ['emit due room, with clients', 1, clients, () => expect(ioStub.to.callCount).to.equal(1), ['/an/image.png']],
+    ['emit to selected room', -99, clients, () => expect(ioStub.to.firstCall.args).to.deep.equal(['/Room']), ['/an/image.png']],
+    ['emit single message', -99, clients, () => expect(ioStub.emit.callCount).to.equal(1), ['/an/image.png']],
+    ['emit new-image message', -99, clients, () => expect(ioStub.emit.firstCall.args[0]).to.equal('new-image'), ['/an/image.png']],
+    ['emit new image path', -99, clients, () => expect(ioStub.emit.firstCall.args[1]).to.equal('/an/image.png'), ['/an/image.png']],
   ]
-  tests.forEach(([title, countdown, clients, validationFn]) => {
+  tests.forEach(([title, countdown, clients, validationFn, images = []]) => {
     it(`should ${title}`, async () => {
       Config.rooms['/Room'] = {
         countdown,
         path: '/Room',
-        images: [],
+        images,
         index: 0,
         uriSafeImage: '/an/image.png',
         pages: {

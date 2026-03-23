@@ -36,44 +36,44 @@ describe('utils/browserify-middleware function WatchFolder()', () => {
     Sinon.restore()
   })
   it('should watch for changes', async () => {
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(watchStub.calledWith('/foo/bar', { persistent: false })).to.equal(true)
   })
   it('should log watch starting', async () => {
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(loggerStub.calledWith('Watching /bar for Scripts')).to.equal(true)
   })
   it('should log error on MODULE_NOT_FOUND', async () => {
     watchStub.throws(new ErrorWithCode('OOPS', 'MODULE_NOT_FOUND'))
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(loggerStub.calledWith('/bar does not exist to watch')).to.equal(true)
   })
   it('should log error on MODULE_NOT_FOUND in iterate', async () => {
     const err = Promise.reject(new ErrorWithCode('OOPS', 'MODULE_NOT_FOUND'))
     watchStub.returns([err])
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(loggerStub.calledWith('/bar does not exist to watch')).to.equal(true)
   })
   it('should log error on ENOENT', async () => {
     watchStub.throws(new ErrorWithCode('OOPS', 'ENOENT'))
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(loggerStub.calledWith('/bar does not exist to watch')).to.equal(true)
   })
   it('should log error on ENOENT in iterate', async () => {
     const err = Promise.reject(new ErrorWithCode('OOPS', 'ENOENT'))
     watchStub.returns([err])
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(loggerStub.calledWith('/bar does not exist to watch')).to.equal(true)
   })
   it('should log error on exception', async () => {
     watchStub.throws('SOMETHING BAD')
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(loggerStub.calledWith('Watcher for /bar exited unexpectedly')).to.equal(true)
   })
   it('should log error on exception in iterate', async () => {
     const err = Promise.reject(new Error('SOMETHING BAD'))
     watchStub.returns([err])
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(loggerStub.calledWith('Watcher for /bar exited unexpectedly')).to.equal(true)
   })
   it('should ignore event without filename', async () => {
@@ -83,7 +83,7 @@ describe('utils/browserify-middleware function WatchFolder()', () => {
         eventType: 'change',
       },
     ])
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(debounceStub.callCount).to.equal(0)
   })
   it('should debounce non folder event on iteration', async () => {
@@ -93,7 +93,7 @@ describe('utils/browserify-middleware function WatchFolder()', () => {
         eventType: 'change',
       },
     ])
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     expect(debounceStub.calledWith('/bar/baz')).to.equal(true)
   })
   it('should debounce folder event on iteration', async () => {
@@ -103,8 +103,8 @@ describe('utils/browserify-middleware function WatchFolder()', () => {
         eventType: 'change',
       },
     ])
-    await Functions.WatchFolder('/foo', '/bar', true)
-    expect(debounceStub.calledWith('/bar')).to.equal(true)
+    await Functions.WatchFolder('/foo', '/bar')
+    expect(debounceStub.calledWith('/bar/baz')).to.equal(true)
   })
   it('should compile scripts for non folder event on iteration', async () => {
     watchStub.returns([
@@ -113,7 +113,7 @@ describe('utils/browserify-middleware function WatchFolder()', () => {
         eventType: 'change',
       },
     ])
-    await Functions.WatchFolder('/foo', '/bar', false)
+    await Functions.WatchFolder('/foo', '/bar')
     const fn = Cast(debounceStub.lastCall.args[1], (o: unknown): o is () => Promise<void> => typeof o === 'function')
     await fn()
     expect(compileAndCacheStub.calledWith('/foo', '/bar/baz')).to.equal(true)
@@ -125,9 +125,9 @@ describe('utils/browserify-middleware function WatchFolder()', () => {
         eventType: 'change',
       },
     ])
-    await Functions.WatchFolder('/foo', '/bar', true)
+    await Functions.WatchFolder('/foo', '/bar')
     const fn = Cast(debounceStub.lastCall.args[1], (o: unknown): o is () => Promise<void> => typeof o === 'function')
     await fn()
-    expect(compileAndCacheStub.calledWith('/foo', '/bar')).to.equal(true)
+    expect(compileAndCacheStub.calledWith('/foo', '/bar/baz')).to.equal(true)
   })
 })

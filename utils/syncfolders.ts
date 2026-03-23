@@ -227,7 +227,7 @@ export const Functions = {
         'firsts.sortKey': 'pictures.sortKey',
       })
       .groupBy('pictures.folder')
-      .orderBy('pictures.folder', 'pictures.path')
+      .orderBy([{ column: 'pictures.folder' }, { column: 'pictures.path' }])
     await Functions.ExecChunksSynchronously(Functions.Chunk(toUpdate), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').merge()
     })
