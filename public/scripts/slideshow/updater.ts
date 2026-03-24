@@ -2,7 +2,12 @@
 
 type UpdateFn = () => Promise<void>
 export async function defaultUpdateFn(): Promise<void> {
-  await Promise.reject(new Error('Cyclic Updater Called with No Updater'))
+  const err = new Error('Cyclic Updater Called with No Updater')
+  // V8 block coverage splits async functions at every `await` into a pre-suspension
+  // block and a post-suspension resume block. When the awaited Promise rejects the
+  // resume block never executes, leaving two ranges uncovered on the lines below.
+  /* c8 ignore next 2 */
+  await Promise.reject(err)
 }
 const INCREMENT = 1
 const COUNTDOWN_EXPIRES_AT = 0

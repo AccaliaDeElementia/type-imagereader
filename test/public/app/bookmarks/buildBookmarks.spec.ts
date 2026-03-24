@@ -364,7 +364,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     const card = dom.window.document.createElement('div')
     buildBookmarkSpy.returns(card)
     Bookmarks.buildBookmarks(data)
-    expect(spy.calledWith(card)).to.equal(true)
+    expect(spy.calledWith(Sinon.match.same(card))).to.equal(true)
   })
   it('should sort BookmarkFolders', () => {
     getFolderSpy.callsFake(() => {
@@ -443,7 +443,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     })
     expect(appendChildSpy.callCount).to.equal(100)
     for (const folder of Bookmarks.BookmarkFolders) {
-      expect(appendChildSpy.calledWith(folder.element)).to.equal(true)
+      expect(appendChildSpy.calledWith(Sinon.match.same(folder.element))).to.equal(true)
     }
   })
 })

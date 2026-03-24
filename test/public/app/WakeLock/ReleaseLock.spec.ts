@@ -106,6 +106,24 @@ describe('public/app/wakelock function TakeLock()', () => {
     await WakeLock.ReleaseLock()
     expect(WakeLock.sentinel).to.equal(null)
   })
+  it('should gracefully handle sentinel release rejecting when sentinel is active', async () => {
+    WakeLock.sentinel = sentinel
+    sentinel.released = false
+    WakeLock.timeout = 99
+    clock?.tick(100)
+    sentinelRelease.rejects(new Error('release failed'))
+    await WakeLock.ReleaseLock()
+    expect(WakeLock.sentinel).to.equal(null)
+  })
+  it('should gracefully handle sentinel release throwing when sentinel is active', async () => {
+    WakeLock.sentinel = sentinel
+    sentinel.released = false
+    WakeLock.timeout = 99
+    clock?.tick(100)
+    sentinelRelease.throws(new Error('release failed'))
+    await WakeLock.ReleaseLock()
+    expect(WakeLock.sentinel).to.equal(null)
+  })
   it('should reset timeout when timeout equals current time with no sentinel', async () => {
     WakeLock.sentinel = null
     WakeLock.timeout = 100
