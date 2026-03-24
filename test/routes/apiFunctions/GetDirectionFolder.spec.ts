@@ -227,6 +227,34 @@ describe('routes/apiFunctions function GetDirectionFolder', () => {
     expect(filter[2]).to.equal(rawQuery)
     expect(rawStub.alwaysCalledWithExactly('"seenCount"')).to.equal(true)
   })
+  it('should filter for only unread on different sortkey for asc', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'unread' }
+    const rawQuery = { raw: Math.random() }
+    rawStub.returns(rawQuery)
+    await Functions.GetDirectionFolder(knexFake, spec)
+    expect(knexSecondCall.andWhere.callCount).to.equal(2)
+    const queries = [knexSecondCall.andWhere.firstCall.args, knexSecondCall.andWhere.secondCall.args]
+    const filter = queries.find((arg) => arg[0] === 'totalCount') as string[] | undefined
+    assert(filter !== undefined)
+    expect(filter).to.have.lengthOf(3)
+    expect(filter[0]).to.equal('totalCount')
+    expect(filter[1]).to.equal('>')
+    expect(filter[2]).to.equal(rawQuery)
+  })
+  it('should filter for only unread on different sortkey for desc', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'unread' }
+    const rawQuery = { raw: Math.random() }
+    rawStub.returns(rawQuery)
+    await Functions.GetDirectionFolder(knexFake, spec)
+    expect(knexSecondCall.andWhere.callCount).to.equal(2)
+    const queries = [knexSecondCall.andWhere.firstCall.args, knexSecondCall.andWhere.secondCall.args]
+    const filter = queries.find((arg) => arg[0] === 'totalCount') as string[] | undefined
+    assert(filter !== undefined)
+    expect(filter).to.have.lengthOf(3)
+    expect(filter[0]).to.equal('totalCount')
+    expect(filter[1]).to.equal('>')
+    expect(filter[2]).to.equal(rawQuery)
+  })
   it('should order properly for same sort key for asc', async () => {
     const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
     await Functions.GetDirectionFolder(knexFake, spec)
@@ -353,5 +381,18 @@ describe('routes/apiFunctions function GetDirectionFolder', () => {
     const result = await Functions.GetDirectionFolder(knexFake, spec)
     assert(result !== null)
     expect(result.cover).to.equal('/foo/abcde0/otherImage.png')
+  })
+  it('should resolve with null cover when both current and firstPicture are null', async () => {
+    const spec: SiblingFolderSearch = { path: '', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    knexFirstCall.limit.resolves([
+      {
+        path: '/foo/abcde0',
+        current: null,
+        firstPicture: null,
+      },
+    ])
+    const result = await Functions.GetDirectionFolder(knexFake, spec)
+    assert(result !== null)
+    expect(result.cover).to.equal(null)
   })
 })

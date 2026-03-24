@@ -61,4 +61,8 @@ describe('routes/slideshow function GetImageCount()', () => {
       expect(actual).to.equal(expected)
     })
   })
+  it('should escape % in path for LIKE query', async () => {
+    await Functions.GetImageCount(knexFake, '/foo%bar/')
+    expect(knexInstanceStub.where.firstCall.args).to.deep.equal(['path', 'like', '/foo\\%bar/%'])
+  })
 })

@@ -23,27 +23,42 @@ describe('public/app/net function decodeResult()', () => {
       json: async () => await Promise.resolve(dataFake),
     })
   })
-  it('should reject for empty content', async () => {
+  it('should reject for empty content with an Error', async () => {
     contentLengthFake = '0'
     const err = await EventuallyRejects(decodeResult(response, isUnknown))
     expect(err).to.be.an.instanceOf(Error)
+  })
+  it('should reject for empty content with expected message', async () => {
+    contentLengthFake = '0'
+    const err = await EventuallyRejects(decodeResult(response, isUnknown))
     expect(err.message).to.equal('Empty JSON response recieved')
   })
-  it('should reject when data is an error', async () => {
+  it('should reject when data is an error with an Error', async () => {
     dataFake = { error: 'This is an Error! FOO!' }
     const err = await EventuallyRejects(decodeResult(response, isUnknown))
     expect(err).to.be.an.instanceOf(Error)
+  })
+  it('should reject when data is an error with expected message', async () => {
+    dataFake = { error: 'This is an Error! FOO!' }
+    const err = await EventuallyRejects(decodeResult(response, isUnknown))
     expect(err.message).to.equal('This is an Error! FOO!')
   })
-  it('should reject when isT does not validate json result', async () => {
+  it('should reject when isT does not validate with an Error', async () => {
     const err = await EventuallyRejects(decodeResult(response, (_): _ is unknown => false))
     expect(err).to.be.an.instanceOf(Error)
+  })
+  it('should reject when isT does not validate with expected message', async () => {
+    const err = await EventuallyRejects(decodeResult(response, (_): _ is unknown => false))
     expect(err.message).to.equal('Invalid JSON object decoded')
   })
-  it('should reject for null result even if isT accepts null as valid', async () => {
+  it('should reject for null result with an Error', async () => {
     dataFake = null
     const err = await EventuallyRejects(decodeResult(response, (_): _ is unknown => true))
     expect(err).to.be.an.instanceOf(Error)
+  })
+  it('should reject for null result with expected message', async () => {
+    dataFake = null
+    const err = await EventuallyRejects(decodeResult(response, (_): _ is unknown => true))
     expect(err.message).to.equal('Invalid JSON object decoded')
   })
   it('should resolve to json data when data is valid', async () => {

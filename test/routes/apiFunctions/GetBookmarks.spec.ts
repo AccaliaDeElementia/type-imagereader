@@ -23,36 +23,60 @@ describe('routes/apiFunctions function GetBookmarks', () => {
     knexStub = Sinon.stub().returns(knexInstance)
     knexFake = StubToKnex(knexStub)
   })
-  it('should select results from bookmarks', async () => {
+  it('should select results from bookmarks once', async () => {
     await Functions.GetBookmarks(knexFake)
     expect(knexStub.callCount).to.equal(1)
+  })
+  it('should select results from bookmarks table', async () => {
+    await Functions.GetBookmarks(knexFake)
     expect(knexStub.firstCall.args).to.deep.equal(['bookmarks'])
   })
-  it('should select expected fields from bookmarks', async () => {
+  it('should select expected fields from bookmarks once', async () => {
     await Functions.GetBookmarks(knexFake)
     expect(knexInstance.select.callCount).to.equal(1)
+  })
+  it('should select expected number of fields from bookmarks', async () => {
+    await Functions.GetBookmarks(knexFake)
     expect(knexInstance.select.firstCall.args).to.have.lengthOf(2)
+  })
+  it('should select pictures.path from bookmarks', async () => {
+    await Functions.GetBookmarks(knexFake)
     expect(knexInstance.select.firstCall.args).to.include('pictures.path')
+  })
+  it('should select pictures.folder from bookmarks', async () => {
+    await Functions.GetBookmarks(knexFake)
     expect(knexInstance.select.firstCall.args).to.include('pictures.folder')
   })
-  it('should join pictures to bookmarks', async () => {
+  it('should join pictures to bookmarks at least once', async () => {
     await Functions.GetBookmarks(knexFake)
     expect(knexInstance.join.callCount).to.be.greaterThanOrEqual(1)
+  })
+  it('should join pictures to bookmarks with expected args', async () => {
+    await Functions.GetBookmarks(knexFake)
     const call = knexInstance.join.getCalls().find((call) => call.args[0] === 'pictures')
     assert(call !== undefined)
     expect(call.args).to.deep.equal(['pictures', 'pictures.path', 'bookmarks.path'])
   })
-  it('should join folders to bookmarks', async () => {
+  it('should join folders to bookmarks at least once', async () => {
     await Functions.GetBookmarks(knexFake)
     expect(knexInstance.join.callCount).to.be.greaterThanOrEqual(1)
+  })
+  it('should join folders to bookmarks with expected args', async () => {
+    await Functions.GetBookmarks(knexFake)
     const call = knexInstance.join.getCalls().find((call) => call.args[0] === 'folders')
     assert(call !== undefined)
     expect(call.args).to.deep.equal(['folders', 'folders.path', 'pictures.folder'])
   })
-  it('should order strictly by folder then picture including sortkey and paths', async () => {
+  it('should order strictly by folder then picture once', async () => {
     await Functions.GetBookmarks(knexFake)
     expect(knexInstance.orderBy.callCount).to.equal(1)
+  })
+  it('should order strictly by folder then picture with one arg', async () => {
+    await Functions.GetBookmarks(knexFake)
     expect(knexInstance.orderBy.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should order strictly by folder then picture including sortkey and paths', async () => {
+    await Functions.GetBookmarks(knexFake)
     expect(knexInstance.orderBy.firstCall.args[0]).to.deep.equal([
       'folders.path',
       'folders.sortKey',

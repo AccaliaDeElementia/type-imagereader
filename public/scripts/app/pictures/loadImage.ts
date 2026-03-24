@@ -12,8 +12,12 @@ function setTextContent(selector: string, content: string): void {
 const MINIMUM_MOD_COUNT = 0
 const DEFAULT_INDEX = 0
 const DEFAULT_PAGE = 1
+
+const isValidModCount = (n: number | undefined): n is number => n !== undefined && n >= MINIMUM_MOD_COUNT
+
 export async function LoadImage(): Promise<void> {
   if (Pictures.current === null) return
+  if (Pictures.current.path === '') return
   if (Pictures.nextPending) {
     Publish('Loading:Show')
   }
@@ -24,9 +28,9 @@ export async function LoadImage(): Promise<void> {
     const newModCount = await Net.PostJSON<number | undefined>(
       '/api/navigate/latest',
       { path: Pictures.current.path, modCount },
-      (o) => typeof o === 'number' || o === undefined,
+      (o): o is number | undefined => (typeof o === 'number' && Number.isFinite(o)) || o === undefined,
     )
-    if (newModCount === undefined || newModCount < MINIMUM_MOD_COUNT) {
+    if (!isValidModCount(newModCount)) {
       Publish('Navigate:Reload')
       return
     }
@@ -37,7 +41,7 @@ export async function LoadImage(): Promise<void> {
       'src',
       makeURI(Pictures.mainImage.width, Pictures.mainImage.height, Pictures.current),
     )
-    const index = Pictures.current.index ?? DEFAULT_INDEX
+    const { index = DEFAULT_INDEX } = Pictures.current
     const displayTotal = Pictures.pictures.length.toLocaleString()
     const displayIndex = IndexToText(index)
     const displayPercent = IndexPercentToText(index, Pictures.pictures.length)
@@ -45,7 +49,7 @@ export async function LoadImage(): Promise<void> {
     setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
     setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
     Pictures.SelectPage(Pictures.current.page ?? DEFAULT_PAGE)
-    void Pictures.LoadNextImage().catch(() => index)
+    void Pictures.LoadNextImage().catch(() => undefined)
     Publish('Picture:LoadNew')
   } catch (err) {
     Publish('Loading:Error', err)

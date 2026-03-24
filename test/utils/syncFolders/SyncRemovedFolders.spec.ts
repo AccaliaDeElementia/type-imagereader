@@ -49,10 +49,16 @@ describe('utils/syncfolders function SyncRemovedFolders()', () => {
     expect(knexInstanceStub.delete.firstCall.args).to.deep.equal([])
   })
   it('should log removed records counts', async () => {
-    knexInstanceStub.delete.returns(1023)
+    knexInstanceStub.delete.resolves(1023)
     await Functions.SyncRemovedFolders(loggerFake, knexFnFake)
     expect(loggerStub.callCount).to.equal(1)
-    expect(loggerStub.firstCall.args[0]).to.equal('Removed 1023 missing folders')
+    expect(loggerStub.firstCall.args).to.deep.equal(['Removed 1023 missing folders'])
+  })
+  it('should log zero when no folders are removed', async () => {
+    knexInstanceStub.delete.resolves(0)
+    await Functions.SyncRemovedFolders(loggerFake, knexFnFake)
+    expect(loggerStub.callCount).to.equal(1)
+    expect(loggerStub.firstCall.args).to.deep.equal(['Removed 0 missing folders'])
   })
   it('should construct inner query to detect removed folders', async () => {
     await Functions.SyncRemovedFolders(loggerFake, knexFnFake)

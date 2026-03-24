@@ -71,7 +71,7 @@ describe('routes/images export getRouter()', () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(CacheStorage.kioskCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
   })
-  it('should create new scaledk mode image cache', async () => {
+  it('should create new scaled mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(CacheStorage.scaledCache).to.not.equal(defaultScaledCache)
   })

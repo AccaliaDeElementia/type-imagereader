@@ -18,7 +18,7 @@ describe('utils/syncfolders function Chunk()', () => {
         ['f', 'g'],
       ],
     ],
-    ['it shhould handle empty input', [], 100, []],
+    ['it should handle empty input', [], 100, []],
   ]
   tests.forEach(([title, value, spread, expected]) => {
     it(title, () => {

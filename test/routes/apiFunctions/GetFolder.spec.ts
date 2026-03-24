@@ -22,25 +22,52 @@ describe('routes/apiFunctions function GetFolder', () => {
     knexStub = Sinon.stub().returns(knexInstance)
     knexFake = StubToKnex(knexStub)
   })
-  it('should select from folders table', async () => {
+  it('should select from folders table once', async () => {
     await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexStub.callCount).to.equal(1)
+  })
+  it('should select from folders table with expected args', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexStub.firstCall.args).to.deep.equal(['folders'])
   })
-  it('should select expected columns', async () => {
+  it('should select expected columns once', async () => {
     await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.callCount).to.equal(1)
+  })
+  it('should select exactly five columns', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.firstCall.args).to.have.lengthOf(5)
+  })
+  it('should select path column', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.firstCall.args).to.include('path')
+  })
+  it('should select folder column', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.firstCall.args).to.include('folder')
+  })
+  it('should select sortKey column', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.firstCall.args).to.include('sortKey')
+  })
+  it('should select current column', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.firstCall.args).to.include('current')
+  })
+  it('should select firstPicture column', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.firstCall.args).to.include('firstPicture')
   })
-  it('should filter to only one result', async () => {
+  it('should limit to only one result once', async () => {
     await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.limit.callCount).to.equal(1)
+  })
+  it('should limit to only one result with one argument', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.limit.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should limit to only one result', async () => {
+    await Functions.GetFolder(knexFake, '/foo/bar')
     expect(knexInstance.limit.firstCall.args[0]).to.equal(1)
   })
   it('should return null when db returns no results', async () => {

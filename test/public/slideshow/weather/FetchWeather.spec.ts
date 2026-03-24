@@ -34,19 +34,35 @@ describe('public/slideshow/weather FetchWeather()', () => {
     expect(await Functions.FetchWeather('foo!')).to.equal(data)
   })
 
-  it('should return fetch data at provided uri', async () => {
+  it('should call fetch once for provided uri', async () => {
     const target = new URL('https://localhost:8192/foo')
     await Functions.FetchWeather(target)
     expect(fetchStub.callCount).to.equal(1)
+  })
+  it('should call fetch with one argument for provided uri', async () => {
+    const target = new URL('https://localhost:8192/foo')
+    await Functions.FetchWeather(target)
     expect(fetchStub.firstCall.args).to.have.length(1)
+  })
+  it('should call fetch with the provided uri', async () => {
+    const target = new URL('https://localhost:8192/foo')
+    await Functions.FetchWeather(target)
     expect(fetchStub.firstCall.args[0]).to.equal(target)
   })
 
-  it('should return fetch data at provided string', async () => {
+  it('should call fetch once for provided string', async () => {
     const target = 'https://localhost:8192/foo'
     await Functions.FetchWeather(target)
     expect(fetchStub.callCount).to.equal(1)
+  })
+  it('should call fetch with one argument for provided string', async () => {
+    const target = 'https://localhost:8192/foo'
+    await Functions.FetchWeather(target)
     expect(fetchStub.firstCall.args).to.have.length(1)
+  })
+  it('should call fetch with the provided string', async () => {
+    const target = 'https://localhost:8192/foo'
+    await Functions.FetchWeather(target)
     expect(fetchStub.firstCall.args[0]).to.equal(target)
   })
 

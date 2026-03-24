@@ -147,12 +147,16 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     expect(bookmarksRemoveSpy.calledWith('/path/to/foo/folder/foo')).to.equal(true)
   })
   it('should stop propagation of event after handling button click', async () => {
-    await ClickRemoveAndWait({
-      name: '',
-      path: '/path/to/foo/folder/foo',
-      folder: 'bar',
+    const result = Bookmarks.BuildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
+    assert(result !== null)
+    let stopPropagationCalled = false
+    const evt = new dom.window.MouseEvent('click')
+    Sinon.stub(evt, 'stopPropagation').callsFake(() => {
+      stopPropagationCalled = true
     })
-    expect(bookmarksRemoveSpy.calledWith('/path/to/foo/folder/foo')).to.equal(true)
+    result.querySelector('button')?.dispatchEvent(evt)
+    await Promise.resolve()
+    expect(stopPropagationCalled).to.equal(true)
   })
   const ClickBookmarkAndWait = async (data: Bookmark): Promise<HTMLElement> => {
     const result = Bookmarks.BuildBookmark(data)
@@ -239,7 +243,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     })
   })
 
-  it('should publish Navigate:Load when PostJSON resolves', async () => {
+  it('should not publish Navigate:Load when PostJSON rejects', async () => {
     postJSONSpy.rejects('FOO')
     await ClickBookmarkAndWait({
       name: '',

@@ -103,6 +103,14 @@ describe('public/slideshow/weather ShowData()', () => {
     expect(base?.style.getPropertyValue('display')).to.equal('none')
   })
 
+  it('should not clear existing element content for empty string input', () => {
+    const base = dom.window.document.querySelector<HTMLElement>('.weather')
+    const element = base?.querySelector<HTMLElement>('.desctext')
+    if (element !== null && element !== undefined) element.innerHTML = 'existing content'
+    Functions.ShowData(base, element, '')
+    expect(element?.innerHTML).to.equal('existing content')
+  })
+
   it('should set display:flex style with stringy input', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     base?.style.setProperty('display', 'Foo!')

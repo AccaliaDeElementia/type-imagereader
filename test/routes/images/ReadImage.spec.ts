@@ -53,6 +53,38 @@ describe('routes/images function ReadImage()', () => {
       'Requested Path Not Found!',
       Promise.reject(new Error('FOO NOT FOUND')),
     ],
+    [
+      'dotfile with no extension',
+      '/foo/.hidden',
+      'E_NOT_IMAGE',
+      StatusCodes.BAD_REQUEST,
+      'Requested Path is Not An Image!',
+      Promise.resolve(),
+    ],
+    [
+      'dotfile with non-image extension',
+      '/foo/.hidden.exe',
+      'E_NOT_IMAGE',
+      StatusCodes.BAD_REQUEST,
+      'Requested Path is Not An Image!',
+      Promise.resolve(),
+    ],
+    [
+      'path with leading double slash',
+      '//foo/bar.jpg',
+      'E_NO_TRAVERSE',
+      StatusCodes.FORBIDDEN,
+      'Directory Traversal is not Allowed!',
+      Promise.resolve(),
+    ],
+    [
+      'path with mid-path double slash',
+      '/foo//bar.jpg',
+      'E_NO_TRAVERSE',
+      StatusCodes.FORBIDDEN,
+      'Directory Traversal is not Allowed!',
+      Promise.resolve(),
+    ],
   ]
   rejectors.forEach(([title, path, errorCode, statusCode, message, readFileResult]) => {
     it(`should reject ${title} with error ImageData`, async () => {
@@ -62,10 +94,14 @@ describe('routes/images function ReadImage()', () => {
       const result = await Functions.ReadImage(path)
       expect(result).to.equal(img)
     })
-    it(`should reject ${title} with using ImageData.fromError`, async () => {
+    it(`should call ImageData.fromError once for ${title}`, async () => {
       readFileStub.returns(readFileResult)
       await Functions.ReadImage(path)
       expect(fromErrorStub.callCount).to.equal(1)
+    })
+    it(`should call ImageData.fromError with 4 arguments for ${title}`, async () => {
+      readFileStub.returns(readFileResult)
+      await Functions.ReadImage(path)
       expect(fromErrorStub.firstCall.args).to.have.lengthOf(4)
     })
     it(`should reject ${title} with with expected error code`, async () => {
@@ -151,5 +187,11 @@ describe('routes/images function ReadImage()', () => {
       const result = await Functions.ReadImage(`/foo/bar/image.${ext}`)
       expect(result).to.equal(img)
     })
+  })
+  it('should allow dotfile with valid image extension', async () => {
+    const img = { img: Math.random() }
+    fromImageStub.returns(img)
+    const result = await Functions.ReadImage('/foo/.hidden.jpg')
+    expect(result).to.equal(img)
   })
 })

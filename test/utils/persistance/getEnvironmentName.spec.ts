@@ -15,15 +15,15 @@ describe('utils/persistance function getEnvironmentName()', () => {
       process.env.DB_CLIENT = envValue
     }
   })
-  it('should default to development when DB_CLIENT environemnt variable unset', () => {
+  it('should default to development when DB_CLIENT environment variable unset', () => {
     delete process.env.DB_CLIENT
     expect(Functions.getEnvironmentName()).to.equal('development')
   })
-  it('should default to development when DB_CLIENT environemnt variable empty', () => {
+  it('should default to development when DB_CLIENT environment variable empty', () => {
     process.env.DB_CLIENT = ''
     expect(Functions.getEnvironmentName()).to.equal('development')
   })
-  it('should retrieve env variable value when DB_CLIENT environemnt variable set', () => {
+  it('should retrieve env variable value when DB_CLIENT environment variable set', () => {
     process.env.DB_CLIENT = 'i am legendary foxxo'
     expect(Functions.getEnvironmentName()).to.equal('i am legendary foxxo')
   })

@@ -15,7 +15,6 @@ import { ReqParamToString } from '../utils/helpers'
 
 const CACHE_SIZE = 25
 const ONE_MONTH = 2_592_000_000
-const ZERO = 0
 const PREVIEW_WIDTH = 240
 const PREVIEW_HEIGHT = 320
 const KIOSK_WIDTH = 1280
@@ -225,9 +224,8 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   )
 
   const parseNumberParam = (val: string): number | undefined => {
-    const n = Number.parseInt(val, 10)
-    if (!Number.isInteger(n) || `${n}` !== val || n <= ZERO) return undefined
-    return n
+    if (!/^[1-9]\d*$/v.test(val)) return undefined
+    return Number.parseInt(val, 10)
   }
 
   router.get(

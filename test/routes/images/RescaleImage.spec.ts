@@ -5,7 +5,7 @@ import { Imports, Functions, ImageData } from '../../../routes/images'
 import Sharp from 'sharp'
 import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
-describe('routes/images function ReadImage()', () => {
+describe('routes/images function RescaleImage()', () => {
   let sharpInstanceStub = {
     rotate: Sinon.stub().returnsThis(),
     resize: Sinon.stub().returnsThis(),
@@ -99,20 +99,70 @@ describe('routes/images function ReadImage()', () => {
     await Functions.RescaleImage(img, 1280, 720)
     expect(img.data).to.equal(data)
   })
-  it('ignore error when sharp throws', async () => {
+  it('should not set error code when sharp throws', async () => {
     const img = new ImageData()
     sharpStub.throws(new Error('OOPS'))
     await Functions.RescaleImage(img, 1280, 720)
     expect(img.code).to.equal(null)
+  })
+  it('should not set error status code when sharp throws', async () => {
+    const img = new ImageData()
+    sharpStub.throws(new Error('OOPS'))
+    await Functions.RescaleImage(img, 1280, 720)
     assert.isNaN(img.statusCode)
+  })
+  it('should not set error message when sharp throws', async () => {
+    const img = new ImageData()
+    sharpStub.throws(new Error('OOPS'))
+    await Functions.RescaleImage(img, 1280, 720)
     expect(img.message).to.equal(null)
   })
-  it('should ignore sharp rejection', async () => {
+  it('should not set error code when sharp rejects', async () => {
     const img = new ImageData()
     sharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
     await Functions.RescaleImage(img, 1280, 720)
     expect(img.code).to.equal(null)
+  })
+  it('should not set error status code when sharp rejects', async () => {
+    const img = new ImageData()
+    sharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
+    await Functions.RescaleImage(img, 1280, 720)
     assert.isNaN(img.statusCode)
+  })
+  it('should not set error message when sharp rejects', async () => {
+    const img = new ImageData()
+    sharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
+    await Functions.RescaleImage(img, 1280, 720)
     expect(img.message).to.equal(null)
+  })
+  it('should not update extension when sharp throws', async () => {
+    const img = new ImageData()
+    img.extension = 'jpg'
+    sharpStub.throws(new Error('OOPS'))
+    await Functions.RescaleImage(img, 1280, 720)
+    expect(img.extension).to.equal('jpg')
+  })
+  it('should not update extension when sharp rejects', async () => {
+    const img = new ImageData()
+    img.extension = 'jpg'
+    sharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
+    await Functions.RescaleImage(img, 1280, 720)
+    expect(img.extension).to.equal('jpg')
+  })
+  it('should not update data when sharp throws', async () => {
+    const img = new ImageData()
+    const originalData = Buffer.from('original')
+    img.data = originalData
+    sharpStub.throws(new Error('OOPS'))
+    await Functions.RescaleImage(img, 1280, 720)
+    expect(img.data).to.equal(originalData)
+  })
+  it('should not update data when sharp rejects', async () => {
+    const img = new ImageData()
+    const originalData = Buffer.from('original')
+    img.data = originalData
+    sharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
+    await Functions.RescaleImage(img, 1280, 720)
+    expect(img.data).to.equal(originalData)
   })
 })

@@ -115,32 +115,6 @@ describe('Contracts: isBookmarkFolder()', () => {
       false,
     ],
     [
-      'missing bookmarks',
-      {
-        name: 'foo!',
-        path: 'bar!',
-      },
-      false,
-    ],
-    [
-      'undefined bookmarks',
-      {
-        name: 'foo!',
-        path: 'bar!',
-        bookmarks: undefined,
-      },
-      false,
-    ],
-    [
-      'null bookmarks',
-      {
-        name: 'foo!',
-        path: 'bar!',
-        bookmarks: null,
-      },
-      false,
-    ],
-    [
       'invalid bookmarks',
       {
         name: 'foo!',

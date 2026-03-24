@@ -81,11 +81,11 @@ describe('routes/slideshow function getRouter', () => {
     ['send launchId', '/launchId', () => expect(getArgs(responseStub.json)[0]).to.deep.equal({ launchId: 3141592 })],
     ['call RootRoute', '/', () => expect(rootRouteStub.callCount).to.equal(1)],
     ['call RootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
-    ['call RootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
-    ['call RootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
+    ['call RootRoute with request', '/', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
+    ['call RootRoute with response', '/', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
     ['call RootRoute with knex', '/*path', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
-    ['call RootRoute with knex', '/*path', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
-    ['call RootRoute with knex', '/*path', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
+    ['call RootRoute with request', '/*path', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
+    ['call RootRoute with response', '/*path', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
   ]
   routeTests.forEach(([title, path, validationFn]) => {
     it(`should ${title} for ${path}`, async () => {

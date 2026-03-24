@@ -8,7 +8,7 @@ import { getRouter, Imports } from '../../../routes/index'
 import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
 
-describe('routes/index route /', () => {
+describe('routes/index route /show', () => {
   let routeFn: (_: Request, __: Response) => void = Sinon.stub()
   let routeAltFn: (_: Request, __: Response) => void = Sinon.stub()
   let requestStub = { params: { path: undefined as string[] | string | undefined } }

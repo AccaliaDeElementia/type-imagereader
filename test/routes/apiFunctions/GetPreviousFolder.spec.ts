@@ -52,7 +52,7 @@ describe('routes/apiFunctions function GetPreviousFolder', () => {
   it('should resolve as result of actual query', async () => {
     const data = { data: Math.random() }
     getDirectionFolderStub.resolves(data)
-    const result = await Functions.GetNextFolder(knexFake, '/foo', 'foo')
+    const result = await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
     expect(result).to.equal(data)
   })
 })

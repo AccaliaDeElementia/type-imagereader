@@ -36,19 +36,19 @@ describe('utils/syncfolders function SyncAllFolders()', () => {
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
       .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
-      .and.satisfy((msg: string) => msg.endsWith(':syncFolders'), 'Logger should be suffixed with `syncPictures`')
+      .and.satisfy((msg: string) => msg.endsWith(':syncFolders'), 'Logger should be suffixed with `syncFolders`')
   })
-  it('should call SyncNewPictures', async () => {
+  it('should call SyncNewFolders', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(syncNewFoldersStub.callCount).to.equal(1)
     expect(syncNewFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncRemovedPictures', async () => {
+  it('should call SyncRemovedFolders', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(syncRemovedFoldersStub.callCount).to.equal(1)
     expect(syncRemovedFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncRemovedBookmarks', async () => {
+  it('should call SyncMissingCoverImages', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(syncMissingCoverImagesStub.callCount).to.equal(1)
     expect(syncMissingCoverImagesStub.firstCall.args).to.deep.equal([loggerStub, knexFake])

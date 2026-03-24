@@ -49,6 +49,6 @@ export default [
     },
   },
   {
-    ignores: ['coverage/**', 'eslint.config.mjs', 'scripts/**', 'dist/scripts/app.js', 'dist/scripts/slideshow.js'],
+    ignores: ['coverage/**', 'eslint.config.mjs', 'dist/**'],
   },
 ]

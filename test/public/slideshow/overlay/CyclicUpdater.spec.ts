@@ -101,7 +101,7 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     await Updater.updateFn()
     expect(fakeGetOpacity?.firstCall.args).to.deep.equal([value])
   })
-  it('should not set Opacity on the overlay element', async () => {
+  it('should set opacity on the overlay element', async () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('.overlay')
     overlay?.style.setProperty('opacity', '1')
     fakeGetOpacity?.returns(0.5)

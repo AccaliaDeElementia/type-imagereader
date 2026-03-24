@@ -45,7 +45,7 @@ describe('routes/api function getRouter()', () => {
   })
   it('should attach handler for get `/healthcheck`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
-    expect(routerStub.get.calledWith('/')).to.equal(true)
+    expect(routerStub.get.calledWith('/healthcheck')).to.equal(true)
   })
   it('should attach handler for get `/listing/*path`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)

@@ -28,12 +28,19 @@ describe('public/app/wakelock function TakeLock()', () => {
   after(() => {
     Sinon.restore()
   })
-  it('should not reset lock when sentinel is null', async () => {
+  it('should reset timeout when sentinel is null and timeout has expired', async () => {
     WakeLock.sentinel = null
     WakeLock.timeout = 1154
     clock?.tick(9001)
     await WakeLock.ReleaseLock()
-    expect(WakeLock.timeout).to.equal(1154)
+    expect(WakeLock.timeout).to.equal(0)
+  })
+  it('should not reset timeout when sentinel is null and timeout has not expired', async () => {
+    WakeLock.sentinel = null
+    WakeLock.timeout = 9002
+    clock?.tick(9001)
+    await WakeLock.ReleaseLock()
+    expect(WakeLock.timeout).to.equal(9002)
   })
   it('should not release lock when timeout is not expired', async () => {
     WakeLock.sentinel = sentinel
@@ -98,5 +105,28 @@ describe('public/app/wakelock function TakeLock()', () => {
     sentinelRelease.rejects('FOOL!')
     await WakeLock.ReleaseLock()
     expect(WakeLock.sentinel).to.equal(null)
+  })
+  it('should reset timeout when timeout equals current time with no sentinel', async () => {
+    WakeLock.sentinel = null
+    WakeLock.timeout = 100
+    clock?.tick(100)
+    await WakeLock.ReleaseLock()
+    expect(WakeLock.timeout).to.equal(0)
+  })
+  it('should release sentinel when timeout equals current time', async () => {
+    WakeLock.sentinel = sentinel
+    sentinel.released = false
+    WakeLock.timeout = 100
+    clock?.tick(100)
+    await WakeLock.ReleaseLock()
+    expect(WakeLock.sentinel).to.equal(null)
+  })
+  it('should call sentinel release when timeout equals current time', async () => {
+    WakeLock.sentinel = sentinel
+    sentinel.released = false
+    WakeLock.timeout = 100
+    clock?.tick(100)
+    await WakeLock.ReleaseLock()
+    expect(sentinelRelease.callCount).to.equal(1)
   })
 })

@@ -127,6 +127,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     ['leading zeros width', { path: '', width: '0100', height: '10' }, eWidthBad],
     ['decimal width', { path: '', width: '3.14159', height: '10' }, eWidthBad],
     ['negative width', { path: '', width: '-100', height: '10' }, eWidthBad],
+    ['explicit positive width', { path: '', width: '+100', height: '10' }, eWidthBad],
     ['zero width', { path: '', width: '0', height: '10' }, eWidthBad],
     ['missing height', { path: '', width: '10' }, eHeightMissing],
     ['null height', { path: '', height: null, width: '10' }, eHeightBad],
@@ -137,6 +138,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     ['decimal height', { path: '', height: '3.14159', width: '10' }, eHeightBad],
     ['zero height', { path: '', height: '0', width: '10' }, eHeightBad],
     ['negative height', { path: '', height: '-100', width: '10' }, eHeightBad],
+    ['explicit positive height', { path: '', height: '+100', width: '10' }, eHeightBad],
   ]
   const validationTests: Array<[string, (msg: string) => void]> = [
     ['not fetch image', () => expect(fetchImageStub.callCount).to.equal(0)],

@@ -40,9 +40,10 @@ export const WakeLock = {
     }
   },
   ReleaseLock: async (): Promise<void> => {
-    const sentinel = WakeLock.sentinel
-    if (sentinel === null || WakeLock.timeout > Date.now()) return
+    if (WakeLock.timeout > Date.now()) return
     WakeLock.timeout = RELEASED_TIMEOUT
+    const sentinel = WakeLock.sentinel
+    if (sentinel === null) return
     try {
       if (!sentinel.released) {
         await sentinel.release()

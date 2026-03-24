@@ -102,7 +102,7 @@ describe('Contracts: isBookmark()', () => {
       false,
     ],
     [
-      'object patj',
+      'object path',
       {
         name: 'foo!',
         path: {},

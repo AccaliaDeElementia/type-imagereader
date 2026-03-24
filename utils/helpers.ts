@@ -58,5 +58,6 @@ export function IndexToText(index: number): string {
   return (index + INDEX_OFFSET).toLocaleString()
 }
 export function IndexPercentToText(index: number, total: number): string {
+  if (total === ZERO_COUNT) return ZERO_COUNT.toLocaleString()
   return (Math.floor((PERCENT_MULT * (index + INDEX_OFFSET)) / total) / PERCENT_DIV).toLocaleString()
 }

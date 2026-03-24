@@ -33,7 +33,7 @@ describe('public/slideshow/overlay CalculateOffset()', () => {
     ['2025-03-18T21:00:00.000Z', 900000],
   ]
   testCases.forEach(([timeNow, expected]) => {
-    it(`should calcualte correct offset for ${timeNow}`, () => {
+    it(`should calculate correct offset for ${timeNow}`, () => {
       clock = Sinon.useFakeTimers({
         now: new Date(timeNow).getTime(),
       })

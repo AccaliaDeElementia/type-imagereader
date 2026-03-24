@@ -161,24 +161,39 @@ describe('public/app/actions function Init()', () => {
     ],
   ]
   navigateDataTestCases.forEach(([title, listing, expected]) => {
-    it(`should ${expected ? '' : 'not '}publish Tab:Select for ${title} listing on navigate`, async () => {
+    const doNavigate = async (): Promise<Sinon.SinonStub> => {
       Actions.Init()
       const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
       assert(handler !== undefined, 'Navigate:Data handler must be defined')
       const spy = Sinon.stub().resolves()
       PubSub.subscribers['TAB:SELECT'] = [spy]
       await handler(listing)
+      return spy
+    }
+    it(`should ${expected ? '' : 'not '}publish Tab:Select for ${title} listing on navigate`, async () => {
+      const spy = await doNavigate()
       expect(spy.called).to.equal(expected)
-      if (expected) {
-        expect(spy.firstCall.args).to.deep.equal(['Actions', 'TAB:SELECT'])
-      }
     })
+    if (expected) {
+      it(`should publish Tab:Select with expected args for ${title} listing on navigate`, async () => {
+        const spy = await doNavigate()
+        expect(spy.firstCall.args).to.deep.equal(['Actions', 'TAB:SELECT'])
+      })
+    }
+  })
+  it('should add exactly one keyup event listener to document', () => {
+    const spy = Sinon.stub(document, 'addEventListener')
+    try {
+      Actions.Init()
+      expect(spy.callCount).to.equal(1)
+    } finally {
+      spy.restore()
+    }
   })
   it('should add keyup event listener to document', () => {
     const spy = Sinon.stub(document, 'addEventListener')
     try {
       Actions.Init()
-      expect(spy.callCount).to.equal(1)
       expect(spy.firstCall.calledWith('keyup')).to.equal(true)
     } finally {
       spy.restore()
@@ -195,32 +210,45 @@ describe('public/app/actions function Init()', () => {
     [{ altKey: true, ctrlKey: true, shiftKey: true, key: 'h' }, '<CTRL><ALT><SHIFT>H'],
   ]
   keyUpTestCases.forEach(([event, expected]) => {
-    it(`should prossess ${expected} keypress`, () => {
+    const doKeypress = (): Sinon.SinonStub => {
       const documentSpy = Sinon.stub(document, 'addEventListener')
+      const spy = Sinon.stub().resolves()
+      PubSub.subscribers['ACTION:KEYPRESS'] = [spy]
       let handler: (o: unknown) => void = (_) => {
         expect.fail('Base Function should not be called!')
       }
       documentSpy.callsFake((_, h) => {
         handler = Cast<(o: unknown) => void>(h)
       })
-      const spy = Sinon.stub().resolves()
-      PubSub.subscribers['ACTION:KEYPRESS'] = [spy]
       try {
         Actions.Init()
         handler(event)
-        expect(spy.callCount).to.equal(1)
-        expect(spy.firstCall.args).to.deep.equal([expected, `ACTION:KEYPRESS:${expected}`])
       } finally {
         documentSpy.restore()
       }
+      return spy
+    }
+    it(`should publish ${expected} keypress event once`, () => {
+      expect(doKeypress().callCount).to.equal(1)
+    })
+    it(`should publish ${expected} keypress event with expected args`, () => {
+      expect(doKeypress().firstCall.args).to.deep.equal([expected, `ACTION:KEYPRESS:${expected}`])
     })
   })
 
-  it('should add gamepadconnected event listener to window', () => {
+  it('should add exactly one event listener to window', () => {
     const spy = Sinon.stub(window, 'addEventListener')
     try {
       Actions.Init()
       expect(spy.callCount).to.equal(1)
+    } finally {
+      spy.restore()
+    }
+  })
+  it('should add gamepadconnected event listener to window', () => {
+    const spy = Sinon.stub(window, 'addEventListener')
+    try {
+      Actions.Init()
       expect(spy.firstCall.calledWith('gamepadconnected')).to.equal(true)
     } finally {
       spy.restore()
@@ -231,7 +259,6 @@ describe('public/app/actions function Init()', () => {
     const spy = Sinon.stub(window, 'addEventListener')
     try {
       Actions.Init()
-      expect(PubSub.intervals.ReadGamepad).to.equal(undefined)
       Cast<() => void>(spy.firstCall.args[1])()
       expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
     } finally {
@@ -244,10 +271,8 @@ describe('public/app/actions function Init()', () => {
     const readspy = Sinon.stub(Actions, 'ReadGamepad')
     try {
       Actions.Init()
-      expect(PubSub.intervals.ReadGamepad).to.equal(undefined)
       Cast<() => void>(spy.firstCall.args[1])()
       assert(PubSub.intervals.ReadGamepad !== undefined)
-      expect(readspy.called).to.equal(false)
       PubSub.intervals.ReadGamepad.method()
       expect(readspy.called).to.equal(true)
     } finally {

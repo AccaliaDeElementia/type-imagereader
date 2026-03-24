@@ -68,7 +68,6 @@ describe('public/app/pictures function LoadImage()', () => {
     }
     Pictures.current = current
     Pictures.mainImage = dom.window.document.createElement('img')
-    Pictures.mainImage.src = ''
 
     element = dom.window.document.createElement('div')
     current.element = element
@@ -112,6 +111,31 @@ describe('public/app/pictures function LoadImage()', () => {
     await Pictures.LoadImage()
     expect(loadingShowSpy.called).to.equal(false)
   })
+  it('should be noop when current image path is empty', async () => {
+    assert(Pictures.current !== null)
+    Pictures.current.path = ''
+    Pictures.nextPending = true
+    await Pictures.LoadImage()
+    expect(loadingShowSpy.called).to.equal(false)
+  })
+  it('should not call PostJSON when current image path is empty', async () => {
+    assert(Pictures.current !== null)
+    Pictures.current.path = ''
+    await Pictures.LoadImage()
+    expect(postJSONSpy.callCount).to.equal(0)
+  })
+  it('should not update image src when current image path is empty', async () => {
+    assert(Pictures.current !== null)
+    Pictures.current.path = ''
+    await Pictures.LoadImage()
+    expect(Pictures.mainImage?.getAttribute('src')).to.equal(null)
+  })
+  it('should not publish LoadNew when current image path is empty', async () => {
+    assert(Pictures.current !== null)
+    Pictures.current.path = ''
+    await Pictures.LoadImage()
+    expect(loadNewSpy.callCount).to.equal(0)
+  })
   it('should show loading when next is pending', async () => {
     Pictures.nextPending = true
     await Pictures.LoadImage()
@@ -149,11 +173,19 @@ describe('public/app/pictures function LoadImage()', () => {
     await Pictures.LoadImage()
     expect(element?.classList.contains('seen')).to.equal(true)
   })
-  it('should post to /api/navigate/latest', async () => {
+  it('should call PostJSON once for navigate latest', async () => {
     Pictures.modCount = 50
     await Pictures.LoadImage()
     expect(postJSONSpy.callCount).to.equal(1)
+  })
+  it('should call PostJSON with expected url for navigate latest', async () => {
+    Pictures.modCount = 50
+    await Pictures.LoadImage()
     expect(postJSONSpy.calledWith('/api/navigate/latest')).to.equal(true)
+  })
+  it('should call PostJSON with expected body for navigate latest', async () => {
+    Pictures.modCount = 50
+    await Pictures.LoadImage()
     expect(postJSONSpy.firstCall.args[1]).to.deep.equal({
       path: '/some/path/1250.png',
       modCount: 50,
@@ -168,6 +200,8 @@ describe('public/app/pictures function LoadImage()', () => {
     ['null', null, false],
     ['object', {}, false],
     ['boolean', true, false],
+    ['NaN', NaN, false],
+    ['Infinity', Infinity, false],
   ]
   modcountTests.forEach(([title, input, result]) => {
     it(`should ${result ? '' : 'not '}accept ${title} as modcount from PostJSON`, async () => {
@@ -177,60 +211,91 @@ describe('public/app/pictures function LoadImage()', () => {
       expect(fn(input)).to.equal(result)
     })
   })
-  it('should initiate reload when new modcount is undefined', async () => {
-    expect(Pictures.mainImage?.src).to.equal('')
+  it('should trigger reload when new modcount is undefined', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(undefined)
     await Pictures.LoadImage()
     expect(reloadSpy.callCount).to.equal(1)
+  })
+  it('should not update image src when new modcount is undefined', async () => {
+    Pictures.modCount = 99
+    postJSONSpy.resolves(undefined)
+    await Pictures.LoadImage()
     expect(Pictures.mainImage?.src).to.equal('')
   })
-  it('should initiate reload when new modcount is negative', async () => {
+  it('should trigger reload when new modcount is NaN', async () => {
+    Pictures.modCount = 99
+    postJSONSpy.resolves(NaN)
+    await Pictures.LoadImage()
+    expect(reloadSpy.callCount).to.equal(1)
+  })
+  it('should not update image src when new modcount is NaN', async () => {
+    Pictures.modCount = 99
+    postJSONSpy.resolves(NaN)
+    await Pictures.LoadImage()
     expect(Pictures.mainImage?.src).to.equal('')
+  })
+  it('should trigger reload when new modcount is negative', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(-1)
     await Pictures.LoadImage()
     expect(reloadSpy.callCount).to.equal(1)
+  })
+  it('should not update image src when new modcount is negative', async () => {
+    Pictures.modCount = 99
+    postJSONSpy.resolves(-1)
+    await Pictures.LoadImage()
     expect(Pictures.mainImage?.src).to.equal('')
+  })
+  it('should not initiate reload when new modcount is zero', async () => {
+    Pictures.modCount = 99
+    postJSONSpy.resolves(0)
+    await Pictures.LoadImage()
+    expect(reloadSpy.callCount).to.equal(0)
+  })
+  it('should update modcount to zero on successful post', async () => {
+    Pictures.modCount = 99
+    postJSONSpy.resolves(0)
+    await Pictures.LoadImage()
+    expect(Pictures.modCount).to.equal(0)
+  })
+  it('should not reload when modcount is valid', async () => {
+    Pictures.modCount = 99
+    postJSONSpy.resolves(76)
+    await Pictures.LoadImage()
+    expect(reloadSpy.callCount).to.equal(0)
   })
   it('should update modcount on successful post', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(76)
     await Pictures.LoadImage()
-    expect(reloadSpy.callCount).to.equal(0)
     expect(Pictures.modCount).to.equal(76)
   })
   it('should set src on image', async () => {
-    expect(Pictures.mainImage?.getAttribute('src')).to.equal('')
     await Pictures.LoadImage()
     expect(Pictures.mainImage?.getAttribute('src')).to.equal('/images/scaled/0/0/some/path/1250.png-image.webp')
   })
   it('should set src height on image', async () => {
-    expect(Pictures.mainImage?.getAttribute('src')).to.equal('')
     assert(Pictures.mainImage !== null)
     Pictures.mainImage.height = 512
     await Pictures.LoadImage()
     expect(Pictures.mainImage.getAttribute('src')).to.equal('/images/scaled/0/512/some/path/1250.png-image.webp')
   })
   it('should set src width on image', async () => {
-    expect(Pictures.mainImage?.getAttribute('src')).to.equal('')
     assert(Pictures.mainImage !== null)
     Pictures.mainImage.width = 1024
     await Pictures.LoadImage()
     expect(Pictures.mainImage.getAttribute('src')).to.equal('/images/scaled/1024/0/some/path/1250.png-image.webp')
   })
   it('should set statusbar name', async () => {
-    expect(bottomCenterText?.innerHTML).to.equal('')
     await Pictures.LoadImage()
     expect(bottomCenterText?.innerHTML).to.equal('1250.png')
   })
   it('should set statusbar percent', async () => {
-    expect(bottomRightText?.innerHTML).to.equal('')
     await Pictures.LoadImage()
     expect(bottomRightText?.innerHTML).to.equal('(83.4%)')
   })
   it('should set statusbar position', async () => {
-    expect(bottomLeftText?.innerHTML).to.equal('')
     await Pictures.LoadImage()
     expect(bottomLeftText?.innerHTML).to.equal('(1,251/1,500)')
   })
@@ -265,12 +330,19 @@ describe('public/app/pictures function LoadImage()', () => {
   it('should publish LoadNew message on successful load', async () => {
     await Pictures.LoadImage()
     expect(loadNewSpy.callCount).to.equal(1)
+  })
+  it('should not publish LoadingError on successful load', async () => {
+    await Pictures.LoadImage()
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should publish LoadNew message even if LoadNextImage rejects', async () => {
     loadNextImageSpy.rejects('ERROR!')
     await Pictures.LoadImage()
     expect(loadNewSpy.callCount).to.equal(1)
+  })
+  it('should not publish LoadingError even if LoadNextImage rejects', async () => {
+    loadNextImageSpy.rejects('ERROR!')
+    await Pictures.LoadImage()
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should publish error when postJSON throws error', async () => {

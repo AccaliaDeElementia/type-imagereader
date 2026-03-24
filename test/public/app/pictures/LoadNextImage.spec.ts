@@ -55,18 +55,34 @@ describe('public/app/pictures function LoadNextImage()', () => {
   after(() => {
     Sinon.restore()
   })
-  it('should load next image when ShowUnreadOnly is unset', async () => {
+  it('should call GetPicture once when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)
     await Pictures.LoadNextImage()
     expect(getPictureStub.callCount).to.equal(1)
+  })
+  it('should call GetPicture with one argument when ShowUnreadOnly is unset', async () => {
+    getShowUnreadOnlyStub.returns(false)
+    await Pictures.LoadNextImage()
     expect(getPictureStub.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should call GetPicture with Next navigation when ShowUnreadOnly is unset', async () => {
+    getShowUnreadOnlyStub.returns(false)
+    await Pictures.LoadNextImage()
     expect(getPictureStub.firstCall.args[0]).to.equal(NavigateTo.Next)
   })
-  it('should load next unread image when ShowUnreadOnly is set', async () => {
+  it('should call GetPicture once when ShowUnreadOnly is set', async () => {
     getShowUnreadOnlyStub.returns(true)
     await Pictures.LoadNextImage()
     expect(getPictureStub.callCount).to.equal(1)
+  })
+  it('should call GetPicture with one argument when ShowUnreadOnly is set', async () => {
+    getShowUnreadOnlyStub.returns(true)
+    await Pictures.LoadNextImage()
     expect(getPictureStub.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should call GetPicture with NextUnread navigation when ShowUnreadOnly is set', async () => {
+    getShowUnreadOnlyStub.returns(true)
+    await Pictures.LoadNextImage()
     expect(getPictureStub.firstCall.args[0]).to.equal(NavigateTo.NextUnread)
   })
   it('should set nextLoader', async () => {
@@ -88,18 +104,26 @@ describe('public/app/pictures function LoadNextImage()', () => {
     expect(Pictures.nextPending).to.equal(false)
     await promise
   })
-  it('should clear nextPending on fetch resolve', async () => {
+  it('should set nextPending during fetch resolve', async () => {
     fetchStub.resolves()
     const promise = Pictures.LoadNextImage()
     expect(Pictures.nextPending).to.equal(true)
     await promise
+  })
+  it('should clear nextPending on fetch resolve', async () => {
+    fetchStub.resolves()
+    await Pictures.LoadNextImage()
     expect(Pictures.nextPending).to.equal(false)
   })
-  it('should clear nextPending on fetch reject', async () => {
+  it('should set nextPending during fetch reject', async () => {
     fetchStub.rejects('BOO')
     const promise = Pictures.LoadNextImage()
     expect(Pictures.nextPending).to.equal(true)
     await promise
+  })
+  it('should clear nextPending on fetch reject', async () => {
+    fetchStub.rejects('BOO')
+    await Pictures.LoadNextImage()
     expect(Pictures.nextPending).to.equal(false)
   })
   it('should not fetch on no next image', async () => {
@@ -107,30 +131,46 @@ describe('public/app/pictures function LoadNextImage()', () => {
     await Pictures.LoadNextImage()
     expect(fetchStub.callCount).to.equal(0)
   })
-  it('should fetch expected url for next image', async () => {
+  it('should fetch once for next image', async () => {
     await Pictures.LoadNextImage()
     expect(fetchStub.callCount).to.equal(1)
+  })
+  it('should fetch with one argument for next image', async () => {
+    await Pictures.LoadNextImage()
     expect(fetchStub.firstCall.args).to.have.lengthOf(1)
-    expect(fetchStub.firstCall.args[0]).to.equal('/images/scaled/1024/768/foobar.png-image.webp')
   })
   it('should fetch expected url for next image', async () => {
     await Pictures.LoadNextImage()
-    expect(fetchStub.callCount).to.equal(1)
-    expect(fetchStub.firstCall.args).to.have.lengthOf(1)
     expect(fetchStub.firstCall.args[0]).to.equal('/images/scaled/1024/768/foobar.png-image.webp')
+  })
+  it('should fetch once with main image width set', async () => {
+    mainImage.width = 65535
+    await Pictures.LoadNextImage()
+    expect(fetchStub.callCount).to.equal(1)
+  })
+  it('should fetch with one argument with main image width set', async () => {
+    mainImage.width = 65535
+    await Pictures.LoadNextImage()
+    expect(fetchStub.firstCall.args).to.have.lengthOf(1)
   })
   it('should fetch expected url with main image width set', async () => {
     mainImage.width = 65535
     await Pictures.LoadNextImage()
-    expect(fetchStub.callCount).to.equal(1)
-    expect(fetchStub.firstCall.args).to.have.lengthOf(1)
     expect(fetchStub.firstCall.args[0]).to.contain('scaled/65535/768/')
+  })
+  it('should fetch once with main image height set', async () => {
+    mainImage.height = 65535
+    await Pictures.LoadNextImage()
+    expect(fetchStub.callCount).to.equal(1)
+  })
+  it('should fetch with one argument with main image height set', async () => {
+    mainImage.height = 65535
+    await Pictures.LoadNextImage()
+    expect(fetchStub.firstCall.args).to.have.lengthOf(1)
   })
   it('should fetch expected url with main image height set', async () => {
     mainImage.height = 65535
     await Pictures.LoadNextImage()
-    expect(fetchStub.callCount).to.equal(1)
-    expect(fetchStub.firstCall.args).to.have.lengthOf(1)
     expect(fetchStub.firstCall.args[0]).to.contain('scaled/1024/65535/')
   })
 })

@@ -65,7 +65,7 @@ describe('Server function ConfigureLoggingAndErrors', () => {
     Functions.ConfigureLoggingAndErrors(appFake)
     expect(helmetStub.callCount).to.equal(1)
   })
-  it('should register helmet logger for production mode', () => {
+  it('should app.use the helmet logger for production mode', () => {
     process.env.NODE_ENV = 'production'
     const logger = {}
     helmetStub.returns(logger)

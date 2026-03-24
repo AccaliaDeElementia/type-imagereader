@@ -58,4 +58,14 @@ describe('public/slideshow/weather SetAlmanac()', () => {
     Functions.SetAlmanac(weather)
     expect(GetAlmanac().sunset).to.equal(new Date(2024, 5, 12, 21, 0, 0, 0).getTime())
   })
+  it('should set sunrise to minimum time when sunrise is undefined', () => {
+    weather.sunrise = undefined
+    Functions.SetAlmanac(weather)
+    expect(GetAlmanac().sunrise).to.equal(new Date(2024, 5, 12, 6, 15, 0, 0).getTime())
+  })
+  it('should set sunset to maximum time when sunset is undefined', () => {
+    weather.sunset = undefined
+    Functions.SetAlmanac(weather)
+    expect(GetAlmanac().sunset).to.equal(new Date(2024, 5, 12, 21, 0, 0, 0).getTime())
+  })
 })

@@ -55,7 +55,7 @@ describe('public/app/loading subscriber "Loading:Show" and "Loading:Hide"', () =
       PubSub.Publish('Loading:Show')
     }).to.not.throw()
   })
-  it('should hide the loading overlay for "Loading:Hide"', () => {
+  it('should tolerate missing overlay for "Loading:Hide"', () => {
     Loading.overlay = null
     expect(() => {
       PubSub.Publish('Loading:Hide')

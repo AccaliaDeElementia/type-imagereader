@@ -49,7 +49,7 @@ describe('routes/slideshow function HandleSocket()', () => {
       Functions.HandleSocket(knexFake, serverFake, socketFake)
       assert.isFunction(getCallback(endpoint))
     })
-    it(`should forward call gor ${endpoint}`, () => {
+    it(`should forward call for ${endpoint}`, () => {
       Functions.HandleSocket(knexFake, serverFake, socketFake)
       const fn = Cast<() => void>(getCallback(endpoint))
       fn()

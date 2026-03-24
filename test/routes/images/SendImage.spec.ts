@@ -5,7 +5,7 @@ import { Functions, ImageData } from '../../../routes/images'
 import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
 import type { Response } from 'express'
-describe('routes/images function ReadAndRescaleImage()', () => {
+describe('routes/images function SendImage()', () => {
   let responseStub = {
     status: Sinon.stub().returnsThis(),
     json: Sinon.stub().returnsThis(),

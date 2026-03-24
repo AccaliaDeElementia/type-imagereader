@@ -18,7 +18,7 @@ html
       div.date
 `
 
-describe('public/slideshow/time FormatDate()', () => {
+describe('public/slideshow/time Updater()', () => {
   let fakeFormatTime: Sinon.SinonStub | undefined = undefined
   let fakeFormatDate: Sinon.SinonStub | undefined = undefined
   let fakeClocks: Sinon.SinonFakeTimers | undefined = undefined
@@ -72,7 +72,7 @@ describe('public/slideshow/time FormatDate()', () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
     expect(elem?.innerHTML).to.equal('I am time')
   })
-  it('should tolerate a missing target node', async () => {
+  it('should tolerate a missing .time target node', async () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
     elem?.remove()
     await Updater.updateFn()
@@ -98,7 +98,7 @@ describe('public/slideshow/time FormatDate()', () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
     expect(elem?.innerHTML).to.equal('I am date')
   })
-  it('should tolerate a missing target node', async () => {
+  it('should tolerate a missing .date target node', async () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
     elem?.remove()
     await Updater.updateFn()

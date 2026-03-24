@@ -42,7 +42,7 @@ describe('public/app/navigation function IsMenuActive()', () => {
     menuNode?.classList.remove('hidden')
     expect(Navigation.IsMenuActive()).to.equal(true)
   })
-  it('should return true for hidden menu', () => {
+  it('should return false for hidden menu', () => {
     menuNode?.classList.add('hidden')
     expect(Navigation.IsMenuActive()).to.equal(false)
   })

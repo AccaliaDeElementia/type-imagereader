@@ -39,7 +39,7 @@ describe('utils/syncfolders function SyncRemovedBookmarks()', () => {
     knexFnStub = Sinon.stub().returns(knexInstanceStub)
     knexFnFake = StubToKnex(knexFnStub)
   })
-  it('should remove records from pictures table', async () => {
+  it('should remove records from bookmarks table', async () => {
     await Functions.SyncRemovedBookmarks(loggerFake, knexFnFake)
     expect(knexFnStub.callCount).to.equal(1)
     expect(knexFnStub.calledWith('bookmarks')).to.equal(true)

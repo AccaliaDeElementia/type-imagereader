@@ -10,10 +10,14 @@ describe('public/app/pubsub function Defer()', () => {
     PubSub.deferred = []
     PubSub.cycleTime = 10
   })
-  it('add method to deferred list', () => {
+  it('should add exactly one item to deferred list', () => {
     const spy = Sinon.spy()
     PubSub.Defer(spy, 0)
     expect(PubSub.deferred).to.have.lengthOf(1)
+  })
+  it('should store provided method in deferred list', () => {
+    const spy = Sinon.spy()
+    PubSub.Defer(spy, 0)
     expect(PubSub.deferred.pop()?.method).to.equal(spy)
   })
   it('deferred method does not immediately fire', () => {
@@ -21,7 +25,17 @@ describe('public/app/pubsub function Defer()', () => {
     PubSub.Defer(spy, 0)
     expect(spy.callCount).to.equal(0)
   })
-  it('append method to deferred list', () => {
+  it('should grow deferred list to 11 items when appending', () => {
+    PubSub.deferred.push(
+      ...Array.from({ length: 10 }).map(() => ({
+        method: Sinon.spy(),
+        delayCycles: 1,
+      })),
+    )
+    PubSub.Defer(Sinon.spy(), 0)
+    expect(PubSub.deferred).to.have.lengthOf(11)
+  })
+  it('should append method as last deferred item', () => {
     PubSub.deferred.push(
       ...Array.from({ length: 10 }).map(() => ({
         method: Sinon.spy(),
@@ -30,7 +44,6 @@ describe('public/app/pubsub function Defer()', () => {
     )
     const spy = Sinon.spy()
     PubSub.Defer(spy, 0)
-    expect(PubSub.deferred).to.have.lengthOf(11)
     expect(PubSub.deferred.pop()?.method).to.equal(spy)
   })
   const delayMaps: Array<[number, number]> = [

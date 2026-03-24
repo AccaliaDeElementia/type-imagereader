@@ -36,7 +36,8 @@ export const Functions = {
     } else if (new URLSearchParams(window.location.search).has('kiosk')) {
       socket.emit('next-image')
     } else {
-      socket.emit('goto-image', (folder: string) => {
+      socket.emit('goto-image', (folder: string | null) => {
+        if (folder === null) return
         WebSockets.LocationAssign(`/show${folder}?noMenu`)
       })
     }

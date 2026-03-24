@@ -14,7 +14,7 @@ html
     nav#navbar
     div#loadingScreen
 `
-describe('public/app/loading function IsLoading()"', () => {
+describe('public/app/loading function IsLoading()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})

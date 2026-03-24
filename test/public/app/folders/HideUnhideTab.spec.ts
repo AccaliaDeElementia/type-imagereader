@@ -65,7 +65,7 @@ describe('public/app/folders function UnhideTab()', () => {
     global.window = existingWindow
     global.document = existingDocument
   })
-  it('should remove hidden class to parent of selected element', () => {
+  it('should remove hidden class from parent of selected element', () => {
     tabFolders?.classList.add('hidden')
     Folders.UnhideTab('a[href="#tabFolders"]')
     expect(tabFolders?.classList.contains('hidden')).to.equal(false)

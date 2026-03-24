@@ -69,7 +69,7 @@ describe('routes/apiFunctions function MarkFolderUnread', () => {
     expect(knexStub.callCount).to.equal(3)
     expect(knexStub.secondCall.args).to.deep.equal(['folders'])
   })
-  it('should update seenCount parent folders when updates update pictures', async () => {
+  it('should decrement seenCount for parent folders when updates update pictures', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
@@ -132,5 +132,26 @@ describe('routes/apiFunctions function MarkFolderUnread', () => {
     await Functions.MarkFolderUnread(knexFake, '/foo/bar/baz/quux/')
     expect(instance.orWhere.callCount).to.equal(1)
     expect(instance.orWhere.firstCall.args).to.deep.equal([{ path: '/foo/bar/baz/quux/' }])
+  })
+  it('should update folders when exactly one picture is marked unread', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(1)
+    knexStub.onFirstCall().returns(query)
+    await Functions.MarkFolderUnread(knexFake, '/foo/bar/baz/quux/')
+    expect(knexStub.callCount).to.equal(3)
+  })
+  it('should not update folders when update count is zero', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(0)
+    knexStub.onFirstCall().returns(query)
+    await Functions.MarkFolderUnread(knexFake, '/foo/bar/baz/quux/')
+    expect(knexStub.callCount).to.equal(1)
+  })
+  it('should not update folders when update count is negative', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(-1)
+    knexStub.onFirstCall().returns(query)
+    await Functions.MarkFolderUnread(knexFake, '/foo/bar/baz/quux/')
+    expect(knexStub.callCount).to.equal(1)
   })
 })

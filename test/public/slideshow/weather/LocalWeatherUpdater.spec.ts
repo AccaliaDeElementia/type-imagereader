@@ -63,21 +63,28 @@ describe('public/slideshow/weather LocalWeatherUpdater', () => {
     expect(LocalWeatherUpdater.period).to.equal(1000)
   })
 
-  it('should fetch weather from expected url when triggered', async () => {
+  it('should fetch weather once when triggered', async () => {
     await LocalWeatherUpdater.updateFn()
     expect(fetchWeatherStub.callCount).to.equal(1)
+  })
+
+  it('should fetch weather from expected url when triggered', async () => {
+    await LocalWeatherUpdater.updateFn()
     expect(fetchWeatherStub.firstCall.args).to.deep.equal(['http://localhost:8080/'])
   })
 
-  it('should show fetched data after retrieval', async () => {
+  it('should show fetched data once after retrieval', async () => {
     await LocalWeatherUpdater.updateFn()
     expect(showWeatherStub.callCount).to.equal(1)
+  })
+
+  it('should show fetched data after fetch when triggered', async () => {
+    await LocalWeatherUpdater.updateFn()
     expect(showWeatherStub.calledAfter(fetchWeatherStub)).to.equal(true)
   })
 
   it('should show weather with expected element as base', async () => {
     const base = dom.window.document.querySelector<HTMLElement>('.localweather')
-    expect(base).to.not.equal(null)
     await LocalWeatherUpdater.updateFn()
     expect(showWeatherStub.firstCall.args[0]).to.equal(base)
   })

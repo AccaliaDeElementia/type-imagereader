@@ -113,7 +113,7 @@ describe('routes/slideshow function GetCounts()', () => {
     await Functions.GetCounts(knexFake, 'foo', 7, spy)
     expect(spy.callCount).to.equal(1)
   })
-  it('should mutate page when current page is set', async () => {
+  it('should mutate page with current page value as argument', async () => {
     getUnreadImageCountStub.resolves(0)
     getImageCountStub.resolves(999)
     Config.memorySize = 10
@@ -150,5 +150,55 @@ describe('routes/slideshow function GetCounts()', () => {
     Config.memorySize = 10
     const result = await Functions.GetCounts(knexFake, 'foo', 7)
     expect(result.page).to.equal(7)
+  })
+  it('should return page 0 when folder is empty', async () => {
+    getUnreadImageCountStub.resolves(0)
+    getImageCountStub.resolves(0)
+    const result = await Functions.GetCounts(knexFake, 'foo')
+    expect(result.page).to.equal(0)
+  })
+  it('should return pages 0 when folder is empty', async () => {
+    getUnreadImageCountStub.resolves(0)
+    getImageCountStub.resolves(0)
+    const result = await Functions.GetCounts(knexFake, 'foo')
+    expect(result.pages).to.equal(0)
+  })
+  it('should not randomize page when folder is empty', async () => {
+    getUnreadImageCountStub.resolves(0)
+    getImageCountStub.resolves(0)
+    await Functions.GetCounts(knexFake, 'foo')
+    expect(randomStub.callCount).to.equal(0)
+  })
+  it('should not call mutator when folder is empty', async () => {
+    getUnreadImageCountStub.resolves(0)
+    getImageCountStub.resolves(0)
+    const spy = Sinon.stub()
+    await Functions.GetCounts(knexFake, 'foo', 0, spy)
+    expect(spy.callCount).to.equal(0)
+  })
+  it('should return page 0 when folder is empty and decrement mutator is provided', async () => {
+    getUnreadImageCountStub.resolves(0)
+    getImageCountStub.resolves(0)
+    const result = await Functions.GetCounts(knexFake, 'foo', 0, (x) => x - 1)
+    expect(result.page).to.equal(0)
+  })
+  it('should set pages from allcount when unread count is zero', async () => {
+    getUnreadImageCountStub.resolves(0)
+    getImageCountStub.resolves(1001)
+    Config.memorySize = 10
+    const result = await Functions.GetCounts(knexFake, 'foo', 7)
+    expect(result.pages).to.equal(101)
+  })
+  it('should include unread count in result', async () => {
+    getUnreadImageCountStub.resolves(42)
+    getImageCountStub.resolves(999)
+    const result = await Functions.GetCounts(knexFake, 'foo')
+    expect(result.unread).to.equal(42)
+  })
+  it('should include total count in result', async () => {
+    getUnreadImageCountStub.resolves(0)
+    getImageCountStub.resolves(999)
+    const result = await Functions.GetCounts(knexFake, 'foo')
+    expect(result.all).to.equal(999)
   })
 })

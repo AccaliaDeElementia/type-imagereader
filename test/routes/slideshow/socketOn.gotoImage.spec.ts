@@ -41,8 +41,20 @@ describe('routes/slideshow socket goto-image', () => {
     ['get room for bad index', '/foo', -1, () => expect(getRoomStub.callCount).to.equal(1)],
     ['get room with knex for bad index', '/foo', -1, () => expect(getRoomStub.firstCall.args[0]).to.equal(knexFake)],
     ['get room with room for bad index', '/foo', -1, () => expect(getRoomStub.firstCall.args[1]).to.equal('/foo')],
+    [
+      'get room with no increment for bad index',
+      '/foo',
+      -1,
+      () => expect(getRoomStub.firstCall.args).to.have.lengthOf(2),
+    ],
     ['get room with knex for good index', '/foo', 0, () => expect(getRoomStub.firstCall.args[0]).to.equal(knexFake)],
     ['get room with room for good index', '/foo', 0, () => expect(getRoomStub.firstCall.args[1]).to.equal('/foo')],
+    [
+      'get room with no increment for good index',
+      '/foo',
+      0,
+      () => expect(getRoomStub.firstCall.args).to.have.lengthOf(2),
+    ],
     ['not provide callback path for null room', null, 0, (spy) => expect(spy.firstCall.args).to.deep.equal([null])],
     ['not provide callback path for bad index', '/foo', -1, (spy) => expect(spy.firstCall.args).to.deep.equal([null])],
     ['send callback path when valid', '/foo', 0, (spy) => expect(spy.firstCall.args[0]).to.equal(picturePath)],
@@ -50,7 +62,12 @@ describe('routes/slideshow socket goto-image', () => {
     ['not set latest for invalid index', '/foo', 12, () => expect(setLatestStub.callCount).to.equal(0)],
     ['set latest when valid', '/foo', 0, () => expect(setLatestStub.callCount).to.equal(1)],
     ['set latest with knex when valid', '/foo', 0, () => expect(setLatestStub.firstCall.args[0]).to.equal(knexFake)],
-    ['set latest with path when valid', '/foo', 0, () => expect(setLatestStub.firstCall.args[1]).to.equal(folder)],
+    [
+      'set latest with folder object when valid',
+      '/foo',
+      0,
+      () => expect(setLatestStub.firstCall.args[1]).to.equal(folder),
+    ],
   ]
   tests.forEach(([title, room, index, validationFn]) => {
     it(`should ${title}`, async () => {
@@ -60,5 +77,13 @@ describe('routes/slideshow socket goto-image', () => {
       await SocketHandlers.gotoImage(spy, socketState, knexFake)
       validationFn(spy)
     })
+  })
+  it('should send null callback path when setLatest returns null', async () => {
+    setLatestStub.resolves(null)
+    socketState.roomName = '/foo'
+    roomData.index = 0
+    const spy = Sinon.stub()
+    await SocketHandlers.gotoImage(spy, socketState, knexFake)
+    expect(spy.firstCall.args[0]).to.equal(null)
   })
 })

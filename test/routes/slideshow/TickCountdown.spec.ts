@@ -52,6 +52,8 @@ describe('routes/slideshow function TickCountdown()', () => {
     ['remove expired room, nil clients', -3599, undefined, () => expect(Config.rooms).to.not.have.any.keys('/Room')],
     ['remove expired room, empty clients', -3599, new Set(), () => expect(Config.rooms).to.not.have.any.keys('/Room')],
     ['remove expired room, with clients', -3599, clients, () => expect(Config.rooms).to.not.have.any.keys('/Room')],
+    ['keep near-expired room', -3598, null, () => expect(Config.rooms).to.have.any.keys('/Room')],
+    ['check clients for near-expired room', -3598, null, () => expect(ioStub.of.callCount).to.equal(1)],
     ['get clients, group by of()', -5, null, () => expect(ioStub.of.callCount).to.equal(1)],
     ['get clients, filter root instance', -5, null, () => expect(ioStub.of.firstCall.args).to.deep.equal(['/'])],
     ['get clients, from rooms', -5, null, () => expect(ioStub.get.callCount).to.equal(1)],
@@ -141,6 +143,46 @@ describe('routes/slideshow function TickCountdown()', () => {
       await Functions.TickCountdown(knexFake, ioFake)
       validationFn()
     })
+  })
+  it('should emit updated uriSafeImage from GetRoomAndIncrementImage', async () => {
+    Config.rooms['/Room'] = {
+      countdown: -99,
+      path: '/Room',
+      images: ['/old/image.png'],
+      index: 0,
+      uriSafeImage: '/old/image.png',
+      pages: { unread: 0, all: 0, pages: 0, page: 0 },
+    }
+    getRoomStub.callsFake((_knex: unknown, name: string) => {
+      const room = Config.rooms[name]
+      if (room !== undefined) {
+        room.uriSafeImage = '/new/image.png'
+        room.images = ['/new/image.png']
+      }
+    })
+    ioStub.get.returns(clients)
+    await Functions.TickCountdown(knexFake, ioFake)
+    expect(ioStub.emit.firstCall.args[1]).to.equal('/new/image.png')
+  })
+  it('should not emit when GetRoomAndIncrementImage empties the image list', async () => {
+    Config.rooms['/Room'] = {
+      countdown: -99,
+      path: '/Room',
+      images: ['/old/image.png'],
+      index: 0,
+      uriSafeImage: '/old/image.png',
+      pages: { unread: 0, all: 0, pages: 0, page: 0 },
+    }
+    getRoomStub.callsFake((_knex: unknown, name: string) => {
+      const room = Config.rooms[name]
+      if (room !== undefined) {
+        room.images = []
+        room.uriSafeImage = ''
+      }
+    })
+    ioStub.get.returns(clients)
+    await Functions.TickCountdown(knexFake, ioFake)
+    expect(ioStub.to.callCount).to.equal(0)
   })
   it('should log when an error is thrown', async () => {
     const err = new Error('TICK FAILED')

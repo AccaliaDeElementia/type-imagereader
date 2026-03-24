@@ -220,7 +220,7 @@ describe('routes/apiFunctions function GetListing', () => {
     assert(result !== null)
     expect(result.children).to.equal(data)
   })
-  it('should set next from GetPictures()', async () => {
+  it('should set pictures from GetPictures()', async () => {
     const data = { data: Math.random() }
     getFolderStub.resolves({})
     getPicturesStub.resolves(data)

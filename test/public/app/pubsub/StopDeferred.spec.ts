@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../testutils/TypeGuards'
 
-describe('public/app/pubsub function RemoveInterval()', () => {
+describe('public/app/pubsub function StopDeferred()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
@@ -45,9 +45,9 @@ describe('public/app/pubsub function RemoveInterval()', () => {
     PubSub.StopDeferred()
     expect(PubSub.timer).to.equal(undefined)
   })
-  it('should not clear interrval if timer is not set', () => {
+  it('should not clear interval if timer is not set', () => {
     PubSub.timer = undefined
-    PubSub.StartDeferred()
+    PubSub.StopDeferred()
     expect(clearIntervalSpy.callCount).to.equal(0)
   })
 })

@@ -85,7 +85,7 @@ describe('utils/persistance function getKnexConfig()', () => {
     expect(conn.connection.password).to.equal('one two three four')
   })
   it('should alter password when env is set', async () => {
-    configBlock.connection.host = 'one two three four'
+    configBlock.connection.password = 'one two three four'
     process.env.DB_PASSWORD = 'foobar'
     const conn = await Functions.getKnexConfig()
     expect(conn.connection.password).to.equal('foobar')

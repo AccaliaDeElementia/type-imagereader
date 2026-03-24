@@ -19,7 +19,7 @@ describe('routes/apiFunctions UriSafePath functions', () => {
   it('encodeNullable() it should accept empty string', () => {
     expect(UriSafePath.encodeNullable('')).to.equal(null)
   })
-  it('encodeNUllable() it should accept string with encoding', () => {
+  it('encodeNullable() it should accept string with encoding', () => {
     expect(UriSafePath.encodeNullable('/,foo=/<bar>')).to.equal('/%2Cfoo%3D/%3Cbar%3E')
   })
   it('encode() it should accept empty string', () => {
@@ -27,5 +27,11 @@ describe('routes/apiFunctions UriSafePath functions', () => {
   })
   it('encode() it should accept string with encoding', () => {
     expect(UriSafePath.encode('/,foo=/<bar>')).to.equal('/%2Cfoo%3D/%3Cbar%3E')
+  })
+  it('encode() it should not encode dot-dot path traversal segments', () => {
+    expect(UriSafePath.encode('../../etc/passwd')).to.equal('../../etc/passwd')
+  })
+  it('encode() it should encode special characters within path traversal-like segments', () => {
+    expect(UriSafePath.encode('../foo bar/..%2Fetc')).to.equal('../foo%20bar/..%252Fetc')
   })
 })

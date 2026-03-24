@@ -86,7 +86,7 @@ describe('public/app/folders function BuildCard()', () => {
     })
     expect(result).to.equal(null)
   })
-  it('should leave emoji cover when cover image is null', () => {
+  it('should not remove emoji icon when cover image is null', () => {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -94,11 +94,19 @@ describe('public/app/folders function BuildCard()', () => {
       totalCount: 100,
       totalSeen: 0,
     })
-    const icon = result?.querySelector('i.material-icons') ?? null
-    expect(icon).to.not.equal(null)
-    expect(icon?.innerHTML).to.equal('folder')
+    expect(result?.querySelector('i.material-icons') ?? null).to.not.equal(null)
   })
-  it('should leave emoji cover when cover image is empty', () => {
+  it('should preserve emoji icon content when cover image is null', () => {
+    const result = Folders.BuildCard({
+      name: 'foo',
+      path: '/path/foo',
+      cover: null,
+      totalCount: 100,
+      totalSeen: 0,
+    })
+    expect(result?.querySelector('i.material-icons')?.innerHTML).to.equal('folder')
+  })
+  it('should not remove emoji icon when cover image is empty', () => {
     const result = Folders.BuildCard({
       name: 'foo',
       path: '/path/foo',
@@ -106,9 +114,17 @@ describe('public/app/folders function BuildCard()', () => {
       totalCount: 100,
       totalSeen: 0,
     })
-    const icon = result?.querySelector('i.material-icons') ?? null
-    expect(icon).to.not.equal(null)
-    expect(icon?.innerHTML).to.equal('folder')
+    expect(result?.querySelector('i.material-icons') ?? null).to.not.equal(null)
+  })
+  it('should preserve emoji icon content when cover image is empty', () => {
+    const result = Folders.BuildCard({
+      name: 'foo',
+      path: '/path/foo',
+      cover: '',
+      totalCount: 100,
+      totalSeen: 0,
+    })
+    expect(result?.querySelector('i.material-icons')?.innerHTML).to.equal('folder')
   })
   it('should remove emoji cover when cover image is set', () => {
     const result = Folders.BuildCard({

@@ -74,4 +74,10 @@ describe('utils/syncfolders function SyncMissingCoverImages()', () => {
     expect(loggerStub.callCount).to.equal(1)
     expect(loggerStub.firstCall.args).to.deep.equal(['Removed 99 missing cover images'])
   })
+  it('should log zero when no cover images are removed', async () => {
+    knexInstanceStub.update.resolves(0)
+    await Functions.SyncMissingCoverImages(loggerFake, knexFnFake)
+    expect(loggerStub.callCount).to.equal(1)
+    expect(loggerStub.firstCall.args).to.deep.equal(['Removed 0 missing cover images'])
+  })
 })

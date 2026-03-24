@@ -43,7 +43,10 @@ function ShowIcon(element: HTMLElementish, icon: stringish): void {
 const DECIMAL_PLACES = 1
 function ShowWeather(base: HTMLElementish, weather: WeatherResults): WeatherResults {
   if (!HasValue(base)) return weather
-  const temp = typeof weather.temp === 'number' ? `${weather.temp.toFixed(DECIMAL_PLACES)}°C` : null
+  const temp =
+    typeof weather.temp === 'number' && Number.isFinite(weather.temp)
+      ? `${weather.temp.toFixed(DECIMAL_PLACES)}°C`
+      : null
   Functions.ShowData(base, base.querySelector<HTMLElement>('.temp'), temp)
   const desc = base.querySelector<HTMLElement>('.desc')
   const desctext = desc?.querySelector<HTMLElement>('.desctext')

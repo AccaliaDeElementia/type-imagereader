@@ -59,16 +59,12 @@ describe('public/app/navigation function Init()', () => {
     Navigation.Init()
     expect(Navigation.current.path).to.equal('/foo/bar/baz')
   })
-  it('should set path of current data on Init', () => {
-    dom.reconfigure({
-      url: 'http://type-imagereader.example.com/show/foo/bar/baz',
-    })
-    Navigation.Init()
-    expect(Navigation.current.path).to.equal('/foo/bar/baz')
-  })
-  it('should execute LoadData with defaults', () => {
+  it('should execute LoadData once with defaults', () => {
     Navigation.Init()
     expect(loadDataStub.callCount).to.equal(1)
+  })
+  it('should execute LoadData with no arguments', () => {
+    Navigation.Init()
     expect(loadDataStub.firstCall.args).to.deep.equal([])
   })
   it('should tolerate LoadData rejecting', async () => {
@@ -103,16 +99,28 @@ describe('public/app/navigation function Init()', () => {
     'Action:Gamepad:Y',
     'Action:Gamepad:A',
   ]
-  it('should have expected subscriber list', () => {
-    Navigation.Init()
+  describe('subscriber list after Init', () => {
     const subs = subscribers.map((s) => s.toUpperCase())
-    expect(PubSub.subscribers).to.have.all.keys(subs)
-    expect(Object.keys(PubSub.subscribers)).to.have.lengthOf(subs.length)
+    beforeEach(() => {
+      Navigation.Init()
+    })
+    it('should contain all expected subscribers', () => {
+      expect(PubSub.subscribers).to.have.all.keys(subs)
+    })
+    it('should contain no unexpected subscribers', () => {
+      expect(Object.keys(PubSub.subscribers)).to.have.lengthOf(subs.length)
+    })
   })
   subscribers.forEach((subscriber) => {
-    it(`should subscribe to ${subscriber}`, () => {
+    const doInit = (): void => {
       Navigation.Init()
+    }
+    it(`should subscribe to ${subscriber}`, () => {
+      doInit()
       expect(PubSub.subscribers).to.have.any.keys(subscriber.toUpperCase())
+    })
+    it(`should subscribe to ${subscriber} exactly once`, () => {
+      doInit()
       expect(PubSub.subscribers[subscriber.toUpperCase()]).to.have.lengthOf(1)
     })
   })

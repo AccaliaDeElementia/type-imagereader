@@ -51,7 +51,7 @@ describe('public/app/pubsub function AddInterval()', () => {
     [31, 4],
   ]
   for (const [delay, mapped] of delayMaps) {
-    it(`should convert a interval of ${delay}ms to ${mapped} delay cycles`, () => {
+    it(`should convert an interval of ${delay}ms to ${mapped} interval cycles`, () => {
       PubSub.AddInterval('FOOBAR', Sinon.spy(), delay)
       expect(PubSub.intervals.FOOBAR?.intervalCycles).to.equal(mapped)
     })

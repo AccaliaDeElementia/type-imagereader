@@ -151,6 +151,9 @@ export const Functions = {
     const unreadcount = await Functions.GetUnreadImageCount(knex, path)
     const allcount = await Functions.GetImageCount(knex, path)
     let pages = Math.ceil(allcount / Config.memorySize)
+    if (pages === ZERO_COUNT) {
+      return { unread: unreadcount, all: allcount, pages: ZERO_COUNT, page: ZERO_COUNT }
+    }
     let resultPage = currentPage ?? Math.floor(Math.random() * pages)
     if (unreadcount > ZERO_COUNT) {
       pages = Math.ceil(unreadcount / Config.memorySize)
@@ -205,6 +208,19 @@ export const Functions = {
     name: string,
     increment = ALTER_COUNTER.NONE as number,
   ): Promise<SlideshowRoom> => {
+    const advancePage = async (
+      currentPage: number,
+      currentUnread: number,
+      direction: ALTER_COUNTER,
+    ): Promise<{ pages: SlideshowPages; images: string[] }> => {
+      const wasUnread = currentUnread > ZERO_COUNT
+      let pages = await Functions.GetCounts(knex, name, currentPage, (x) => x + direction)
+      if (wasUnread && pages.unread === ZERO_COUNT) {
+        pages = await Functions.GetCounts(knex, name)
+      }
+      const images = await Functions.GetImages(knex, name, pages.page, Config.memorySize)
+      return { pages, images }
+    }
     let room = Config.rooms[name]
     if (room === undefined) {
       const pages = await Functions.GetCounts(knex, name)
@@ -219,14 +235,18 @@ export const Functions = {
       Config.rooms[name] ??= room
     } else {
       room.index += increment
-      if (room.index < ZERO_COUNT) {
-        room.pages = await Functions.GetCounts(knex, name, room.pages.page, (x) => x + ALTER_COUNTER.DECREMENT)
-        room.images = await Functions.GetImages(knex, name, room.pages.page, Config.memorySize)
-        room.index = room.images.length + ALTER_COUNTER.DECREMENT
-      } else if (room.index >= room.images.length) {
-        room.pages = await Functions.GetCounts(knex, name, room.pages.page, (x) => x + ALTER_COUNTER.INCREMENT)
+      if (room.images.length === ZERO_COUNT) {
         room.index = ZERO_COUNT
-        room.images = await Functions.GetImages(knex, name, room.pages.page, Config.memorySize)
+      } else if (room.index < ZERO_COUNT) {
+        const result = await advancePage(room.pages.page, room.pages.unread, ALTER_COUNTER.DECREMENT)
+        room.pages = result.pages
+        room.images = result.images
+        room.index = Math.max(room.images.length + ALTER_COUNTER.DECREMENT, ZERO_COUNT)
+      } else if (room.index >= room.images.length) {
+        const result = await advancePage(room.pages.page, room.pages.unread, ALTER_COUNTER.INCREMENT)
+        room.pages = result.pages
+        room.images = result.images
+        room.index = ZERO_COUNT
       }
     }
     const image = room.images[room.index]

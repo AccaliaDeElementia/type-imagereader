@@ -93,7 +93,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     ['kiosk', 1, 0.3, 'next-image'],
   ]
   emitCases.forEach(([search, xPercent, yPercent, expected]) => {
-    it(`should emit ${search} message when click is ${xPercent}`, () => {
+    const doClick = (): void => {
       dom.reconfigure({
         url: `http://127.0.0.1:2999/slideshow?${search}`,
       })
@@ -102,20 +102,16 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientY: global.window.innerHeight * yPercent,
       })
       Functions.HandleClick(event, fakeSocket, 1)
+    }
+    it(`should emit once when click is at ${xPercent} with search "${search}"`, () => {
+      doClick()
       expect(fakeEmit.callCount).to.equal(1)
     })
-    it(`should emit ${expected} ${search} message when click is ${xPercent}`, () => {
-      dom.reconfigure({
-        url: `http://127.0.0.1:2999/slideshow?${search}`,
-      })
-      const event = new global.window.MouseEvent('click', {
-        clientX: global.window.innerWidth * xPercent,
-        clientY: global.window.innerHeight * yPercent,
-      })
-      Functions.HandleClick(event, fakeSocket, 1)
+    it(`should emit ${expected} when click is at ${xPercent} with search "${search}"`, () => {
+      doClick()
       expect(fakeEmit.firstCall.args[0]).to.deep.equal(expected)
     })
-    it(`should ignore click at ${xPercent}:${yPercent} when zoomed out`, () => {
+    it(`should not ignore click at ${xPercent}:${yPercent} when zoomed in`, () => {
       const event = new global.window.MouseEvent('click', {
         clientX: global.window.innerWidth * xPercent,
         clientY: global.window.innerHeight * yPercent,
@@ -123,7 +119,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       Functions.HandleClick(event, fakeSocket, 1.001)
       expect(fakeEmit.callCount).to.equal(1)
     })
-    it(`should ignore click at ${xPercent}:${yPercent} when zoomed in`, () => {
+    it(`should ignore click at ${xPercent}:${yPercent} when zoomed out`, () => {
       const event = new global.window.MouseEvent('click', {
         clientX: global.window.innerWidth * xPercent,
         clientY: global.window.innerHeight * yPercent,
@@ -132,40 +128,74 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       expect(fakeEmit.callCount).to.equal(0)
     })
   })
-  it(`should emit second parameter for goto-image event`, () => {
-    const event = new global.window.MouseEvent('click', {
-      clientX: global.window.innerWidth * 0.5,
-      clientY: global.window.innerHeight * 0.5,
+  describe('when center-clicked for goto-image event', () => {
+    beforeEach(() => {
+      const event = new global.window.MouseEvent('click', {
+        clientX: global.window.innerWidth * 0.5,
+        clientY: global.window.innerHeight * 0.5,
+      })
+      Functions.HandleClick(event, fakeSocket, 1)
     })
-    Functions.HandleClick(event, fakeSocket, 1)
-    expect(fakeEmit.firstCall.args).to.have.lengthOf(2)
+    it('should emit second parameter for goto-image event', () => {
+      expect(fakeEmit.firstCall.args).to.have.lengthOf(2)
+    })
+    it('should provide callback function for goto-image event', () => {
+      expect(fakeEmit.firstCall.args[1]).to.be.an.instanceOf(Function)
+    })
   })
-  it(`should provide callback function for goto-image event`, () => {
-    const event = new global.window.MouseEvent('click', {
-      clientX: global.window.innerWidth * 0.5,
-      clientY: global.window.innerHeight * 0.5,
+  describe('when visualViewport is null', () => {
+    beforeEach(() => {
+      global.window.visualViewport = null
     })
-    Functions.HandleClick(event, fakeSocket, 1)
-    expect(fakeEmit.firstCall.args[1]).to.be.an.instanceOf(Function)
+    afterEach(() => {
+      global.window.visualViewport = Cast<VisualViewport>(fakeViewport)
+    })
+    it('should still process click when visualViewport is null', () => {
+      const event = new global.window.MouseEvent('click', {
+        clientX: global.window.innerWidth,
+        clientY: global.window.innerHeight / 2,
+      })
+      Functions.HandleClick(event, fakeSocket, 1)
+      expect(fakeEmit.callCount).to.equal(1)
+    })
+    it('should emit next-image for right click when visualViewport is null', () => {
+      const event = new global.window.MouseEvent('click', {
+        clientX: global.window.innerWidth,
+        clientY: global.window.innerHeight / 2,
+      })
+      Functions.HandleClick(event, fakeSocket, 1)
+      expect(fakeEmit.firstCall.args[0]).to.equal('next-image')
+    })
   })
-  it(`should call location.assign from goto-image callback`, () => {
-    const event = new global.window.MouseEvent('click', {
-      clientX: global.window.innerWidth * 0.5,
-      clientY: global.window.innerHeight * 0.5,
+  describe('when goto-image callback is invoked with null', () => {
+    beforeEach(() => {
+      const event = new global.window.MouseEvent('click', {
+        clientX: global.window.innerWidth * 0.5,
+        clientY: global.window.innerHeight * 0.5,
+      })
+      Functions.HandleClick(event, fakeSocket, 1)
+      const fn = Cast<(x: string | null) => void>(fakeEmit.firstCall.args[1])
+      fn(null)
     })
-    Functions.HandleClick(event, fakeSocket, 1)
-    const fn = Cast<(x: string) => void>(fakeEmit.firstCall.args[1])
-    fn('/foo/bar/baz')
-    expect(fakeAssign.callCount).to.equal(1)
+    it('should not call location.assign from goto-image callback when folder is null', () => {
+      expect(fakeAssign.callCount).to.equal(0)
+    })
   })
-  it(`should assign expected uri from goto-image callback`, () => {
-    const event = new global.window.MouseEvent('click', {
-      clientX: global.window.innerWidth * 0.5,
-      clientY: global.window.innerHeight * 0.5,
+  describe('when goto-image callback is invoked', () => {
+    beforeEach(() => {
+      const event = new global.window.MouseEvent('click', {
+        clientX: global.window.innerWidth * 0.5,
+        clientY: global.window.innerHeight * 0.5,
+      })
+      Functions.HandleClick(event, fakeSocket, 1)
+      const fn = Cast<(x: string) => void>(fakeEmit.firstCall.args[1])
+      fn('/foo/bar/baz')
     })
-    Functions.HandleClick(event, fakeSocket, 1)
-    const fn = Cast<(x: string) => void>(fakeEmit.firstCall.args[1])
-    fn('/foo/bar/baz')
-    expect(fakeAssign.firstCall.args).to.deep.equal(['/show/foo/bar/baz?noMenu'])
+    it('should call location.assign from goto-image callback', () => {
+      expect(fakeAssign.callCount).to.equal(1)
+    })
+    it('should assign expected uri from goto-image callback', () => {
+      expect(fakeAssign.firstCall.args).to.deep.equal(['/show/foo/bar/baz?noMenu'])
+    })
   })
 })

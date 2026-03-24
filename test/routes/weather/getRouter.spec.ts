@@ -69,7 +69,7 @@ describe('routes/weather function getRouter()', () => {
     await getRouter(applicationFake, serverFake, socketFake)
     assert.isFunction(setIntervalStub.firstCall.args[0])
   })
-  it('should call UpdateWearther when callback fires', async () => {
+  it('should call UpdateWeather when callback fires', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
     const fn = Cast<() => void>(setIntervalStub.firstCall.args[0])
     updateWeatherStub.resetHistory()
@@ -80,7 +80,7 @@ describe('routes/weather function getRouter()', () => {
     await getRouter(applicationFake, serverFake, socketFake)
     expect(setIntervalStub.firstCall.args[1]).to.equal(600000)
   })
-  it('should call UpdateWearther when creating router', async () => {
+  it('should call UpdateWeather when creating router', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
     expect(updateWeatherStub.callCount).to.equal(1)
   })

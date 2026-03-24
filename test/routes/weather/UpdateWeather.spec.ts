@@ -61,7 +61,7 @@ describe('routes/weather function UpdateWeather', () => {
     ['set default pressure', (weather) => expect(weather.pressure).to.equal(undefined)],
     ['set default humidity', (weather) => expect(weather.humidity).to.equal(undefined)],
     ['set default description', (weather) => expect(weather.description).to.equal(undefined)],
-    ['set default idon', (weather) => expect(weather.icon).to.equal(undefined)],
+    ['set default icon', (weather) => expect(weather.icon).to.equal(undefined)],
     ['set default sunrise', (weather) => expect(weather.sunrise).to.equal(123000)],
     ['set default sunset', (weather) => expect(weather.sunset).to.equal(456000)],
   ]
@@ -72,9 +72,9 @@ describe('routes/weather function UpdateWeather', () => {
       validationFn(result)
     })
     it(`should ${title} when fetch throws`, async () => {
-      getWeatherStub.rejects(new Error('foo!'))
+      getWeatherStub.throws(new Error('foo!'))
       const result = await Functions.UpdateWeather()
-      expect(result).to.equal(Functions.weather)
+      validationFn(result)
     })
   })
   const successTests: Array<[string, () => void, (data: WeatherResults) => void]> = [
@@ -89,7 +89,7 @@ describe('routes/weather function UpdateWeather', () => {
       (data) => expect(data.pressure).to.equal(1024.4),
     ],
     [
-      'set humuidity',
+      'set humidity',
       () => (weatherData.main = { temp: 0, pressure: 0, humidity: 21.7 }),
       (data) => expect(data.humidity).to.equal(21.7),
     ],
@@ -135,10 +135,25 @@ describe('routes/weather function UpdateWeather', () => {
     ['set sunset', () => (weatherData.sys.sunset = 501.2), (d) => expect(d.sunset).to.equal(501200)],
   ]
   successTests.forEach(([title, setupFn, validationFn]) => {
-    it(`should ${title} when fetch rejects`, async () => {
+    it(`should ${title} when fetch resolves`, async () => {
       setupFn()
       const result = await Functions.UpdateWeather()
       validationFn(result)
     })
+  })
+  it('should set pressure to zero when API returns zero pressure', async () => {
+    weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
+    const result = await Functions.UpdateWeather()
+    expect(result.pressure).to.equal(0)
+  })
+  it('should set humidity to zero when API returns zero humidity', async () => {
+    weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
+    const result = await Functions.UpdateWeather()
+    expect(result.humidity).to.equal(0)
+  })
+  it('should set temp from zero kelvin when API returns zero temp', async () => {
+    weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
+    const result = await Functions.UpdateWeather()
+    expect(result.temp).to.equal(-273.15)
   })
 })

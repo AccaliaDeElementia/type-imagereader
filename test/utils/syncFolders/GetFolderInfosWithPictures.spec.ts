@@ -59,7 +59,7 @@ describe('utils/syncfolders function GetFolderInfosWithPictures()', () => {
     await Functions.GetFolderInfosWithPictures(knexFnFake)
     expect(data[0]?.totalCount).to.equal(31415926)
   })
-  it('should not alter totalCount of valid results', async () => {
+  it('should not alter seenCount of valid results', async () => {
     const expected: FolderInfo[] = [
       {
         path: 'foo',

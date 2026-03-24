@@ -4,7 +4,7 @@ import { Functions } from '../../../../public/scripts/slideshow/overlay'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 
-describe('public/slideshow/weather LocalWeatherUpdater', () => {
+describe('public/slideshow/overlay ShowHideKiosk()', () => {
   const dom = new JSDOM('<html></html>')
 
   it('should accept missing .hide class when in kiosk mode', () => {

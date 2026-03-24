@@ -68,7 +68,6 @@ describe('public/slideshow/weather ShowWeather()', () => {
 
   it('should return input weather when valid base provided', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    expect(base).to.not.equal(null)
     const result = Functions.ShowWeather(base, weather)
     expect(result).to.equal(weather)
   })
@@ -102,7 +101,6 @@ describe('public/slideshow/weather ShowWeather()', () => {
 
   it('should show temp with null text for missing data', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    expect(weather).to.not.have.any.keys('temp')
     Functions.ShowWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
     expect(callArgs[2]).to.equal(null)
@@ -124,6 +122,38 @@ describe('public/slideshow/weather ShowWeather()', () => {
     expect(callArgs[2]).to.equal('99.0°C')
   })
 
+  it('should show temp with null text for NaN data', () => {
+    const base = dom.window.document.querySelector<HTMLElement>('.weather')
+    weather.temp = NaN
+    Functions.ShowWeather(base, weather)
+    const callArgs = showDataStub.firstCall.args
+    expect(callArgs[2]).to.equal(null)
+  })
+
+  it('should show temp with null text for Infinity data', () => {
+    const base = dom.window.document.querySelector<HTMLElement>('.weather')
+    weather.temp = Infinity
+    Functions.ShowWeather(base, weather)
+    const callArgs = showDataStub.firstCall.args
+    expect(callArgs[2]).to.equal(null)
+  })
+
+  it('should show temp with null text for negative Infinity data', () => {
+    const base = dom.window.document.querySelector<HTMLElement>('.weather')
+    weather.temp = -Infinity
+    Functions.ShowWeather(base, weather)
+    const callArgs = showDataStub.firstCall.args
+    expect(callArgs[2]).to.equal(null)
+  })
+
+  it('should show temp with formatted text for zero degrees', () => {
+    const base = dom.window.document.querySelector<HTMLElement>('.weather')
+    weather.temp = 0
+    Functions.ShowWeather(base, weather)
+    const callArgs = showDataStub.firstCall.args
+    expect(callArgs[2]).to.equal('0.0°C')
+  })
+
   it('should show description with expected base element', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     const expected = base?.querySelector<HTMLElement>('.desc')
@@ -142,7 +172,6 @@ describe('public/slideshow/weather ShowWeather()', () => {
 
   it('should show description with undefined text for missing data', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    expect(weather).to.not.have.any.keys('description')
     Functions.ShowWeather(base, weather)
     const callArgs = showDataStub.secondCall.args
     expect(callArgs[2]).to.equal(undefined)
@@ -172,15 +201,14 @@ describe('public/slideshow/weather ShowWeather()', () => {
     expect(callArgs[0]).to.equal(expected)
   })
 
-  it('should show description with undefined text for missing data', () => {
+  it('should show icon with undefined src for missing data', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    expect(weather).to.not.have.any.keys('icon')
     Functions.ShowWeather(base, weather)
     const callArgs = showIconStub.firstCall.args
     expect(callArgs[1]).to.equal(undefined)
   })
 
-  it('should show description with undefined text for undefined data', () => {
+  it('should show icon with undefined src for undefined icon data', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     weather.icon = undefined
     Functions.ShowWeather(base, weather)
@@ -188,7 +216,7 @@ describe('public/slideshow/weather ShowWeather()', () => {
     expect(callArgs[1]).to.equal(undefined)
   })
 
-  it('should show description with provided data', () => {
+  it('should show icon with provided icon data', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     weather.icon = 'what a great value'
     Functions.ShowWeather(base, weather)

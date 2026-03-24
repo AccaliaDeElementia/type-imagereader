@@ -5,7 +5,7 @@ import { expect } from 'chai'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 
-describe('public/app/pubsub function RemoveInterval()', () => {
+describe('public/app/pubsub function ExecuteInterval()', () => {
   const testInterval = {
     method: Sinon.stub(),
     delayCycles: 10,
@@ -30,15 +30,21 @@ describe('public/app/pubsub function RemoveInterval()', () => {
   after(() => {
     Sinon.restore()
   })
-  it('should decrement delayCycle count for pending defer', () => {
+  it('should decrement delayCycle count once for pending defer', () => {
     PubSub.ExecuteInterval()
     expect(testDefer.delayCycles).to.equal(9)
+  })
+  it('should decrement delayCycle count on successive call for pending defer', () => {
+    PubSub.ExecuteInterval()
     PubSub.ExecuteInterval()
     expect(testDefer.delayCycles).to.equal(8)
   })
-  it('should decrement delayCycle count for interval', () => {
+  it('should decrement delayCycle count once for interval', () => {
     PubSub.ExecuteInterval()
     expect(testInterval.delayCycles).to.equal(9)
+  })
+  it('should decrement delayCycle count on successive call for interval', () => {
+    PubSub.ExecuteInterval()
     PubSub.ExecuteInterval()
     expect(testInterval.delayCycles).to.equal(8)
   })

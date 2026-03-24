@@ -138,7 +138,7 @@ describe('public/app/wakelock function TakeLock()', () => {
     await WakeLock.TakeLock()
     expect(WakeLock.timeout).to.equal(0)
   })
-  it('shoudl cracefully handle missing wakelock functionality', async () => {
+  it('should gracefully handle missing wakelock functionality', async () => {
     WakeLock.sentinel = sentinel
     sentinel.released = true
     WakeLock.timeout = -1
@@ -152,7 +152,7 @@ describe('public/app/wakelock function TakeLock()', () => {
     }
     expect(await fn()).to.equal(undefined, 'should not reject or throw')
   })
-  it('shoudl reset sentinal when missing wakelock functionality', async () => {
+  it('should reset sentinel when missing wakelock functionality', async () => {
     WakeLock.sentinel = sentinel
     sentinel.released = true
     WakeLock.timeout = -1
@@ -163,7 +163,7 @@ describe('public/app/wakelock function TakeLock()', () => {
     await WakeLock.TakeLock()
     expect(WakeLock.sentinel).to.equal(null)
   })
-  it('shoudl reset sentinal when missing wakelock functionality', async () => {
+  it('should reset timeout when missing wakelock functionality', async () => {
     WakeLock.sentinel = sentinel
     sentinel.released = true
     WakeLock.timeout = -1

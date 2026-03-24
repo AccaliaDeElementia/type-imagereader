@@ -5,7 +5,7 @@ import { StubToKnex } from '../../testutils/TypeGuards'
 import { expect } from 'chai'
 import { Functions } from '../../../routes/slideshow'
 
-describe('routes/slideshow function GetImages()', () => {
+describe('routes/slideshow function MarkImageRead()', () => {
   let knexQueryOne = {
     select: Sinon.stub().returnsThis(),
     where: Sinon.stub().resolves(),
@@ -80,6 +80,45 @@ describe('routes/slideshow function GetImages()', () => {
       knexQueryOne.where.resolves(results)
       await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
       validationFn()
+    })
+  })
+
+  describe('with a root-level image path', () => {
+    const shallowIncrementFilter = ['path', ['/']]
+    const shallowUpdateFilter = { path: '/baz.png' }
+    const shallowTests: Array<[string, () => void]> = [
+      [
+        'filter increment paths to root folder only',
+        () => expect(knexQueryTwo.whereIn.firstCall.args).to.deep.equal(shallowIncrementFilter),
+      ],
+      [
+        'filter update query by shallow path',
+        () => expect(knexQueryThree.where.firstCall.args).to.deep.equal([shallowUpdateFilter]),
+      ],
+    ]
+    shallowTests.forEach(([title, validationFn]) => {
+      it(`should ${title}`, async () => {
+        knexQueryOne.where.resolves([{}])
+        await Functions.MarkImageRead(knexFake, '/baz.png')
+        validationFn()
+      })
+    })
+  })
+
+  describe('with a two-level image path', () => {
+    const twoLevelIncrementFilter = ['path', ['/foo/', '/']]
+    const twoLevelTests: Array<[string, () => void]> = [
+      [
+        'filter increment paths to two parent folders',
+        () => expect(knexQueryTwo.whereIn.firstCall.args).to.deep.equal(twoLevelIncrementFilter),
+      ],
+    ]
+    twoLevelTests.forEach(([title, validationFn]) => {
+      it(`should ${title}`, async () => {
+        knexQueryOne.where.resolves([{}])
+        await Functions.MarkImageRead(knexFake, '/foo/baz.png')
+        validationFn()
+      })
     })
   })
 })

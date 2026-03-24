@@ -4,8 +4,8 @@
   "description": "A typscript powered web based image and comic reader pulling from local files",
   "scripts": {
     "prebuild": "npm run lint",
-    "build:client": "ts-node scripts/build-client.ts",
-    "build:sass": "ts-node scripts/build-sass.ts",
+    "build:client": "esbuild app=public/scripts/app/index.ts slideshow=public/scripts/slideshow/index.ts --bundle --minify --target=es2024 --format=iife --outdir=dist/scripts --sourcemap",
+    "build:sass": "sass public/stylesheets:dist/stylesheets --style=compressed",
     "build": "npm run build:client && npm run build:sass && tsc --build tsconfig.json",
     "pretty": "prettier . --write",
     "prettyCheck": "prettier . --write --log-level=warn",
@@ -18,8 +18,6 @@
     "knex": "knex --knexfile knexfile.json",
     "predev": "npm run build",
     "dev": "DEBUG='type-imagereader:*' SKIP_SYNC=1 ts-node .",
-    "dev:watch": "ts-node scripts/build-client.ts watch",
-    "dev:sass": "ts-node scripts/build-sass.ts watch",
     "scan": "DEBUG='type-imagereader:*' SKIP_SERVE=1 ts-node ."
   },
   "repository": {
@@ -114,8 +112,7 @@
       "**/*.spec.ts",
       "test/testutils/**/*.ts",
       "knexfile.ts",
-      "test.ts",
-      "scripts/**"
+      "test.ts"
     ],
     "reporter": [
       "lcov",

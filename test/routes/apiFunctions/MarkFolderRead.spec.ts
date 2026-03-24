@@ -38,59 +38,97 @@ describe('routes/apiFunctions function MarkFolderRead', () => {
   afterEach(() => {
     getPictureFoldersStub.restore()
   })
-  it('should update for pictures table to set pictures read', async () => {
+  it('should update pictures table once to set pictures read', async () => {
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(knexStub.callCount).to.equal(1)
+  })
+  it('should update pictures table with expected args to set pictures read', async () => {
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(knexStub.firstCall.args).to.deep.equal(['pictures'])
   })
-  it('should update setting seen flag for called path', async () => {
+  it('should update setting seen flag once for called path', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.update.callCount).to.equal(1)
+  })
+  it('should update setting seen flag with expected args for called path', async () => {
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(instance)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.update.firstCall.args).to.deep.equal([{ seen: true }])
   })
-  it('should update filtering only unseen pictures for called path', async () => {
+  it('should update filtering only unseen pictures once for called path', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.where.callCount).to.equal(1)
+  })
+  it('should update filtering only unseen pictures with expected args for called path', async () => {
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(instance)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.where.firstCall.args).to.deep.equal([{ seen: false }])
   })
-  it('should update filtering paths prefixed with called path', async () => {
+  it('should update filtering paths prefixed with called path once', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.andWhere.callCount).to.equal(1)
+  })
+  it('should update filtering paths prefixed with called path with expected args', async () => {
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(instance)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.andWhere.firstCall.args).to.deep.equal(['folder', 'like', '/foo/bar/baz/quux/%'])
   })
-  it('should update seenCount parent folders when updates update pictures', async () => {
+  it('should query folders table 3 times when updates update pictures', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     knexStub.onFirstCall().returns(query)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(knexStub.callCount).to.equal(3)
+  })
+  it('should query folders table on second call when updating parent seenCount', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    knexStub.onFirstCall().returns(query)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(knexStub.secondCall.args).to.deep.equal(['folders'])
   })
-  it('should update seenCount parent folders when updates update pictures', async () => {
+  it('should increment seenCount once when updating parent folders', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.increment.callCount).to.equal(1)
+  })
+  it('should increment seenCount with expected args when updating parent folders', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.increment.firstCall.args).to.deep.equal(['seenCount', 3.1415926])
   })
-  it('should use GetPictureFolders to find parent folders when updates update pictures', async () => {
+  it('should use GetPictureFolders once to find parent folders when updates update pictures', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(getPictureFoldersStub.callCount).to.equal(1)
+  })
+  it('should use GetPictureFolders with expected args to find parent folders when updates update pictures', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(getPictureFoldersStub.firstCall.args).to.deep.equal(['/foo/bar/baz/quux/'])
   })
-  it('should filter folders in list of parent folders when updates update pictures', async () => {
+  it('should filter folders in list of parent folders once when updates update pictures', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
@@ -98,27 +136,49 @@ describe('routes/apiFunctions function MarkFolderRead', () => {
     getPictureFoldersStub.returns('FOOBAR')
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.whereIn.callCount).to.equal(1)
+  })
+  it('should filter folders in list of parent folders with expected args when updates update pictures', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
+    getPictureFoldersStub.returns('FOOBAR')
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.whereIn.firstCall.args).to.deep.equal(['path', 'FOOBAR'])
   })
-  it('should update seen count to equal for child folders when updates update pictures', async () => {
+  it('should query folders table on third call when updating child seenCount', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(knexStub.callCount).to.equal(3)
+  })
+  it('should query folders table with expected args on third call when updating child seenCount', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(knexStub.thirdCall.args).to.deep.equal(['folders'])
   })
-  it('should use knexRaw to update seen count for child folders when updates update pictures', async () => {
+  it('should use knexRaw once to update seen count for child folders when updates update pictures', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(knexRawStub.callCount).to.equal(1)
+  })
+  it('should use knexRaw with expected args to update seen count for child folders when updates update pictures', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(knexRawStub.firstCall.args).to.deep.equal(['"totalCount"'])
   })
-  it('should use results of knexRaw to update seen count for child folders when updates update pictures', async () => {
+  it('should update once with knexRaw result for child seen count when updates update pictures', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
@@ -126,9 +186,17 @@ describe('routes/apiFunctions function MarkFolderRead', () => {
     knexRawStub.returns(2.71828)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.update.callCount).to.equal(1)
+  })
+  it('should update with knexRaw result for child seen count when updates update pictures', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
+    knexRawStub.returns(2.71828)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.update.firstCall.args).to.deep.equal([{ seenCount: 2.71828 }])
   })
-  it('should update seen count for exactly child folders when updates update pictures', async () => {
+  it('should filter child folders once when updating seen count for child folders', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
@@ -136,9 +204,17 @@ describe('routes/apiFunctions function MarkFolderRead', () => {
     knexRawStub.returns(2.71828)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.where.callCount).to.equal(1)
+  })
+  it('should filter child folders with expected args when updating seen count for child folders', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
+    knexRawStub.returns(2.71828)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.where.firstCall.args).to.deep.equal(['path', 'like', '/foo/bar/baz/quux/%'])
   })
-  it('should update seen count for selected folder when updates update pictures', async () => {
+  it('should include selected folder once when updating seen count for child folders', async () => {
     const query = makeKnexInstance()
     query.andWhere.resolves(3.1415926)
     const instance = makeKnexInstance()
@@ -146,6 +222,35 @@ describe('routes/apiFunctions function MarkFolderRead', () => {
     knexRawStub.returns(2.71828)
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.orWhere.callCount).to.equal(1)
+  })
+  it('should include selected folder with expected args when updating seen count for child folders', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(3.1415926)
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
+    knexRawStub.returns(2.71828)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.orWhere.firstCall.args).to.deep.equal([{ path: '/foo/bar/baz/quux/' }])
+  })
+  it('should update folders when exactly one picture is marked read', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(1)
+    knexStub.onFirstCall().returns(query)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
+    expect(knexStub.callCount).to.equal(3)
+  })
+  it('should not update folders when update count is zero', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(0)
+    knexStub.onFirstCall().returns(query)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
+    expect(knexStub.callCount).to.equal(1)
+  })
+  it('should not update folders when update count is negative', async () => {
+    const query = makeKnexInstance()
+    query.andWhere.resolves(-1)
+    knexStub.onFirstCall().returns(query)
+    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
+    expect(knexStub.callCount).to.equal(1)
   })
 })
