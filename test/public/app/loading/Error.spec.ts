@@ -52,6 +52,10 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     PubSub.Publish('Loading:Error', undefined)
     expect(consoleError.called).to.equal(false)
   })
+  it('should not log empty string message to web console', () => {
+    PubSub.Publish('Loading:Error', '')
+    expect(consoleError.called).to.equal(false)
+  })
   it('should hide loading overlay', async () => {
     let hidden = false
     PubSub.Subscribe('Loading:Hide', async () => {

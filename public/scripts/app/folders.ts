@@ -4,7 +4,7 @@ import { Publish, Subscribe } from './pubsub'
 
 import { isHTMLElement, CloneNode } from './utils'
 import { type FolderWithCounts, isListing, type Listing } from '../../../contracts/listing'
-import { HasValue, HasValues, StringishHasValue } from '../../../utils/helpers'
+import { HasValue, HasValues, StringishHasValue, ZERO_COUNT } from '../../../utils/helpers'
 
 const PERCENT_MULT = 100
 const FIXED_DECIMAL_PLACES = 2
@@ -32,7 +32,8 @@ export const Folders = {
 
     const txtSeen = folder.totalSeen.toLocaleString()
     const txtCount = folder.totalCount.toLocaleString()
-    const percentSeen = (PERCENT_MULT * folder.totalSeen) / folder.totalCount
+    const percentSeen =
+      folder.totalCount === ZERO_COUNT ? PERCENT_MULT : (PERCENT_MULT * folder.totalSeen) / folder.totalCount
 
     const header = card.querySelector('h5')
     if (header !== null) header.innerText = folder.name

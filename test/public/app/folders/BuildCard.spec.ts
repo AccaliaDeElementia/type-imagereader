@@ -239,6 +239,16 @@ describe('public/app/folders function BuildCard()', () => {
     })
     expect(result?.querySelector<HTMLDivElement>('div.slider')?.style.width).to.equal('6.66%')
   })
+  it('should set folder slider width to 100% when total count is zero', () => {
+    const result = Folders.BuildCard({
+      name: 'foo',
+      path: '/path/foo',
+      cover: '/path/foo/cover.png',
+      totalCount: 0,
+      totalSeen: 0,
+    })
+    expect(result?.querySelector<HTMLDivElement>('div.slider')?.style.width).to.equal('100%')
+  })
   it('should gracefully decline to set folder slider width when missing', () => {
     folderCard?.querySelector('div.slider')?.remove()
     const result = Folders.BuildCard({

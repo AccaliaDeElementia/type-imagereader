@@ -12,7 +12,7 @@ export const Loading = {
     Loading.navbar = document.querySelector<HTMLElement>('#navbar')
 
     Subscribe('Loading:Error', async (message) => {
-      if (HasValue(message)) {
+      if (HasValue(message) && message !== '') {
         window.console.error(message)
       }
       Loading.navbar?.style.removeProperty('transition')
