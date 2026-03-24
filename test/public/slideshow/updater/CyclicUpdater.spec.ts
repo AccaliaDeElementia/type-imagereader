@@ -46,6 +46,7 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
     expect(test._maxFails).to.equal(10)
   })
   describe('this.trigger()', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments -- T cannot be inferred from unknown
     const existingWindow = Cast<Window & typeof globalThis>(global.window)
     const existingDocument = global.document
     const dom = new JSDOM('', {})
