@@ -22,6 +22,7 @@ describe('public/app/wakelock function Init()', () => {
     takeLockSpy = Sinon.stub(WakeLock, 'TakeLock').resolves()
     releaseLockSpy = Sinon.stub(WakeLock, 'ReleaseLock').resolves()
     PubSub.subscribers = {}
+    WakeLock.initialized = false
   })
   afterEach(() => {
     takeLockSpy.restore()
@@ -76,5 +77,18 @@ describe('public/app/wakelock function Init()', () => {
     interval.method()
     await Promise.resolve()
     expect(releaseLockSpy.callCount).to.equal(1)
+  })
+  it('should only register one Picture:LoadNew subscriber when Init is called twice', () => {
+    WakeLock.Init()
+    WakeLock.Init()
+    expect(PubSub.subscribers['PICTURE:LOADNEW']).to.have.lengthOf(1)
+  })
+  it('should only call TakeLock once per Picture:LoadNew when Init is called twice', async () => {
+    WakeLock.Init()
+    WakeLock.Init()
+    const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
+    assert(fn !== undefined)
+    await fn(undefined)
+    expect(takeLockSpy.callCount).to.equal(1)
   })
 })

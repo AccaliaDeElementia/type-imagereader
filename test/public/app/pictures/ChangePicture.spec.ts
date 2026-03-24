@@ -6,7 +6,7 @@ import { expect } from 'chai'
 import { Loading } from '../../../../public/scripts/app/loading'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 
-describe('public/app/pictures function GetPicture()', () => {
+describe('public/app/pictures function ChangePicture()', () => {
   const menuHideSpy = Sinon.stub().resolves()
   const loadingErrorSpy = Sinon.stub().resolves()
   let isLoadingSpy = Sinon.stub()
@@ -66,6 +66,10 @@ describe('public/app/pictures function GetPicture()', () => {
   it('should publish error when changing to empty picture', async () => {
     await Pictures.ChangePicture(undefined)
     expect(loadingErrorSpy.callCount).to.equal(1)
+  })
+  it('should publish specific error message when changing to empty picture', async () => {
+    await Pictures.ChangePicture(undefined)
+    expect(loadingErrorSpy.firstCall.args[0]).to.equal('Change Picture called with No Picture to change to')
   })
   it('should set current image when changing to valid picture', async () => {
     const pic = { name: '', path: '', seen: true }

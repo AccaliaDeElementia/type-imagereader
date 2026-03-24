@@ -6,7 +6,7 @@ import { expect } from 'chai'
 import { HandleSocketState, Functions, SocketHandlers } from '../../../routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
-describe('routes/slideshow socket prev-image', () => {
+describe('routes/slideshow socket next-image', () => {
   let knexFake = StubToKnex({})
   let ioStub = { emit: Sinon.stub(), to: Sinon.stub().returnsThis() }
   let serverFake = Cast<WebSocketServer>(ioStub)
@@ -39,7 +39,7 @@ describe('routes/slideshow socket prev-image', () => {
     ['decrement image for valid room', '/foo', () => expect(getRoomStub.callCount).to.equal(1)],
     ['decrement image with knex', '/foo', () => expect(getRoomStub.firstCall.args[0]).to.equal(knexFake)],
     ['decrement image with room name', '/foo', () => expect(getRoomStub.firstCall.args[1]).to.equal('/foo')],
-    ['decrement image by exactly one image', '/foo', () => expect(getRoomStub.firstCall.args[2]).to.equal(1)],
+    ['increment image by exactly one image', '/foo', () => expect(getRoomStub.firstCall.args[2]).to.equal(1)],
     ['broadcast message for valid room', '/foo', () => expect(ioStub.to.callCount).to.equal(1)],
     ['broadcast message to room name', '/foo', () => expect(ioStub.to.firstCall.args).to.deep.equal(['/foo/bar'])],
     ['emit message for valid room', '/foo', () => expect(ioStub.emit.callCount).to.equal(1)],

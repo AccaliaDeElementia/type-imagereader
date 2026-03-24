@@ -14,7 +14,10 @@ export const WakeLock = {
   sentinel: ((): WakeLockSentinel | null => null)(),
   timeout: RELEASED_TIMEOUT,
   wakeTime: LOCK_HOLD_TIME,
+  initialized: false,
   Init: (): void => {
+    if (WakeLock.initialized) return
+    WakeLock.initialized = true
     Subscribe('Picture:LoadNew', async () => {
       await WakeLock.TakeLock().catch(() => null)
     })
