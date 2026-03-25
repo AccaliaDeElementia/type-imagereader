@@ -10,6 +10,8 @@ import { Navigation } from '../../../../../public/scripts/app/navigation'
 import { Cast } from '../../../../../testutils/TypeGuards'
 import type { Listing } from '../../../../../contracts/listing'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   head
@@ -38,7 +40,7 @@ describe('public/app/navigation function Init()', () => {
     PubSub.deferred = []
     tabSelectedSpy.resolves()
     PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    loadDataStub = Sinon.stub(Navigation, 'LoadData').resolves()
+    loadDataStub = sandbox.stub(Navigation, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -46,7 +48,7 @@ describe('public/app/navigation function Init()', () => {
     }
   })
   afterEach(() => {
-    loadDataStub.restore()
+    sandbox.restore()
     tabSelectedSpy.reset()
   })
   after(() => {
@@ -178,10 +180,10 @@ describe('public/app/navigation function Init()', () => {
   describe('Navigate:Data Message Handler', () => {
     let consoleLogSpy = Sinon.stub()
     beforeEach(() => {
-      consoleLogSpy = Sinon.stub(global.window.console, 'log')
+      consoleLogSpy = sandbox.stub(global.window.console, 'log')
     })
     afterEach(() => {
-      consoleLogSpy.restore()
+      sandbox.restore()
     })
     const testCases: Array<[string, unknown, boolean]> = [
       ['null', null, false],

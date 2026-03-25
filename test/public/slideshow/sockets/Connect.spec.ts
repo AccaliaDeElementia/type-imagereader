@@ -8,6 +8,8 @@ import { JSDOM } from 'jsdom'
 import { expect } from 'chai'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeEmit = Sinon.stub()
   const fakeOn = Sinon.stub()
@@ -25,17 +27,17 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     fakeViewport.scale = 1
     fakeEmit.reset()
     fakeOn.reset()
-    fakeHandleClick = Sinon.stub(Functions, 'HandleClick')
-    fakeHandleKeys = Sinon.stub(Functions, 'HandleKeys')
-    fakeParseRoom = Sinon.stub(Functions, 'ParseRoomName')
+    fakeHandleClick = sandbox.stub(Functions, 'HandleClick')
+    fakeHandleKeys = sandbox.stub(Functions, 'HandleKeys')
+    fakeParseRoom = sandbox.stub(Functions, 'ParseRoomName')
     fakeParseRoom.returns('')
-    fakeIO = Sinon.stub(Imports, 'io').returns(fakeSocket)
+    fakeIO = sandbox.stub(Imports, 'io').returns(fakeSocket)
     global.window = Cast<Window & typeof globalThis>(dom.window)
     Object.defineProperty(global, 'document', {
       configurable: true,
       get: () => dom.window.document,
     })
-    fakeAddEventListener = Sinon.stub(dom.window.document.body, 'addEventListener')
+    fakeAddEventListener = sandbox.stub(dom.window.document.body, 'addEventListener')
     dom.reconfigure({
       url: `http://127.0.0.1:2999/slideshow?`,
     })
@@ -43,19 +45,12 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     global.window.visualViewport = Cast<VisualViewport>(fakeViewport)
   })
   afterEach(() => {
-    fakeHandleClick?.restore()
-    fakeHandleKeys?.restore()
-    fakeIO?.restore()
-    fakeParseRoom?.restore()
-    fakeAddEventListener?.restore()
+    sandbox.restore()
     global.window = existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
       get: () => existingDocument,
     })
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should clear launchId prior to connect succeeding', () => {
     WebSockets.launchId = 'BAD PRIOR ID'

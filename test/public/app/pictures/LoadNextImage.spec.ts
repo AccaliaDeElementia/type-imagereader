@@ -9,6 +9,8 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import type { Picture } from '../../../../contracts/listing'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -40,20 +42,16 @@ describe('public/app/pictures function LoadNextImage()', () => {
     dom.window.fetch = fetchStub
     fetchStub.reset()
     fetchStub.resolves()
-    getPictureStub = Sinon.stub(Pictures, 'GetPicture').returns(next)
-    getShowUnreadOnlyStub = Sinon.stub(Pictures, 'GetShowUnreadOnly').returns(false)
+    getPictureStub = sandbox.stub(Pictures, 'GetPicture').returns(next)
+    getShowUnreadOnlyStub = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
     mainImage.width = 1024
     mainImage.height = 768
     Pictures.mainImage = Cast<HTMLImageElement>(mainImage)
   })
   afterEach(() => {
-    getShowUnreadOnlyStub.restore()
-    getPictureStub.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should call GetPicture once when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)

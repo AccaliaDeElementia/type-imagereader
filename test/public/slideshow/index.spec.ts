@@ -11,14 +11,16 @@ import { WeatherUpdater, LocalWeatherUpdater } from '../../../public/scripts/sli
 import { CyclicManager } from '../../../public/scripts/slideshow/updater'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/index', () => {
   let fakeCyclicAdd: Sinon.SinonStub | undefined = undefined
   let fakeCyclicStart: Sinon.SinonStub | undefined = undefined
   let fakeSocketConnect: Sinon.SinonStub | undefined = undefined
   before(async () => {
-    fakeCyclicAdd = Sinon.stub(CyclicManager, 'Add')
-    fakeCyclicStart = Sinon.stub(CyclicManager, 'Start')
-    fakeSocketConnect = Sinon.stub(WebSockets, 'connect')
+    fakeCyclicAdd = sandbox.stub(CyclicManager, 'Add')
+    fakeCyclicStart = sandbox.stub(CyclicManager, 'Start')
+    fakeSocketConnect = sandbox.stub(WebSockets, 'connect')
     await import('../../../public/scripts/slideshow/index')
   })
   after(() => {

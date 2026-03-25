@@ -3,16 +3,17 @@
 import { expect } from 'chai'
 import { Functions } from '../../../routes/images'
 import Sinon from 'sinon'
+
+const sandbox = Sinon.createSandbox()
 describe('routes/images function ReadAndRescaleImage()', () => {
   let readImageStub = Sinon.stub()
   let rescaleImageStub = Sinon.stub()
   beforeEach(() => {
-    readImageStub = Sinon.stub(Functions, 'ReadImage').resolves()
-    rescaleImageStub = Sinon.stub(Functions, 'RescaleImage').resolves()
+    readImageStub = sandbox.stub(Functions, 'ReadImage').resolves()
+    rescaleImageStub = sandbox.stub(Functions, 'RescaleImage').resolves()
   })
   afterEach(() => {
-    rescaleImageStub.restore()
-    readImageStub.restore()
+    sandbox.restore()
   })
   it('should read image as requested', async () => {
     await Functions.ReadAndRescaleImage('/foo.png', 999, 999)

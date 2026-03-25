@@ -11,6 +11,8 @@ import { Tabs } from '../../../../public/scripts/app/tabs'
 import assert from 'node:assert'
 import { HasValue } from '../../../../utils/helpers'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -43,18 +45,15 @@ describe('public/app/tabs function Init()', () => {
     })
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    selectTabSpy = Sinon.stub(Tabs, 'SelectTab')
+    selectTabSpy = sandbox.stub(Tabs, 'SelectTab')
     PubSub.subscribers = {}
     Tabs.tabs = []
     Tabs.tabNames = []
   })
   afterEach(() => {
-    selectTabSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   const links = ['#tabActions', '#tabFolders', '#tabImages', '#tabBookmarks']
   it('should discover expected tab count', () => {
@@ -102,7 +101,7 @@ describe('public/app/tabs function Init()', () => {
     it(`should add click handler to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
       assert(HasValue(elem))
-      const spy = Sinon.stub(elem, 'addEventListener')
+      const spy = sandbox.stub(elem, 'addEventListener')
       try {
         Tabs.Init()
         expect(spy.callCount).to.equal(1)

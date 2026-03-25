@@ -5,6 +5,8 @@ import { Functions } from '../../../utils/persistance'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/persistance function getKnexConfig()', () => {
   let configBlock = {
     client: '',
@@ -35,11 +37,11 @@ describe('utils/persistance function getKnexConfig()', () => {
       },
       migrations: { tableName: '' },
     }
-    readConfigurationBlockStub = Sinon.stub(Functions, 'readConfigurationBlock').resolves(configBlock)
+    readConfigurationBlockStub = sandbox.stub(Functions, 'readConfigurationBlock').resolves(configBlock)
   })
 
   afterEach(() => {
-    readConfigurationBlockStub.restore()
+    sandbox.restore()
   })
   it('should reject when readConfig rejects', async () => {
     readConfigurationBlockStub.rejects(new Error('FOO I FAIL'))

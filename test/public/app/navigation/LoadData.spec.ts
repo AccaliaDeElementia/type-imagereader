@@ -12,6 +12,8 @@ import { Net } from '../../../../public/scripts/app/net'
 import { isListing } from '../../../../contracts/listing'
 import { EventuallyFullfills } from '../../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   head
@@ -46,7 +48,7 @@ describe('public/app/navigation function LoadData()', () => {
     assert(titleElement !== null)
     brandElement = dom.window.document.querySelector('a.navbar-brand')
     assert(brandElement !== null)
-    historySpy = Sinon.stub(dom.window.history, 'pushState')
+    historySpy = sandbox.stub(dom.window.history, 'pushState')
 
     loadingErrorSpy.resolves()
     loadingHideSpy.resolves()
@@ -64,17 +66,15 @@ describe('public/app/navigation function LoadData()', () => {
       name: '',
       parent: '',
     }
-    getJSONSpy = Sinon.stub(Net, 'GetJSON').resolves({
+    getJSONSpy = sandbox.stub(Net, 'GetJSON').resolves({
       path: '/foo',
       name: 'foo',
       parent: '/',
     })
-    suppressMenuSpy = Sinon.stub(Navigation, 'IsSuppressMenu').returns(false)
+    suppressMenuSpy = sandbox.stub(Navigation, 'IsSuppressMenu').returns(false)
   })
   afterEach(() => {
-    suppressMenuSpy.restore()
-    getJSONSpy.restore()
-    historySpy.restore()
+    sandbox.restore()
     loadingErrorSpy.reset()
     loadingHideSpy.reset()
     loadingShowSpy.reset()

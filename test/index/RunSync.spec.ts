@@ -5,6 +5,8 @@ import { ImageReader, RunSync, Functions, Imports } from '../..'
 import { expect } from 'chai'
 import { EventuallyFullfills } from '../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 const fireImmediately = (fn: () => Promise<void>): number => {
   fn().catch(() => null)
   return 0
@@ -18,14 +20,12 @@ describe('index.ts RunSync() tests', () => {
   beforeEach(() => {
     ImageReader.Interval = undefined
     ImageReader.SyncInterval = defaultInterval
-    actuallyRunSpy = Sinon.stub(Functions, 'ActuallyRunSyncForReal').resolves()
-    setIntervalFake = Sinon.stub(Functions, 'setInterval').returns(0)
-    loggerStub = Sinon.stub(Imports, 'logger')
+    actuallyRunSpy = sandbox.stub(Functions, 'ActuallyRunSyncForReal').resolves()
+    setIntervalFake = sandbox.stub(Functions, 'setInterval').returns(0)
+    loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
-    setIntervalFake.restore()
-    actuallyRunSpy.restore()
-    loggerStub.restore()
+    sandbox.restore()
   })
   it('should set interval to execute sync on schedule', async () => {
     await RunSync()

@@ -11,6 +11,8 @@ import { Cast } from '../../../../../testutils/TypeGuards'
 import { Pictures } from '../../../../../public/scripts/app/pictures'
 import { EventuallyRejects } from '../../../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   head
@@ -27,7 +29,7 @@ describe('public/app/navigation function Init()', () => {
   const existingDocument = global.document
   let dom = new JSDOM('', {})
   const tabSelectedSpy = Sinon.stub()
-  let loadDataStub = Sinon.stub()
+  Sinon.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -39,7 +41,7 @@ describe('public/app/navigation function Init()', () => {
     PubSub.deferred = []
     tabSelectedSpy.resolves()
     PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    loadDataStub = Sinon.stub(Navigation, 'LoadData').resolves()
+    sandbox.stub(Navigation, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -47,7 +49,7 @@ describe('public/app/navigation function Init()', () => {
     }
   })
   afterEach(() => {
-    loadDataStub.restore()
+    sandbox.restore()
     tabSelectedSpy.reset()
   })
   after(() => {
@@ -72,8 +74,8 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = Sinon.stub(Navigation, 'NavigateTo')
-      showUnreadOnlyStub = Sinon.stub(Pictures, 'GetShowUnreadOnly').returns(false)
+      navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
+      showUnreadOnlyStub = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
       Navigation.Init()
       previousFolder = {
         name: `Foo ${Math.random()}`,
@@ -92,8 +94,7 @@ describe('public/app/navigation function Init()', () => {
       handler = h
     })
     afterEach(() => {
-      navigateToStub.restore()
-      showUnreadOnlyStub.restore()
+      sandbox.restore()
     })
     it('should navigate to previous folder when showUnreadOnly is not set', async () => {
       await handler()
@@ -150,8 +151,8 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = Sinon.stub(Navigation, 'NavigateTo')
-      showUnreadOnlyStub = Sinon.stub(Pictures, 'GetShowUnreadOnly').returns(false)
+      navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
+      showUnreadOnlyStub = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
       Navigation.Init()
       nextFolder = {
         name: `Foo ${Math.random()}`,
@@ -170,8 +171,7 @@ describe('public/app/navigation function Init()', () => {
       handler = h
     })
     afterEach(() => {
-      navigateToStub.restore()
-      showUnreadOnlyStub.restore()
+      sandbox.restore()
     })
     it('should navigate to next folder when showUnreadOnly is not set', async () => {
       await handler()
@@ -218,7 +218,7 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = Sinon.stub(Navigation, 'NavigateTo')
+      navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
       Navigation.Init()
       parentFolder = `/Foo ${Math.random()}`
       Navigation.current.parent = parentFolder
@@ -227,7 +227,7 @@ describe('public/app/navigation function Init()', () => {
       handler = h
     })
     afterEach(() => {
-      navigateToStub.restore()
+      sandbox.restore()
     })
     it('should navigate to parent folder', async () => {
       await handler()
@@ -257,7 +257,7 @@ describe('public/app/navigation function Init()', () => {
     }
     let children = [{ name: '', path: '', cover: '', totalSeen: 0, totalCount: 0 }]
     beforeEach(() => {
-      navigateToStub = Sinon.stub(Navigation, 'NavigateTo')
+      navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
       Navigation.Init()
       children = Array(20)
         .fill(undefined)
@@ -274,7 +274,7 @@ describe('public/app/navigation function Init()', () => {
       handler = h
     })
     afterEach(() => {
-      navigateToStub.restore()
+      sandbox.restore()
     })
     it('should navigate to undefined when no children are undefined', async () => {
       Navigation.current.children = undefined

@@ -7,6 +7,8 @@ import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
 import { Functions, Imports } from '../../Server'
 
+const sandbox = Sinon.createSandbox()
+
 describe('Server function ConfigureBaseApp', () => {
   let jsonifyStub = Sinon.stub().returns({})
   let urlEncoderStub = Sinon.stub().returns({})
@@ -15,18 +17,15 @@ describe('Server function ConfigureBaseApp', () => {
   let appStub = { use: Sinon.stub() }
   let appFake = Cast<Express>(appStub)
   beforeEach(() => {
-    jsonifyStub = Sinon.stub(express, 'json')
-    urlEncoderStub = Sinon.stub(express, 'urlencoded')
-    cookieParserStub = Sinon.stub(Imports, 'cookieParser')
-    faviconStub = Sinon.stub(Imports, 'favicon')
+    jsonifyStub = sandbox.stub(express, 'json')
+    urlEncoderStub = sandbox.stub(express, 'urlencoded')
+    cookieParserStub = sandbox.stub(Imports, 'cookieParser')
+    faviconStub = sandbox.stub(Imports, 'favicon')
     appStub = { use: Sinon.stub() }
     appFake = Cast<Express>(appStub)
   })
   afterEach(() => {
-    jsonifyStub.restore()
-    urlEncoderStub.restore()
-    cookieParserStub.restore()
-    faviconStub.restore()
+    sandbox.restore()
   })
   it('should use correct count of extensions', () => {
     Functions.ConfigureBaseApp(appFake)

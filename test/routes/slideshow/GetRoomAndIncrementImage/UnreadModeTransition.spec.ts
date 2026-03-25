@@ -5,6 +5,8 @@ import { StubToKnex } from '../../../../testutils/TypeGuards'
 import { expect } from 'chai'
 import { Config, Functions } from '../../../../routes/slideshow'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow function GetRoomAndIncrementImage() unread to all-images mode transition', () => {
   let knexFake = StubToKnex({ knex: Math.random() })
   let getImagesStub = Sinon.stub()
@@ -35,17 +37,15 @@ describe('routes/slideshow function GetRoomAndIncrementImage() unread to all-ima
     Config.rooms = {}
     Config.countdownDuration = 60
     Config.memorySize = 100
-    getImagesStub = Sinon.stub(Functions, 'GetImages').resolves([])
-    markImageReadStub = Sinon.stub(Functions, 'MarkImageRead').resolves()
-    getCountsStub = Sinon.stub(Functions, 'GetCounts')
+    getImagesStub = sandbox.stub(Functions, 'GetImages').resolves([])
+    markImageReadStub = sandbox.stub(Functions, 'MarkImageRead').resolves()
+    getCountsStub = sandbox.stub(Functions, 'GetCounts')
     getCountsStub.onFirstCall().resolves(transitionPages)
     getCountsStub.onSecondCall().resolves(freshPages)
     Config.rooms['/path/'] = unreadRoom
   })
   afterEach(() => {
-    getCountsStub.restore()
-    getImagesStub.restore()
-    markImageReadStub.restore()
+    sandbox.restore()
     Config.countdownDuration = 60
     Config.memorySize = 100
   })
@@ -105,5 +105,33 @@ describe('routes/slideshow function GetRoomAndIncrementImage() unread to all-ima
     unreadRoom.index = 0
     await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -1)
     expect(getCountsStub.callCount).to.equal(1)
+  })
+  it('it should call MarkImageRead with knex on unread to all-images transition on increment', async () => {
+    getImagesStub.resolves(['/new_image.png'])
+    await Functions.GetRoomAndIncrementImage(knexFake, '/path/', 1)
+    expect(markImageReadStub.calledOnce).to.equal(true)
+    expect(markImageReadStub.firstCall.args[0]).to.equal(knexFake)
+  })
+  it('it should call MarkImageRead with the first fresh image on unread to all-images transition on increment', async () => {
+    getImagesStub.resolves(['/new_image.png'])
+    await Functions.GetRoomAndIncrementImage(knexFake, '/path/', 1)
+    expect(markImageReadStub.firstCall.args[1]).to.equal('/new_image.png')
+  })
+  it('it should call MarkImageRead with knex on unread to all-images transition on decrement', async () => {
+    unreadRoom.index = 0
+    getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
+    await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -1)
+    expect(markImageReadStub.calledOnce).to.equal(true)
+    expect(markImageReadStub.firstCall.args[0]).to.equal(knexFake)
+  })
+  it('it should call MarkImageRead with the last fresh image on unread to all-images transition on decrement', async () => {
+    unreadRoom.index = 0
+    getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
+    await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -1)
+    expect(markImageReadStub.firstCall.args[1]).to.equal('/prev_b.png')
+  })
+  it('it should not call MarkImageRead when no images are available after transition', async () => {
+    await Functions.GetRoomAndIncrementImage(knexFake, '/path/', 1)
+    expect(markImageReadStub.notCalled).to.equal(true)
   })
 })

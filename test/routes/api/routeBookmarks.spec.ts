@@ -12,6 +12,8 @@ import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 type RequestHandler = (req: Request, res: Response) => Promise<void>
 
 describe('routes/api route GET /bookmarks', () => {
@@ -30,7 +32,7 @@ describe('routes/api route GET /bookmarks', () => {
   let responseFake = Cast<Response>(responseStub)
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
-  let debuggerStub = Sinon.stub()
+  Sinon.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -47,16 +49,16 @@ describe('routes/api route GET /bookmarks', () => {
     responseFake = Cast<Response>(responseStub)
     const getFn = Sinon.stub()
     knexFake = { Knex: Math.random() }
-    const InitializeStub = Sinon.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
-    const MakeRouterStub = Sinon.stub(Imports, 'Router').returns(
+    const InitializeStub = sandbox.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
+    const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         get: getFn,
         post: Sinon.stub(),
       }),
     )
-    getBookmarkStub = Sinon.stub(Functions, 'GetBookmarks').resolves()
+    getBookmarkStub = sandbox.stub(Functions, 'GetBookmarks').resolves()
     loggerStub = Sinon.stub()
-    debuggerStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     const fn = getFn.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1] as unknown
     routeHandler = Cast(fn, (fn): fn is RequestHandler => typeof fn === 'function')
@@ -65,8 +67,7 @@ describe('routes/api route GET /bookmarks', () => {
   })
 
   afterEach(() => {
-    debuggerStub.restore()
-    getBookmarkStub.restore()
+    sandbox.restore()
   })
   it('should return bookmarks', async () => {
     const bookmarks = { Bookmarks: Math.random() }

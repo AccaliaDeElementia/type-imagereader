@@ -6,6 +6,8 @@ import { expect } from 'chai'
 import { Loading } from '../../../../public/scripts/app/loading'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pictures function ChangePicture()', () => {
   const menuHideSpy = Sinon.stub().resolves()
   const loadingErrorSpy = Sinon.stub().resolves()
@@ -19,15 +21,11 @@ describe('public/app/pictures function ChangePicture()', () => {
     }
     menuHideSpy.resetHistory()
     loadingErrorSpy.resetHistory()
-    isLoadingSpy = Sinon.stub(Loading, 'IsLoading').returns(false)
-    loadImageSpy = Sinon.stub(Pictures, 'LoadImage').resolves()
+    isLoadingSpy = sandbox.stub(Loading, 'IsLoading').returns(false)
+    loadImageSpy = sandbox.stub(Pictures, 'LoadImage').resolves()
   })
   afterEach(() => {
-    isLoadingSpy.restore()
-    loadImageSpy.restore()
-  })
-  after(() => {
-    Sinon.restore()
+    sandbox.restore()
   })
   it('should not set current picture if image is currently loading', async () => {
     isLoadingSpy.returns(true)

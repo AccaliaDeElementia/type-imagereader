@@ -10,6 +10,8 @@ import type { Picture } from '../../../../contracts/listing'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -64,23 +66,16 @@ describe('public/app/pictures function Init()', () => {
     global.document = dom.window.document
     PubSub.subscribers = {}
     PubSub.deferred = []
-    resetMarkupSpy = Sinon.stub(Pictures, 'ResetMarkup')
-    initActionsSpy = Sinon.stub(Pictures, 'InitActions')
-    initMouseSpy = Sinon.stub(Pictures, 'InitMouse')
-    initUnreadSliderSpy = Sinon.stub(Pictures, 'InitUnreadSelectorSlider')
-    loadDataSpy = Sinon.stub(Pictures, 'LoadData')
+    resetMarkupSpy = sandbox.stub(Pictures, 'ResetMarkup')
+    initActionsSpy = sandbox.stub(Pictures, 'InitActions')
+    initMouseSpy = sandbox.stub(Pictures, 'InitMouse')
+    initUnreadSliderSpy = sandbox.stub(Pictures, 'InitUnreadSelectorSlider')
+    loadDataSpy = sandbox.stub(Pictures, 'LoadData')
   })
   afterEach(() => {
-    loadDataSpy.restore()
-    initUnreadSliderSpy.restore()
-    initMouseSpy.restore()
-    initActionsSpy.restore()
-    resetMarkupSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should clear pictures array', () => {
     Pictures.pictures = Cast<Picture[]>(null)

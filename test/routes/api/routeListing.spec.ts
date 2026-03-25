@@ -12,6 +12,8 @@ import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 type RequestHandler = (req: Request, res: Response) => Promise<void>
 
 describe('routes/api route GET /listing', () => {
@@ -30,7 +32,7 @@ describe('routes/api route GET /listing', () => {
   let responseFake = Cast<Response>(responseStub)
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
-  let debuggerStub = Sinon.stub()
+  Sinon.stub()
   let getListingStub = Sinon.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
@@ -49,16 +51,16 @@ describe('routes/api route GET /listing', () => {
     responseFake = Cast<Response>(responseStub)
     knexFake = { Knex: Math.random() }
     const getFn = Sinon.stub()
-    const InitializeStub = Sinon.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
-    const MakeRouterStub = Sinon.stub(Imports, 'Router').returns(
+    const InitializeStub = sandbox.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
+    const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         get: getFn,
         post: Sinon.stub(),
       }),
     )
-    getListingStub = Sinon.stub(Functions, 'GetListing').resolves()
+    getListingStub = sandbox.stub(Functions, 'GetListing').resolves()
     loggerStub = Sinon.stub()
-    debuggerStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       getFn.getCalls().find((call) => call.args[0] === '/listing')?.args[1],
@@ -68,8 +70,7 @@ describe('routes/api route GET /listing', () => {
     MakeRouterStub.restore()
   })
   afterEach(() => {
-    getListingStub.restore()
-    debuggerStub.restore()
+    sandbox.restore()
   })
   it('should return status OK', async () => {
     getListingStub.resolves({})

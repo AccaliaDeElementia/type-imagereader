@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -13,6 +13,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
 import assert from 'node:assert'
 import type { Bookmark } from '../../../../contracts/listing'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -62,15 +64,12 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
-    postJSONSpy = Sinon.stub(Net, 'PostJSON').resolves()
+    postJSONSpy = sandbox.stub(Net, 'PostJSON').resolves()
   })
   afterEach(() => {
-    postJSONSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should return null if card template is missing', () => {
     Bookmarks.bookmarkCard = undefined
@@ -121,7 +120,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
-    Sinon.stub(evt, 'stopPropagation').callsFake(() => {
+    sandbox.stub(evt, 'stopPropagation').callsFake(() => {
       awaiter = Promise.resolve()
     })
     const button = result.querySelector('button')
@@ -151,7 +150,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     assert(result !== null)
     let stopPropagationCalled = false
     const evt = new dom.window.MouseEvent('click')
-    Sinon.stub(evt, 'stopPropagation').callsFake(() => {
+    sandbox.stub(evt, 'stopPropagation').callsFake(() => {
       stopPropagationCalled = true
     })
     result.querySelector('button')?.dispatchEvent(evt)
@@ -163,7 +162,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
-    Sinon.stub(evt, 'stopPropagation').callsFake(() => {
+    sandbox.stub(evt, 'stopPropagation').callsFake(() => {
       awaiter = Promise.resolve()
     })
     result.dispatchEvent(evt)

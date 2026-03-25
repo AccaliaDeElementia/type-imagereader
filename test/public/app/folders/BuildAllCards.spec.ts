@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
@@ -11,6 +11,8 @@ import { Folders } from '../../../../public/scripts/app/folders'
 import assert from 'node:assert'
 import Sinon from 'sinon'
 import type { Listing } from '../../../../contracts/listing'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -55,15 +57,12 @@ describe('public/app/folders function BuildAllCards()', () => {
     assert(template !== null)
     folderCard = template.content
     Folders.FolderCard = folderCard
-    buildCardStub = Sinon.stub(Folders, 'BuildCard').returns(null)
+    buildCardStub = sandbox.stub(Folders, 'BuildCard').returns(null)
   })
   afterEach(() => {
-    buildCardStub.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should handle undefined listing', () => {
     for (let i = 0; i < 5; i += 1) {

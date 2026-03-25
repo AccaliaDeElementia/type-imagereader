@@ -6,14 +6,16 @@ import Sinon from 'sinon'
 import fsWalker from '../../../utils/fswalker'
 import { EventuallyRejects } from '../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/fswalker function fsWalker()', () => {
   let readdirSpy = Sinon.stub()
   beforeEach(() => {
-    readdirSpy = Sinon.stub(fsWalker.fn, 'readdir')
+    readdirSpy = sandbox.stub(fsWalker.fn, 'readdir')
     readdirSpy.resolves([])
   })
   afterEach(() => {
-    readdirSpy.restore()
+    sandbox.restore()
   })
   it('should call readdir starting at root', async () => {
     await fsWalker('/foo/bar/baz', async () => {

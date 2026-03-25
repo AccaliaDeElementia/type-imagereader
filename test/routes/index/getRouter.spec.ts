@@ -8,18 +8,20 @@ import { getRouter, Imports } from '../../../routes/index'
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/index function getRouter()', () => {
   const applicationFake = Cast<Application>({})
   const serverFake = Cast<Server>({})
   const socketsFake = Cast<WebSocketServer>({})
   let routerStub = { get: Sinon.stub() }
-  let getRouterStub = Sinon.stub().returns(Cast<Router>(routerStub))
+  Sinon.stub().returns(Cast<Router>(routerStub))
   beforeEach(() => {
     routerStub = { get: Sinon.stub() }
-    getRouterStub = Sinon.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
   })
   afterEach(() => {
-    getRouterStub.restore()
+    sandbox.restore()
   })
   it('should return constructed router', async () => {
     const result = await getRouter(applicationFake, serverFake, socketsFake)

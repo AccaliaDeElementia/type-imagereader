@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function PruneEmptyFolders()', () => {
   let loggerStub = Sinon.stub()
   let debugStub = Sinon.stub()
@@ -23,10 +25,10 @@ describe('utils/syncfolders function PruneEmptyFolders()', () => {
     }
     knexFnStub = Sinon.stub().returns(knexStub)
     knexFnFake = StubToKnex(knexFnStub)
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
   })
   afterEach(() => {
-    debugStub.restore()
+    sandbox.restore()
   })
   it('should construct prefixed logger', async () => {
     await Functions.PruneEmptyFolders(knexFnFake)

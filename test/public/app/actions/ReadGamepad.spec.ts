@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 import Sinon from 'sinon'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
@@ -10,11 +10,13 @@ import { Actions } from '../../../../public/scripts/app/actions'
 import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/actions function ReadGamepad()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   const dom: JSDOM = new JSDOM('', {})
-  let BuildActionsSpy = Sinon.stub()
+  Sinon.stub()
   let GamepadResetSpy = Sinon.stub()
 
   let existingNavigator: Navigator = global.navigator
@@ -38,9 +40,9 @@ describe('public/app/actions function ReadGamepad()', () => {
     PubSub.subscribers = {}
     PubSub.deferred = []
     PubSub.intervals = {}
-    BuildActionsSpy = Sinon.stub(Actions, 'BuildActions')
+    sandbox.stub(Actions, 'BuildActions')
     Actions.gamepads.Reset()
-    GamepadResetSpy = Sinon.stub(Actions.gamepads, 'Reset')
+    GamepadResetSpy = sandbox.stub(Actions.gamepads, 'Reset')
     documentHidden = false
     existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
@@ -54,24 +56,19 @@ describe('public/app/actions function ReadGamepad()', () => {
       get: () => documentHidden,
     })
     getTestGamepads.returns([testGamePad])
-    gamepadsReadStub = Sinon.stub(Actions.gamepads, 'Read').returns(false)
+    gamepadsReadStub = sandbox.stub(Actions.gamepads, 'Read').returns(false)
     actionGamepadListener = Sinon.stub().resolves()
     PubSub.Subscribe('Action:Gamepad', actionGamepadListener)
   })
   afterEach(() => {
-    gamepadsReadStub.restore()
+    sandbox.restore()
     Actions.gamepads.Reset()
     Object.defineProperty(global, 'navigator', {
       configurable: true,
       get: () => existingNavigator,
     })
-    GamepadResetSpy.restore()
-    BuildActionsSpy.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should accept an null of gamepads', () => {
     getTestGamepads.resetBehavior()

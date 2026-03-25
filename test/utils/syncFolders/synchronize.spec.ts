@@ -7,6 +7,8 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function synchronize()', () => {
   let loggerStub = Sinon.stub()
   let debugStub = Sinon.stub()
@@ -20,22 +22,16 @@ describe('utils/syncfolders function synchronize()', () => {
   beforeEach(() => {
     loggerStub = Sinon.stub()
     knexFnStub = Sinon.stub().returnsThis()
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    persistenceIntitializerStub = Sinon.stub(persistence, 'initialize').resolves(StubToKnex(knexFnStub))
-    findSyncItemsStub = Sinon.stub(Functions, 'FindSyncItems').resolves(1)
-    syncAllPicturesStub = Sinon.stub(Functions, 'SyncAllPictures').resolves()
-    syncAllFoldersStub = Sinon.stub(Functions, 'SyncAllFolders').resolves()
-    updateFolderPictureCountsStub = Sinon.stub(Functions, 'UpdateFolderPictureCounts').resolves()
-    pruneEmptyFoldersStub = Sinon.stub(Functions, 'PruneEmptyFolders').resolves()
+    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    persistenceIntitializerStub = sandbox.stub(persistence, 'initialize').resolves(StubToKnex(knexFnStub))
+    findSyncItemsStub = sandbox.stub(Functions, 'FindSyncItems').resolves(1)
+    syncAllPicturesStub = sandbox.stub(Functions, 'SyncAllPictures').resolves()
+    syncAllFoldersStub = sandbox.stub(Functions, 'SyncAllFolders').resolves()
+    updateFolderPictureCountsStub = sandbox.stub(Functions, 'UpdateFolderPictureCounts').resolves()
+    pruneEmptyFoldersStub = sandbox.stub(Functions, 'PruneEmptyFolders').resolves()
   })
   afterEach(() => {
-    debugStub.restore()
-    findSyncItemsStub.restore()
-    syncAllPicturesStub.restore()
-    syncAllFoldersStub.restore()
-    updateFolderPictureCountsStub.restore()
-    pruneEmptyFoldersStub.restore()
-    persistenceIntitializerStub.restore()
+    sandbox.restore()
   })
   it('should create logger at start of process', async () => {
     await synchronize()

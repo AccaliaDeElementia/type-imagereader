@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
 import { Functions, Imports } from '../../Server'
 
+const sandbox = Sinon.createSandbox()
+
 describe('Server function ConfigureLoggingAndErrors', () => {
   let helmetStub = Sinon.stub()
   let morganStub = Sinon.stub()
@@ -13,16 +15,15 @@ describe('Server function ConfigureLoggingAndErrors', () => {
   let appFake = Cast<Express>(appStub)
   let responseStub = { status: Sinon.stub().returnsThis(), json: Sinon.stub().returnsThis() }
   beforeEach(() => {
-    helmetStub = Sinon.stub(Imports, 'helmet')
-    morganStub = Sinon.stub(Imports, 'morgan')
+    helmetStub = sandbox.stub(Imports, 'helmet')
+    morganStub = sandbox.stub(Imports, 'morgan')
     appStub = { use: Sinon.stub() }
     appFake = Cast<Express>(appStub)
     responseStub = { status: Sinon.stub().returnsThis(), json: Sinon.stub().returnsThis() }
     delete process.env.NODE_ENV
   })
   afterEach(() => {
-    morganStub.restore()
-    helmetStub.restore()
+    sandbox.restore()
   })
   it('should not register logger for unconfigured env variable', () => {
     Functions.ConfigureLoggingAndErrors(appFake)

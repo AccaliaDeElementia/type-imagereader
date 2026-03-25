@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function FindSyncItems()', () => {
   let loggerStub = Sinon.stub()
   let debugStub = Sinon.stub()
@@ -25,18 +27,16 @@ describe('utils/syncfolders function FindSyncItems()', () => {
     knexFnStub = Sinon.stub().returns(knexInstanceStub)
     knexFnFake = StubToKnex(knexFnStub)
     loggerStub = Sinon.stub()
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    fsWalkerStub = Sinon.stub(Imports, 'fsWalker').resolves()
-    chunkSyncItemsForInsertStub = Sinon.stub(Functions, 'ChunkSyncItemsForInsert').returns({
+    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
+    chunkSyncItemsForInsertStub = sandbox.stub(Functions, 'ChunkSyncItemsForInsert').returns({
       files: 0,
       dirs: 0,
       chunks: [],
     })
   })
   afterEach(() => {
-    debugStub.restore()
-    fsWalkerStub.restore()
-    chunkSyncItemsForInsertStub.restore()
+    sandbox.restore()
   })
   it('should create prefixed logger', async () => {
     await Functions.FindSyncItems(knexFnFake)

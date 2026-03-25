@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
 import { EventuallyRejects } from '../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/weather function GetWeather', () => {
   let weatherData = {
     weather: [],
@@ -32,12 +34,12 @@ describe('routes/weather function GetWeather', () => {
     fetchResult = {
       json: Sinon.stub().resolves(weatherData),
     }
-    fetchStub = Sinon.stub(global, 'fetch').resolves(Cast<globalThis.Response>(fetchResult))
+    fetchStub = sandbox.stub(global, 'fetch').resolves(Cast<globalThis.Response>(fetchResult))
   })
   afterEach(() => {
+    sandbox.restore()
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    fetchStub.restore()
   })
   it('should reject missing appId', async () => {
     delete process.env.OPENWEATHER_APPID

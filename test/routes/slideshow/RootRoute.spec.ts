@@ -6,6 +6,8 @@ import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import { expect } from 'chai'
 import { Functions } from '../../../routes/slideshow'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow function RootRoute', () => {
   let reqStub = {
     params: { path: undefined as string | undefined },
@@ -36,12 +38,12 @@ describe('routes/slideshow function RootRoute', () => {
     noImages = []
     fullImages = ['1', '2', '3', '4', '5', '6', '7', '8']
     roomData = { images: noImages, uriSafeImage: '/foo/bar/baz.png' }
-    getRoomStub = Sinon.stub(Functions, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
     getRoomError = new Error('Error Fetching Room!')
   })
   afterEach(() => {
-    getRoomStub.restore()
+    sandbox.restore()
   })
   const eTraverse = {
     title: 'ERROR',

@@ -10,16 +10,18 @@ import persistance from '../../../utils/persistance'
 import { Cast } from '../../../testutils/TypeGuards'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/api function getRouter()', () => {
   let applicationFake = Cast<Application>({ App: Math.random() })
   let serverFake = Cast<Server>({ Server: Math.random() })
   let socketServerFake = Cast<WebSocketServer>({ Sockets: Math.random() })
-  let initializeStub = Sinon.stub()
+  Sinon.stub()
   let routerStub = {
     get: Sinon.stub(),
     post: Sinon.stub(),
   }
-  let makeRouterStub = Sinon.stub()
+  Sinon.stub()
   beforeEach(() => {
     applicationFake = Cast<Application>({ App: Math.random() })
     serverFake = Cast<Server>({ Server: Math.random() })
@@ -28,12 +30,11 @@ describe('routes/api function getRouter()', () => {
       get: Sinon.stub(),
       post: Sinon.stub(),
     }
-    initializeStub = Sinon.stub(persistance, 'initialize').resolves()
-    makeRouterStub = Sinon.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+    sandbox.stub(persistance, 'initialize').resolves()
+    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
   })
   afterEach(() => {
-    initializeStub.restore()
-    makeRouterStub.restore()
+    sandbox.restore()
   })
   it('should resolve to created router', async () => {
     const result = await getRouter(applicationFake, serverFake, socketServerFake)

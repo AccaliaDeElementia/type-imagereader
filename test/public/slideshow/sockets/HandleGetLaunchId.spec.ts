@@ -5,17 +5,16 @@ import { Functions, WebSockets } from '../../../../public/scripts/slideshow/sock
 import { beforeEach, afterEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/sockets HandleGetLaunchId()', () => {
   let fakeReload: Sinon.SinonStub | undefined = undefined
   beforeEach(() => {
-    fakeReload = Sinon.stub(WebSockets, 'LocationReload')
+    fakeReload = sandbox.stub(WebSockets, 'LocationReload')
     WebSockets.launchId = undefined
   })
   afterEach(() => {
-    fakeReload?.restore()
-  })
-  after(() => {
-    Sinon.restore()
+    sandbox.restore()
   })
   it('should save launchId on call', () => {
     Functions.HandleGetLaunchId(8675309)

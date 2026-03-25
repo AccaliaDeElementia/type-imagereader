@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
@@ -12,6 +12,8 @@ import { Folders } from '../../../../public/scripts/app/folders'
 import assert from 'node:assert'
 import Sinon from 'sinon'
 import type { Listing } from '../../../../contracts/listing'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -51,15 +53,12 @@ describe('public/app/folders function Init()', () => {
     PubSub.subscribers = {}
     PubSub.deferred = []
     Folders.FolderCard = null
-    buildFoldersSpy = Sinon.stub(Folders, 'BuildFolders')
+    buildFoldersSpy = sandbox.stub(Folders, 'BuildFolders')
   })
   afterEach(() => {
-    buildFoldersSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should subscribe to Navigate:Data', () => {
     Folders.Init()

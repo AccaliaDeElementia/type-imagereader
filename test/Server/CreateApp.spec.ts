@@ -8,6 +8,8 @@ import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
 import { Functions, Imports } from '../../Server'
 
+const sandbox = Sinon.createSandbox()
+
 describe('Server function CreateApp', () => {
   let serverFake = Cast<Server>({})
   let socketsFake = Cast<WebSocketServer>({})
@@ -21,14 +23,12 @@ describe('Server function CreateApp', () => {
     socketsFake = Cast<WebSocketServer>({})
     appStub = { listen: Sinon.stub().returns(serverFake) }
     appFake = Cast<Express>(appStub)
-    expressStub = Sinon.stub(Imports, 'express').returns(appFake)
-    socketsServerStub = Sinon.stub(Imports, 'WebSocketServer').returns(socketsFake)
-    loggerFake = Sinon.stub(Imports, 'logger')
+    expressStub = sandbox.stub(Imports, 'express').returns(appFake)
+    socketsServerStub = sandbox.stub(Imports, 'WebSocketServer').returns(socketsFake)
+    loggerFake = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
-    loggerFake.restore()
-    expressStub.restore()
-    socketsServerStub.restore()
+    sandbox.restore()
   })
   it('should construct express app', () => {
     Functions.CreateApp(1)

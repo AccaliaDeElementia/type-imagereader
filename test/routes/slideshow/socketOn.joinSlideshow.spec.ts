@@ -6,6 +6,8 @@ import { expect } from 'chai'
 import { HandleSocketState, Functions, SocketHandlers } from '../../../routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow socket join-slideshow()', () => {
   let knexFake = StubToKnex({})
   let serverFake = Cast<WebSocketServer>({})
@@ -26,11 +28,11 @@ describe('routes/slideshow socket join-slideshow()', () => {
     roomData = {
       uriSafeImage: '/foo/quux.png',
     }
-    getRoomStub = Sinon.stub(Functions, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
   })
   afterEach(() => {
-    getRoomStub.restore()
+    sandbox.restore()
   })
   const tests: Array<[string, string | null | undefined, () => void]> = [
     ['not join missing room name', undefined, () => expect(socketStub.join.callCount).to.equal(0)],

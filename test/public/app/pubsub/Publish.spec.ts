@@ -8,16 +8,15 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pubsub function Publish()', () => {
   let publishAsyncSpy = Sinon.stub().resolves()
   beforeEach(() => {
-    publishAsyncSpy = Sinon.stub(PubSub, 'PublishAsync').resolves()
+    publishAsyncSpy = sandbox.stub(PubSub, 'PublishAsync').resolves()
   })
   afterEach(() => {
-    publishAsyncSpy.restore()
-  })
-  after(() => {
-    Sinon.restore()
+    sandbox.restore()
   })
   it('should pass parameters to voided PublishAsync', () => {
     const topic = `TOPIC${Math.random()}`
@@ -38,7 +37,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
     dom = new JSDOM('<html></html')
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    consoleWarn = Sinon.stub(global.window.console, 'warn')
+    consoleWarn = sandbox.stub(global.window.console, 'warn')
 
     subscriber = Sinon.stub().resolves()
     PubSub.subscribers = {
@@ -52,9 +51,6 @@ describe('public/app/pubsub function PublishAsync()', () => {
   afterEach(() => {
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should print warning on Publish for unknown topic', async () => {
     await PubSub.PublishAsync('Quux', 'Digital')

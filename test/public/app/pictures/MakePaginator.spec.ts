@@ -10,6 +10,8 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -30,19 +32,17 @@ describe('public/app/pictures function MakePaginator()', () => {
     })
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    makePageItemSpy = Sinon.stub(Pictures, 'MakePaginatorItem').callsFake(() => dom.window.document.createElement('li'))
-    getCurrentPageSpy = Sinon.stub(Pictures, 'GetCurrentPage').returns(0)
+    makePageItemSpy = sandbox
+      .stub(Pictures, 'MakePaginatorItem')
+      .callsFake(() => dom.window.document.createElement('li'))
+    getCurrentPageSpy = sandbox.stub(Pictures, 'GetCurrentPage').returns(0)
     PubSub.subscribers = {}
     PubSub.deferred = []
   })
   afterEach(() => {
-    getCurrentPageSpy.restore()
-    makePageItemSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should return null for negative page count', () => {
     const result = Pictures.MakePaginator(-7)

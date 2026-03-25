@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -14,6 +14,8 @@ import { PubSub } from '../../../../../public/scripts/app/pubsub'
 import { Bookmarks } from '../../../../../public/scripts/app/bookmarks'
 
 import assert from 'node:assert'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -60,18 +62,14 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = Sinon.stub(Bookmarks, 'buildBookmarks')
-    getJSONSpy = Sinon.stub(Net, 'GetJSON').resolves()
+    BuildBookmarksSpy = sandbox.stub(Bookmarks, 'buildBookmarks')
+    getJSONSpy = sandbox.stub(Net, 'GetJSON').resolves()
     Bookmarks.Init()
   })
   afterEach(() => {
-    getJSONSpy.restore()
-    BuildBookmarksSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should use Net.GetJSON to load bookmarks', async () => {
     const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()

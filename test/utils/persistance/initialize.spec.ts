@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { EventuallyRejects } from '../../../testutils/Errors'
 import { StubToKnex } from '../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/persistance function initialize()', () => {
   let fakeEnvironment: KnexOptions = {
     client: 'fakeClient',
@@ -40,13 +42,12 @@ describe('utils/persistance function initialize()', () => {
         latest: Sinon.stub().resolves(),
       },
     }
-    stubKnex = Sinon.stub(Imports, 'knex').returns(StubToKnex(stubKnexInstance))
-    stubEnvironment = Sinon.stub(Functions, 'getKnexConfig').resolves(fakeEnvironment)
+    stubKnex = sandbox.stub(Imports, 'knex').returns(StubToKnex(stubKnexInstance))
+    stubEnvironment = sandbox.stub(Functions, 'getKnexConfig').resolves(fakeEnvironment)
   })
 
   afterEach(() => {
-    stubKnex.restore()
-    stubEnvironment.restore()
+    sandbox.restore()
   })
   it('should return stored initializer when one is already created', async () => {
     const promise = Promise.resolve(StubToKnex(stubKnexInstance))

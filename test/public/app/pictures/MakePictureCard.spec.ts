@@ -8,6 +8,8 @@ import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pictures function MakePictureCard()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
@@ -29,15 +31,12 @@ describe('public/app/pictures function MakePictureCard()', () => {
     template.innerHTML =
       '<template id="ImageCard><div class="card"><div class="card-body"><h5>placeholder</h5></div></div></template>'
     Pictures.imageCard = Cast<HTMLTemplateElement>(template.firstChild)
-    changePictureSpy = Sinon.stub(Pictures, 'ChangePicture')
+    changePictureSpy = sandbox.stub(Pictures, 'ChangePicture')
   })
   afterEach(() => {
-    changePictureSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should return an HTMLElement on failure', () => {
     Pictures.imageCard = null

@@ -10,6 +10,8 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import type { WeatherResults } from '../../../../contracts/weather'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -39,21 +41,17 @@ describe('public/slideshow/weather ShowWeather()', () => {
       configurable: true,
       get: () => dom.window.document,
     })
-    showDataStub = Sinon.stub(Functions, 'ShowData')
-    showIconStub = Sinon.stub(Functions, 'ShowIcon')
+    showDataStub = sandbox.stub(Functions, 'ShowData')
+    showIconStub = sandbox.stub(Functions, 'ShowIcon')
   })
 
   afterEach(() => {
-    showIconStub.restore()
-    showDataStub.restore()
+    sandbox.restore()
     global.window = baseWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
       get: () => baseDocument,
     })
-  })
-  after(() => {
-    Sinon.restore()
   })
 
   it('should return input weather when null base provided', () => {

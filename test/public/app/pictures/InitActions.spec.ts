@@ -10,6 +10,8 @@ import assert from 'node:assert'
 import type { Picture } from '../../../../contracts/listing'
 import { Cast } from '../../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pictures function InitActions()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
@@ -31,26 +33,18 @@ describe('public/app/pictures function InitActions()', () => {
     PubSub.deferred = []
     Pictures.mainImage = null
     Pictures.imageCard = null
-    isMenuActiveSpy = Sinon.stub(Navigation, 'IsMenuActive').returns(false)
-    getShowUnreadOnly = Sinon.stub(Pictures, 'GetShowUnreadOnly').returns(false)
+    isMenuActiveSpy = sandbox.stub(Navigation, 'IsMenuActive').returns(false)
+    getShowUnreadOnly = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
     getPictureFake = { number: Math.random() }
-    getPictureSpy = Sinon.stub(Pictures, 'GetPicture').returns(Cast<Picture>(getPictureFake))
-    changePictureSpy = Sinon.stub(Pictures, 'ChangePicture')
-    loadCurrentPageSpy = Sinon.stub(Pictures, 'LoadCurrentPageImages')
-    windowOpenSpy = Sinon.stub(global.window, 'open')
+    getPictureSpy = sandbox.stub(Pictures, 'GetPicture').returns(Cast<Picture>(getPictureFake))
+    changePictureSpy = sandbox.stub(Pictures, 'ChangePicture')
+    loadCurrentPageSpy = sandbox.stub(Pictures, 'LoadCurrentPageImages')
+    windowOpenSpy = sandbox.stub(global.window, 'open')
   })
   afterEach(() => {
-    windowOpenSpy.restore()
-    loadCurrentPageSpy.restore()
-    changePictureSpy.restore()
-    getPictureSpy.restore()
-    getShowUnreadOnly.restore()
-    isMenuActiveSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   const noMenuSubscribers: Array<[string, string]> = [
     ['Action:Keypress:ArrowUp', 'ShowMenu'],

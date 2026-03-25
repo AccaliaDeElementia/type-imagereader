@@ -8,6 +8,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../public/scripts/app/navigation'
 import { Cast } from '../../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   head
@@ -36,7 +38,7 @@ describe('public/app/navigation function Init()', () => {
     PubSub.deferred = []
     tabSelectedSpy.resolves()
     PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    loadDataStub = Sinon.stub(Navigation, 'LoadData').resolves()
+    loadDataStub = sandbox.stub(Navigation, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -44,7 +46,7 @@ describe('public/app/navigation function Init()', () => {
     }
   })
   afterEach(() => {
-    loadDataStub.restore()
+    sandbox.restore()
     tabSelectedSpy.reset()
   })
   after(() => {

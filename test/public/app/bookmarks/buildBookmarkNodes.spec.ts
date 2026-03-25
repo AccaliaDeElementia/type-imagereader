@@ -11,6 +11,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   head
@@ -44,8 +46,8 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    getFolderSpy = Sinon.stub(Bookmarks, 'GetFolder').returns(dom.window.document.createElement('div'))
-    buildBookmarkSpy = Sinon.stub(Bookmarks, 'BuildBookmark').returns(dom.window.document.createElement('div'))
+    getFolderSpy = sandbox.stub(Bookmarks, 'GetFolder').returns(dom.window.document.createElement('div'))
+    buildBookmarkSpy = sandbox.stub(Bookmarks, 'BuildBookmark').returns(dom.window.document.createElement('div'))
 
     PubSub.subscribers = {}
     PubSub.deferred = []
@@ -53,13 +55,9 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     Bookmarks.BookmarkFolders = []
   })
   afterEach(() => {
-    buildBookmarkSpy.restore()
-    getFolderSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should not retrieve folder when bookmarks are undefined', () => {
     Bookmarks.buildBookmarkNodes(

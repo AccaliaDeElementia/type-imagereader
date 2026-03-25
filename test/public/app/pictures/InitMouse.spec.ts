@@ -9,6 +9,8 @@ import assert from 'node:assert'
 import { Cast } from '../../../../testutils/TypeGuards'
 import { HasValue } from '../../../../utils/helpers'
 
+const sandbox = Sinon.createSandbox()
+
 interface TestVisualViewport {
   scale: number
 }
@@ -21,7 +23,7 @@ describe('public/app/pictures function InitMouse()', () => {
   const executePreviousSpy = Sinon.stub().resolves()
   const executeNextSpy = Sinon.stub().resolves()
   const executeMenuSpy = Sinon.stub().resolves()
-  let getBoundingSpy = Sinon.stub()
+  Sinon.stub()
   let visualViewport: TestVisualViewport = { scale: 1 }
   let boundingRect = {
     x: 0,
@@ -55,7 +57,7 @@ describe('public/app/pictures function InitMouse()', () => {
     }
     const tgt = Pictures.mainImage?.parentElement
     assert(HasValue(tgt))
-    getBoundingSpy = Sinon.stub(tgt, 'getBoundingClientRect').callsFake(() => Cast<DOMRect>(boundingRect))
+    sandbox.stub(tgt, 'getBoundingClientRect').callsFake(() => Cast<DOMRect>(boundingRect))
     ignoreClickSpy.resetHistory()
     executePreviousSpy.resetHistory()
     executeNextSpy.resetHistory()
@@ -70,16 +72,13 @@ describe('public/app/pictures function InitMouse()', () => {
     assert(Pictures.mainImage !== null)
   })
   afterEach(() => {
-    getBoundingSpy.restore()
+    sandbox.restore()
     executeMenuSpy.resetHistory()
     executeNextSpy.resetHistory()
     executePreviousSpy.resetHistory()
     ignoreClickSpy.resetHistory()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should store initial scale from visual viewport', () => {
     visualViewport.scale = 972

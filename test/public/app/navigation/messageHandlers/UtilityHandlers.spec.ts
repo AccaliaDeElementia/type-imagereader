@@ -11,6 +11,8 @@ import { Cast } from '../../../../../testutils/TypeGuards'
 import { Net } from '../../../../../public/scripts/app/net'
 import { EventuallyFullfills } from '../../../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   head
@@ -39,7 +41,7 @@ describe('public/app/navigation function Init()', () => {
     PubSub.deferred = []
     tabSelectedSpy.resolves()
     PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    loadDataStub = Sinon.stub(Navigation, 'LoadData').resolves()
+    loadDataStub = sandbox.stub(Navigation, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -47,7 +49,7 @@ describe('public/app/navigation function Init()', () => {
     }
   })
   afterEach(() => {
-    loadDataStub.restore()
+    sandbox.restore()
     tabSelectedSpy.reset()
   })
   after(() => {
@@ -62,7 +64,7 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      postJSONSpy = Sinon.stub(Net, 'PostJSON').resolves()
+      postJSONSpy = sandbox.stub(Net, 'PostJSON').resolves()
       Navigation.Init()
       loadDataStub.resetHistory()
       errorSpy = Sinon.stub().resolves()
@@ -72,7 +74,7 @@ describe('public/app/navigation function Init()', () => {
       handler = h
     })
     afterEach(() => {
-      postJSONSpy.restore()
+      sandbox.restore()
     })
     it('should post to mark read API endpoint', async () => {
       await handler()
@@ -156,7 +158,7 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      postJSONSpy = Sinon.stub(Net, 'PostJSON').resolves()
+      postJSONSpy = sandbox.stub(Net, 'PostJSON').resolves()
       Navigation.Init()
       loadDataStub.resetHistory()
       errorSpy = Sinon.stub().resolves()
@@ -166,7 +168,7 @@ describe('public/app/navigation function Init()', () => {
       handler = h
     })
     afterEach(() => {
-      postJSONSpy.restore()
+      sandbox.restore()
     })
     it('should post to mark unread API endpoint', async () => {
       await handler()
@@ -250,13 +252,13 @@ describe('public/app/navigation function Init()', () => {
     }
     beforeEach(() => {
       Navigation.Init()
-      locationAssignSpy = Sinon.stub(Navigation, 'LocationAssign')
+      locationAssignSpy = sandbox.stub(Navigation, 'LocationAssign')
       const h = PubSub.subscribers['ACTION:EXECUTE:SLIDESHOW']?.pop()
       assert(h !== undefined)
       handler = h
     })
     afterEach(() => {
-      locationAssignSpy.restore()
+      sandbox.restore()
     })
     it('should alter location via locationAssign when invoked', async () => {
       await handler()

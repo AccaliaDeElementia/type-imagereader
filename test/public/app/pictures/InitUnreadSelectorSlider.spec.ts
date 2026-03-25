@@ -9,6 +9,8 @@ import { render } from 'pug'
 import Sinon from 'sinon'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `html
   body
     div.selectUnreadAll
@@ -25,19 +27,14 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     dom = new JSDOM(render(markup))
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    getShowUnreadOnlySpy = Sinon.stub(Pictures, 'GetShowUnreadOnly').returns(false)
-    setShowUnreadOnlySpy = Sinon.stub(Pictures, 'SetShowUnreadOnly')
-    updateUnreadSelectorSliderSpy = Sinon.stub(Pictures, 'UpdateUnreadSelectorSlider')
+    getShowUnreadOnlySpy = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
+    setShowUnreadOnlySpy = sandbox.stub(Pictures, 'SetShowUnreadOnly')
+    updateUnreadSelectorSliderSpy = sandbox.stub(Pictures, 'UpdateUnreadSelectorSlider')
   })
   afterEach(() => {
-    updateUnreadSelectorSliderSpy.restore()
-    setShowUnreadOnlySpy.restore()
-    getShowUnreadOnlySpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should update current status on init', () => {
     Pictures.InitUnreadSelectorSlider()

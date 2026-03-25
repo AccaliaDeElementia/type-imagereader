@@ -11,6 +11,8 @@ import { CacheStorage, Functions, getRouter, Imports } from '../../../routes/ima
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/images export getRouter()', () => {
   const defaultKioskCache = CacheStorage.kioskCache
   const defaultScaledCache = CacheStorage.scaledCache
@@ -30,13 +32,12 @@ describe('routes/images export getRouter()', () => {
     routerFake = {
       get: Sinon.stub().returnsThis(),
     }
-    getRouterStub = Sinon.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
+    getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = Sinon.stub()
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
   })
   afterEach(() => {
-    debugStub.restore()
-    getRouterStub.restore()
+    sandbox.restore()
   })
   after(() => {
     CacheStorage.kioskCache = defaultKioskCache

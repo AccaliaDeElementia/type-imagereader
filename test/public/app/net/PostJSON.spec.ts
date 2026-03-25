@@ -5,6 +5,8 @@ import { Net } from '../../../../public/scripts/app/net'
 import { Cast } from '../../../../testutils/TypeGuards'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 interface TestRequest {
   method: string
   body: string
@@ -29,10 +31,10 @@ describe('public/app/net function PostJSON()', () => {
       },
       json: async () => await Promise.resolve(dataFake),
     })
-    fetchStub = Sinon.stub(global, 'fetch').resolves(response)
+    fetchStub = sandbox.stub(global, 'fetch').resolves(response)
   })
   afterEach(() => {
-    fetchStub.restore()
+    sandbox.restore()
   })
   it('should call fetch with provided path', async () => {
     const path = `/Some/Test/Path/${Math.random()}`

@@ -10,6 +10,8 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import type { Picture } from '../../../../contracts/listing'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -29,14 +31,14 @@ describe('public/app/pictures function MakeTab()', () => {
     })
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    makePicturesPageSpy = Sinon.stub(Pictures, 'MakePicturesPage')
+    makePicturesPageSpy = sandbox.stub(Pictures, 'MakePicturesPage')
     makePicturesPageSpy.callsFake((pagenum: number, _: Picture[]) => {
       const retval = dom.window.document.createElement('div')
       retval.classList.add('page')
       retval.classList.add(`data-page-${pagenum}`)
       return retval
     })
-    makePaginatorSpy = Sinon.stub(Pictures, 'MakePaginator')
+    makePaginatorSpy = sandbox.stub(Pictures, 'MakePaginator')
     makePaginatorSpy.callsFake(() => {
       const retval = dom.window.document.createElement('div')
       retval.classList.add('paginator')
@@ -54,13 +56,9 @@ describe('public/app/pictures function MakeTab()', () => {
     tab = dom.window.document.querySelector('#tabImages')
   })
   afterEach(() => {
-    makePaginatorSpy.restore()
-    makePicturesPageSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should add provided page to pictures tab', () => {
     Pictures.MakeTab()

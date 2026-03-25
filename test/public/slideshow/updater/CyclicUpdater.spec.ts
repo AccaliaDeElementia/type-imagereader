@@ -7,6 +7,8 @@ import { JSDOM } from 'jsdom'
 import Sinon from 'sinon'
 import { Cast } from '../../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/updater class CyclicUpdater', () => {
   it('should set default update function when fn undefined', () => {
     const test = new CyclicUpdater(undefined, undefined)
@@ -74,10 +76,10 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
       updater.period = 60000
       updater._countdown = 6000
       updater._failCount = 0
-      errorStub = Sinon.stub(global.window.console, 'error')
+      errorStub = sandbox.stub(global.window.console, 'error')
     })
     afterEach(() => {
-      errorStub.restore()
+      sandbox.restore()
     })
     it('should decrement countdown on call', async () => {
       await updater.trigger(200)

@@ -9,11 +9,13 @@ import { assert, expect } from 'chai'
 import { Config, Functions, getRouter, Imports } from '../../../routes/slideshow'
 import persistance from '../../../utils/persistance'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow function getRouter', () => {
   let routerStub = { get: Sinon.stub() }
-  let createRouterStub = Sinon.stub()
+  Sinon.stub()
   let knexFake = StubToKnex({})
-  let initializeStub = Sinon.stub().resolves(knexFake)
+  Sinon.stub().resolves(knexFake)
   let rootRouteStub = Sinon.stub()
   let handleSocketStub = Sinon.stub()
   let setIntervalStub = Sinon.stub()
@@ -24,20 +26,19 @@ describe('routes/slideshow function getRouter', () => {
     on: Sinon.stub(),
   }
   let socketsFake = Cast<WebSocketServer>(ioStub)
-  let clockFake: Sinon.SinonFakeTimers | null = null
   let requestFake = Cast<Request>({})
   let responseStub = { json: Sinon.stub() }
   let responseFake = Cast<Response>(responseStub)
   beforeEach(() => {
-    clockFake = Sinon.useFakeTimers({ now: 3141592 })
+    sandbox.useFakeTimers({ now: 3141592 })
     routerStub = { get: Sinon.stub() }
-    createRouterStub = Sinon.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
     knexFake = StubToKnex({})
-    initializeStub = Sinon.stub(persistance, 'initialize').resolves(knexFake)
-    rootRouteStub = Sinon.stub(Functions, 'RootRoute').resolves()
-    handleSocketStub = Sinon.stub(Functions, 'HandleSocket')
-    setIntervalStub = Sinon.stub(global, 'setInterval')
-    tickCountdownStub = Sinon.stub(Functions, 'TickCountdown').resolves()
+    sandbox.stub(persistance, 'initialize').resolves(knexFake)
+    rootRouteStub = sandbox.stub(Functions, 'RootRoute').resolves()
+    handleSocketStub = sandbox.stub(Functions, 'HandleSocket')
+    setIntervalStub = sandbox.stub(global, 'setInterval')
+    tickCountdownStub = sandbox.stub(Functions, 'TickCountdown').resolves()
     applicationFake = Cast<Application>({})
     serverFake = Cast<Server>({})
     ioStub = {
@@ -50,13 +51,7 @@ describe('routes/slideshow function getRouter', () => {
     responseFake = Cast<Response>(responseStub)
   })
   afterEach(() => {
-    clockFake?.restore()
-    tickCountdownStub.restore()
-    setIntervalStub.restore()
-    handleSocketStub.restore()
-    rootRouteStub.restore()
-    initializeStub.restore()
-    createRouterStub.restore()
+    sandbox.restore()
   })
   const routes = ['/launchId', '/', '/*path']
   it('should set launch Id to current time', async () => {

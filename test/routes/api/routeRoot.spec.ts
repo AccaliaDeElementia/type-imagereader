@@ -11,6 +11,8 @@ import { StatusCodes } from 'http-status-codes'
 import { Cast } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 type RequestHandler = (req: Request, res: Response) => Promise<void>
 
 describe('routes/api route GET /', () => {
@@ -28,7 +30,7 @@ describe('routes/api route GET /', () => {
   let responseFake = Cast<Response>(responseStub)
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
-  let debuggerStub = Sinon.stub()
+  Sinon.stub()
   beforeEach(async () => {
     requestStub = {
       body: { Body: -1 },
@@ -43,15 +45,15 @@ describe('routes/api route GET /', () => {
     }
     responseFake = Cast<Response>(responseStub)
     const getFn = Sinon.stub()
-    const InitializeStub = Sinon.stub(persistance, 'initialize').resolves()
-    const MakeRouterStub = Sinon.stub(Imports, 'Router').returns(
+    const InitializeStub = sandbox.stub(persistance, 'initialize').resolves()
+    const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         get: getFn,
         post: Sinon.stub(),
       }),
     )
     loggerStub = Sinon.stub()
-    debuggerStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       getFn.getCalls().find((call) => call.args[0] === '/')?.args[1],
@@ -61,7 +63,7 @@ describe('routes/api route GET /', () => {
     MakeRouterStub.restore()
   })
   afterEach(() => {
-    debuggerStub.restore()
+    sandbox.restore()
   })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)

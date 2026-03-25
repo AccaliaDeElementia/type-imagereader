@@ -13,6 +13,8 @@ import { Net } from '../../../../public/scripts/app/net'
 import { Delay } from '../../../../testutils/Utils'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -39,7 +41,7 @@ describe('public/app/pictures function LoadImage()', () => {
   let element: HTMLElement | null = null
   let postJSONSpy = Sinon.stub()
   let selectPageSpy = Sinon.stub()
-  let getPictureSpy = Sinon.stub()
+  Sinon.stub()
   let loadNextImageSpy = Sinon.stub()
   const loadingShowSpy = Sinon.stub().resolves()
   const loadingErrorSpy = Sinon.stub().resolves()
@@ -73,11 +75,11 @@ describe('public/app/pictures function LoadImage()', () => {
     current.element = element
     current.page = 40
     current.index = 1250
-    postJSONSpy = Sinon.stub(Net, 'PostJSON')
+    postJSONSpy = sandbox.stub(Net, 'PostJSON')
     postJSONSpy.resolves(50)
-    getPictureSpy = Sinon.stub(Pictures, 'GetPicture').returns(undefined)
-    selectPageSpy = Sinon.stub(Pictures, 'SelectPage')
-    loadNextImageSpy = Sinon.stub(Pictures, 'LoadNextImage').resolves()
+    sandbox.stub(Pictures, 'GetPicture').returns(undefined)
+    selectPageSpy = sandbox.stub(Pictures, 'SelectPage')
+    loadNextImageSpy = sandbox.stub(Pictures, 'LoadNextImage').resolves()
     PubSub.subscribers = {
       'LOADING:SHOW': [loadingShowSpy],
       'LOADING:ERROR': [loadingErrorSpy],
@@ -90,10 +92,7 @@ describe('public/app/pictures function LoadImage()', () => {
     bottomRightText = dom.window.document.querySelector('.statusBar.bottom .right')
   })
   afterEach(() => {
-    loadNextImageSpy.restore()
-    postJSONSpy.restore()
-    selectPageSpy.restore()
-    getPictureSpy.restore()
+    sandbox.restore()
 
     loadingShowSpy.resetHistory()
     loadingErrorSpy.resetHistory()
@@ -101,9 +100,6 @@ describe('public/app/pictures function LoadImage()', () => {
     reloadSpy.resetHistory()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should be noop when current image is null', async () => {
     Pictures.current = null

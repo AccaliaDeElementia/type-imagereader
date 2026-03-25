@@ -13,6 +13,8 @@ import { Bookmarks } from '../../../public/scripts/app/bookmarks'
 import { Navigation } from '../../../public/scripts/app/navigation'
 import { PubSub } from '../../../public/scripts/app/pubsub'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app initialzation', () => {
   let loadingInitSpy: Sinon.SinonStub = Sinon.stub()
   let actionsInitSpy: Sinon.SinonStub = Sinon.stub()
@@ -24,26 +26,18 @@ describe('public/app initialzation', () => {
   let pubsubDeferredSpy: Sinon.SinonStub = Sinon.stub()
   let wakeLockInitSpy: Sinon.SinonStub = Sinon.stub()
   beforeEach(() => {
-    loadingInitSpy = Sinon.stub(Loading, 'Init')
-    actionsInitSpy = Sinon.stub(Actions, 'Init')
-    tabsInitSpy = Sinon.stub(Tabs, 'Init')
-    foldersInitSpy = Sinon.stub(Folders, 'Init')
-    picturesInitSpy = Sinon.stub(Pictures, 'Init')
-    bookmarksInitSpy = Sinon.stub(Bookmarks, 'Init')
-    navigationInitSpy = Sinon.stub(Navigation, 'Init')
-    pubsubDeferredSpy = Sinon.stub(PubSub, 'StartDeferred')
-    wakeLockInitSpy = Sinon.stub(WakeLock, 'Init')
+    loadingInitSpy = sandbox.stub(Loading, 'Init')
+    actionsInitSpy = sandbox.stub(Actions, 'Init')
+    tabsInitSpy = sandbox.stub(Tabs, 'Init')
+    foldersInitSpy = sandbox.stub(Folders, 'Init')
+    picturesInitSpy = sandbox.stub(Pictures, 'Init')
+    bookmarksInitSpy = sandbox.stub(Bookmarks, 'Init')
+    navigationInitSpy = sandbox.stub(Navigation, 'Init')
+    pubsubDeferredSpy = sandbox.stub(PubSub, 'StartDeferred')
+    wakeLockInitSpy = sandbox.stub(WakeLock, 'Init')
   })
   afterEach(() => {
-    loadingInitSpy.restore()
-    actionsInitSpy.restore()
-    tabsInitSpy.restore()
-    foldersInitSpy.restore()
-    picturesInitSpy.restore()
-    bookmarksInitSpy.restore()
-    navigationInitSpy.restore()
-    pubsubDeferredSpy.restore()
-    wakeLockInitSpy.restore()
+    sandbox.restore()
   })
   it('inits all modules', async () => {
     await import('../../../public/scripts/app/index')

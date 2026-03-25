@@ -10,6 +10,8 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import assert from 'node:assert'
 import { Tabs } from '../../../../public/scripts/app/tabs'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -35,7 +37,7 @@ describe('public/app/tabs function SelectTab()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  let consoleError = Sinon.stub()
+  Sinon.stub()
   const actionsScroll = Sinon.stub()
   const foldersScroll = Sinon.stub()
   const imagesScroll = Sinon.stub()
@@ -45,7 +47,7 @@ describe('public/app/tabs function SelectTab()', () => {
     dom = new JSDOM(render(markup), {})
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    consoleError = Sinon.stub(global.window.console, 'error')
+    sandbox.stub(global.window.console, 'error')
     const actions = dom.window.document.getElementById('tabActions')
     assert(actions !== null)
     actions.scroll = actionsScroll
@@ -65,7 +67,7 @@ describe('public/app/tabs function SelectTab()', () => {
     PubSub.deferred = []
     Tabs.tabs = []
     Tabs.tabNames = []
-    const spy = Sinon.stub(Tabs, 'SelectTab')
+    const spy = sandbox.stub(Tabs, 'SelectTab')
     try {
       Tabs.Init()
     } finally {
@@ -73,7 +75,7 @@ describe('public/app/tabs function SelectTab()', () => {
     }
   })
   afterEach(() => {
-    consoleError.restore()
+    sandbox.restore()
     actionsScroll.reset()
     foldersScroll.reset()
     imagesScroll.reset()
@@ -81,9 +83,6 @@ describe('public/app/tabs function SelectTab()', () => {
     tabSelectedSpy.reset()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should gracefully handle zero tabs', () => {
     Tabs.tabNames = []

@@ -10,6 +10,8 @@ import Sinon from 'sinon'
 import { CyclicUpdater } from '../../../../public/scripts/slideshow/updater'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -21,15 +23,14 @@ html
 describe('public/slideshow/time Updater()', () => {
   let fakeFormatTime: Sinon.SinonStub | undefined = undefined
   let fakeFormatDate: Sinon.SinonStub | undefined = undefined
-  let fakeClocks: Sinon.SinonFakeTimers | undefined = undefined
   const baseWindow = global.window
   const baseDocument = global.document
   let dom = new JSDOM(render(markup))
   const now = new Date(2000, 3, 1, 0, 0, 0, 0)
   beforeEach(() => {
-    fakeFormatTime = Sinon.stub(Functions, 'FormatTime').returns('')
-    fakeFormatDate = Sinon.stub(Functions, 'FormatDate').returns('')
-    fakeClocks = Sinon.useFakeTimers({ now })
+    fakeFormatTime = sandbox.stub(Functions, 'FormatTime').returns('')
+    fakeFormatDate = sandbox.stub(Functions, 'FormatDate').returns('')
+    sandbox.useFakeTimers({ now })
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })
@@ -40,17 +41,12 @@ describe('public/slideshow/time Updater()', () => {
     })
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = baseWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
       get: () => baseDocument,
     })
-    fakeClocks?.restore()
-    fakeFormatDate?.restore()
-    fakeFormatTime?.restore()
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should expose a CyclicUpdater', () => {
     expect(Updater).to.be.an.instanceOf(CyclicUpdater)

@@ -8,6 +8,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
 import type { Picture } from '../../../../contracts/listing'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pictures function LoadData()', () => {
   let resetMarkupSpy = Sinon.stub()
   let setPicturesSpy = Sinon.stub()
@@ -30,22 +32,16 @@ describe('public/app/pictures function LoadData()', () => {
       index: -1,
     }))
     Pictures.current = null
-    resetMarkupSpy = Sinon.stub(Pictures, 'ResetMarkup')
-    setPicturesSpy = Sinon.stub(Pictures, 'SetPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
-    makeTabSpy = Sinon.stub(Pictures, 'MakeTab')
-    loadImageSpy = Sinon.stub(Pictures, 'LoadImage').resolves()
+    resetMarkupSpy = sandbox.stub(Pictures, 'ResetMarkup')
+    setPicturesSpy = sandbox.stub(Pictures, 'SetPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
+    makeTabSpy = sandbox.stub(Pictures, 'MakeTab')
+    loadImageSpy = sandbox.stub(Pictures, 'LoadImage').resolves()
   })
   afterEach(() => {
-    loadImageSpy.restore()
-    makeTabSpy.restore()
-    setPicturesSpy.restore()
-    resetMarkupSpy.restore()
+    sandbox.restore()
     menuHideSpy.resetHistory()
     menuShowSpy.resetHistory()
     tabSelectSpy.resetHistory()
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should reset markup on load', async () => {
     await Pictures.LoadData({

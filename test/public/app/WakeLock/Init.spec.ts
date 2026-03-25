@@ -9,6 +9,8 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import assert from 'node:assert'
 import { WakeLock } from '../../../../public/scripts/app/wakelock'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/wakelock function Init()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
@@ -19,19 +21,15 @@ describe('public/app/wakelock function Init()', () => {
     dom = new JSDOM('<html></html>', {})
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    takeLockSpy = Sinon.stub(WakeLock, 'TakeLock').resolves()
-    releaseLockSpy = Sinon.stub(WakeLock, 'ReleaseLock').resolves()
+    takeLockSpy = sandbox.stub(WakeLock, 'TakeLock').resolves()
+    releaseLockSpy = sandbox.stub(WakeLock, 'ReleaseLock').resolves()
     PubSub.subscribers = {}
     WakeLock.initialized = false
   })
   afterEach(() => {
-    takeLockSpy.restore()
-    releaseLockSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should subscribe to Picture:LoadNew', () => {
     WakeLock.Init()

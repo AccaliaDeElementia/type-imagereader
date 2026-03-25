@@ -8,6 +8,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Loading } from '../../../../public/scripts/app/loading'
 import { Cast } from '../../../../testutils/TypeGuards'
 import assert from 'node:assert'
+
+const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -25,7 +27,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     })
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    consoleError = Sinon.stub(global.window.console, 'error')
+    consoleError = sandbox.stub(global.window.console, 'error')
     PubSub.subscribers = {}
     PubSub.deferred = []
     Loading.overlay = null
@@ -35,9 +37,6 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
   afterEach(() => {
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should log message to web console', () => {
     const message = `error message! ${Math.random()}`

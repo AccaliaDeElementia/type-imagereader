@@ -5,6 +5,8 @@ import { Imports, Functions, ImageData } from '../../../routes/images'
 import Sharp from 'sharp'
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
+
+const sandbox = Sinon.createSandbox()
 describe('routes/images function RescaleImage()', () => {
   let sharpInstanceStub = {
     rotate: Sinon.stub().returnsThis(),
@@ -14,16 +16,16 @@ describe('routes/images function RescaleImage()', () => {
   }
   let sharpStub = Sinon.stub()
   beforeEach(() => {
-    sharpStub = Sinon.stub(Imports, 'Sharp').returns(Cast<Sharp.Sharp>(sharpInstanceStub))
+    sharpStub = sandbox.stub(Imports, 'Sharp').returns(Cast<Sharp.Sharp>(sharpInstanceStub))
   })
   afterEach(() => {
+    sandbox.restore()
     sharpInstanceStub = {
       rotate: Sinon.stub().returnsThis(),
       resize: Sinon.stub().returnsThis(),
       webp: Sinon.stub().returnsThis(),
       toBuffer: Sinon.stub().resolves(),
     }
-    sharpStub.restore()
   })
   it('should abort when error already detected', async () => {
     const img = new ImageData()

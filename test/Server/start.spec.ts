@@ -8,6 +8,8 @@ import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
+const sandbox = Sinon.createSandbox()
+
 describe('Server function RegisterRouters', () => {
   let appStub = { get: Sinon.stub() }
   let appFake = Cast<Express>(appStub)
@@ -23,18 +25,14 @@ describe('Server function RegisterRouters', () => {
     appFake = Cast<Express>(appStub)
     serverFake = Cast<HttpServer>({})
     socketsFake = Cast<WebSocketServer>({})
-    createAppStub = Sinon.stub(Functions, 'CreateApp').returns([appFake, serverFake, socketsFake])
-    configureBaseAppStub = Sinon.stub(Functions, 'ConfigureBaseApp')
-    registerRoutersStub = Sinon.stub(Functions, 'RegisterRouters').resolves()
-    configureLoggingStub = Sinon.stub(Functions, 'ConfigureLoggingAndErrors')
-    registerViewsStub = Sinon.stub(Functions, 'RegisterViewsAndMiddleware')
+    createAppStub = sandbox.stub(Functions, 'CreateApp').returns([appFake, serverFake, socketsFake])
+    configureBaseAppStub = sandbox.stub(Functions, 'ConfigureBaseApp')
+    registerRoutersStub = sandbox.stub(Functions, 'RegisterRouters').resolves()
+    configureLoggingStub = sandbox.stub(Functions, 'ConfigureLoggingAndErrors')
+    registerViewsStub = sandbox.stub(Functions, 'RegisterViewsAndMiddleware')
   })
   afterEach(() => {
-    createAppStub.restore()
-    configureBaseAppStub.restore()
-    registerRoutersStub.restore()
-    configureLoggingStub.restore()
-    registerViewsStub.restore()
+    sandbox.restore()
   })
   const baseTests: Array<[string, () => void]> = [
     ['create app', () => expect(createAppStub.callCount).to.equal(1)],

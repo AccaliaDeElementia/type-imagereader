@@ -7,6 +7,8 @@ import { Cast } from '../../testutils/TypeGuards'
 import { Imports, Functions } from '../../Server'
 import express from 'express'
 
+const sandbox = Sinon.createSandbox()
+
 type MiddlewareFn = (req: unknown, res: unknown, next: Sinon.SinonStub) => void
 
 describe('Server function RegisterRouters', () => {
@@ -14,12 +16,12 @@ describe('Server function RegisterRouters', () => {
   let appStub = { use: Sinon.stub(), set: Sinon.stub() }
   let appFake = Cast<Express>(appStub)
   beforeEach(() => {
-    staticStub = Sinon.stub(express, 'static')
+    staticStub = sandbox.stub(express, 'static')
     appStub = { use: Sinon.stub(), set: Sinon.stub() }
     appFake = Cast<Express>(appStub)
   })
   afterEach(() => {
-    staticStub.restore()
+    sandbox.restore()
   })
   it('should app.set() all views options', () => {
     Functions.RegisterViewsAndMiddleware(appFake)

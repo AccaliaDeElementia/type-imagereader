@@ -9,6 +9,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
 import type { Picture } from '../../../../contracts/listing'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pictures function MakePicturesPage()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
@@ -26,17 +28,14 @@ describe('public/app/pictures function MakePicturesPage()', () => {
       'MENU:HIDE': [menuHideSpy],
     }
     PubSub.deferred = []
-    makePictureCardSpy = Sinon.stub(Pictures, 'MakePictureCard').callsFake(() =>
-      dom.window.document.createElement('div'),
-    )
+    makePictureCardSpy = sandbox
+      .stub(Pictures, 'MakePictureCard')
+      .callsFake(() => dom.window.document.createElement('div'))
   })
   afterEach(() => {
-    makePictureCardSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should return div element', () => {
     const page = Pictures.MakePicturesPage(666, [])

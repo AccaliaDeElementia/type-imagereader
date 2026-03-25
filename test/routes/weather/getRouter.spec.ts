@@ -9,6 +9,8 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { Cast } from '../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/weather function getRouter()', () => {
   let setIntervalStub = Sinon.stub()
   let updateWeatherStub = Sinon.stub()
@@ -25,15 +27,15 @@ describe('routes/weather function getRouter()', () => {
   }
   let responseFake = Cast<Response>(responseStub)
   beforeEach(() => {
-    setIntervalStub = Sinon.stub(global, 'setInterval')
-    updateWeatherStub = Sinon.stub(Functions, 'UpdateWeather').resolves()
+    setIntervalStub = sandbox.stub(global, 'setInterval')
+    updateWeatherStub = sandbox.stub(Functions, 'UpdateWeather').resolves()
     routerStub = {
       get: Sinon.stub(),
     }
     applicationFake = Cast<Application>({})
     serverFake = Cast<Server>({})
     socketFake = Cast<WebSocketServer>({})
-    getRouterStub = Sinon.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+    getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
     responseStub = {
       status: Sinon.stub().returnsThis(),
       json: Sinon.stub().returnsThis(),
@@ -41,9 +43,7 @@ describe('routes/weather function getRouter()', () => {
     responseFake = Cast<Response>(responseStub)
   })
   afterEach(() => {
-    getRouterStub.restore()
-    updateWeatherStub.restore()
-    setIntervalStub.restore()
+    sandbox.restore()
   })
   it('should create Router', async () => {
     await getRouter(applicationFake, serverFake, socketFake)

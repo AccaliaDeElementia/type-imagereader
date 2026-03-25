@@ -5,6 +5,8 @@ import { Functions, Imports } from '../../../utils/persistance'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/persistance function readConfigurationBlock()', () => {
   let configContent = {
     testtest: {
@@ -16,7 +18,7 @@ describe('utils/persistance function readConfigurationBlock()', () => {
     },
   }
   let configName = 'testtest'
-  let getEnvironmentNameStub = Sinon.stub()
+  Sinon.stub()
   let readFileStub = Sinon.stub()
   beforeEach(() => {
     configContent = {
@@ -29,14 +31,13 @@ describe('utils/persistance function readConfigurationBlock()', () => {
       },
     }
     configName = 'testtest'
-    getEnvironmentNameStub = Sinon.stub(Functions, 'getEnvironmentName').returns(configName)
-    readFileStub = Sinon.stub(Imports, 'readFile').callsFake(
-      async () => await Promise.resolve(JSON.stringify(configContent)),
-    )
+    sandbox.stub(Functions, 'getEnvironmentName').returns(configName)
+    readFileStub = sandbox
+      .stub(Imports, 'readFile')
+      .callsFake(async () => await Promise.resolve(JSON.stringify(configContent)))
   })
   afterEach(() => {
-    getEnvironmentNameStub.restore()
-    readFileStub.restore()
+    sandbox.restore()
   })
   it('should resolve to object', async () => {
     const result = await Functions.readConfigurationBlock()

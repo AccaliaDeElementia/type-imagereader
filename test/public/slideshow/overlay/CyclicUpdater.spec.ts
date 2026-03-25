@@ -7,6 +7,8 @@ import { CyclicUpdater } from '../../../../public/scripts/slideshow/updater'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { Cast } from '../../../../testutils/TypeGuards'
+
+const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -21,9 +23,9 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
   const baseWindow = global.window
   const baseDocument = global.document
   beforeEach(() => {
-    fakeShowHide = Sinon.stub(Functions, 'ShowHideKiosk')
-    fakeCalculateOffset = Sinon.stub(Functions, 'CalculateOffset').returns(0)
-    fakeGetOpacity = Sinon.stub(Functions, 'GetOpacity').returns(0)
+    fakeShowHide = sandbox.stub(Functions, 'ShowHideKiosk')
+    fakeCalculateOffset = sandbox.stub(Functions, 'CalculateOffset').returns(0)
+    fakeGetOpacity = sandbox.stub(Functions, 'GetOpacity').returns(0)
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })
@@ -34,17 +36,12 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     })
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = baseWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
       get: () => baseDocument,
     })
-    fakeGetOpacity?.restore()
-    fakeCalculateOffset?.restore()
-    fakeShowHide?.restore()
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should be a CyclicUpdater', () => {
     expect(Updater).to.be.an.instanceOf(CyclicUpdater)

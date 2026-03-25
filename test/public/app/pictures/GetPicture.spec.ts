@@ -5,6 +5,8 @@ import { NavigateTo, Pictures } from '../../../../public/scripts/app/pictures'
 import { expect } from 'chai'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pictures function GetPicture()', () => {
   let choosePictureIndexSpy = Sinon.stub()
   beforeEach(() => {
@@ -20,10 +22,10 @@ describe('public/app/pictures function GetPicture()', () => {
       seen: true,
       index: 24,
     }
-    choosePictureIndexSpy = Sinon.stub(Pictures, 'ChoosePictureIndex').returns(24)
+    choosePictureIndexSpy = sandbox.stub(Pictures, 'ChoosePictureIndex').returns(24)
   })
   afterEach(() => {
-    choosePictureIndexSpy.restore()
+    sandbox.restore()
   })
 
   const tests: Array<[string, NavigateTo]> = [

@@ -6,19 +6,19 @@ import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/images function ReadImage()', () => {
   let fromErrorStub = Sinon.stub()
   let fromImageStub = Sinon.stub()
   let readFileStub = Sinon.stub()
   beforeEach(() => {
-    fromErrorStub = Sinon.stub(ImageData, 'fromError')
-    fromImageStub = Sinon.stub(ImageData, 'fromImage')
-    readFileStub = Sinon.stub(Imports, 'readFile').resolves()
+    fromErrorStub = sandbox.stub(ImageData, 'fromError')
+    fromImageStub = sandbox.stub(ImageData, 'fromImage')
+    readFileStub = sandbox.stub(Imports, 'readFile').resolves()
   })
   afterEach(() => {
-    fromErrorStub.restore()
-    fromImageStub.restore()
-    readFileStub.restore()
+    sandbox.restore()
   })
   const rejectors: Array<[string, string, string, number, string, Promise<unknown>]> = [
     [

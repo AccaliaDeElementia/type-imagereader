@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 import Sinon from 'sinon'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
@@ -10,6 +10,8 @@ import { Actions } from '../../../../public/scripts/app/actions'
 import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
+
+const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -42,9 +44,6 @@ describe('public/app/actions function createButtons()', () => {
   afterEach(() => {
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should return div element', () => {
     const result = Actions.createButtons([])
@@ -117,7 +116,7 @@ describe('public/app/actions function createButtons()', () => {
     ]
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
-    const spy = Sinon.stub(event, 'preventDefault')
+    const spy = sandbox.stub(event, 'preventDefault')
     button?.dispatchEvent(event)
     expect(spy.called).to.equal(true)
   })

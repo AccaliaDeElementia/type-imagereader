@@ -8,6 +8,8 @@ import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
 import { Routers, Functions } from '../../Server'
 
+const sandbox = Sinon.createSandbox()
+
 describe('Server function RegisterRouters', () => {
   let getRootRouter = Sinon.stub()
   let getApiRouter = Sinon.stub()
@@ -19,22 +21,18 @@ describe('Server function RegisterRouters', () => {
   let serverFake = Cast<HttpServer>({})
   let socketsFake = Cast<WebSocketServer>({})
   beforeEach(() => {
-    getRootRouter = Sinon.stub(Routers, 'Root').resolves()
-    getApiRouter = Sinon.stub(Routers, 'Api').resolves()
-    getImagesRouter = Sinon.stub(Routers, 'Images').resolves()
-    getSlideshowRouter = Sinon.stub(Routers, 'Slideshow').resolves()
-    getWeatherRouter = Sinon.stub(Routers, 'Weather').resolves()
+    getRootRouter = sandbox.stub(Routers, 'Root').resolves()
+    getApiRouter = sandbox.stub(Routers, 'Api').resolves()
+    getImagesRouter = sandbox.stub(Routers, 'Images').resolves()
+    getSlideshowRouter = sandbox.stub(Routers, 'Slideshow').resolves()
+    getWeatherRouter = sandbox.stub(Routers, 'Weather').resolves()
     appStub = { use: Sinon.stub() }
     appFake = Cast<Express>(appStub)
     serverFake = Cast<HttpServer>({})
     socketsFake = Cast<WebSocketServer>({})
   })
   afterEach(() => {
-    getRootRouter.restore()
-    getApiRouter.restore()
-    getImagesRouter.restore()
-    getSlideshowRouter.restore()
-    getWeatherRouter.restore()
+    sandbox.restore()
   })
   const tests: Array<[string, string, () => Sinon.SinonStub]> = [
     ['Root', '/', () => getRootRouter],

@@ -7,15 +7,17 @@ import { Imports } from '../../../routes/slideshow'
 import { expect } from 'chai'
 import { EventuallyRejects } from '../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow Imports', () => {
   let setLatestPictureStub = Sinon.stub()
   let knexFake = StubToKnex({})
   beforeEach(() => {
     knexFake = StubToKnex({})
-    setLatestPictureStub = Sinon.stub(Functions, 'SetLatestPicture').resolves()
+    setLatestPictureStub = sandbox.stub(Functions, 'SetLatestPicture').resolves()
   })
   afterEach(() => {
-    setLatestPictureStub.restore()
+    sandbox.restore()
   })
   describe('setLatest()', () => {
     it('should call api function SetLatestPicture', async () => {

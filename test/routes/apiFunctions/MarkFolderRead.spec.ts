@@ -5,6 +5,8 @@ import { Functions } from '../../../routes/apiFunctions'
 import { StubToKnex } from '../../../testutils/TypeGuards'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 interface KnexStub {
   select: Sinon.SinonStub
   increment: Sinon.SinonStub
@@ -33,10 +35,10 @@ describe('routes/apiFunctions function MarkFolderRead', () => {
     knexFake = StubToKnex(knexStub)
     knexRawStub = Sinon.stub()
     knexFake.raw = knexRawStub
-    getPictureFoldersStub = Sinon.stub(Functions, 'GetPictureFolders').returns([])
+    getPictureFoldersStub = sandbox.stub(Functions, 'GetPictureFolders').returns([])
   })
   afterEach(() => {
-    getPictureFoldersStub.restore()
+    sandbox.restore()
   })
   it('should update pictures table once to set pictures read', async () => {
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')

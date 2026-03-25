@@ -6,6 +6,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../public/scripts/app/navigation'
 import { Cast } from '../../../../testutils/TypeGuards'
 import { EventuallyFullfills } from '../../../../testutils/Errors'
+
+const sandbox = Sinon.createSandbox()
 describe('public/app/navigation function NavigateTo()', () => {
   const errorSpy = Sinon.stub()
   let loadDataSpy = Sinon.stub()
@@ -14,10 +16,10 @@ describe('public/app/navigation function NavigateTo()', () => {
     PubSub.subscribers = {
       'LOADING:ERROR': [errorSpy],
     }
-    loadDataSpy = Sinon.stub(Navigation, 'LoadData').resolves()
+    loadDataSpy = sandbox.stub(Navigation, 'LoadData').resolves()
   })
   afterEach(() => {
-    loadDataSpy.restore()
+    sandbox.restore()
     errorSpy.reset()
   })
   it('should publish error when path is empty', async () => {

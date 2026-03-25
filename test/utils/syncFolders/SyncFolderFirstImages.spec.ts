@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function SyncFolderFirstImages()', () => {
   let loggerStub = Sinon.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
@@ -61,10 +63,10 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
     knexFnFake = StubToKnex(knexFnStub)
     chunkStub = Sinon.stub()
     knexFnFake.queryBuilder = queryBuilderStub
-    chunkStub = Sinon.stub(Functions, 'Chunk').returns([])
+    chunkStub = sandbox.stub(Functions, 'Chunk').returns([])
   })
   afterEach(() => {
-    chunkStub.restore()
+    sandbox.restore()
   })
   it('should select from querybuilder for update', async () => {
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)

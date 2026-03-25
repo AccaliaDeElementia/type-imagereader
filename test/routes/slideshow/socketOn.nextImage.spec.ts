@@ -6,6 +6,8 @@ import { expect } from 'chai'
 import { HandleSocketState, Functions, SocketHandlers } from '../../../routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow socket next-image', () => {
   let knexFake = StubToKnex({})
   let ioStub = { emit: Sinon.stub(), to: Sinon.stub().returnsThis() }
@@ -26,11 +28,11 @@ describe('routes/slideshow socket next-image', () => {
       path: '/foo/bar',
       uriSafeImage: '/foo/quux.png',
     }
-    getRoomStub = Sinon.stub(Functions, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
   })
   afterEach(() => {
-    getRoomStub.restore()
+    sandbox.restore()
   })
   const tests: Array<[string, string | null, () => void]> = [
     ['not decrement image for null room', null, () => expect(getRoomStub.callCount).to.equal(0)],

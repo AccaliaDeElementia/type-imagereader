@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function SyncAllFolders()', () => {
   let syncNewFoldersStub = Sinon.stub()
   let syncRemovedFoldersStub = Sinon.stub()
@@ -16,19 +18,15 @@ describe('utils/syncfolders function SyncAllFolders()', () => {
   let knexFake = StubToKnex({ id: Math.random() })
   beforeEach(() => {
     loggerStub = Sinon.stub()
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    syncNewFoldersStub = Sinon.stub(Functions, 'SyncNewFolders').resolves()
-    syncRemovedFoldersStub = Sinon.stub(Functions, 'SyncRemovedFolders').resolves()
-    syncMissingCoverImagesStub = Sinon.stub(Functions, 'SyncMissingCoverImages').resolves()
-    syncFolderFirstImagesStub = Sinon.stub(Functions, 'SyncFolderFirstImages').resolves()
+    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    syncNewFoldersStub = sandbox.stub(Functions, 'SyncNewFolders').resolves()
+    syncRemovedFoldersStub = sandbox.stub(Functions, 'SyncRemovedFolders').resolves()
+    syncMissingCoverImagesStub = sandbox.stub(Functions, 'SyncMissingCoverImages').resolves()
+    syncFolderFirstImagesStub = sandbox.stub(Functions, 'SyncFolderFirstImages').resolves()
     knexFake = StubToKnex({ id: Math.random() })
   })
   afterEach(() => {
-    debugStub.restore()
-    syncNewFoldersStub.restore()
-    syncRemovedFoldersStub.restore()
-    syncMissingCoverImagesStub.restore()
-    syncFolderFirstImagesStub.restore()
+    sandbox.restore()
   })
   it('should construct prefixed logger', async () => {
     await Functions.SyncAllFolders(knexFake)

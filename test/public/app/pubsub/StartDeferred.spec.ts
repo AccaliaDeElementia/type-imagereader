@@ -9,6 +9,8 @@ import assert from 'node:assert'
 import { Cast } from '../../../../testutils/TypeGuards'
 import { HasValue } from '../../../../utils/helpers'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pubsub function StartDeferred()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
@@ -19,20 +21,16 @@ describe('public/app/pubsub function StartDeferred()', () => {
     dom = new JSDOM('<html></html>', {})
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    setIntervalSpy = Sinon.stub(global.window, 'setInterval')
+    setIntervalSpy = sandbox.stub(global.window, 'setInterval')
     setIntervalSpy.returns(1)
     PubSub.cycleTime = 17
     PubSub.timer = undefined
-    executeIntervalSpy = Sinon.stub(PubSub, 'ExecuteInterval')
+    executeIntervalSpy = sandbox.stub(PubSub, 'ExecuteInterval')
   })
   afterEach(() => {
-    setIntervalSpy.restore()
-    executeIntervalSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should set interval with Window.SetInterval()', () => {
     PubSub.StartDeferred()

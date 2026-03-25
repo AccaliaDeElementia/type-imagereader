@@ -4,17 +4,18 @@ import { expect } from 'chai'
 import { ModCount } from '../../../routes/apiFunctions'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/apiFunctions ModCount functions', () => {
   let mathFloorSpy = Sinon.spy()
   let mathRandomSpy = Sinon.spy()
   beforeEach(() => {
-    mathFloorSpy = Sinon.spy(Math, 'floor')
-    mathRandomSpy = Sinon.spy(Math, 'random')
+    mathFloorSpy = sandbox.spy(Math, 'floor')
+    mathRandomSpy = sandbox.spy(Math, 'random')
     ModCount._modCount = 5050
   })
   afterEach(() => {
-    mathFloorSpy.restore()
-    mathRandomSpy.restore()
+    sandbox.restore()
   })
   it('Reset() should call Math.random once', () => {
     ModCount._Reset()

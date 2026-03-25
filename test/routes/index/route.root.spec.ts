@@ -8,6 +8,8 @@ import { getRouter, Imports } from '../../../routes/index'
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/index route /', () => {
   let routeFn: (_: Request, __: Response) => void = Sinon.stub()
   let requestFake = Cast<Request>({})
@@ -20,7 +22,7 @@ describe('routes/index route /', () => {
     const routerStub = { get: Sinon.stub() }
     let getRouterStub: Sinon.SinonStub | undefined = undefined
     try {
-      getRouterStub = Sinon.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+      getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
       await getRouter(applicationFake, serverFake, socketsFake)
       routeFn = Cast<(_: Request, __: Response) => void>(
         routerStub.get.getCalls().find((c) => c.args[0] === '/')?.args[1],

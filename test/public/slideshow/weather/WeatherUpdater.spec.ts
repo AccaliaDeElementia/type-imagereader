@@ -9,6 +9,8 @@ import { render } from 'pug'
 import Sinon from 'sinon'
 import { CyclicUpdater } from '../../../../public/scripts/slideshow/updater'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -33,9 +35,9 @@ describe('public/slideshow/weather WeatherUpdater', () => {
   let dom = new JSDOM(render(markup))
 
   beforeEach(() => {
-    fetchWeatherStub = Sinon.stub(Functions, 'FetchWeather').resolves({})
-    showWeatherStub = Sinon.stub(Functions, 'ShowWeather').returns({})
-    setAlmanacStub = Sinon.stub(Functions, 'SetAlmanac')
+    fetchWeatherStub = sandbox.stub(Functions, 'FetchWeather').resolves({})
+    showWeatherStub = sandbox.stub(Functions, 'ShowWeather').returns({})
+    setAlmanacStub = sandbox.stub(Functions, 'SetAlmanac')
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })
@@ -47,17 +49,12 @@ describe('public/slideshow/weather WeatherUpdater', () => {
   })
 
   afterEach(() => {
+    sandbox.restore()
     global.window = baseWindow
     Object.defineProperty(global, 'document', {
       configurable: true,
       get: () => baseDocument,
     })
-    fetchWeatherStub.restore()
-    showWeatherStub.restore()
-    setAlmanacStub.restore()
-  })
-  after(() => {
-    Sinon.restore()
   })
 
   it('should be an CyclicUpdater', () => {

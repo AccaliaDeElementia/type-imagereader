@@ -10,6 +10,8 @@ import { Navigation } from '../../../../../public/scripts/app/navigation'
 import { Cast } from '../../../../../testutils/TypeGuards'
 import { EventuallyFullfills } from '../../../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   head
@@ -26,7 +28,7 @@ describe('public/app/navigation function Init()', () => {
   const existingDocument = global.document
   let dom = new JSDOM('', {})
   const tabSelectedSpy = Sinon.stub()
-  let loadDataStub = Sinon.stub()
+  Sinon.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -38,7 +40,7 @@ describe('public/app/navigation function Init()', () => {
     PubSub.deferred = []
     tabSelectedSpy.resolves()
     PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    loadDataStub = Sinon.stub(Navigation, 'LoadData').resolves()
+    sandbox.stub(Navigation, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -46,7 +48,7 @@ describe('public/app/navigation function Init()', () => {
     }
   })
   afterEach(() => {
-    loadDataStub.restore()
+    sandbox.restore()
     tabSelectedSpy.reset()
   })
   after(() => {

@@ -11,6 +11,8 @@ import { CacheStorage, Functions, getRouter, ImageData, Imports } from '../../..
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/images route /full/*', () => {
   const defaultKioskCache = CacheStorage.kioskCache
   const defaultScaledCache = CacheStorage.scaledCache
@@ -31,9 +33,9 @@ describe('routes/images route /full/*', () => {
   let routerFake = {
     get: Sinon.stub().returnsThis(),
   }
-  let getRouterStub = Sinon.stub()
+  Sinon.stub()
   let loggerStub = Sinon.stub()
-  let debugStub = Sinon.stub()
+  Sinon.stub()
   let router = Cast<(req: Request, res: Response) => Promise<void>>(Sinon.stub())
   let readImageStub = Sinon.stub()
   let sendImageStub = Sinon.stub()
@@ -44,17 +46,17 @@ describe('routes/images route /full/*', () => {
     routerFake = {
       get: Sinon.stub().returnsThis(),
     }
-    getRouterStub = Sinon.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
+    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = Sinon.stub()
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/full/*path')
       .map((call) => call.args[1] as unknown)
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
-    readImageStub = Sinon.stub(Functions, 'ReadImage').resolves()
-    sendImageStub = Sinon.stub(Functions, 'SendImage').resolves()
+    readImageStub = sandbox.stub(Functions, 'ReadImage').resolves()
+    sendImageStub = sandbox.stub(Functions, 'SendImage').resolves()
     requestStub = {
       params: { path: undefined },
       body: '',
@@ -68,10 +70,7 @@ describe('routes/images route /full/*', () => {
     responseFake = Cast<Response>(responseStub)
   })
   afterEach(() => {
-    sendImageStub.restore()
-    readImageStub.restore()
-    debugStub.restore()
-    getRouterStub.restore()
+    sandbox.restore()
   })
   after(() => {
     CacheStorage.kioskCache = defaultKioskCache

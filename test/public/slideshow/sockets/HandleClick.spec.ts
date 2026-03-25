@@ -8,6 +8,8 @@ import { JSDOM } from 'jsdom'
 import assert from 'node:assert'
 import { expect } from 'chai'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeEmit = Sinon.stub()
   const fakeSocket = Cast<WebSocket>({ emit: fakeEmit })
@@ -17,7 +19,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   const existingDocument = global.document
   const dom = new JSDOM('<html></html>')
   before(() => {
-    fakeAssign = Sinon.stub(WebSockets, 'LocationAssign')
+    fakeAssign = sandbox.stub(WebSockets, 'LocationAssign')
     global.window = Cast<Window & typeof globalThis>(dom.window)
     Object.defineProperty(global, 'document', {
       configurable: true,

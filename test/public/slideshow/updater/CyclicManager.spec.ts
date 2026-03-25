@@ -7,22 +7,20 @@ import Sinon from 'sinon'
 import { expect } from 'chai'
 import { assert } from 'node:console'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/updater class CyclicManager', () => {
   let fakeSetInterval: Sinon.SinonStub | undefined = undefined
   let fakeClearInterval: Sinon.SinonStub | undefined = undefined
   beforeEach(() => {
     CyclicManager.__updaters = []
     CyclicManager.__timer = undefined
-    fakeSetInterval = Sinon.stub(global, 'setInterval')
+    fakeSetInterval = sandbox.stub(global, 'setInterval')
     fakeSetInterval.returns(1)
-    fakeClearInterval = Sinon.stub(global, 'clearInterval')
+    fakeClearInterval = sandbox.stub(global, 'clearInterval')
   })
   afterEach(() => {
-    fakeSetInterval?.restore()
-    fakeClearInterval?.restore()
-  })
-  after(() => {
-    Sinon.restore()
+    sandbox.restore()
   })
   describe('__triggerUpdaters()', () => {
     it('should handle updating zero updaters', async () => {
@@ -31,14 +29,14 @@ describe('public/slideshow/updater class CyclicManager', () => {
     })
     it('should trigger one updaters', async () => {
       const updater = new CyclicUpdater()
-      const spy = Sinon.stub(updater, 'trigger').resolves()
+      const spy = sandbox.stub(updater, 'trigger').resolves()
       CyclicManager.__updaters = [updater]
       await CyclicManager.__triggerUpdaters(10)
       expect(spy.callCount).to.equal(1)
     })
     it('should trigger many updaters', async () => {
       const updater = new CyclicUpdater()
-      const spy = Sinon.stub(updater, 'trigger').resolves()
+      const spy = sandbox.stub(updater, 'trigger').resolves()
       CyclicManager.__updaters = Cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await CyclicManager.__triggerUpdaters(10)
       expect(spy.callCount).to.equal(10)
@@ -46,14 +44,14 @@ describe('public/slideshow/updater class CyclicManager', () => {
     it('should trigger with provided interval', async () => {
       const interval = Math.round(Math.random() * 1e9)
       const updater = new CyclicUpdater()
-      const spy = Sinon.stub(updater, 'trigger').resolves()
+      const spy = sandbox.stub(updater, 'trigger').resolves()
       CyclicManager.__updaters = [updater]
       await CyclicManager.__triggerUpdaters(interval)
       expect(spy.firstCall.args).to.deep.equal([interval])
     })
     it('should tolerate updater rejecting', async () => {
       const updater = new CyclicUpdater()
-      const spy = Sinon.stub(updater, 'trigger').resolves()
+      const spy = sandbox.stub(updater, 'trigger').resolves()
       spy.onThirdCall().rejects(new Error('This is a rejection error!'))
       CyclicManager.__updaters = Cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await CyclicManager.__triggerUpdaters(10)
@@ -61,7 +59,7 @@ describe('public/slideshow/updater class CyclicManager', () => {
     })
     it('should tolerate updater throwing', async () => {
       const updater = new CyclicUpdater()
-      const spy = Sinon.stub(updater, 'trigger').resolves()
+      const spy = sandbox.stub(updater, 'trigger').resolves()
       spy.onThirdCall().throws(new Error('This is a rejection error!'))
       CyclicManager.__updaters = Cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await CyclicManager.__triggerUpdaters(10)
@@ -104,10 +102,10 @@ describe('public/slideshow/updater class CyclicManager', () => {
   describe('Start()', () => {
     let fakeTrigger: Sinon.SinonStub | undefined = undefined
     beforeEach(() => {
-      fakeTrigger = Sinon.stub(CyclicManager, '__triggerUpdaters').resolves()
+      fakeTrigger = sandbox.stub(CyclicManager, '__triggerUpdaters').resolves()
     })
     afterEach(() => {
-      fakeTrigger?.restore()
+      sandbox.restore()
     })
     it('should set interval on call', () => {
       expect(fakeSetInterval?.callCount).to.equal(0)

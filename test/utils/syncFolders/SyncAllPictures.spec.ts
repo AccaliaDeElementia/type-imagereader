@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function SyncAllPictures()', () => {
   let syncNewPicturesStub = Sinon.stub()
   let syncRemovedPicturesStub = Sinon.stub()
@@ -16,16 +18,13 @@ describe('utils/syncfolders function SyncAllPictures()', () => {
   beforeEach(() => {
     loggerStub = Sinon.stub()
     knexFake = StubToKnex({ id: Math.random() })
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    syncNewPicturesStub = Sinon.stub(Functions, 'SyncNewPictures').resolves()
-    syncRemovedPicturesStub = Sinon.stub(Functions, 'SyncRemovedPictures').resolves()
-    syncRemovedBookmarksStub = Sinon.stub(Functions, 'SyncRemovedBookmarks').resolves()
+    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    syncNewPicturesStub = sandbox.stub(Functions, 'SyncNewPictures').resolves()
+    syncRemovedPicturesStub = sandbox.stub(Functions, 'SyncRemovedPictures').resolves()
+    syncRemovedBookmarksStub = sandbox.stub(Functions, 'SyncRemovedBookmarks').resolves()
   })
   afterEach(() => {
-    debugStub.restore()
-    syncNewPicturesStub.restore()
-    syncRemovedPicturesStub.restore()
-    syncRemovedBookmarksStub.restore()
+    sandbox.restore()
   })
   it('should construct prefixed logger', async () => {
     await Functions.SyncAllPictures(knexFake)

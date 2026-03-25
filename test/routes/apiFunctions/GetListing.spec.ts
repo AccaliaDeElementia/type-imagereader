@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { StubToKnex } from '../../../testutils/TypeGuards'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/apiFunctions function GetListing', () => {
   let getFolderStub = Sinon.stub()
   let getDirectionFolderStub = Sinon.stub()
@@ -18,22 +20,16 @@ describe('routes/apiFunctions function GetListing', () => {
   beforeEach(() => {
     ModCount._modCount = 32_768
     knexFake = StubToKnex({ Knex: Math.random() })
-    getFolderStub = Sinon.stub(Functions, 'GetFolder').resolves(null)
-    getDirectionFolderStub = Sinon.stub(Functions, 'GetDirectionFolder').resolves(null)
-    getNextFolderStub = Sinon.stub(Functions, 'GetNextFolder').resolves(null)
-    getPreviousFolderStub = Sinon.stub(Functions, 'GetPreviousFolder').resolves(null)
-    getChildFoldersStub = Sinon.stub(Functions, 'GetChildFolders').resolves(undefined)
-    getPicturesStub = Sinon.stub(Functions, 'GetPictures').resolves(undefined)
-    getBookmarksStub = Sinon.stub(Functions, 'GetBookmarks').resolves(undefined)
+    getFolderStub = sandbox.stub(Functions, 'GetFolder').resolves(null)
+    getDirectionFolderStub = sandbox.stub(Functions, 'GetDirectionFolder').resolves(null)
+    getNextFolderStub = sandbox.stub(Functions, 'GetNextFolder').resolves(null)
+    getPreviousFolderStub = sandbox.stub(Functions, 'GetPreviousFolder').resolves(null)
+    getChildFoldersStub = sandbox.stub(Functions, 'GetChildFolders').resolves(undefined)
+    getPicturesStub = sandbox.stub(Functions, 'GetPictures').resolves(undefined)
+    getBookmarksStub = sandbox.stub(Functions, 'GetBookmarks').resolves(undefined)
   })
   afterEach(() => {
-    getFolderStub.restore()
-    getDirectionFolderStub.restore()
-    getNextFolderStub.restore()
-    getPreviousFolderStub.restore()
-    getChildFoldersStub.restore()
-    getPicturesStub.restore()
-    getBookmarksStub.restore()
+    sandbox.restore()
   })
   it('should call GetFolder()', async () => {
     await Functions.GetListing(knexFake, '/foo/bar/')

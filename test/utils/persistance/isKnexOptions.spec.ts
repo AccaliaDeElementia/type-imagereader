@@ -4,22 +4,19 @@ import { expect } from 'chai'
 import { TypeGuards } from '../../../utils/persistance'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/persistance function isKnexOptions()', () => {
   let isMigrationsValidStub = Sinon.stub()
   let isConnectionValid = Sinon.stub()
   let isPoolValid = Sinon.stub()
   beforeEach(() => {
-    isMigrationsValidStub = Sinon.stub(TypeGuards, 'isMigrationsValid').returns(true)
-    isConnectionValid = Sinon.stub(TypeGuards, 'isConnectionValid').returns(true)
-    isPoolValid = Sinon.stub(TypeGuards, 'isPoolValid').returns(true)
+    isMigrationsValidStub = sandbox.stub(TypeGuards, 'isMigrationsValid').returns(true)
+    isConnectionValid = sandbox.stub(TypeGuards, 'isConnectionValid').returns(true)
+    isPoolValid = sandbox.stub(TypeGuards, 'isPoolValid').returns(true)
   })
   afterEach(() => {
-    isPoolValid.restore()
-    isConnectionValid.restore()
-    isMigrationsValidStub.restore()
-  })
-  after(() => {
-    Sinon.restore()
+    sandbox.restore()
   })
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],

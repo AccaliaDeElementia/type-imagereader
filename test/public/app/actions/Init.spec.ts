@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 import Sinon from 'sinon'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
@@ -11,6 +11,8 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import type { Listing } from '../../../../contracts/listing'
 import assert from 'node:assert'
+
+const sandbox = Sinon.createSandbox()
 
 describe('public/app/actions function Init()', () => {
   const existingWindow: Window & typeof globalThis = global.window
@@ -25,17 +27,13 @@ describe('public/app/actions function Init()', () => {
     PubSub.subscribers = {}
     PubSub.deferred = []
     PubSub.intervals = {}
-    BuildActionsSpy = Sinon.stub(Actions, 'BuildActions')
-    GamepadResetSpy = Sinon.stub(Actions.gamepads, 'Reset')
+    BuildActionsSpy = sandbox.stub(Actions, 'BuildActions')
+    GamepadResetSpy = sandbox.stub(Actions.gamepads, 'Reset')
   })
   afterEach(() => {
-    GamepadResetSpy.restore()
-    BuildActionsSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should build actions on init', () => {
     Actions.Init()
@@ -182,7 +180,7 @@ describe('public/app/actions function Init()', () => {
     }
   })
   it('should add exactly one keyup event listener to document', () => {
-    const spy = Sinon.stub(document, 'addEventListener')
+    const spy = sandbox.stub(document, 'addEventListener')
     try {
       Actions.Init()
       expect(spy.callCount).to.equal(1)
@@ -191,7 +189,7 @@ describe('public/app/actions function Init()', () => {
     }
   })
   it('should add keyup event listener to document', () => {
-    const spy = Sinon.stub(document, 'addEventListener')
+    const spy = sandbox.stub(document, 'addEventListener')
     try {
       Actions.Init()
       expect(spy.firstCall.calledWith('keyup')).to.equal(true)
@@ -211,7 +209,7 @@ describe('public/app/actions function Init()', () => {
   ]
   keyUpTestCases.forEach(([event, expected]) => {
     const doKeypress = (): Sinon.SinonStub => {
-      const documentSpy = Sinon.stub(document, 'addEventListener')
+      const documentSpy = sandbox.stub(document, 'addEventListener')
       const spy = Sinon.stub().resolves()
       PubSub.subscribers['ACTION:KEYPRESS'] = [spy]
       let handler: (o: unknown) => void = (_) => {
@@ -237,7 +235,7 @@ describe('public/app/actions function Init()', () => {
   })
 
   it('should add exactly one event listener to window', () => {
-    const spy = Sinon.stub(window, 'addEventListener')
+    const spy = sandbox.stub(window, 'addEventListener')
     try {
       Actions.Init()
       expect(spy.callCount).to.equal(1)
@@ -246,7 +244,7 @@ describe('public/app/actions function Init()', () => {
     }
   })
   it('should add gamepadconnected event listener to window', () => {
-    const spy = Sinon.stub(window, 'addEventListener')
+    const spy = sandbox.stub(window, 'addEventListener')
     try {
       Actions.Init()
       expect(spy.firstCall.calledWith('gamepadconnected')).to.equal(true)
@@ -256,7 +254,7 @@ describe('public/app/actions function Init()', () => {
   })
 
   it('should add ReadGamepad interval when gamepadConnected event fires', () => {
-    const spy = Sinon.stub(window, 'addEventListener')
+    const spy = sandbox.stub(window, 'addEventListener')
     try {
       Actions.Init()
       Cast<() => void>(spy.firstCall.args[1])()
@@ -267,8 +265,8 @@ describe('public/app/actions function Init()', () => {
   })
 
   it('should ReadGamepad() when ReadGamepad interval fires', () => {
-    const spy = Sinon.stub(window, 'addEventListener')
-    const readspy = Sinon.stub(Actions, 'ReadGamepad')
+    const spy = sandbox.stub(window, 'addEventListener')
+    const readspy = sandbox.stub(Actions, 'ReadGamepad')
     try {
       Actions.Init()
       Cast<() => void>(spy.firstCall.args[1])()

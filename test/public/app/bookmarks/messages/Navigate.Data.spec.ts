@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -12,6 +12,8 @@ import { PubSub } from '../../../../../public/scripts/app/pubsub'
 import { Bookmarks } from '../../../../../public/scripts/app/bookmarks'
 
 import assert from 'node:assert'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -53,17 +55,14 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = Sinon.stub(Bookmarks, 'buildBookmarks')
+    BuildBookmarksSpy = sandbox.stub(Bookmarks, 'buildBookmarks')
 
     Bookmarks.Init()
   })
   afterEach(() => {
-    BuildBookmarksSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   const testCases: Array<[string, unknown, boolean]> = [
     ['null', null, false],

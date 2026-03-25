@@ -6,6 +6,8 @@ import { assert, expect } from 'chai'
 import { Functions, SocketHandlers } from '../../../routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow function HandleSocket()', () => {
   let knexFake = StubToKnex({})
   let serverFake = Cast<WebSocketServer>({})
@@ -18,17 +20,15 @@ describe('routes/slideshow function HandleSocket()', () => {
     socketStub = { on: Sinon.stub() }
     socketFake = Cast<Socket>(socketStub)
     socketStubs = [
-      ['get-launchId', Sinon.stub(SocketHandlers, 'getLaunchId')],
-      ['join-slideshow', Sinon.stub(SocketHandlers, 'joinSlideshow')],
-      ['prev-image', Sinon.stub(SocketHandlers, 'prevImage')],
-      ['next-image', Sinon.stub(SocketHandlers, 'nextImage')],
-      ['goto-image', Sinon.stub(SocketHandlers, 'gotoImage')],
+      ['get-launchId', sandbox.stub(SocketHandlers, 'getLaunchId')],
+      ['join-slideshow', sandbox.stub(SocketHandlers, 'joinSlideshow')],
+      ['prev-image', sandbox.stub(SocketHandlers, 'prevImage')],
+      ['next-image', sandbox.stub(SocketHandlers, 'nextImage')],
+      ['goto-image', sandbox.stub(SocketHandlers, 'gotoImage')],
     ]
   })
   afterEach(() => {
-    socketStubs.forEach(([_, stub]) => {
-      stub.restore()
-    })
+    sandbox.restore()
   })
   const endpoints = ['get-launchId', 'join-slideshow', 'prev-image', 'next-image', 'goto-image']
   it('should register expected endpoint count', () => {

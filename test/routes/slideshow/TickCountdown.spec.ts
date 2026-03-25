@@ -6,6 +6,8 @@ import { expect } from 'chai'
 import { Config, Functions, Imports } from '../../../routes/slideshow'
 import type { Server as WebSocketServer } from 'socket.io'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow function TickCountdown()', () => {
   let knexFake = StubToKnex({ knex: Math.random() })
   let ioStub = {
@@ -34,12 +36,11 @@ describe('routes/slideshow function TickCountdown()', () => {
     ioStub.rooms = ioStub
     Config.rooms = {}
     Config.countdownDuration = 60
-    getRoomStub = Sinon.stub(Functions, 'GetRoomAndIncrementImage')
-    loggerStub = Sinon.stub(Imports, 'logger')
+    getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
+    loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
-    getRoomStub.restore()
-    loggerStub.restore()
+    sandbox.restore()
   })
   it('should accept empty room list', async () => {
     await Functions.TickCountdown(knexFake, ioFake)

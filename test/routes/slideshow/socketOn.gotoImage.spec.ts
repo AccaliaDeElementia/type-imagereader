@@ -6,6 +6,8 @@ import { expect } from 'chai'
 import { HandleSocketState, Functions, Imports, SocketHandlers } from '../../../routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow socket goto-image', () => {
   let knexFake = StubToKnex({})
   let ioStub = {}
@@ -27,14 +29,13 @@ describe('routes/slideshow socket goto-image', () => {
     socketState = Functions.HandleSocket(knexFake, serverFake, socketFake)
     folder = { path: '/foo/bar' }
     roomData = { images: [folder], index: -1 }
-    getRoomStub = Sinon.stub(Functions, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
     picturePath = `Picture-${Math.random()}.png`
-    setLatestStub = Sinon.stub(Imports, 'setLatest').resolves(picturePath)
+    setLatestStub = sandbox.stub(Imports, 'setLatest').resolves(picturePath)
   })
   afterEach(() => {
-    setLatestStub.restore()
-    getRoomStub.restore()
+    sandbox.restore()
   })
   const tests: Array<[string, string | null, number, (_: Sinon.SinonStub) => void]> = [
     ['not get room for null room', null, 0, () => expect(getRoomStub.callCount).to.equal(0)],

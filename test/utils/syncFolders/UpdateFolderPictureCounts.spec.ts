@@ -6,6 +6,8 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
   let getFolderInfosWithPicturesStub = Sinon.stub()
   let getAllFolderInfosStub = Sinon.stub()
@@ -29,18 +31,14 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     knexFnStub = Sinon.stub().returns(knexStub)
     knexFnFake = StubToKnex(knexFnStub)
     loggerStub = Sinon.stub()
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    getFolderInfosWithPicturesStub = Sinon.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
-    getAllFolderInfosStub = Sinon.stub(Functions, 'GetAllFolderInfos').resolves({})
-    calculateFolderInfosStub = Sinon.stub(Functions, 'CalculateFolderInfos').returns([])
-    chunkStub = Sinon.stub(Functions, 'Chunk').returns([])
+    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    getFolderInfosWithPicturesStub = sandbox.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
+    getAllFolderInfosStub = sandbox.stub(Functions, 'GetAllFolderInfos').resolves({})
+    calculateFolderInfosStub = sandbox.stub(Functions, 'CalculateFolderInfos').returns([])
+    chunkStub = sandbox.stub(Functions, 'Chunk').returns([])
   })
   afterEach(() => {
-    debugStub.restore()
-    getFolderInfosWithPicturesStub.restore()
-    getAllFolderInfosStub.restore()
-    calculateFolderInfosStub.restore()
-    chunkStub.restore()
+    sandbox.restore()
   })
   it('should construct prefixed logger', async () => {
     await Functions.UpdateFolderPictureCounts(knexFnFake)

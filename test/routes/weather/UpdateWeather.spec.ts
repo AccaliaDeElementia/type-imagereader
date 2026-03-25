@@ -5,6 +5,8 @@ import { Functions, Imports, type OpenWeatherData, type WeatherResults } from '.
 import Sinon from 'sinon'
 import { EventuallyRejects } from '../../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/weather function UpdateWeather', () => {
   let weatherData: OpenWeatherData = {
     main: { temp: 291.15, pressure: 1024.4, humidity: 52.9 },
@@ -21,9 +23,9 @@ describe('routes/weather function UpdateWeather', () => {
       weather: [{ main: 'weatherMain', icon: 'weatherIcon' }],
       sys: { sunrise: 123000, sunset: 456000 },
     }
-    getNightNotAfterStub = Sinon.stub(Imports, 'getNightNotAfter').returns(123000)
-    getNightNotBeforeStub = Sinon.stub(Imports, 'getNightNotBefore').returns(456000)
-    getWeatherStub = Sinon.stub(Functions, 'GetWeather').resolves(weatherData)
+    getNightNotAfterStub = sandbox.stub(Imports, 'getNightNotAfter').returns(123000)
+    getNightNotBeforeStub = sandbox.stub(Imports, 'getNightNotBefore').returns(456000)
+    getWeatherStub = sandbox.stub(Functions, 'GetWeather').resolves(weatherData)
     Functions.weather = {
       temp: -4.1,
       pressure: 1000.0,
@@ -35,9 +37,7 @@ describe('routes/weather function UpdateWeather', () => {
     }
   })
   afterEach(() => {
-    getWeatherStub.restore()
-    getNightNotBeforeStub.restore()
-    getNightNotAfterStub.restore()
+    sandbox.restore()
   })
   it('should reject when getNightNotBefore throws', async () => {
     const err = new Error('FOO!')

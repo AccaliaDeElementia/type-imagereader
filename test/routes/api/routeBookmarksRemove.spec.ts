@@ -12,6 +12,8 @@ import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 type RequestHandler = (req: Request, res: Response) => Promise<void>
 
 describe('routes/api route POST /bookmarks/remove', () => {
@@ -31,7 +33,7 @@ describe('routes/api route POST /bookmarks/remove', () => {
   let responseFake = Cast<Response>(responseStub)
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
-  let debuggerStub = Sinon.stub()
+  Sinon.stub()
   let removeBookmarkStub = Sinon.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
@@ -51,16 +53,16 @@ describe('routes/api route POST /bookmarks/remove', () => {
     responseFake = Cast<Response>(responseStub)
     knexFake = { Knex: Math.random() }
     const postFn = Sinon.stub()
-    const InitializeStub = Sinon.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
-    const MakeRouterStub = Sinon.stub(Imports, 'Router').returns(
+    const InitializeStub = sandbox.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
+    const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         post: postFn,
         get: Sinon.stub(),
       }),
     )
-    removeBookmarkStub = Sinon.stub(Functions, 'RemoveBookmark').resolves()
+    removeBookmarkStub = sandbox.stub(Functions, 'RemoveBookmark').resolves()
     loggerStub = Sinon.stub()
-    debuggerStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       postFn.getCalls().find((call) => call.args[0] === '/bookmarks/remove')?.args[1],
@@ -70,8 +72,7 @@ describe('routes/api route POST /bookmarks/remove', () => {
     MakeRouterStub.restore()
   })
   afterEach(() => {
-    removeBookmarkStub.restore()
-    debuggerStub.restore()
+    sandbox.restore()
   })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)

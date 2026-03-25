@@ -5,6 +5,8 @@ import { StubToKnex } from '../../../testutils/TypeGuards'
 import { Config, Functions } from '../../../routes/slideshow'
 import { expect } from 'chai'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow function GetCounts()', () => {
   let knexFake = StubToKnex({})
   let getUnreadImageCountStub = Sinon.stub().resolves()
@@ -13,14 +15,12 @@ describe('routes/slideshow function GetCounts()', () => {
   beforeEach(() => {
     Config.memorySize = 10
     knexFake = StubToKnex({})
-    getUnreadImageCountStub = Sinon.stub(Functions, 'GetUnreadImageCount').resolves(0)
-    getImageCountStub = Sinon.stub(Functions, 'GetImageCount').resolves(0)
-    randomStub = Sinon.stub(Math, 'random').returns(0.5)
+    getUnreadImageCountStub = sandbox.stub(Functions, 'GetUnreadImageCount').resolves(0)
+    getImageCountStub = sandbox.stub(Functions, 'GetImageCount').resolves(0)
+    randomStub = sandbox.stub(Math, 'random').returns(0.5)
   })
   afterEach(() => {
-    randomStub.restore()
-    getImageCountStub.restore()
-    getUnreadImageCountStub.restore()
+    sandbox.restore()
   })
   it('should get unread image count', async () => {
     await Functions.GetCounts(knexFake, 'foo')

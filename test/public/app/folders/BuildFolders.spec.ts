@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
@@ -11,6 +11,8 @@ import { Folders } from '../../../../public/scripts/app/folders'
 import Sinon from 'sinon'
 import type { Listing } from '../../../../contracts/listing'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -36,22 +38,17 @@ describe('public/app/folders function BuildFolders()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     tabFolders = dom.window.document.querySelector('#tabFolders')
-    hideTabStub = Sinon.stub(Folders, 'HideTab')
-    unhideTabStub = Sinon.stub(Folders, 'UnhideTab')
-    buildAllCardsStub = Sinon.stub(Folders, 'BuildAllCards')
+    hideTabStub = sandbox.stub(Folders, 'HideTab')
+    unhideTabStub = sandbox.stub(Folders, 'UnhideTab')
+    buildAllCardsStub = sandbox.stub(Folders, 'BuildAllCards')
     tabSelectStub = Sinon.stub().resolves()
     PubSub.subscribers['TAB:SELECT'] = [tabSelectStub]
   })
   afterEach(() => {
+    sandbox.restore()
     PubSub.subscribers = {}
-    buildAllCardsStub.restore()
-    unhideTabStub.restore()
-    hideTabStub.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should remove all existing folder cards on call', () => {
     for (let i = 0; i < 20; i += 1) {

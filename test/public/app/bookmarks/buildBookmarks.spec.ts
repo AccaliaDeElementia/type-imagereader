@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
@@ -11,6 +11,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
 import Sinon from 'sinon'
 import assert from 'node:assert'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -45,8 +47,9 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    getFolderSpy = Sinon.stub(Bookmarks, 'GetFolder').returns(dom.window.document.createElement('div'))
-    buildBookmarkSpy = Sinon.stub(Bookmarks, 'BuildBookmark')
+    getFolderSpy = sandbox.stub(Bookmarks, 'GetFolder').returns(dom.window.document.createElement('div'))
+    buildBookmarkSpy = sandbox
+      .stub(Bookmarks, 'BuildBookmark')
       .returns(dom.window.document.createElement('div'))
       .returns(null)
 
@@ -59,13 +62,9 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     Bookmarks.bookmarksTab = dom.window.document.querySelector<HTMLElement>('#tabBookmarks')
   })
   afterEach(() => {
-    buildBookmarkSpy.restore()
-    getFolderSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should bail when bookmarksTab is missing', () => {
     const data = {
@@ -334,7 +333,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     }
     const folder = dom.window.document.createElement('details')
     getFolderSpy.returns(folder)
-    const spy = Sinon.stub(folder, 'appendChild')
+    const spy = sandbox.stub(folder, 'appendChild')
     buildBookmarkSpy.returns(null)
     Bookmarks.buildBookmarks(data)
     expect(spy.called).to.equal(false)
@@ -360,7 +359,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     }
     const folder = dom.window.document.createElement('details')
     getFolderSpy.returns(folder)
-    const spy = Sinon.stub(folder, 'appendChild')
+    const spy = sandbox.stub(folder, 'appendChild')
     const card = dom.window.document.createElement('div')
     buildBookmarkSpy.returns(card)
     Bookmarks.buildBookmarks(data)
@@ -422,7 +421,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       }
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
-    const appendChildSpy = Sinon.stub(Bookmarks.bookmarksTab, 'appendChild')
+    const appendChildSpy = sandbox.stub(Bookmarks.bookmarksTab, 'appendChild')
     Bookmarks.buildBookmarks({
       name: '',
       parent: '',

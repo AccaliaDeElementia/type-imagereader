@@ -12,6 +12,8 @@ import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 type RequestHandler = (req: Request, res: Response) => Promise<void>
 
 describe('routes/api route POST /navigate/latest', () => {
@@ -32,7 +34,7 @@ describe('routes/api route POST /navigate/latest', () => {
   let responseFake = Cast<Response>(responseStub)
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
-  let debuggerStub = Sinon.stub()
+  Sinon.stub()
   let setLatestPictureStub = Sinon.stub()
   let validateModcountStub = Sinon.stub()
   let incrementModcountStub = Sinon.stub()
@@ -56,19 +58,19 @@ describe('routes/api route POST /navigate/latest', () => {
     responseFake = Cast<Response>(responseStub)
     knexFake = { Knex: Math.random() }
     const postFn = Sinon.stub()
-    const InitializeStub = Sinon.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
-    const MakeRouterStub = Sinon.stub(Imports, 'Router').returns(
+    const InitializeStub = sandbox.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
+    const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         post: postFn,
         get: Sinon.stub(),
       }),
     )
-    setLatestPictureStub = Sinon.stub(Functions, 'SetLatestPicture').resolves()
-    validateModcountStub = Sinon.stub(ModCount, 'Validate').returns(true)
-    incrementModcountStub = Sinon.stub(ModCount, 'Increment').returns(1)
-    getModcountStub = Sinon.stub(ModCount, 'Get').returns(69)
+    setLatestPictureStub = sandbox.stub(Functions, 'SetLatestPicture').resolves()
+    validateModcountStub = sandbox.stub(ModCount, 'Validate').returns(true)
+    incrementModcountStub = sandbox.stub(ModCount, 'Increment').returns(1)
+    getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
     loggerStub = Sinon.stub()
-    debuggerStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       postFn.getCalls().find((call) => call.args[0] === '/navigate/latest')?.args[1],
@@ -78,11 +80,7 @@ describe('routes/api route POST /navigate/latest', () => {
     MakeRouterStub.restore()
   })
   afterEach(() => {
-    setLatestPictureStub.restore()
-    validateModcountStub.restore()
-    incrementModcountStub.restore()
-    getModcountStub.restore()
-    debuggerStub.restore()
+    sandbox.restore()
   })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)

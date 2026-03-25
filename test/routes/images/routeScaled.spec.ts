@@ -11,6 +11,8 @@ import { CacheStorage, Functions, getRouter, ImageData, Imports } from '../../..
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 interface ReqParams {
   path: string | string[] | undefined
   width?: unknown
@@ -47,9 +49,9 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   let routerFake = {
     get: Sinon.stub().returnsThis(),
   }
-  let getRouterStub = Sinon.stub()
+  Sinon.stub()
   let loggerStub = Sinon.stub()
-  let debugStub = Sinon.stub()
+  Sinon.stub()
   let router = Cast<(req: Request, res: Response) => Promise<void>>(Sinon.stub())
   let fetchImageStub = Sinon.stub()
   let sendImageStub = Sinon.stub()
@@ -60,17 +62,17 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     routerFake = {
       get: Sinon.stub().returnsThis(),
     }
-    getRouterStub = Sinon.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
+    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = Sinon.stub()
-    debugStub = Sinon.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*path-image.webp')
       .map((call) => call.args[1] as unknown)
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
-    fetchImageStub = Sinon.stub(CacheStorage.scaledCache, 'fetch').resolves()
-    sendImageStub = Sinon.stub(Functions, 'SendImage').resolves()
+    fetchImageStub = sandbox.stub(CacheStorage.scaledCache, 'fetch').resolves()
+    sendImageStub = sandbox.stub(Functions, 'SendImage').resolves()
     requestStub = {
       params: { path: undefined },
       body: '',
@@ -84,10 +86,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     responseFake = Cast<Response>(responseStub)
   })
   afterEach(() => {
-    sendImageStub.restore()
-    fetchImageStub.restore()
-    debugStub.restore()
-    getRouterStub.restore()
+    sandbox.restore()
   })
   after(() => {
     CacheStorage.kioskCache = defaultKioskCache

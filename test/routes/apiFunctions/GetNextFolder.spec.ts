@@ -6,15 +6,17 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/apiFunctions function GetNextFolder', () => {
   let knexFake = StubToKnex({ Knex: Math.random() })
   let getDirectionFolderStub = Sinon.stub()
   beforeEach(() => {
     knexFake = StubToKnex({ Knex: Math.random() })
-    getDirectionFolderStub = Sinon.stub(Functions, 'GetDirectionFolder').resolves()
+    getDirectionFolderStub = sandbox.stub(Functions, 'GetDirectionFolder').resolves()
   })
   afterEach(() => {
-    getDirectionFolderStub.restore()
+    sandbox.restore()
   })
   it('should call GetDirectionFolder to do actual query', async () => {
     await Functions.GetNextFolder(knexFake, '/foo', 'foo')

@@ -11,6 +11,8 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -28,7 +30,7 @@ describe('public/app/actions function BuildActions()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let GamepadResetSpy = Sinon.stub()
+  Sinon.stub()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -39,15 +41,12 @@ describe('public/app/actions function BuildActions()', () => {
     PubSub.subscribers = {}
     PubSub.deferred = []
     PubSub.intervals = {}
-    GamepadResetSpy = Sinon.stub(Actions.gamepads, 'Reset')
+    sandbox.stub(Actions.gamepads, 'Reset')
   })
   afterEach(() => {
-    GamepadResetSpy.restore()
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should return build actions for each tab', () => {
     Actions.BuildActions()

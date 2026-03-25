@@ -5,6 +5,8 @@ import { StubToKnex } from '../../../../testutils/TypeGuards'
 import { expect } from 'chai'
 import { Config, Functions } from '../../../../routes/slideshow'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/slideshow function GetRoomAndIncrementImage() room initialisation', () => {
   let stockImages = Array(Config.memorySize)
     .fill(undefined)
@@ -28,14 +30,12 @@ describe('routes/slideshow function GetRoomAndIncrementImage() room initialisati
     Config.rooms = {}
     Config.countdownDuration = 60
     Config.memorySize = 100
-    getImagesStub = Sinon.stub(Functions, 'GetImages').resolves(stockImages)
-    markImageReadStub = Sinon.stub(Functions, 'MarkImageRead').resolves()
-    getCountsStub = Sinon.stub(Functions, 'GetCounts').resolves(pages)
+    getImagesStub = sandbox.stub(Functions, 'GetImages').resolves(stockImages)
+    markImageReadStub = sandbox.stub(Functions, 'MarkImageRead').resolves()
+    getCountsStub = sandbox.stub(Functions, 'GetCounts').resolves(pages)
   })
   afterEach(() => {
-    getCountsStub.restore()
-    getImagesStub.restore()
-    markImageReadStub.restore()
+    sandbox.restore()
     Config.countdownDuration = 60
     Config.memorySize = 100
   })

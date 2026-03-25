@@ -5,19 +5,19 @@ import { ImageReader, Functions } from '../..'
 import { expect } from 'chai'
 import { EventuallyRejects } from '../../testutils/Errors'
 
+const sandbox = Sinon.createSandbox()
+
 describe('index.ts Functions.ActuallyRunSyncForReal()', () => {
   let synchronizeStub = Sinon.stub()
   let takeStub = Sinon.stub()
   let releaseStub = Sinon.stub()
   beforeEach(() => {
-    synchronizeStub = Sinon.stub(ImageReader, 'Synchronize').resolves()
-    takeStub = Sinon.stub(ImageReader.SyncLock, 'Take').returns(true)
-    releaseStub = Sinon.stub(ImageReader.SyncLock, 'Release')
+    synchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
+    takeStub = sandbox.stub(ImageReader.SyncLock, 'Take').returns(true)
+    releaseStub = sandbox.stub(ImageReader.SyncLock, 'Release')
   })
   afterEach(() => {
-    synchronizeStub.restore()
-    takeStub.restore()
-    releaseStub.restore()
+    sandbox.restore()
   })
   it('should attempt to take the sync lock', async () => {
     await Functions.ActuallyRunSyncForReal()

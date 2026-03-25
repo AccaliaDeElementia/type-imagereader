@@ -8,6 +8,8 @@ import { EventuallyRejects } from '../../testutils/Errors'
 
 import { ImageReader, Imports } from '../..'
 
+const sandbox = Sinon.createSandbox()
+
 describe('/index.ts tests', (): void => {
   let StartServerStub: Sinon.SinonStub | undefined = undefined
   let SynchronizeStub: Sinon.SinonStub | undefined = undefined
@@ -17,22 +19,16 @@ describe('/index.ts tests', (): void => {
   beforeEach(() => {
     delete process.env.PORT
     delete process.env.SKIP_SYNC
-    StartServerStub = Sinon.stub(ImageReader, 'StartServer').resolves()
-    SynchronizeStub = Sinon.stub(ImageReader, 'Synchronize').resolves()
-    ClockFake = Sinon.useFakeTimers()
-    LoggerStub = Sinon.stub(Imports, 'logger')
+    StartServerStub = sandbox.stub(ImageReader, 'StartServer').resolves()
+    SynchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
+    ClockFake = sandbox.useFakeTimers()
+    LoggerStub = sandbox.stub(Imports, 'logger')
   })
 
   afterEach(() => {
+    sandbox.restore()
     ImageReader.Interval = undefined
     ImageReader.SyncLock._locked = false
-    StartServerStub?.restore()
-    SynchronizeStub?.restore()
-    ClockFake?.restore()
-    LoggerStub?.restore()
-  })
-  after(() => {
-    Sinon.restore()
   })
 
   it('should reject when StartServer throws', async () => {
