@@ -51,20 +51,17 @@ describe('public/app/net function GetJSON()', () => {
     const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.headers).to.have.all.keys(['Content-Type', 'Accept-Encoding', 'Accept'])
   })
-  it('should set Accept-Encoding header', async () => {
-    await Net.GetJSON('/foo', isUnknown)
-    const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
-    expect(req.headers['Accept-Encoding']).to.equal('gzip, deflate, br')
-  })
-  it('should set Accept header', async () => {
-    await Net.GetJSON('/foo', isUnknown)
-    const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
-    expect(req.headers.Accept).to.equal('application/json')
-  })
-  it('should set Content-Type header', async () => {
-    await Net.GetJSON('/foo', isUnknown)
-    const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
-    expect(req.headers['Content-Type']).to.equal('application/json')
+  const headerTests: Array<[string, string, string]> = [
+    ['Accept-Encoding', 'Accept-Encoding', 'gzip, deflate, br'],
+    ['Accept', 'Accept', 'application/json'],
+    ['Content-Type', 'Content-Type', 'application/json'],
+  ]
+  headerTests.forEach(([title, header, expected]) => {
+    it(`should set ${title} header`, async () => {
+      await Net.GetJSON('/foo', isUnknown)
+      const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
+      expect(req.headers[header]).to.equal(expected)
+    })
   })
   it('should not set body in request', async () => {
     await Net.GetJSON('', isUnknown)

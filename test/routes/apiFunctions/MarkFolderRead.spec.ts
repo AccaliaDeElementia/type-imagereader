@@ -219,25 +219,18 @@ describe('routes/apiFunctions function MarkFolderRead', () => {
     await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
     expect(instance.orWhere.firstCall.args).to.deep.equal([{ path: '/foo/bar/baz/quux/' }])
   })
-  it('should update folders when exactly one picture is marked read', async () => {
-    const query = createKnexChainFake(chainMethods, terminalMethods).instance
-    query.andWhere.resolves(1)
-    knexStub.onFirstCall().returns(query)
-    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
-    expect(knexStub.callCount).to.equal(3)
-  })
-  it('should not update folders when update count is zero', async () => {
-    const query = createKnexChainFake(chainMethods, terminalMethods).instance
-    query.andWhere.resolves(0)
-    knexStub.onFirstCall().returns(query)
-    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
-    expect(knexStub.callCount).to.equal(1)
-  })
-  it('should not update folders when update count is negative', async () => {
-    const query = createKnexChainFake(chainMethods, terminalMethods).instance
-    query.andWhere.resolves(-1)
-    knexStub.onFirstCall().returns(query)
-    await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
-    expect(knexStub.callCount).to.equal(1)
+  const updateCountTests: Array<[string, number, number]> = [
+    ['should update folders when exactly one picture is marked read', 1, 3],
+    ['should not update folders when update count is zero', 0, 1],
+    ['should not update folders when update count is negative', -1, 1],
+  ]
+  updateCountTests.forEach(([title, resolvedCount, expectedCallCount]) => {
+    it(title, async () => {
+      const query = createKnexChainFake(chainMethods, terminalMethods).instance
+      query.andWhere.resolves(resolvedCount)
+      knexStub.onFirstCall().returns(query)
+      await Functions.MarkFolderRead(knexFake, '/foo/bar/baz/quux/')
+      expect(knexStub.callCount).to.equal(expectedCallCount)
+    })
   })
 })

@@ -41,42 +41,30 @@ describe('public/slideshow/weather ShowIcon()', () => {
     })
   })
 
-  it('should accept null base element', () => {
-    Functions.ShowIcon(null, 'FOO')
-    assert(true, 'We expect the call to return without failing on null input')
+  const acceptBaseTests: Array<[string, null | undefined]> = [
+    ['null base element', null],
+    ['undefined base element', undefined],
+  ]
+  acceptBaseTests.forEach(([title, base]) => {
+    it(`should accept ${title}`, () => {
+      Functions.ShowIcon(base, 'FOO')
+      assert(true, 'We expect the call to return without failing on null input')
+    })
   })
 
-  it('should accept undefined base element', () => {
-    Functions.ShowIcon(undefined, 'FOO')
-    assert(true, 'We expect the call to return without failing on null input')
-  })
-
-  it('should hide element on null icon', () => {
-    const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
-    element?.style.setProperty('display', 'FOO')
-    Functions.ShowIcon(element, null)
-    expect(element?.style.display).to.equal('none')
-  })
-
-  it('should hide element on undefined icon', () => {
-    const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
-    element?.style.setProperty('display', 'FOO')
-    Functions.ShowIcon(element, undefined)
-    expect(element?.style.display).to.equal('none')
-  })
-
-  it('should hide element on empty icon', () => {
-    const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
-    element?.style.setProperty('display', 'FOO')
-    Functions.ShowIcon(element, '')
-    expect(element?.style.display).to.equal('none')
-  })
-
-  it('should unhide element on valid icon', () => {
-    const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
-    element?.style.setProperty('display', 'FOO')
-    Functions.ShowIcon(element, '8472')
-    expect(element?.style.display).to.equal('inline-block')
+  const iconDisplayTests: Array<[string, string | null | undefined, string]> = [
+    ['hide element on null icon', null, 'none'],
+    ['hide element on undefined icon', undefined, 'none'],
+    ['hide element on empty icon', '', 'none'],
+    ['unhide element on valid icon', '8472', 'inline-block'],
+  ]
+  iconDisplayTests.forEach(([title, icon, expected]) => {
+    it(`should ${title}`, () => {
+      const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
+      element?.style.setProperty('display', 'FOO')
+      Functions.ShowIcon(element, icon)
+      expect(element?.style.display).to.equal(expected)
+    })
   })
 
   it('should set src attribute on valid icon', () => {

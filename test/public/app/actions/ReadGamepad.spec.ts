@@ -69,26 +69,19 @@ describe('public/app/actions function ReadGamepad()', () => {
     global.window = existingWindow
     global.document = existingDocument
   })
-  it('should accept an null of gamepads', () => {
-    getTestGamepads.resetBehavior()
-    getTestGamepads.returns(undefined)
-    expect(() => {
-      Actions.ReadGamepad()
-    }).to.not.throw()
-  })
-  it('should accept an empty list of gamepads', () => {
-    getTestGamepads.resetBehavior()
-    getTestGamepads.returns([])
-    expect(() => {
-      Actions.ReadGamepad()
-    }).to.not.throw()
-  })
-  it('should accept a null gamepad', () => {
-    getTestGamepads.resetBehavior()
-    getTestGamepads.returns([null])
-    expect(() => {
-      Actions.ReadGamepad()
-    }).to.not.throw()
+  const acceptTests: Array<[string, unknown]> = [
+    ['a null of gamepads', undefined],
+    ['an empty list of gamepads', []],
+    ['a null gamepad', [null]],
+  ]
+  acceptTests.forEach(([title, gamepads]) => {
+    it(`should accept ${title}`, () => {
+      getTestGamepads.resetBehavior()
+      getTestGamepads.returns(gamepads)
+      expect(() => {
+        Actions.ReadGamepad()
+      }).to.not.throw()
+    })
   })
   it('should accept a valid gamepad', () => {
     Actions.ReadGamepad()

@@ -22,17 +22,16 @@ describe('public/app/navigation function NavigateTo()', () => {
     sandbox.restore()
     errorSpy.reset()
   })
-  it('should publish error when path is empty', async () => {
-    await Navigation.NavigateTo('', 'FOO')
-    expect(errorSpy.called).to.equal(true)
-  })
-  it('should publish error when path is undefined', async () => {
-    await Navigation.NavigateTo(undefined, 'FOO')
-    expect(errorSpy.called).to.equal(true)
-  })
-  it('should publish error when path is null', async () => {
-    await Navigation.NavigateTo(Cast<string>(null), 'FOO')
-    expect(errorSpy.called).to.equal(true)
+  const invalidPaths: Array<[string, string | undefined]> = [
+    ['empty', ''],
+    ['undefined', undefined],
+    ['null', Cast<string>(null)],
+  ]
+  invalidPaths.forEach(([title, path]) => {
+    it(`should publish error when path is ${title}`, async () => {
+      await Navigation.NavigateTo(path, 'FOO')
+      expect(errorSpy.called).to.equal(true)
+    })
   })
   it('should publish error message when path is invalid', async () => {
     await Navigation.NavigateTo('', 'FOO')

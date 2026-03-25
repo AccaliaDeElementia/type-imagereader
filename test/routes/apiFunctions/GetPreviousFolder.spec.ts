@@ -28,29 +28,19 @@ describe('routes/apiFunctions function GetPreviousFolder', () => {
     await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
     expect(getDirectionFolderStub.firstCall.args[0]).to.equal(knexFake)
   })
-  it('should call pass path parameter to do actual query', async () => {
-    await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
-    const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
-    assert(param !== undefined)
-    expect(param.path).to.equal('/foo')
-  })
-  it('should call pass sortkey parameter to do actual query', async () => {
-    await Functions.GetPreviousFolder(knexFake, '/foo', 'foo90210')
-    const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
-    assert(param !== undefined)
-    expect(param.sortKey).to.equal('foo90210')
-  })
-  it('should call pass desc as direction parameter to do actual query', async () => {
-    await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
-    const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
-    assert(param !== undefined)
-    expect(param.direction).to.equal('desc')
-  })
-  it('should call pass all as type parameter to do actual query', async () => {
-    await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
-    const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
-    assert(param !== undefined)
-    expect(param.type).to.equal('all')
+  const paramTests: Array<[string, string, keyof SiblingFolderSearch, string]> = [
+    ['path parameter', '/foo', 'path', '/foo'],
+    ['sortkey parameter', 'foo90210', 'sortKey', 'foo90210'],
+    ['direction parameter', 'foo', 'direction', 'desc'],
+    ['type parameter', 'foo', 'type', 'all'],
+  ]
+  paramTests.forEach(([title, sortKey, prop, expected]) => {
+    it(`should call pass ${title} to do actual query`, async () => {
+      await Functions.GetPreviousFolder(knexFake, '/foo', sortKey)
+      const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
+      assert(param !== undefined)
+      expect(param[prop]).to.equal(expected)
+    })
   })
   it('should resolve as result of actual query', async () => {
     const data = { data: Math.random() }

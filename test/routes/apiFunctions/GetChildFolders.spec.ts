@@ -25,83 +25,46 @@ describe('routes/apiFunctions function GetChildFolders', () => {
     await Functions.GetChildFolders(knexFake, '/foo/bar/')
     expect(knexStub.firstCall.args).to.deep.equal(['folders'])
   })
-  it('should include path column in select', async () => {
-    await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.select.firstCall.args).to.include('path')
+  const columns = ['path', 'current', 'firstPicture', 'totalCount', 'seenCount'] as const
+  columns.forEach((col) => {
+    it(`should include ${col} column in select`, async () => {
+      await Functions.GetChildFolders(knexFake, '/foo/bar/')
+      expect(knexInstance.select.firstCall.args).to.include(col)
+    })
   })
-  it('should select name from folders', async () => {
-    const data = { path: '/foo/bar/baz' }
-    knexInstance.orderBy.resolves([data])
-    const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.name).to.equal('baz')
+  const namePathTests: Array<[string, string, 'name' | 'path', string]> = [
+    ['name', '/foo/bar/baz', 'name', 'baz'],
+    ['non uri safe name', '/foo/bar/<baz>', 'name', '<baz>'],
+    ['path', '/foo/bar/baz', 'path', '/foo/bar/baz'],
+    ['uri safe path', '/foo/bar/<baz>', 'path', '/foo/bar/%3Cbaz%3E'],
+  ]
+  namePathTests.forEach(([title, path, prop, expected]) => {
+    it(`should select ${title} from folders`, async () => {
+      knexInstance.orderBy.resolves([{ path }])
+      const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
+      expect(result[0]?.[prop]).to.equal(expected)
+    })
   })
-  it('should select non uri safe name from folders', async () => {
-    const data = { path: '/foo/bar/<baz>' }
-    knexInstance.orderBy.resolves([data])
-    const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.name).to.equal('<baz>')
-  })
-  it('should select path from folders', async () => {
-    const data = { path: '/foo/bar/baz' }
-    knexInstance.orderBy.resolves([data])
-    const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.path).to.equal('/foo/bar/baz')
-  })
-  it('should select uri safe path from folders', async () => {
-    const data = { path: '/foo/bar/<baz>' }
-    knexInstance.orderBy.resolves([data])
-    const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.path).to.equal('/foo/bar/%3Cbaz%3E')
-  })
-  it('should include current column in select', async () => {
-    await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.select.firstCall.args).to.include('current')
-  })
-  it('should select cover as current from folders', async () => {
-    const data = { path: '/foo/bar/baz', current: '/foo/bar/baz.zip', firstPicture: '/foo/bar/quuz.bmp' }
-    knexInstance.orderBy.resolves([data])
-    const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.cover).to.equal('/foo/bar/baz.zip')
-  })
-  it('should select uri safe cover as current from folders', async () => {
-    const data = { path: '/foo/bar/baz', current: '/foo/bar/<baz>.zip', firstPicture: '/foo/bar/quuz.bmp' }
-    knexInstance.orderBy.resolves([data])
-    const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.cover).to.equal('/foo/bar/%3Cbaz%3E.zip')
-  })
-  it('should include firstPicture column in select', async () => {
-    await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.select.firstCall.args).to.include('firstPicture')
-  })
-  it('should select firstPicture as cover when current is null', async () => {
-    const data = { path: '/foo/bar/baz', current: null, firstPicture: '/foo/bar/quuz.bmp' }
-    knexInstance.orderBy.resolves([data])
-    const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.cover).to.equal('/foo/bar/quuz.bmp')
-  })
-  it('should select uri safe firstPicture as cover when current is null', async () => {
-    const data = { path: '/foo/bar/baz', current: null, firstPicture: '/foo/bar/<quuz>.bmp' }
-    knexInstance.orderBy.resolves([data])
-    const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.cover).to.equal('/foo/bar/%3Cquuz%3E.bmp')
-  })
-  it('should include totalCount column in select', async () => {
-    await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.select.firstCall.args).to.include('totalCount')
+  const coverTests: Array<[string, string | null, string, string]> = [
+    ['cover as current', '/foo/bar/baz.zip', '/foo/bar/quuz.bmp', '/foo/bar/baz.zip'],
+    ['uri safe cover as current', '/foo/bar/<baz>.zip', '/foo/bar/quuz.bmp', '/foo/bar/%3Cbaz%3E.zip'],
+    ['firstPicture as cover when current is null', null, '/foo/bar/quuz.bmp', '/foo/bar/quuz.bmp'],
+    ['uri safe firstPicture as cover when null', null, '/foo/bar/<quuz>.bmp', '/foo/bar/%3Cquuz%3E.bmp'],
+  ]
+  coverTests.forEach(([title, current, firstPicture, expected]) => {
+    it(`should select ${title} from folders`, async () => {
+      knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', current, firstPicture }])
+      const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
+      expect(result[0]?.cover).to.equal(expected)
+    })
   })
   it('should select totalCount from folders', async () => {
-    const data = { path: '/foo/bar/baz', totalCount: 42 }
-    knexInstance.orderBy.resolves([data])
+    knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', totalCount: 42 }])
     const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
     expect(result[0]?.totalCount).to.equal(42)
   })
-  it('should include seenCount column in select', async () => {
-    await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.select.firstCall.args).to.include('seenCount')
-  })
   it('should select totalSeen from folders', async () => {
-    const data = { path: '/foo/bar/baz', seenCount: 69 }
-    knexInstance.orderBy.resolves([data])
+    knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', seenCount: 69 }])
     const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
     expect(result[0]?.totalSeen).to.equal(69)
   })

@@ -139,85 +139,41 @@ describe('routes/apiFunctions function GetDirectionFolder queries part 2', () =>
     assert(filter !== undefined)
     expect(filter).to.deep.equal(['totalCount', '>', rawQuery])
   })
-  it('should call orderBy once for same sort key for asc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.orderBy.callCount).to.equal(1)
+  const orderByTests: Array<[string, 'asc' | 'desc', () => typeof knexFirstCall, string[]]> = [
+    ['same sort key for asc', 'asc', () => knexFirstCall, ['path', 'asc']],
+    ['same sort key for desc', 'desc', () => knexFirstCall, ['path', 'desc']],
+    ['different sort key for asc', 'asc', () => knexSecondCall, ['sortKey', 'asc']],
+    ['different sort key for desc', 'desc', () => knexSecondCall, ['sortKey', 'desc']],
+  ]
+  orderByTests.forEach(([title, direction, getQuery, expected]) => {
+    it(`should call orderBy once for ${title}`, async () => {
+      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction, type: 'all' }
+      await Functions.GetDirectionFolder(knexFake, spec)
+      expect(getQuery().orderBy.callCount).to.equal(1)
+    })
+    it(`should order properly for ${title}`, async () => {
+      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction, type: 'all' }
+      await Functions.GetDirectionFolder(knexFake, spec)
+      expect(getQuery().orderBy.firstCall.args).to.deep.equal(expected)
+    })
   })
-  it('should order properly for same sort key for asc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.orderBy.firstCall.args).to.deep.equal(['path', 'asc'])
-  })
-  it('should call orderBy once for same sort key for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.orderBy.callCount).to.equal(1)
-  })
-  it('should order properly for same sort key for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.orderBy.firstCall.args).to.deep.equal(['path', 'desc'])
-  })
-  it('should call orderBy once for different sort key for asc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexSecondCall.orderBy.callCount).to.equal(1)
-  })
-  it('should order properly for different sort key for asc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexSecondCall.orderBy.firstCall.args).to.deep.equal(['sortKey', 'asc'])
-  })
-  it('should call orderBy once for different sort key for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexSecondCall.orderBy.callCount).to.equal(1)
-  })
-  it('should order properly for different sort key for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexSecondCall.orderBy.firstCall.args).to.deep.equal(['sortKey', 'desc'])
-  })
-  it('should call limit once for same sort key query for asc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.limit.callCount).to.equal(1)
-  })
-  it('should limit same sort key query for asc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.limit.firstCall.args).to.deep.equal([1])
-  })
-  it('should call limit once for same sort key query for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.limit.callCount).to.equal(1)
-  })
-  it('should limit same sort key query for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.limit.firstCall.args).to.deep.equal([1])
-  })
-  it('should call limit once for different sort key query for asc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexSecondCall.limit.callCount).to.equal(1)
-  })
-  it('should limit different sort key query for asc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexSecondCall.limit.firstCall.args).to.deep.equal([1])
-  })
-  it('should call limit once for different sort key query for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexSecondCall.limit.callCount).to.equal(1)
-  })
-  it('should limit different sort key query for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexSecondCall.limit.firstCall.args).to.deep.equal([1])
+  const limitTests: Array<[string, 'asc' | 'desc', () => typeof knexFirstCall]> = [
+    ['same sort key query for asc', 'asc', () => knexFirstCall],
+    ['same sort key query for desc', 'desc', () => knexFirstCall],
+    ['different sort key query for asc', 'asc', () => knexSecondCall],
+    ['different sort key query for desc', 'desc', () => knexSecondCall],
+  ]
+  limitTests.forEach(([title, direction, getQuery]) => {
+    it(`should call limit once for ${title}`, async () => {
+      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction, type: 'all' }
+      await Functions.GetDirectionFolder(knexFake, spec)
+      expect(getQuery().limit.callCount).to.equal(1)
+    })
+    it(`should limit ${title}`, async () => {
+      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction, type: 'all' }
+      await Functions.GetDirectionFolder(knexFake, spec)
+      expect(getQuery().limit.firstCall.args).to.deep.equal([1])
+    })
   })
   it('should union same sortkey and different sort key queries for asc', async () => {
     const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }

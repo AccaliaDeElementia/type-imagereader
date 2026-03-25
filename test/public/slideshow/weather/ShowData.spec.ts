@@ -65,42 +65,32 @@ describe('public/slideshow/weather ShowData()', () => {
     assert(true, 'We expect the call to return without failing on null input')
   })
 
-  it('should not set display style with null element', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    base?.style.removeProperty('display')
-    Functions.ShowData(base, null, 'FOO')
-    expect(base?.style.getPropertyValue('display')).to.equal('')
+  const noDisplayTests: Array<[string, null | undefined]> = [
+    ['null element', null],
+    ['undefined element', undefined],
+  ]
+  noDisplayTests.forEach(([title, element]) => {
+    it(`should not set display style with ${title}`, () => {
+      const base = dom.window.document.querySelector<HTMLElement>('.weather')
+      base?.style.removeProperty('display')
+      Functions.ShowData(base, element, 'FOO')
+      expect(base?.style.getPropertyValue('display')).to.equal('')
+    })
   })
 
-  it('should not set display style with undefined element', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    base?.style.removeProperty('display')
-    Functions.ShowData(base, undefined, 'FOO')
-    expect(base?.style.getPropertyValue('display')).to.equal('')
-  })
-
-  it('should set display:none style with null input', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    base?.style.setProperty('display', 'Foo!')
-    const element = base?.querySelector<HTMLElement>('.desctext')
-    Functions.ShowData(base, element, null)
-    expect(base?.style.getPropertyValue('display')).to.equal('none')
-  })
-
-  it('should set display:none style with undefined input', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    base?.style.setProperty('display', 'Foo!')
-    const element = base?.querySelector<HTMLElement>('.desctext')
-    Functions.ShowData(base, element, undefined)
-    expect(base?.style.getPropertyValue('display')).to.equal('none')
-  })
-
-  it('should set display:none style with empty input', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    base?.style.setProperty('display', 'Foo!')
-    const element = base?.querySelector<HTMLElement>('.desctext')
-    Functions.ShowData(base, element, '')
-    expect(base?.style.getPropertyValue('display')).to.equal('none')
+  const noneDisplayTests: Array<[string, string | null | undefined]> = [
+    ['null input', null],
+    ['undefined input', undefined],
+    ['empty input', ''],
+  ]
+  noneDisplayTests.forEach(([title, input]) => {
+    it(`should set display:none style with ${title}`, () => {
+      const base = dom.window.document.querySelector<HTMLElement>('.weather')
+      base?.style.setProperty('display', 'Foo!')
+      const element = base?.querySelector<HTMLElement>('.desctext')
+      Functions.ShowData(base, element, input)
+      expect(base?.style.getPropertyValue('display')).to.equal('none')
+    })
   })
 
   it('should not clear existing element content for empty string input', () => {
