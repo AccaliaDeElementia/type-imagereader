@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom'
 
 import { WakeLock, type WakeLockSentinel } from '../../../../public/scripts/app/wakelock'
 
+const sandbox = Sinon.createSandbox()
 describe('public/app/wakelock function TakeLock()', () => {
   const existingNavigator = global.navigator
 
@@ -18,7 +19,7 @@ describe('public/app/wakelock function TakeLock()', () => {
   let dom = new JSDOM('<html></html>', {})
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
-    clock = Sinon.useFakeTimers()
+    clock = sandbox.useFakeTimers()
     WakeLock.sentinel = null
     WakeLock.timeout = 0
     sentinel = {
@@ -41,6 +42,7 @@ describe('public/app/wakelock function TakeLock()', () => {
     })
   })
   afterEach(() => {
+    sandbox.restore()
     Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
       get: () => undefined,
@@ -49,10 +51,6 @@ describe('public/app/wakelock function TakeLock()', () => {
       configurable: true,
       get: () => existingNavigator,
     })
-    clock?.restore()
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should take lock if sentinel is null', async () => {
     await WakeLock.TakeLock()

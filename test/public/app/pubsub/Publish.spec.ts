@@ -33,11 +33,13 @@ describe('public/app/pubsub function PublishAsync()', () => {
   const existingDocument = global.document
   let dom = new JSDOM('<html></html')
   let consoleWarn = Sinon.stub()
+  let consoleError = Sinon.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html')
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     consoleWarn = sandbox.stub(global.window.console, 'warn')
+    consoleError = sandbox.stub(global.window.console, 'error')
 
     subscriber = Sinon.stub().resolves()
     PubSub.subscribers = {
@@ -49,6 +51,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
     PubSub.cycleTime = 10
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
   })
@@ -125,6 +128,8 @@ describe('public/app/pubsub function PublishAsync()', () => {
     for (const sub of PubSub.subscribers['FOO:BAR']) {
       expect(Cast<Sinon.SinonStub>(sub).callCount).to.equal(1)
     }
+    expect(consoleError.callCount).to.equal(1)
+    expect(consoleError.firstCall.args[0]).to.equal('Subscriber for FOO:BAR rejected with error:')
   })
   it('should tolerate one subscriber throwing', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
@@ -137,5 +142,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
     for (const sub of PubSub.subscribers['FOO:BAR']) {
       expect(Cast<Sinon.SinonStub>(sub).callCount).to.equal(1)
     }
+    expect(consoleError.callCount).to.equal(1)
+    expect(consoleError.firstCall.args[0]).to.equal('Subscriber for FOO:BAR rejected with error:')
   })
 })

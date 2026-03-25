@@ -10,6 +10,8 @@ import { render } from 'pug'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import type { Picture } from '../../../../contracts/listing'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -39,12 +41,10 @@ describe('public/app/pictures function SetPicturesGetFirst()', () => {
     Pictures.modCount = -65535
   })
   afterEach(() => {
+    sandbox.restore()
     menuShow.resetHistory()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should abort gracefully for null mainImage', () => {
     Pictures.mainImage = null

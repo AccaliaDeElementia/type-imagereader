@@ -24,9 +24,6 @@ describe('public/slideshow/weather FetchWeather()', () => {
   afterEach(() => {
     global.window = existingWindow
   })
-  after(() => {
-    Sinon.restore()
-  })
 
   it('should return expected data on success', async () => {
     const data = { extraData: Math.random() }

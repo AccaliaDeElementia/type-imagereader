@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { beforeEach, afterEach, after, describe, it } from 'mocha'
+import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
@@ -11,6 +11,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Folders } from '../../../../public/scripts/app/folders'
 import assert from 'node:assert'
 import Sinon from 'sinon'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -56,11 +58,9 @@ describe('public/app/folders function BuildCard()', () => {
     Folders.FolderCard = folderCard
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should return null when template is missing', () => {
     Folders.FolderCard = null

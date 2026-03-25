@@ -8,6 +8,8 @@ import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pictures function LoadCurrentPageImages()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
@@ -31,11 +33,9 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     Pictures.imageCard = null
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should gracefully handle no tabs existing', () => {
     expect(() => {

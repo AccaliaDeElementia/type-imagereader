@@ -27,7 +27,6 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       configurable: true,
       get: () => existingDocument,
     })
-    Sinon.restore()
   })
   beforeEach(() => {
     fakeEmit.reset()

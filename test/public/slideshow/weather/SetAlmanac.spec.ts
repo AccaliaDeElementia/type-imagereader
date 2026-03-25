@@ -6,19 +6,17 @@ import type { WeatherResults } from '../../../../contracts/weather'
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/weather SetAlmanac()', () => {
-  let clocks: Sinon.SinonFakeTimers | null = null
   let weather: WeatherResults = {}
   beforeEach(() => {
     weather = {}
     const date = new Date(2024, 5, 12, 12, 0, 0, 0)
-    clocks = Sinon.useFakeTimers({ now: date.getTime() })
+    sandbox.useFakeTimers({ now: date.getTime() })
   })
   afterEach(() => {
-    clocks?.restore()
-  })
-  after(() => {
-    Sinon.restore()
+    sandbox.restore()
   })
 
   it('should set sunrise when sunrise occurs after minimum value', () => {

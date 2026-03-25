@@ -5,18 +5,16 @@ import { Functions } from '../../../../public/scripts/slideshow/overlay'
 import { GetAlmanac } from '../../../../public/scripts/slideshow/weather'
 import { expect } from 'chai'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/overlay CalculateOffset()', () => {
-  let clock: Sinon.SinonFakeTimers | undefined = undefined
   const almanac = GetAlmanac()
   beforeEach(() => {
     almanac.sunrise = new Date('2025-03-18T05:45:00.000Z').getTime()
     almanac.sunset = new Date('2025-03-18T20:45:00.000Z').getTime()
   })
   afterEach(() => {
-    clock?.restore()
-  })
-  after(() => {
-    Sinon.restore()
+    sandbox.restore()
   })
   const testCases: Array<[string, number]> = [
     ['2025-03-18T05:30:00.000Z', 900000],
@@ -34,7 +32,7 @@ describe('public/slideshow/overlay CalculateOffset()', () => {
   ]
   testCases.forEach(([timeNow, expected]) => {
     it(`should calculate correct offset for ${timeNow}`, () => {
-      clock = Sinon.useFakeTimers({
+      sandbox.useFakeTimers({
         now: new Date(timeNow).getTime(),
       })
       expect(Functions.CalculateOffset()).to.equal(expected)

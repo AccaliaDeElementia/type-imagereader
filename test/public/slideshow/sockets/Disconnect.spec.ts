@@ -19,9 +19,6 @@ describe('public/slideshow/sockets Disconnect()', () => {
     WebSockets.socket = fakeSocket
     fakeDisconnect.reset()
   })
-  after(() => {
-    Sinon.restore()
-  })
   it('should allow disconnect without socket', () => {
     WebSockets.socket = undefined
     WebSockets.disconnect()

@@ -9,6 +9,8 @@ import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 const markup = `
 html
   body
@@ -68,11 +70,9 @@ describe('public/app/pictures function ResetMarkup()', () => {
     Pictures.imageCard = null
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should set mainImage node', () => {
     Pictures.ResetMarkup()

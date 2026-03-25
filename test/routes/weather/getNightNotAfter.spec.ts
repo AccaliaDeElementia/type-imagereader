@@ -4,18 +4,19 @@ import { expect } from 'chai'
 import { Imports } from '../../../routes/weather'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/weather function getNightNotAfter()', () => {
-  let clock: Sinon.SinonFakeTimers | undefined = undefined
   let tz: string | undefined = undefined
 
   beforeEach(() => {
     tz = process.env.TZ
     process.env.TZ = 'UTC'
-    clock = Sinon.useFakeTimers(946684800000) // 2000-01-01T00:00:00.000Z
+    sandbox.useFakeTimers(946684800000) // 2000-01-01T00:00:00.000Z
     delete process.env.NIGHT_NOT_AFTER
   })
   afterEach(() => {
-    clock?.restore()
+    sandbox.restore()
     process.env.TZ = tz
     delete process.env.NIGHT_NOT_AFTER
   })

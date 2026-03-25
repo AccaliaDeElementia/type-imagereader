@@ -5,6 +5,7 @@ import { expect } from 'chai'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 
+const sandbox = Sinon.createSandbox()
 describe('public/app/pubsub function ExecuteInterval()', () => {
   const testInterval = {
     method: Sinon.stub(),
@@ -27,8 +28,8 @@ describe('public/app/pubsub function ExecuteInterval()', () => {
     testDefer.delayCycles = 10
     testDefer.method.reset()
   })
-  after(() => {
-    Sinon.restore()
+  afterEach(() => {
+    sandbox.restore()
   })
   it('should decrement delayCycle count once for pending defer', () => {
     PubSub.ExecuteInterval()

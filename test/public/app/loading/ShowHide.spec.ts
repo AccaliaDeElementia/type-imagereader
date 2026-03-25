@@ -8,6 +8,7 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Loading } from '../../../../public/scripts/app/loading'
 import { Cast } from '../../../../testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -31,11 +32,9 @@ describe('public/app/loading subscriber "Loading:Show" and "Loading:Hide"', () =
     Loading.Init()
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should show the loading overlay for "Loading:Show"', () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')

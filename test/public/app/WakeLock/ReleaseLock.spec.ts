@@ -5,6 +5,7 @@ import { expect } from 'chai'
 
 import { WakeLock, type WakeLockSentinel } from '../../../../public/scripts/app/wakelock'
 
+const sandbox = Sinon.createSandbox()
 describe('public/app/wakelock function TakeLock()', () => {
   let clock: sinon.SinonFakeTimers | undefined = undefined
   let sentinelRelease: sinon.SinonStub = Sinon.stub().resolves()
@@ -13,7 +14,7 @@ describe('public/app/wakelock function TakeLock()', () => {
     released: false,
   }
   beforeEach(() => {
-    clock = Sinon.useFakeTimers()
+    clock = sandbox.useFakeTimers()
     WakeLock.sentinel = null
     WakeLock.timeout = 0
     sentinelRelease = Sinon.stub().resolves()
@@ -23,10 +24,7 @@ describe('public/app/wakelock function TakeLock()', () => {
     }
   })
   afterEach(() => {
-    clock?.restore()
-  })
-  after(() => {
-    Sinon.restore()
+    sandbox.restore()
   })
   it('should reset timeout when sentinel is null and timeout has expired', async () => {
     WakeLock.sentinel = null

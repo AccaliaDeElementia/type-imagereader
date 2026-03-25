@@ -20,7 +20,14 @@ describe('routes/images function ReadImage()', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  const rejectors: Array<[string, string, string, number, string, Promise<unknown>]> = [
+  const configureReadFile = (stub: Sinon.SinonStub, result: Promise<unknown> | Error): void => {
+    if (result instanceof Error) {
+      stub.rejects(result)
+    } else {
+      stub.returns(result)
+    }
+  }
+  const rejectors: Array<[string, string, string, number, string, Promise<unknown> | Error]> = [
     [
       'directory traversal',
       '/foo/../bar/image.png',
@@ -51,7 +58,7 @@ describe('routes/images function ReadImage()', () => {
       'E_NOT_FOUND',
       StatusCodes.NOT_FOUND,
       'Requested Path Not Found!',
-      Promise.reject(new Error('FOO NOT FOUND')),
+      new Error('FOO NOT FOUND'),
     ],
     [
       'dotfile with no extension',
@@ -88,39 +95,39 @@ describe('routes/images function ReadImage()', () => {
   ]
   rejectors.forEach(([title, path, errorCode, statusCode, message, readFileResult]) => {
     it(`should reject ${title} with error ImageData`, async () => {
-      readFileStub.returns(readFileResult)
+      configureReadFile(readFileStub, readFileResult)
       const img = { img: Math.random() }
       fromErrorStub.returns(img)
       const result = await Functions.ReadImage(path)
       expect(result).to.equal(img)
     })
     it(`should call ImageData.fromError once for ${title}`, async () => {
-      readFileStub.returns(readFileResult)
+      configureReadFile(readFileStub, readFileResult)
       await Functions.ReadImage(path)
       expect(fromErrorStub.callCount).to.equal(1)
     })
     it(`should call ImageData.fromError with 4 arguments for ${title}`, async () => {
-      readFileStub.returns(readFileResult)
+      configureReadFile(readFileStub, readFileResult)
       await Functions.ReadImage(path)
       expect(fromErrorStub.firstCall.args).to.have.lengthOf(4)
     })
     it(`should reject ${title} with with expected error code`, async () => {
-      readFileStub.returns(readFileResult)
+      configureReadFile(readFileStub, readFileResult)
       await Functions.ReadImage(path)
       expect(fromErrorStub.firstCall.args[0]).to.equal(errorCode)
     })
     it(`should reject ${title} with with expected statuscode`, async () => {
-      readFileStub.returns(readFileResult)
+      configureReadFile(readFileStub, readFileResult)
       await Functions.ReadImage(path)
       expect(fromErrorStub.firstCall.args[1]).to.equal(statusCode)
     })
     it(`should reject ${title} with with expected error message`, async () => {
-      readFileStub.returns(readFileResult)
+      configureReadFile(readFileStub, readFileResult)
       await Functions.ReadImage(path)
       expect(fromErrorStub.firstCall.args[2]).to.equal(message)
     })
     it(`should reject ${title} with with expected path`, async () => {
-      readFileStub.returns(readFileResult)
+      configureReadFile(readFileStub, readFileResult)
       await Functions.ReadImage(path)
       expect(fromErrorStub.firstCall.args[3]).to.equal(path)
     })

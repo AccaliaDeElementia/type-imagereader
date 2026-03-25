@@ -8,6 +8,8 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Loading } from '../../../../public/scripts/app/loading'
 import { Cast } from '../../../../testutils/TypeGuards'
 import assert from 'node:assert'
+
+const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -31,11 +33,9 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     Loading.Init()
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
-  })
-  after(() => {
-    Sinon.restore()
   })
   it('should remove css transition style on navbar', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')

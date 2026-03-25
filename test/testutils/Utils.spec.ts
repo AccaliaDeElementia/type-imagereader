@@ -5,14 +5,16 @@ import Sinon from 'sinon'
 
 import { Delay } from '../../testutils/Utils'
 
+const sandbox = Sinon.createSandbox()
+
 describe('testutils/Utils function Delay()', () => {
   let clock: sinon.SinonFakeTimers | undefined = undefined
 
   beforeEach(() => {
-    clock = Sinon.useFakeTimers()
+    clock = sandbox.useFakeTimers()
   })
   afterEach(() => {
-    clock?.restore()
+    sandbox.restore()
   })
 
   it('should not resolve before the specified delay elapses', async () => {
