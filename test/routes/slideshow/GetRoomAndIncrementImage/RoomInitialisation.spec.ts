@@ -133,11 +133,13 @@ describe('routes/slideshow function GetRoomAndIncrementImage() room initialisati
     const room = await Functions.GetRoomAndIncrementImage(knexFake, '/path/')
     expect(room.index).to.equal(0)
   })
-  it('it should ignore increment on new room', async () => {
+  it('it should ignore negative increment on new room', async () => {
     const room = await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -10)
     expect(room.index).to.equal(0)
-    const room2 = await Functions.GetRoomAndIncrementImage(knexFake, '/path2/', 5)
-    expect(room2.index).to.equal(0)
+  })
+  it('it should ignore positive increment on new room', async () => {
+    const room = await Functions.GetRoomAndIncrementImage(knexFake, '/path2/', 5)
+    expect(room.index).to.equal(0)
   })
   it('it should set uriSafeImage', async () => {
     const room = await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')

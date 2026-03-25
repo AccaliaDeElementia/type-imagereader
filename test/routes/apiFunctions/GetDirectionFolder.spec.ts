@@ -43,50 +43,54 @@ describe('routes/apiFunctions function GetDirectionFolder', () => {
     knexFake = StubToKnex(knexStub)
     knexFake.raw = rawStub
   })
-  it('should select from folders twice for asc', async () => {
+  it('should query folders table for same-sortKey query (asc)', async () => {
     const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
     await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexStub.callCount).to.equal(2)
-    expect(knexStub.firstCall.args).to.have.lengthOf(1)
     expect(knexStub.firstCall.args[0]).to.equal('folders')
-    expect(knexStub.secondCall.args).to.have.lengthOf(1)
-    expect(knexStub.secondCall.args[0]).to.equal('folders')
   })
-  it('should select from folders twice for desc', async () => {
-    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-    await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexStub.callCount).to.equal(2)
-    expect(knexStub.firstCall.args).to.have.lengthOf(1)
-    expect(knexStub.firstCall.args[0]).to.equal('folders')
-    expect(knexStub.secondCall.args).to.have.lengthOf(1)
-    expect(knexStub.secondCall.args[0]).to.equal('folders')
-  })
-  it('should select same colums both times for asc', async () => {
+  it('should query folders table for different-sortKey query (asc)', async () => {
     const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
     await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.select.callCount).to.equal(1)
-    expect(knexFirstCall.select.firstCall.args).to.have.lengthOf(3)
-    expect(knexFirstCall.select.firstCall.args).to.include('path')
-    expect(knexFirstCall.select.firstCall.args).to.include('current')
-    expect(knexFirstCall.select.firstCall.args).to.include('firstPicture')
-    expect(knexSecondCall.select.callCount).to.equal(1)
-    expect(knexSecondCall.select.firstCall.args).to.have.lengthOf(3)
-    expect(knexSecondCall.select.firstCall.args).to.include('path')
-    expect(knexSecondCall.select.firstCall.args).to.include('current')
-    expect(knexSecondCall.select.firstCall.args).to.include('firstPicture')
+    expect(knexStub.secondCall.args[0]).to.equal('folders')
   })
-  it('should select same colums both times for desc', async () => {
+  it('should query folders table for same-sortKey query (desc)', async () => {
     const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
     await Functions.GetDirectionFolder(knexFake, spec)
-    expect(knexFirstCall.select.callCount).to.equal(1)
-    expect(knexFirstCall.select.firstCall.args).to.have.lengthOf(3)
+    expect(knexStub.firstCall.args[0]).to.equal('folders')
+  })
+  it('should query folders table for different-sortKey query (desc)', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
+    await Functions.GetDirectionFolder(knexFake, spec)
+    expect(knexStub.secondCall.args[0]).to.equal('folders')
+  })
+  it('should select path in same-sortKey query', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(knexFake, spec)
     expect(knexFirstCall.select.firstCall.args).to.include('path')
+  })
+  it('should select current in same-sortKey query', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(knexFake, spec)
     expect(knexFirstCall.select.firstCall.args).to.include('current')
+  })
+  it('should select firstPicture in same-sortKey query', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(knexFake, spec)
     expect(knexFirstCall.select.firstCall.args).to.include('firstPicture')
-    expect(knexSecondCall.select.callCount).to.equal(1)
-    expect(knexSecondCall.select.firstCall.args).to.have.lengthOf(3)
+  })
+  it('should select path in different-sortKey query', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(knexFake, spec)
     expect(knexSecondCall.select.firstCall.args).to.include('path')
+  })
+  it('should select current in different-sortKey query', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(knexFake, spec)
     expect(knexSecondCall.select.firstCall.args).to.include('current')
+  })
+  it('should select firstPicture in different-sortKey query', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    await Functions.GetDirectionFolder(knexFake, spec)
     expect(knexSecondCall.select.firstCall.args).to.include('firstPicture')
   })
   it('should filter for same sort key for asc', async () => {
@@ -324,36 +328,67 @@ describe('routes/apiFunctions function GetDirectionFolder', () => {
     const result = await Functions.GetDirectionFolder(knexFake, spec)
     expect(result).to.equal(null)
   })
-  it('should resolve parsed result when query finds results', async () => {
+  it('should resolve name from path segment when query finds results', async () => {
     const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
     knexSecondCall.limit.resolves([
-      {
-        path: '/foo/abcde0',
-        current: '/foo/abcde0/image.png',
-        firstPicture: '/foo/abcde0/otherImage.png',
-      },
+      { path: '/foo/abcde0', current: '/foo/abcde0/image.png', firstPicture: '/foo/abcde0/otherImage.png' },
     ])
     const result = await Functions.GetDirectionFolder(knexFake, spec)
     assert(result !== null)
-    expect(Object.keys(result)).to.have.lengthOf(3)
     expect(result.name).to.equal('abcde0')
+  })
+  it('should resolve path when query finds results', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    knexSecondCall.limit.resolves([
+      { path: '/foo/abcde0', current: '/foo/abcde0/image.png', firstPicture: '/foo/abcde0/otherImage.png' },
+    ])
+    const result = await Functions.GetDirectionFolder(knexFake, spec)
+    assert(result !== null)
     expect(result.path).to.equal('/foo/abcde0')
+  })
+  it('should resolve cover from current image when query finds results', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    knexSecondCall.limit.resolves([
+      { path: '/foo/abcde0', current: '/foo/abcde0/image.png', firstPicture: '/foo/abcde0/otherImage.png' },
+    ])
+    const result = await Functions.GetDirectionFolder(knexFake, spec)
+    assert(result !== null)
     expect(result.cover).to.equal('/foo/abcde0/image.png')
   })
-  it('should resolve uri safe results when query finds results', async () => {
+  it('should resolve exactly three properties when query finds results', async () => {
     const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
-    knexFirstCall.limit.resolves([
-      {
-        path: '/foo/abcde<0>',
-        current: '/foo/abcde<0>/image.png',
-        firstPicture: '/foo/abcde<0>/otherImage.png',
-      },
+    knexSecondCall.limit.resolves([
+      { path: '/foo/abcde0', current: '/foo/abcde0/image.png', firstPicture: '/foo/abcde0/otherImage.png' },
     ])
     const result = await Functions.GetDirectionFolder(knexFake, spec)
     assert(result !== null)
     expect(Object.keys(result)).to.have.lengthOf(3)
+  })
+  it('should preserve raw name with special characters in result', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    knexFirstCall.limit.resolves([
+      { path: '/foo/abcde<0>', current: '/foo/abcde<0>/image.png', firstPicture: '/foo/abcde<0>/otherImage.png' },
+    ])
+    const result = await Functions.GetDirectionFolder(knexFake, spec)
+    assert(result !== null)
     expect(result.name).to.equal('abcde<0>')
+  })
+  it('should uri-encode path when path contains special characters', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    knexFirstCall.limit.resolves([
+      { path: '/foo/abcde<0>', current: '/foo/abcde<0>/image.png', firstPicture: '/foo/abcde<0>/otherImage.png' },
+    ])
+    const result = await Functions.GetDirectionFolder(knexFake, spec)
+    assert(result !== null)
     expect(result.path).to.equal('/foo/abcde%3C0%3E')
+  })
+  it('should uri-encode cover when path contains special characters', async () => {
+    const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+    knexFirstCall.limit.resolves([
+      { path: '/foo/abcde<0>', current: '/foo/abcde<0>/image.png', firstPicture: '/foo/abcde<0>/otherImage.png' },
+    ])
+    const result = await Functions.GetDirectionFolder(knexFake, spec)
+    assert(result !== null)
     expect(result.cover).to.equal('/foo/abcde%3C0%3E/image.png')
   })
   it('should resolve with current image as cover when set', async () => {

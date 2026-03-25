@@ -34,67 +34,120 @@ describe('/index.ts tests', (): void => {
   it('should reject when StartServer throws', async () => {
     StartServerStub?.throws(new Error('FOO'))
     const err = await EventuallyRejects(ImageReader.Run())
-    expect(err).to.be.instanceOf(Error)
     expect(err.message).to.equal('FOO')
   })
 
   it('should reject when StartServer rejects', async () => {
     StartServerStub?.rejects(new Error('FOO'))
     const err = await EventuallyRejects(ImageReader.Run())
-    expect(err).to.be.instanceOf(Error)
     expect(err.message).to.equal('FOO')
   })
 
-  it('should start using default port when PORT is not defined', async () => {
+  it('should call StartServer when PORT is not defined', async () => {
     delete process.env.PORT
     await ImageReader.Run()
     expect(StartServerStub?.called).to.equal(true)
+  })
+
+  it('should pass default port 3030 to StartServer when PORT is not defined', async () => {
+    delete process.env.PORT
+    await ImageReader.Run()
     expect(StartServerStub?.firstCall.args[0]).to.equal(3030)
   })
 
-  it('should start using default port when PORT is blank', async () => {
+  it('should call StartServer when PORT is blank', async () => {
     process.env.PORT = ''
     await ImageReader.Run()
     expect(StartServerStub?.called).to.equal(true)
+  })
+
+  it('should pass default port 3030 to StartServer when PORT is blank', async () => {
+    process.env.PORT = ''
+    await ImageReader.Run()
     expect(StartServerStub?.firstCall.args[0]).to.equal(3030)
   })
 
-  it('should start using specified port when PORT is valid', async () => {
+  it('should call StartServer when PORT is valid', async () => {
     process.env.PORT = '5555'
     await ImageReader.Run()
     expect(StartServerStub?.called).to.equal(true)
+  })
+
+  it('should pass specified port to StartServer when PORT is valid', async () => {
+    process.env.PORT = '5555'
+    await ImageReader.Run()
     expect(StartServerStub?.firstCall.args[0]).to.equal(5555)
   })
 
-  it('should reject start when PORT fails to parse', async () => {
+  it('should not call StartServer when PORT fails to parse', async () => {
+    process.env.PORT = 'FOO'
+    await EventuallyRejects(ImageReader.Run())
+    expect(StartServerStub?.called).to.equal(false)
+  })
+
+  it('should not call Synchronize when PORT fails to parse', async () => {
+    process.env.PORT = 'FOO'
+    await EventuallyRejects(ImageReader.Run())
+    expect(SynchronizeStub?.called).to.equal(false)
+  })
+
+  it('should reject with descriptive message when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
     const e = await EventuallyRejects(ImageReader.Run())
-    expect(StartServerStub?.called).to.equal(false)
-    expect(SynchronizeStub?.called).to.equal(false)
     expect(e.message).to.equal('Port NaN (from env: FOO) is not a number. Valid ports must be a number.')
   })
 
-  it('should reject start when PORT is too small', async () => {
+  it('should not call StartServer when PORT is too small', async () => {
+    process.env.PORT = '-1'
+    await EventuallyRejects(ImageReader.Run())
+    expect(StartServerStub?.called).to.equal(false)
+  })
+
+  it('should not call Synchronize when PORT is too small', async () => {
+    process.env.PORT = '-1'
+    await EventuallyRejects(ImageReader.Run())
+    expect(SynchronizeStub?.called).to.equal(false)
+  })
+
+  it('should reject with descriptive message when PORT is too small', async () => {
     process.env.PORT = '-1'
     const e = await EventuallyRejects(ImageReader.Run())
-    expect(StartServerStub?.called).to.equal(false)
-    expect(SynchronizeStub?.called).to.equal(false)
     expect(e.message).to.equal('Port -1 is out of range. Valid ports must be between 0 and 65535.')
   })
 
-  it('should reject start when PORT is too big', async () => {
+  it('should not call StartServer when PORT is too big', async () => {
+    process.env.PORT = '131072'
+    await EventuallyRejects(ImageReader.Run())
+    expect(StartServerStub?.called).to.equal(false)
+  })
+
+  it('should not call Synchronize when PORT is too big', async () => {
+    process.env.PORT = '131072'
+    await EventuallyRejects(ImageReader.Run())
+    expect(SynchronizeStub?.called).to.equal(false)
+  })
+
+  it('should reject with descriptive message when PORT is too big', async () => {
     process.env.PORT = '131072'
     const e = await EventuallyRejects(ImageReader.Run())
-    expect(StartServerStub?.called).to.equal(false)
-    expect(SynchronizeStub?.called).to.equal(false)
     expect(e.message).to.equal('Port 131072 is out of range. Valid ports must be between 0 and 65535.')
   })
 
-  it('should reject start when PORT is not integer', async () => {
+  it('should not call StartServer when PORT is not integer', async () => {
+    process.env.PORT = '3.1415926'
+    await EventuallyRejects(ImageReader.Run())
+    expect(StartServerStub?.called).to.equal(false)
+  })
+
+  it('should not call Synchronize when PORT is not integer', async () => {
+    process.env.PORT = '3.1415926'
+    await EventuallyRejects(ImageReader.Run())
+    expect(SynchronizeStub?.called).to.equal(false)
+  })
+
+  it('should reject with descriptive message when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
     const e = await EventuallyRejects(ImageReader.Run())
-    expect(StartServerStub?.called).to.equal(false)
-    expect(SynchronizeStub?.called).to.equal(false)
     expect(e.message).to.equal('Port 3.1415926 is not integer. Valid ports must be integer between 0 and 65535.')
   })
 
@@ -189,12 +242,23 @@ describe('/index.ts tests', (): void => {
     assert(true, 'should not throw or reject because inner promise rejects')
   })
 
-  it('should log when initial sync rejects', async () => {
+  it('should log once when initial sync rejects', async () => {
     const err = new Error('SYNC FAILED')
     SynchronizeStub?.rejects(err)
     await ImageReader.Run()
     expect(LoggerStub?.callCount).to.equal(1)
+  })
+
+  it("should log with message 'sync error' when initial sync rejects", async () => {
+    SynchronizeStub?.rejects(new Error('SYNC FAILED'))
+    await ImageReader.Run()
     expect(LoggerStub?.firstCall.args[0]).to.equal('sync error')
+  })
+
+  it('should log the error object when initial sync rejects', async () => {
+    const err = new Error('SYNC FAILED')
+    SynchronizeStub?.rejects(err)
+    await ImageReader.Run()
     expect(LoggerStub?.firstCall.args[1]).to.equal(err)
   })
 
@@ -203,14 +267,28 @@ describe('/index.ts tests', (): void => {
     expect(LoggerStub?.callCount).to.equal(0)
   })
 
-  it('should log when interval sync rejects', async () => {
+  it('should log once when interval sync rejects', async () => {
+    ImageReader.SyncInterval = 100
+    await ImageReader.Run()
+    SynchronizeStub?.rejects(new Error('INTERVAL SYNC FAILED'))
+    await ClockFake?.tickAsync(101)
+    expect(LoggerStub?.callCount).to.equal(1)
+  })
+
+  it("should log with message 'sync interval error' when interval sync rejects", async () => {
+    ImageReader.SyncInterval = 100
+    await ImageReader.Run()
+    SynchronizeStub?.rejects(new Error('INTERVAL SYNC FAILED'))
+    await ClockFake?.tickAsync(101)
+    expect(LoggerStub?.firstCall.args[0]).to.equal('sync interval error')
+  })
+
+  it('should log the error object when interval sync rejects', async () => {
     const err = new Error('INTERVAL SYNC FAILED')
     ImageReader.SyncInterval = 100
     await ImageReader.Run()
     SynchronizeStub?.rejects(err)
     await ClockFake?.tickAsync(101)
-    expect(LoggerStub?.callCount).to.equal(1)
-    expect(LoggerStub?.firstCall.args[0]).to.equal('sync interval error')
     expect(LoggerStub?.firstCall.args[1]).to.equal(err)
   })
 

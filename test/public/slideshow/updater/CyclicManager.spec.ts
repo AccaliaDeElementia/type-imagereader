@@ -68,32 +68,46 @@ describe('public/slideshow/updater class CyclicManager', () => {
   })
   describe('Add()', () => {
     const makeUpdater = (): CyclicUpdater => new CyclicUpdater()
-    it('should add single updater to internal list', () => {
+    it('should increase list length to 1 when adding a single updater', () => {
+      CyclicManager.Add(new CyclicUpdater())
+      expect(CyclicManager.__updaters).to.have.length(1)
+    })
+    it('should store the added updater at index 0', () => {
       const updater = new CyclicUpdater()
       CyclicManager.Add(updater)
-      expect(CyclicManager.__updaters).to.have.length(1)
       expect(CyclicManager.__updaters[0]).to.equal(updater)
     })
-    it('should append single updater to internal list', () => {
+    it('should increase list length to 2 when appending a single updater', () => {
+      CyclicManager.__updaters.push(new CyclicUpdater())
+      CyclicManager.Add(new CyclicUpdater())
+      expect(CyclicManager.__updaters).to.have.length(2)
+    })
+    it('should store the appended updater at index 1', () => {
       CyclicManager.__updaters.push(new CyclicUpdater())
       const updater = new CyclicUpdater()
       CyclicManager.Add(updater)
-      expect(CyclicManager.__updaters).to.have.length(2)
       expect(CyclicManager.__updaters[1]).to.equal(updater)
     })
-    it('should add spread multiple __updaters to internal list', () => {
+    it('should set list length to 5 when adding 5 spread updaters', () => {
+      CyclicManager.Add(...Array.from({ length: 5 }).map(makeUpdater))
+      expect(CyclicManager.__updaters).to.have.length(5)
+    })
+    it('should store each of 5 spread updaters at its respective index', () => {
       const updaters = Array.from({ length: 5 }).map(makeUpdater)
       CyclicManager.Add(...updaters)
-      expect(CyclicManager.__updaters).to.have.length(5)
       for (let i = 0; i < updaters.length; i += 1) {
         expect(CyclicManager.__updaters[i]).to.equal(updaters[i])
       }
     })
-    it('should append spread multiple __updaters to internal list', () => {
+    it('should set list length to 10 when appending 5 spread updaters to existing 5', () => {
+      CyclicManager.__updaters = Array.from({ length: 5 }).map(makeUpdater)
+      CyclicManager.Add(...Array.from({ length: 5 }).map(makeUpdater))
+      expect(CyclicManager.__updaters).to.have.length(10)
+    })
+    it('should store each of the 5 appended updaters at indices 5-9', () => {
       CyclicManager.__updaters = Array.from({ length: 5 }).map(makeUpdater)
       const updaters = Array.from({ length: 5 }).map(makeUpdater)
       CyclicManager.Add(...updaters)
-      expect(CyclicManager.__updaters).to.have.length(10)
       for (let i = 0; i < updaters.length; i += 1) {
         expect(CyclicManager.__updaters[i + 5]).to.equal(updaters[i])
       }

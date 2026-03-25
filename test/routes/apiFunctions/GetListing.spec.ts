@@ -43,16 +43,32 @@ describe('routes/apiFunctions function GetListing', () => {
     const result = await Functions.GetListing(knexFake, '/foo/bar/')
     expect(result).to.equal(null)
   })
-  it('should abort early when GetFolder() does not resolve to a folder', async () => {
+  it('should not call GetNextFolder when GetFolder returns null', async () => {
     getFolderStub.resolves(null)
     await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getNextFolderStub.callCount).to.equal(0)
+  })
+  it('should not call GetPreviousFolder when GetFolder returns null', async () => {
+    getFolderStub.resolves(null)
+    await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getPreviousFolderStub.callCount).to.equal(0)
+  })
+  it('should not call GetChildFolders when GetFolder returns null', async () => {
+    getFolderStub.resolves(null)
+    await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getChildFoldersStub.callCount).to.equal(0)
+  })
+  it('should not call GetPictures when GetFolder returns null', async () => {
+    getFolderStub.resolves(null)
+    await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getPicturesStub.callCount).to.equal(0)
+  })
+  it('should not call GetBookmarks when GetFolder returns null', async () => {
+    getFolderStub.resolves(null)
+    await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getBookmarksStub.callCount).to.equal(0)
   })
-  it('should continue when GetFolder() resolves to a folder', async () => {
+  it('should call GetNextFolder when GetFolder returns a folder', async () => {
     getFolderStub.resolves({
       name: 'bar<=>',
       path: '/foo/bar/',
@@ -62,9 +78,49 @@ describe('routes/apiFunctions function GetListing', () => {
     })
     await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getNextFolderStub.callCount).to.equal(1)
+  })
+  it('should call GetPreviousFolder when GetFolder returns a folder', async () => {
+    getFolderStub.resolves({
+      name: 'bar<=>',
+      path: '/foo/bar/',
+      folder: '/foo/',
+      cover: '/foo/bar/image.png',
+      sortKey: 'bar>-<',
+    })
+    await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getPreviousFolderStub.callCount).to.equal(1)
+  })
+  it('should call GetChildFolders when GetFolder returns a folder', async () => {
+    getFolderStub.resolves({
+      name: 'bar<=>',
+      path: '/foo/bar/',
+      folder: '/foo/',
+      cover: '/foo/bar/image.png',
+      sortKey: 'bar>-<',
+    })
+    await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getChildFoldersStub.callCount).to.equal(1)
+  })
+  it('should call GetPictures when GetFolder returns a folder', async () => {
+    getFolderStub.resolves({
+      name: 'bar<=>',
+      path: '/foo/bar/',
+      folder: '/foo/',
+      cover: '/foo/bar/image.png',
+      sortKey: 'bar>-<',
+    })
+    await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getPicturesStub.callCount).to.equal(1)
+  })
+  it('should call GetBookmarks when GetFolder returns a folder', async () => {
+    getFolderStub.resolves({
+      name: 'bar<=>',
+      path: '/foo/bar/',
+      folder: '/foo/',
+      cover: '/foo/bar/image.png',
+      sortKey: 'bar>-<',
+    })
+    await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getBookmarksStub.callCount).to.equal(1)
   })
   it('should call GetNextFolder()', async () => {
@@ -177,7 +233,7 @@ describe('routes/apiFunctions function GetListing', () => {
     expect(call.args[0]).to.equal(knexFake)
     expect(call.args[1]).to.deep.equal({ path: '/foo/bar/', sortKey: 'bar>-<', direction: 'desc', type: 'unread' })
   })
-  it('should resolve folder data', async () => {
+  it('should resolve folder name', async () => {
     getFolderStub.resolves({
       name: 'bar<=>',
       path: '/fop/bat/',
@@ -188,8 +244,41 @@ describe('routes/apiFunctions function GetListing', () => {
     const result = await Functions.GetListing(knexFake, '/foo/bar/')
     assert(result !== null)
     expect(result.name).to.equal('bar<=>')
+  })
+  it('should resolve folder path', async () => {
+    getFolderStub.resolves({
+      name: 'bar<=>',
+      path: '/fop/bat/',
+      folder: '/foo/',
+      cover: '/foo/bar/image.png',
+      sortKey: 'bar>-<',
+    })
+    const result = await Functions.GetListing(knexFake, '/foo/bar/')
+    assert(result !== null)
     expect(result.path).to.equal('/fop/bat/')
+  })
+  it('should resolve folder parent', async () => {
+    getFolderStub.resolves({
+      name: 'bar<=>',
+      path: '/fop/bat/',
+      folder: '/foo/',
+      cover: '/foo/bar/image.png',
+      sortKey: 'bar>-<',
+    })
+    const result = await Functions.GetListing(knexFake, '/foo/bar/')
+    assert(result !== null)
     expect(result.parent).to.equal('/foo/')
+  })
+  it('should resolve folder cover', async () => {
+    getFolderStub.resolves({
+      name: 'bar<=>',
+      path: '/fop/bat/',
+      folder: '/foo/',
+      cover: '/foo/bar/image.png',
+      sortKey: 'bar>-<',
+    })
+    const result = await Functions.GetListing(knexFake, '/foo/bar/')
+    assert(result !== null)
     expect(result.cover).to.equal('/foo/bar/image.png')
   })
   it('should set next from GetNextFolder()', async () => {

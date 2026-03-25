@@ -124,12 +124,17 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
       await updater.trigger(0)
       expect(errorStub.callCount).to.equal(0)
     })
-    it('should log error when update fails', async () => {
+    it('should log once when update fails', async () => {
+      updater._countdown = -9
+      updateFn.rejects(new Error('FOO'))
+      await updater.trigger(0)
+      expect(errorStub.callCount).to.equal(1)
+    })
+    it('should log the error with message when update fails', async () => {
       updater._countdown = -9
       const err = new Error('FOO')
       updateFn.rejects(err)
       await updater.trigger(0)
-      expect(errorStub.callCount).to.equal(1)
       expect(errorStub.firstCall.args).to.deep.equal(['CyclicUpdater update resulted in error:', err])
     })
     it('should increase failCount when update fails', async () => {

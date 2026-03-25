@@ -57,16 +57,22 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     WebSockets.connect()
     expect(WebSockets.launchId).to.equal(undefined)
   })
+  it('should store location.assign as a function for later use', () => {
+    WebSockets.connect()
+    expect(WebSockets.LocationAssign).to.be.an('function')
+  })
   it('should store location.assign bound for later use', () => {
     WebSockets.connect()
     //TODO: find a better way to assert this... this seems fragile
-    expect(WebSockets.LocationAssign).to.be.an('function')
     expect(WebSockets.LocationAssign.name).to.equal('bound assign')
+  })
+  it('should store location.reload as a function for later use', () => {
+    WebSockets.connect()
+    expect(WebSockets.LocationReload).to.be.an('function')
   })
   it('should store location.reload bound for later use', () => {
     WebSockets.connect()
     //TODO: find a better way to assert this... this seems fragile
-    expect(WebSockets.LocationReload).to.be.an('function')
     expect(WebSockets.LocationReload.name).to.equal('bound reload')
   })
   it('should construct socket.io client', () => {

@@ -25,7 +25,7 @@ describe('public/app initialzation', () => {
   let navigationInitSpy: Sinon.SinonStub = Sinon.stub()
   let pubsubDeferredSpy: Sinon.SinonStub = Sinon.stub()
   let wakeLockInitSpy: Sinon.SinonStub = Sinon.stub()
-  beforeEach(() => {
+  before(async () => {
     loadingInitSpy = sandbox.stub(Loading, 'Init')
     actionsInitSpy = sandbox.stub(Actions, 'Init')
     tabsInitSpy = sandbox.stub(Tabs, 'Init')
@@ -35,20 +35,36 @@ describe('public/app initialzation', () => {
     navigationInitSpy = sandbox.stub(Navigation, 'Init')
     pubsubDeferredSpy = sandbox.stub(PubSub, 'StartDeferred')
     wakeLockInitSpy = sandbox.stub(WakeLock, 'Init')
+    await import('../../../public/scripts/app/index')
   })
-  afterEach(() => {
+  after(() => {
     sandbox.restore()
   })
-  it('inits all modules', async () => {
-    await import('../../../public/scripts/app/index')
-    expect(loadingInitSpy.called, 'Loading.Init() should be called').to.equal(true)
-    expect(actionsInitSpy.called, 'Actions.Init() should be called').to.equal(true)
-    expect(tabsInitSpy.called, 'Tabs.Init() should be called').to.equal(true)
-    expect(foldersInitSpy.called, 'Folders.Init() should be called').to.equal(true)
-    expect(picturesInitSpy.called, 'Pictures.Init() should be called').to.equal(true)
-    expect(bookmarksInitSpy.called, 'Bookmarks.Init() should be called').to.equal(true)
-    expect(navigationInitSpy.called, 'Navigatin.Init() should be called').to.equal(true)
-    expect(pubsubDeferredSpy.called, 'PubSub.StartDeferred() should be called').to.equal(true)
-    expect(wakeLockInitSpy.called, 'WaleLock.Init()  should be called').to.equal(true)
+  it('should call Loading.Init()', () => {
+    expect(loadingInitSpy.called).to.equal(true)
+  })
+  it('should call Actions.Init()', () => {
+    expect(actionsInitSpy.called).to.equal(true)
+  })
+  it('should call Tabs.Init()', () => {
+    expect(tabsInitSpy.called).to.equal(true)
+  })
+  it('should call Folders.Init()', () => {
+    expect(foldersInitSpy.called).to.equal(true)
+  })
+  it('should call Pictures.Init()', () => {
+    expect(picturesInitSpy.called).to.equal(true)
+  })
+  it('should call Bookmarks.Init()', () => {
+    expect(bookmarksInitSpy.called).to.equal(true)
+  })
+  it('should call Navigation.Init()', () => {
+    expect(navigationInitSpy.called).to.equal(true)
+  })
+  it('should call PubSub.StartDeferred()', () => {
+    expect(pubsubDeferredSpy.called).to.equal(true)
+  })
+  it('should call WakeLock.Init()', () => {
+    expect(wakeLockInitSpy.called).to.equal(true)
   })
 })

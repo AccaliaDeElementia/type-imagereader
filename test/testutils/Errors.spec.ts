@@ -16,16 +16,24 @@ describe('testutils/Errors function EventuallyRejects()', () => {
     const result = await EventuallyRejects(Promise.reject<unknown>(err))
     expect(result).to.equal(err)
   })
-  it('should return an Error wrapping the string when promise rejects with a string', async () => {
+  it('should return an Error when promise rejects with a string', async () => {
     // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing non-Error rejection handling
     const result = await EventuallyRejects(Promise.reject<unknown>('oops'))
     expect(result).to.be.instanceOf(Error)
+  })
+  it('should set the string as the message when promise rejects with a string', async () => {
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing non-Error rejection handling
+    const result = await EventuallyRejects(Promise.reject<unknown>('oops'))
     expect(result.message).to.equal('oops')
   })
-  it('should return an Error describing the type when promise rejects with a non-Error non-string', async () => {
+  it('should return an Error when promise rejects with a non-Error non-string', async () => {
     // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing non-Error rejection handling
     const result = await EventuallyRejects(Promise.reject<unknown>(42))
     expect(result).to.be.instanceOf(Error)
+  })
+  it('should include the type in the message when promise rejects with a non-Error non-string', async () => {
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing non-Error rejection handling
+    const result = await EventuallyRejects(Promise.reject<unknown>(42))
     expect(result.message).to.include('number')
   })
   it('should throw an assertion error when the promise resolves', async () => {
@@ -63,20 +71,32 @@ describe('testutils/Errors function DefinitelyThrows()', () => {
     })
     expect(result).to.equal(err)
   })
-  it('should return an Error wrapping the string when the function throws a string', () => {
+  it('should return an Error when the function throws a string', () => {
     const result = DefinitelyThrows(() => {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing the string-throw branch of DefinitelyThrows
       throw 'oops'
     })
     expect(result).to.be.instanceOf(Error)
+  })
+  it('should set the string as the message when the function throws a string', () => {
+    const result = DefinitelyThrows(() => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing the string-throw branch of DefinitelyThrows
+      throw 'oops'
+    })
     expect(result.message).to.equal('oops')
   })
-  it('should return an Error describing the type when the function throws a non-Error non-string', () => {
+  it('should return an Error when the function throws a non-Error non-string', () => {
     const result = DefinitelyThrows(() => {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing the non-Error non-string branch of DefinitelyThrows
       throw 42
     })
     expect(result).to.be.instanceOf(Error)
+  })
+  it('should include the type in the message when the function throws a non-Error non-string', () => {
+    const result = DefinitelyThrows(() => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing the non-Error non-string branch of DefinitelyThrows
+      throw 42
+    })
     expect(result.message).to.include('number')
   })
   it('should throw an assertion error when the function does not throw', () => {

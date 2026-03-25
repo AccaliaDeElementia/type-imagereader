@@ -41,15 +41,29 @@ describe('index.ts RunSync() tests', () => {
     actuallyRunSpy.rejects('foo!')
     await EventuallyFullfills(RunSync())
   })
-  it('should log when interval callback rejects', async () => {
+  it('should log once when interval callback rejects', async () => {
+    actuallyRunSpy.resolves()
+    setIntervalFake.callsFake(fireImmediately)
+    actuallyRunSpy.onSecondCall().rejects(new Error('SYNC FAILED'))
+    await RunSync()
+    await Promise.resolve()
+    expect(loggerStub.callCount).to.equal(1)
+  })
+  it("should log with message 'sync interval error' when interval callback rejects", async () => {
+    actuallyRunSpy.resolves()
+    setIntervalFake.callsFake(fireImmediately)
+    actuallyRunSpy.onSecondCall().rejects(new Error('SYNC FAILED'))
+    await RunSync()
+    await Promise.resolve()
+    expect(loggerStub.firstCall.args[0]).to.equal('sync interval error')
+  })
+  it('should log the error object when interval callback rejects', async () => {
     const err = new Error('SYNC FAILED')
     actuallyRunSpy.resolves()
     setIntervalFake.callsFake(fireImmediately)
     actuallyRunSpy.onSecondCall().rejects(err)
     await RunSync()
     await Promise.resolve()
-    expect(loggerStub.callCount).to.equal(1)
-    expect(loggerStub.firstCall.args[0]).to.equal('sync interval error')
     expect(loggerStub.firstCall.args[1]).to.equal(err)
   })
   it('should not log when interval callback resolves', async () => {

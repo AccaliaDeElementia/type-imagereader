@@ -280,14 +280,20 @@ describe('routes/images class ImageData', () => {
         expect(paths).to.not.include('/c.png')
       })
 
-      it('should retain the most recently used items when cache overflows', async () => {
-        // Fill cache: [A, B, C] — A and B should survive
+      it('should retain the most recently used item /a.png when cache overflows', async () => {
         imageCache.items.push(makeCacheItem('/a.png'))
         imageCache.items.push(makeCacheItem('/b.png'))
         imageCache.items.push(makeCacheItem('/c.png'))
         await imageCache.fetch('/new.png', 100, 100)
         const paths = imageCache.items.map((i: CacheItem) => i.path)
         expect(paths).to.include('/a.png')
+      })
+      it('should retain the most recently used item /b.png when cache overflows', async () => {
+        imageCache.items.push(makeCacheItem('/a.png'))
+        imageCache.items.push(makeCacheItem('/b.png'))
+        imageCache.items.push(makeCacheItem('/c.png'))
+        await imageCache.fetch('/new.png', 100, 100)
+        const paths = imageCache.items.map((i: CacheItem) => i.path)
         expect(paths).to.include('/b.png')
       })
 
@@ -302,6 +308,17 @@ describe('routes/images class ImageData', () => {
         await imageCache.fetch('/new.png', 100, 100)
         const paths = imageCache.items.map((i: CacheItem) => i.path)
         expect(paths).to.include('/c.png')
+      })
+      it('should evict the item that became LRU after a recent access', async () => {
+        // Fill cache: [A, B, C] — C is LRU
+        imageCache.items.push(makeCacheItem('/a.png'))
+        imageCache.items.push(makeCacheItem('/b.png'))
+        imageCache.items.push(makeCacheItem('/c.png'))
+        // Access C, promoting it to head: [C, A, B] — B is now LRU
+        await imageCache.fetch('/c.png', 100, 100)
+        // Add new item — B should be evicted
+        await imageCache.fetch('/new.png', 100, 100)
+        const paths = imageCache.items.map((i: CacheItem) => i.path)
         expect(paths).to.not.include('/b.png')
       })
 
@@ -317,7 +334,25 @@ describe('routes/images class ImageData', () => {
         await imageCache.fetch('/new.png', 100, 100)
         const paths = imageCache.items.map((i: CacheItem) => i.path)
         expect(paths).to.not.include('/a.png')
+      })
+      it('should retain /b.png when it was accessed more recently than the evicted item', async () => {
+        imageCache.items.push(makeCacheItem('/a.png'))
+        imageCache.items.push(makeCacheItem('/b.png'))
+        imageCache.items.push(makeCacheItem('/c.png'))
+        await imageCache.fetch('/c.png', 100, 100)
+        await imageCache.fetch('/b.png', 100, 100)
+        await imageCache.fetch('/new.png', 100, 100)
+        const paths = imageCache.items.map((i: CacheItem) => i.path)
         expect(paths).to.include('/b.png')
+      })
+      it('should retain /c.png when it was accessed more recently than the evicted item', async () => {
+        imageCache.items.push(makeCacheItem('/a.png'))
+        imageCache.items.push(makeCacheItem('/b.png'))
+        imageCache.items.push(makeCacheItem('/c.png'))
+        await imageCache.fetch('/c.png', 100, 100)
+        await imageCache.fetch('/b.png', 100, 100)
+        await imageCache.fetch('/new.png', 100, 100)
+        const paths = imageCache.items.map((i: CacheItem) => i.path)
         expect(paths).to.include('/c.png')
       })
     })

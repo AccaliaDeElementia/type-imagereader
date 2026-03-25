@@ -80,12 +80,17 @@ describe('Server function CreateApp', () => {
     fn(new Error('FOO!'))
     expect(loggerFake.firstCall.args).to.deep.equal(['Error encountered creating server'])
   })
-  it('should log error object when callback is called with error parameter', () => {
+  it('should log only the error object when callback is called with error parameter', () => {
+    Functions.CreateApp(1)
+    const fn = Cast<(err: Error | undefined) => unknown>(appStub.listen.firstCall.args[1])
+    fn(new Error("D'OH!"))
+    expect(loggerFake.secondCall.args).to.have.lengthOf(1)
+  })
+  it('should log the error object when callback is called with error parameter', () => {
     Functions.CreateApp(1)
     const fn = Cast<(err: Error | undefined) => unknown>(appStub.listen.firstCall.args[1])
     const err = new Error("D'OH!")
     fn(err)
-    expect(loggerFake.secondCall.args).to.have.lengthOf(1)
     expect(loggerFake.secondCall.args[0]).to.equal(err)
   })
   it('should create websocket server', () => {
