@@ -125,22 +125,44 @@ describe('routes/api route POST /bookmarks/add', () => {
       },
     ])
   })
-  it('should log message on error', async () => {
-    const err = new Error('Evil Error!')
-    addBookmarkStub.rejects(err)
+  it('should call logger on error', async () => {
+    addBookmarkStub.rejects(new Error('Evil Error!'))
     requestStub.originalUrl = '/'
     await routeHandler(requestFake, responseFake)
     expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
+  })
+  it('should log two arguments on first log call on error', async () => {
+    addBookmarkStub.rejects(new Error('Evil Error!'))
+    requestStub.originalUrl = '/'
+    await routeHandler(requestFake, responseFake)
     expect(loggerStub.firstCall.args).to.have.lengthOf(2)
+  })
+  it('should log rendered url as first log argument on error', async () => {
+    addBookmarkStub.rejects(new Error('Evil Error!'))
+    requestStub.originalUrl = '/'
+    await routeHandler(requestFake, responseFake)
     expect(loggerStub.firstCall.args[0]).to.equal('Error rendering: /')
+  })
+  it('should log request body as second log argument on error', async () => {
+    addBookmarkStub.rejects(new Error('Evil Error!'))
+    requestStub.originalUrl = '/'
+    await routeHandler(requestFake, responseFake)
     expect(loggerStub.firstCall.args[1]).to.equal(requestStub.body)
   })
-  it('should log error on error', async () => {
+  it('should call logger at least once on error', async () => {
+    addBookmarkStub.rejects(new Error('Evil Error!'))
+    await routeHandler(requestFake, responseFake)
+    expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
+  })
+  it('should log one argument on last log call on error', async () => {
+    addBookmarkStub.rejects(new Error('Evil Error!'))
+    await routeHandler(requestFake, responseFake)
+    expect(loggerStub.lastCall.args).to.have.lengthOf(1)
+  })
+  it('should log error object as last log argument on error', async () => {
     const err = new Error('Evil Error!')
     addBookmarkStub.rejects(err)
     await routeHandler(requestFake, responseFake)
-    expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
-    expect(loggerStub.lastCall.args).to.have.lengthOf(1)
     expect(loggerStub.lastCall.args[0]).to.equal(err)
   })
 })

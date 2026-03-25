@@ -84,24 +84,46 @@ describe('routes/api route GET /', () => {
       { error: { code: 'E_INTERNAL_ERROR', message: 'Internal Server Error' } },
     ])
   })
-  it('should log message on error', async () => {
-    const err = new Error('Evil Error!')
-    responseStub.status.onFirstCall().throws(err)
-    const bodyData = { Body: Math.random() }
-    requestStub.body = bodyData
+  it('should call logger on error', async () => {
+    responseStub.status.onFirstCall().throws(new Error('Evil Error!'))
     requestStub.originalUrl = '/'
     await routeHandler(requestFake, responseFake)
     expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
+  })
+  it('should log two arguments on first log call on error', async () => {
+    responseStub.status.onFirstCall().throws(new Error('Evil Error!'))
+    requestStub.originalUrl = '/'
+    await routeHandler(requestFake, responseFake)
     expect(loggerStub.firstCall.args).to.have.lengthOf(2)
+  })
+  it('should log rendered url as first log argument on error', async () => {
+    responseStub.status.onFirstCall().throws(new Error('Evil Error!'))
+    requestStub.originalUrl = '/'
+    await routeHandler(requestFake, responseFake)
     expect(loggerStub.firstCall.args[0]).to.equal('Error rendering: /')
+  })
+  it('should log request body as second log argument on error', async () => {
+    const bodyData = { Body: Math.random() }
+    responseStub.status.onFirstCall().throws(new Error('Evil Error!'))
+    requestStub.body = bodyData
+    requestStub.originalUrl = '/'
+    await routeHandler(requestFake, responseFake)
     expect(loggerStub.firstCall.args[1]).to.equal(bodyData)
   })
-  it('should log error on error', async () => {
+  it('should call logger at least once on error', async () => {
+    responseStub.status.onFirstCall().throws(new Error('Evil Error!'))
+    await routeHandler(requestFake, responseFake)
+    expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
+  })
+  it('should log one argument on last log call on error', async () => {
+    responseStub.status.onFirstCall().throws(new Error('Evil Error!'))
+    await routeHandler(requestFake, responseFake)
+    expect(loggerStub.lastCall.args).to.have.lengthOf(1)
+  })
+  it('should log error object as last log argument on error', async () => {
     const err = new Error('Evil Error!')
     responseStub.status.onFirstCall().throws(err)
     await routeHandler(requestFake, responseFake)
-    expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
-    expect(loggerStub.lastCall.args).to.have.lengthOf(1)
     expect(loggerStub.lastCall.args[0]).to.equal(err)
   })
 })

@@ -1,10 +1,11 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import type { Request, Response } from 'express'
+import type { Request } from 'express'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import { expect } from 'chai'
 import { Functions } from '../../../routes/slideshow'
+import { createResponseFake } from '../../../testutils/Express'
 
 const sandbox = Sinon.createSandbox()
 
@@ -12,12 +13,8 @@ describe('routes/slideshow function RootRoute', () => {
   let reqStub = {
     params: { path: undefined as string | undefined },
   }
-  let resStub = {
-    status: Sinon.stub().returnsThis(),
-    render: Sinon.stub().resolvesThis(),
-  }
+  let { stub: resStub, fake: responseFake } = createResponseFake()
   let requestFake = Cast<Request>(reqStub)
-  let responseFake = Cast<Response>(resStub)
   let knexFake = StubToKnex({})
   let roomData = { images: [''], uriSafeImage: '' }
   let getRoomStub = Sinon.stub().resolves()
@@ -28,12 +25,8 @@ describe('routes/slideshow function RootRoute', () => {
     reqStub = {
       params: { path: undefined },
     }
-    resStub = {
-      status: Sinon.stub().returnsThis(),
-      render: Sinon.stub().resolvesThis(),
-    }
+    ;({ stub: resStub, fake: responseFake } = createResponseFake())
     requestFake = Cast<Request>(reqStub)
-    responseFake = Cast<Response>(resStub)
     knexFake = StubToKnex({})
     noImages = []
     fullImages = ['1', '2', '3', '4', '5', '6', '7', '8']

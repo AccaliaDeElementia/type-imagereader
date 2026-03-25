@@ -2,25 +2,11 @@
 
 import { expect } from 'chai'
 import { Functions, ImageData } from '../../../routes/images'
-import Sinon from 'sinon'
-import { Cast } from '../../../testutils/TypeGuards'
-import type { Response } from 'express'
+import { createResponseFake } from '../../../testutils/Express'
 describe('routes/images function SendImage()', () => {
-  let responseStub = {
-    status: Sinon.stub().returnsThis(),
-    json: Sinon.stub().returnsThis(),
-    set: Sinon.stub().returnsThis(),
-    send: Sinon.stub().returnsThis(),
-  }
-  let responseFake = Cast<Response>(responseStub)
+  let { stub: responseStub, fake: responseFake } = createResponseFake()
   beforeEach(() => {
-    responseStub = {
-      status: Sinon.stub().returnsThis(),
-      json: Sinon.stub().returnsThis(),
-      set: Sinon.stub().returnsThis(),
-      send: Sinon.stub().returnsThis(),
-    }
-    responseFake = Cast<Response>(responseStub)
+    ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
   it('should set content-type for valid image', () => {
     const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')

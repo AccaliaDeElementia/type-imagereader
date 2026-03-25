@@ -21,6 +21,14 @@ describe('testutils/Express createResponseFake()', () => {
     const { stub } = createResponseFake()
     expect(stub.end).to.be.a('function')
   })
+  it('should return a stub with a render method', () => {
+    const { stub } = createResponseFake()
+    expect(stub.render).to.be.a('function')
+  })
+  it('should return a stub with a set method', () => {
+    const { stub } = createResponseFake()
+    expect(stub.set).to.be.a('function')
+  })
   it('should start with status callCount of 0', () => {
     const { stub } = createResponseFake()
     expect(stub.status.callCount).to.equal(0)
@@ -37,6 +45,14 @@ describe('testutils/Express createResponseFake()', () => {
     const { stub } = createResponseFake()
     expect(stub.end.callCount).to.equal(0)
   })
+  it('should start with render callCount of 0', () => {
+    const { stub } = createResponseFake()
+    expect(stub.render.callCount).to.equal(0)
+  })
+  it('should start with set callCount of 0', () => {
+    const { stub } = createResponseFake()
+    expect(stub.set.callCount).to.equal(0)
+  })
   it('should have status return fake for method chaining', () => {
     const { stub, fake } = createResponseFake()
     expect(stub.status(200)).to.equal(fake)
@@ -52,6 +68,14 @@ describe('testutils/Express createResponseFake()', () => {
   it('should have end return fake for method chaining', () => {
     const { stub, fake } = createResponseFake()
     expect(stub.end()).to.equal(fake)
+  })
+  it('should have render return a promise resolving to fake for method chaining', async () => {
+    const { stub, fake } = createResponseFake()
+    expect(await stub.render('view')).to.equal(fake)
+  })
+  it('should have set return fake for method chaining', () => {
+    const { stub, fake } = createResponseFake()
+    expect(stub.set('key', 'value')).to.equal(fake)
   })
   it('should return independent stubs on each call', () => {
     const a = createResponseFake()

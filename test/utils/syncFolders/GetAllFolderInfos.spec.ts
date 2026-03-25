@@ -2,23 +2,20 @@
 
 import { expect } from 'chai'
 import { Functions } from '../../../utils/syncfolders'
-import Sinon from 'sinon'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 
 describe('utils/syncfolders function GetAllFolderInfos()', () => {
-  let knexInstanceStub = {
-    select: Sinon.stub().resolves([]),
-  }
-
-  let knexFnStub = Sinon.stub().returns(knexInstanceStub)
-  let knexFnFake = StubToKnex(knexFnStub)
+  let {
+    instance: knexInstanceStub,
+    stub: knexFnStub,
+    fake: knexFnFake,
+  } = createKnexChainFake([] as const, ['select'] as const)
   beforeEach(() => {
-    knexInstanceStub = {
-      select: Sinon.stub().resolves([]),
-    }
-
-    knexFnStub = Sinon.stub().returns(knexInstanceStub)
-    knexFnFake = StubToKnex(knexFnStub)
+    ;({
+      instance: knexInstanceStub,
+      stub: knexFnStub,
+      fake: knexFnFake,
+    } = createKnexChainFake([] as const, ['select'] as const))
   })
   it('should select all paths from folders table', async () => {
     await Functions.GetAllFolderInfos(knexFnFake)

@@ -3,7 +3,8 @@
 import { expect } from 'chai'
 import { Functions, Imports } from '../../../utils/syncfolders'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 import type { Debugger } from 'debug'
 
 const sandbox = Sinon.createSandbox()
@@ -15,21 +16,17 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
   let chunkStub = Sinon.stub()
   let loggerStub = Sinon.stub()
   let debugStub = Sinon.stub()
-  let knexStub = {
-    insert: Sinon.stub().returnsThis(),
-    onConflict: Sinon.stub().returnsThis(),
-    merge: Sinon.stub().resolves(),
-  }
-  let knexFnStub = Sinon.stub().returns(knexStub)
-  let knexFnFake = StubToKnex(knexFnStub)
+  let {
+    instance: knexStub,
+    stub: knexFnStub,
+    fake: knexFnFake,
+  } = createKnexChainFake(['insert', 'onConflict'] as const, ['merge'] as const, undefined)
   beforeEach(() => {
-    knexStub = {
-      insert: Sinon.stub().returnsThis(),
-      onConflict: Sinon.stub().returnsThis(),
-      merge: Sinon.stub().resolves(),
-    }
-    knexFnStub = Sinon.stub().returns(knexStub)
-    knexFnFake = StubToKnex(knexFnStub)
+    ;({
+      instance: knexStub,
+      stub: knexFnStub,
+      fake: knexFnFake,
+    } = createKnexChainFake(['insert', 'onConflict'] as const, ['merge'] as const, undefined))
     loggerStub = Sinon.stub()
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     getFolderInfosWithPicturesStub = sandbox.stub(Functions, 'GetFolderInfosWithPictures').resolves([])

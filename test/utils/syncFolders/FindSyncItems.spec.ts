@@ -3,7 +3,8 @@
 import { expect } from 'chai'
 import { Functions, Imports } from '../../../utils/syncfolders'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 import type { Debugger } from 'debug'
 
 const sandbox = Sinon.createSandbox()
@@ -13,19 +14,17 @@ describe('utils/syncfolders function FindSyncItems()', () => {
   let debugStub = Sinon.stub()
   let fsWalkerStub = Sinon.stub()
   let chunkSyncItemsForInsertStub = Sinon.stub()
-  let knexInstanceStub = {
-    del: Sinon.stub().resolves(),
-    insert: Sinon.stub().resolves(),
-  }
-  let knexFnStub = Sinon.stub().returns(knexInstanceStub)
-  let knexFnFake = StubToKnex(knexFnStub)
+  let {
+    instance: knexInstanceStub,
+    stub: knexFnStub,
+    fake: knexFnFake,
+  } = createKnexChainFake([] as const, ['del', 'insert'] as const, undefined)
   beforeEach(() => {
-    knexInstanceStub = {
-      del: Sinon.stub().resolves(),
-      insert: Sinon.stub().resolves(),
-    }
-    knexFnStub = Sinon.stub().returns(knexInstanceStub)
-    knexFnFake = StubToKnex(knexFnStub)
+    ;({
+      instance: knexInstanceStub,
+      stub: knexFnStub,
+      fake: knexFnFake,
+    } = createKnexChainFake([] as const, ['del', 'insert'] as const, undefined))
     loggerStub = Sinon.stub()
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()

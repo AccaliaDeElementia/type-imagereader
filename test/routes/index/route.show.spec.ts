@@ -1,22 +1,22 @@
 'use sanity'
 
 import { expect } from 'chai'
-import type { Application, Router } from 'express'
+import type { Application, Response as ExpressResponse, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { getRouter, Imports } from '../../../routes/index'
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
+import { createResponseFake } from '../../../testutils/Express'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/index route /show', () => {
-  let routeFn: (_: Request, __: Response) => void = Sinon.stub()
-  let routeAltFn: (_: Request, __: Response) => void = Sinon.stub()
+  let routeFn: (_: Request, __: ExpressResponse) => void = Sinon.stub()
+  let routeAltFn: (_: Request, __: ExpressResponse) => void = Sinon.stub()
   let requestStub = { params: { path: undefined as string[] | string | undefined } }
   let requestFake = Cast<Request>(requestStub)
-  let resposeStub = { render: Sinon.stub(), status: Sinon.stub().returnsThis() }
-  let responseFake = Cast<Response>(resposeStub)
+  let { stub: resposeStub, fake: responseFake } = createResponseFake()
   beforeEach(async () => {
     const applicationFake = Cast<Application>({})
     const serverFake = Cast<Server>({})
@@ -26,10 +26,10 @@ describe('routes/index route /show', () => {
     try {
       getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
       await getRouter(applicationFake, serverFake, socketsFake)
-      routeFn = Cast<(_: Request, __: Response) => void>(
+      routeFn = Cast<(_: Request, __: ExpressResponse) => void>(
         routerStub.get.getCalls().find((c) => c.args[0] === '/show')?.args[1],
       )
-      routeAltFn = Cast<(_: Request, __: Response) => void>(
+      routeAltFn = Cast<(_: Request, __: ExpressResponse) => void>(
         routerStub.get.getCalls().find((c) => c.args[0] === '/show/*path')?.args[1],
       )
     } finally {
@@ -37,8 +37,7 @@ describe('routes/index route /show', () => {
     }
     requestStub = { params: { path: undefined } }
     requestFake = Cast<Request>(requestStub)
-    resposeStub = { render: Sinon.stub(), status: Sinon.stub().returnsThis() }
-    responseFake = Cast<Response>(resposeStub)
+    ;({ stub: resposeStub, fake: responseFake } = createResponseFake())
   })
   it("should alias same handler for both '/show' and '/show/*path' routes", () => {
     expect(routeFn).to.equal(routeAltFn)

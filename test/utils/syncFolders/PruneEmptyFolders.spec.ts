@@ -3,7 +3,8 @@
 import { expect } from 'chai'
 import { Functions, Imports } from '../../../utils/syncfolders'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 import type { Debugger } from 'debug'
 
 const sandbox = Sinon.createSandbox()
@@ -11,20 +12,18 @@ const sandbox = Sinon.createSandbox()
 describe('utils/syncfolders function PruneEmptyFolders()', () => {
   let loggerStub = Sinon.stub()
   let debugStub = Sinon.stub()
-  let knexStub = {
-    where: Sinon.stub().returnsThis(),
-    delete: Sinon.stub().resolves(),
-  }
-  let knexFnStub = Sinon.stub().returns(knexStub)
-  let knexFnFake = StubToKnex(knexFnStub)
+  let {
+    instance: knexStub,
+    stub: knexFnStub,
+    fake: knexFnFake,
+  } = createKnexChainFake(['where'] as const, ['delete'] as const, undefined)
   beforeEach(() => {
     loggerStub = Sinon.stub()
-    knexStub = {
-      where: Sinon.stub().returnsThis(),
-      delete: Sinon.stub().resolves(),
-    }
-    knexFnStub = Sinon.stub().returns(knexStub)
-    knexFnFake = StubToKnex(knexFnStub)
+    ;({
+      instance: knexStub,
+      stub: knexFnStub,
+      fake: knexFnFake,
+    } = createKnexChainFake(['where'] as const, ['delete'] as const, undefined))
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
   })
   afterEach(() => {
