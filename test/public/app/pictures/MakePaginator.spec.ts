@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import assert from 'node:assert'
 

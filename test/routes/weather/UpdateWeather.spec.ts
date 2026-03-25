@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { Functions, Imports, type OpenWeatherData, type WeatherResults } from '../../../routes/weather'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '../../testutils/Errors'
+import { EventuallyRejects } from '../../../testutils/Errors'
 
 describe('routes/weather function UpdateWeather', () => {
   let weatherData: OpenWeatherData = {

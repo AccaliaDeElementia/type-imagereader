@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import { Functions } from '../../../routes/weather'
 import Sinon from 'sinon'
-import { Cast } from '../../testutils/TypeGuards'
-import { EventuallyRejects } from '../../testutils/Errors'
+import { Cast } from '../../../testutils/TypeGuards'
+import { EventuallyRejects } from '../../../testutils/Errors'
 
 describe('routes/weather function GetWeather', () => {
   let weatherData = {

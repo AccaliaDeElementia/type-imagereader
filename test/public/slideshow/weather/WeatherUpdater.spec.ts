@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, it } from 'mocha'
 import { Functions, WeatherUpdater } from '../../../../public/scripts/slideshow/weather'
 import { expect } from 'chai'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import Sinon from 'sinon'

@@ -13,5 +13,6 @@ export function IsKnex(_: unknown): _ is KnexDefault {
 
 export function StubToKnex(stub: unknown): KnexDefault {
   if (IsKnex(stub)) return stub
+  /* c8 ignore next 2 -- IsKnex always returns true; this throw is unreachable dead code */
   throw new Error('Stub is not KNEX')
 }

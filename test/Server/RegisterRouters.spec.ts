@@ -5,7 +5,7 @@ import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import Sinon from 'sinon'
-import { Cast } from '../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 import { Routers, Functions } from '../../Server'
 
 describe('Server function RegisterRouters', () => {

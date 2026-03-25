@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import assert from 'node:assert'
 import { Tabs } from '../../../../public/scripts/app/tabs'
 

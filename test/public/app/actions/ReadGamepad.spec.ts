@@ -7,7 +7,7 @@ import Sinon from 'sinon'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Actions } from '../../../../public/scripts/app/actions'
 
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 
 describe('public/app/actions function ReadGamepad()', () => {

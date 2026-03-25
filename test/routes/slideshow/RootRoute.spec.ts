@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import type { Request, Response } from 'express'
-import { Cast, StubToKnex } from '../../testutils/TypeGuards'
+import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import { expect } from 'chai'
 import { Functions } from '../../../routes/slideshow'
 

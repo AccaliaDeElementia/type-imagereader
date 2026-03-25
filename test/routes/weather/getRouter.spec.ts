@@ -7,7 +7,7 @@ import Sinon from 'sinon'
 import type { Application, Router, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { Cast } from '../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
 
 describe('routes/weather function getRouter()', () => {
   let setIntervalStub = Sinon.stub()

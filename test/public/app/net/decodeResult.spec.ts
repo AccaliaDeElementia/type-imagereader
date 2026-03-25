@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import { decodeResult } from '../../../../public/scripts/app/net'
-import { Cast } from '../../../testutils/TypeGuards'
-import { EventuallyRejects } from '../../../testutils/Errors'
+import { Cast } from '../../../../testutils/TypeGuards'
+import { EventuallyRejects } from '../../../../testutils/Errors'
 
 describe('public/app/net function decodeResult()', () => {
   let response = Cast<Response>(null)

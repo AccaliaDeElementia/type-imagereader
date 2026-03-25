@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import fsWalker from '../../../utils/fswalker'
-import { EventuallyRejects } from '../../testutils/Errors'
+import { EventuallyRejects } from '../../../testutils/Errors'
 
 describe('utils/fswalker function fsWalker()', () => {
   let readdirSpy = Sinon.stub()

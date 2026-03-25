@@ -2,7 +2,7 @@
 
 import { assert, expect } from 'chai'
 import Sinon from 'sinon'
-import { Cast } from '../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 import start, { Functions } from '../../Server'
 import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'

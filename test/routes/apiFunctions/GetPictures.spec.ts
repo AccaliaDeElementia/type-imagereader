@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { Functions } from '../../../routes/apiFunctions'
 import Sinon from 'sinon'
-import { StubToKnex } from '../../testutils/TypeGuards'
+import { StubToKnex } from '../../../testutils/TypeGuards'
 
 describe('routes/apiFunctions function GetPictures', () => {
   let knexInstance = {

@@ -2,7 +2,7 @@
 
 import { Functions } from '../../../../public/scripts/slideshow/sockets'
 import { after, before, describe, it } from 'mocha'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import { expect } from 'chai'
 

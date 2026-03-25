@@ -4,8 +4,8 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../public/scripts/app/navigation'
-import { Cast } from '../../../testutils/TypeGuards'
-import { EventuallyFullfills } from '../../../testutils/Errors'
+import { Cast } from '../../../../testutils/TypeGuards'
+import { EventuallyFullfills } from '../../../../testutils/Errors'
 describe('public/app/navigation function NavigateTo()', () => {
   const errorSpy = Sinon.stub()
   let loadDataSpy = Sinon.stub()

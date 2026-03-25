@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { Functions, Imports } from '../../../utils/persistance'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '../../testutils/Errors'
+import { EventuallyRejects } from '../../../testutils/Errors'
 
 describe('utils/persistance function readConfigurationBlock()', () => {
   let configContent = {

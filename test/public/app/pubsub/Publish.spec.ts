@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom'
 import { expect } from 'chai'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import assert from 'node:assert'
 
 describe('public/app/pubsub function Publish()', () => {

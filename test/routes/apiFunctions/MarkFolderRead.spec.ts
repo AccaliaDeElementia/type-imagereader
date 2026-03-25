@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { Functions } from '../../../routes/apiFunctions'
-import { StubToKnex } from '../../testutils/TypeGuards'
+import { StubToKnex } from '../../../testutils/TypeGuards'
 import Sinon from 'sinon'
 
 interface KnexStub {

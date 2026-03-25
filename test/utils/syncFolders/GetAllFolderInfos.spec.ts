@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { Functions } from '../../../utils/syncfolders'
 import Sinon from 'sinon'
-import { StubToKnex } from '../../testutils/TypeGuards'
+import { StubToKnex } from '../../../testutils/TypeGuards'
 
 describe('utils/syncfolders function GetAllFolderInfos()', () => {
   let knexInstanceStub = {

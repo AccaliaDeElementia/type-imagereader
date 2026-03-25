@@ -5,7 +5,7 @@ import { CyclicUpdater, defaultUpdateFn } from '../../../../public/scripts/slide
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import Sinon from 'sinon'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 
 describe('public/slideshow/updater class CyclicUpdater', () => {
   it('should set default update function when fn undefined', () => {

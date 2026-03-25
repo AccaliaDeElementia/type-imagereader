@@ -9,7 +9,7 @@ import { getRouter, Imports } from '../../../routes/api'
 import { Functions } from '../../../routes/apiFunctions'
 import persistance from '../../../utils/persistance'
 import { StatusCodes } from 'http-status-codes'
-import { Cast, StubToKnex } from '../../testutils/TypeGuards'
+import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
 type RequestHandler = (req: Request, res: Response) => Promise<void>

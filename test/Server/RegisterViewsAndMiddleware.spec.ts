@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import type { Express } from 'express'
 import Sinon from 'sinon'
-import { Cast } from '../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 import { Imports, Functions } from '../../Server'
 import express from 'express'
 

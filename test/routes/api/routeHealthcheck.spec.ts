@@ -8,7 +8,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '../../../routes/api'
 import persistance from '../../../utils/persistance'
 import { StatusCodes } from 'http-status-codes'
-import { Cast } from '../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
 type RequestHandler = (req: Request, res: Response) => Promise<void>

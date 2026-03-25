@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { Cast } from '../../../../../testutils/TypeGuards'
 import type { Listing } from '../../../../../contracts/listing'
 
 import { Net } from '../../../../../public/scripts/app/net'

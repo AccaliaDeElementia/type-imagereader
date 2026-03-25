@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { Functions, ImageData } from '../../../routes/images'
 import Sinon from 'sinon'
-import { Cast } from '../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
 import type { Response } from 'express'
 describe('routes/images function SendImage()', () => {
   let responseStub = {

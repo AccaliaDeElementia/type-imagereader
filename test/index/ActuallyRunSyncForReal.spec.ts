@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { ImageReader, Functions } from '../..'
 import { expect } from 'chai'
-import { EventuallyRejects } from '../testutils/Errors'
+import { EventuallyRejects } from '../../testutils/Errors'
 
 describe('index.ts Functions.ActuallyRunSyncForReal()', () => {
   let synchronizeStub = Sinon.stub()

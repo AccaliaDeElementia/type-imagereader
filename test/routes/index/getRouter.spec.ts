@@ -6,7 +6,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { getRouter, Imports } from '../../../routes/index'
 import Sinon from 'sinon'
-import { Cast } from '../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
 
 describe('routes/index function getRouter()', () => {
   const applicationFake = Cast<Application>({})

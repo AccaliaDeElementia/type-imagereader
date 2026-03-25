@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Functions, type WebSocket } from '../../../../public/scripts/slideshow/sockets'
 import { after, before, beforeEach, describe, it } from 'mocha'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import assert from 'node:assert'
 import { expect } from 'chai'

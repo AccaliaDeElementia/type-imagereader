@@ -105,7 +105,6 @@
     ],
     "exclude": [
       "**/*.spec.ts",
-      "test/testutils/**/*.ts",
       "knexfile.ts",
       "test.ts",
       "migrations/**"

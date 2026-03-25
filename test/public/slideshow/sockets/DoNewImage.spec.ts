@@ -2,7 +2,7 @@
 
 import { Functions } from '../../../../public/scripts/slideshow/sockets'
 import { afterEach, beforeEach, describe, it } from 'mocha'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import { JSDOM } from 'jsdom'
 import { expect } from 'chai'

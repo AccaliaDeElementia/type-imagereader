@@ -6,8 +6,8 @@ import { Functions } from '../../../../public/scripts/slideshow/weather'
 import Sinon from 'sinon'
 import { URL } from 'node:url'
 import { JSDOM } from 'jsdom'
-import { EventuallyRejects } from '../../../testutils/Errors'
-import { Cast } from '../../../testutils/TypeGuards'
+import { EventuallyRejects } from '../../../../testutils/Errors'
+import { Cast } from '../../../../testutils/TypeGuards'
 
 describe('public/slideshow/weather FetchWeather()', () => {
   let fetchStub = Sinon.stub()

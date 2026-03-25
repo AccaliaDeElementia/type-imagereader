@@ -3,7 +3,7 @@
 import { assert, expect } from 'chai'
 import type { Express, Response } from 'express'
 import Sinon from 'sinon'
-import { Cast } from '../testutils/TypeGuards'
+import { Cast } from '../../testutils/TypeGuards'
 import { Functions, Imports } from '../../Server'
 
 describe('Server function ConfigureLoggingAndErrors', () => {

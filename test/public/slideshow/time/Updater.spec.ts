@@ -1,7 +1,7 @@
 'use sanity'
 
 import Updater, { Functions } from '../../../../public/scripts/slideshow/time'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { expect } from 'chai'

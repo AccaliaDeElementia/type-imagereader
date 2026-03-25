@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import persistance, { Functions, Imports, type KnexOptions } from '../../../utils/persistance'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '../../testutils/Errors'
-import { StubToKnex } from '../../testutils/TypeGuards'
+import { EventuallyRejects } from '../../../testutils/Errors'
+import { StubToKnex } from '../../../testutils/TypeGuards'
 
 describe('utils/persistance function initialize()', () => {
   let fakeEnvironment: KnexOptions = {

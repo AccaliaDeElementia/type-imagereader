@@ -6,7 +6,7 @@ import { expect } from 'chai'
 import { CyclicUpdater } from '../../../../public/scripts/slideshow/updater'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 const markup = `
 html
   body

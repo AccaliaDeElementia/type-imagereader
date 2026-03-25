@@ -9,7 +9,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 
 import { CacheStorage, Functions, getRouter, ImageData, Imports } from '../../../routes/images'
 import Sinon from 'sinon'
-import { Cast } from '../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
 
 describe('routes/images route /kiosk/*-image.webp', () => {
   const defaultKioskCache = CacheStorage.kioskCache

@@ -4,7 +4,7 @@ import { assert, expect } from 'chai'
 import { Imports, Functions, ImageData } from '../../../routes/images'
 import Sharp from 'sharp'
 import Sinon from 'sinon'
-import { Cast } from '../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
 describe('routes/images function RescaleImage()', () => {
   let sharpInstanceStub = {
     rotate: Sinon.stub().returnsThis(),

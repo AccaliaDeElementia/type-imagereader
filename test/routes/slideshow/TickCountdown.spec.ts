@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '../../testutils/TypeGuards'
+import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import { expect } from 'chai'
 import { Config, Functions, Imports } from '../../../routes/slideshow'
 import type { Server as WebSocketServer } from 'socket.io'

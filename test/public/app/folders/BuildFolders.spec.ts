@@ -5,7 +5,7 @@ import { beforeEach, afterEach, after, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 
 import { Folders } from '../../../../public/scripts/app/folders'
 import Sinon from 'sinon'

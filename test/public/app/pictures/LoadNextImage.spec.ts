@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { NavigateTo, Pictures } from '../../../../public/scripts/app/pictures'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import type { Picture } from '../../../../contracts/listing'
 

@@ -1,7 +1,7 @@
 'use sanity'
 
 import { describe, it } from 'mocha'
-import { EventuallyRejects } from '../../../testutils/Errors'
+import { EventuallyRejects } from '../../../../testutils/Errors'
 import { defaultUpdateFn } from '../../../../public/scripts/slideshow/updater'
 import { expect } from 'chai'
 

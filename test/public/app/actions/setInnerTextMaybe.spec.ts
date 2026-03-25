@@ -4,8 +4,8 @@ import { assert, expect } from 'chai'
 import { describe, it } from 'mocha'
 import { Actions } from '../../../../public/scripts/app/actions'
 import { JSDOM } from 'jsdom'
-import { Cast } from '../../../testutils/TypeGuards'
-import { DoesNotThrow } from '../../../testutils/Errors'
+import { Cast } from '../../../../testutils/TypeGuards'
+import { DoesNotThrow } from '../../../../testutils/Errors'
 
 describe('public/app/actions function setInnerTextMaybe', () => {
   const existingWindow: Window & typeof globalThis = global.window

@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 import { HasValue } from '../../../../utils/helpers'
 
 describe('public/app/pubsub function StartDeferred()', () => {

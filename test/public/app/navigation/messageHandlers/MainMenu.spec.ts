@@ -7,8 +7,8 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { PubSub } from '../../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../../public/scripts/app/navigation'
-import { Cast } from '../../../../testutils/TypeGuards'
-import { EventuallyFullfills } from '../../../../testutils/Errors'
+import { Cast } from '../../../../../testutils/TypeGuards'
+import { EventuallyFullfills } from '../../../../../testutils/Errors'
 
 const markup = `
 html

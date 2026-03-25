@@ -8,7 +8,7 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../public/scripts/app/navigation'
 import assert from 'node:assert'
 import type { Picture } from '../../../../contracts/listing'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../../testutils/TypeGuards'
 
 describe('public/app/pictures function InitActions()', () => {
   const existingWindow = global.window

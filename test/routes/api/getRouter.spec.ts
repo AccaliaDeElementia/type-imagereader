@@ -7,7 +7,7 @@ import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '../../../routes/api'
 import persistance from '../../../utils/persistance'
-import { Cast } from '../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
 import assert from 'node:assert'
 
 describe('routes/api function getRouter()', () => {

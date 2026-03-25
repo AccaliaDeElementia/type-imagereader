@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { ImageReader, RunSync, Functions, Imports } from '../..'
 import { expect } from 'chai'
-import { EventuallyFullfills } from '../testutils/Errors'
+import { EventuallyFullfills } from '../../testutils/Errors'
 
 const fireImmediately = (fn: () => Promise<void>): number => {
   fn().catch(() => null)

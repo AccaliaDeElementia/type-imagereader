@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { Imports, Functions, ImageData } from '../../../routes/images'
 import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
-import { Cast } from '../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
 
 describe('routes/images function ReadImage()', () => {
   let fromErrorStub = Sinon.stub()
