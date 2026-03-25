@@ -47,13 +47,13 @@ describe('public/app/pictures function SetPictureIndices()', () => {
     Pictures.SetPictureIndices()
     expect(Pictures.pictures[2]?.index).to.equal(2)
   })
-
-  it('should assign sequential indices to all pictures', () => {
-    const pics = Array.from({ length: 10 }, (_, i) => makePicture(`pic${i}.png`))
-    Pictures.pictures = pics
-    Pictures.SetPictureIndices()
-    pics.forEach((pic, idx) => {
-      expect(pic.index).to.equal(idx)
+  ;[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].forEach((idx) => {
+    it(`should assign index ${idx} to picture at position ${idx} in 10-element array`, () => {
+      const pics: Array<ReturnType<typeof makePicture>> = []
+      for (let i = 0; i < 10; i += 1) pics.push(makePicture(`pic${i}.png`))
+      Pictures.pictures = pics
+      Pictures.SetPictureIndices()
+      expect(pics[idx]?.index).to.equal(idx)
     })
   })
 
@@ -84,7 +84,7 @@ describe('public/app/pictures function SetPictureIndices()', () => {
     expect(Pictures.pictures[1]?.index).to.equal(1)
   })
 
-  it('should overwrite all pre-existing indices regardless of prior values', () => {
+  it('should overwrite pre-existing index 500 on first picture', () => {
     const pics = [
       makePicture('a.png', { index: 500 }),
       makePicture('b.png', { index: 0 }),
@@ -92,8 +92,26 @@ describe('public/app/pictures function SetPictureIndices()', () => {
     ]
     Pictures.pictures = pics
     Pictures.SetPictureIndices()
-    pics.forEach((pic, idx) => {
-      expect(pic.index).to.equal(idx)
-    })
+    expect(pics[0]?.index).to.equal(0)
+  })
+  it('should overwrite pre-existing index 0 on second picture', () => {
+    const pics = [
+      makePicture('a.png', { index: 500 }),
+      makePicture('b.png', { index: 0 }),
+      makePicture('c.png', { index: -1 }),
+    ]
+    Pictures.pictures = pics
+    Pictures.SetPictureIndices()
+    expect(pics[1]?.index).to.equal(1)
+  })
+  it('should overwrite pre-existing index -1 on third picture', () => {
+    const pics = [
+      makePicture('a.png', { index: 500 }),
+      makePicture('b.png', { index: 0 }),
+      makePicture('c.png', { index: -1 }),
+    ]
+    Pictures.pictures = pics
+    Pictures.SetPictureIndices()
+    expect(pics[2]?.index).to.equal(2)
   })
 })

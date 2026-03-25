@@ -42,9 +42,12 @@ describe('public/app/pubsub function RemoveInterval()', () => {
     PubSub.RemoveInterval('FOOBAR')
     expect(PubSub.intervals).to.not.equal(ivals)
   })
-  it('should not remove other intervals', () => {
+  it('should not remove BAZ interval', () => {
     PubSub.RemoveInterval('FOOBAR')
     expect(PubSub.intervals).to.have.any.keys('BAZ')
+  })
+  it('should not remove QUUX interval', () => {
+    PubSub.RemoveInterval('FOOBAR')
     expect(PubSub.intervals).to.have.any.keys('QUUX')
   })
   it('should not call method on removing interval even if the interval is expired', () => {

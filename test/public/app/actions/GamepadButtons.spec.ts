@@ -85,52 +85,82 @@ describe('public/app/actions class GamepadButtons', () => {
       ['Down', 13],
     ]
     validButtons.forEach(([btn, id]: [string, number]): void => {
-      it(`should register button press when ${btn} is pressed`, () => {
+      it(`should return true when ${btn} is pressed`, () => {
         assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = true
-        const pressed = buttons.Read(gamePad)
-        expect(pressed).to.equal(true)
+        expect(buttons.Read(gamePad)).to.equal(true)
+      })
+      it(`should set pressingNow when ${btn} is pressed`, () => {
+        assert(testGamePad.buttons[id] !== undefined)
+        testGamePad.buttons[id].pressed = true
+        buttons.Read(gamePad)
         expect(buttons.pressingNow).to.equal(true)
+      })
+      it(`should add ${btn} to pressedButtons when ${btn} is pressed`, () => {
+        assert(testGamePad.buttons[id] !== undefined)
+        testGamePad.buttons[id].pressed = true
+        buttons.Read(gamePad)
         expect(buttons.pressedButtons).to.deep.equal([btn])
       })
 
-      it(`should not duplicate button press when ${btn} is pressed`, () => {
+      it(`should return true when ${btn} is already tracked and pressed again`, () => {
         assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = true
         buttons.pressedButtons.push(btn)
-        const pressed = buttons.Read(gamePad)
-        expect(pressed).to.equal(true)
+        expect(buttons.Read(gamePad)).to.equal(true)
+      })
+      it(`should set pressingNow when ${btn} is already tracked and pressed again`, () => {
+        assert(testGamePad.buttons[id] !== undefined)
+        testGamePad.buttons[id].pressed = true
+        buttons.pressedButtons.push(btn)
+        buttons.Read(gamePad)
         expect(buttons.pressingNow).to.equal(true)
+      })
+      it(`should not duplicate ${btn} in pressedButtons when already tracked`, () => {
+        assert(testGamePad.buttons[id] !== undefined)
+        testGamePad.buttons[id].pressed = true
+        buttons.pressedButtons.push(btn)
+        buttons.Read(gamePad)
         expect(buttons.pressedButtons).to.deep.equal([btn])
       })
 
-      it(`should not remove non pressed buttons when ${btn} is pressed`, () => {
+      it(`should return true when ${btn} is pressed alongside pre-existing button`, () => {
         assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = true
         buttons.pressedButtons.push('Q')
-        const pressed = buttons.Read(gamePad)
-        expect(pressed).to.equal(true)
+        expect(buttons.Read(gamePad)).to.equal(true)
+      })
+      it(`should set pressingNow when ${btn} is pressed alongside pre-existing button`, () => {
+        assert(testGamePad.buttons[id] !== undefined)
+        testGamePad.buttons[id].pressed = true
+        buttons.pressedButtons.push('Q')
+        buttons.Read(gamePad)
         expect(buttons.pressingNow).to.equal(true)
+      })
+      it(`should keep pre-existing button and add ${btn} to pressedButtons`, () => {
+        assert(testGamePad.buttons[id] !== undefined)
+        testGamePad.buttons[id].pressed = true
+        buttons.pressedButtons.push('Q')
+        buttons.Read(gamePad)
         expect(buttons.pressedButtons).to.deep.equal(['Q', btn])
       })
 
-      it(`should not register button press when ${btn} is not`, () => {
+      it(`should return false when ${btn} is not pressed`, () => {
         assert(testGamePad.buttons[id] !== undefined)
         testGamePad.buttons[id].pressed = false
-        const pressed = buttons.Read(gamePad)
-        expect(pressed).to.equal(false)
-        expect(buttons.pressingNow).to.equal(false)
-        expect(buttons.pressedButtons).to.deep.equal([])
+        expect(buttons.Read(gamePad)).to.equal(false)
       })
-
-      it(`should not duplicate button press when ${btn} is pressed`, () => {
+      it(`should not set pressingNow when ${btn} is not pressed`, () => {
         assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.pressedButtons.push(btn)
-        const pressed = buttons.Read(gamePad)
-        expect(pressed).to.equal(true)
-        expect(buttons.pressingNow).to.equal(true)
-        expect(buttons.pressedButtons).to.deep.equal([btn])
+        testGamePad.buttons[id].pressed = false
+        buttons.Read(gamePad)
+        expect(buttons.pressingNow).to.equal(false)
+      })
+      it(`should leave pressedButtons empty when ${btn} is not pressed`, () => {
+        assert(testGamePad.buttons[id] !== undefined)
+        testGamePad.buttons[id].pressed = false
+        buttons.Read(gamePad)
+        expect(buttons.pressedButtons).to.deep.equal([])
       })
     })
   }
@@ -179,11 +209,18 @@ describe('public/app/actions class GamepadButtons', () => {
     ]
     validAxis.forEach(([axis, values, expected]: [string, Array<number | undefined>, boolean]): void => {
       const pressed = expected ? [axis] : []
-      it(`Should ${expected ? 'set' : 'not set'} ${axis} when axis is ${JSON.stringify(values)}`, () => {
+      it(`should return ${String(expected)} for ${axis} axis ${JSON.stringify(values)}`, () => {
         testGamePad.axes = values
-        const result = buttons.Read(gamePad)
-        expect(result).to.equal(expected)
+        expect(buttons.Read(gamePad)).to.equal(expected)
+      })
+      it(`should set pressingNow to ${String(expected)} for ${axis} axis ${JSON.stringify(values)}`, () => {
+        testGamePad.axes = values
+        buttons.Read(gamePad)
         expect(buttons.pressingNow).to.equal(expected)
+      })
+      it(`should set pressedButtons to ${JSON.stringify(pressed)} for ${axis} axis ${JSON.stringify(values)}`, () => {
+        testGamePad.axes = values
+        buttons.Read(gamePad)
         expect(buttons.pressedButtons).to.deep.equal(pressed)
       })
     })
