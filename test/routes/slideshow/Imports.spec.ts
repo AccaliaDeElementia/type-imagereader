@@ -1,11 +1,11 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Functions } from '../../../routes/apiFunctions'
-import { StubToKnex } from '../../../testutils/TypeGuards'
-import { Imports } from '../../../routes/slideshow'
+import { Functions } from '#routes/apiFunctions'
+import { StubToKnex } from '#testutils/TypeGuards'
+import { Imports } from '#routes/slideshow'
 import { expect } from 'chai'
-import { EventuallyRejects } from '../../../testutils/Errors'
+import { EventuallyRejects } from '#testutils/Errors'
 
 const sandbox = Sinon.createSandbox()
 

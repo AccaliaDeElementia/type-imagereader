@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { TypeGuards } from '../../../utils/persistance'
+import { TypeGuards } from '#utils/persistance'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()

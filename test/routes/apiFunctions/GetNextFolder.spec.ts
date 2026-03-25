@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, type SiblingFolderSearch } from '../../../routes/apiFunctions'
+import { Functions, type SiblingFolderSearch } from '#routes/apiFunctions'
 import Sinon from 'sinon'
-import { Cast } from '../../../testutils/TypeGuards'
-import { createKnexChainFake } from '../../../testutils/Knex'
+import { Cast } from '#testutils/TypeGuards'
+import { createKnexChainFake } from '#testutils/Knex'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

@@ -1,8 +1,8 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { resetPubSub } from '../../../../testutils/PubSub'
+import { PubSub } from '#public/scripts/app/pubsub'
+import { resetPubSub } from '#testutils/PubSub'
 import { expect } from 'chai'
 
 describe('public/app/pubsub function Subscribe()', () => {

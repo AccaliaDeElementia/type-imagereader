@@ -3,12 +3,12 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { WebSockets } from '../../../public/scripts/slideshow/sockets'
+import { WebSockets } from '#public/scripts/slideshow/sockets'
 
-import TimeUpdater from '../../../public/scripts/slideshow/time'
-import OverlayUpdater from '../../../public/scripts/slideshow/overlay'
-import { WeatherUpdater, LocalWeatherUpdater } from '../../../public/scripts/slideshow/weather'
-import { CyclicManager } from '../../../public/scripts/slideshow/updater'
+import TimeUpdater from '#public/scripts/slideshow/time'
+import OverlayUpdater from '#public/scripts/slideshow/overlay'
+import { WeatherUpdater, LocalWeatherUpdater } from '#public/scripts/slideshow/weather'
+import { CyclicManager } from '#public/scripts/slideshow/updater'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

@@ -1,6 +1,6 @@
 'use sanity'
 
-import { HasValues } from '../../../utils/helpers'
+import { HasValues } from '#utils/helpers'
 
 export type SubscriberFunction = (recievedData: unknown, actualTopic?: string) => Promise<void>
 

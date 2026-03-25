@@ -1,8 +1,8 @@
 'use sanity'
 
 import { describe, beforeEach, afterEach, it } from 'mocha'
-import { CyclicManager, CyclicUpdater } from '../../../../public/scripts/slideshow/updater'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { CyclicManager, CyclicUpdater } from '#public/scripts/slideshow/updater'
+import { Cast } from '#testutils/TypeGuards'
 import Sinon from 'sinon'
 import { expect } from 'chai'
 import { assert } from 'node:console'

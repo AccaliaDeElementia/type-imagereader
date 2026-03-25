@@ -6,14 +6,14 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 
-import { Net } from '../../../../public/scripts/app/net'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { resetPubSub } from '../../../../testutils/PubSub'
-import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
+import { Net } from '#public/scripts/app/net'
+import { PubSub } from '#public/scripts/app/pubsub'
+import { resetPubSub } from '#testutils/PubSub'
+import { Bookmarks } from '#public/scripts/app/bookmarks'
 import assert from 'node:assert'
-import type { Bookmark } from '../../../../contracts/listing'
+import type { Bookmark } from '#contracts/listing'
 
 const sandbox = Sinon.createSandbox()
 

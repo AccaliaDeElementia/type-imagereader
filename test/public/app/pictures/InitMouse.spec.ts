@@ -3,11 +3,11 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
-import { Pictures } from '../../../../public/scripts/app/pictures'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { Pictures } from '#public/scripts/app/pictures'
+import { PubSub } from '#public/scripts/app/pubsub'
 import assert from 'node:assert'
-import { Cast } from '../../../../testutils/TypeGuards'
-import { HasValue } from '../../../../utils/helpers'
+import { Cast } from '#testutils/TypeGuards'
+import { HasValue } from '#utils/helpers'
 
 const sandbox = Sinon.createSandbox()
 

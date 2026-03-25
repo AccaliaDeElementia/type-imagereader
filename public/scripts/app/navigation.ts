@@ -3,8 +3,8 @@
 import { Pictures } from './pictures'
 import { Net } from './net'
 import { Publish, Subscribe } from './pubsub'
-import { isListing, type Listing } from '../../../contracts/listing'
-import { HasValue, HasValues, StringishHasValue } from '../../../utils/helpers'
+import { isListing, type Listing } from '#contracts/listing'
+import { HasValue, HasValues, StringishHasValue } from '#utils/helpers'
 
 export const Navigation = {
   GetBaseUrl: (): string => {

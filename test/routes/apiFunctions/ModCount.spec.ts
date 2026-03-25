@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { ModCount } from '../../../routes/apiFunctions'
+import { ModCount } from '#routes/apiFunctions'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()

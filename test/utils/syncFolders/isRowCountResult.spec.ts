@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { isRowCountResult } from '../../../utils/syncfolders'
+import { isRowCountResult } from '#utils/syncfolders'
 
 describe('utils/syncfolders function isRowCountResult()', () => {
   const tests: Array<[string, unknown, boolean]> = [

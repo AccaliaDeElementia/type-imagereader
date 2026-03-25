@@ -2,7 +2,7 @@
 
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { isFolder, isFolderWithCounts } from '../../../contracts/listing'
+import { isFolder, isFolderWithCounts } from '#contracts/listing'
 
 describe('Contracts: isFolder(), isFolderWithCounts()', () => {
   const commonCases: Array<[string, unknown, boolean]> = [

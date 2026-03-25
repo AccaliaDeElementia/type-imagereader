@@ -9,7 +9,7 @@ import debug from 'debug'
 
 import { normalize, dirname } from 'node:path'
 
-import persistance from '../utils/persistance'
+import persistance from '#utils/persistance'
 import { UriSafePath, Functions as api } from './apiFunctions'
 
 import type { Knex } from 'knex'
@@ -22,7 +22,7 @@ import {
   ReqParamToString,
   StringishHasValue,
   ZERO_COUNT,
-} from '../utils/helpers'
+} from '#utils/helpers'
 
 interface SlideshowPages {
   pages: number

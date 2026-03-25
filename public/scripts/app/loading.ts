@@ -1,6 +1,6 @@
 'use sanity'
 
-import { HasValue } from '../../../utils/helpers'
+import { HasValue } from '#utils/helpers'
 import { Subscribe, Publish, Defer } from './pubsub'
 
 const ANIMATION_RESET_DELAY = 100

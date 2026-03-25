@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import persistence from '../../../utils/persistance'
-import synchronize, { Functions, Imports } from '../../../utils/syncfolders'
+import persistence from '#utils/persistance'
+import synchronize, { Functions, Imports } from '#utils/syncfolders'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
 const sandbox = Sinon.createSandbox()

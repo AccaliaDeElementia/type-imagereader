@@ -11,7 +11,7 @@ import {
   isArray,
   type Listing,
   isListing,
-} from '../../../contracts/listing'
+} from '#contracts/listing'
 
 interface WebBookmarkFolder {
   name: string

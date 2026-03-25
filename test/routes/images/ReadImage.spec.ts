@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Imports, Functions, ImageData } from '../../../routes/images'
+import { Imports, Functions, ImageData } from '#routes/images'
 import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 
 const sandbox = Sinon.createSandbox()
 

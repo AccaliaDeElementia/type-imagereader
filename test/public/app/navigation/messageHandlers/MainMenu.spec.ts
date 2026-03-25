@@ -5,11 +5,11 @@ import Sinon from 'sinon'
 import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { PubSub } from '../../../../../public/scripts/app/pubsub'
-import { Navigation } from '../../../../../public/scripts/app/navigation'
-import { Cast } from '../../../../../testutils/TypeGuards'
-import { resetPubSub } from '../../../../../testutils/PubSub'
-import { EventuallyFullfills } from '../../../../../testutils/Errors'
+import { PubSub } from '#public/scripts/app/pubsub'
+import { Navigation } from '#public/scripts/app/navigation'
+import { Cast } from '#testutils/TypeGuards'
+import { resetPubSub } from '#testutils/PubSub'
+import { EventuallyFullfills } from '#testutils/Errors'
 
 const sandbox = Sinon.createSandbox()
 

@@ -1,8 +1,8 @@
 'use sanity'
 
-import { createKnexChainFake } from '../../../testutils/Knex'
+import { createKnexChainFake } from '#testutils/Knex'
 import { expect } from 'chai'
-import { Functions } from '../../../routes/slideshow'
+import { Functions } from '#routes/slideshow'
 
 describe('routes/slideshow function GetUnreadImageCount()', () => {
   let {

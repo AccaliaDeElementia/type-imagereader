@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { type FolderInfo, Functions } from '../../../utils/syncfolders'
+import { type FolderInfo, Functions } from '#utils/syncfolders'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards'
 
 describe('utils/syncfolders function GetFolderInfosWithPictures()', () => {
   let knexStub = {

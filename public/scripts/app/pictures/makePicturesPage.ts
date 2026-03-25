@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Pictures } from '.'
-import type { Picture } from '../../../../contracts/listing'
+import type { Picture } from '#contracts/listing'
 
 export function MakePicturesPage(pageNum: number, pictures: Picture[]): HTMLElement {
   const page = document.createElement('div')

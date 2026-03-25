@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 
-import { createResponseFake } from '../../testutils/Express'
+import { createResponseFake } from '#testutils/Express'
 
 describe('testutils/Express createResponseFake()', () => {
   it('should return a stub with a status method', () => {

@@ -1,6 +1,6 @@
 'use sanity'
 
-import type { Picture } from '../../../../contracts/listing'
+import type { Picture } from '#contracts/listing'
 import { InitMouse } from './initMouse'
 import { ResetMarkup } from './resetMarkup'
 import { InitActions } from './initActions'

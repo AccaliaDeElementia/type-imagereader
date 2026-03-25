@@ -5,7 +5,7 @@ import type { Application, Request, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
-import { StringishHasValue } from '../utils/helpers'
+import { StringishHasValue } from '#utils/helpers'
 
 const KELVIN_TO_CELCIUS_OFFSET = -273.15
 const SECONDS_TO_MILLISECONDS_MULTIPLE = 1000

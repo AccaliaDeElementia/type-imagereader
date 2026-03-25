@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 
-import { Cast, StubToKnex } from '../../testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards'
 
 describe('testutils/TypeGuards function Cast()', () => {
   it('should return the value when no isT predicate is provided', () => {

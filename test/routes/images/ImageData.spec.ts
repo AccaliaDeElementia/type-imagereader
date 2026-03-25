@@ -1,7 +1,7 @@
 'use sanity'
 
 import { assert, expect } from 'chai'
-import { ImageData } from '../../../routes/images'
+import { ImageData } from '#routes/images'
 
 describe('routes/images class ImageData', () => {
   describe('fromImage()', () => {

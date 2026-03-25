@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
-import { Navigation } from '../../../../public/scripts/app/navigation'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { Navigation } from '#public/scripts/app/navigation'
+import { Cast } from '#testutils/TypeGuards'
 describe('public/app/navigation function GetFolderPath()', () => {
   const existingWindow = global.window
   const existingDocument = global.document

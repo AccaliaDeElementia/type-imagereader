@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, ModCount } from '../../../routes/apiFunctions'
+import { Functions, ModCount } from '#routes/apiFunctions'
 import Sinon from 'sinon'
-import { createKnexChainFake } from '../../../testutils/Knex'
+import { createKnexChainFake } from '#testutils/Knex'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

@@ -2,7 +2,7 @@
 
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { isBookmark } from '../../../contracts/listing'
+import { isBookmark } from '#contracts/listing'
 
 describe('Contracts: isBookmark()', () => {
   const cases: Array<[string, unknown, boolean]> = [

@@ -3,7 +3,7 @@
 import { normalize, basename, dirname, extname, sep } from 'node:path'
 
 import type { Knex } from 'knex'
-import { EscapeLikeWildcards, StringishHasValue } from '../utils/helpers'
+import { EscapeLikeWildcards, StringishHasValue } from '#utils/helpers'
 
 export const INVALID_MOD_COUNT = -1
 const MAXIMUM_MOD_COUNT = Number.MAX_SAFE_INTEGER + INVALID_MOD_COUNT

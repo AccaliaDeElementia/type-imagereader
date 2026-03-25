@@ -3,15 +3,15 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { Loading } from '../../../public/scripts/app/loading'
-import { WakeLock } from '../../../public/scripts/app/wakelock'
-import { Actions } from '../../../public/scripts/app/actions'
-import { Tabs } from '../../../public/scripts/app/tabs'
-import { Folders } from '../../../public/scripts/app/folders'
-import { Pictures } from '../../../public/scripts/app/pictures'
-import { Bookmarks } from '../../../public/scripts/app/bookmarks'
-import { Navigation } from '../../../public/scripts/app/navigation'
-import { PubSub } from '../../../public/scripts/app/pubsub'
+import { Loading } from '#public/scripts/app/loading'
+import { WakeLock } from '#public/scripts/app/wakelock'
+import { Actions } from '#public/scripts/app/actions'
+import { Tabs } from '#public/scripts/app/tabs'
+import { Folders } from '#public/scripts/app/folders'
+import { Pictures } from '#public/scripts/app/pictures'
+import { Bookmarks } from '#public/scripts/app/bookmarks'
+import { Navigation } from '#public/scripts/app/navigation'
+import { PubSub } from '#public/scripts/app/pubsub'
 
 const sandbox = Sinon.createSandbox()
 

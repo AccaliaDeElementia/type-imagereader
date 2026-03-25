@@ -2,7 +2,7 @@
 
 import { io, type Socket } from 'socket.io-client'
 import type { DefaultEventsMap } from 'socket.io/dist/typed-events'
-import { HasValue, StringishHasValue } from '../../../utils/helpers'
+import { HasValue, StringishHasValue } from '#utils/helpers'
 export type WebSocket = Socket<DefaultEventsMap, DefaultEventsMap>
 
 export const Imports = {

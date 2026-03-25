@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { StringIsNullOrEmpty } from '../../../utils/helpers'
+import { StringIsNullOrEmpty } from '#utils/helpers'
 
 describe('utils/helpers function StringIsNullOrEmpty()', () => {
   const tests: Array<[string, string | null | undefined, boolean]> = [

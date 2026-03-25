@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { ReqParamToString } from '../../../utils/helpers'
+import { ReqParamToString } from '#utils/helpers'
 
 describe('utils/helpers function ReqParamToString()', () => {
   describe('null and undefined input', () => {

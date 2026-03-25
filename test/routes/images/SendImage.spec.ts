@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, ImageData } from '../../../routes/images'
-import { createResponseFake } from '../../../testutils/Express'
+import { Functions, ImageData } from '#routes/images'
+import { createResponseFake } from '#testutils/Express'
 describe('routes/images function SendImage()', () => {
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   beforeEach(() => {

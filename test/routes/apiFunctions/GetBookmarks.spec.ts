@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '../../../routes/apiFunctions'
-import { createKnexChainFake } from '../../../testutils/Knex'
+import { Functions } from '#routes/apiFunctions'
+import { createKnexChainFake } from '#testutils/Knex'
 import assert from 'node:assert'
 
 describe('routes/apiFunctions function GetBookmarks', () => {

@@ -4,13 +4,13 @@ import { expect } from 'chai'
 import { beforeEach, afterEach, describe, it } from 'mocha'
 import Sinon from 'sinon'
 
-import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { Actions } from '../../../../public/scripts/app/actions'
+import { PubSub } from '#public/scripts/app/pubsub'
+import { Actions } from '#public/scripts/app/actions'
 
-import { Cast } from '../../../../testutils/TypeGuards'
-import { resetPubSub } from '../../../../testutils/PubSub'
+import { Cast } from '#testutils/TypeGuards'
+import { resetPubSub } from '#testutils/PubSub'
 import { JSDOM } from 'jsdom'
-import type { Listing } from '../../../../contracts/listing'
+import type { Listing } from '#contracts/listing'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

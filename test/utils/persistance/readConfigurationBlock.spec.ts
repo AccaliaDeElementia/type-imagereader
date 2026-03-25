@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '../../../utils/persistance'
+import { Functions, Imports } from '#utils/persistance'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '../../../testutils/Errors'
+import { EventuallyRejects } from '#testutils/Errors'
 
 const sandbox = Sinon.createSandbox()
 

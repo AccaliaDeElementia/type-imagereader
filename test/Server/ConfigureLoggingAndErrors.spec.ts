@@ -3,9 +3,9 @@
 import { assert, expect } from 'chai'
 import type { Express, Response } from 'express'
 import Sinon from 'sinon'
-import { Cast } from '../../testutils/TypeGuards'
-import { createResponseFake } from '../../testutils/Express'
-import { Functions, Imports } from '../../Server'
+import { Cast } from '#testutils/TypeGuards'
+import { createResponseFake } from '#testutils/Express'
+import { Functions, Imports } from '#Server'
 
 const sandbox = Sinon.createSandbox()
 

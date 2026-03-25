@@ -1,13 +1,13 @@
 'use sanity'
 
-import Updater, { Functions } from '../../../../public/scripts/slideshow/time'
-import { Cast } from '../../../../testutils/TypeGuards'
+import Updater, { Functions } from '#public/scripts/slideshow/time'
+import { Cast } from '#testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { expect } from 'chai'
 import { afterEach, beforeEach, describe } from 'mocha'
 import Sinon from 'sinon'
-import { CyclicUpdater } from '../../../../public/scripts/slideshow/updater'
+import { CyclicUpdater } from '#public/scripts/slideshow/updater'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

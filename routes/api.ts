@@ -7,12 +7,12 @@ import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'node:path'
 
-import persistance from '../utils/persistance'
+import persistance from '#utils/persistance'
 
 import { ModCount, UriSafePath, Functions, INVALID_MOD_COUNT } from './apiFunctions'
 
 import debug from 'debug'
-import { ReqParamToString } from '../utils/helpers'
+import { ReqParamToString } from '#utils/helpers'
 
 export const Imports = { Router, debug }
 

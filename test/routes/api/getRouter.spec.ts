@@ -5,9 +5,9 @@ import Sinon from 'sinon'
 import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
-import { getRouter, Imports } from '../../../routes/api'
-import persistance from '../../../utils/persistance'
-import { Cast } from '../../../testutils/TypeGuards'
+import { getRouter, Imports } from '#routes/api'
+import persistance from '#utils/persistance'
+import { Cast } from '#testutils/TypeGuards'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

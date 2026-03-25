@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { ReadBody } from '../../../routes/api'
-import { DefinitelyThrows } from '../../../testutils/Errors'
+import { ReadBody } from '#routes/api'
+import { DefinitelyThrows } from '#testutils/Errors'
 
 describe('routes/api function ReadBody()', () => {
   it('should return body when successful parse', () => {

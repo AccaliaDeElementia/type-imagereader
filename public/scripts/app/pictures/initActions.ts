@@ -1,6 +1,6 @@
 'use sanity'
 
-import { HasValues } from '../../../../utils/helpers'
+import { HasValues } from '#utils/helpers'
 import { Navigation } from '../navigation'
 import { NavigateTo, Pictures } from '.'
 import { Publish, Subscribe } from '../pubsub'

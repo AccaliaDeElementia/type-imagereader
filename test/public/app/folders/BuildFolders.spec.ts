@@ -5,13 +5,13 @@ import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../../testutils/TypeGuards'
-import { resetPubSub } from '../../../../testutils/PubSub'
+import { Cast } from '#testutils/TypeGuards'
+import { resetPubSub } from '#testutils/PubSub'
 
-import { Folders } from '../../../../public/scripts/app/folders'
+import { Folders } from '#public/scripts/app/folders'
 import Sinon from 'sinon'
-import type { Listing } from '../../../../contracts/listing'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
+import type { Listing } from '#contracts/listing'
+import { PubSub } from '#public/scripts/app/pubsub'
 
 const sandbox = Sinon.createSandbox()
 

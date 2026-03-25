@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '../../../utils/syncfolders'
+import { Functions } from '#utils/syncfolders'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
 const sandbox = Sinon.createSandbox()

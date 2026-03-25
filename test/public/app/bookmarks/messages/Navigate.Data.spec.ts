@@ -6,11 +6,11 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 
-import { PubSub } from '../../../../../public/scripts/app/pubsub'
-import { resetPubSub } from '../../../../../testutils/PubSub'
-import { Bookmarks } from '../../../../../public/scripts/app/bookmarks'
+import { PubSub } from '#public/scripts/app/pubsub'
+import { resetPubSub } from '#testutils/PubSub'
+import { Bookmarks } from '#public/scripts/app/bookmarks'
 
 import assert from 'node:assert'
 

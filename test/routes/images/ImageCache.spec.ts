@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { type CacheItem, ImageCache, ImageData } from '../../../routes/images'
+import { type CacheItem, ImageCache, ImageData } from '#routes/images'
 import Sinon from 'sinon'
 
 describe('routes/images class ImageData', () => {

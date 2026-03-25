@@ -11,7 +11,7 @@ import Sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
-import { ReqParamToString } from '../utils/helpers'
+import { ReqParamToString } from '#utils/helpers'
 
 const CACHE_SIZE = 25
 const ONE_MONTH = 2_592_000_000

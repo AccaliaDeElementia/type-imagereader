@@ -1,7 +1,7 @@
 'use sanity'
 
 import { makeURI, Pictures } from '.'
-import { IndexPercentToText, IndexToText } from '../../../../utils/helpers'
+import { IndexPercentToText, IndexToText } from '#utils/helpers'
 import { Net } from '../net'
 import { Publish } from '../pubsub'
 

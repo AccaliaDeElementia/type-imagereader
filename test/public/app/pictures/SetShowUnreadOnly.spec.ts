@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 
 import { JSDOM } from 'jsdom'
-import { Pictures } from '../../../../public/scripts/app/pictures'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { Pictures } from '#public/scripts/app/pictures'
+import { Cast } from '#testutils/TypeGuards'
 
 describe('public/app/pictures function SetShowUnreadOnly()', () => {
   const existingWindow = global.window

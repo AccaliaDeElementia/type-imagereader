@@ -1,9 +1,9 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { StubToKnex } from '#testutils/TypeGuards'
 import { expect } from 'chai'
-import { Functions } from '../../../routes/slideshow'
+import { Functions } from '#routes/slideshow'
 
 describe('routes/slideshow function MarkImageRead()', () => {
   let knexQueryOne = {

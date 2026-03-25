@@ -1,9 +1,9 @@
 'use sanity'
 
-import { DefaultLocationAssign, DefaultLocationReload } from '../../../../public/scripts/slideshow/sockets'
+import { DefaultLocationAssign, DefaultLocationReload } from '#public/scripts/slideshow/sockets'
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { DefinitelyThrows } from '../../../../testutils/Errors'
+import { DefinitelyThrows } from '#testutils/Errors'
 
 describe('public/slideshow/sockets defaults()', () => {
   it('should definitely throw for DefaultLocationAssign()', () => {

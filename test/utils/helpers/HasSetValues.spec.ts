@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { HasSetValues } from '../../../utils/helpers'
+import { HasSetValues } from '#utils/helpers'
 import Sinon from 'sinon'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 
 describe('utils/helpers function HasSetValues()', () => {
   const add = Sinon.stub()

@@ -3,8 +3,8 @@
 import { Subscribe, Publish, AddInterval } from './pubsub'
 import { CloneNode, isHTMLElement } from './utils'
 
-import { isListing } from '../../../contracts/listing'
-import { HasValue, HasValues } from '../../../utils/helpers'
+import { isListing } from '#contracts/listing'
+import { HasValue, HasValues } from '#utils/helpers'
 
 interface ButtonDefinition {
   name: string

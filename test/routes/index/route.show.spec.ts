@@ -4,10 +4,10 @@ import { expect } from 'chai'
 import type { Application, Response as ExpressResponse, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { getRouter, Imports } from '../../../routes/index'
+import { getRouter, Imports } from '#routes/index'
 import Sinon from 'sinon'
-import { Cast } from '../../../testutils/TypeGuards'
-import { createResponseFake } from '../../../testutils/Express'
+import { Cast } from '#testutils/TypeGuards'
+import { createResponseFake } from '#testutils/Express'
 
 const sandbox = Sinon.createSandbox()
 

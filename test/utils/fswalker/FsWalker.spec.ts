@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import fsWalker from '../../../utils/fswalker'
-import { EventuallyRejects } from '../../../testutils/Errors'
+import fsWalker from '#utils/fswalker'
+import { EventuallyRejects } from '#testutils/Errors'
 
 const sandbox = Sinon.createSandbox()
 

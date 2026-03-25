@@ -3,12 +3,12 @@
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 import Sinon from 'sinon'
-import { Pictures } from '../../../../public/scripts/app/pictures'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { Pictures } from '#public/scripts/app/pictures'
+import { PubSub } from '#public/scripts/app/pubsub'
 import assert from 'node:assert'
-import { resetPubSub } from '../../../../testutils/PubSub'
+import { resetPubSub } from '#testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 

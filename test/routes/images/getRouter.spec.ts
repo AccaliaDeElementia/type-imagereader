@@ -7,9 +7,9 @@ import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
-import { CacheStorage, Functions, getRouter, Imports } from '../../../routes/images'
+import { CacheStorage, Functions, getRouter, Imports } from '#routes/images'
 import Sinon from 'sinon'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 
 const sandbox = Sinon.createSandbox()
 

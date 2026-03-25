@@ -2,10 +2,10 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { Navigation } from '../../../../public/scripts/app/navigation'
-import { Cast } from '../../../../testutils/TypeGuards'
-import { EventuallyFullfills } from '../../../../testutils/Errors'
+import { PubSub } from '#public/scripts/app/pubsub'
+import { Navigation } from '#public/scripts/app/navigation'
+import { Cast } from '#testutils/TypeGuards'
+import { EventuallyFullfills } from '#testutils/Errors'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/navigation function NavigateTo()', () => {

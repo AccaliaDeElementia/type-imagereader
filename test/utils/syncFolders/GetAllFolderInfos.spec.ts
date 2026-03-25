@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '../../../utils/syncfolders'
-import { createKnexChainFake } from '../../../testutils/Knex'
+import { Functions } from '#utils/syncfolders'
+import { createKnexChainFake } from '#testutils/Knex'
 
 describe('utils/syncfolders function GetAllFolderInfos()', () => {
   let {

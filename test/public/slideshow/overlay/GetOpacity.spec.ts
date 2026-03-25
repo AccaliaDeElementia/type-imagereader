@@ -1,7 +1,7 @@
 'use sanity'
 
 import { describe, it } from 'mocha'
-import { Functions } from '../../../../public/scripts/slideshow/overlay'
+import { Functions } from '#public/scripts/slideshow/overlay'
 import { expect } from 'chai'
 
 describe('public/slideshow/overlay GetOpacity()', () => {

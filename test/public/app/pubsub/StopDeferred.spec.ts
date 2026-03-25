@@ -4,9 +4,9 @@ import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 
-import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { resetPubSub } from '../../../../testutils/PubSub'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { PubSub } from '#public/scripts/app/pubsub'
+import { resetPubSub } from '#testutils/PubSub'
+import { Cast } from '#testutils/TypeGuards'
 
 const sandbox = Sinon.createSandbox()
 

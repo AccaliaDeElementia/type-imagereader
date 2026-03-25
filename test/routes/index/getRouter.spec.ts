@@ -4,9 +4,9 @@ import { assert, expect } from 'chai'
 import type { Application, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { getRouter, Imports } from '../../../routes/index'
+import { getRouter, Imports } from '#routes/index'
 import Sinon from 'sinon'
-import { Cast } from '../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 
 const sandbox = Sinon.createSandbox()
 

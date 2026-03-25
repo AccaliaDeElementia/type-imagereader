@@ -2,7 +2,7 @@
 
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { isListing } from '../../../contracts/listing'
+import { isListing } from '#contracts/listing'
 
 describe('Contracts: isListing()', () => {
   const threeValueObject = (name: unknown, path: unknown, parent: unknown): unknown => ({

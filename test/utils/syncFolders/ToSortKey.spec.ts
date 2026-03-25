@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '../../../utils/syncfolders'
+import { Functions } from '#utils/syncfolders'
 
 describe('utils/syncfolders function ToSortKey()', () => {
   beforeEach(() => {

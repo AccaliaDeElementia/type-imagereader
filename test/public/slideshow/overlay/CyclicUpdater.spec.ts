@@ -1,12 +1,12 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import Updater, { Functions } from '../../../../public/scripts/slideshow/overlay'
+import Updater, { Functions } from '#public/scripts/slideshow/overlay'
 import { expect } from 'chai'
-import { CyclicUpdater } from '../../../../public/scripts/slideshow/updater'
+import { CyclicUpdater } from '#public/scripts/slideshow/updater'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 
 const sandbox = Sinon.createSandbox()
 const markup = `

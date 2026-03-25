@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { HasValues } from '../../../utils/helpers'
-import { Cast } from '../../../testutils/TypeGuards'
+import { HasValues } from '#utils/helpers'
+import { Cast } from '#testutils/TypeGuards'
 
 describe('utils/helpers function HasValues()', () => {
   const tests: Array<[string, unknown, boolean]> = [

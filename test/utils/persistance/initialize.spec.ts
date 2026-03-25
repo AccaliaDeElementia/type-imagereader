@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import persistance, { Functions, Imports, type KnexOptions } from '../../../utils/persistance'
+import persistance, { Functions, Imports, type KnexOptions } from '#utils/persistance'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '../../../testutils/Errors'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { EventuallyRejects } from '#testutils/Errors'
+import { StubToKnex } from '#testutils/TypeGuards'
 
 const sandbox = Sinon.createSandbox()
 

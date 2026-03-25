@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Pictures } from '.'
-import type { Listing } from '../../../../contracts/listing'
+import type { Listing } from '#contracts/listing'
 import { Publish } from '../pubsub'
 
 export async function LoadData(data: Listing): Promise<void> {

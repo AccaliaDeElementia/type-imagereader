@@ -1,7 +1,7 @@
 'use sanity'
 
 import { type NavigateTo, Pictures } from '.'
-import type { Picture } from '../../../../contracts/listing'
+import type { Picture } from '#contracts/listing'
 
 export function GetPicture(navi: NavigateTo): Picture | undefined {
   const current = Pictures.current?.index

@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { isError } from '../../../../public/scripts/app/net'
+import { isError } from '#public/scripts/app/net'
 
 describe('public/app/net function isError()', () => {
   const testCases: Array<[string, unknown, boolean]> = [

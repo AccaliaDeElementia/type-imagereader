@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Pictures } from '.'
-import { StringishHasValue } from '../../../../utils/helpers'
+import { StringishHasValue } from '#utils/helpers'
 import { Publish } from '../pubsub'
 
 export function ResetMarkup(): void {

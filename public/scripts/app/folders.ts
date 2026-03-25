@@ -3,8 +3,8 @@
 import { Publish, Subscribe } from './pubsub'
 
 import { isHTMLElement, CloneNode } from './utils'
-import { type FolderWithCounts, isListing, type Listing } from '../../../contracts/listing'
-import { HasValue, HasValues, StringishHasValue, ZERO_COUNT } from '../../../utils/helpers'
+import { type FolderWithCounts, isListing, type Listing } from '#contracts/listing'
+import { HasValue, HasValues, StringishHasValue, ZERO_COUNT } from '#utils/helpers'
 
 const PERCENT_MULT = 100
 const FIXED_DECIMAL_PLACES = 2

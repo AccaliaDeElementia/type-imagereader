@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 
-import { WakeLock, type WakeLockSentinel } from '../../../../public/scripts/app/wakelock'
+import { WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/wakelock function TakeLock()', () => {

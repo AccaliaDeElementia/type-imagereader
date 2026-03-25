@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { UriSafePath } from '../../../routes/apiFunctions'
+import { UriSafePath } from '#routes/apiFunctions'
 
 describe('routes/apiFunctions UriSafePath functions', () => {
   const decodeTests: Array<[string, string, string]> = [

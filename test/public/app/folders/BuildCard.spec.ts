@@ -5,11 +5,11 @@ import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '../../../../testutils/TypeGuards'
-import { resetPubSub } from '../../../../testutils/PubSub'
+import { Cast } from '#testutils/TypeGuards'
+import { resetPubSub } from '#testutils/PubSub'
 
-import { PubSub } from '../../../../public/scripts/app/pubsub'
-import { Folders } from '../../../../public/scripts/app/folders'
+import { PubSub } from '#public/scripts/app/pubsub'
+import { Folders } from '#public/scripts/app/folders'
 import assert from 'node:assert'
 import Sinon from 'sinon'
 

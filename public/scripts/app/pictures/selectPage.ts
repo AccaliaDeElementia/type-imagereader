@@ -1,6 +1,6 @@
 'use sanity'
 
-import { HasValues } from '../../../../utils/helpers'
+import { HasValues } from '#utils/helpers'
 import { Publish } from '../pubsub'
 
 const INDEX_OFFSET = 1

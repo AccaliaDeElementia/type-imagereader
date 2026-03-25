@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Pictures } from '.'
-import type { Picture } from '../../../../contracts/listing'
+import type { Picture } from '#contracts/listing'
 import { Publish } from '../pubsub'
 import { CloneNode, isHTMLElement } from '../utils'
 

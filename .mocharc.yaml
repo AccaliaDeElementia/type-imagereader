@@ -33,7 +33,7 @@ reporter: 'spec'
 #reporter-option:
 #  - 'foo=bar'
 #  - 'baz=quux'
-require: ['source-map-support/register', 'ts-node/register']
+require: ['source-map-support/register', 'ts-node/register', 'tsconfig-paths/register']
 retries: 1
 slow: 75
 sort: false

@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { GetFirst } from '../../../utils/helpers'
-import { Cast } from '../../../testutils/TypeGuards'
+import { GetFirst } from '#utils/helpers'
+import { Cast } from '#testutils/TypeGuards'
 
 describe('utils/helpers function GetFirst()', () => {
   const tests: Array<[string, unknown, unknown]> = [

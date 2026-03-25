@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { TypeGuards } from '../../../utils/persistance'
+import { TypeGuards } from '#utils/persistance'
 
 describe('utils/persistance function isMigrationsValid()', () => {
   it('should reject missing migrations element', () => {

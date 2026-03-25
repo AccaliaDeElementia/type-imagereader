@@ -1,7 +1,7 @@
 'use sanity'
 
 import { CACHE_SIZE, Pictures } from '.'
-import { isListing } from '../../../../contracts/listing'
+import { isListing } from '#contracts/listing'
 import { Subscribe } from '../pubsub'
 
 export function Init(): void {

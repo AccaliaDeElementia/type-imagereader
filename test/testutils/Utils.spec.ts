@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { Delay } from '../../testutils/Utils'
+import { Delay } from '#testutils/Utils'
 
 const sandbox = Sinon.createSandbox()
 

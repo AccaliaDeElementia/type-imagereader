@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '../../../routes/apiFunctions'
+import { Functions } from '#routes/apiFunctions'
 
 describe('routes/apiFunctions function GetPictureFolders', () => {
   it('should resolve to expected paths for root image', () => {

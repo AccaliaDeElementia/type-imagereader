@@ -3,9 +3,9 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 
-import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { PubSub } from '#public/scripts/app/pubsub'
 import assert from 'node:assert'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 
 describe('public/app/pubsub function RemoveInterval()', () => {
   beforeEach(() => {

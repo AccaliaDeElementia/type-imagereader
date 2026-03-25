@@ -5,8 +5,8 @@ import type { Express } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import Sinon from 'sinon'
-import { Cast } from '../../testutils/TypeGuards'
-import { Functions, Imports } from '../../Server'
+import { Cast } from '#testutils/TypeGuards'
+import { Functions, Imports } from '#Server'
 
 const sandbox = Sinon.createSandbox()
 

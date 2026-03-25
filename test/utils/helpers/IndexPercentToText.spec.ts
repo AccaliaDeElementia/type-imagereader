@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { IndexPercentToText } from '../../../utils/helpers'
+import { IndexPercentToText } from '#utils/helpers'
 
 describe('utils/helpers function IndexPercentToText()', () => {
   const tests: Array<[string, number, number, string]> = [

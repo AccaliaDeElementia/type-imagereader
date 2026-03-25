@@ -6,9 +6,9 @@ import {
   DefaultLocationReload,
   WebSockets,
   type WebSocket,
-} from '../../../../public/scripts/slideshow/sockets'
+} from '#public/scripts/slideshow/sockets'
 import { beforeEach, describe, it } from 'mocha'
-import { Cast } from '../../../../testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards'
 import { expect } from 'chai'
 import assert from 'node:assert'
 

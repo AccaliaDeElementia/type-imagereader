@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { EscapeLikeWildcards } from '../../../utils/helpers'
+import { EscapeLikeWildcards } from '#utils/helpers'
 
 describe('utils/helpers function EscapeLikeWildcards()', () => {
   const tests: Array<[string, string, string]> = [

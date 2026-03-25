@@ -1,8 +1,8 @@
 'use sanity'
 
 import { Pictures } from '.'
-import type { Listing, Picture } from '../../../../contracts/listing'
-import { GetFirst } from '../../../../utils/helpers'
+import type { Listing, Picture } from '#contracts/listing'
+import { GetFirst } from '#utils/helpers'
 import { Publish } from '../pubsub'
 
 const DEFAULT_MOD_COUNT = -1

@@ -1,7 +1,7 @@
 'use sanity'
 
 import { DEFAULT_SCALE, Pictures } from '.'
-import { HasValue, ZERO_LENGTH } from '../../../../utils/helpers'
+import { HasValue, ZERO_LENGTH } from '#utils/helpers'
 import { Publish } from '../pubsub'
 
 const LEFT_THIRD = 0.3333333333333333

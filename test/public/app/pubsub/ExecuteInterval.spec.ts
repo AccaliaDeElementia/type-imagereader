@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 
-import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { PubSub } from '#public/scripts/app/pubsub'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/pubsub function ExecuteInterval()', () => {

@@ -4,9 +4,9 @@ import assert from 'node:assert'
 import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '../../testutils/Errors'
+import { EventuallyRejects } from '#testutils/Errors'
 
-import { ImageReader, Imports } from '../..'
+import { ImageReader, Imports } from '#app'
 
 const sandbox = Sinon.createSandbox()
 
