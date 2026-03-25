@@ -5,6 +5,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import assert from 'node:assert'
 import { Cast } from '../../../../testutils/TypeGuards'
 import { HasValue } from '../../../../utils/helpers'
@@ -24,7 +25,7 @@ describe('public/app/pubsub function StartDeferred()', () => {
     setIntervalSpy = sandbox.stub(global.window, 'setInterval')
     setIntervalSpy.returns(1)
     PubSub.cycleTime = 17
-    PubSub.timer = undefined
+    resetPubSub()
     executeIntervalSpy = sandbox.stub(PubSub, 'ExecuteInterval')
   })
   afterEach(() => {

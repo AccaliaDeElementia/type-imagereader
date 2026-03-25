@@ -8,6 +8,7 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Actions } from '../../../../public/scripts/app/actions'
 
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { JSDOM } from 'jsdom'
 
 const sandbox = Sinon.createSandbox()
@@ -37,9 +38,7 @@ describe('public/app/actions function ReadGamepad()', () => {
   beforeEach(() => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    PubSub.subscribers = {}
-    PubSub.deferred = []
-    PubSub.intervals = {}
+    resetPubSub()
     sandbox.stub(Actions, 'BuildActions')
     Actions.gamepads.Reset()
     GamepadResetSpy = sandbox.stub(Actions.gamepads, 'Reset')

@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { Cast } from '../../../../testutils/TypeGuards'
 
-import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
 import Sinon from 'sinon'
 import assert from 'node:assert'
@@ -53,8 +53,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       .returns(dom.window.document.createElement('div'))
       .returns(null)
 
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
 
     Bookmarks.BookmarkFolders = []
     Bookmarks.bookmarkCard = dom.window.document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content

@@ -8,6 +8,7 @@ import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Actions } from '../../../../public/scripts/app/actions'
 
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { JSDOM } from 'jsdom'
 import type { Listing } from '../../../../contracts/listing'
 import assert from 'node:assert'
@@ -24,9 +25,7 @@ describe('public/app/actions function Init()', () => {
   beforeEach(() => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    PubSub.subscribers = {}
-    PubSub.deferred = []
-    PubSub.intervals = {}
+    resetPubSub()
     BuildActionsSpy = sandbox.stub(Actions, 'BuildActions')
     GamepadResetSpy = sandbox.stub(Actions.gamepads, 'Reset')
   })

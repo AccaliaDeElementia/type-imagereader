@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import assert from 'node:assert'
 import { WakeLock } from '../../../../public/scripts/app/wakelock'
 
@@ -23,7 +24,7 @@ describe('public/app/wakelock function Init()', () => {
     global.document = dom.window.document
     takeLockSpy = sandbox.stub(WakeLock, 'TakeLock').resolves()
     releaseLockSpy = sandbox.stub(WakeLock, 'ReleaseLock').resolves()
-    PubSub.subscribers = {}
+    resetPubSub()
     WakeLock.initialized = false
   })
   afterEach(() => {

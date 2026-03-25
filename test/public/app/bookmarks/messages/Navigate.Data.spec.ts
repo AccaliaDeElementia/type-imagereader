@@ -9,6 +9,7 @@ import { render } from 'pug'
 import { Cast } from '../../../../../testutils/TypeGuards'
 
 import { PubSub } from '../../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../../testutils/PubSub'
 import { Bookmarks } from '../../../../../public/scripts/app/bookmarks'
 
 import assert from 'node:assert'
@@ -48,8 +49,7 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined

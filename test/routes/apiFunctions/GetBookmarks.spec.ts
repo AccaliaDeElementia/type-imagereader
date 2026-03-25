@@ -2,26 +2,21 @@
 
 import { expect } from 'chai'
 import { Functions } from '../../../routes/apiFunctions'
-import Sinon from 'sinon'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 import assert from 'node:assert'
 
 describe('routes/apiFunctions function GetBookmarks', () => {
-  let knexInstance = {
-    select: Sinon.stub().returnsThis(),
-    join: Sinon.stub().returnsThis(),
-    orderBy: Sinon.stub().resolves([]),
-  }
-  let knexStub = Sinon.stub().returns(knexInstance)
-  let knexFake = StubToKnex(knexStub)
+  let {
+    instance: knexInstance,
+    stub: knexStub,
+    fake: knexFake,
+  } = createKnexChainFake(['select', 'join'] as const, ['orderBy'] as const)
   beforeEach(() => {
-    knexInstance = {
-      select: Sinon.stub().returnsThis(),
-      join: Sinon.stub().returnsThis(),
-      orderBy: Sinon.stub().resolves([]),
-    }
-    knexStub = Sinon.stub().returns(knexInstance)
-    knexFake = StubToKnex(knexStub)
+    ;({
+      instance: knexInstance,
+      stub: knexStub,
+      fake: knexFake,
+    } = createKnexChainFake(['select', 'join'] as const, ['orderBy'] as const))
   })
   it('should select results from bookmarks once', async () => {
     await Functions.GetBookmarks(knexFake)

@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom'
 import { NavigateTo, Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../public/scripts/app/navigation'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import assert from 'node:assert'
 import type { Picture } from '../../../../contracts/listing'
 import { Cast } from '../../../../testutils/TypeGuards'
@@ -29,8 +30,7 @@ describe('public/app/pictures function InitActions()', () => {
     })
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
     Pictures.mainImage = null
     Pictures.imageCard = null
     isMenuActiveSpy = sandbox.stub(Navigation, 'IsMenuActive').returns(false)

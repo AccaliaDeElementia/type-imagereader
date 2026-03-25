@@ -10,6 +10,7 @@ import { Cast } from '../../../../../testutils/TypeGuards'
 
 import { Net } from '../../../../../public/scripts/app/net'
 import { PubSub } from '../../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../../testutils/PubSub'
 import { Bookmarks } from '../../../../../public/scripts/app/bookmarks'
 
 import assert from 'node:assert'
@@ -55,12 +56,12 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
     bookmarksLoadSpy = Sinon.stub().resolves()
     loadingErrorSpy = Sinon.stub().resolves()
     loadingSuccessSpy = Sinon.stub().resolves()
+    resetPubSub()
     PubSub.subscribers = {
       'BOOKMARKS:LOAD': [bookmarksLoadSpy],
       'LOADING:ERROR': [loadingErrorSpy],
       'LOADING:SUCCESS': [loadingSuccessSpy],
     }
-    PubSub.deferred = []
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined

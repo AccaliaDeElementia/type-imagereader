@@ -8,6 +8,7 @@ import Sinon from 'sinon'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 
@@ -61,11 +62,11 @@ describe('public/app/pictures function ResetMarkup()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     loadingErrorSpy.resetHistory()
+    resetPubSub()
     PubSub.subscribers = {
       'LOADING:ERROR': [loadingErrorSpy],
       'LOADING:HIDE': [loadingHideSpy],
     }
-    PubSub.deferred = []
     Pictures.mainImage = null
     Pictures.imageCard = null
   })

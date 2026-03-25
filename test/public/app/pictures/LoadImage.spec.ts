@@ -10,6 +10,7 @@ import { render } from 'pug'
 import type { Picture } from '../../../../contracts/listing'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Net } from '../../../../public/scripts/app/net'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { Delay } from '../../../../testutils/Utils'
 import assert from 'node:assert'
 
@@ -54,8 +55,7 @@ describe('public/app/pictures function LoadImage()', () => {
     dom = new JSDOM(render(markup))
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
     Pictures.pictures = Array.from({ length: totalCount }).map(
       (_: unknown, i: number): Picture => ({
         path: `/some/path/${i}.png`,

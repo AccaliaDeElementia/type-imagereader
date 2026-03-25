@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { Cast } from '../../../../testutils/TypeGuards'
 
-import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
 import Sinon from 'sinon'
 
@@ -49,8 +49,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     getFolderSpy = sandbox.stub(Bookmarks, 'GetFolder').returns(dom.window.document.createElement('div'))
     buildBookmarkSpy = sandbox.stub(Bookmarks, 'BuildBookmark').returns(dom.window.document.createElement('div'))
 
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
 
     Bookmarks.BookmarkFolders = []
   })

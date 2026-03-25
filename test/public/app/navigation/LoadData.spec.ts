@@ -8,6 +8,7 @@ import { render } from 'pug'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../public/scripts/app/navigation'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { Net } from '../../../../public/scripts/app/net'
 import { isListing } from '../../../../contracts/listing'
 import { EventuallyFullfills } from '../../../../testutils/Errors'
@@ -54,13 +55,13 @@ describe('public/app/navigation function LoadData()', () => {
     loadingHideSpy.resolves()
     loadingShowSpy.resolves()
     navigateDataSpy.resolves()
+    resetPubSub()
     PubSub.subscribers = {
       'NAVIGATE:DATA': [navigateDataSpy],
       'LOADING:SHOW': [loadingShowSpy],
       'LOADING:HIDE': [loadingHideSpy],
       'LOADING:ERROR': [loadingErrorSpy],
     }
-    PubSub.deferred = []
     Navigation.current = {
       path: '/',
       name: '',

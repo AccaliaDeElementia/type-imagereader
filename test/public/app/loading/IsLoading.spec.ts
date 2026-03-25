@@ -4,9 +4,9 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Loading } from '../../../../public/scripts/app/loading'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 const markup = `
@@ -25,8 +25,7 @@ describe('public/app/loading function IsLoading()', () => {
     })
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
     Loading.Init()

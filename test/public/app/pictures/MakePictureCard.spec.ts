@@ -7,6 +7,7 @@ import { JSDOM } from 'jsdom'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 
@@ -23,10 +24,10 @@ describe('public/app/pictures function MakePictureCard()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     menuHideSpy.resetHistory()
+    resetPubSub()
     PubSub.subscribers = {
       'MENU:HIDE': [menuHideSpy],
     }
-    PubSub.deferred = []
     const template = dom.window.document.createElement('div')
     template.innerHTML =
       '<template id="ImageCard><div class="card"><div class="card-body"><h5>placeholder</h5></div></div></template>'

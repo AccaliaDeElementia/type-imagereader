@@ -2,25 +2,20 @@
 
 import { expect } from 'chai'
 import { Functions } from '../../../routes/apiFunctions'
-import Sinon from 'sinon'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 
 describe('routes/apiFunctions function GetFolder', () => {
-  let knexInstance = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    limit: Sinon.stub().resolves([]),
-  }
-  let knexStub = Sinon.stub().returns(knexInstance)
-  let knexFake = StubToKnex(knexStub)
+  let {
+    instance: knexInstance,
+    stub: knexStub,
+    fake: knexFake,
+  } = createKnexChainFake(['select', 'where'] as const, ['limit'] as const)
   beforeEach(() => {
-    knexInstance = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      limit: Sinon.stub().resolves([]),
-    }
-    knexStub = Sinon.stub().returns(knexInstance)
-    knexFake = StubToKnex(knexStub)
+    ;({
+      instance: knexInstance,
+      stub: knexStub,
+      fake: knexFake,
+    } = createKnexChainFake(['select', 'where'] as const, ['limit'] as const))
   })
   it('should select from folders table once', async () => {
     await Functions.GetFolder(knexFake, '/foo/bar')

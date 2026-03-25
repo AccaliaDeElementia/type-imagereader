@@ -5,10 +5,10 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { Pictures } from '../../../../public/scripts/app/pictures'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import assert from 'node:assert'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 
@@ -36,8 +36,7 @@ describe('public/app/pictures function MakePaginator()', () => {
       .stub(Pictures, 'MakePaginatorItem')
       .callsFake(() => dom.window.document.createElement('li'))
     getCurrentPageSpy = sandbox.stub(Pictures, 'GetCurrentPage').returns(0)
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
   })
   afterEach(() => {
     sandbox.restore()

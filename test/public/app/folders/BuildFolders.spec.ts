@@ -6,6 +6,7 @@ import { beforeEach, afterEach, describe, it } from 'mocha'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 import { Folders } from '../../../../public/scripts/app/folders'
 import Sinon from 'sinon'
@@ -46,7 +47,7 @@ describe('public/app/folders function BuildFolders()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    PubSub.subscribers = {}
+    resetPubSub()
     global.window = existingWindow
     global.document = existingDocument
   })

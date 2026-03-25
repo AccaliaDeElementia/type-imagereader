@@ -2,25 +2,20 @@
 
 import { expect } from 'chai'
 import { Functions } from '../../../routes/apiFunctions'
-import { StubToKnex } from '../../../testutils/TypeGuards'
-import Sinon from 'sinon'
+import { createKnexChainFake } from '../../../testutils/Knex'
 
-interface KnexStub {
-  where: Sinon.SinonStub
-  delete: Sinon.SinonStub
-}
-const makeKnexInstance = (): KnexStub => ({
-  where: Sinon.stub().returnsThis(),
-  delete: Sinon.stub().returnsThis(),
-})
 describe('routes/apiFunctions function RemoveBookmark', () => {
-  let knexInstance = makeKnexInstance()
-  let knexStub = Sinon.stub()
-  let knexFake = StubToKnex(knexStub)
+  let {
+    instance: knexInstance,
+    stub: knexStub,
+    fake: knexFake,
+  } = createKnexChainFake(['where', 'delete'] as const, [] as const)
   beforeEach(() => {
-    knexInstance = makeKnexInstance()
-    knexStub = Sinon.stub().returns(knexInstance)
-    knexFake = StubToKnex(knexStub)
+    ;({
+      instance: knexInstance,
+      stub: knexStub,
+      fake: knexFake,
+    } = createKnexChainFake(['where', 'delete'] as const, [] as const))
   })
   it('should query bookmarks table once to remove bookmark', async () => {
     await Functions.RemoveBookmark(knexFake, '/foo/bar/baz.png')

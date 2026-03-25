@@ -1,30 +1,33 @@
 'use sanity'
 
-import Sinon from 'sinon'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 import { expect } from 'chai'
 import { Functions } from '../../../routes/slideshow'
 
 describe('routes/slideshow function GetImages()', () => {
-  let knexInstanceStub = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    orderBy: Sinon.stub().returnsThis(),
-    offset: Sinon.stub().returnsThis(),
-    limit: Sinon.stub().resolves([]),
-  }
-  let knexStub = Sinon.stub().returns(knexInstanceStub)
-  let knexFake = StubToKnex(knexStub)
+  let {
+    instance: knexInstanceStub,
+    stub: knexStub,
+    fake: knexFake,
+  } = createKnexChainFake(['select', 'where', 'orderBy', 'offset'] as const, ['limit'] as const, [
+    { path: '1' },
+    { path: '2' },
+    { path: '3' },
+    { path: '4' },
+    { path: '5' },
+  ])
   beforeEach(() => {
-    knexInstanceStub = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      orderBy: Sinon.stub().returnsThis(),
-      offset: Sinon.stub().returnsThis(),
-      limit: Sinon.stub().resolves([{ path: '1' }, { path: '2' }, { path: '3' }, { path: '4' }, { path: '5' }]),
-    }
-    knexStub = Sinon.stub().returns(knexInstanceStub)
-    knexFake = StubToKnex(knexStub)
+    ;({
+      instance: knexInstanceStub,
+      stub: knexStub,
+      fake: knexFake,
+    } = createKnexChainFake(['select', 'where', 'orderBy', 'offset'] as const, ['limit'] as const, [
+      { path: '1' },
+      { path: '2' },
+      { path: '3' },
+      { path: '4' },
+      { path: '5' },
+    ]))
   })
   const tests: Array<[string, number, number, (data: string[]) => void]> = [
     ['make a knex query', 0, 40, () => expect(knexStub.callCount).to.equal(1)],

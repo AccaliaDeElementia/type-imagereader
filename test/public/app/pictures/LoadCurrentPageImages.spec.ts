@@ -7,6 +7,7 @@ import { JSDOM } from 'jsdom'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 
@@ -24,11 +25,11 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     global.document = dom.window.document
     selectPageSpy.resetHistory()
     loadingErrorSpy.resetHistory()
+    resetPubSub()
     PubSub.subscribers = {
       'PICTURES:SELECTPAGE': [selectPageSpy],
       'LOADING:ERROR': [loadingErrorSpy],
     }
-    PubSub.deferred = []
     Pictures.mainImage = null
     Pictures.imageCard = null
   })

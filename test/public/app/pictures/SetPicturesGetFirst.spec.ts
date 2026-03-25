@@ -9,6 +9,7 @@ import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import type { Picture } from '../../../../contracts/listing'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 
@@ -31,10 +32,10 @@ describe('public/app/pictures function SetPicturesGetFirst()', () => {
     dom = new JSDOM(render(markup))
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
+    resetPubSub()
     PubSub.subscribers = {
       'MENU:SHOW': [menuShow],
     }
-    PubSub.deferred = []
     Pictures.mainImage = dom.window.document.createElement('img')
     element = dom.window.document.querySelector('div#ImageLink')
     Pictures.pictures = []

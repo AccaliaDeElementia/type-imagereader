@@ -5,10 +5,10 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { Pictures } from '../../../../public/scripts/app/pictures'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
 import { render } from 'pug'
 import type { Picture } from '../../../../contracts/listing'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 
@@ -51,8 +51,7 @@ describe('public/app/pictures function MakeTab()', () => {
         seen: false,
       }),
     )
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
     tab = dom.window.document.querySelector('#tabImages')
   })
   afterEach(() => {

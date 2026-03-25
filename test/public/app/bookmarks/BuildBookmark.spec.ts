@@ -10,6 +10,7 @@ import { Cast } from '../../../../testutils/TypeGuards'
 
 import { Net } from '../../../../public/scripts/app/net'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { Bookmarks } from '../../../../public/scripts/app/bookmarks'
 import assert from 'node:assert'
 import type { Bookmark } from '../../../../contracts/listing'
@@ -55,11 +56,11 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
 
     navigateLoadSpy = Sinon.stub().resolves()
     bookmarksRemoveSpy = Sinon.stub().resolves()
+    resetPubSub()
     PubSub.subscribers = {
       'NAVIGATE:LOAD': [navigateLoadSpy],
       'BOOKMARKS:REMOVE': [bookmarksRemoveSpy],
     }
-    PubSub.deferred = []
 
     Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     Bookmarks.bookmarkFolder = undefined

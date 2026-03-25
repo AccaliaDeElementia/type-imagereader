@@ -5,6 +5,7 @@ import { JSDOM } from 'jsdom'
 import { expect } from 'chai'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { Cast } from '../../../../testutils/TypeGuards'
 import assert from 'node:assert'
 
@@ -42,12 +43,10 @@ describe('public/app/pubsub function PublishAsync()', () => {
     consoleError = sandbox.stub(global.window.console, 'error')
 
     subscriber = Sinon.stub().resolves()
+    resetPubSub()
     PubSub.subscribers = {
       'FOO:BAR': [subscriber],
     }
-    PubSub.deferred = []
-    PubSub.intervals = {}
-    PubSub.timer = undefined
     PubSub.cycleTime = 10
   })
   afterEach(() => {

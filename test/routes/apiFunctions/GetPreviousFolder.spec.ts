@@ -3,17 +3,18 @@
 import { expect } from 'chai'
 import { Functions, type SiblingFolderSearch } from '../../../routes/apiFunctions'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
+import { Cast } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/apiFunctions function GetPreviousFolder', () => {
-  let knexFake = StubToKnex({ Knex: Math.random() })
+  let { fake: knexFake } = createKnexChainFake([] as const, [] as const)
   let getDirectionFolderStub = Sinon.stub()
 
   beforeEach(() => {
-    knexFake = StubToKnex({ Knex: Math.random() })
+    ;({ fake: knexFake } = createKnexChainFake([] as const, [] as const))
     getDirectionFolderStub = sandbox.stub(Functions, 'GetDirectionFolder').resolves()
   })
   afterEach(() => {

@@ -6,6 +6,7 @@ import Sinon from 'sinon'
 import { Pictures } from '../../../../public/scripts/app/pictures'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import type { Picture } from '../../../../contracts/listing'
 
 const sandbox = Sinon.createSandbox()
@@ -19,12 +20,12 @@ describe('public/app/pictures function LoadData()', () => {
   const menuShowSpy = Sinon.stub().resolves()
   const menuHideSpy = Sinon.stub().resolves()
   beforeEach(() => {
+    resetPubSub()
     PubSub.subscribers = {
       'MENU:SHOW': [menuShowSpy],
       'MENU:HIDE': [menuHideSpy],
       'TAB:SELECT': [tabSelectSpy],
     }
-    PubSub.deferred = []
     Pictures.pictures = Array.from({ length: 64 }).map((_, i) => ({
       path: `/some/path/${i}.png`,
       name: `${i}.png`,

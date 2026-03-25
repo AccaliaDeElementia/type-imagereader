@@ -4,10 +4,11 @@ import Sinon from 'sinon'
 import { expect } from 'chai'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 describe('public/app/pubsub function Defer()', () => {
   beforeEach(() => {
-    PubSub.deferred = []
+    resetPubSub()
     PubSub.cycleTime = 10
   })
   it('should add exactly one item to deferred list', () => {

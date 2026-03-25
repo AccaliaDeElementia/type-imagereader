@@ -11,6 +11,7 @@ import type { Listing } from '../../../../../contracts/listing'
 
 import { Net } from '../../../../../public/scripts/app/net'
 import { PubSub } from '../../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../../testutils/PubSub'
 import { Bookmarks } from '../../../../../public/scripts/app/bookmarks'
 
 import assert from 'node:assert'
@@ -53,10 +54,10 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     global.document = dom.window.document
 
     loadingErrorSpy = Sinon.stub().resolves()
+    resetPubSub()
     PubSub.subscribers = {
       'LOADING:ERROR': [loadingErrorSpy],
     }
-    PubSub.deferred = []
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined

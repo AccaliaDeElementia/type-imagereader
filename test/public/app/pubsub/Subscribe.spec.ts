@@ -2,15 +2,13 @@
 
 import Sinon from 'sinon'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { expect } from 'chai'
 
 describe('public/app/pubsub function Subscribe()', () => {
   let subscriber = Sinon.stub().resolves()
   beforeEach(() => {
-    PubSub.subscribers = {}
-    PubSub.deferred = []
-    PubSub.intervals = {}
-    PubSub.timer = undefined
+    resetPubSub()
     PubSub.cycleTime = 10
     subscriber = Sinon.stub().resolves()
   })

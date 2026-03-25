@@ -7,6 +7,7 @@ import { render } from 'pug'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import { Tabs } from '../../../../public/scripts/app/tabs'
 import assert from 'node:assert'
 import { HasValue } from '../../../../utils/helpers'
@@ -46,7 +47,7 @@ describe('public/app/tabs function Init()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     selectTabSpy = sandbox.stub(Tabs, 'SelectTab')
-    PubSub.subscribers = {}
+    resetPubSub()
     Tabs.tabs = []
     Tabs.tabNames = []
   })

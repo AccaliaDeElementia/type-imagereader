@@ -6,6 +6,7 @@ import { beforeEach, afterEach, describe, it } from 'mocha'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Folders } from '../../../../public/scripts/app/folders'
@@ -49,8 +50,7 @@ describe('public/app/folders function BuildCard()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
     Folders.FolderCard = null
     const template = document.querySelector<HTMLTemplateElement>('#FolderCard')
     assert(template !== null)

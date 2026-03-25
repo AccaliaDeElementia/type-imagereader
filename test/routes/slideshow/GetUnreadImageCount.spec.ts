@@ -1,26 +1,21 @@
 'use sanity'
 
-import Sinon from 'sinon'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 import { expect } from 'chai'
 import { Functions } from '../../../routes/slideshow'
 
 describe('routes/slideshow function GetUnreadImageCount()', () => {
-  let knexInstanceStub = {
-    count: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    andWhere: Sinon.stub().resolves(),
-  }
-  let knexStub = Sinon.stub().returns(knexInstanceStub)
-  let knexFake = StubToKnex(knexStub)
+  let {
+    instance: knexInstanceStub,
+    stub: knexStub,
+    fake: knexFake,
+  } = createKnexChainFake(['count', 'where'] as const, ['andWhere'] as const)
   beforeEach(() => {
-    knexInstanceStub = {
-      count: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      andWhere: Sinon.stub().resolves([]),
-    }
-    knexStub = Sinon.stub().returns(knexInstanceStub)
-    knexFake = StubToKnex(knexStub)
+    ;({
+      instance: knexInstanceStub,
+      stub: knexStub,
+      fake: knexFake,
+    } = createKnexChainFake(['count', 'where'] as const, ['andWhere'] as const))
   })
   const queryTests: Array<[string, () => void]> = [
     ['query knex once', () => expect(knexStub.callCount).to.equal(1)],

@@ -9,6 +9,7 @@ import { Pictures } from '../../../../public/scripts/app/pictures'
 import type { Picture } from '../../../../contracts/listing'
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import assert from 'node:assert'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 
@@ -64,8 +65,7 @@ describe('public/app/pictures function Init()', () => {
     })
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
     resetMarkupSpy = sandbox.stub(Pictures, 'ResetMarkup')
     initActionsSpy = sandbox.stub(Pictures, 'InitActions')
     initMouseSpy = sandbox.stub(Pictures, 'InitMouse')

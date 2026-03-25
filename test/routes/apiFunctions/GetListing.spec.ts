@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { Functions, ModCount } from '../../../routes/apiFunctions'
 import Sinon from 'sinon'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
@@ -16,10 +16,10 @@ describe('routes/apiFunctions function GetListing', () => {
   let getChildFoldersStub = Sinon.stub()
   let getPicturesStub = Sinon.stub()
   let getBookmarksStub = Sinon.stub()
-  let knexFake = StubToKnex({ Knex: Math.random() })
+  let { fake: knexFake } = createKnexChainFake([] as const, [] as const)
   beforeEach(() => {
     ModCount._modCount = 32_768
-    knexFake = StubToKnex({ Knex: Math.random() })
+    ;({ fake: knexFake } = createKnexChainFake([] as const, [] as const))
     getFolderStub = sandbox.stub(Functions, 'GetFolder').resolves(null)
     getDirectionFolderStub = sandbox.stub(Functions, 'GetDirectionFolder').resolves(null)
     getNextFolderStub = sandbox.stub(Functions, 'GetNextFolder').resolves(null)

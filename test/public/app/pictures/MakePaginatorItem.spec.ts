@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { Pictures } from '../../../../public/scripts/app/pictures'
-import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 
 const sandbox = Sinon.createSandbox()
 
@@ -22,8 +22,7 @@ describe('public/app/pictures function MakePaginatorItem()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     selectPageSpy = sandbox.stub(Pictures, 'SelectPage')
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
     const holder = dom.window.document.createElement('div')
     holder.innerHTML =
       '<template id="PaginatorItem"><li class="page-item"><a class="page-link" href="#"><span>foobar</span></a></li></template>'

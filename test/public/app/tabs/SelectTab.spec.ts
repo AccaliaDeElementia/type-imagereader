@@ -7,6 +7,7 @@ import { render } from 'pug'
 
 import { PubSub } from '../../../../public/scripts/app/pubsub'
 import { Cast } from '../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../testutils/PubSub'
 import assert from 'node:assert'
 import { Tabs } from '../../../../public/scripts/app/tabs'
 
@@ -61,10 +62,8 @@ describe('public/app/tabs function SelectTab()', () => {
     assert(bookmarks !== null)
     bookmarks.scroll = bookmarksScroll
     tabSelectedSpy.resolves()
-    PubSub.subscribers = {
-      'TAB:SELECTED': [tabSelectedSpy],
-    }
-    PubSub.deferred = []
+    resetPubSub()
+    PubSub.subscribers['TAB:SELECTED'] = [tabSelectedSpy]
     Tabs.tabs = []
     Tabs.tabNames = []
     const spy = sandbox.stub(Tabs, 'SelectTab')

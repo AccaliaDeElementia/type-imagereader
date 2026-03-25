@@ -2,25 +2,20 @@
 
 import { expect } from 'chai'
 import { Functions } from '../../../routes/apiFunctions'
-import Sinon from 'sinon'
-import { StubToKnex } from '../../../testutils/TypeGuards'
+import { createKnexChainFake } from '../../../testutils/Knex'
 
 describe('routes/apiFunctions function GetPictures', () => {
-  let knexInstance = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    orderBy: Sinon.stub().resolves([]),
-  }
-  let knexStub = Sinon.stub().returns(knexInstance)
-  let knexFake = StubToKnex(knexStub)
+  let {
+    instance: knexInstance,
+    stub: knexStub,
+    fake: knexFake,
+  } = createKnexChainFake(['select', 'where'] as const, ['orderBy'] as const)
   beforeEach(() => {
-    knexInstance = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      orderBy: Sinon.stub().resolves([]),
-    }
-    knexStub = Sinon.stub().returns(knexInstance)
-    knexFake = StubToKnex(knexStub)
+    ;({
+      instance: knexInstance,
+      stub: knexStub,
+      fake: knexFake,
+    } = createKnexChainFake(['select', 'where'] as const, ['orderBy'] as const))
   })
   it('should select data from pictures', async () => {
     await Functions.GetPictures(knexFake, '/foo/bar/')

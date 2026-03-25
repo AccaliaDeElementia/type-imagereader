@@ -180,19 +180,24 @@ describe('routes/api route POST /navigate/latest', () => {
     expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
     expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
   })
-  it('should respond with error message on error', async () => {
+  it('should call response status on error', async () => {
     const err = new Error('Evil Error!')
     setLatestPictureStub.rejects(err)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.be.greaterThanOrEqual(1)
+  })
+  it('should set INTERNAL_SERVER_ERROR status on error', async () => {
+    const err = new Error('Evil Error!')
+    setLatestPictureStub.rejects(err)
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.lastCall.args).to.deep.equal([StatusCodes.INTERNAL_SERVER_ERROR])
+  })
+  it('should set E_INTERNAL_ERROR json payload on error', async () => {
+    const err = new Error('Evil Error!')
+    setLatestPictureStub.rejects(err)
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.json.lastCall.args).to.deep.equal([
-      {
-        error: {
-          code: 'E_INTERNAL_ERROR',
-          message: 'Internal Server Error',
-        },
-      },
+      { error: { code: 'E_INTERNAL_ERROR', message: 'Internal Server Error' } },
     ])
   })
   it('should log message on error', async () => {

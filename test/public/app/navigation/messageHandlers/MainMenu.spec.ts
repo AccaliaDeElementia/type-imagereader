@@ -8,6 +8,7 @@ import { render } from 'pug'
 import { PubSub } from '../../../../../public/scripts/app/pubsub'
 import { Navigation } from '../../../../../public/scripts/app/navigation'
 import { Cast } from '../../../../../testutils/TypeGuards'
+import { resetPubSub } from '../../../../../testutils/PubSub'
 import { EventuallyFullfills } from '../../../../../testutils/Errors'
 
 const sandbox = Sinon.createSandbox()
@@ -36,8 +37,7 @@ describe('public/app/navigation function Init()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    PubSub.subscribers = {}
-    PubSub.deferred = []
+    resetPubSub()
     tabSelectedSpy.resolves()
     PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
     sandbox.stub(Navigation, 'LoadData').resolves()

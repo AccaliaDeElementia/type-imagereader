@@ -4,23 +4,16 @@ import { expect } from 'chai'
 import { Functions } from '../../../routes/apiFunctions'
 import { StubToKnex } from '../../../testutils/TypeGuards'
 import Sinon from 'sinon'
+import { createKnexChainFake } from '../../../testutils/Knex'
 
-interface KnexStub {
-  insert: Sinon.SinonStub
-  onConflict: Sinon.SinonStub
-  ignore: Sinon.SinonStub
-}
-const makeKnexInstance = (): KnexStub => ({
-  insert: Sinon.stub().returnsThis(),
-  onConflict: Sinon.stub().returnsThis(),
-  ignore: Sinon.stub().returnsThis(),
-})
+const chainMethods = ['insert', 'onConflict', 'ignore'] as const
+const terminalMethods = [] as const
 describe('routes/apiFunctions function AddBookmark', () => {
-  let knexInstance = makeKnexInstance()
+  let knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
   let knexStub = Sinon.stub()
   let knexFake = StubToKnex(knexStub)
   beforeEach(() => {
-    knexInstance = makeKnexInstance()
+    knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
     knexStub = Sinon.stub().returns(knexInstance)
     knexFake = StubToKnex(knexStub)
   })
