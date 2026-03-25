@@ -8,6 +8,7 @@ import type { Application, Router, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { Cast } from '../../../testutils/TypeGuards'
+import { createResponseFake } from '../../../testutils/Express'
 
 const sandbox = Sinon.createSandbox()
 
@@ -21,11 +22,7 @@ describe('routes/weather function getRouter()', () => {
   let applicationFake = Cast<Application>({})
   let serverFake = Cast<Server>({})
   let socketFake = Cast<WebSocketServer>({})
-  let responseStub = {
-    status: Sinon.stub().returnsThis(),
-    json: Sinon.stub().returnsThis(),
-  }
-  let responseFake = Cast<Response>(responseStub)
+  let { stub: responseStub, fake: responseFake } = createResponseFake()
   beforeEach(() => {
     setIntervalStub = sandbox.stub(global, 'setInterval')
     updateWeatherStub = sandbox.stub(Functions, 'UpdateWeather').resolves()
@@ -36,11 +33,7 @@ describe('routes/weather function getRouter()', () => {
     serverFake = Cast<Server>({})
     socketFake = Cast<WebSocketServer>({})
     getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
-    responseStub = {
-      status: Sinon.stub().returnsThis(),
-      json: Sinon.stub().returnsThis(),
-    }
-    responseFake = Cast<Response>(responseStub)
+    ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
   afterEach(() => {
     sandbox.restore()

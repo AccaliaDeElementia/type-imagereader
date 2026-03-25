@@ -4,6 +4,7 @@ import { assert, expect } from 'chai'
 import type { Express, Response } from 'express'
 import Sinon from 'sinon'
 import { Cast } from '../../testutils/TypeGuards'
+import { createResponseFake } from '../../testutils/Express'
 import { Functions, Imports } from '../../Server'
 
 const sandbox = Sinon.createSandbox()
@@ -13,13 +14,13 @@ describe('Server function ConfigureLoggingAndErrors', () => {
   let morganStub = Sinon.stub()
   let appStub = { use: Sinon.stub() }
   let appFake = Cast<Express>(appStub)
-  let responseStub = { status: Sinon.stub().returnsThis(), json: Sinon.stub().returnsThis() }
+  let { stub: responseStub } = createResponseFake()
   beforeEach(() => {
     helmetStub = sandbox.stub(Imports, 'helmet')
     morganStub = sandbox.stub(Imports, 'morgan')
     appStub = { use: Sinon.stub() }
     appFake = Cast<Express>(appStub)
-    responseStub = { status: Sinon.stub().returnsThis(), json: Sinon.stub().returnsThis() }
+    ;({ stub: responseStub } = createResponseFake())
     delete process.env.NODE_ENV
   })
   afterEach(() => {

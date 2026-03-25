@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import type { Application, Router } from 'express'
+import type { Application, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { Functions } from '../../../routes/apiFunctions'
@@ -11,10 +11,11 @@ import persistance from '../../../utils/persistance'
 import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '../../../testutils/TypeGuards'
 import type { Debugger } from 'debug'
+import { createResponseFake } from '../../../testutils/Express'
 
 const sandbox = Sinon.createSandbox()
 
-type RequestHandler = (req: Request, res: Response) => Promise<void>
+type RequestHandler = (req: Request, res: ExpressResponse) => Promise<void>
 
 describe('routes/api route GET /listing', () => {
   let requestStub = {
@@ -23,13 +24,7 @@ describe('routes/api route GET /listing', () => {
     originalUrl: '/',
   }
   let requestFake = Cast<Request>(requestStub)
-  let responseStub = {
-    status: Sinon.stub().returnsThis(),
-    json: Sinon.stub().returnsThis(),
-    send: Sinon.stub().returnsThis(),
-    end: Sinon.stub().returnsThis(),
-  }
-  let responseFake = Cast<Response>(responseStub)
+  let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
   Sinon.stub()
@@ -42,13 +37,7 @@ describe('routes/api route GET /listing', () => {
       originalUrl: '/',
     }
     requestFake = Cast<Request>(requestStub)
-    responseStub = {
-      status: Sinon.stub().returnsThis(),
-      json: Sinon.stub().returnsThis(),
-      send: Sinon.stub().returnsThis(),
-      end: Sinon.stub().returnsThis(),
-    }
-    responseFake = Cast<Response>(responseStub)
+    ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     knexFake = { Knex: Math.random() }
     const getFn = Sinon.stub()
     const InitializeStub = sandbox.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))

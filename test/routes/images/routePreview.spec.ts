@@ -10,6 +10,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 import { CacheStorage, Functions, getRouter, ImageData, Imports } from '../../../routes/images'
 import Sinon from 'sinon'
 import { Cast } from '../../../testutils/TypeGuards'
+import { createResponseFake } from '../../../testutils/Express'
 
 const sandbox = Sinon.createSandbox()
 
@@ -25,11 +26,7 @@ describe('routes/images route /preview/*-image.webp', () => {
     originalUrl: '',
   }
   let requestFake = Cast<Request>(requestStub)
-  let responseStub = {
-    status: Sinon.stub().returnsThis(),
-    json: Sinon.stub().returnsThis(),
-  }
-  let responseFake = Cast<Response>(responseStub)
+  let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routerFake = {
     get: Sinon.stub().returnsThis(),
   }
@@ -65,11 +62,7 @@ describe('routes/images route /preview/*-image.webp', () => {
       originalUrl: '',
     }
     requestFake = Cast<Request>(requestStub)
-    responseStub = {
-      status: Sinon.stub().returnsThis(),
-      json: Sinon.stub().returnsThis(),
-    }
-    responseFake = Cast<Response>(responseStub)
+    ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
   afterEach(() => {
     sandbox.restore()
