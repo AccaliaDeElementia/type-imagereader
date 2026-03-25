@@ -51,9 +51,12 @@ describe('public/app/pictures function GetPicture()', () => {
       const result = Pictures.GetPicture(navi)
       expect(result).to.equal(undefined)
     })
-    it(`${title}: should call ChoosePictureIndex to choose image Id`, () => {
+    it(`${title}: should call ChoosePictureIndex once`, () => {
       Pictures.GetPicture(navi)
       expect(choosePictureIndexSpy.callCount).to.equal(1)
+    })
+    it(`${title}: should call ChoosePictureIndex with 3 arguments`, () => {
+      Pictures.GetPicture(navi)
       expect(choosePictureIndexSpy.firstCall.args).to.have.lengthOf(3)
     })
     it(`${title}: should pass navigation option to ChoosePictureIndex`, () => {

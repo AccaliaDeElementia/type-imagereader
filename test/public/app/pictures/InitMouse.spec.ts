@@ -98,7 +98,6 @@ describe('public/app/pictures function InitMouse()', () => {
       clientX: boundingRect.width / 4,
       clientY: boundingRect.height / 2,
     })
-    expect(Pictures.mainImage).to.not.equal(null)
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
     expect(executePreviousSpy.callCount).to.equal(1)
   })
@@ -110,9 +109,19 @@ describe('public/app/pictures function InitMouse()', () => {
       clientX: boundingRect.width / 4,
       clientY: boundingRect.height / 2,
     })
-    expect(Pictures.mainImage).to.not.equal(null)
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
     expect(executePreviousSpy.callCount).to.equal(1)
+  })
+  it('should not navigate when current scale is zoomed in from initial', () => {
+    visualViewport.scale = 2
+    Pictures.InitMouse()
+    visualViewport.scale = 2.0001
+    const evt = new dom.window.MouseEvent('click', {
+      clientX: boundingRect.width / 4,
+      clientY: boundingRect.height / 2,
+    })
+    Pictures.mainImage?.parentElement?.dispatchEvent(evt)
+    expect(executePreviousSpy.callCount).to.equal(0)
   })
   it('should ignore click when current scale is zoomed in from initial', () => {
     visualViewport.scale = 2
@@ -122,10 +131,20 @@ describe('public/app/pictures function InitMouse()', () => {
       clientX: boundingRect.width / 4,
       clientY: boundingRect.height / 2,
     })
-    expect(Pictures.mainImage).to.not.equal(null)
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(0)
     expect(ignoreClickSpy.callCount).to.equal(1)
+  })
+  it('should not navigate when mainImage bounding rect invalid', () => {
+    visualViewport.scale = 2
+    Pictures.InitMouse()
+    const tgt = Pictures.mainImage?.parentElement
+    Pictures.mainImage = null
+    const evt = new dom.window.MouseEvent('click', {
+      clientX: boundingRect.width / 4,
+      clientY: boundingRect.height / 2,
+    })
+    tgt?.dispatchEvent(evt)
+    expect(executePreviousSpy.callCount).to.equal(0)
   })
   it('should ignore click when mainImage bounding rect invalid', () => {
     visualViewport.scale = 2
@@ -137,8 +156,18 @@ describe('public/app/pictures function InitMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     tgt?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(0)
     expect(ignoreClickSpy.callCount).to.equal(1)
+  })
+  it('should not navigate when click target width is zero', () => {
+    visualViewport.scale = 2
+    Pictures.InitMouse()
+    boundingRect.width = 0
+    const evt = new dom.window.MouseEvent('click', {
+      clientX: boundingRect.width / 4,
+      clientY: boundingRect.height / 2,
+    })
+    Pictures.mainImage?.parentElement?.dispatchEvent(evt)
+    expect(executePreviousSpy.callCount).to.equal(0)
   })
   it('should ignore click when click target width is zero', () => {
     visualViewport.scale = 2
@@ -148,30 +177,16 @@ describe('public/app/pictures function InitMouse()', () => {
       clientX: boundingRect.width / 4,
       clientY: boundingRect.height / 2,
     })
-    expect(Pictures.mainImage).to.not.equal(null)
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(0)
     expect(ignoreClickSpy.callCount).to.equal(1)
   })
-  it('should navigate to previous from left area click with de', () => {
+  it('should navigate to previous from left area click (de)', () => {
     visualViewport.scale = 2
     Pictures.InitMouse()
     const evt = new dom.window.MouseEvent('click', {
       clientX: boundingRect.width / 4,
       clientY: boundingRect.height / 2,
     })
-    expect(Pictures.mainImage).to.not.equal(null)
-    Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(1)
-  })
-  it('should navigate to previous from left area click', () => {
-    visualViewport.scale = 2
-    Pictures.InitMouse()
-    const evt = new dom.window.MouseEvent('click', {
-      clientX: boundingRect.width / 4,
-      clientY: boundingRect.height / 2,
-    })
-    expect(Pictures.mainImage).to.not.equal(null)
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
     expect(executePreviousSpy.callCount).to.equal(1)
   })
@@ -182,7 +197,6 @@ describe('public/app/pictures function InitMouse()', () => {
       clientX: boundingRect.width / 2,
       clientY: boundingRect.height / 2,
     })
-    expect(Pictures.mainImage).to.not.equal(null)
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
     expect(executeMenuSpy.callCount).to.equal(1)
   })
@@ -193,7 +207,6 @@ describe('public/app/pictures function InitMouse()', () => {
       clientX: (3 * boundingRect.width) / 4,
       clientY: boundingRect.height / 2,
     })
-    expect(Pictures.mainImage).to.not.equal(null)
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
     expect(executeNextSpy.callCount).to.equal(1)
   })

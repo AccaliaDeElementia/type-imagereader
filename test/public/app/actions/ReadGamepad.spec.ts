@@ -118,6 +118,9 @@ describe('public/app/actions function ReadGamepad()', () => {
   it('should use the GamepadButtons to read the gamepads', () => {
     Actions.ReadGamepad()
     expect(gamepadsReadStub.called).to.equal(true)
+  })
+  it('should pass the gamepad to GamepadButtons.Read', () => {
+    Actions.ReadGamepad()
     expect(gamepadsReadStub.calledWithExactly(testGamePad)).to.equal(true)
   })
   it('should not reset the GamepadButtons when read detects no buttons having no history', () => {
@@ -129,12 +132,18 @@ describe('public/app/actions function ReadGamepad()', () => {
     Actions.ReadGamepad()
     expect(GamepadResetSpy.called).to.equal(true)
   })
-  it('should publish all buttons when read detects no buttons', () => {
+  it('should publish when read detects no buttons', () => {
     Actions.gamepads.pressedButtons.push('A')
     Actions.gamepads.pressedButtons.push('Q')
     Actions.gamepads.pressedButtons.push('Z')
     Actions.ReadGamepad()
     expect(actionGamepadListener.called).to.equal(true)
+  })
+  it('should publish concatenated button names when read detects no buttons', () => {
+    Actions.gamepads.pressedButtons.push('A')
+    Actions.gamepads.pressedButtons.push('Q')
+    Actions.gamepads.pressedButtons.push('Z')
+    Actions.ReadGamepad()
     expect(actionGamepadListener.calledWithExactly(undefined, 'ACTION:GAMEPAD:AQZ')).to.equal(true)
   })
   it('should not publish publish any buttons when read detects no buttons with no history', () => {

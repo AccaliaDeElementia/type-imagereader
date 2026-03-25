@@ -63,19 +63,40 @@ describe('routes/api route POST /bookmarks/remove', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should return status OK', async () => {
+  it('should call response status once on success', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should return status OK', async () => {
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+  })
+  it('should call response end once on success', async () => {
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.end.callCount).to.equal(1)
+  })
+  it('should return empty response body on success', async () => {
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.end.firstCall.args).to.have.lengthOf(0)
   })
-  it('should call RemoveBookmark', async () => {
+  it('should call RemoveBookmark once', async () => {
     requestStub.body.path = 'foo/a%20bar/baz.gif'
     await routeHandler(requestFake, responseFake)
     expect(removeBookmarkStub.callCount).to.equal(1)
+  })
+  it('should call RemoveBookmark with two arguments', async () => {
+    requestStub.body.path = 'foo/a%20bar/baz.gif'
+    await routeHandler(requestFake, responseFake)
     expect(removeBookmarkStub.firstCall.args).to.have.lengthOf(2)
+  })
+  it('should call RemoveBookmark with knex instance', async () => {
+    requestStub.body.path = 'foo/a%20bar/baz.gif'
+    await routeHandler(requestFake, responseFake)
     expect(removeBookmarkStub.firstCall.args[0]).to.equal(knexFake)
+  })
+  it('should call RemoveBookmark with decoded path', async () => {
+    requestStub.body.path = 'foo/a%20bar/baz.gif'
+    await routeHandler(requestFake, responseFake)
     expect(removeBookmarkStub.firstCall.args[1]).to.equal('/foo/a bar/baz.gif')
   })
   it('should not retrieve listing directory traversal attempt', async () => {
@@ -83,11 +104,25 @@ describe('routes/api route POST /bookmarks/remove', () => {
     await routeHandler(requestFake, responseFake)
     expect(removeBookmarkStub.callCount).to.equal(0)
   })
-  it('should return status FORBIDDEN for directory traversal attempt', async () => {
+  it('should call response status once for directory traversal attempt', async () => {
     requestStub.body.path = '/foo/../bar.gif'
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should return status FORBIDDEN for directory traversal attempt', async () => {
+    requestStub.body.path = '/foo/../bar.gif'
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
+  })
+  it('should call response json once for directory traversal attempt', async () => {
+    requestStub.body.path = '/foo/../bar.gif'
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.callCount).to.equal(1)
+  })
+  it('should json error with one argument for directory traversal attempt', async () => {
+    requestStub.body.path = '/foo/../bar.gif'
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
   })
   it('should json error for directory traversal attempt', async () => {
     requestStub.body.path = '/foo/../bar.gif'
@@ -99,8 +134,6 @@ describe('routes/api route POST /bookmarks/remove', () => {
       },
     }
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
-    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
     expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
   })
   it('should call response status on error', async () => {

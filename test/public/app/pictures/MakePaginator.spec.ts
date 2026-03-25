@@ -64,16 +64,29 @@ describe('public/app/pictures function MakePaginator()', () => {
   it('should return nav element for valid paginator', () => {
     const result = Pictures.MakePaginator(7)
     expect(result).to.be.an.instanceOf(dom.window.HTMLElement)
+  })
+  it('should return nav element with nav nodeName for valid paginator', () => {
+    const result = Pictures.MakePaginator(7)
     expect(result?.nodeName).to.equal('NAV')
   })
   it('should create previousPage element first', () => {
     const sentinal = dom.window.document.createElement('div')
     sentinal.classList.add('sentinal')
     makePageItemSpy.onFirstCall().returns(sentinal)
+    Pictures.MakePaginator(7)
+    expect(makePageItemSpy.firstCall.args[0]).to.equal('«')
+  })
+  it('should create pagination list for valid paginator', () => {
     const result = Pictures.MakePaginator(7)
     const pages = result?.querySelector('.pagination')
-    expect(makePageItemSpy.firstCall.args[0]).to.equal('«')
     expect(pages).to.be.an.instanceOf(dom.window.HTMLElement)
+  })
+  it('should insert previousPage element as first child', () => {
+    const sentinal = dom.window.document.createElement('div')
+    sentinal.classList.add('sentinal')
+    makePageItemSpy.onFirstCall().returns(sentinal)
+    const result = Pictures.MakePaginator(7)
+    const pages = result?.querySelector('.pagination')
     expect(pages?.firstElementChild).to.equal(sentinal)
   })
   it('should select previous page for previous page selector when on valid page', () => {
@@ -108,10 +121,15 @@ describe('public/app/pictures function MakePaginator()', () => {
     const sentinal = dom.window.document.createElement('div')
     sentinal.classList.add('sentinal')
     makePageItemSpy.onCall(8).returns(sentinal)
+    Pictures.MakePaginator(7)
+    expect(makePageItemSpy.getCall(8).args[0]).to.equal('»')
+  })
+  it('should insert nextPage element as last child', () => {
+    const sentinal = dom.window.document.createElement('div')
+    sentinal.classList.add('sentinal')
+    makePageItemSpy.onCall(8).returns(sentinal)
     const result = Pictures.MakePaginator(7)
     const pages = result?.querySelector('.pagination')
-    expect(makePageItemSpy.getCall(8).args[0]).to.equal('»')
-    expect(pages).to.be.an.instanceOf(dom.window.HTMLElement)
     expect(pages?.lastElementChild).to.equal(sentinal)
   })
   it('should select next page for next page selector when on valid page', () => {
@@ -142,7 +160,13 @@ describe('public/app/pictures function MakePaginator()', () => {
     assert(fn !== undefined)
     expect(fn()).to.equal(-4)
   })
-  it('should create specific page elements', () => {
+  it('should create specific page elements with correct labels', () => {
+    Pictures.MakePaginator(7)
+    for (let i = 1; i <= 7; i += 1) {
+      expect(makePageItemSpy.getCall(i).args[0]).to.equal(`${i}`)
+    }
+  })
+  it('should insert specific page elements in order', () => {
     const nodes = Array.from({ length: 8 }).map(() => dom.window.document.createElement('div'))
     for (let i = 1; i <= 7; i += 1) {
       makePageItemSpy.onCall(i).returns(nodes[i])
@@ -150,7 +174,6 @@ describe('public/app/pictures function MakePaginator()', () => {
     const result = Pictures.MakePaginator(7)
     const pages = result?.querySelector('.pagination')
     for (let i = 1; i <= 7; i += 1) {
-      expect(makePageItemSpy.getCall(i).args[0]).to.equal(`${i}`)
       expect(pages?.children[i]).to.equal(nodes[i])
     }
   })

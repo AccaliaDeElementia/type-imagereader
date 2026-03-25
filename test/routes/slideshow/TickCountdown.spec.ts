@@ -42,9 +42,12 @@ describe('routes/slideshow function TickCountdown()', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should accept empty room list', async () => {
+  it('should not call io.of with empty room list', async () => {
     await Functions.TickCountdown(knexFake, ioFake)
     expect(ioStub.of.callCount).to.equal(0)
+  })
+  it('should not call GetRoom with empty room list', async () => {
+    await Functions.TickCountdown(knexFake, ioFake)
     expect(getRoomStub.callCount).to.equal(0)
   })
   const clients = new Set(['/'])
@@ -303,6 +306,29 @@ describe('routes/slideshow function TickCountdown()', () => {
     expect(ioStub.emit.callCount).to.equal(1)
   })
   it('should log once when the first of two due rooms fails', async () => {
+    Config.rooms['/RoomA'] = {
+      countdown: -99,
+      path: '/RoomA',
+      images: ['/a.png'],
+      index: 0,
+      uriSafeImage: '/a.png',
+      pages: { unread: 0, all: 0, pages: 0, page: 0 },
+    }
+    Config.rooms['/RoomB'] = {
+      countdown: -99,
+      path: '/RoomB',
+      images: ['/b.png'],
+      index: 0,
+      uriSafeImage: '/b.png',
+      pages: { unread: 0, all: 0, pages: 0, page: 0 },
+    }
+    getRoomStub.onFirstCall().rejects(new Error('ROOM A FAILED'))
+    getRoomStub.onSecondCall().resolves()
+    ioStub.get.returns(clients)
+    await Functions.TickCountdown(knexFake, ioFake)
+    expect(loggerStub.callCount).to.equal(1)
+  })
+  it('should log the error when the first of two due rooms fails', async () => {
     const err = new Error('ROOM A FAILED')
     Config.rooms['/RoomA'] = {
       countdown: -99,
@@ -324,7 +350,6 @@ describe('routes/slideshow function TickCountdown()', () => {
     getRoomStub.onSecondCall().resolves()
     ioStub.get.returns(clients)
     await Functions.TickCountdown(knexFake, ioFake)
-    expect(loggerStub.callCount).to.equal(1)
     expect(loggerStub.firstCall.args[1]).to.equal(err)
   })
   it('should emit for the successful room when the first room fails', async () => {

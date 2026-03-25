@@ -106,17 +106,35 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
       expect(result(obj)).to.equal(expected)
     })
   })
-  it('should build bookmarks when GetJSON resolves', async () => {
+  it('should call BuildBookmarks once when GetJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
     const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
     assert(fn !== undefined)
     await fn(undefined)
     expect(BuildBookmarksSpy.callCount).to.equal(1)
-    const marks = Cast<Listing>(BuildBookmarksSpy.firstCall.args[0])
-    expect(marks.name).to.equal('')
-    expect(marks.path).to.equal('')
-    expect(marks.bookmarks).to.equal(data)
+  })
+  it('should pass empty name to BuildBookmarks when GetJSON resolves', async () => {
+    getJSONSpy.resolves([])
+    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
+    assert(fn !== undefined)
+    await fn(undefined)
+    expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).name).to.equal('')
+  })
+  it('should pass empty path to BuildBookmarks when GetJSON resolves', async () => {
+    getJSONSpy.resolves([])
+    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
+    assert(fn !== undefined)
+    await fn(undefined)
+    expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).path).to.equal('')
+  })
+  it('should pass resolved data as bookmarks to BuildBookmarks', async () => {
+    const data = [{ BOOKMARK_DATA: Math.random() }]
+    getJSONSpy.resolves(data)
+    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
+    assert(fn !== undefined)
+    await fn(undefined)
+    expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(data)
   })
   it('should not publish Loading:Error when GetJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]

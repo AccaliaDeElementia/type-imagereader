@@ -58,18 +58,32 @@ describe('routes/api route GET /bookmarks', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should return bookmarks', async () => {
+  it('should call json once when returning bookmarks', async () => {
+    getBookmarkStub.resolves({ Bookmarks: Math.random() })
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.callCount).to.equal(1)
+  })
+  it('should call json with 1 argument', async () => {
+    getBookmarkStub.resolves({ Bookmarks: Math.random() })
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should pass bookmarks to json response', async () => {
     const bookmarks = { Bookmarks: Math.random() }
     getBookmarkStub.resolves(bookmarks)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
-    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
     expect(responseStub.json.firstCall.args[0]).to.equal(bookmarks)
   })
-  it('should call GetBookmarks', async () => {
+  it('should call GetBookmarks once', async () => {
     await routeHandler(requestFake, responseFake)
     expect(getBookmarkStub.callCount).to.equal(1)
+  })
+  it('should call GetBookmarks with 1 argument', async () => {
+    await routeHandler(requestFake, responseFake)
     expect(getBookmarkStub.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should pass knex to GetBookmarks', async () => {
+    await routeHandler(requestFake, responseFake)
     expect(getBookmarkStub.firstCall.args[0]).to.equal(knexFake)
   })
   it('should call response status on error', async () => {

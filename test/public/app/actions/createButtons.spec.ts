@@ -73,33 +73,32 @@ describe('public/app/actions function createButtons()', () => {
     const result = Actions.createButtons(buttons)
     expect(result.children).to.have.length(target)
   })
-  it('should set icon for buttons', () => {
-    const expected = `RANDOM TEXT ${Math.random()}`
-    const container = Actions.createButtons([
-      {
-        name: 'name',
-        image: expected,
-      },
-    ])
+  it('should create an HTMLElement for each button card', () => {
+    const container = Actions.createButtons([{ name: 'name', image: 'icon' }])
     const [result] = container.children
     expect(result).to.be.instanceOf(dom.window.HTMLElement)
-    const text = result?.querySelector('i')
-    expect(text).to.be.instanceOf(dom.window.HTMLElement)
-    expect(text?.innerText).to.equal(expected)
   })
-  it('should set name for buttons', () => {
-    const expected = `RANDOM TEXT ${Math.random()}`
-    const container = Actions.createButtons([
-      {
-        name: expected,
-        image: 'icon',
-      },
-    ])
+  it('should create an HTMLElement for the icon element', () => {
+    const container = Actions.createButtons([{ name: 'name', image: 'icon' }])
     const [result] = container.children
-    expect(result).to.be.instanceOf(dom.window.HTMLElement)
-    const text = result?.querySelector('h5')
-    expect(text).to.be.instanceOf(dom.window.HTMLElement)
-    expect(text?.innerText).to.equal(expected)
+    expect(result?.querySelector('i')).to.be.instanceOf(dom.window.HTMLElement)
+  })
+  it('should set icon text for buttons', () => {
+    const expected = `RANDOM TEXT ${Math.random()}`
+    const container = Actions.createButtons([{ name: 'name', image: expected }])
+    const [result] = container.children
+    expect(result?.querySelector('i')?.innerText).to.equal(expected)
+  })
+  it('should create an HTMLElement for the name element', () => {
+    const container = Actions.createButtons([{ name: 'name', image: 'icon' }])
+    const [result] = container.children
+    expect(result?.querySelector('h5')).to.be.instanceOf(dom.window.HTMLElement)
+  })
+  it('should set name text for buttons', () => {
+    const expected = `RANDOM TEXT ${Math.random()}`
+    const container = Actions.createButtons([{ name: expected, image: 'icon' }])
+    const [result] = container.children
+    expect(result?.querySelector('h5')?.innerText).to.equal(expected)
   })
   it('should prevent default on click', () => {
     const container = Actions.createButtons([

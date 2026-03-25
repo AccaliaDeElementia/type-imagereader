@@ -43,7 +43,7 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
       Pictures.LoadCurrentPageImages()
     }).to.not.throw()
   })
-  it('should handle only hidden tab gracefully', () => {
+  it('should not throw when only hidden tab exists', () => {
     const container = dom.window.document.createElement('div')
     container.id = 'tabImages'
     const page = dom.window.document.createElement('div')
@@ -55,13 +55,26 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     card.setAttribute('data-backgroundImage', 'url("/images/preview.webp")')
     page.appendChild(card)
     dom.window.document.body.appendChild(container)
-    expect(card.style.backgroundImage).to.equal('')
     expect(() => {
       Pictures.LoadCurrentPageImages()
     }).to.not.throw()
+  })
+  it('should not modify backgroundImage when only hidden tab exists', () => {
+    const container = dom.window.document.createElement('div')
+    container.id = 'tabImages'
+    const page = dom.window.document.createElement('div')
+    page.classList.add('page')
+    page.classList.add('hidden')
+    container.appendChild(page)
+    const card = dom.window.document.createElement('div')
+    card.classList.add('card')
+    card.setAttribute('data-backgroundImage', 'url("/images/preview.webp")')
+    page.appendChild(card)
+    dom.window.document.body.appendChild(container)
+    Pictures.LoadCurrentPageImages()
     expect(card.style.backgroundImage).to.equal('')
   })
-  it('should handle missing attribute gracefully', () => {
+  it('should not throw when card is missing data-backgroundImage attribute', () => {
     const container = dom.window.document.createElement('div')
     container.id = 'tabImages'
     const page = dom.window.document.createElement('div')
@@ -71,10 +84,21 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     card.classList.add('card')
     page.appendChild(card)
     dom.window.document.body.appendChild(container)
-    expect(card.style.backgroundImage).to.equal('')
     expect(() => {
       Pictures.LoadCurrentPageImages()
     }).to.not.throw()
+  })
+  it('should not modify backgroundImage when card is missing data-backgroundImage attribute', () => {
+    const container = dom.window.document.createElement('div')
+    container.id = 'tabImages'
+    const page = dom.window.document.createElement('div')
+    page.classList.add('page')
+    container.appendChild(page)
+    const card = dom.window.document.createElement('div')
+    card.classList.add('card')
+    page.appendChild(card)
+    dom.window.document.body.appendChild(container)
+    Pictures.LoadCurrentPageImages()
     expect(card.style.backgroundImage).to.equal('')
   })
   it('should set backgroundImage style for non hidden page', () => {

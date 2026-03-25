@@ -186,13 +186,18 @@ describe('public/app/bookmarks Init Bookmarks:Remove', () => {
     await fn('foo!')
     expect(loadingErrorSpy.firstCall.args[0]).to.equal(err)
   })
-  it('should publish generic Loading:Error with error on rejection with non error', async () => {
+  it('should publish a generic Error on rejection with non-error', async () => {
     postJSONSpy.rejects({})
     const fn = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop()
     assert(fn !== undefined)
     await fn('foo!')
     expect(loadingErrorSpy.firstCall.args[0]).to.be.an.instanceOf(Error)
-    const err = Cast<Error>(loadingErrorSpy.firstCall.args[0])
-    expect(err.message).to.equal('Non Error rejection!')
+  })
+  it('should set message on generic error on rejection with non-error', async () => {
+    postJSONSpy.rejects({})
+    const fn = PubSub.subscribers['BOOKMARKS:REMOVE']?.pop()
+    assert(fn !== undefined)
+    await fn('foo!')
+    expect(Cast<Error>(loadingErrorSpy.firstCall.args[0]).message).to.equal('Non Error rejection!')
   })
 })

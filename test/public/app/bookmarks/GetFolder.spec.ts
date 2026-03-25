@@ -60,17 +60,21 @@ describe('public/app/bookmarks function GetFolder()', () => {
     })
     expect(result).to.be.an.instanceOf(dom.window.HTMLElement)
   })
-  it('should add folder to folder list on creation', () => {
+  it('should add exactly one folder to the list on creation', () => {
     expect(Bookmarks.BookmarkFolders).to.have.length(0)
-    const result = Bookmarks.GetFolder('', {
-      name: '/foo',
-      path: '/foo/bar.jpg',
-      bookmarks: [],
-    })
+    Bookmarks.GetFolder('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
     expect(Bookmarks.BookmarkFolders).to.have.length(1)
+  })
+  it('should store the folder name on creation', () => {
+    Bookmarks.GetFolder('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
     const folder = Bookmarks.BookmarkFolders.pop()
     assert(folder !== undefined, 'Folder should exist')
     expect(folder.name).to.equal('/foo')
+  })
+  it('should store the folder element on creation', () => {
+    const result = Bookmarks.GetFolder('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
+    const folder = Bookmarks.BookmarkFolders.pop()
+    assert(folder !== undefined, 'Folder should exist')
     expect(result).to.equal(folder.element)
   })
   it('should return existing folder element for matching name', () => {

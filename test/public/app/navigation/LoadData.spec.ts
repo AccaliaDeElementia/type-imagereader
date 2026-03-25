@@ -90,10 +90,16 @@ describe('public/app/navigation function LoadData()', () => {
     await Navigation.LoadData()
     expect(loadingShowSpy.called).to.equal(true)
   })
-  it('should call getJSON after Loading:Show has been published', async () => {
+  it('should call getJSON', async () => {
     await Navigation.LoadData()
     expect(getJSONSpy.called).to.equal(true)
+  })
+  it('should call getJSON with 2 arguments', async () => {
+    await Navigation.LoadData()
     expect(getJSONSpy.firstCall.args).to.have.lengthOf(2)
+  })
+  it('should call getJSON after Loading:Show has been published', async () => {
+    await Navigation.LoadData()
     expect(getJSONSpy.calledAfter(loadingShowSpy)).to.equal(true)
   })
   it('should request data from expected listing path', async () => {
@@ -165,12 +171,24 @@ describe('public/app/navigation function LoadData()', () => {
     await Navigation.LoadData()
     expect(historySpy.called).to.equal(true)
   })
-  it('should push expected stat when saving history', async () => {
+  it('should push history with 3 arguments', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
     await Navigation.LoadData()
     expect(historySpy.firstCall.args).to.have.lengthOf(3)
+  })
+  it('should push history with empty state object', async () => {
+    getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
+    await Navigation.LoadData()
     expect(historySpy.firstCall.args[0]).to.deep.equal({})
+  })
+  it('should push history with empty title', async () => {
+    getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
+    await Navigation.LoadData()
     expect(historySpy.firstCall.args[1]).to.equal('')
+  })
+  it('should push history with URL derived from resolved path', async () => {
+    getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
+    await Navigation.LoadData()
     expect(historySpy.firstCall.args[2]).to.equal('http://127.0.0.1:2999//N/Nude in Bar')
   })
   it('should push history after retrieving data', async () => {

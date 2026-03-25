@@ -54,14 +54,20 @@ describe('routes/api route GET /', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should return status OK', async () => {
+  it('should call status once', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should return status OK', async () => {
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+  })
+  it('should call json once', async () => {
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.callCount).to.equal(1)
   })
   it('should return JSON data', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
     expect(responseStub.json.firstCall.args).to.deep.equal([{ title: 'API' }])
   })
   it('should call response status on error', async () => {

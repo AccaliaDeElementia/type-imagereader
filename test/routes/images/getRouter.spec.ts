@@ -46,6 +46,9 @@ describe('routes/images export getRouter()', () => {
   it('should use router import to construct router', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(getRouterStub.callCount).to.equal(1)
+  })
+  it('should call router import with no arguments', async () => {
+    await getRouter(applicationFake, serverFake, websocketsFake)
     expect(getRouterStub.firstCall.args).to.deep.equal([])
   })
   it('should return new router instance', async () => {

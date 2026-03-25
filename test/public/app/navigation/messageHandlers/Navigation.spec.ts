@@ -105,24 +105,38 @@ describe('public/app/navigation function Init()', () => {
       const catcher = (): never => expect.fail('Handler should not reject!')
       await handler('a string').catch(catcher)
     })
-    it('should call LoadData() with defaults', async () => {
+    it('should call LoadData() once with defaults', async () => {
       Navigation.Init()
       loadDataStub.resetHistory()
       const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
       assert(handler !== undefined, 'handler must have a value')
       await handler('a string')
       expect(loadDataStub.callCount).to.equal(1)
+    })
+    it('should call LoadData() with defaults', async () => {
+      Navigation.Init()
+      loadDataStub.resetHistory()
+      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
+      assert(handler !== undefined, 'handler must have a value')
+      await handler('a string')
       expect(loadDataStub.firstCall.args).to.deep.equal([])
     })
   })
   describe('Navigate:Reload Message Handler', () => {
-    it('should call LoadData()', async () => {
+    it('should call LoadData() once', async () => {
       Navigation.Init()
       loadDataStub.resetHistory()
       const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
       assert(handler !== undefined, 'handler must have a value')
       await handler('a string')
       expect(loadDataStub.callCount).to.equal(1)
+    })
+    it('should call LoadData() with no arguments', async () => {
+      Navigation.Init()
+      loadDataStub.resetHistory()
+      const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
+      assert(handler !== undefined, 'handler must have a value')
+      await handler('a string')
       expect(loadDataStub.firstCall.args).to.deep.equal([])
     })
     it('should tolerate LoadData() rejecting', async () => {
@@ -166,7 +180,7 @@ describe('public/app/navigation function Init()', () => {
       dom.window.dispatchEvent(popStateEvent)
       expect(loadDataStub.callCount).to.equal(1)
     })
-    it('should register popstate listener that calls LoadData with no history flag set', () => {
+    it('should register popstate listener that calls LoadData once with no history flag set', () => {
       Navigation.Init()
       loadDataStub.resetHistory()
       const popStateEvent = new dom.window.PopStateEvent('popstate', {
@@ -174,6 +188,14 @@ describe('public/app/navigation function Init()', () => {
       })
       dom.window.dispatchEvent(popStateEvent)
       expect(loadDataStub.callCount).to.equal(1)
+    })
+    it('should register popstate listener that calls LoadData with no history flag set', () => {
+      Navigation.Init()
+      loadDataStub.resetHistory()
+      const popStateEvent = new dom.window.PopStateEvent('popstate', {
+        state: {},
+      })
+      dom.window.dispatchEvent(popStateEvent)
       expect(loadDataStub.firstCall.args).to.deep.equal([true])
     })
   })
@@ -204,11 +226,27 @@ describe('public/app/navigation function Init()', () => {
         assert(handler !== undefined, 'handler must have a value')
         await handler(data)
         expect(consoleLogSpy.called).to.equal(expected)
-        if (expected) {
-          expect(consoleLogSpy.firstCall.args).to.have.lengthOf(1)
-          expect(consoleLogSpy.firstCall.args[0]).to.equal(data)
-        }
       })
     })
+    testCases
+      .filter(([, , expected]) => expected)
+      .forEach(([name, data]) => {
+        it(`should log data with one argument when passed ${name}`, async () => {
+          Navigation.Init()
+          loadDataStub.resetHistory()
+          const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
+          assert(handler !== undefined, 'handler must have a value')
+          await handler(data)
+          expect(consoleLogSpy.firstCall.args).to.have.lengthOf(1)
+        })
+        it(`should log data value when passed ${name}`, async () => {
+          Navigation.Init()
+          loadDataStub.resetHistory()
+          const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
+          assert(handler !== undefined, 'handler must have a value')
+          await handler(data)
+          expect(consoleLogSpy.firstCall.args[0]).to.equal(data)
+        })
+      })
   })
 })

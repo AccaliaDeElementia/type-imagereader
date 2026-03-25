@@ -55,9 +55,12 @@ describe('index.ts Functions.ActuallyRunSyncForReal()', () => {
     await Functions.ActuallyRunSyncForReal()
     expect(lockReleasedBeforeSync).to.equal(false)
   })
-  it('should release lock after synchronize resolves', async () => {
+  it('should release lock once after synchronize resolves', async () => {
     await Functions.ActuallyRunSyncForReal()
     expect(releaseStub.callCount).to.equal(1)
+  })
+  it('should release lock after (not before) synchronize resolves', async () => {
+    await Functions.ActuallyRunSyncForReal()
     expect(releaseStub.calledAfter(synchronizeStub)).to.equal(true)
   })
   it('should release lock after synchronize rejects', async () => {

@@ -26,33 +26,39 @@ describe('utils/syncfolders function SyncAllPictures()', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should construct prefixed logger', async () => {
+  it('should call debug once when constructing logger', async () => {
     await Functions.SyncAllPictures(knexFake)
     expect(debugStub.callCount).to.equal(1)
+  })
+  it('should construct prefixed logger', async () => {
+    await Functions.SyncAllPictures(knexFake)
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
       .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
       .and.satisfy((msg: string) => msg.endsWith(':syncPictures'), 'Logger should be suffixed with `syncPictures`')
   })
-  it('should call SyncNewPictures', async () => {
+  it('should call SyncNewPictures once', async () => {
     await Functions.SyncAllPictures(knexFake)
     expect(syncNewPicturesStub.callCount).to.equal(1)
-    expect(syncNewPicturesStub.firstCall.args).to.have.lengthOf(2)
-    expect(syncNewPicturesStub.firstCall.args[0]).to.equal(loggerStub)
-    expect(syncNewPicturesStub.firstCall.args[1]).to.equal(knexFake)
   })
-  it('should call SyncRemovedPictures', async () => {
+  it('should call SyncNewPictures with expected args', async () => {
+    await Functions.SyncAllPictures(knexFake)
+    expect(syncNewPicturesStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
+  })
+  it('should call SyncRemovedPictures once', async () => {
     await Functions.SyncAllPictures(knexFake)
     expect(syncRemovedPicturesStub.callCount).to.equal(1)
-    expect(syncRemovedPicturesStub.firstCall.args).to.have.lengthOf(2)
-    expect(syncRemovedPicturesStub.firstCall.args[0]).to.equal(loggerStub)
-    expect(syncRemovedPicturesStub.firstCall.args[1]).to.equal(knexFake)
   })
-  it('should call SyncRemovedBookmarks', async () => {
+  it('should call SyncRemovedPictures with expected args', async () => {
+    await Functions.SyncAllPictures(knexFake)
+    expect(syncRemovedPicturesStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
+  })
+  it('should call SyncRemovedBookmarks once', async () => {
     await Functions.SyncAllPictures(knexFake)
     expect(syncRemovedBookmarksStub.callCount).to.equal(1)
-    expect(syncRemovedBookmarksStub.firstCall.args).to.have.lengthOf(2)
-    expect(syncRemovedBookmarksStub.firstCall.args[0]).to.equal(loggerStub)
-    expect(syncRemovedBookmarksStub.firstCall.args[1]).to.equal(knexFake)
+  })
+  it('should call SyncRemovedBookmarks with expected args', async () => {
+    await Functions.SyncAllPictures(knexFake)
+    expect(syncRemovedBookmarksStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
 })

@@ -106,10 +106,14 @@ describe('routes/slideshow function GetRoomAndIncrementImage() unread to all-ima
     await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -1)
     expect(getCountsStub.callCount).to.equal(1)
   })
-  it('it should call MarkImageRead with knex on unread to all-images transition on increment', async () => {
+  it('it should call MarkImageRead once on unread to all-images transition on increment', async () => {
     getImagesStub.resolves(['/new_image.png'])
     await Functions.GetRoomAndIncrementImage(knexFake, '/path/', 1)
     expect(markImageReadStub.calledOnce).to.equal(true)
+  })
+  it('it should call MarkImageRead with knex on unread to all-images transition on increment', async () => {
+    getImagesStub.resolves(['/new_image.png'])
+    await Functions.GetRoomAndIncrementImage(knexFake, '/path/', 1)
     expect(markImageReadStub.firstCall.args[0]).to.equal(knexFake)
   })
   it('it should call MarkImageRead with the first fresh image on unread to all-images transition on increment', async () => {
@@ -117,11 +121,16 @@ describe('routes/slideshow function GetRoomAndIncrementImage() unread to all-ima
     await Functions.GetRoomAndIncrementImage(knexFake, '/path/', 1)
     expect(markImageReadStub.firstCall.args[1]).to.equal('/new_image.png')
   })
-  it('it should call MarkImageRead with knex on unread to all-images transition on decrement', async () => {
+  it('it should call MarkImageRead once on unread to all-images transition on decrement', async () => {
     unreadRoom.index = 0
     getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
     await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -1)
     expect(markImageReadStub.calledOnce).to.equal(true)
+  })
+  it('it should call MarkImageRead with knex on unread to all-images transition on decrement', async () => {
+    unreadRoom.index = 0
+    getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
+    await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -1)
     expect(markImageReadStub.firstCall.args[0]).to.equal(knexFake)
   })
   it('it should call MarkImageRead with the last fresh image on unread to all-images transition on decrement', async () => {

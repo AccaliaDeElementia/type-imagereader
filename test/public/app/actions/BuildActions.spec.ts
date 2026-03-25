@@ -26,6 +26,11 @@ html
         div.card-body
           h5 placeholder
 `
+
+const rowCases = Actions.ActionGroups.flatMap(({ target, buttons }) =>
+  buttons.map((row, rowIndex) => ({ target, rowIndex, buttonCount: row.length })),
+)
+
 describe('public/app/actions function BuildActions()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
@@ -46,34 +51,47 @@ describe('public/app/actions function BuildActions()', () => {
     global.window = existingWindow
     global.document = existingDocument
   })
-  it('should return build actions for each tab', () => {
-    Actions.BuildActions()
-    for (const { target, buttons } of Actions.ActionGroups) {
-      const result = dom.window.document.querySelectorAll(`${target} .actions`)
-      expect(result).to.have.length(buttons.length, `${target} should have ${buttons.length} rows`)
-      for (let i = 0; i < buttons.length; i += 1) {
-        expect(result[i]).to.be.instanceOf(dom.window.HTMLDivElement, `${target} row ${i} should have expected type`)
-        expect(result[i]?.children).to.have.length(
-          buttons[i]?.length ?? -1,
-          `${target} row ${i} should have ${buttons[i]?.length} buttons`,
-        )
-      }
-    }
+
+  Actions.ActionGroups.forEach(({ target, buttons }) => {
+    it(`should create ${buttons.length} action rows in ${target}`, () => {
+      Actions.BuildActions()
+      expect(dom.window.document.querySelectorAll(`${target} .actions`)).to.have.length(buttons.length)
+    })
   })
 
-  it('should be idempotent', () => {
-    Actions.BuildActions()
-    Actions.BuildActions()
-    for (const { target, buttons } of Actions.ActionGroups) {
-      const result = dom.window.document.querySelectorAll(`${target} .actions`)
-      expect(result).to.have.length(buttons.length, `${target} should have ${buttons.length} rows`)
-      for (let i = 0; i < buttons.length; i += 1) {
-        expect(result[i]).to.be.instanceOf(dom.window.HTMLDivElement, `${target} row ${i} should have expected type`)
-        expect(result[i]?.children).to.have.length(
-          buttons[i]?.length ?? -1,
-          `${target} row ${i} should have ${buttons[i]?.length} buttons`,
-        )
-      }
-    }
+  rowCases.forEach(({ target, rowIndex, buttonCount }) => {
+    it(`should make ${target} row ${rowIndex} an HTMLDivElement`, () => {
+      Actions.BuildActions()
+      const rows = dom.window.document.querySelectorAll(`${target} .actions`)
+      expect(rows[rowIndex]).to.be.instanceOf(dom.window.HTMLDivElement)
+    })
+    it(`should put ${buttonCount} buttons in ${target} row ${rowIndex}`, () => {
+      Actions.BuildActions()
+      const rows = dom.window.document.querySelectorAll(`${target} .actions`)
+      expect(rows[rowIndex]?.children).to.have.length(buttonCount)
+    })
+  })
+
+  Actions.ActionGroups.forEach(({ target, buttons }) => {
+    it(`should create ${buttons.length} action rows in ${target} when called twice`, () => {
+      Actions.BuildActions()
+      Actions.BuildActions()
+      expect(dom.window.document.querySelectorAll(`${target} .actions`)).to.have.length(buttons.length)
+    })
+  })
+
+  rowCases.forEach(({ target, rowIndex, buttonCount }) => {
+    it(`should make ${target} row ${rowIndex} an HTMLDivElement when called twice`, () => {
+      Actions.BuildActions()
+      Actions.BuildActions()
+      const rows = dom.window.document.querySelectorAll(`${target} .actions`)
+      expect(rows[rowIndex]).to.be.instanceOf(dom.window.HTMLDivElement)
+    })
+    it(`should put ${buttonCount} buttons in ${target} row ${rowIndex} when called twice`, () => {
+      Actions.BuildActions()
+      Actions.BuildActions()
+      const rows = dom.window.document.querySelectorAll(`${target} .actions`)
+      expect(rows[rowIndex]?.children).to.have.length(buttonCount)
+    })
   })
 })

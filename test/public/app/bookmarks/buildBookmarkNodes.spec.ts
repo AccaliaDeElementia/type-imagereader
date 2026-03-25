@@ -82,24 +82,24 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     )
     expect(getFolderSpy.called).to.equal(false)
   })
-  it('should call GetFolder with expected params', () => {
-    const folder = {
-      name: 'Quux',
-      path: '/path/to/Quux',
-      bookmarks: [],
-    }
-    Bookmarks.buildBookmarkNodes(
-      {
-        name: '',
-        path: '',
-        parent: '',
-        bookmarks: [folder],
-      },
-      '/FOO/BAR!',
-    )
+  it('should call GetFolder once', () => {
+    const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
+    Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.callCount).to.equal(1)
+  })
+  it('should call GetFolder with 2 arguments', () => {
+    const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
+    Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args).to.have.lengthOf(2)
+  })
+  it('should pass parent path as first argument to GetFolder', () => {
+    const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
+    Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args[0]).to.equal('/FOO/BAR!')
+  })
+  it('should pass bookmark folder as second argument to GetFolder', () => {
+    const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
+    Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args[1]).to.equal(folder)
   })
   it('should not build bookmarks when folder retrieve fails', () => {
@@ -139,28 +139,49 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     )
     expect(buildBookmarkSpy.callCount).to.equal(0)
   })
-  it('should build bookmarks from folder', () => {
+  it('should call BuildBookmark once per bookmark', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
+    Bookmarks.buildBookmarkNodes(
+      { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
+      '',
+    )
+    expect(buildBookmarkSpy.callCount).to.equal(1)
+  })
+  it('should call BuildBookmark with 1 argument', () => {
+    const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
+    Bookmarks.buildBookmarkNodes(
+      { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
+      '',
+    )
+    expect(buildBookmarkSpy.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should pass the bookmark to BuildBookmark', () => {
+    const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
+    Bookmarks.buildBookmarkNodes(
+      { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
+      '',
+    )
+    expect(buildBookmarkSpy.firstCall.args[0]).to.equal(mark)
+  })
+  it('should increase folder child count by 1 when appending bookmark card', () => {
+    const folder = dom.window.document.createElement('div')
+    for (let i = 0; i < 10; i += 1) {
+      folder.appendChild(dom.window.document.createElement('div'))
+    }
+    getFolderSpy.returns(folder)
+    buildBookmarkSpy.returns(dom.window.document.createElement('div'))
     Bookmarks.buildBookmarkNodes(
       {
         name: '',
         path: '',
         parent: '',
-        bookmarks: [
-          {
-            name: 'Quux',
-            path: '/path/to/Quux',
-            bookmarks: [mark],
-          },
-        ],
+        bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [{ name: 'FOO', path: 'BAR', folder: 'BAZ' }] }],
       },
       '',
     )
-    expect(buildBookmarkSpy.callCount).to.equal(1)
-    expect(buildBookmarkSpy.firstCall.args).to.have.lengthOf(1)
-    expect(buildBookmarkSpy.firstCall.args[0]).to.equal(mark)
+    expect(folder.children).to.have.lengthOf(11)
   })
-  it('should append bookmark card to folder node', () => {
+  it('should append the bookmark card as the last child of the folder node', () => {
     const folder = dom.window.document.createElement('div')
     for (let i = 0; i < 10; i += 1) {
       folder.appendChild(dom.window.document.createElement('div'))
@@ -173,17 +194,10 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
         name: '',
         path: '',
         parent: '',
-        bookmarks: [
-          {
-            name: 'Quux',
-            path: '/path/to/Quux',
-            bookmarks: [{ name: 'FOO', path: 'BAR', folder: 'BAZ' }],
-          },
-        ],
+        bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [{ name: 'FOO', path: 'BAR', folder: 'BAZ' }] }],
       },
       '',
     )
-    expect(folder.children).to.have.lengthOf(11)
     expect(folder.children[10]).to.equal(card)
   })
   it('should not append node to folder node when bookmark card creation fails', () => {

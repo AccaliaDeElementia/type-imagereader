@@ -63,10 +63,16 @@ describe('public/app/pictures function SelectPage()', () => {
     dom.window.document.querySelector('body')?.appendChild(pages)
     return result
   }
-  it('should publish default page select when no pages', () => {
+  it('should publish default page select once when no pages', () => {
     Pictures.SelectPage(0)
     expect(selectPageSpy.callCount).to.equal(1)
+  })
+  it('should publish default page select with expected args when no pages', () => {
+    Pictures.SelectPage(0)
     expect(selectPageSpy.firstCall.args).to.deep.equal(['Default Page Selected', 'PICTURES:SELECTPAGE'])
+  })
+  it('should not publish loading error when publishing default page select', () => {
+    Pictures.SelectPage(0)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should not publish error when no pages', () => {
@@ -76,35 +82,70 @@ describe('public/app/pictures function SelectPage()', () => {
     Pictures.SelectPage(1e9)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
-  it('should publish error when trying to select zero page', () => {
+  it('should not call selectPage when trying to select zero page', () => {
     makePageLinks(10)
     makePages(10)
     Pictures.SelectPage(0)
     expect(selectPageSpy.callCount).to.equal(0)
+  })
+  it('should publish error once when trying to select zero page', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(0)
     expect(loadingErrorSpy.callCount).to.equal(1)
+  })
+  it('should publish error with expected args when trying to select zero page', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(0)
     expect(loadingErrorSpy.firstCall.args).to.deep.equal(['Invalid Page Index Selected', 'LOADING:ERROR'])
   })
-  it('should publish error when trying to select negative page', () => {
+  it('should not call selectPage when trying to select negative page', () => {
     makePageLinks(10)
     makePages(10)
     Pictures.SelectPage(-1)
     expect(selectPageSpy.callCount).to.equal(0)
+  })
+  it('should publish error once when trying to select negative page', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(-1)
     expect(loadingErrorSpy.callCount).to.equal(1)
+  })
+  it('should publish error with expected args when trying to select negative page', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(-1)
     expect(loadingErrorSpy.firstCall.args).to.deep.equal(['Invalid Page Index Selected', 'LOADING:ERROR'])
   })
-  it('should publish error when trying to select out of range page', () => {
+  it('should not call selectPage when trying to select out of range page', () => {
     makePageLinks(10)
     makePages(10)
     Pictures.SelectPage(11)
     expect(selectPageSpy.callCount).to.equal(0)
+  })
+  it('should publish error once when trying to select out of range page', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(11)
     expect(loadingErrorSpy.callCount).to.equal(1)
+  })
+  it('should publish error with expected args when trying to select out of range page', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(11)
     expect(loadingErrorSpy.firstCall.args).to.deep.equal(['Invalid Page Index Selected', 'LOADING:ERROR'])
+  })
+  it('should call selectPage once when trying to select valid page', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(5)
+    expect(selectPageSpy.callCount).to.equal(1)
   })
   it('should not publish error when trying to select valid page', () => {
     makePageLinks(10)
     makePages(10)
     Pictures.SelectPage(5)
-    expect(selectPageSpy.callCount).to.equal(1)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should remove active class from current active page link when switching', () => {
@@ -139,12 +180,22 @@ describe('public/app/pictures function SelectPage()', () => {
     Pictures.SelectPage(25)
     expect(pages[24]?.classList.contains('hidden')).to.equal(false)
   })
-  it('should publish notification on successful page select', () => {
+  it('should publish notification once on successful page select', () => {
     makePageLinks(10)
     makePages(10)
     Pictures.SelectPage(5)
     expect(selectPageSpy.callCount).to.equal(1)
+  })
+  it('should publish notification with expected args on successful page select', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(5)
     expect(selectPageSpy.firstCall.args).to.deep.equal(['New Page 5 Selected', 'PICTURES:SELECTPAGE'])
+  })
+  it('should not publish error on successful page select', () => {
+    makePageLinks(10)
+    makePages(10)
+    Pictures.SelectPage(5)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should not publish notification on error page select', () => {

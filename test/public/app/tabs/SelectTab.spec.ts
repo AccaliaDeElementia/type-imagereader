@@ -95,36 +95,56 @@ describe('public/app/tabs function SelectTab()', () => {
       Tabs.SelectTab(undefined)
     }).to.not.throw()
   })
-  it('should publish first tab when selecting null tab', () => {
+  it('should publish once when selecting null tab', () => {
     Tabs.SelectTab()
     expect(tabSelectedSpy.callCount).to.equal(1)
+  })
+  it('should publish first tab when selecting null tab', () => {
+    Tabs.SelectTab()
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabActions', 'TAB:SELECTED'])
+  })
+  it('should publish once when selecting unknown tab', () => {
+    Tabs.SelectTab('#tabDoesNotExist')
+    expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish first tab when selecting unknown tab', () => {
     Tabs.SelectTab('#tabDoesNotExist')
-    expect(tabSelectedSpy.callCount).to.equal(1)
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabActions', 'TAB:SELECTED'])
+  })
+  it('should publish once when selecting nonprefixed tab', () => {
+    Tabs.SelectTab('Bookmarks')
+    expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting nonprefixed tab', () => {
     Tabs.SelectTab('Bookmarks')
-    expect(tabSelectedSpy.callCount).to.equal(1)
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabBookmarks', 'TAB:SELECTED'])
+  })
+  it('should publish once when selecting full tab', () => {
+    Tabs.SelectTab('#tabImages')
+    expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting full tab', () => {
     Tabs.SelectTab('#tabImages')
-    expect(tabSelectedSpy.callCount).to.equal(1)
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabImages', 'TAB:SELECTED'])
+  })
+  it('should publish once even if href is removed', () => {
+    const elem = dom.window.document.querySelector('a[href=tabImages]')
+    elem?.removeAttribute('href')
+    Tabs.SelectTab('#tabImages')
+    expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
     Tabs.SelectTab('#tabImages')
-    expect(tabSelectedSpy.callCount).to.equal(1)
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabImages', 'TAB:SELECTED'])
+  })
+  it('should publish once when selecting tab case insensitively', () => {
+    Tabs.SelectTab('#TABFOLDERS')
+    expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting tab case insensitively', () => {
     Tabs.SelectTab('#TABFOLDERS')
-    expect(tabSelectedSpy.callCount).to.equal(1)
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabFolders', 'TAB:SELECTED'])
   })
   it('should add active css class to selected tab', () => {
@@ -163,6 +183,9 @@ describe('public/app/tabs function SelectTab()', () => {
     expect(imagesScroll.callCount).to.equal(0)
     Tabs.SelectTab('Images')
     expect(imagesScroll.callCount).to.equal(1)
+  })
+  it('should scroll with expected options on tab select', () => {
+    Tabs.SelectTab('Images')
     expect(imagesScroll.firstCall.args).to.deep.equal([{ top: 0, behavior: 'smooth' }])
   })
 })

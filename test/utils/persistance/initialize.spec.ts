@@ -53,6 +53,11 @@ describe('utils/persistance function initialize()', () => {
     const promise = Promise.resolve(StubToKnex(stubKnexInstance))
     Imports.Initializer = promise
     expect(await persistance.initialize()).to.equal(stubKnexInstance)
+  })
+  it('should not call knex when an initializer is already stored', async () => {
+    const promise = Promise.resolve(StubToKnex(stubKnexInstance))
+    Imports.Initializer = promise
+    await persistance.initialize()
     expect(stubKnex.called).to.equal(false)
   })
   it('should set stored Initializer when empty', async () => {

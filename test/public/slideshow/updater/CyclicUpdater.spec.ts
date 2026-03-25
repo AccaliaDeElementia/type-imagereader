@@ -81,9 +81,12 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
     afterEach(() => {
       sandbox.restore()
     })
-    it('should decrement countdown on call', async () => {
+    it('should not call updateFn when countdown has not expired', async () => {
       await updater.trigger(200)
       expect(updateFn.callCount).to.equal(0)
+    })
+    it('should decrement countdown on call', async () => {
+      await updater.trigger(200)
       expect(updater._countdown).to.equal(5800)
     })
     it('should set countdown to infinite while waiting for updater to run', async () => {

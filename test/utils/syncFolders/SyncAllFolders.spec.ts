@@ -28,32 +28,47 @@ describe('utils/syncfolders function SyncAllFolders()', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should construct prefixed logger', async () => {
+  it('should call debug once when constructing logger', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(debugStub.callCount).to.equal(1)
+  })
+  it('should construct prefixed logger', async () => {
+    await Functions.SyncAllFolders(knexFake)
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
       .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
       .and.satisfy((msg: string) => msg.endsWith(':syncFolders'), 'Logger should be suffixed with `syncFolders`')
   })
-  it('should call SyncNewFolders', async () => {
+  it('should call SyncNewFolders once', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(syncNewFoldersStub.callCount).to.equal(1)
+  })
+  it('should call SyncNewFolders with expected args', async () => {
+    await Functions.SyncAllFolders(knexFake)
     expect(syncNewFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncRemovedFolders', async () => {
+  it('should call SyncRemovedFolders once', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(syncRemovedFoldersStub.callCount).to.equal(1)
+  })
+  it('should call SyncRemovedFolders with expected args', async () => {
+    await Functions.SyncAllFolders(knexFake)
     expect(syncRemovedFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncMissingCoverImages', async () => {
+  it('should call SyncMissingCoverImages once', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(syncMissingCoverImagesStub.callCount).to.equal(1)
+  })
+  it('should call SyncMissingCoverImages with expected args', async () => {
+    await Functions.SyncAllFolders(knexFake)
     expect(syncMissingCoverImagesStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncFolderFirstImages', async () => {
+  it('should call SyncFolderFirstImages once', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(syncFolderFirstImagesStub.callCount).to.equal(1)
+  })
+  it('should call SyncFolderFirstImages with expected args', async () => {
+    await Functions.SyncAllFolders(knexFake)
     expect(syncFolderFirstImagesStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
 })

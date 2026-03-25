@@ -55,27 +55,31 @@ describe('public/app/pictures function MakePicturesPage()', () => {
     Pictures.MakePicturesPage(69, [pic])
     expect(pic.page).to.equal(69)
   })
-  it('should create image card with input picture', () => {
-    const pic: Picture = {
-      name: '',
-      path: '',
-      seen: false,
-    }
-    Pictures.MakePicturesPage(69, [pic])
+  it('should call MakePictureCard once per picture', () => {
+    Pictures.MakePicturesPage(69, [{ name: '', path: '', seen: false }])
     expect(makePictureCardSpy.callCount).to.equal(1)
+  })
+  it('should call MakePictureCard with 1 argument', () => {
+    Pictures.MakePicturesPage(69, [{ name: '', path: '', seen: false }])
     expect(makePictureCardSpy.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should pass the picture to MakePictureCard', () => {
+    const pic: Picture = { name: '', path: '', seen: false }
+    Pictures.MakePicturesPage(69, [pic])
     expect(makePictureCardSpy.firstCall.args[0]).to.equal(pic)
   })
-  it('should save card to picture on success', () => {
-    const picture: Picture = {
-      name: 'foo',
-      path: '/foo/bar/baz.jpg',
-      seen: false,
-    }
+  it('should save card element to picture on success', () => {
+    const picture: Picture = { name: 'foo', path: '/foo/bar/baz.jpg', seen: false }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
     Pictures.MakePicturesPage(69, [picture])
     expect(picture).to.have.any.keys('element')
+  })
+  it('should save the returned card as the picture element', () => {
+    const picture: Picture = { name: 'foo', path: '/foo/bar/baz.jpg', seen: false }
+    const card = dom.window.document.createElement('div')
+    makePictureCardSpy.returns(card)
+    Pictures.MakePicturesPage(69, [picture])
     expect(picture.element).to.equal(card)
   })
   it('should not set page number when card creation fails', () => {

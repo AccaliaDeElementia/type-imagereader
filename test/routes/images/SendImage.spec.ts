@@ -24,12 +24,22 @@ describe('routes/images function SendImage()', () => {
     Functions.SendImage(img, responseFake)
     expect(responseStub.set.calledWith('Expires', new Date(Date.now() + aMonth).toUTCString())).to.equal(true)
   })
-  it('should send image data for valid image', () => {
+  it('should call send once for valid image', () => {
     const data = Buffer.from('Image Data')
     const img = ImageData.fromImage(data, 'webp', '/image.png')
     Functions.SendImage(img, responseFake)
     expect(responseStub.send.callCount).to.equal(1)
+  })
+  it('should send image data with one argument for valid image', () => {
+    const data = Buffer.from('Image Data')
+    const img = ImageData.fromImage(data, 'webp', '/image.png')
+    Functions.SendImage(img, responseFake)
     expect(responseStub.send.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should send image data for valid image', () => {
+    const data = Buffer.from('Image Data')
+    const img = ImageData.fromImage(data, 'webp', '/image.png')
+    Functions.SendImage(img, responseFake)
     expect(responseStub.send.firstCall.args[0]).to.equal(data)
   })
   it('should not set status code explicitly', () => {
@@ -48,14 +58,20 @@ describe('routes/images function SendImage()', () => {
     Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
     expect(responseStub.send.callCount).to.equal(0)
   })
-  it('should set http status for invalid image', () => {
+  it('should call status once for invalid image', () => {
     Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should set http status for invalid image', () => {
+    Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([418])
+  })
+  it('should call json once for invalid image', () => {
+    Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
+    expect(responseStub.json.callCount).to.equal(1)
   })
   it('should send json data for invalid image', () => {
     Functions.SendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
     expect(responseStub.json.firstCall.args).to.deep.equal([
       {
         error: {

@@ -108,21 +108,31 @@ describe('public/app/navigation function Init()', () => {
       ],
     ]
     payloadTests.forEach(([name, data]) => {
-      it(`should accept ${name} as result from postJSON`, async () => {
+      it(`should provide a function as validator for ${name} result from postJSON`, async () => {
         await handler()
         const fn = Cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
         expect(fn).to.be.a('function')
+      })
+      it(`should accept ${name} as result from postJSON`, async () => {
+        await handler()
+        const fn = Cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
         expect(fn(data)).to.equal(true)
       })
     })
-    it('should call LoadData after postJSON resolves', async () => {
+    it('should call LoadData once after postJSON resolves', async () => {
       await handler()
       expect(loadDataStub.callCount).to.equal(1)
+    })
+    it('should call LoadData after (not before) postJSON resolves', async () => {
+      await handler()
       expect(loadDataStub.calledAfter(postJSONSpy)).to.equal(true)
     })
-    it('should call LoadData in no history mode', async () => {
+    it('should call LoadData with one argument in no history mode', async () => {
       await handler()
       expect(loadDataStub.firstCall.args).to.have.lengthOf(1)
+    })
+    it('should call LoadData with true in no history mode', async () => {
+      await handler()
       expect(loadDataStub.firstCall.args[0]).to.equal(true)
     })
     it('should not publish LoadingError when PostJSON resolves', async () => {
@@ -202,21 +212,31 @@ describe('public/app/navigation function Init()', () => {
       ],
     ]
     payloadTests.forEach(([name, data]) => {
-      it(`should accept ${name} as result from postJSON`, async () => {
+      it(`should provide a function as validator for ${name} result from postJSON`, async () => {
         await handler()
         const fn = Cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
         expect(fn).to.be.a('function')
+      })
+      it(`should accept ${name} as result from postJSON`, async () => {
+        await handler()
+        const fn = Cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
         expect(fn(data)).to.equal(true)
       })
     })
-    it('should call LoadData after postJSON resolves', async () => {
+    it('should call LoadData once after postJSON resolves', async () => {
       await handler()
       expect(loadDataStub.callCount).to.equal(1)
+    })
+    it('should call LoadData after (not before) postJSON resolves', async () => {
+      await handler()
       expect(loadDataStub.calledAfter(postJSONSpy)).to.equal(true)
     })
-    it('should call LoadData in no history mode', async () => {
+    it('should call LoadData with one argument in no history mode', async () => {
       await handler()
       expect(loadDataStub.firstCall.args).to.have.lengthOf(1)
+    })
+    it('should call LoadData with true in no history mode', async () => {
+      await handler()
       expect(loadDataStub.firstCall.args[0]).to.equal(true)
     })
     it('should not publish LoadingError when PostJSON resolves', async () => {
@@ -299,14 +319,20 @@ describe('public/app/navigation function Init()', () => {
       requestFullscreenStub.reset()
       exitFullscreenStub.reset()
     })
-    it('should execute requestFullscreen when no fullscreen element exists', async () => {
+    it('should call requestFullscreen once when no fullscreen element exists', async () => {
       await handler()
       expect(requestFullscreenStub.callCount).to.equal(1)
+    })
+    it('should not call exitFullscreen when no fullscreen element exists', async () => {
+      await handler()
       expect(exitFullscreenStub.callCount).to.equal(0)
+    })
+    it('should request fullscreen with one argument', async () => {
+      await handler()
+      expect(requestFullscreenStub.firstCall.args).to.have.lengthOf(1)
     })
     it('should request fullscreen without navigationUI', async () => {
       await handler()
-      expect(requestFullscreenStub.firstCall.args).to.have.lengthOf(1)
       expect(requestFullscreenStub.firstCall.args[0]).to.deep.equal({ navigationUI: 'hide' })
     })
     it('should not publish Loading:Error when requestFullscreen resolves', async () => {
@@ -325,13 +351,20 @@ describe('public/app/navigation function Init()', () => {
       await handler()
       expect(errorSpy.firstCall.args[0]).to.equal(err)
     })
-    it('should exit fullscreen when full screen element exists', async () => {
+    it('should not call requestFullscreen when fullscreen element exists', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
         writable: true,
         value: dom.window.document.body,
       })
       await handler()
       expect(requestFullscreenStub.callCount).to.equal(0)
+    })
+    it('should call exitFullscreen once when fullscreen element exists', async () => {
+      Object.defineProperty(dom.window.document, 'fullscreenElement', {
+        writable: true,
+        value: dom.window.document.body,
+      })
+      await handler()
       expect(exitFullscreenStub.callCount).to.equal(1)
     })
     it('should not publish Loading:Error when exitFullscreen resolves', async () => {

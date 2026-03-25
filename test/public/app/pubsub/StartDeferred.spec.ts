@@ -44,9 +44,12 @@ describe('public/app/pubsub function StartDeferred()', () => {
     Cast<() => void>(fn)()
     expect(executeIntervalSpy.callCount).to.equal(1)
   })
-  it('should set interval with configured interval period', () => {
+  it('should call setInterval with 2 arguments', () => {
     PubSub.StartDeferred()
     expect(setIntervalSpy.firstCall.args).to.have.lengthOf(2)
+  })
+  it('should set interval with configured interval period', () => {
+    PubSub.StartDeferred()
     expect(setIntervalSpy.firstCall.args[1]).to.equal(17)
   })
   it('should save timer id for later deactivation', () => {

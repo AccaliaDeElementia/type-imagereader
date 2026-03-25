@@ -49,11 +49,16 @@ describe('public/app/pictures function MakePaginatorItem()', () => {
     result?.dispatchEvent(evt)
     expect(spy.callCount).to.equal(1)
   })
-  it('should add click handler that selects page based on selector results', () => {
+  it('should add click handler that calls SelectPage', () => {
     const result = Pictures.MakePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
     expect(selectPageSpy.callCount).to.equal(1)
+  })
+  it('should add click handler that passes selector result to SelectPage', () => {
+    const result = Pictures.MakePaginatorItem('frobitz', () => 99)
+    const evt = new dom.window.MouseEvent('click')
+    result?.dispatchEvent(evt)
     expect(selectPageSpy.firstCall.args).to.deep.equal([99])
   })
 })

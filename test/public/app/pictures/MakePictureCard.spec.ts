@@ -98,17 +98,22 @@ describe('public/app/pictures function MakePictureCard()', () => {
     card?.dispatchEvent(evt)
     expect(changePictureSpy.called).to.equal(true)
   })
-  it('should change to clicked picture on click event', () => {
-    const pic = {
-      name: 'Foobar 9001',
-      path: '/foo/bar/baz.jpg',
-      seen: false,
-    }
+  it('should call ChangePicture once on click event', () => {
+    const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
     const card = Pictures.MakePictureCard(pic)
-    const evt = new dom.window.MouseEvent('click')
-    card?.dispatchEvent(evt)
+    card?.dispatchEvent(new dom.window.MouseEvent('click'))
     expect(changePictureSpy.callCount).to.equal(1)
+  })
+  it('should call ChangePicture with 1 argument on click event', () => {
+    const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
+    const card = Pictures.MakePictureCard(pic)
+    card?.dispatchEvent(new dom.window.MouseEvent('click'))
     expect(changePictureSpy.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should pass the picture to ChangePicture on click event', () => {
+    const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
+    const card = Pictures.MakePictureCard(pic)
+    card?.dispatchEvent(new dom.window.MouseEvent('click'))
     expect(changePictureSpy.firstCall.args[0]).to.equal(pic)
   })
   it('should hide menu on click event', () => {

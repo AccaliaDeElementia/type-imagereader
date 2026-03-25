@@ -61,48 +61,82 @@ describe('routes/api route GET /listing', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should return status OK', async () => {
+  it('should call status once when returning OK', async () => {
     getListingStub.resolves({})
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should return status OK', async () => {
+    getListingStub.resolves({})
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+  })
+  it('should call json once when sending listing response', async () => {
+    const listing = { listing: Math.random() }
+    getListingStub.resolves(listing)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.callCount).to.equal(1)
+  })
+  it('should json send one argument in listing response', async () => {
+    const listing = { listing: Math.random() }
+    getListingStub.resolves(listing)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
   })
   it('should json send listing response', async () => {
     const listing = { listing: Math.random() }
     getListingStub.resolves(listing)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
-    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
     expect(responseStub.json.firstCall.args[0]).to.equal(listing)
   })
-  it('should call GetListingStub with Knex from initialize', async () => {
+  it('should call GetListing once with Knex from initialize', async () => {
     requestStub.params.path = []
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
+  })
+  it('should pass Knex to GetListing', async () => {
+    requestStub.params.path = []
+    await routeHandler(requestFake, responseFake)
     expect(getListingStub.firstCall.args[0]).to.equal(knexFake)
   })
-  it('should call GetListingStub to retrieve implicit root listing', async () => {
+  it('should call GetListing once for implicit root listing', async () => {
     requestStub.params.path = []
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
+  })
+  it('should retrieve implicit root listing', async () => {
+    requestStub.params.path = []
+    await routeHandler(requestFake, responseFake)
     expect(getListingStub.firstCall.args[1]).to.equal('/')
   })
-  it('should call GetListingStub to retrieve explicit root listing', async () => {
+  it('should call GetListing once for explicit root listing', async () => {
     requestStub.params.path = ['']
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
+  })
+  it('should retrieve explicit root listing', async () => {
+    requestStub.params.path = ['']
+    await routeHandler(requestFake, responseFake)
     expect(getListingStub.firstCall.args[1]).to.equal('/')
   })
-  it('should call GetListingStub to retrieve web path listing for string', async () => {
+  it('should call GetListing once for string path listing', async () => {
     requestStub.params.path = 'foo/a bar/baz'
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
+  })
+  it('should retrieve web path listing for string', async () => {
+    requestStub.params.path = 'foo/a bar/baz'
+    await routeHandler(requestFake, responseFake)
     expect(getListingStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
   })
-  it('should call GetListingStub to retrieve web path listing for string array', async () => {
+  it('should call GetListing once for string array path listing', async () => {
     requestStub.params.path = ['foo', 'a bar', 'baz']
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(1)
+  })
+  it('should retrieve web path listing for string array', async () => {
+    requestStub.params.path = ['foo', 'a bar', 'baz']
+    await routeHandler(requestFake, responseFake)
     expect(getListingStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
   })
   it('should not retrieve listing directory traversal attempt', async () => {
@@ -110,11 +144,25 @@ describe('routes/api route GET /listing', () => {
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(0)
   })
-  it('should return status FORBIDDEN for directory traversal attempt', async () => {
+  it('should call status once for directory traversal attempt', async () => {
     requestStub.params.path = 'foo/../bar/'
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should return status FORBIDDEN for directory traversal attempt', async () => {
+    requestStub.params.path = 'foo/../bar/'
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
+  })
+  it('should call json once for directory traversal attempt', async () => {
+    requestStub.params.path = 'foo/../bar/'
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.callCount).to.equal(1)
+  })
+  it('should json one argument for directory traversal attempt', async () => {
+    requestStub.params.path = 'foo/../bar/'
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
   })
   it('should json error for directory traversal attempt', async () => {
     requestStub.params.path = 'foo/../bar/'
@@ -126,15 +174,27 @@ describe('routes/api route GET /listing', () => {
       },
     }
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
-    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
     expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
+  })
+  it('should call status once for missing folder', async () => {
+    getListingStub.resolves(null)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.status.callCount).to.equal(1)
   })
   it('should return status NOT_FOUND for missing folder', async () => {
     getListingStub.resolves(null)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.equal(1)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.NOT_FOUND])
+  })
+  it('should call json once for missing folder', async () => {
+    getListingStub.resolves(null)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.callCount).to.equal(1)
+  })
+  it('should json one argument for missing folder', async () => {
+    getListingStub.resolves(null)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
   })
   it('should json error for missing folder', async () => {
     const err = {
@@ -146,8 +206,6 @@ describe('routes/api route GET /listing', () => {
     }
     getListingStub.resolves(null)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
-    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
     expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
   })
   it('should call response status on error', async () => {

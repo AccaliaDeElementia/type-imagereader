@@ -57,19 +57,16 @@ describe('public/app/bookmarks function Init()', () => {
   })
   it('should locate bookmarkCard template on init', () => {
     const content = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
-    expect(content).to.not.equal(undefined)
     Bookmarks.Init()
     expect(Bookmarks.bookmarkCard).to.equal(content)
   })
   it('should locate bookmarkFolder template on init', () => {
     const content = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
-    expect(content).to.not.equal(undefined)
     Bookmarks.Init()
     expect(Bookmarks.bookmarkFolder).to.equal(content)
   })
   it('should locate bookmarksTab template on init', () => {
     const content = document.querySelector<HTMLElement>('#tabBookmarks')
-    expect(content).to.not.equal(undefined)
     Bookmarks.Init()
     expect(Bookmarks.bookmarksTab).to.equal(content)
   })

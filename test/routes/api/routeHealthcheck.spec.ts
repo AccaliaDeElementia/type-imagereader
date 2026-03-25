@@ -54,14 +54,20 @@ describe('routes/api route GET /healthcheck', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should return status OK', async () => {
+  it('should call status once', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should return status OK', async () => {
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+  })
+  it('should call send once', async () => {
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.send.callCount).to.equal(1)
   })
   it('should return `OK`', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.send.callCount).to.equal(1)
     expect(responseStub.send.firstCall.args).to.deep.equal(['OK'])
   })
   it('should call response status on error', async () => {

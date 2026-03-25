@@ -71,82 +71,131 @@ describe('routes/api route POST /navigate/latest', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should return status OK', async () => {
+  it('should call response status once on success', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should return status OK', async () => {
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+  })
+  it('should call status once when modcount is invalid', async () => {
+    validateModcountStub.returns(false)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should set status BAD_REQUEST when modcount is invalid', async () => {
+    validateModcountStub.returns(false)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+  })
+  it('should call send once when modcount is invalid', async () => {
+    validateModcountStub.returns(false)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.send.callCount).to.equal(1)
   })
   it('should accept missing modcount and handle as invalid modcount', async () => {
     validateModcountStub.returns(false)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.equal(1)
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
-    expect(responseStub.send.callCount).to.equal(1)
     expect(responseStub.send.firstCall.args).to.deep.equal(['-1'])
+  })
+  it('should call send once when validate passes', async () => {
+    validateModcountStub.returns(true)
+    incrementModcountStub.returns(5050)
+    const req = Cast<Request>({ body: { path: '/image.png' }, originalUrl: '/' })
+    await routeHandler(req, responseFake)
+    expect(responseStub.send.callCount).to.equal(1)
   })
   it('should return new modcount when validate passes', async () => {
     validateModcountStub.returns(true)
     incrementModcountStub.returns(5050)
-    const req = Cast<Request>({
-      body: {
-        path: '/image.png',
-      },
-      originalUrl: '/',
-    })
+    const req = Cast<Request>({ body: { path: '/image.png' }, originalUrl: '/' })
     await routeHandler(req, responseFake)
-    expect(responseStub.send.callCount).to.equal(1)
     expect(responseStub.send.firstCall.args).to.deep.equal(['5050'])
+  })
+  it('should call status once when validate is bypassed', async () => {
+    requestStub.body.modCount = -1
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.status.callCount).to.equal(1)
   })
   it('should return Status OK when validate is bypassed', async () => {
     requestStub.body.modCount = -1
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.equal(1)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+  })
+  it('should call send once when validate is bypassed', async () => {
+    requestStub.body.modCount = -1
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.send.callCount).to.equal(1)
   })
   it('should return invalid modcount when validate is bypassed', async () => {
     requestStub.body.modCount = -1
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.send.callCount).to.equal(1)
     expect(responseStub.send.firstCall.args).to.deep.equal(['-1'])
+  })
+  it('should call SetLatestPicture once when validate is bypassed', async () => {
+    validateModcountStub.returns(false)
+    requestStub.body.modCount = -1
+    requestStub.body.path = 'foo/bar/a%20image.png'
+    await routeHandler(requestFake, responseFake)
+    expect(setLatestPictureStub.callCount).to.equal(1)
   })
   it('should call SetLatestPicture when validate is bypassed', async () => {
     validateModcountStub.returns(false)
     requestStub.body.modCount = -1
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
-    expect(setLatestPictureStub.callCount).to.equal(1)
-    expect(setLatestPictureStub.firstCall.args).to.have.lengthOf(2)
-    expect(setLatestPictureStub.firstCall.args[0]).to.equal(knexFake)
-    expect(setLatestPictureStub.firstCall.args[1]).to.equal('/foo/bar/a image.png')
+    expect(setLatestPictureStub.firstCall.args).to.deep.equal([knexFake, '/foo/bar/a image.png'])
   })
-  it('should ignore modcount when validate is bypassed', async () => {
+  it('should not call Validate when validate is bypassed', async () => {
     requestStub.body.modCount = -1
     await routeHandler(requestFake, responseFake)
     expect(validateModcountStub.callCount).to.equal(0)
+  })
+  it('should not call Get when validate is bypassed', async () => {
+    requestStub.body.modCount = -1
+    await routeHandler(requestFake, responseFake)
     expect(getModcountStub.callCount).to.equal(0)
+  })
+  it('should not call Increment when validate is bypassed', async () => {
+    requestStub.body.modCount = -1
+    await routeHandler(requestFake, responseFake)
     expect(incrementModcountStub.callCount).to.equal(0)
+  })
+  it('should call SetLatestPicture once when validate passes', async () => {
+    validateModcountStub.returns(true)
+    requestStub.body.path = 'foo/bar/a%20image.png'
+    await routeHandler(requestFake, responseFake)
+    expect(setLatestPictureStub.callCount).to.equal(1)
   })
   it('should call SetLatestPicture when validate passes', async () => {
     validateModcountStub.returns(true)
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
-    expect(setLatestPictureStub.callCount).to.equal(1)
-    expect(setLatestPictureStub.firstCall.args).to.have.lengthOf(2)
-    expect(setLatestPictureStub.firstCall.args[0]).to.equal(knexFake)
-    expect(setLatestPictureStub.firstCall.args[1]).to.equal('/foo/bar/a image.png')
+    expect(setLatestPictureStub.firstCall.args).to.deep.equal([knexFake, '/foo/bar/a image.png'])
+  })
+  it('should call status once when validate fails', async () => {
+    validateModcountStub.returns(false)
+    getModcountStub.returns(69_420)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.status.callCount).to.equal(1)
   })
   it('should set status BAD_REQUEST when validate fails', async () => {
     validateModcountStub.returns(false)
     getModcountStub.returns(69_420)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.equal(1)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
+  })
+  it('should call send once when validate fails', async () => {
+    validateModcountStub.returns(false)
+    getModcountStub.returns(69_420)
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.send.callCount).to.equal(1)
   })
   it('should return invalid when validate fails', async () => {
     validateModcountStub.returns(false)
     getModcountStub.returns(69_420)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.send.callCount).to.equal(1)
     expect(responseStub.send.firstCall.args).to.deep.equal(['-1'])
   })
   it('should not call SetLatestPicture when validate fails', async () => {
@@ -164,7 +213,16 @@ describe('routes/api route POST /navigate/latest', () => {
     requestStub.body.path = '/foo/../bar/'
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.callCount).to.equal(1)
+  })
+  it('should set status FORBIDDEN for directory traversal attempt', async () => {
+    requestStub.body.path = '/foo/../bar/'
+    await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
+  })
+  it('should call json once for directory traversal attempt', async () => {
+    requestStub.body.path = '/foo/../bar/'
+    await routeHandler(requestFake, responseFake)
+    expect(responseStub.json.callCount).to.equal(1)
   })
   it('should json error for directory traversal attempt', async () => {
     requestStub.body.path = '/foo/../bar/'
@@ -176,8 +234,6 @@ describe('routes/api route POST /navigate/latest', () => {
       },
     }
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
-    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
     expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
   })
   it('should call response status on error', async () => {

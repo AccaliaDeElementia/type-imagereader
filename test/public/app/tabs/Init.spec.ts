@@ -71,13 +71,20 @@ describe('public/app/tabs function Init()', () => {
     Tabs.Init()
     expect(PubSub.subscribers).to.have.any.keys('TAB:SELECT')
   })
-  it('should select provided tab for Tab:Select event', async () => {
+  it('should call SelectTab once for Tab:Select event', async () => {
     Tabs.Init()
     selectTabSpy.resetHistory()
     const fn = PubSub.subscribers['TAB:SELECT']?.[0]
     assert(fn !== undefined)
     await fn('FOOBAR')
     expect(selectTabSpy.callCount).to.equal(1)
+  })
+  it('should select provided tab for Tab:Select event', async () => {
+    Tabs.Init()
+    selectTabSpy.resetHistory()
+    const fn = PubSub.subscribers['TAB:SELECT']?.[0]
+    assert(fn !== undefined)
+    await fn('FOOBAR')
     expect(selectTabSpy.firstCall.args).to.deep.equal(['FOOBAR'])
   })
   it('should ignore non string value for Tab:Select event', async () => {
@@ -91,7 +98,6 @@ describe('public/app/tabs function Init()', () => {
   links.forEach((link, idx) => {
     it(`should find a[href="${link}"] as tab selector`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
-      expect(elem).to.not.equal(null)
       Tabs.Init()
       expect(Tabs.tabs[idx]).to.equal(elem)
     })
@@ -99,22 +105,41 @@ describe('public/app/tabs function Init()', () => {
       Tabs.Init()
       expect(Tabs.tabNames[idx]).to.equal(link)
     })
-    it(`should add click handler to tab parent element for ${link}`, () => {
+    it(`should call addEventListener once on tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
       assert(HasValue(elem))
       const spy = sandbox.stub(elem, 'addEventListener')
       try {
         Tabs.Init()
         expect(spy.callCount).to.equal(1)
+      } finally {
+        spy.restore()
+      }
+    })
+    it(`should add click handler with two args to tab parent element for ${link}`, () => {
+      const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
+      assert(HasValue(elem))
+      const spy = sandbox.stub(elem, 'addEventListener')
+      try {
+        Tabs.Init()
         expect(spy.firstCall.args).to.have.lengthOf(2)
-        expect(spy.firstCall.args[0]).to.equal('click')
       } finally {
         spy.restore()
       }
     })
     it(`should add click handler to tab parent element for ${link}`, () => {
+      const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
+      assert(HasValue(elem))
+      const spy = sandbox.stub(elem, 'addEventListener')
+      try {
+        Tabs.Init()
+        expect(spy.firstCall.args[0]).to.equal('click')
+      } finally {
+        spy.restore()
+      }
+    })
+    it(`should trigger SelectTab on tab click for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
-      expect(elem).to.not.equal(null)
       Tabs.Init()
       selectTabSpy.resetHistory()
       const evt = new dom.window.MouseEvent('click')
@@ -123,7 +148,6 @@ describe('public/app/tabs function Init()', () => {
     })
     it(`should select expected tab for ${link} click handler`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
-      expect(elem).to.not.equal(null)
       Tabs.Init()
       selectTabSpy.resetHistory()
       const evt = new dom.window.MouseEvent('click')
@@ -132,7 +156,6 @@ describe('public/app/tabs function Init()', () => {
     })
     it(`should select default for ${link} with removed href`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
-      expect(elem).to.not.equal(null)
       elem?.removeAttribute('href')
       Tabs.Init()
       selectTabSpy.resetHistory()
