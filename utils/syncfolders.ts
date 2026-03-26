@@ -55,6 +55,15 @@ export const Imports = {
 }
 
 export const Functions = {
+  ExtractInsertCount: (result: unknown): number => {
+    if (isRowCountResult(result)) {
+      return result.rowCount
+    }
+    if (result instanceof Array && result.length > ZERO && typeof result[ZERO] === 'number') {
+      return result[ZERO]
+    }
+    return ZERO
+  },
   padLength: NUMBER_PAD_LENGTH,
   ToSortKey: (key: string): string => {
     const zeroes = '0'.repeat(Functions.padLength)
@@ -144,14 +153,7 @@ export const Functions = {
             'pictures.path': null,
           })
       })
-    let count = ZERO
-    if (isRowCountResult(insertedpics)) {
-      ;({ rowCount: count } = insertedpics)
-    }
-    if (insertedpics instanceof Array && insertedpics.length > ZERO && typeof insertedpics[ZERO] === 'number') {
-      ;[count] = insertedpics
-    }
-    logger(`Added ${count} new pictures`)
+    logger(`Added ${Functions.ExtractInsertCount(insertedpics)} new pictures`)
   },
   SyncRemovedPictures: async (logger: Debugger, knex: Knex): Promise<void> => {
     const deletedpics = await knex('pictures')
@@ -187,14 +189,7 @@ export const Functions = {
             'folders.path': null,
           })
       })
-    let count = ZERO
-    if (isRowCountResult(folders)) {
-      ;({ rowCount: count } = folders)
-    }
-    if (folders instanceof Array && folders.length > ZERO && typeof folders[ZERO] === 'number') {
-      ;[count] = folders
-    }
-    logger(`Added ${count} new folders`)
+    logger(`Added ${Functions.ExtractInsertCount(folders)} new folders`)
   },
   SyncRemovedFolders: async (logger: Debugger, knex: Knex): Promise<void> => {
     const deletedfolders = await knex('folders')

@@ -13,8 +13,10 @@ import { ModCount, UriSafePath, Functions, INVALID_MOD_COUNT } from './apiFuncti
 
 import debug from 'debug'
 import { ReqParamToString } from '#utils/helpers'
+import { handleErrors as _handleErrors } from '#utils/Express'
+import { isPathTraversal as _isPathTraversal } from '#utils/Path'
 
-export const Imports = { Router, debug }
+export const Imports = { Router, debug, handleErrors: _handleErrors, isPathTraversal: _isPathTraversal }
 
 interface ReqWithBodyData {
   body: BodyData
@@ -45,26 +47,11 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   const router = Imports.Router()
 
   const logger = Imports.debug('type-imagereader:api')
-
-  const handleErrors =
-    (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
-    async (req: Request, res: Response) => {
-      try {
-        await action(req, res)
-      } catch (e) {
-        logger(`Error rendering: ${req.originalUrl}`, req.body)
-        logger(e)
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          error: {
-            code: 'E_INTERNAL_ERROR',
-            message: 'Internal Server Error',
-          },
-        })
-      }
-    }
+  const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
+    Imports.handleErrors(logger, action)
 
   const parsePath = (path: string, res: Response): string | null => {
-    if (normalize(path) !== path) {
+    if (Imports.isPathTraversal(path)) {
       res.status(StatusCodes.FORBIDDEN).json({
         error: {
           code: 'E_NO_TRAVERSE',
@@ -145,7 +132,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
-        await Functions.MarkFolderRead(knex, normalize(`${path}/`))
+        await Functions.MarkFolderSeen(knex, normalize(`${path}/`), true)
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -157,7 +144,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
-        await Functions.MarkFolderUnread(knex, normalize(`${path}/`))
+        await Functions.MarkFolderSeen(knex, normalize(`${path}/`), false)
         res.status(StatusCodes.OK).end()
       }
     }),

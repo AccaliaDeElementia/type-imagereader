@@ -4,6 +4,9 @@ import { normalize, basename, dirname, extname, sep } from 'node:path'
 
 import type { Knex } from 'knex'
 import { EscapeLikeWildcards, StringishHasValue } from '#utils/helpers'
+import { GetParentFolders as _GetParentFolders } from '#utils/Path'
+
+export const Imports = { GetParentFolders: _GetParentFolders }
 
 export const INVALID_MOD_COUNT = -1
 const MAXIMUM_MOD_COUNT = Number.MAX_SAFE_INTEGER + INVALID_MOD_COUNT
@@ -286,15 +289,6 @@ export const Functions = {
       modCount: ModCount.Get(),
     }
   },
-  GetPictureFolders: (path: string): string[] => {
-    const results = []
-    let parent = path
-    while (parent !== sep) {
-      parent = normalize(dirname(parent) + sep)
-      results.push(parent)
-    }
-    return results
-  },
   SetLatestPicture: async (knex: Knex, path: string): Promise<string | null> => {
     const folder = normalize(dirname(path) + sep)
     const picture = (await knex('pictures').select<DbPicture[]>('seen').where({ path })).shift()
@@ -302,34 +296,25 @@ export const Functions = {
       return null
     }
     if (!picture.seen) {
-      await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Functions.GetPictureFolders(path))
+      await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Imports.GetParentFolders(path))
       await knex('pictures').update({ seen: true }).where({ path })
     }
     await knex('folders').update({ current: path }).where({ path: folder })
     return UriSafePath.encode(folder)
   },
-  MarkFolderRead: async (knex: Knex, path: string): Promise<void> => {
+  MarkFolderSeen: async (knex: Knex, path: string, markAsSeen: boolean): Promise<void> => {
     const updates = await knex('pictures')
-      .update({ seen: true })
-      .where({ seen: false })
+      .update({ seen: markAsSeen })
+      .where({ seen: !markAsSeen })
       .andWhere('folder', 'like', `${EscapeLikeWildcards(path)}%`)
     if (updates > ZERO_COUNT) {
-      await knex('folders').increment('seenCount', updates).whereIn('path', Functions.GetPictureFolders(path))
+      const increment = markAsSeen ? updates : -updates
+      await knex('folders').increment('seenCount', increment).whereIn('path', Imports.GetParentFolders(path))
+      const folderUpdate = markAsSeen
+        ? { seenCount: knex.raw('"totalCount"') }
+        : { seenCount: ZERO_COUNT, current: null }
       await knex('folders')
-        .update({ seenCount: knex.raw('"totalCount"') })
-        .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
-        .orWhere({ path })
-    }
-  },
-  MarkFolderUnread: async (knex: Knex, path: string): Promise<void> => {
-    const updates = await knex('pictures')
-      .update({ seen: false })
-      .where({ seen: true })
-      .andWhere('folder', 'like', `${EscapeLikeWildcards(path)}%`)
-    if (updates > ZERO_COUNT) {
-      await knex('folders').increment('seenCount', -updates).whereIn('path', Functions.GetPictureFolders(path))
-      await knex('folders')
-        .update({ seenCount: ZERO_COUNT, current: null })
+        .update(folderUpdate)
         .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
         .orWhere({ path })
     }

@@ -3,7 +3,7 @@
 import { type Application, Router, type Request, type Response, type RequestHandler } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { normalize, join, extname } from 'node:path'
+import { join, extname } from 'node:path'
 import { readFile } from 'node:fs/promises'
 
 import Sharp from 'sharp'
@@ -12,6 +12,8 @@ import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
 import { ReqParamToString } from '#utils/helpers'
+import { handleErrors as _handleErrors } from '#utils/Express'
+import { isPathTraversal as _isPathTraversal } from '#utils/Path'
 
 const CACHE_SIZE = 25
 const ONE_MONTH = 2_592_000_000
@@ -70,7 +72,14 @@ export class ImageData {
   }
 }
 
-export const Imports = { debug, readFile, Sharp, Router }
+export const Imports = {
+  debug,
+  readFile,
+  Sharp,
+  Router,
+  handleErrors: _handleErrors,
+  isPathTraversal: _isPathTraversal,
+}
 
 export interface CacheItem {
   path: string
@@ -112,7 +121,7 @@ export class ImageCache {
 
 export const Functions = {
   ReadImage: async (path: string): Promise<ImageData> => {
-    if (normalize(path) !== path) {
+    if (Imports.isPathTraversal(path)) {
       return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
     }
     const regexResult = /^(?:\.)?(?<ext>.+)/v.exec(extname(path))
@@ -197,22 +206,8 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     })
   }
 
-  const handleErrors =
-    (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
-    async (req: Request, res: Response) => {
-      try {
-        await action(req, res)
-      } catch (e) {
-        logger(`Error rendering: ${req.originalUrl}`, req.body)
-        logger(e)
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          error: {
-            code: 'E_INTERNAL_ERROR',
-            message: 'Internal Server Error',
-          },
-        })
-      }
-    }
+  const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
+    Imports.handleErrors(logger, action)
 
   router.get(
     '/full/*path',

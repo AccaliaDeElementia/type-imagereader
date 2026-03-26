@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import type { Debugger } from 'debug'
 
-import type { Request, Response, Application, Router } from 'express'
+import type { Request, RequestHandler, Response, Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
@@ -32,6 +32,7 @@ describe('routes/images route /full/*', () => {
   }
   Sinon.stub()
   let loggerStub = Sinon.stub()
+  let handleErrorsStub = Sinon.stub()
   Sinon.stub()
   let router = Cast<(req: Request, res: Response) => Promise<void>>(Sinon.stub())
   let readImageStub = Sinon.stub()
@@ -46,6 +47,9 @@ describe('routes/images route /full/*', () => {
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = Sinon.stub()
     sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    handleErrorsStub = sandbox
+      .stub(Imports, 'handleErrors')
+      .callsFake((_logger, action) => Cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get
       .getCalls()
@@ -79,36 +83,6 @@ describe('routes/images route /full/*', () => {
     ['send retrieved image with SendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
     ['send retrieved imageData', (_, data) => expect(sendImageStub.firstCall.args).to.deep.equal([data, responseFake])],
   ]
-  const errorTriggers: Array<[string, (err: Error) => void]> = [
-    ['ReadImage() throws', (err) => readImageStub.throws(err)],
-    ['ReadImage() rejects', (err) => readImageStub.rejects(err)],
-    ['SendImage() throws', (err) => sendImageStub.throws(err)],
-  ]
-  const errorTests: Array<[string, (err: Error) => void]> = [
-    ['call response status() to set status', () => expect(responseStub.status.callCount).to.equal(1)],
-    ['set error response status code', () => expect(responseStub.status.firstCall.args).to.deep.equal([500])],
-    ['call response json() to render error', () => expect(responseStub.json.callCount).to.equal(1)],
-    [
-      'set response error payload',
-      () =>
-        expect(responseStub.json.firstCall.args).to.deep.equal([
-          {
-            error: {
-              code: 'E_INTERNAL_ERROR',
-              message: 'Internal Server Error',
-            },
-          },
-        ]),
-    ],
-    ['log multiple messages', () => expect(loggerStub.callCount).to.equal(2)],
-    ['log error message first', () => expect(loggerStub.firstCall.args).to.have.lengthOf(2)],
-    [
-      'log simple error message',
-      () => expect(loggerStub.firstCall.args).to.deep.equal(['Error rendering: /full/image.png', 'REQUEST BODY']),
-    ],
-    ['log exception second', () => expect(loggerStub.secondCall.args).to.have.lengthOf(1)],
-    ['log exception object exactly', (err) => expect(loggerStub.secondCall.args[0]).to.equal(err)],
-  ]
   const successTestRunner = (
     path: string,
     title: string,
@@ -127,25 +101,17 @@ describe('routes/images route /full/*', () => {
       successTestRunner(path, title, validation)
     }
   }
-  const errorTestRunner = (
-    triggerName: string,
-    triggerFn: (e: Error) => void,
-    errorTitle: string,
-    validation: (e: Error) => void,
-  ): void => {
-    it(`should ${errorTitle} when ${triggerName}`, async () => {
-      requestStub.params.path = 'foo/bar/baz.txt'
-      requestStub.originalUrl = '/full/image.png'
-      requestStub.body = 'REQUEST BODY'
-      const err = new Error('FOO')
-      triggerFn(err)
-      await router(requestFake, responseFake)
-      validation(err)
-    })
-  }
-  for (const [triggerName, triggerFn] of errorTriggers) {
-    for (const [errorTitle, validation] of errorTests) {
-      errorTestRunner(triggerName, triggerFn, errorTitle, validation)
+  it('should register route handler using handleErrors', () => {
+    expect(handleErrorsStub.callCount).to.be.greaterThanOrEqual(1)
+  })
+  it('should pass logger to every handleErrors call', () => {
+    for (const call of handleErrorsStub.getCalls()) {
+      expect(call.args[0]).to.equal(loggerStub)
     }
-  }
+  })
+  it('should pass action function to every handleErrors call', () => {
+    for (const call of handleErrorsStub.getCalls()) {
+      expect(call.args[1]).to.be.a('function')
+    }
+  })
 })

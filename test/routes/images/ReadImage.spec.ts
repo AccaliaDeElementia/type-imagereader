@@ -12,10 +12,12 @@ describe('routes/images function ReadImage()', () => {
   let fromErrorStub = Sinon.stub()
   let fromImageStub = Sinon.stub()
   let readFileStub = Sinon.stub()
+  let isPathTraversalStub = Sinon.stub()
   beforeEach(() => {
     fromErrorStub = sandbox.stub(ImageData, 'fromError')
     fromImageStub = sandbox.stub(ImageData, 'fromImage')
     readFileStub = sandbox.stub(Imports, 'readFile').resolves()
+    isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
   })
   afterEach(() => {
     sandbox.restore()
@@ -28,14 +30,6 @@ describe('routes/images function ReadImage()', () => {
     }
   }
   const rejectors: Array<[string, string, string, number, string, Promise<unknown> | Error]> = [
-    [
-      'directory traversal',
-      '/foo/../bar/image.png',
-      'E_NO_TRAVERSE',
-      StatusCodes.FORBIDDEN,
-      'Directory Traversal is not Allowed!',
-      Promise.resolve(),
-    ],
     [
       'non image path',
       '/foo/bar/image',
@@ -74,22 +68,6 @@ describe('routes/images function ReadImage()', () => {
       'E_NOT_IMAGE',
       StatusCodes.BAD_REQUEST,
       'Requested Path is Not An Image!',
-      Promise.resolve(),
-    ],
-    [
-      'path with leading double slash',
-      '//foo/bar.jpg',
-      'E_NO_TRAVERSE',
-      StatusCodes.FORBIDDEN,
-      'Directory Traversal is not Allowed!',
-      Promise.resolve(),
-    ],
-    [
-      'path with mid-path double slash',
-      '/foo//bar.jpg',
-      'E_NO_TRAVERSE',
-      StatusCodes.FORBIDDEN,
-      'Directory Traversal is not Allowed!',
       Promise.resolve(),
     ],
   ]
@@ -131,6 +109,29 @@ describe('routes/images function ReadImage()', () => {
       await Functions.ReadImage(path)
       expect(fromErrorStub.firstCall.args[3]).to.equal(path)
     })
+  })
+  it('should call isPathTraversal with the path', async () => {
+    await Functions.ReadImage('/foo/bar/image.png')
+    expect(isPathTraversalStub.firstCall.args).to.deep.equal(['/foo/bar/image.png'])
+  })
+  it('should return E_NO_TRAVERSE error when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
+    const img = { img: Math.random() }
+    fromErrorStub.returns(img)
+    await Functions.ReadImage('/foo/bar/image.png')
+    expect(fromErrorStub.firstCall.args[0]).to.equal('E_NO_TRAVERSE')
+  })
+  it('should return FORBIDDEN status when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
+    fromErrorStub.returns({})
+    await Functions.ReadImage('/foo/bar/image.png')
+    expect(fromErrorStub.firstCall.args[1]).to.equal(StatusCodes.FORBIDDEN)
+  })
+  it('should not read file when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
+    fromErrorStub.returns({})
+    await Functions.ReadImage('/foo/bar/image.png')
+    expect(readFileStub.callCount).to.equal(0)
   })
   const validImagetests: Array<[string, (i: ImageData, d: ImageData, buff: Buffer) => void]> = [
     [

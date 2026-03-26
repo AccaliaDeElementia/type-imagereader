@@ -5,6 +5,7 @@ import type { Application, Response as ExpressResponse, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { getRouter, Imports } from '#routes/index'
+import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards'
 import { createResponseFake } from '#testutils/Express'
@@ -17,6 +18,7 @@ describe('routes/index route /show', () => {
   let requestStub = { params: { path: undefined as string[] | string | undefined } }
   let requestFake = Cast<Request>(requestStub)
   let { stub: resposeStub, fake: responseFake } = createResponseFake()
+  let isPathTraversalStub = Sinon.stub()
   beforeEach(async () => {
     const applicationFake = Cast<Application>({})
     const serverFake = Cast<Server>({})
@@ -35,49 +37,36 @@ describe('routes/index route /show', () => {
     } finally {
       getRouterStub?.restore()
     }
+    isPathTraversalStub = Sinon.stub(Imports, 'isPathTraversal').returns(false)
     requestStub = { params: { path: undefined } }
     requestFake = Cast<Request>(requestStub)
     ;({ stub: resposeStub, fake: responseFake } = createResponseFake())
   })
+  afterEach(() => {
+    isPathTraversalStub.restore()
+  })
   it("should alias same handler for both '/show' and '/show/*path' routes", () => {
     expect(routeFn).to.equal(routeAltFn)
   })
-  const errorData = {
-    error: {
-      title: 'ERROR',
-      code: 'E_NO_TRAVERSE',
-      message: 'Directory Traversal is not Allowed!',
-    },
-  }
-  const getArgs = (stub: Sinon.SinonStub): unknown[] => stub.firstCall.args as unknown[]
-  const errorTests: Array<[string, string, () => void]> = [
-    ['set explicit status', 'foo/../bar', () => expect(resposeStub.status.callCount).to.equal(1)],
-    ['set explicit status', 'foo/./bar', () => expect(resposeStub.status.callCount).to.equal(1)],
-    ['set explicit status', 'foo//bar', () => expect(resposeStub.status.callCount).to.equal(1)],
-    ['set explicit status', '~foo/bar', () => expect(resposeStub.status.callCount).to.equal(1)],
-    ['set explicit status', '/foo/bar/', () => expect(resposeStub.status.callCount).to.equal(1)],
-    ['forbid', 'foo/../bar', () => expect(getArgs(resposeStub.status)[0]).to.equal(403)],
-    ['forbid', 'foo/./bar', () => expect(getArgs(resposeStub.status)[0]).to.equal(403)],
-    ['forbid', 'foo//bar', () => expect(getArgs(resposeStub.status)[0]).to.equal(403)],
-    ['forbid', '~foo/bar', () => expect(getArgs(resposeStub.status)[0]).to.equal(403)],
-    ['forbid', '/foo/bar/', () => expect(getArgs(resposeStub.status)[0]).to.equal(403)],
-    ["render 'error'", 'foo/../bar', () => expect(getArgs(resposeStub.render)[0]).to.equal('error')],
-    ["render 'error'", 'foo/./bar', () => expect(getArgs(resposeStub.render)[0]).to.equal('error')],
-    ["render 'error'", 'foo//bar', () => expect(getArgs(resposeStub.render)[0]).to.equal('error')],
-    ["render 'error'", '~foo/bar', () => expect(getArgs(resposeStub.render)[0]).to.equal('error')],
-    ["render 'error'", '/foo/bar/', () => expect(getArgs(resposeStub.render)[0]).to.equal('error')],
-    ['render with errorData', 'foo/../bar', () => expect(getArgs(resposeStub.render)[1]).to.deep.equal(errorData)],
-    ['render with errorData', 'foo/./bar', () => expect(getArgs(resposeStub.render)[1]).to.deep.equal(errorData)],
-    ['render with errorData', 'foo//bar', () => expect(getArgs(resposeStub.render)[1]).to.deep.equal(errorData)],
-    ['render with errorData', '~foo/bar', () => expect(getArgs(resposeStub.render)[1]).to.deep.equal(errorData)],
-    ['render with errorData', '/foo/bar/', () => expect(getArgs(resposeStub.render)[1]).to.deep.equal(errorData)],
-  ]
-  errorTests.forEach(([title, path, validationFn]) => {
-    it(`should ${title} for '${path}'`, () => {
-      requestStub.params.path = path
-      routeFn(requestFake, responseFake)
-      validationFn()
-    })
+  it('should return FORBIDDEN when isPathTraversal returns true', () => {
+    isPathTraversalStub.returns(true)
+    routeFn(requestFake, responseFake)
+    expect(resposeStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
+  })
+  it('should render error template when isPathTraversal returns true', () => {
+    isPathTraversalStub.returns(true)
+    routeFn(requestFake, responseFake)
+    expect(resposeStub.render.firstCall.args[0]).to.equal('error')
+  })
+  it('should render E_NO_TRAVERSE error data when isPathTraversal returns true', () => {
+    isPathTraversalStub.returns(true)
+    routeFn(requestFake, responseFake)
+    expect(resposeStub.render.firstCall.args[1]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
+  })
+  it('should not render app when isPathTraversal returns true', () => {
+    isPathTraversalStub.returns(true)
+    routeFn(requestFake, responseFake)
+    expect(resposeStub.render.firstCall.args[0]).to.not.equal('app')
   })
   const successPaths: Array<string | string[] | undefined> = [
     undefined,

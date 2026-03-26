@@ -7,7 +7,7 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
-import { normalize, dirname } from 'node:path'
+import { isPathTraversal as _isPathTraversal, GetParentFolders as _GetParentFolders } from '#utils/Path'
 
 import persistance from '#utils/persistance'
 import { UriSafePath, Functions as api } from './apiFunctions'
@@ -105,6 +105,8 @@ export const SocketHandlers = {
 export const Imports = {
   logger,
   setLatest: async (knex: Knex, path: string): Promise<string | null> => await api.SetLatestPicture(knex, path),
+  GetParentFolders: _GetParentFolders,
+  isPathTraversal: _isPathTraversal,
   Router,
 }
 export class HandleSocketState {
@@ -117,25 +119,15 @@ export class HandleSocketState {
   }
 }
 export const Functions = {
-  GetUnreadImageCount: async (knex: Knex, path: string): Promise<number> => {
-    const counts = await knex('pictures')
+  GetImageCount: async (knex: Knex, path: string, unreadOnly = false): Promise<number> => {
+    let query = knex('pictures')
       .count({ count: 'path' })
       .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
-      .andWhere('seen', '=', false)
+    if (unreadOnly) {
+      query = query.andWhere('seen', '=', false)
+    }
     try {
-      const count = counts.shift()?.count
-      if (HasValue(count)) {
-        return Number.parseInt(`${count}`, 10)
-      }
-    } catch {}
-    return ZERO_COUNT
-  },
-  GetImageCount: async (knex: Knex, path: string): Promise<number> => {
-    const counts = await knex('pictures')
-      .count({ count: 'path' })
-      .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
-    try {
-      const count = counts.shift()?.count
+      const count = (await query).shift()?.count
       if (HasValue(count)) {
         return Number.parseInt(`${count}`, 10)
       }
@@ -148,7 +140,7 @@ export const Functions = {
     currentPage?: number,
     mutator = (page: number): number => page,
   ): Promise<SlideshowPages> => {
-    const unreadcount = await Functions.GetUnreadImageCount(knex, path)
+    const unreadcount = await Functions.GetImageCount(knex, path, true)
     const allcount = await Functions.GetImageCount(knex, path)
     let pages = Math.ceil(allcount / Config.memorySize)
     if (pages === ZERO_COUNT) {
@@ -194,13 +186,9 @@ export const Functions = {
     if (!HasValues(picture)) {
       return
     }
-    const folders = []
-    let path = image
-    while (path !== '/') {
-      path = dirname(path)
-      folders.push(`${path}${path === '/' ? '' : '/'}`)
-    }
-    await knex('folders').increment('seenCount', ALTER_COUNTER.INCREMENT).whereIn('path', folders)
+    await knex('folders')
+      .increment('seenCount', ALTER_COUNTER.INCREMENT)
+      .whereIn('path', Imports.GetParentFolders(image))
     await knex('pictures').update({ seen: true }).where({ path: image })
   },
   GetRoomAndIncrementImage: async (
@@ -312,7 +300,7 @@ export const Functions = {
   },
   RootRoute: async (knex: Knex, req: Request, res: Response): Promise<void> => {
     const folder = `/${ReqParamToString(req.params.path)}`
-    if (normalize(folder) !== folder || folder.startsWith('/~')) {
+    if (Imports.isPathTraversal(folder)) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
         title: 'ERROR',
         code: 'E_NO_TRAVERSE',

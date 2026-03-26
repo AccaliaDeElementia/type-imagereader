@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import type { Application, Response as ExpressResponse, Router } from 'express'
+import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { Functions } from '#routes/apiFunctions'
@@ -28,8 +28,10 @@ describe('routes/api route POST /mark/unread', () => {
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
+  let handleErrorsStub = Sinon.stub()
+  let isPathTraversalStub = Sinon.stub()
   Sinon.stub()
-  let markFolderUnreadStub = Sinon.stub()
+  let markFolderSeenStub = Sinon.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -49,9 +51,13 @@ describe('routes/api route POST /mark/unread', () => {
         get: Sinon.stub(),
       }),
     )
-    markFolderUnreadStub = sandbox.stub(Functions, 'MarkFolderUnread').resolves()
+    markFolderSeenStub = sandbox.stub(Functions, 'MarkFolderSeen').resolves()
     loggerStub = Sinon.stub()
     sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    handleErrorsStub = sandbox
+      .stub(Imports, 'handleErrors')
+      .callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
+    isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       postFn.getCalls().find((call) => call.args[0] === '/mark/unread')?.args[1],
@@ -79,123 +85,57 @@ describe('routes/api route POST /mark/unread', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.end.firstCall.args).to.have.lengthOf(0)
   })
-  it('should call MarkFolderUnread once', async () => {
+  it('should call MarkFolderSeen once', async () => {
     requestStub.body.path = 'foo/a%20bar/baz'
     await routeHandler(requestFake, responseFake)
-    expect(markFolderUnreadStub.callCount).to.equal(1)
+    expect(markFolderSeenStub.callCount).to.equal(1)
   })
-  it('should call MarkFolderUnread with two arguments', async () => {
+  it('should call MarkFolderSeen with three arguments', async () => {
     requestStub.body.path = 'foo/a%20bar/baz'
     await routeHandler(requestFake, responseFake)
-    expect(markFolderUnreadStub.firstCall.args).to.have.lengthOf(2)
+    expect(markFolderSeenStub.firstCall.args).to.have.lengthOf(3)
   })
-  it('should call MarkFolderUnread with knex instance', async () => {
+  it('should call MarkFolderSeen with knex instance', async () => {
     requestStub.body.path = 'foo/a%20bar/baz'
     await routeHandler(requestFake, responseFake)
-    expect(markFolderUnreadStub.firstCall.args[0]).to.equal(knexFake)
+    expect(markFolderSeenStub.firstCall.args[0]).to.equal(knexFake)
   })
-  it('should call MarkFolderUnread with decoded path', async () => {
+  it('should call MarkFolderSeen with decoded path', async () => {
     requestStub.body.path = 'foo/a%20bar/baz'
     await routeHandler(requestFake, responseFake)
-    expect(markFolderUnreadStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
+    expect(markFolderSeenStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
   })
-  it('should not retrieve listing directory traversal attempt', async () => {
-    requestStub.body.path = '/foo/../bar/'
+  it('should call MarkFolderSeen with markAsSeen false', async () => {
+    requestStub.body.path = 'foo/a%20bar/baz'
     await routeHandler(requestFake, responseFake)
-    expect(markFolderUnreadStub.callCount).to.equal(0)
+    expect(markFolderSeenStub.firstCall.args[2]).to.equal(false)
   })
-  it('should call response status once for directory traversal attempt', async () => {
-    requestStub.body.path = '/foo/../bar/'
+  it('should not call MarkFolderSeen when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.equal(1)
+    expect(markFolderSeenStub.callCount).to.equal(0)
   })
-  it('should return status FORBIDDEN for directory traversal attempt', async () => {
-    requestStub.body.path = '/foo/../bar/'
+  it('should return status FORBIDDEN when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
   })
-  it('should call response json once for directory traversal attempt', async () => {
-    requestStub.body.path = '/foo/../bar/'
+  it('should return E_NO_TRAVERSE json error when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
+    expect(responseStub.json.firstCall.args[0]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
   })
-  it('should json error with one argument for directory traversal attempt', async () => {
-    requestStub.body.path = '/foo/../bar/'
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
+  it('should register route handler using handleErrors', () => {
+    expect(handleErrorsStub.callCount).to.be.greaterThanOrEqual(1)
   })
-  it('should json error for directory traversal attempt', async () => {
-    requestStub.body.path = '/foo/../bar/'
-    const err = {
-      error: {
-        code: 'E_NO_TRAVERSE',
-        message: 'Directory Traversal is not Allowed!',
-        path: '/foo/../bar/',
-      },
+  it('should pass logger to every handleErrors call', () => {
+    for (const call of handleErrorsStub.getCalls()) {
+      expect(call.args[0]).to.equal(loggerStub)
     }
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
   })
-  it('should call response status on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.be.greaterThanOrEqual(1)
-  })
-  it('should set INTERNAL_SERVER_ERROR status on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.lastCall.args).to.deep.equal([StatusCodes.INTERNAL_SERVER_ERROR])
-  })
-  it('should set E_INTERNAL_ERROR json payload on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.lastCall.args).to.deep.equal([
-      {
-        error: {
-          code: 'E_INTERNAL_ERROR',
-          message: 'Internal Server Error',
-        },
-      },
-    ])
-  })
-  it('should call logger on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    requestStub.originalUrl = '/'
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
-  })
-  it('should log two arguments on first log call on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    requestStub.originalUrl = '/'
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.firstCall.args).to.have.lengthOf(2)
-  })
-  it('should log rendered url as first log argument on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    requestStub.originalUrl = '/'
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.firstCall.args[0]).to.equal('Error rendering: /')
-  })
-  it('should log request body as second log argument on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    requestStub.originalUrl = '/'
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.firstCall.args[1]).to.equal(requestStub.body)
-  })
-  it('should call logger at least once on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
-  })
-  it('should log one argument on last log call on error', async () => {
-    markFolderUnreadStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.lastCall.args).to.have.lengthOf(1)
-  })
-  it('should log error object as last log argument on error', async () => {
-    const err = new Error('Evil Error!')
-    markFolderUnreadStub.rejects(err)
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.lastCall.args[0]).to.equal(err)
+  it('should pass action function to every handleErrors call', () => {
+    for (const call of handleErrorsStub.getCalls()) {
+      expect(call.args[1]).to.be.a('function')
+    }
   })
 })

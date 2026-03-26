@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import type { Request } from 'express'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import { expect } from 'chai'
-import { Functions } from '#routes/slideshow'
+import { Functions, Imports } from '#routes/slideshow'
 import { createResponseFake } from '#testutils/Express'
 
 const sandbox = Sinon.createSandbox()
@@ -18,6 +18,7 @@ describe('routes/slideshow function RootRoute', () => {
   let knexFake = StubToKnex({})
   let roomData = { images: [''], uriSafeImage: '' }
   let getRoomStub = Sinon.stub().resolves()
+  let isPathTraversalStub = Sinon.stub()
   let noImages = [] as string[]
   let fullImages = ['1', '2', '3', '4', '5', '6', '7', '8']
   let getRoomError = new Error('Error Fetching Room!')
@@ -33,6 +34,7 @@ describe('routes/slideshow function RootRoute', () => {
     roomData = { images: noImages, uriSafeImage: '/foo/bar/baz.png' }
     getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
+    isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     getRoomError = new Error('Error Fetching Room!')
   })
   afterEach(() => {
@@ -54,37 +56,27 @@ describe('routes/slideshow function RootRoute', () => {
     message: getRoomError,
   }
   const getArgs = (stub: Sinon.SinonStub): unknown[] => stub.firstCall.args as unknown[]
+  it('should return FORBIDDEN when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
+    await Functions.RootRoute(knexFake, requestFake, responseFake)
+    expect(getArgs(resStub.status)[0]).to.equal(403)
+  })
+  it('should render error template when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
+    await Functions.RootRoute(knexFake, requestFake, responseFake)
+    expect(getArgs(resStub.render)[0]).to.equal('error')
+  })
+  it('should render E_NO_TRAVERSE error data when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
+    await Functions.RootRoute(knexFake, requestFake, responseFake)
+    expect(getArgs(resStub.render)[1]).to.deep.equal(eTraverse)
+  })
+  it('should not get room when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
+    await Functions.RootRoute(knexFake, requestFake, responseFake)
+    expect(getRoomStub.callCount).to.equal(0)
+  })
   const tests: Array<[string, string | undefined, string[] | null, (data: unknown) => void]> = [
-    ['set status', 'foo/../bar', fullImages, () => expect(resStub.status.callCount).to.equal(1)],
-    ['set status', 'foo/./bar', fullImages, () => expect(resStub.status.callCount).to.equal(1)],
-    ['set status', 'foo//bar', fullImages, () => expect(resStub.status.callCount).to.equal(1)],
-    ['set status', '~foo/bar', fullImages, () => expect(resStub.status.callCount).to.equal(1)],
-    ['set status', '/foo/bar/', fullImages, () => expect(resStub.status.callCount).to.equal(1)],
-    ['forbid', 'foo/../bar', fullImages, () => expect(getArgs(resStub.status)[0]).to.equal(403)],
-    ['forbid', 'foo/./bar', fullImages, () => expect(getArgs(resStub.status)[0]).to.equal(403)],
-    ['forbid', 'foo//bar', fullImages, () => expect(getArgs(resStub.status)[0]).to.equal(403)],
-    ['forbid', '~foo/bar', fullImages, () => expect(getArgs(resStub.status)[0]).to.equal(403)],
-    ['forbid', '/foo/bar/', fullImages, () => expect(getArgs(resStub.status)[0]).to.equal(403)],
-    ['render', 'foo/../a', fullImages, () => expect(resStub.render.callCount).to.equal(1)],
-    ['render', 'foo/./bar', fullImages, () => expect(resStub.render.callCount).to.equal(1)],
-    ['render', 'foo//bar', fullImages, () => expect(resStub.render.callCount).to.equal(1)],
-    ['render', '~foo/bar', fullImages, () => expect(resStub.render.callCount).to.equal(1)],
-    ['render', '/foo/bar/', fullImages, () => expect(resStub.render.callCount).to.equal(1)],
-    ['render error', 'foo/../a', fullImages, () => expect(getArgs(resStub.render)[0]).to.equal('error')],
-    ['render error', 'foo/./bar', fullImages, () => expect(getArgs(resStub.render)[0]).to.equal('error')],
-    ['render error', 'foo//bar', fullImages, () => expect(getArgs(resStub.render)[0]).to.equal('error')],
-    ['render error', '~foo/bar', fullImages, () => expect(getArgs(resStub.render)[0]).to.equal('error')],
-    ['render error', '/foo/bar/', fullImages, () => expect(getArgs(resStub.render)[0]).to.equal('error')],
-    ['render err data', 'foo/../a', fullImages, () => expect(getArgs(resStub.render)[1]).to.deep.equal(eTraverse)],
-    ['render err data', 'foo/./bar', fullImages, () => expect(getArgs(resStub.render)[1]).to.deep.equal(eTraverse)],
-    ['render err data', 'foo//bar', fullImages, () => expect(getArgs(resStub.render)[1]).to.deep.equal(eTraverse)],
-    ['render err data', '~foo/bar', fullImages, () => expect(getArgs(resStub.render)[1]).to.deep.equal(eTraverse)],
-    ['render err data', '/foo/bar/', fullImages, () => expect(getArgs(resStub.render)[1]).to.deep.equal(eTraverse)],
-    ['not get room', 'foo/../a', fullImages, () => expect(getRoomStub.callCount).to.equal(0)],
-    ['not get room', 'foo/./bar', fullImages, () => expect(getRoomStub.callCount).to.equal(0)],
-    ['not get room', 'foo//bar', fullImages, () => expect(getRoomStub.callCount).to.equal(0)],
-    ['not get room', '~foo/bar', fullImages, () => expect(getRoomStub.callCount).to.equal(0)],
-    ['not get room', '/foo/bar/', fullImages, () => expect(getRoomStub.callCount).to.equal(0)],
     ['get room', undefined, fullImages, () => expect(getRoomStub.callCount).to.equal(1)],
     ['get room', 'foo', fullImages, () => expect(getRoomStub.callCount).to.equal(1)],
     ['set not found status', 'foo', noImages, () => expect(resStub.status.callCount).to.equal(1)],

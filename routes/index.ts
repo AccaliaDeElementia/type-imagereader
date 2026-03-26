@@ -6,17 +6,17 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 
-import { normalize } from 'node:path'
 import { ReqParamToString } from '#utils/helpers'
+import { isPathTraversal as _isPathTraversal } from '#utils/Path'
 
-export const Imports = { Router }
+export const Imports = { Router, isPathTraversal: _isPathTraversal }
 
 export async function getRouter(_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
 
   const rootRoute = (req: Request, res: Response): void => {
     const folder = `/${ReqParamToString(req.params.path)}`
-    if (normalize(folder) !== folder || folder.startsWith('/~')) {
+    if (Imports.isPathTraversal(folder)) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
         error: {
           title: 'ERROR',

@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#routes/apiFunctions'
+import { Functions, Imports } from '#routes/apiFunctions'
 import { StubToKnex } from '#testutils/TypeGuards'
 import Sinon from 'sinon'
 
@@ -26,11 +26,11 @@ const makeKnexInstance = (): KnexStub => ({
 describe('routes/apiFunctions function SetLatestPicture', () => {
   let knexStub = Sinon.stub()
   let knexFake = StubToKnex(knexStub)
-  let getPictureFoldersStub = Sinon.stub()
+  let getParentFoldersStub = Sinon.stub()
   beforeEach(() => {
     knexStub = Sinon.stub().callsFake(() => StubToKnex(makeKnexInstance()))
     knexFake = StubToKnex(knexStub)
-    getPictureFoldersStub = sandbox.stub(Functions, 'GetPictureFolders').returns([])
+    getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns([])
   })
   afterEach(() => {
     sandbox.restore()
@@ -178,7 +178,7 @@ describe('routes/apiFunctions function SetLatestPicture', () => {
     const instance = makeKnexInstance()
     knexStub.onCall(1).returns(instance)
     await Functions.SetLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(getPictureFoldersStub.callCount).to.equal(1)
+    expect(getParentFoldersStub.callCount).to.equal(1)
   })
   it('should use GetPictureFolders to get parent folders when unseen picture is found', async () => {
     const searcher = makeKnexInstance()
@@ -187,7 +187,7 @@ describe('routes/apiFunctions function SetLatestPicture', () => {
     const instance = makeKnexInstance()
     knexStub.onCall(1).returns(instance)
     await Functions.SetLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(getPictureFoldersStub.firstCall.args).to.deep.equal(['/foo/bar/image.pdf'])
+    expect(getParentFoldersStub.firstCall.args).to.deep.equal(['/foo/bar/image.pdf'])
   })
   it('should call whereIn once when filtering parent folders when unseen picture is found', async () => {
     const searcher = makeKnexInstance()
@@ -195,7 +195,7 @@ describe('routes/apiFunctions function SetLatestPicture', () => {
     knexStub.onCall(0).returns(searcher)
     const instance = makeKnexInstance()
     knexStub.onCall(1).returns(instance)
-    getPictureFoldersStub.returns('FOOBAR')
+    getParentFoldersStub.returns('FOOBAR')
     await Functions.SetLatestPicture(knexFake, '/foo/bar/image.pdf')
     expect(instance.whereIn.callCount).to.equal(1)
   })
@@ -205,7 +205,7 @@ describe('routes/apiFunctions function SetLatestPicture', () => {
     knexStub.onCall(0).returns(searcher)
     const instance = makeKnexInstance()
     knexStub.onCall(1).returns(instance)
-    getPictureFoldersStub.returns('FOOBAR')
+    getParentFoldersStub.returns('FOOBAR')
     await Functions.SetLatestPicture(knexFake, '/foo/bar/image.pdf')
     expect(instance.whereIn.getCall(0).args).to.deep.equal(['path', 'FOOBAR'])
   })

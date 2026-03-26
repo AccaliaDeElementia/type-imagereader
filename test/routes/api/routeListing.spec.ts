@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import type { Application, Response as ExpressResponse, Router } from 'express'
+import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { Functions } from '#routes/apiFunctions'
@@ -27,6 +27,8 @@ describe('routes/api route GET /listing', () => {
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
+  let handleErrorsStub = Sinon.stub()
+  let isPathTraversalStub = Sinon.stub()
   Sinon.stub()
   let getListingStub = Sinon.stub()
   let knexFake = { Knex: Math.random() }
@@ -50,6 +52,10 @@ describe('routes/api route GET /listing', () => {
     getListingStub = sandbox.stub(Functions, 'GetListing').resolves()
     loggerStub = Sinon.stub()
     sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    handleErrorsStub = sandbox
+      .stub(Imports, 'handleErrors')
+      .callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
+    isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       getFn.getCalls().find((call) => call.args[0] === '/listing')?.args[1],
@@ -139,42 +145,20 @@ describe('routes/api route GET /listing', () => {
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
   })
-  it('should not retrieve listing directory traversal attempt', async () => {
-    requestStub.params.path = 'foo/../bar/'
+  it('should not call GetListing when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(0)
   })
-  it('should call status once for directory traversal attempt', async () => {
-    requestStub.params.path = 'foo/../bar/'
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.equal(1)
-  })
-  it('should return status FORBIDDEN for directory traversal attempt', async () => {
-    requestStub.params.path = 'foo/../bar/'
+  it('should return status FORBIDDEN when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
   })
-  it('should call json once for directory traversal attempt', async () => {
-    requestStub.params.path = 'foo/../bar/'
+  it('should return E_NO_TRAVERSE json error when isPathTraversal returns true', async () => {
+    isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
-  })
-  it('should json one argument for directory traversal attempt', async () => {
-    requestStub.params.path = 'foo/../bar/'
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args).to.have.lengthOf(1)
-  })
-  it('should json error for directory traversal attempt', async () => {
-    requestStub.params.path = 'foo/../bar/'
-    const err = {
-      error: {
-        code: 'E_NO_TRAVERSE',
-        message: 'Directory Traversal is not Allowed!',
-        path: '/foo/../bar/',
-      },
-    }
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
+    expect(responseStub.json.firstCall.args[0]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
   })
   it('should call status once for missing folder', async () => {
     getListingStub.resolves(null)
@@ -208,68 +192,17 @@ describe('routes/api route GET /listing', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
   })
-  it('should call response status on error', async () => {
-    getListingStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.be.greaterThanOrEqual(1)
+  it('should register route handler using handleErrors', () => {
+    expect(handleErrorsStub.callCount).to.be.greaterThanOrEqual(1)
   })
-  it('should set INTERNAL_SERVER_ERROR status on error', async () => {
-    getListingStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.lastCall.args).to.deep.equal([StatusCodes.INTERNAL_SERVER_ERROR])
+  it('should pass logger to every handleErrors call', () => {
+    for (const call of handleErrorsStub.getCalls()) {
+      expect(call.args[0]).to.equal(loggerStub)
+    }
   })
-  it('should set E_INTERNAL_ERROR json payload on error', async () => {
-    getListingStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.lastCall.args).to.deep.equal([
-      {
-        error: {
-          code: 'E_INTERNAL_ERROR',
-          message: 'Internal Server Error',
-        },
-      },
-    ])
-  })
-  it('should call logger on error', async () => {
-    getListingStub.rejects(new Error('Evil Error!'))
-    requestStub.originalUrl = '/'
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
-  })
-  it('should log two arguments on first log call on error', async () => {
-    getListingStub.rejects(new Error('Evil Error!'))
-    requestStub.originalUrl = '/'
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.firstCall.args).to.have.lengthOf(2)
-  })
-  it('should log rendered url as first log argument on error', async () => {
-    getListingStub.rejects(new Error('Evil Error!'))
-    requestStub.originalUrl = '/'
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.firstCall.args[0]).to.equal('Error rendering: /')
-  })
-  it('should log request body as second log argument on error', async () => {
-    const bodyData = { Body: Math.random() }
-    getListingStub.rejects(new Error('Evil Error!'))
-    requestStub.body = bodyData
-    requestStub.originalUrl = '/'
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.firstCall.args[1]).to.equal(bodyData)
-  })
-  it('should call logger at least once on error', async () => {
-    getListingStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.callCount).to.be.greaterThanOrEqual(1)
-  })
-  it('should log one argument on last log call on error', async () => {
-    getListingStub.rejects(new Error('Evil Error!'))
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.lastCall.args).to.have.lengthOf(1)
-  })
-  it('should log error object as last log argument on error', async () => {
-    const err = new Error('Evil Error!')
-    getListingStub.rejects(err)
-    await routeHandler(requestFake, responseFake)
-    expect(loggerStub.lastCall.args[0]).to.equal(err)
+  it('should pass action function to every handleErrors call', () => {
+    for (const call of handleErrorsStub.getCalls()) {
+      expect(call.args[1]).to.be.a('function')
+    }
   })
 })
