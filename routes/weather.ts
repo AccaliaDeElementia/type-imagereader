@@ -93,33 +93,22 @@ function StringToTimeCode(input: string | undefined): timeCode | undefined {
   }
   return undefined
 }
+function getTimeOfDay(envVar: string | undefined, defaultHour: number, defaultMinute: number): number {
+  const time = new Date()
+  time.setMilliseconds(DEFAULT_MILLISECONDS)
+  time.setSeconds(DEFAULT_SECONDS)
+  time.setMinutes(defaultMinute)
+  time.setHours(defaultHour)
+  const code = StringToTimeCode(envVar)
+  if (code !== undefined) {
+    time.setHours(code.hour)
+    time.setMinutes(code.minute)
+  }
+  return time.getTime()
+}
 export const Imports = {
-  getNightNotBefore: (): number => {
-    const time = new Date()
-    time.setMilliseconds(DEFAULT_MILLISECONDS)
-    time.setSeconds(DEFAULT_SECONDS)
-    time.setMinutes(DEFAULT_DUSK_MINUTES)
-    time.setHours(DEFAULT_DUSK_HOUR)
-    const code = StringToTimeCode(process.env.NIGHT_NOT_BEFORE)
-    if (code !== undefined) {
-      time.setHours(code.hour)
-      time.setMinutes(code.minute)
-    }
-    return time.getTime()
-  },
-  getNightNotAfter: (): number => {
-    const time = new Date()
-    time.setMilliseconds(DEFAULT_MILLISECONDS)
-    time.setSeconds(DEFAULT_SECONDS)
-    time.setMinutes(DEFAULT_DAWN_MINUTES)
-    time.setHours(DEFAULT_DAWN_HOUR)
-    const code = StringToTimeCode(process.env.NIGHT_NOT_AFTER)
-    if (code !== undefined) {
-      time.setHours(code.hour)
-      time.setMinutes(code.minute)
-    }
-    return time.getTime()
-  },
+  getNightNotBefore: (): number => getTimeOfDay(process.env.NIGHT_NOT_BEFORE, DEFAULT_DUSK_HOUR, DEFAULT_DUSK_MINUTES),
+  getNightNotAfter: (): number => getTimeOfDay(process.env.NIGHT_NOT_AFTER, DEFAULT_DAWN_HOUR, DEFAULT_DAWN_MINUTES),
   Router,
 }
 const defaultWeather: WeatherResults = {

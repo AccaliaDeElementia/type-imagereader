@@ -152,9 +152,9 @@ export const Bookmarks = {
       )
     })
 
-    Subscribe('Bookmarks:Add', async (path) => {
+    const bookmarkAction = async (apiPath: string, path: unknown): Promise<void> => {
       if (typeof path !== 'string') return
-      await Net.PostJSON('/api/bookmarks/add', { path }, (_: unknown): _ is unknown => true)
+      await Net.PostJSON(apiPath, { path }, (_: unknown): _ is unknown => true)
         .catch((err: unknown) => {
           if (!(err instanceof Error)) throw new Error('Non Error rejection!')
           if (err.message !== 'Empty JSON response recieved') throw err
@@ -168,24 +168,13 @@ export const Bookmarks = {
             Publish('Loading:Error', err)
           },
         )
-    })
+    }
 
+    Subscribe('Bookmarks:Add', async (path) => {
+      await bookmarkAction('/api/bookmarks/add', path)
+    })
     Subscribe('Bookmarks:Remove', async (path) => {
-      if (typeof path !== 'string') return
-      await Net.PostJSON('/api/bookmarks/remove', { path }, (_: unknown): _ is unknown => true)
-        .catch((err: unknown) => {
-          if (!(err instanceof Error)) throw new Error('Non Error rejection!')
-          if (err.message !== 'Empty JSON response recieved') throw err
-        })
-        .then(
-          () => {
-            Publish('Bookmarks:Load')
-            Publish('Loading:Success')
-          },
-          (err: unknown) => {
-            Publish('Loading:Error', err)
-          },
-        )
+      await bookmarkAction('/api/bookmarks/remove', path)
     })
   },
 }
