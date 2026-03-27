@@ -5,8 +5,8 @@ import { Subscribe, Publish, Defer } from './pubsub'
 
 const ANIMATION_RESET_DELAY = 100
 export const Loading = {
-  overlay: ((): HTMLElement | null => null)(),
-  navbar: ((): HTMLElement | null => null)(),
+  overlay: null as HTMLElement | null,
+  navbar: null as HTMLElement | null,
   Init: (): void => {
     Loading.overlay = document.querySelector<HTMLElement>('#loadingScreen')
     Loading.navbar = document.querySelector<HTMLElement>('#navbar')

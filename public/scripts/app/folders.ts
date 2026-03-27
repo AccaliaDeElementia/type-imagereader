@@ -10,7 +10,7 @@ const PERCENT_MULT = 100
 const FIXED_DECIMAL_PLACES = 2
 
 export const Folders = {
-  FolderCard: ((): DocumentFragment | null => null)(),
+  FolderCard: null as DocumentFragment | null,
   HideTab: (selector: string): void => {
     document.querySelector(selector)?.parentElement?.classList.add('hidden')
   },

@@ -20,7 +20,7 @@ describe('index.ts RunSync() tests', () => {
   beforeEach(() => {
     ImageReader.Interval = undefined
     ImageReader.SyncInterval = defaultInterval
-    actuallyRunSpy = sandbox.stub(Functions, 'ActuallyRunSyncForReal').resolves()
+    actuallyRunSpy = sandbox.stub(Functions, 'RunSyncWithLock').resolves()
     setIntervalFake = sandbox.stub(Functions, 'setInterval').returns(0)
     loggerStub = sandbox.stub(Imports, 'logger')
   })

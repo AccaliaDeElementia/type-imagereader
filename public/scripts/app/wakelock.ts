@@ -11,7 +11,7 @@ const RELEASED_TIMEOUT = 0
 const LOCK_HOLD_TIME = 120_000 // two minutes
 const LOCK_RELEASE_CHECK_INTERVAL = 30_000 //thirty seconds
 export const WakeLock = {
-  sentinel: ((): WakeLockSentinel | null => null)(),
+  sentinel: null as WakeLockSentinel | null,
   timeout: RELEASED_TIMEOUT,
   wakeTime: LOCK_HOLD_TIME,
   initialized: false,

@@ -124,5 +124,8 @@ export const Functions = {
 }
 
 export default {
-  initialize: async (): Promise<Knex> => await (Imports.Initializer ??= initialize()),
+  initialize: async (): Promise<Knex> => {
+    Imports.Initializer ??= initialize()
+    return await Imports.Initializer
+  },
 }

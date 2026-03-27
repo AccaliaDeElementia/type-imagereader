@@ -21,9 +21,9 @@ const CYCLES_DUE_AT = 0
 const INCREMENT_CYCLES = 1
 export const PubSub = {
   subscribers: ((): Record<string, SubscriberFunction[]> => ({}))(),
-  deferred: ((): DeferredMethod[] => [])(),
+  deferred: [] as DeferredMethod[],
   intervals: ((): Record<string, DeferredMethod & IntervalMethod> => ({}))(),
-  timer: ((): NodeJS.Timeout | string | number | undefined => undefined)(),
+  timer: undefined as NodeJS.Timeout | string | number | undefined,
   cycleTime: PUBLISH_CYCLE_TIME,
   Subscribe: (topic: string, subscriber: SubscriberFunction): void => {
     const target = topic.toUpperCase()

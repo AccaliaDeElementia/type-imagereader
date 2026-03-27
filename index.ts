@@ -42,7 +42,7 @@ export class LockResource {
 
 export const Functions = {
   setInterval: setInterval as (fn: () => Promise<void>, interval: number) => number | NodeJS.Timeout,
-  ActuallyRunSyncForReal: async (): Promise<void> => {
+  RunSyncWithLock: async (): Promise<void> => {
     if (!ImageReader.SyncLock.Take()) return
     try {
       await ImageReader.Synchronize()
@@ -53,10 +53,10 @@ export const Functions = {
 }
 
 export async function RunSync(): Promise<void> {
-  const promise = Functions.ActuallyRunSyncForReal()
+  const promise = Functions.RunSyncWithLock()
   ImageReader.Interval = Functions.setInterval(async () => {
     try {
-      await Functions.ActuallyRunSyncForReal()
+      await Functions.RunSyncWithLock()
     } catch (err) {
       Imports.logger('sync interval error', err)
     }

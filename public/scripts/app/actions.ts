@@ -286,7 +286,7 @@ export const Actions = {
       }
     }
   },
-  gamepads: ((): GamepadButtons => new GamepadButtons())(),
+  gamepads: new GamepadButtons(),
   ReadGamepad: (): void => {
     if (document.hidden) return
     const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined

@@ -28,7 +28,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks function GetFolder()', () => {
+describe('public/app/bookmarks function GetOrCreateFolderElement()', () => {
   let existingWindow: Window & typeof globalThis = global.window
   let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
@@ -53,7 +53,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     global.document = existingDocument
   })
   it('should return an HTMLElement', () => {
-    const result = Bookmarks.GetFolder('', {
+    const result = Bookmarks.GetOrCreateFolderElement('', {
       name: '',
       path: '/foo/bar.jpg',
       bookmarks: [],
@@ -62,17 +62,17 @@ describe('public/app/bookmarks function GetFolder()', () => {
   })
   it('should add exactly one folder to the list on creation', () => {
     expect(Bookmarks.BookmarkFolders).to.have.length(0)
-    Bookmarks.GetFolder('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
+    Bookmarks.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
     expect(Bookmarks.BookmarkFolders).to.have.length(1)
   })
   it('should store the folder name on creation', () => {
-    Bookmarks.GetFolder('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
+    Bookmarks.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
     const folder = Bookmarks.BookmarkFolders.pop()
     assert(folder !== undefined, 'Folder should exist')
     expect(folder.name).to.equal('/foo')
   })
   it('should store the folder element on creation', () => {
-    const result = Bookmarks.GetFolder('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
+    const result = Bookmarks.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
     const folder = Bookmarks.BookmarkFolders.pop()
     assert(folder !== undefined, 'Folder should exist')
     expect(result).to.equal(folder.element)
@@ -83,7 +83,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
       name: '/foo/bar/baz/',
       element,
     })
-    const result = Bookmarks.GetFolder('', {
+    const result = Bookmarks.GetOrCreateFolderElement('', {
       name: '/foo/bar/baz',
       path: '/foo/bar/baz/',
       bookmarks: [],
@@ -93,7 +93,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
   it('should return null for folder when template is missing', () => {
     Bookmarks.bookmarkFolder = undefined
 
-    const result = Bookmarks.GetFolder('', {
+    const result = Bookmarks.GetOrCreateFolderElement('', {
       name: '/foo/bar/baz',
       path: '/foo/bar/baz/quux.png',
       bookmarks: [],
@@ -101,7 +101,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     expect(result).to.equal(null)
   })
   it('should set data attribute for folderPath', () => {
-    const result = Bookmarks.GetFolder('', {
+    const result = Bookmarks.GetOrCreateFolderElement('', {
       name: '/foo/bar/baz',
       path: '/foo/bar/baz/',
       bookmarks: [],
@@ -110,7 +110,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     expect(value).to.equal('/foo/bar/baz/')
   })
   it('should set title', () => {
-    const result = Bookmarks.GetFolder('', {
+    const result = Bookmarks.GetOrCreateFolderElement('', {
       name: '/foo/bar/baz',
       path: '/foo/bar/baz/quux.png',
       bookmarks: [],
@@ -119,7 +119,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     expect(title?.innerText).to.equal('/foo/bar/baz')
   })
   it('should uridecode title', () => {
-    const result = Bookmarks.GetFolder('', {
+    const result = Bookmarks.GetOrCreateFolderElement('', {
       name: '%7C',
       path: '',
       bookmarks: [],
@@ -129,7 +129,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
   })
   it('should not create title if element is missing from template', () => {
     Bookmarks.bookmarkFolder?.querySelector('.title')?.remove()
-    const result = Bookmarks.GetFolder('', {
+    const result = Bookmarks.GetOrCreateFolderElement('', {
       name: '%7C',
       path: '',
       bookmarks: [],
@@ -138,7 +138,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     expect(title).to.equal(null)
   })
   it('should not add the closed class with matching path', () => {
-    const result = Bookmarks.GetFolder('/bar', {
+    const result = Bookmarks.GetOrCreateFolderElement('/bar', {
       name: '/bar',
       path: '/bar/baz.png',
       bookmarks: [],
@@ -146,7 +146,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     expect(result?.classList.contains('clsoed')).to.equal(false)
   })
   it('should add the closed class with non matching path', () => {
-    const result = Bookmarks.GetFolder('/foo', {
+    const result = Bookmarks.GetOrCreateFolderElement('/foo', {
       name: '/bar',
       path: '/bar/baz.png',
       bookmarks: [],
@@ -154,7 +154,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
     expect(result?.classList.contains('closed')).to.equal(true)
   })
   it('should have on click handler to open self', () => {
-    const result = Bookmarks.GetFolder('/foo', {
+    const result = Bookmarks.GetOrCreateFolderElement('/foo', {
       name: '',
       path: '/bar/baz.png',
       bookmarks: [],
@@ -169,7 +169,7 @@ describe('public/app/bookmarks function GetFolder()', () => {
   })
   it('should have on click handler to close others', () => {
     for (let i = 1; i <= 50; i += 1) {
-      Bookmarks.GetFolder('/foo', {
+      Bookmarks.GetOrCreateFolderElement('/foo', {
         name: `/bar${i}`,
         path: `/bar${i}/baz${i}.png`,
         bookmarks: [],

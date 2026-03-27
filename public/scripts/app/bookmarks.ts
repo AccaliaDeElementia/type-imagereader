@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Publish, Subscribe } from './pubsub'
-import { Net } from './net'
+import { Net, acceptAnyResponse } from './net'
 import { CloneNode, isHTMLElement } from './utils'
 
 import {
@@ -23,11 +23,11 @@ const SORT_BEFORE = -1
 const SORT_AFTER = 1
 const SORT_EQUAL = 0
 export const Bookmarks = {
-  bookmarkCard: ((): DocumentFragment | undefined => undefined)(),
-  bookmarkFolder: ((): DocumentFragment | undefined => undefined)(),
-  bookmarksTab: ((): HTMLElement | null => null)(),
-  BookmarkFolders: ((): WebBookmarkFolder[] => [])(),
-  GetFolder: (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null => {
+  bookmarkCard: undefined as DocumentFragment | undefined,
+  bookmarkFolder: undefined as DocumentFragment | undefined,
+  bookmarksTab: null as HTMLElement | null,
+  BookmarkFolders: [] as WebBookmarkFolder[],
+  GetOrCreateFolderElement: (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null => {
     let folder = Bookmarks.BookmarkFolders.find((e) => e.name === bookmarkFolder.path)
     if (folder === undefined) {
       const element = CloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
@@ -76,7 +76,7 @@ export const Bookmarks = {
           path: bookmark.path,
           modCount: DEFAULT_MOD_COUNT,
         },
-        (_: unknown): _ is unknown => true,
+        acceptAnyResponse,
       ).then(
         () => {
           Publish('Navigate:Load', {
@@ -93,7 +93,7 @@ export const Bookmarks = {
   buildBookmarkNodes: (data: Listing, openPath: string): void => {
     if (data.bookmarks === undefined) return
     for (const folder of data.bookmarks) {
-      const folderNode = Bookmarks.GetFolder(openPath, folder)
+      const folderNode = Bookmarks.GetOrCreateFolderElement(openPath, folder)
       if (folderNode === null) {
         continue
       }
@@ -154,7 +154,7 @@ export const Bookmarks = {
 
     const bookmarkAction = async (apiPath: string, path: unknown): Promise<void> => {
       if (typeof path !== 'string') return
-      await Net.PostJSON(apiPath, { path }, (_: unknown): _ is unknown => true)
+      await Net.PostJSON(apiPath, { path }, acceptAnyResponse)
         .catch((err: unknown) => {
           if (!(err instanceof Error)) throw new Error('Non Error rejection!')
           if (err.message !== 'Empty JSON response recieved') throw err

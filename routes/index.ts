@@ -34,7 +34,6 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   router.get('/show', rootRoute)
   router.get('/show/*path', rootRoute)
 
-  await Promise.resolve()
-
+  await Promise.resolve() // async required by getRouter signature
   return router
 }

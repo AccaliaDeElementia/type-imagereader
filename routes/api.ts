@@ -68,7 +68,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     '/',
     handleErrors(async (_, res) => {
       res.status(StatusCodes.OK).json({ title: 'API' })
-      await Promise.resolve()
+      await Promise.resolve() // async required by handleErrors contract
     }),
   )
 
@@ -76,7 +76,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     '/healthcheck',
     handleErrors(async (_, res) => {
       res.status(StatusCodes.OK).send('OK')
-      await Promise.resolve()
+      await Promise.resolve() // async required by handleErrors contract
     }),
   )
 

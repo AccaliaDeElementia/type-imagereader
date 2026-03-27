@@ -180,6 +180,6 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
   }, UPDATE_INTERVAL)
   void Functions.UpdateWeather()
 
-  await Promise.resolve()
+  await Promise.resolve() // async required by getRouter signature
   return router
 }

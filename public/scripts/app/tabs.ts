@@ -6,8 +6,8 @@ const DEFAULT_TAB = 0
 const SCROLL_TOP = 0
 
 export const Tabs = {
-  tabs: ((): HTMLElement[] => [])(),
-  tabNames: ((): string[] => [])(),
+  tabs: [] as HTMLElement[],
+  tabNames: [] as string[],
   Init: (): void => {
     Tabs.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
     Tabs.tabNames = Tabs.tabs.map((tab) => tab.getAttribute('href')).filter((name) => name !== null)

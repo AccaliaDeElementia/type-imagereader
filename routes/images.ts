@@ -166,25 +166,15 @@ export const Functions = {
   },
 }
 
+const uninitializedCacheError: CacheCreator = async (path) => {
+  await Promise.resolve() // async required by CacheCreator contract
+  return ImageData.fromError('INTERNAL_SERVER_ERROR', StatusCodes.INTERNAL_SERVER_ERROR, 'CACHE_NOT_INITIALIZED', path)
+}
+
+// Placeholder caches that return errors until getRouter() initializes them
 export const CacheStorage = {
-  kioskCache: new ImageCache(async (path, _, __) => {
-    await Promise.resolve()
-    return ImageData.fromError(
-      'INTERNAL_SERVER_ERROR',
-      StatusCodes.INTERNAL_SERVER_ERROR,
-      'CACHE_NOT_INITIALIZED',
-      path,
-    )
-  }),
-  scaledCache: new ImageCache(async (path, _, __) => {
-    await Promise.resolve()
-    return ImageData.fromError(
-      'INTERNAL_SERVER_ERROR',
-      StatusCodes.INTERNAL_SERVER_ERROR,
-      'CACHE_NOT_INITIALIZED',
-      path,
-    )
-  }),
+  kioskCache: new ImageCache(uninitializedCacheError),
+  scaledCache: new ImageCache(uninitializedCacheError),
 }
 
 // Export the base-router
@@ -269,7 +259,6 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     }),
   )
 
-  await Promise.resolve()
-
+  await Promise.resolve() // async required by getRouter signature
   return router
 }

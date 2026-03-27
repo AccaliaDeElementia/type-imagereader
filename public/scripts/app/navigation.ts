@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Pictures } from './pictures'
-import { Net } from './net'
+import { Net, acceptAnyResponse } from './net'
 import { Publish, Subscribe } from './pubsub'
 import { isListing, type Listing } from '#contracts/listing'
 import { HasValue, HasValues, StringishHasValue } from '#utils/helpers'
@@ -21,7 +21,7 @@ export const Navigation = {
     const path = window.location.pathname.replace(/^\/[^\/]+/v, '')
     return StringishHasValue(path) ? path : '/'
   },
-  LocationAssign: ((): undefined | ((url: string | URL) => void) => undefined)(),
+  LocationAssign: undefined as undefined | ((url: string | URL) => void),
   IsMenuActive: (): boolean => {
     const mainMenu = document.querySelector('#mainMenu')
     return !(mainMenu?.classList.contains('hidden') ?? false)
@@ -108,7 +108,7 @@ export const Navigation = {
       await Promise.resolve()
     })
     Subscribe('Action:Execute:MarkAllSeen', async () => {
-      await Net.PostJSON('/api/mark/read', { path: Navigation.current.path }, (_: unknown): _ is unknown => true)
+      await Net.PostJSON('/api/mark/read', { path: Navigation.current.path }, acceptAnyResponse)
         .then(
           async () => {
             await Navigation.LoadData(true)
@@ -120,7 +120,7 @@ export const Navigation = {
         .catch(() => null)
     })
     Subscribe('Action:Execute:MarkAllUnseen', async () => {
-      await Net.PostJSON('/api/mark/unread', { path: Navigation.current.path }, (_: unknown): _ is unknown => true)
+      await Net.PostJSON('/api/mark/unread', { path: Navigation.current.path }, acceptAnyResponse)
         .then(
           async () => {
             await Navigation.LoadData(true)

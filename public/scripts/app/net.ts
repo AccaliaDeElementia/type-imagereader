@@ -18,6 +18,8 @@ export async function decodeResult<T>(response: Response, isT: (obj: unknown) =>
   return data
 }
 
+export const acceptAnyResponse = (_: unknown): _ is unknown => true
+
 export const Net = {
   GetJSON: async <T>(path: string, isT: (obj: unknown) => obj is T): Promise<T> =>
     await fetch(path, {

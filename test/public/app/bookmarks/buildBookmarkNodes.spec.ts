@@ -46,7 +46,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    getFolderSpy = sandbox.stub(Bookmarks, 'GetFolder').returns(dom.window.document.createElement('div'))
+    getFolderSpy = sandbox.stub(Bookmarks, 'GetOrCreateFolderElement').returns(dom.window.document.createElement('div'))
     buildBookmarkSpy = sandbox.stub(Bookmarks, 'BuildBookmark').returns(dom.window.document.createElement('div'))
 
     resetPubSub()
@@ -82,22 +82,22 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     )
     expect(getFolderSpy.called).to.equal(false)
   })
-  it('should call GetFolder once', () => {
+  it('should call GetOrCreateFolderElement once', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.callCount).to.equal(1)
   })
-  it('should call GetFolder with 2 arguments', () => {
+  it('should call GetOrCreateFolderElement with 2 arguments', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args).to.have.lengthOf(2)
   })
-  it('should pass parent path as first argument to GetFolder', () => {
+  it('should pass parent path as first argument to GetOrCreateFolderElement', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args[0]).to.equal('/FOO/BAR!')
   })
-  it('should pass bookmark folder as second argument to GetFolder', () => {
+  it('should pass bookmark folder as second argument to GetOrCreateFolderElement', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args[1]).to.equal(folder)
