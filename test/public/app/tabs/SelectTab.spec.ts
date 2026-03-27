@@ -38,7 +38,6 @@ describe('public/app/tabs function SelectTab()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  Sinon.stub()
   const actionsScroll = Sinon.stub()
   const foldersScroll = Sinon.stub()
   const imagesScroll = Sinon.stub()

@@ -30,7 +30,6 @@ describe('routes/api route POST /bookmarks/remove', () => {
   let loggerStub = Sinon.stub()
   let handleErrorsStub = Sinon.stub()
   let isPathTraversalStub = Sinon.stub()
-  Sinon.stub()
   let removeBookmarkStub = Sinon.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {

@@ -29,7 +29,6 @@ describe('routes/api route GET /listing', () => {
   let loggerStub = Sinon.stub()
   let handleErrorsStub = Sinon.stub()
   let isPathTraversalStub = Sinon.stub()
-  Sinon.stub()
   let getListingStub = Sinon.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {

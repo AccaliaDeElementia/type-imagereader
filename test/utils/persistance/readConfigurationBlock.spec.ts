@@ -18,7 +18,6 @@ describe('utils/persistance function readConfigurationBlock()', () => {
     },
   }
   let configName = 'testtest'
-  Sinon.stub()
   let readFileStub = Sinon.stub()
   beforeEach(() => {
     configContent = {

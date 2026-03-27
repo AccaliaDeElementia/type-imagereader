@@ -30,7 +30,6 @@ describe('routes/api route POST /bookmarks/add', () => {
   let loggerStub = Sinon.stub()
   let handleErrorsStub = Sinon.stub()
   let isPathTraversalStub = Sinon.stub()
-  Sinon.stub()
   let addBookmarkStub = Sinon.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {

@@ -31,7 +31,6 @@ describe('routes/api route POST /navigate/latest', () => {
   let loggerStub = Sinon.stub()
   let handleErrorsStub = Sinon.stub()
   let isPathTraversalStub = Sinon.stub()
-  Sinon.stub()
   let setLatestPictureStub = Sinon.stub()
   let validateModcountStub = Sinon.stub()
   let incrementModcountStub = Sinon.stub()

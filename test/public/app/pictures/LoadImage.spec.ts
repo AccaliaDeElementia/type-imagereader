@@ -42,7 +42,6 @@ describe('public/app/pictures function LoadImage()', () => {
   let element: HTMLElement | null = null
   let postJSONSpy = Sinon.stub()
   let selectPageSpy = Sinon.stub()
-  Sinon.stub()
   let loadNextImageSpy = Sinon.stub()
   const loadingShowSpy = Sinon.stub().resolves()
   const loadingErrorSpy = Sinon.stub().resolves()

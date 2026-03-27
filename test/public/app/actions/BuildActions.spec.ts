@@ -35,7 +35,6 @@ describe('public/app/actions function BuildActions()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  Sinon.stub()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {

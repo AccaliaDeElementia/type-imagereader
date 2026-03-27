@@ -17,7 +17,6 @@ describe('public/app/actions function ReadGamepad()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   const dom: JSDOM = new JSDOM('', {})
-  Sinon.stub()
   let GamepadResetSpy = Sinon.stub()
 
   let existingNavigator: Navigator = global.navigator

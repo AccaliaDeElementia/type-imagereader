@@ -23,7 +23,6 @@ describe('public/app/pictures function InitMouse()', () => {
   const executePreviousSpy = Sinon.stub().resolves()
   const executeNextSpy = Sinon.stub().resolves()
   const executeMenuSpy = Sinon.stub().resolves()
-  Sinon.stub()
   let visualViewport: TestVisualViewport = { scale: 1 }
   let boundingRect = {
     x: 0,

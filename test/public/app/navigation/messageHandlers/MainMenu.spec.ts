@@ -29,7 +29,6 @@ describe('public/app/navigation function Init()', () => {
   const existingDocument = global.document
   let dom = new JSDOM('', {})
   const tabSelectedSpy = Sinon.stub()
-  Sinon.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',

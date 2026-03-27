@@ -27,7 +27,6 @@ describe('routes/api route GET /bookmarks', () => {
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
   let handleErrorsStub = Sinon.stub()
-  Sinon.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {

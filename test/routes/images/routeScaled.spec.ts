@@ -46,10 +46,8 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   let routerFake = {
     get: Sinon.stub().returnsThis(),
   }
-  Sinon.stub()
   let loggerStub = Sinon.stub()
   let handleErrorsStub = Sinon.stub()
-  Sinon.stub()
   let router = Cast<(req: Request, res: Response) => Promise<void>>(Sinon.stub())
   let fetchImageStub = Sinon.stub()
   let sendImageStub = Sinon.stub()

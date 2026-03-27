@@ -16,12 +16,10 @@ describe('routes/api function getRouter()', () => {
   let applicationFake = Cast<Application>({ App: Math.random() })
   let serverFake = Cast<Server>({ Server: Math.random() })
   let socketServerFake = Cast<WebSocketServer>({ Sockets: Math.random() })
-  Sinon.stub()
   let routerStub = {
     get: Sinon.stub(),
     post: Sinon.stub(),
   }
-  Sinon.stub()
   beforeEach(() => {
     applicationFake = Cast<Application>({ App: Math.random() })
     serverFake = Cast<Server>({ Server: Math.random() })

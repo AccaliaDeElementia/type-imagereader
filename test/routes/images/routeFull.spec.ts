@@ -30,10 +30,8 @@ describe('routes/images route /full/*', () => {
   let routerFake = {
     get: Sinon.stub().returnsThis(),
   }
-  Sinon.stub()
   let loggerStub = Sinon.stub()
   let handleErrorsStub = Sinon.stub()
-  Sinon.stub()
   let router = Cast<(req: Request, res: Response) => Promise<void>>(Sinon.stub())
   let readImageStub = Sinon.stub()
   let sendImageStub = Sinon.stub()

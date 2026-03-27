@@ -15,7 +15,6 @@ describe('public/app/pubsub function StopDeferred()', () => {
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   let clearIntervalSpy = Sinon.stub()
-  Sinon.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
     global.window = Cast<Window & typeof globalThis>(dom.window)

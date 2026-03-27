@@ -26,7 +26,6 @@ describe('routes/api route GET /', () => {
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
   let loggerStub = Sinon.stub()
   let handleErrorsStub = Sinon.stub()
-  Sinon.stub()
   beforeEach(async () => {
     requestStub = {
       body: { Body: -1 },

@@ -13,7 +13,6 @@ const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow function getRouter', () => {
   let routerStub = { get: Sinon.stub() }
-  Sinon.stub()
   let knexFake = StubToKnex({})
   Sinon.stub().resolves(knexFake)
   let rootRouteStub = Sinon.stub()
