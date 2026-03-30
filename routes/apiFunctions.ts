@@ -227,30 +227,27 @@ export const Functions = {
       .join('pictures', 'pictures.path', 'bookmarks.path')
       .join('folders', 'folders.path', 'pictures.folder')
       .orderBy(['folders.path', 'folders.sortKey', 'pictures.sortKey', 'pictures.path'])
-    let folder: BookmarkFolder = {
-      name: '',
-      path: '',
-      bookmarks: [],
+    interface Acc {
+      results: BookmarkFolder[]
+      current: BookmarkFolder | null
     }
-    const results = []
-    for (const bookmark of bookmarks) {
-      if (bookmark.folder !== folder.name) {
-        results.push(folder)
-        folder = {
-          name: bookmark.folder,
-          path: UriSafePath.encode(bookmark.folder),
-          bookmarks: [],
+    return bookmarks.reduce<Acc>(
+      ({ results, current }, bookmark) => {
+        const entry = {
+          name: basename(bookmark.path),
+          path: UriSafePath.encode(bookmark.path),
+          folder: UriSafePath.encode(bookmark.folder),
         }
-      }
-      folder.bookmarks.push({
-        name: basename(bookmark.path),
-        path: UriSafePath.encode(bookmark.path),
-        folder: UriSafePath.encode(bookmark.folder),
-      })
-    }
-    results.push(folder)
-    results.shift()
-    return results
+        if (current?.name === bookmark.folder) {
+          return { results, current: { ...current, bookmarks: [...current.bookmarks, entry] } }
+        }
+        return {
+          results: current === null ? results : [...results, current],
+          current: { name: bookmark.folder, path: UriSafePath.encode(bookmark.folder), bookmarks: [entry] },
+        }
+      },
+      { results: [], current: null },
+    ).results
   },
   GetListing: async (knex: Knex, path: string): Promise<Listing | null> => {
     const folder = await Functions.GetFolder(knex, path)

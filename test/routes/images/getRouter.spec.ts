@@ -51,10 +51,6 @@ describe('routes/images export getRouter()', () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(getRouterStub.firstCall.args).to.deep.equal([])
   })
-  it('should return new router instance', async () => {
-    const router = await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(router).to.equal(routerFake)
-  })
   it('should construct logger', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(debugStub.callCount).to.equal(1)

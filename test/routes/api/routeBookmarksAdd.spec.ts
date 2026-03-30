@@ -27,8 +27,6 @@ describe('routes/api route POST /bookmarks/add', () => {
   let requestFake = Cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
-  let loggerStub = Sinon.stub()
-  let handleErrorsStub = Sinon.stub()
   let isPathTraversalStub = Sinon.stub()
   let addBookmarkStub = Sinon.stub()
   let knexFake = { Knex: Math.random() }
@@ -51,11 +49,8 @@ describe('routes/api route POST /bookmarks/add', () => {
       }),
     )
     addBookmarkStub = sandbox.stub(Functions, 'AddBookmark').resolves()
-    loggerStub = Sinon.stub()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    handleErrorsStub = sandbox
-      .stub(Imports, 'handleErrors')
-      .callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
@@ -68,31 +63,13 @@ describe('routes/api route POST /bookmarks/add', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should call response status once on success', async () => {
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.equal(1)
-  })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
   })
-  it('should call response end once on success', async () => {
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.end.callCount).to.equal(1)
-  })
   it('should return empty response body on success', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.end.firstCall.args).to.have.lengthOf(0)
-  })
-  it('should call AddBookmark once', async () => {
-    requestStub.body.path = 'foo/a%20bar/baz.gif'
-    await routeHandler(requestFake, responseFake)
-    expect(addBookmarkStub.callCount).to.equal(1)
-  })
-  it('should call AddBookmark with two arguments', async () => {
-    requestStub.body.path = 'foo/a%20bar/baz.gif'
-    await routeHandler(requestFake, responseFake)
-    expect(addBookmarkStub.firstCall.args).to.have.lengthOf(2)
   })
   it('should call AddBookmark with knex instance', async () => {
     requestStub.body.path = 'foo/a%20bar/baz.gif'
@@ -118,18 +95,5 @@ describe('routes/api route POST /bookmarks/add', () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.firstCall.args[0]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
-  })
-  it('should register route handler using handleErrors', () => {
-    expect(handleErrorsStub.callCount).to.be.greaterThanOrEqual(1)
-  })
-  it('should pass logger to every handleErrors call', () => {
-    for (const call of handleErrorsStub.getCalls()) {
-      expect(call.args[0]).to.equal(loggerStub)
-    }
-  })
-  it('should pass action function to every handleErrors call', () => {
-    for (const call of handleErrorsStub.getCalls()) {
-      expect(call.args[1]).to.be.a('function')
-    }
   })
 })

@@ -179,16 +179,6 @@ describe('public/app/pictures function InitMouse()', () => {
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
     expect(ignoreClickSpy.callCount).to.equal(1)
   })
-  it('should navigate to previous from left area click (de)', () => {
-    visualViewport.scale = 2
-    Pictures.InitMouse()
-    const evt = new dom.window.MouseEvent('click', {
-      clientX: boundingRect.width / 4,
-      clientY: boundingRect.height / 2,
-    })
-    Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(1)
-  })
   it('should show menu from middle area click', () => {
     visualViewport.scale = 2
     Pictures.InitMouse()

@@ -17,6 +17,7 @@ const MINIMUM_COUNTDOWN = 0
 const RESET_FAIL_COUNT = 0
 const MAX_FAIL_COUNT = 10
 const UPDATER_BACKOFF_MULTIPLE = 2
+const UPDATE_IN_PROGRESS = Infinity
 export class CyclicUpdater {
   _countdown = DEFAULT_COUNTDOWN_VALUE
   _failCount = RESET_FAIL_COUNT
@@ -34,7 +35,7 @@ export class CyclicUpdater {
   async trigger(elapsed: number): Promise<void> {
     this._countdown -= elapsed
     if (this._countdown <= COUNTDOWN_EXPIRES_AT) {
-      this._countdown = Infinity
+      this._countdown = UPDATE_IN_PROGRESS
       try {
         await this.updateFn()
         this._countdown = this.period
@@ -49,8 +50,8 @@ export class CyclicUpdater {
 }
 
 export const CyclicManager = {
-  __updaters: ((): CyclicUpdater[] => [])(),
-  __timer: ((): NodeJS.Timeout | number | undefined => undefined)(),
+  __updaters: [] as CyclicUpdater[],
+  __timer: undefined as NodeJS.Timeout | number | undefined,
   __triggerUpdaters: async (interval: number): Promise<void> => {
     await Promise.all(
       CyclicManager.__updaters.map(async (updater) => {

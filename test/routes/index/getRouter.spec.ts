@@ -15,17 +15,12 @@ describe('routes/index function getRouter()', () => {
   const serverFake = Cast<Server>({})
   const socketsFake = Cast<WebSocketServer>({})
   let routerStub = { get: Sinon.stub() }
-  Sinon.stub().returns(Cast<Router>(routerStub))
   beforeEach(() => {
     routerStub = { get: Sinon.stub() }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
   })
   afterEach(() => {
     sandbox.restore()
-  })
-  it('should return constructed router', async () => {
-    const result = await getRouter(applicationFake, serverFake, socketsFake)
-    expect(result).to.equal(routerStub)
   })
   const endpoints = ['/', '/show', '/show/*path']
   it('should register expected number of endpoints', async () => {

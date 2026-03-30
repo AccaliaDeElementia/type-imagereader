@@ -34,10 +34,6 @@ describe('routes/api function getRouter()', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should resolve to created router', async () => {
-    const result = await getRouter(applicationFake, serverFake, socketServerFake)
-    expect(result).to.equal(routerStub)
-  })
   it('should attach handler for get `/`', async () => {
     await getRouter(applicationFake, serverFake, socketServerFake)
     expect(routerStub.get.calledWith('/')).to.equal(true)

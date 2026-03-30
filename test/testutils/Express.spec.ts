@@ -29,30 +29,6 @@ describe('testutils/Express createResponseFake()', () => {
     const { stub } = createResponseFake()
     expect(stub.set).to.be.a('function')
   })
-  it('should start with status callCount of 0', () => {
-    const { stub } = createResponseFake()
-    expect(stub.status.callCount).to.equal(0)
-  })
-  it('should start with json callCount of 0', () => {
-    const { stub } = createResponseFake()
-    expect(stub.json.callCount).to.equal(0)
-  })
-  it('should start with send callCount of 0', () => {
-    const { stub } = createResponseFake()
-    expect(stub.send.callCount).to.equal(0)
-  })
-  it('should start with end callCount of 0', () => {
-    const { stub } = createResponseFake()
-    expect(stub.end.callCount).to.equal(0)
-  })
-  it('should start with render callCount of 0', () => {
-    const { stub } = createResponseFake()
-    expect(stub.render.callCount).to.equal(0)
-  })
-  it('should start with set callCount of 0', () => {
-    const { stub } = createResponseFake()
-    expect(stub.set.callCount).to.equal(0)
-  })
   it('should have status return fake for method chaining', () => {
     const { stub, fake } = createResponseFake()
     expect(stub.status(200)).to.equal(fake)

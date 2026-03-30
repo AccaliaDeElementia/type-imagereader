@@ -14,7 +14,7 @@ import {
 } from '#contracts/listing'
 
 interface WebBookmarkFolder {
-  name: string
+  path: string
   element: HTMLElement
 }
 
@@ -28,14 +28,14 @@ export const Bookmarks = {
   bookmarksTab: null as HTMLElement | null,
   BookmarkFolders: [] as WebBookmarkFolder[],
   GetOrCreateFolderElement: (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null => {
-    let folder = Bookmarks.BookmarkFolders.find((e) => e.name === bookmarkFolder.path)
+    let folder = Bookmarks.BookmarkFolders.find((e) => e.path === bookmarkFolder.path)
     if (folder === undefined) {
       const element = CloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
       if (element === undefined) {
         return null
       }
       folder = {
-        name: bookmarkFolder.name,
+        path: bookmarkFolder.path,
         element,
       }
       element.setAttribute('data-folderPath', bookmarkFolder.path)
@@ -125,7 +125,7 @@ export const Bookmarks = {
     Bookmarks.BookmarkFolders = []
     Bookmarks.buildBookmarkNodes(data, openPath)
     Bookmarks.BookmarkFolders.sort((a, b) =>
-      a.name < b.name ? SORT_BEFORE : a.name > b.name ? SORT_AFTER : SORT_EQUAL,
+      a.path < b.path ? SORT_BEFORE : a.path > b.path ? SORT_AFTER : SORT_EQUAL,
     )
     for (const folder of Bookmarks.BookmarkFolders) {
       Bookmarks.bookmarksTab.appendChild(folder.element)

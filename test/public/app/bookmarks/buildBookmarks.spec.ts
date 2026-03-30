@@ -356,10 +356,10 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
   const buildBookmarksWithFolders = (dom: JSDOM): void => {
     getFolderSpy.callsFake(() => {
       Bookmarks.BookmarkFolders = [
-        { name: 'Z', element: dom.window.document.createElement('details') },
-        { name: 'M', element: dom.window.document.createElement('details') },
-        { name: 'A', element: dom.window.document.createElement('details') },
-        { name: 'M', element: dom.window.document.createElement('details') },
+        { path: 'Z', element: dom.window.document.createElement('details') },
+        { path: 'M', element: dom.window.document.createElement('details') },
+        { path: 'A', element: dom.window.document.createElement('details') },
+        { path: 'M', element: dom.window.document.createElement('details') },
       ]
     })
     Bookmarks.buildBookmarks({
@@ -375,25 +375,25 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
   })
   it('should sort BookmarkFolders: index 0 should be A', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders[0]?.name).to.equal('A')
+    expect(Bookmarks.BookmarkFolders[0]?.path).to.equal('A')
   })
   it('should sort BookmarkFolders: index 1 should be M', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders[1]?.name).to.equal('M')
+    expect(Bookmarks.BookmarkFolders[1]?.path).to.equal('M')
   })
   it('should sort BookmarkFolders: index 2 should be M', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders[2]?.name).to.equal('M')
+    expect(Bookmarks.BookmarkFolders[2]?.path).to.equal('M')
   })
   it('should sort BookmarkFolders: index 3 should be Z', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders[3]?.name).to.equal('Z')
+    expect(Bookmarks.BookmarkFolders[3]?.path).to.equal('Z')
   })
   it('should call appendChild once for each BookmarkFolder', () => {
     getFolderSpy.callsFake(() => {
       Bookmarks.BookmarkFolders = []
       for (let i = 1; i <= 100; i += 1) {
-        Bookmarks.BookmarkFolders.push({ name: `Z${101 - i}`, element: dom.window.document.createElement('details') })
+        Bookmarks.BookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
       }
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
@@ -410,7 +410,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     getFolderSpy.callsFake(() => {
       Bookmarks.BookmarkFolders = []
       for (let i = 1; i <= 100; i += 1) {
-        Bookmarks.BookmarkFolders.push({ name: `Z${101 - i}`, element: dom.window.document.createElement('details') })
+        Bookmarks.BookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
       }
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')

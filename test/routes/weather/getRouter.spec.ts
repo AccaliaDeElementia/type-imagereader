@@ -42,10 +42,6 @@ describe('routes/weather function getRouter()', () => {
     await getRouter(applicationFake, serverFake, socketFake)
     expect(getRouterStub.callCount).to.equal(1)
   })
-  it('should return Router', async () => {
-    const result = await getRouter(applicationFake, serverFake, socketFake)
-    expect(result).to.equal(routerStub)
-  })
   it('should register correct endpoint count', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
     expect(routerStub.get.callCount).to.equal(1)

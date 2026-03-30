@@ -100,8 +100,8 @@ export function DefaultLocationReload(): void {
   throw new Error('Should not call default value!')
 }
 export const WebSockets = {
-  socket: ((): WebSocket | undefined => undefined)(),
-  launchId: ((): unknown => undefined)(),
+  socket: undefined as WebSocket | undefined,
+  launchId: undefined as unknown,
   LocationAssign: DefaultLocationAssign,
   LocationReload: DefaultLocationReload,
   connect: Connect,

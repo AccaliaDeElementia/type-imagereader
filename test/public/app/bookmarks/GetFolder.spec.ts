@@ -55,7 +55,7 @@ describe('public/app/bookmarks function GetOrCreateFolderElement()', () => {
   it('should return an HTMLElement', () => {
     const result = Bookmarks.GetOrCreateFolderElement('', {
       name: '',
-      path: '/foo/bar.jpg',
+      path: '/foo/',
       bookmarks: [],
     })
     expect(result).to.be.an.instanceOf(dom.window.HTMLElement)
@@ -65,11 +65,11 @@ describe('public/app/bookmarks function GetOrCreateFolderElement()', () => {
     Bookmarks.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
     expect(Bookmarks.BookmarkFolders).to.have.length(1)
   })
-  it('should store the folder name on creation', () => {
-    Bookmarks.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
+  it('should store the folder path on creation', () => {
+    Bookmarks.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/', bookmarks: [] })
     const folder = Bookmarks.BookmarkFolders.pop()
     assert(folder !== undefined, 'Folder should exist')
-    expect(folder.name).to.equal('/foo')
+    expect(folder.path).to.equal('/foo/')
   })
   it('should store the folder element on creation', () => {
     const result = Bookmarks.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
@@ -77,10 +77,10 @@ describe('public/app/bookmarks function GetOrCreateFolderElement()', () => {
     assert(folder !== undefined, 'Folder should exist')
     expect(result).to.equal(folder.element)
   })
-  it('should return existing folder element for matching name', () => {
+  it('should return existing folder element for matching path', () => {
     const element = dom.window.document.createElement('div')
     Bookmarks.BookmarkFolders.push({
-      name: '/foo/bar/baz/',
+      path: '/foo/bar/baz/',
       element,
     })
     const result = Bookmarks.GetOrCreateFolderElement('', {

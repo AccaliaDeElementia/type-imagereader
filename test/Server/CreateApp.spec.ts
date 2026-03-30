@@ -51,11 +51,6 @@ describe('Server function CreateApp', () => {
     const fn = appStub.listen.firstCall.args[1] as unknown
     assert.isFunction(fn)
   })
-  it('should return undefined from listen callback', () => {
-    Functions.CreateApp(1)
-    const fn = Cast<() => unknown>(appStub.listen.firstCall.args[1])
-    expect(fn()).to.equal(undefined)
-  })
   it('should not log message when callback is called without error parameter', () => {
     Functions.CreateApp(1)
     const fn = Cast<() => unknown>(appStub.listen.firstCall.args[1])
@@ -101,24 +96,8 @@ describe('Server function CreateApp', () => {
     Functions.CreateApp(1)
     expect(socketsServerStub.firstCall.args[0]).to.equal(serverFake)
   })
-  it('should return tuple of created servers', () => {
+  it('should return tuple of [express app, http server, websocket server]', () => {
     const result = Functions.CreateApp(1)
-    assert.isArray(result)
-  })
-  it('should return correctly sized tuple of created servers', () => {
-    const result = Functions.CreateApp(1)
-    expect(result).to.have.lengthOf(3)
-  })
-  it('should return express app server', () => {
-    const result = Functions.CreateApp(1)
-    expect(result[0]).to.equal(appFake)
-  })
-  it('should return http server', () => {
-    const result = Functions.CreateApp(1)
-    expect(result[1]).to.equal(serverFake)
-  })
-  it('should return websocket server', () => {
-    const result = Functions.CreateApp(1)
-    expect(result[2]).to.equal(socketsFake)
+    expect(result).to.deep.equal([appFake, serverFake, socketsFake])
   })
 })

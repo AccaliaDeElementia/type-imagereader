@@ -4,6 +4,7 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import { expect } from 'chai'
 import { Config, Functions, type SlideshowRoom } from '#routes/slideshow'
+import { ALTER_COUNTER } from '#utils/helpers'
 
 const sandbox = Sinon.createSandbox()
 
@@ -68,16 +69,16 @@ describe('routes/slideshow function GetRoomAndIncrementImage() index navigation'
         countdown: 50,
         images: pagedImages(20, 200),
         path: '/path/',
-        index: 10,
+        index: 1,
         uriSafeImage: undefined,
         pages: { unread: 0, all: 0, pages: 0, page: 11 },
       })
       Config.rooms['/path/'] = room
       getImagesStub.onFirstCall().resolves(second)
       await Functions.GetRoomAndIncrementImage(knexFake, '/path/')
-      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -10)
+      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', ALTER_COUNTER.DECREMENT)
       getCountsStub.resetHistory()
-      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -1)
+      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', ALTER_COUNTER.DECREMENT)
     })
     it('should call GetCounts once', () => expect(getCountsStub.callCount).to.equal(1))
     it('should call GetCounts with 4 arguments', () => expect(getCountsStub.firstCall.args).to.have.lengthOf(4))
@@ -98,7 +99,7 @@ describe('routes/slideshow function GetRoomAndIncrementImage() index navigation'
       second = pagedImages(100)
       getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves(second)
       room = await Functions.GetRoomAndIncrementImage(knexFake, '/path/')
-      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -1000)
+      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', ALTER_COUNTER.DECREMENT)
     })
     it('should set index to last image of new page', () => expect(room.index).to.equal(99))
     it('should reload images from new page', () => expect(getImagesStub.callCount).to.equal(2))
@@ -112,10 +113,10 @@ describe('routes/slideshow function GetRoomAndIncrementImage() index navigation'
       second = pagedImages(100)
       getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves(second)
       room = await Functions.GetRoomAndIncrementImage(knexFake, '/path/')
-      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', 199)
+      room.index = room.images.length + ALTER_COUNTER.DECREMENT
       room.pages.page = 13
       getCountsStub.resetHistory()
-      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', 1)
+      await Functions.GetRoomAndIncrementImage(knexFake, '/path/', ALTER_COUNTER.INCREMENT)
     })
     it('should call GetCounts once', () => expect(getCountsStub.callCount).to.equal(1))
     it('should call GetCounts with 4 arguments', () => expect(getCountsStub.firstCall.args).to.have.lengthOf(4))

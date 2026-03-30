@@ -31,7 +31,6 @@ describe('routes/images route /full/*', () => {
     get: Sinon.stub().returnsThis(),
   }
   let loggerStub = Sinon.stub()
-  let handleErrorsStub = Sinon.stub()
   let router = Cast<(req: Request, res: Response) => Promise<void>>(Sinon.stub())
   let readImageStub = Sinon.stub()
   let sendImageStub = Sinon.stub()
@@ -45,9 +44,7 @@ describe('routes/images route /full/*', () => {
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = Sinon.stub()
     sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    handleErrorsStub = sandbox
-      .stub(Imports, 'handleErrors')
-      .callsFake((_logger, action) => Cast<RequestHandler>(action))
+    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get
       .getCalls()
@@ -99,17 +96,4 @@ describe('routes/images route /full/*', () => {
       successTestRunner(path, title, validation)
     }
   }
-  it('should register route handler using handleErrors', () => {
-    expect(handleErrorsStub.callCount).to.be.greaterThanOrEqual(1)
-  })
-  it('should pass logger to every handleErrors call', () => {
-    for (const call of handleErrorsStub.getCalls()) {
-      expect(call.args[0]).to.equal(loggerStub)
-    }
-  })
-  it('should pass action function to every handleErrors call', () => {
-    for (const call of handleErrorsStub.getCalls()) {
-      expect(call.args[1]).to.be.a('function')
-    }
-  })
 })

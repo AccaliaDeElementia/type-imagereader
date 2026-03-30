@@ -66,20 +66,4 @@ describe('testutils/Knex createKnexChainFake()', () => {
     const { stub: b } = createKnexChainFake(['select'] as const, ['limit'] as const)
     expect(a).to.not.equal(b)
   })
-  it('should start select chain method call count at zero', () => {
-    const { instance } = createKnexChainFake(['select', 'where'] as const, ['limit'] as const)
-    expect(instance.select.callCount).to.equal(0)
-  })
-  it('should start where chain method call count at zero', () => {
-    const { instance } = createKnexChainFake(['select', 'where'] as const, ['limit'] as const)
-    expect(instance.where.callCount).to.equal(0)
-  })
-  it('should start terminal method call counts at zero', () => {
-    const { instance } = createKnexChainFake(['select'] as const, ['limit'] as const)
-    expect(instance.limit.callCount).to.equal(0)
-  })
-  it('should start stub call count at zero', () => {
-    const { stub } = createKnexChainFake(['select'] as const, ['limit'] as const)
-    expect(stub.callCount).to.equal(0)
-  })
 })

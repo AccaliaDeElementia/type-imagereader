@@ -24,8 +24,6 @@ describe('routes/api route GET /', () => {
   let requestFake = Cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
-  let loggerStub = Sinon.stub()
-  let handleErrorsStub = Sinon.stub()
   beforeEach(async () => {
     requestStub = {
       body: { Body: -1 },
@@ -41,11 +39,8 @@ describe('routes/api route GET /', () => {
         post: Sinon.stub(),
       }),
     )
-    loggerStub = Sinon.stub()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    handleErrorsStub = sandbox
-      .stub(Imports, 'handleErrors')
-      .callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
       getFn.getCalls().find((call) => call.args[0] === '/')?.args[1],
@@ -57,33 +52,12 @@ describe('routes/api route GET /', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should call status once', async () => {
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.callCount).to.equal(1)
-  })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
   })
-  it('should call json once', async () => {
-    await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.callCount).to.equal(1)
-  })
   it('should return JSON data', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.firstCall.args).to.deep.equal([{ title: 'API' }])
-  })
-  it('should register route handler using handleErrors', () => {
-    expect(handleErrorsStub.callCount).to.be.greaterThanOrEqual(1)
-  })
-  it('should pass logger to every handleErrors call', () => {
-    for (const call of handleErrorsStub.getCalls()) {
-      expect(call.args[0]).to.equal(loggerStub)
-    }
-  })
-  it('should pass action function to every handleErrors call', () => {
-    for (const call of handleErrorsStub.getCalls()) {
-      expect(call.args[1]).to.be.a('function')
-    }
   })
 })

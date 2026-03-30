@@ -194,7 +194,7 @@ export const Functions = {
   GetRoomAndIncrementImage: async (
     knex: Knex,
     name: string,
-    increment = ALTER_COUNTER.NONE as number,
+    increment: ALTER_COUNTER = ALTER_COUNTER.NONE,
   ): Promise<SlideshowRoom> => {
     const advancePage = async (
       currentPage: number,
@@ -242,7 +242,7 @@ export const Functions = {
       await Functions.MarkImageRead(knex, image)
     }
     room.uriSafeImage = UriSafePath.encode(room.images[room.index] ?? '')
-    if (increment !== (ALTER_COUNTER.NONE as number)) {
+    if (increment !== ALTER_COUNTER.NONE) {
       room.countdown = Config.countdownDuration
     }
     return room

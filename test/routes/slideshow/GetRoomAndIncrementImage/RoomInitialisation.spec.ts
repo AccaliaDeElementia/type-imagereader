@@ -2,6 +2,7 @@
 
 import Sinon from 'sinon'
 import { StubToKnex } from '#testutils/TypeGuards'
+import { ALTER_COUNTER } from '#utils/helpers'
 import { expect } from 'chai'
 import { Config, Functions } from '#routes/slideshow'
 
@@ -134,11 +135,11 @@ describe('routes/slideshow function GetRoomAndIncrementImage() room initialisati
     expect(room.index).to.equal(0)
   })
   it('it should ignore negative increment on new room', async () => {
-    const room = await Functions.GetRoomAndIncrementImage(knexFake, '/path/', -10)
+    const room = await Functions.GetRoomAndIncrementImage(knexFake, '/path/', ALTER_COUNTER.DECREMENT)
     expect(room.index).to.equal(0)
   })
   it('it should ignore positive increment on new room', async () => {
-    const room = await Functions.GetRoomAndIncrementImage(knexFake, '/path2/', 5)
+    const room = await Functions.GetRoomAndIncrementImage(knexFake, '/path2/', ALTER_COUNTER.INCREMENT)
     expect(room.index).to.equal(0)
   })
   it('it should set uriSafeImage', async () => {
