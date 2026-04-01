@@ -64,7 +64,7 @@ describe('routes/slideshow function GetImageCount()', () => {
       expect(knexInstanceStub.where.firstCall.args).to.deep.equal(['path', 'like', '/foo\\%bar/%'])
     })
   })
-  describe('with unreadOnly = false', () => {
+  describe("with filter = 'all'", () => {
     let {
       instance: knexInstanceStub,
       stub: knexStub,
@@ -78,20 +78,20 @@ describe('routes/slideshow function GetImageCount()', () => {
       } = createKnexChainFake(['count'] as const, ['where'] as const))
     })
     it('should query knex once', async () => {
-      await Functions.GetImageCount(knexFake, '/slideshow/path', false)
+      await Functions.GetImageCount(knexFake, '/slideshow/path', 'all')
       expect(knexStub.callCount).to.equal(1)
     })
     it('should filter results with where clause', async () => {
-      await Functions.GetImageCount(knexFake, '/slideshow/path', false)
+      await Functions.GetImageCount(knexFake, '/slideshow/path', 'all')
       expect(knexInstanceStub.where.callCount).to.equal(1)
     })
     it('should resolve number results', async () => {
       knexInstanceStub.where.resolves([{ count: 12 }])
-      const actual = await Functions.GetImageCount(knexFake, '/foo', false)
+      const actual = await Functions.GetImageCount(knexFake, '/foo', 'all')
       expect(actual).to.equal(12)
     })
   })
-  describe('with unreadOnly = true', () => {
+  describe("with filter = 'unread'", () => {
     let {
       instance: knexInstanceStub,
       stub: knexStub,
@@ -125,7 +125,7 @@ describe('routes/slideshow function GetImageCount()', () => {
     ]
     queryTests.forEach(([title, validationFn]) => {
       it(`should ${title}`, async () => {
-        await Functions.GetImageCount(knexFake, '/slideshow/path', true)
+        await Functions.GetImageCount(knexFake, '/slideshow/path', 'unread')
         validationFn()
       })
     })
@@ -146,12 +146,12 @@ describe('routes/slideshow function GetImageCount()', () => {
     resultsTests.forEach(([title, result, expected]) => {
       it(`should resolve ${title}`, async () => {
         knexInstanceStub.andWhere.resolves(result)
-        const actual = await Functions.GetImageCount(knexFake, '/foo', true)
+        const actual = await Functions.GetImageCount(knexFake, '/foo', 'unread')
         expect(actual).to.equal(expected)
       })
     })
     it('should escape % in path for LIKE query', async () => {
-      await Functions.GetImageCount(knexFake, '/foo%bar/', true)
+      await Functions.GetImageCount(knexFake, '/foo%bar/', 'unread')
       expect(knexInstanceStub.where.firstCall.args).to.deep.equal(['path', 'like', '/foo\\%bar/%'])
     })
   })

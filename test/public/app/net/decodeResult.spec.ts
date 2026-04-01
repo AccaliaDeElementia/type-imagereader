@@ -23,15 +23,20 @@ describe('public/app/net function decodeResult()', () => {
       json: async () => await Promise.resolve(dataFake),
     })
   })
-  it('should reject for empty content with an Error', async () => {
+  it('should resolve to null for empty content with permissive type guard', async () => {
     contentLengthFake = '0'
-    const err = await EventuallyRejects(decodeResult(response, isUnknown))
+    const result = await decodeResult(response, isUnknown)
+    expect(result).to.equal(null)
+  })
+  it('should reject for empty content with strict type guard with an Error', async () => {
+    contentLengthFake = '0'
+    const err = await EventuallyRejects(decodeResult(response, (_): _ is never => false))
     expect(err).to.be.an.instanceOf(Error)
   })
-  it('should reject for empty content with expected message', async () => {
+  it('should reject for empty content with strict type guard with expected message', async () => {
     contentLengthFake = '0'
-    const err = await EventuallyRejects(decodeResult(response, isUnknown))
-    expect(err.message).to.equal('Empty JSON response recieved')
+    const err = await EventuallyRejects(decodeResult(response, (_): _ is never => false))
+    expect(err.message).to.equal('Empty JSON response received')
   })
   it('should reject when data is an error with an Error', async () => {
     dataFake = { error: 'This is an Error! FOO!' }

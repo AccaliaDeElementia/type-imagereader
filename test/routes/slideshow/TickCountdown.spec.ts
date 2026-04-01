@@ -114,10 +114,10 @@ describe('routes/slideshow function TickCountdown()', () => {
     ],
     ['emit single message', -99, clients, () => expect(ioStub.emit.callCount).to.equal(1), ['/an/image.png']],
     [
-      'emit new-image message',
+      'emit image-changed message',
       -99,
       clients,
-      () => expect(ioStub.emit.firstCall.args[0]).to.equal('new-image'),
+      () => expect(ioStub.emit.firstCall.args[0]).to.equal('image-changed'),
       ['/an/image.png'],
     ],
     [

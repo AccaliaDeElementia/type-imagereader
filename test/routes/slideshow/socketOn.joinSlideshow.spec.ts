@@ -55,7 +55,7 @@ describe('routes/slideshow socket join-slideshow()', () => {
     ['not emit message for null room name', null, () => expect(socketStub.emit.callCount).to.equal(0)],
     ['not emit message for empty room name', '', () => expect(socketStub.emit.callCount).to.equal(0)],
     ['not emit message for valid room name', '/foo', () => expect(socketStub.emit.callCount).to.equal(1)],
-    ["emit 'new-image' message", '/foo', () => expect(socketStub.emit.firstCall.args[0]).to.equal('new-image')],
+    ["emit 'image-changed' message", '/foo', () => expect(socketStub.emit.firstCall.args[0]).to.equal('image-changed')],
     ['emit message with image path', '/foo', () => expect(socketStub.emit.firstCall.args[1]).to.equal('/foo/quux.png')],
   ]
   tests.forEach(([title, room, validationFn]) => {

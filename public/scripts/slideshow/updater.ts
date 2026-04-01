@@ -2,7 +2,7 @@
 
 type UpdateFn = () => Promise<void>
 export async function defaultUpdateFn(): Promise<void> {
-  const err = new Error('Cyclic Updater Called with No Updater')
+  const err = new Error('CyclicUpdater fired before an updateFn was provided to the constructor')
   // V8 block coverage splits async functions at every `await` into a pre-suspension
   // block and a post-suspension resume block. When the awaited Promise rejects the
   // resume block never executes, leaving two ranges uncovered on the lines below.
@@ -17,7 +17,7 @@ const MINIMUM_COUNTDOWN = 0
 const RESET_FAIL_COUNT = 0
 const MAX_FAIL_COUNT = 10
 const UPDATER_BACKOFF_MULTIPLE = 2
-const UPDATE_IN_PROGRESS = Infinity
+const UPDATE_IN_PROGRESS = Infinity // Infinity - elapsed = Infinity: prevents re-entrancy via the existing countdown check
 export class CyclicUpdater {
   _countdown = DEFAULT_COUNTDOWN_VALUE
   _failCount = RESET_FAIL_COUNT

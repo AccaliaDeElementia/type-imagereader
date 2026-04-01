@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/weather function getNightNotBefore()', () => {
+describe('routes/weather function getEarliestSunset()', () => {
   let tz: string | undefined = undefined
 
   beforeEach(() => {
@@ -41,7 +41,7 @@ describe('routes/weather function getNightNotBefore()', () => {
       if (env !== undefined) {
         process.env.NIGHT_NOT_BEFORE = env
       }
-      const result = Imports.getNightNotBefore()
+      const result = Imports.getEarliestSunset()
       expect(result).to.equal(expected)
     })
   })

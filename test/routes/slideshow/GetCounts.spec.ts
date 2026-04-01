@@ -38,7 +38,7 @@ describe('routes/slideshow function GetCounts()', () => {
   })
   it('should get unread image count with unreadOnly flag', async () => {
     await Functions.GetCounts(knexFake, 'foo')
-    expect(getImageCountStub.firstCall.args[2]).to.equal(true)
+    expect(getImageCountStub.firstCall.args[2]).to.equal('unread')
   })
   it('should get all image count with expected parameters', async () => {
     await Functions.GetCounts(knexFake, 'foo')

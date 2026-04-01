@@ -3,14 +3,15 @@
 import { HasValues } from '#utils/helpers'
 import { Publish } from '../pubsub'
 
-const INDEX_OFFSET = 1
+const LAST_LINK_OFFSET = 1
+const PREV_BUTTON_OFFSET = 1
 const MINIMUM_INDEX = 0
 export function SelectPage(index: number): void {
   const links = document.querySelectorAll('.pagination .page-item')
   if (!HasValues(links)) {
     Publish('Pictures:SelectPage', 'Default Page Selected')
     return
-  } else if (index <= MINIMUM_INDEX || index >= links.length - INDEX_OFFSET) {
+  } else if (index <= MINIMUM_INDEX || index >= links.length - LAST_LINK_OFFSET) {
     Publish('Loading:Error', 'Invalid Page Index Selected')
     return
   }
@@ -23,7 +24,7 @@ export function SelectPage(index: number): void {
   })
   const content = document.querySelectorAll('#tabImages .page')
   content.forEach((element: Element, i: number) => {
-    if (i === index - INDEX_OFFSET) {
+    if (i === index - PREV_BUTTON_OFFSET) {
       element.classList.remove('hidden')
     } else {
       element.classList.add('hidden')

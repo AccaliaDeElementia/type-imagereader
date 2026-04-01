@@ -15,7 +15,7 @@ html
     img.mainImage.bottomImage
 `
 
-describe('public/slideshow/sockets DoNewImage()', () => {
+describe('public/slideshow/sockets ShowBackingImageByType()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>')
@@ -64,32 +64,32 @@ describe('public/slideshow/sockets DoNewImage()', () => {
   staticImages.forEach((img) => {
     it(`should unhide .topImage for image: ${img}`, () => {
       topImage?.classList.add('hide')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(topImage?.classList.contains('hide')).to.equal(false)
     })
     it(`should set source .topImage for image: ${img}`, () => {
       topImage?.setAttribute('src', 'Invalid!')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(topImage?.getAttribute('src')).to.equal(`/images/kiosk${img}-image.webp`)
     })
     it(`should unhide .bottomImage for image: ${img}`, () => {
       bottomImage?.classList.add('hide')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(bottomImage?.classList.contains('hide')).to.equal(false)
     })
     it(`should set source .bottomImage for image: ${img}`, () => {
       bottomImage?.setAttribute('src', 'Invalid!')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(bottomImage?.getAttribute('src')).to.equal(`/images/kiosk${img}-image.webp`)
     })
     it(`should unhide .bottomImage.blur for image: ${img}`, () => {
       bottomBlurImage?.classList.add('hide')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(bottomBlurImage?.classList.contains('hide')).to.equal(false)
     })
     it(`should set source .bottomImage.blur for image: ${img}`, () => {
       bottomBlurImage?.setAttribute('src', 'Invalid!')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(bottomBlurImage?.getAttribute('src')).to.equal(`/images/kiosk${img}-image.webp`)
     })
   })
@@ -97,32 +97,32 @@ describe('public/slideshow/sockets DoNewImage()', () => {
   animatedImages.forEach((img) => {
     it(`should unhide .topImage for image: ${img}`, () => {
       topImage?.classList.add('hide')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(topImage?.classList.contains('hide')).to.equal(false)
     })
     it(`should set source .topImage for image: ${img}`, () => {
       topImage?.setAttribute('src', 'Invalid!')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(topImage?.getAttribute('src')).to.equal(`/images/kiosk${img}-image.webp`)
     })
     it(`should hide .bottomImage for image: ${img}`, () => {
       bottomImage?.classList.add('hide')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(bottomImage?.classList.contains('hide')).to.equal(true)
     })
     it(`should clear source .bottomImage for image: ${img}`, () => {
       bottomImage?.setAttribute('src', 'Invalid!')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(bottomImage?.getAttribute('src')).to.equal(null)
     })
     it(`should hide .bottomImage.blur for image: ${img}`, () => {
       bottomBlurImage?.classList.add('hide')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(bottomBlurImage?.classList.contains('hide')).to.equal(true)
     })
     it(`should clear source .bottomImage.blur for image: ${img}`, () => {
       bottomBlurImage?.setAttribute('src', 'Invalid!')
-      Functions.DoNewImage(img)
+      Functions.ShowBackingImageByType(img)
       expect(bottomBlurImage?.getAttribute('src')).to.equal(null)
     })
   })

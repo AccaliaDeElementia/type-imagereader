@@ -7,7 +7,7 @@ import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/overlay CalculateOffset()', () => {
+describe('public/slideshow/overlay CalculateDarknessMs()', () => {
   const almanac = GetAlmanac()
   beforeEach(() => {
     almanac.sunrise = new Date('2025-03-18T05:45:00.000Z').getTime()
@@ -35,7 +35,7 @@ describe('public/slideshow/overlay CalculateOffset()', () => {
       sandbox.useFakeTimers({
         now: new Date(timeNow).getTime(),
       })
-      expect(Functions.CalculateOffset()).to.equal(expected)
+      expect(Functions.CalculateDarknessMs()).to.equal(expected)
     })
   })
 })

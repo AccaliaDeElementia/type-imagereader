@@ -3,6 +3,7 @@
 import { io, type Socket } from 'socket.io-client'
 import type { DefaultEventsMap } from 'socket.io/dist/typed-events'
 import { HasValue, StringishHasValue } from '#utils/helpers'
+import { SocketEvents } from '#contracts/socketEvents'
 export type WebSocket = Socket<DefaultEventsMap, DefaultEventsMap>
 
 export const Imports = {
@@ -17,9 +18,9 @@ export const Functions = {
   HandleKeys: (event: KeyboardEvent, socket: WebSocket | undefined): void => {
     if (!HasValue(socket)) return
     if (event.key.toUpperCase() === 'ARROWRIGHT') {
-      socket.emit('next-image')
+      socket.emit(SocketEvents.NextImage)
     } else if (event.key.toUpperCase() === 'ARROWLEFT') {
-      socket.emit('prev-image')
+      socket.emit(SocketEvents.PrevImage)
     }
   },
   HandleClick: (event: MouseEvent, socket: WebSocket | undefined, initialScale: number): void => {
@@ -30,19 +31,19 @@ export const Functions = {
     const pageWidth = window.innerWidth
     const x = event.clientX
     if (x < pageWidth * LEFT_THIRD) {
-      socket.emit('prev-image')
+      socket.emit(SocketEvents.PrevImage)
     } else if (x > pageWidth * RIGHT_THIRD) {
-      socket.emit('next-image')
+      socket.emit(SocketEvents.NextImage)
     } else if (new URLSearchParams(window.location.search).has('kiosk')) {
-      socket.emit('next-image')
+      socket.emit(SocketEvents.NextImage)
     } else {
-      socket.emit('goto-image', (folder: string | null) => {
+      socket.emit(SocketEvents.GotoImage, (folder: string | null) => {
         if (folder === null) return
         WebSockets.LocationAssign(`/show${folder}?noMenu`)
       })
     }
   },
-  DoNewImage: (path: string): void => {
+  ShowBackingImageByType: (path: string): void => {
     if (/[.]gif$/iv.test(path)) {
       for (const elem of document.querySelectorAll('img.bottomImage')) {
         elem.classList.add('hide')
@@ -80,10 +81,10 @@ function Connect(): void {
   WebSockets.socket = Imports.io(new URL(window.location.href).origin)
   const room = Functions.ParseRoomName()
   WebSockets.socket.on('connect', () => {
-    WebSockets.socket?.emit('join-slideshow', room)
-    WebSockets.socket?.emit('get-launchId', Functions.HandleGetLaunchId)
+    WebSockets.socket?.emit(SocketEvents.JoinSlideshow, room)
+    WebSockets.socket?.emit(SocketEvents.GetLaunchId, Functions.HandleGetLaunchId)
   })
-  WebSockets.socket.on('new-image', Functions.DoNewImage)
+  WebSockets.socket.on(SocketEvents.ImageChanged, Functions.ShowBackingImageByType)
   const initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
   document.body.addEventListener('click', (event) => {
     Functions.HandleClick(event, WebSockets.socket, initialScale)
@@ -93,23 +94,23 @@ function Connect(): void {
   })
 }
 
-export function DefaultLocationAssign(_: string | URL): void {
-  throw new Error('Should not call default value!')
+export function UninitializedLocationAssign(_: string | URL): void {
+  throw new Error('LocationAssign called before Connect()')
 }
-export function DefaultLocationReload(): void {
-  throw new Error('Should not call default value!')
+export function UninitializedLocationReload(): void {
+  throw new Error('LocationReload called before Connect()')
 }
 export const WebSockets = {
   socket: undefined as WebSocket | undefined,
   launchId: undefined as unknown,
-  LocationAssign: DefaultLocationAssign,
-  LocationReload: DefaultLocationReload,
+  LocationAssign: UninitializedLocationAssign,
+  LocationReload: UninitializedLocationReload,
   connect: Connect,
   disconnect: (): void => {
     WebSockets.socket?.disconnect()
     WebSockets.socket = undefined
     WebSockets.launchId = undefined
-    WebSockets.LocationAssign = DefaultLocationAssign
-    WebSockets.LocationReload = DefaultLocationReload
+    WebSockets.LocationAssign = UninitializedLocationAssign
+    WebSockets.LocationReload = UninitializedLocationReload
   },
 }

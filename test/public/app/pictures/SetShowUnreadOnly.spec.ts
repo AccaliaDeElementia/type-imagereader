@@ -23,10 +23,10 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
   })
   it('should store true when enabling function', () => {
     Pictures.SetShowUnreadOnly(true)
-    expect(dom.window.localStorage.getItem('ShowUnseenOnly')).to.equal('true')
+    expect(dom.window.localStorage.getItem('ShowUnreadOnly')).to.equal('true')
   })
   it('should store true when disabling function', () => {
     Pictures.SetShowUnreadOnly(false)
-    expect(dom.window.localStorage.getItem('ShowUnseenOnly')).to.equal('false')
+    expect(dom.window.localStorage.getItem('ShowUnreadOnly')).to.equal('false')
   })
 })

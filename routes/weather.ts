@@ -37,7 +37,7 @@ export interface OpenWeatherData {
   }
 }
 
-function isMainValid(data: object): boolean {
+function isOptionalMainValid(data: object): boolean {
   if ('main' in data) {
     if (typeof data.main !== 'object' || data.main === null) return false
     if (!('temp' in data.main) || typeof data.main.temp !== 'number') return false
@@ -107,8 +107,8 @@ function getTimeOfDay(envVar: string | undefined, defaultHour: number, defaultMi
   return time.getTime()
 }
 export const Imports = {
-  getNightNotBefore: (): number => getTimeOfDay(process.env.NIGHT_NOT_BEFORE, DEFAULT_DUSK_HOUR, DEFAULT_DUSK_MINUTES),
-  getNightNotAfter: (): number => getTimeOfDay(process.env.NIGHT_NOT_AFTER, DEFAULT_DAWN_HOUR, DEFAULT_DAWN_MINUTES),
+  getEarliestSunset: (): number => getTimeOfDay(process.env.NIGHT_NOT_BEFORE, DEFAULT_DUSK_HOUR, DEFAULT_DUSK_MINUTES),
+  getLatestSunrise: (): number => getTimeOfDay(process.env.NIGHT_NOT_AFTER, DEFAULT_DAWN_HOUR, DEFAULT_DAWN_MINUTES),
   Router,
 }
 const defaultWeather: WeatherResults = {
@@ -124,7 +124,7 @@ export const Functions = {
   weather: defaultWeather,
   isOpenWeatherData: (data: unknown): data is OpenWeatherData => {
     if (typeof data !== 'object' || data === null) return false
-    if (!isMainValid(data)) return false
+    if (!isOptionalMainValid(data)) return false
     if (!isWeatherValid(data)) return false
     return isSysValid(data)
   },
@@ -140,8 +140,8 @@ export const Functions = {
   },
   UpdateWeather: async (): Promise<WeatherResults> => {
     const weather = Functions.weather
-    const nightNotAfter = Imports.getNightNotAfter()
-    const nightNotBefore = Imports.getNightNotBefore()
+    const latestSunrise = Imports.getLatestSunrise()
+    const earliestSunset = Imports.getEarliestSunset()
     try {
       const data = await Functions.GetWeather()
       if (data.main !== undefined) {
@@ -152,16 +152,16 @@ export const Functions = {
       const [firstForecast] = data.weather
       weather.description = firstForecast?.main
       weather.icon = firstForecast?.icon
-      weather.sunrise = Math.min(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunrise, nightNotAfter)
-      weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, nightNotBefore)
+      weather.sunrise = Math.min(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunrise, latestSunrise)
+      weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, earliestSunset)
     } catch (_) {
       weather.temp = undefined
       weather.pressure = undefined
       weather.humidity = undefined
       weather.description = undefined
       weather.icon = undefined
-      weather.sunrise = nightNotAfter
-      weather.sunset = nightNotBefore
+      weather.sunrise = latestSunrise
+      weather.sunset = earliestSunset
     }
     return weather
   },

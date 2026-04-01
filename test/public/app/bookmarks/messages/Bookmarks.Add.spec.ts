@@ -136,22 +136,22 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
     await fn('foo!')
     expect(loadingErrorSpy.called).to.equal(false)
   })
-  it('should publish Bookmarks:Load on rejection for no data', async () => {
-    postJSONSpy.rejects(new Error('Empty JSON response recieved'))
+  it('should publish Bookmarks:Load on empty response', async () => {
+    postJSONSpy.resolves(null)
     const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
     assert(fn !== undefined)
     await fn('foo!')
     expect(bookmarksLoadSpy.called).to.equal(true)
   })
-  it('should publish Loading:Success on rejection for no data', async () => {
-    postJSONSpy.rejects(new Error('Empty JSON response recieved'))
+  it('should publish Loading:Success on empty response', async () => {
+    postJSONSpy.resolves(null)
     const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
     assert(fn !== undefined)
     await fn('foo!')
     expect(loadingSuccessSpy.called).to.equal(true)
   })
-  it('should not publish Loading:Error on rejection for no data', async () => {
-    postJSONSpy.rejects(new Error('Empty JSON response recieved'))
+  it('should not publish Loading:Error on empty response', async () => {
+    postJSONSpy.resolves(null)
     const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
     assert(fn !== undefined)
     await fn('foo!')

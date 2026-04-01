@@ -44,16 +44,16 @@ interface PictureCache {
   prev: Picture[]
 }
 
-const DEFAULT_MOD_COUNT = -1
-export const DEFAULT_SCALE = -1
+const UNINITIALIZED_MOD_COUNT = -1
+export const UNINITIALIZED_SCALE = -1
 const PICTURES_PER_PAGE = 32
 export const CACHE_SIZE = 10
 
 export const Pictures = {
-  modCount: DEFAULT_MOD_COUNT,
+  modCount: UNINITIALIZED_MOD_COUNT,
   nextLoader: Promise.resolve(),
   nextPending: true,
-  initialScale: DEFAULT_SCALE,
+  initialScale: UNINITIALIZED_SCALE,
   pictures: [] as Picture[],
   current: null as Picture | null,
   mainImage: null as HTMLImageElement | null,

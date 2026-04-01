@@ -30,8 +30,8 @@ interface BodyData {
 export function isReqWithBodyData(obj: unknown): obj is ReqWithBodyData {
   if (obj === null || typeof obj !== 'object') return false
   if (!('body' in obj) || obj.body === null || typeof obj.body !== 'object') return false
-  if ('modCount' in obj.body && typeof obj.body.modCount !== 'number') return false
-  if (!('path' in obj.body) || typeof obj.body.path !== 'string') return false
+  if ('modCount' in obj.body && typeof obj.body.modCount !== 'number') return false // optional
+  if (!('path' in obj.body) || typeof obj.body.path !== 'string') return false // required
   return true
 }
 
@@ -108,7 +108,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     handleErrors(async (req, res) => {
       const body = ReadBody(req)
       const incomingModCount = body.modCount ?? Number.NaN
-      let response = -1
+      let response = INVALID_MOD_COUNT
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path === null) {
         return
@@ -119,7 +119,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
         response = ModCount.Increment()
         await Functions.SetLatestPicture(knex, path)
       } else {
-        res.status(StatusCodes.BAD_REQUEST).send('-1')
+        res.status(StatusCodes.BAD_REQUEST).send(`${INVALID_MOD_COUNT}`)
         return
       }
       res.status(StatusCodes.OK).send(`${response}`)

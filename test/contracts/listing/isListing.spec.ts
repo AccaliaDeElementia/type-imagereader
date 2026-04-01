@@ -71,7 +71,7 @@ describe('Contracts: isListing()', () => {
     ['invalid child in children', oneExtraKey('children', [89]), false],
     [
       'non empty children',
-      oneExtraKey('children', [{ name: '', path: '', cover: '', totalSeen: 0, totalCount: 1 }]),
+      oneExtraKey('children', [{ name: '', path: '', cover: '', seenCount: 0, totalCount: 1 }]),
       true,
     ],
     ['invalid pictures', oneExtraKey('pictures', {}), false],

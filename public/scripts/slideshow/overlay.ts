@@ -3,7 +3,10 @@
 import { CyclicUpdater } from './updater'
 import { GetAlmanac } from './weather'
 
-const FADE_IN_TIME = 900_000 // 15 minutes
+const FADE_IN_MINUTES = 15
+const SECONDS_PER_MINUTE = 60
+const MS_PER_SECOND = 1000
+const FADE_IN_TIME = FADE_IN_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND
 const MAX_OPACITY = 0.95 // in percent.
 const MIN_OPACITY = 0
 const MIN_OFFSET = 0
@@ -20,13 +23,13 @@ export const Functions = {
       overlay.classList.add('hide')
     }
   },
-  CalculateOffset: (): number => {
+  CalculateDarknessMs: (): number => {
     const times = GetAlmanac()
     const now = Date.now()
     if (now < times.sunrise) {
-      return times.sunrise - now
+      return times.sunrise - now // pre-dawn: counts down as morning approaches
     } else if (now > times.sunset) {
-      return now - times.sunset
+      return now - times.sunset // post-dusk: counts up as night deepens
     }
     return MIN_OFFSET
   },
@@ -37,7 +40,7 @@ const updateOverlay = async (): Promise<void> => {
   const overlay = document.querySelector<HTMLElement>('.overlay')
   if (overlay === null) return
   Functions.ShowHideKiosk(overlay, kioskMode)
-  const offset = Functions.CalculateOffset()
+  const offset = Functions.CalculateDarknessMs()
   overlay.style.setProperty('opacity', `${Functions.GetOpacity(offset)}`)
   await Promise.resolve()
 }

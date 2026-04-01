@@ -1,8 +1,8 @@
 'use sanity'
 
 export function GetShowUnreadOnly(): boolean {
-  return window.localStorage.ShowUnseenOnly === 'true'
+  return window.localStorage.ShowUnreadOnly === 'true'
 }
 export function SetShowUnreadOnly(value: boolean): void {
-  window.localStorage.ShowUnseenOnly = `${value}`
+  window.localStorage.ShowUnreadOnly = `${value}`
 }

@@ -18,7 +18,7 @@ interface WebBookmarkFolder {
   element: HTMLElement
 }
 
-const DEFAULT_MOD_COUNT = -1
+const UNINITIALIZED_MOD_COUNT = -1
 const SORT_BEFORE = -1
 const SORT_AFTER = 1
 const SORT_EQUAL = 0
@@ -74,7 +74,7 @@ export const Bookmarks = {
         '/api/navigate/latest',
         {
           path: bookmark.path,
-          modCount: DEFAULT_MOD_COUNT,
+          modCount: UNINITIALIZED_MOD_COUNT,
         },
         acceptAnyResponse,
       ).then(
@@ -154,20 +154,15 @@ export const Bookmarks = {
 
     const bookmarkAction = async (apiPath: string, path: unknown): Promise<void> => {
       if (typeof path !== 'string') return
-      await Net.PostJSON(apiPath, { path }, acceptAnyResponse)
-        .catch((err: unknown) => {
-          if (!(err instanceof Error)) throw new Error('Non Error rejection!')
-          if (err.message !== 'Empty JSON response recieved') throw err
-        })
-        .then(
-          () => {
-            Publish('Bookmarks:Load')
-            Publish('Loading:Success')
-          },
-          (err: unknown) => {
-            Publish('Loading:Error', err)
-          },
-        )
+      await Net.PostJSON(apiPath, { path }, acceptAnyResponse).then(
+        () => {
+          Publish('Bookmarks:Load')
+          Publish('Loading:Success')
+        },
+        (err: unknown) => {
+          Publish('Loading:Error', err)
+        },
+      )
     }
 
     Subscribe('Bookmarks:Add', async (path) => {

@@ -2,8 +2,8 @@
 
 import Sinon from 'sinon'
 import {
-  DefaultLocationAssign,
-  DefaultLocationReload,
+  UninitializedLocationAssign,
+  UninitializedLocationReload,
   WebSockets,
   type WebSocket,
 } from '#public/scripts/slideshow/sockets'
@@ -42,23 +42,23 @@ describe('public/slideshow/sockets Disconnect()', () => {
   it('should clear LocationAssign with socket', () => {
     WebSockets.LocationAssign = Sinon.stub()
     WebSockets.disconnect()
-    expect(WebSockets.LocationAssign).to.equal(DefaultLocationAssign)
+    expect(WebSockets.LocationAssign).to.equal(UninitializedLocationAssign)
   })
   it('should clear LocationAssign without socket', () => {
     WebSockets.socket = undefined
     WebSockets.LocationAssign = Sinon.stub()
     WebSockets.disconnect()
-    expect(WebSockets.LocationAssign).to.equal(DefaultLocationAssign)
+    expect(WebSockets.LocationAssign).to.equal(UninitializedLocationAssign)
   })
   it('should clear LocationReload with socket', () => {
     WebSockets.LocationReload = Sinon.stub()
     WebSockets.disconnect()
-    expect(WebSockets.LocationReload).to.equal(DefaultLocationReload)
+    expect(WebSockets.LocationReload).to.equal(UninitializedLocationReload)
   })
   it('should clear LocationReload without socket', () => {
     WebSockets.socket = undefined
     WebSockets.LocationReload = Sinon.stub()
     WebSockets.disconnect()
-    expect(WebSockets.LocationReload).to.equal(DefaultLocationReload)
+    expect(WebSockets.LocationReload).to.equal(UninitializedLocationReload)
   })
 })

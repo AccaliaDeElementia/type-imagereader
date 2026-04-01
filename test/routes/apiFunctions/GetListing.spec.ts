@@ -1,9 +1,12 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, ModCount } from '#routes/apiFunctions'
-import Sinon from 'sinon'
+import { Functions, ModCount, type ModCountInternals } from '#routes/apiFunctions'
+import { Cast } from '#testutils/TypeGuards'
 import { createKnexChainFake } from '#testutils/Knex'
+import Sinon from 'sinon'
+
+const modCountInternals = Cast<ModCountInternals>(ModCount)
 const sandbox = Sinon.createSandbox()
 
 describe('routes/apiFunctions function GetListing', () => {
@@ -15,7 +18,7 @@ describe('routes/apiFunctions function GetListing', () => {
   let getBookmarksStub = Sinon.stub()
   let { fake: knexFake } = createKnexChainFake([] as const, [] as const)
   beforeEach(() => {
-    ModCount._modCount = 32_768
+    modCountInternals.modCount = 32_768
     ;({ fake: knexFake } = createKnexChainFake([] as const, [] as const))
     getFolderStub = sandbox.stub(Functions, 'GetFolder').resolves(null)
     sandbox.stub(Functions, 'GetDirectionFolder').resolves(null)

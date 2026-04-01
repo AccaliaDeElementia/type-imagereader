@@ -61,9 +61,12 @@ export interface SunTimes {
   sunset: number
 }
 
+const UNSET_SUNRISE = -Infinity // Math.max identity: any real timestamp wins
+const UNSET_SUNSET = Infinity // Math.min identity: any real timestamp wins
+
 const almanac: SunTimes = {
-  sunrise: -Infinity,
-  sunset: Infinity,
+  sunrise: UNSET_SUNRISE,
+  sunset: UNSET_SUNSET,
 }
 
 export const GetAlmanac = (): SunTimes => almanac
@@ -84,8 +87,8 @@ function SetAlmanac(weather: WeatherResults): void {
   today.setHours(DEFAULT_SUNSET_HOUR)
   today.setMinutes(DEFAULT_SUNSET_MINUTE)
   const maxset = today.getTime()
-  almanac.sunrise = Math.max(weather.sunrise ?? -Infinity, minrise)
-  almanac.sunset = Math.min(weather.sunset ?? Infinity, maxset)
+  almanac.sunrise = Math.max(weather.sunrise ?? UNSET_SUNRISE, minrise)
+  almanac.sunset = Math.min(weather.sunset ?? UNSET_SUNSET, maxset)
 }
 
 const LOCAL_WEATHER_UPDATE_INTERVAL = 1_000

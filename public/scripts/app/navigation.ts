@@ -96,7 +96,7 @@ export const Navigation = {
       await Navigation.NavigateTo(Navigation.current.parent, 'ParentFolder')
     })
     Subscribe('Action:Execute:FirstUnfinished', async () => {
-      const target = Navigation.current.children?.find((child) => child.totalSeen < child.totalCount)
+      const target = Navigation.current.children?.find((child) => child.seenCount < child.totalCount)
       await Navigation.NavigateTo(target?.path, 'FirstUnfinished')
     })
     Subscribe('Action:Execute:ShowMenu', async () => {

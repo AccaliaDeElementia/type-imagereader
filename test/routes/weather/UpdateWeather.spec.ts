@@ -13,8 +13,8 @@ describe('routes/weather function UpdateWeather', () => {
     weather: [{ main: 'weatherMain', icon: 'weatherIcon' }],
     sys: { sunrise: 123.5, sunset: 455.5 },
   }
-  let getNightNotAfterStub = Sinon.stub()
-  let getNightNotBeforeStub = Sinon.stub()
+  let getLatestSunriseStub = Sinon.stub()
+  let getEarliestSunsetStub = Sinon.stub()
   let getWeatherStub = Sinon.stub()
 
   beforeEach(() => {
@@ -23,8 +23,8 @@ describe('routes/weather function UpdateWeather', () => {
       weather: [{ main: 'weatherMain', icon: 'weatherIcon' }],
       sys: { sunrise: 123000, sunset: 456000 },
     }
-    getNightNotAfterStub = sandbox.stub(Imports, 'getNightNotAfter').returns(123000)
-    getNightNotBeforeStub = sandbox.stub(Imports, 'getNightNotBefore').returns(456000)
+    getLatestSunriseStub = sandbox.stub(Imports, 'getLatestSunrise').returns(123000)
+    getEarliestSunsetStub = sandbox.stub(Imports, 'getEarliestSunset').returns(456000)
     getWeatherStub = sandbox.stub(Functions, 'GetWeather').resolves(weatherData)
     Functions.weather = {
       temp: -4.1,
@@ -39,15 +39,15 @@ describe('routes/weather function UpdateWeather', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should reject when getNightNotBefore throws', async () => {
+  it('should reject when getEarliestSunset throws', async () => {
     const err = new Error('FOO!')
-    getNightNotBeforeStub.throws(err)
+    getEarliestSunsetStub.throws(err)
     const result = await EventuallyRejects(Functions.UpdateWeather())
     expect(result).to.equal(err)
   })
-  it('should reject when getNightNotAfter throws', async () => {
+  it('should reject when getLatestSunrise throws', async () => {
     const err = new Error('FOO!')
-    getNightNotAfterStub.throws(err)
+    getLatestSunriseStub.throws(err)
     const result = await EventuallyRejects(Functions.UpdateWeather())
     expect(result).to.equal(err)
   })

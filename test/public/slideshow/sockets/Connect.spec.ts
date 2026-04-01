@@ -128,15 +128,15 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     const call = fakeEmit.getCalls().find((c) => c.args[0] === 'get-launchId')
     expect(call?.args[1]).to.equal(Functions.HandleGetLaunchId)
   })
-  it('should listen for new-image message', () => {
+  it('should listen for image-changed message', () => {
     WebSockets.connect()
-    expect(fakeOn.calledWith('new-image')).to.equal(true)
+    expect(fakeOn.calledWith('image-changed')).to.equal(true)
   })
-  it('should handle new-image message with Functions.DoNewImage()', () => {
+  it('should handle image-changed message with Functions.ShowBackingImageByType()', () => {
     WebSockets.connect()
-    const call = fakeOn.getCalls().find((c) => c.args[0] === 'new-image')
+    const call = fakeOn.getCalls().find((c) => c.args[0] === 'image-changed')
     assert(call !== undefined)
-    expect(call.args[1]).to.equal(Functions.DoNewImage)
+    expect(call.args[1]).to.equal(Functions.ShowBackingImageByType)
   })
   it('should add a document level onclick event handler', () => {
     WebSockets.connect()

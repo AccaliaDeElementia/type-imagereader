@@ -1,10 +1,13 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, ModCount } from '#routes/apiFunctions'
-import Sinon from 'sinon'
+import { Functions, ModCount, type ModCountInternals } from '#routes/apiFunctions'
+import { Cast } from '#testutils/TypeGuards'
 import { createKnexChainFake } from '#testutils/Knex'
 import assert from 'node:assert'
+import Sinon from 'sinon'
+
+const modCountInternals = Cast<ModCountInternals>(ModCount)
 
 const sandbox = Sinon.createSandbox()
 
@@ -18,7 +21,7 @@ describe('routes/apiFunctions function GetListing direction and result', () => {
   let getBookmarksStub = Sinon.stub()
   let { fake: knexFake } = createKnexChainFake([] as const, [] as const)
   beforeEach(() => {
-    ModCount._modCount = 32_768
+    modCountInternals.modCount = 32_768
     ;({ fake: knexFake } = createKnexChainFake([] as const, [] as const))
     getFolderStub = sandbox.stub(Functions, 'GetFolder').resolves(null)
     getDirectionFolderStub = sandbox.stub(Functions, 'GetDirectionFolder').resolves(null)
@@ -208,7 +211,7 @@ describe('routes/apiFunctions function GetListing direction and result', () => {
   })
   it('should set modcount', async () => {
     getFolderStub.resolves({})
-    ModCount._modCount = 9090
+    modCountInternals.modCount = 9090
     const result = await Functions.GetListing(knexFake, '/foo/bar/')
     assert(result !== null)
     expect(result.modCount).to.equal(9090)

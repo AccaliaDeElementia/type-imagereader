@@ -3,18 +3,17 @@
 import { normalize, basename, dirname, extname, sep } from 'node:path'
 
 import type { Knex } from 'knex'
-import { EscapeLikeWildcards, StringishHasValue } from '#utils/helpers'
+import { EscapeLikeWildcards, StringishHasValue, ZERO_COUNT } from '#utils/helpers'
 import { GetParentFolders as _GetParentFolders } from '#utils/Path'
 
 export const Imports = { GetParentFolders: _GetParentFolders }
 
 export const INVALID_MOD_COUNT = -1
-const MAXIMUM_MOD_COUNT = Number.MAX_SAFE_INTEGER + INVALID_MOD_COUNT
 const RESET_MOD_COUNT = 0
 const INCREMENT_SINGLE = 1
+const MAXIMUM_MOD_COUNT = Number.MAX_SAFE_INTEGER - INCREMENT_SINGLE
 const MODCOUNT_INITIAL_MAGNITUDE = 1e10
 const LIMIT_SINGLE_RECORD = 1
-const ZERO_COUNT = 0
 
 export interface Bookmark {
   name: string
@@ -41,7 +40,7 @@ export interface FolderWithParent extends Folder {
 
 export interface FolderWithCounts extends Folder {
   totalCount: number
-  totalSeen: number
+  seenCount: number
 }
 
 export interface Picture {
@@ -65,30 +64,33 @@ interface Listing {
   bookmarks: BookmarkFolder[]
   modCount: number
 }
-interface ModCountType {
-  _modCount: number
-  _Reset: () => number
+interface ModCountPublic {
   Get: () => number
   Validate: (incoming: number) => boolean
   Increment: () => number
 }
-export const ModCount: ModCountType = {
-  _modCount: INVALID_MOD_COUNT,
-  _Reset: (): number => {
-    ModCount._modCount = Math.floor(Math.random() * MODCOUNT_INITIAL_MAGNITUDE)
-    return ModCount._modCount
+export interface ModCountInternals {
+  modCount: number
+  Reset: () => number
+}
+const modCountImpl: ModCountPublic & ModCountInternals = {
+  modCount: RESET_MOD_COUNT,
+  Reset: (): number => {
+    modCountImpl.modCount = Math.floor(Math.random() * MODCOUNT_INITIAL_MAGNITUDE)
+    return modCountImpl.modCount
   },
-  Get: (): number => ModCount._modCount,
-  Validate: (incoming: number): boolean => ModCount._modCount === incoming,
+  Get: (): number => modCountImpl.modCount,
+  Validate: (incoming: number): boolean => modCountImpl.modCount === incoming,
   Increment: (): number => {
-    if (ModCount._modCount >= MAXIMUM_MOD_COUNT) {
-      ModCount._modCount = RESET_MOD_COUNT
+    if (modCountImpl.modCount >= MAXIMUM_MOD_COUNT) {
+      modCountImpl.modCount = RESET_MOD_COUNT
     }
-    ModCount._modCount += INCREMENT_SINGLE
-    return ModCount._modCount
+    modCountImpl.modCount += INCREMENT_SINGLE
+    return modCountImpl.modCount
   },
 }
-ModCount._Reset()
+modCountImpl.Reset()
+export const ModCount: ModCountPublic = modCountImpl
 
 export const UriSafePath = {
   decode: (uri: string): string =>
@@ -135,6 +137,10 @@ interface DbBookmark {
   folder: string
 }
 
+function getCoverPath(folder: { current: string | null; firstPicture: string | null }): string | null {
+  return folder.current ?? folder.firstPicture // prefer last-viewed image; fall back to first image if never visited
+}
+
 export interface SiblingFolderSearch {
   path: string
   sortKey: string
@@ -151,9 +157,9 @@ export const Functions = {
     return data.map((i) => ({
       name: basename(i.path),
       path: UriSafePath.encode(i.path),
-      cover: UriSafePath.encodeNullable(i.current ?? i.firstPicture),
+      cover: UriSafePath.encodeNullable(getCoverPath(i)),
       totalCount: i.totalCount,
-      totalSeen: i.seenCount,
+      seenCount: i.seenCount,
     }))
   },
   GetFolder: async (knex: Knex, path: string): Promise<FolderWithParent | null> => {
@@ -171,7 +177,7 @@ export const Functions = {
       path: UriSafePath.encode(folder.path),
       folder: UriSafePath.encode(folder.folder ?? '/'),
       sortKey: folder.sortKey,
-      cover: UriSafePath.encodeNullable(folder.current ?? folder.firstPicture),
+      cover: UriSafePath.encodeNullable(getCoverPath(folder)),
     }
   },
   GetDirectionFolder: async (
@@ -202,7 +208,7 @@ export const Functions = {
     return {
       name: basename(folder.path),
       path: UriSafePath.encode(folder.path),
-      cover: UriSafePath.encodeNullable(folder.current ?? folder.firstPicture),
+      cover: UriSafePath.encodeNullable(getCoverPath(folder)),
     }
   },
   GetPreviousFolder: async (knex: Knex, path: string, sortKey: string): Promise<Folder | null> =>
@@ -229,24 +235,24 @@ export const Functions = {
       .orderBy(['folders.path', 'folders.sortKey', 'pictures.sortKey', 'pictures.path'])
     interface Acc {
       results: BookmarkFolder[]
-      current: BookmarkFolder | null
+      pendingFolder: BookmarkFolder | null
     }
     return bookmarks.reduce<Acc>(
-      ({ results, current }, bookmark) => {
+      ({ results, pendingFolder }, bookmark) => {
         const entry = {
           name: basename(bookmark.path),
           path: UriSafePath.encode(bookmark.path),
           folder: UriSafePath.encode(bookmark.folder),
         }
-        if (current?.name === bookmark.folder) {
-          return { results, current: { ...current, bookmarks: [...current.bookmarks, entry] } }
+        if (pendingFolder?.name === bookmark.folder) {
+          return { results, pendingFolder: { ...pendingFolder, bookmarks: [...pendingFolder.bookmarks, entry] } }
         }
         return {
-          results: current === null ? results : [...results, current],
-          current: { name: bookmark.folder, path: UriSafePath.encode(bookmark.folder), bookmarks: [entry] },
+          results: pendingFolder === null ? results : [...results, pendingFolder],
+          pendingFolder: { name: bookmark.folder, path: UriSafePath.encode(bookmark.folder), bookmarks: [entry] },
         }
       },
-      { results: [], current: null },
+      { results: [], pendingFolder: null },
     ).results
   },
   GetListing: async (knex: Knex, path: string): Promise<Listing | null> => {
@@ -300,9 +306,10 @@ export const Functions = {
     return UriSafePath.encode(folder)
   },
   MarkFolderSeen: async (knex: Knex, path: string, markAsSeen: boolean): Promise<void> => {
+    const currentSeenState = !markAsSeen // only rows not already in target state need updating
     const updates = await knex('pictures')
       .update({ seen: markAsSeen })
-      .where({ seen: !markAsSeen })
+      .where({ seen: currentSeenState })
       .andWhere('folder', 'like', `${EscapeLikeWildcards(path)}%`)
     if (updates > ZERO_COUNT) {
       const increment = markAsSeen ? updates : -updates

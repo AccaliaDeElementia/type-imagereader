@@ -273,7 +273,7 @@ describe('public/app/navigation function Init()', () => {
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
-    let children = [{ name: '', path: '', cover: '', totalSeen: 0, totalCount: 0 }]
+    let children = [{ name: '', path: '', cover: '', seenCount: 0, totalCount: 0 }]
     beforeEach(() => {
       navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
       Navigation.Init()
@@ -283,7 +283,7 @@ describe('public/app/navigation function Init()', () => {
           name: `Foo ${i}`,
           path: `/foo${i}`,
           cover: '',
-          totalSeen: i,
+          seenCount: i,
           totalCount: i,
         }))
       Navigation.current.children = children
@@ -325,40 +325,40 @@ describe('public/app/navigation function Init()', () => {
     it('should call NavigateTo once when navigating to unfinished child folder', async () => {
       assert(children[10] !== undefined)
       children[10].totalCount = 100
-      children[10].totalSeen = 10
+      children[10].seenCount = 10
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
     })
     it('should navigate to unfinished child folder', async () => {
       assert(children[10] !== undefined)
       children[10].totalCount = 100
-      children[10].totalSeen = 10
+      children[10].seenCount = 10
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([children[10].path, 'FirstUnfinished'])
     })
     it('should call NavigateTo once when navigating to first unfinished child folder', async () => {
       assert(children[10] !== undefined)
       children[10].totalCount = 100
-      children[10].totalSeen = 10
+      children[10].seenCount = 10
       assert(children[11] !== undefined)
       children[11].totalCount = 100
-      children[11].totalSeen = 10
+      children[11].seenCount = 10
       assert(children[19] !== undefined)
       children[19].totalCount = 100
-      children[19].totalSeen = 10
+      children[19].seenCount = 10
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
     })
     it('should navigate to first unfinished child folder', async () => {
       assert(children[10] !== undefined)
       children[10].totalCount = 100
-      children[10].totalSeen = 10
+      children[10].seenCount = 10
       assert(children[11] !== undefined)
       children[11].totalCount = 100
-      children[11].totalSeen = 10
+      children[11].seenCount = 10
       assert(children[19] !== undefined)
       children[19].totalCount = 100
-      children[19].totalSeen = 10
+      children[19].seenCount = 10
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([children[10].path, 'FirstUnfinished'])
     })

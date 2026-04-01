@@ -11,7 +11,11 @@ export function isError(obj: unknown): obj is JSONError {
 }
 
 export async function decodeResult<T>(response: Response, isT: (obj: unknown) => obj is T): Promise<T> {
-  if (response.headers.get('content-length') === '0') throw new Error('Empty JSON response recieved')
+  if (response.headers.get('content-length') === '0') {
+    const empty = null
+    if (isT(empty)) return empty
+    throw new Error('Empty JSON response received')
+  }
   const data = (await response.json()) as unknown
   if (isError(data)) throw new Error(data.error)
   if (!isT(data) || data === null) throw new Error('Invalid JSON object decoded')

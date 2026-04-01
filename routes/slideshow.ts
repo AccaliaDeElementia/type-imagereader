@@ -11,10 +11,11 @@ import { isPathTraversal as _isPathTraversal, GetParentFolders as _GetParentFold
 
 import persistance from '#utils/persistance'
 import { UriSafePath, Functions as api } from './apiFunctions'
+import { SocketEvents } from '#contracts/socketEvents'
 
 import type { Knex } from 'knex'
 import {
-  ALTER_COUNTER,
+  STEP,
   HasSetValues,
   HasValue,
   HasValues,
@@ -49,8 +50,9 @@ const logger = debug('type-imagereader:slideshow')
 
 const DEFAULT_LAUNCH_ID = -1
 const DEFAULT_MEMORY_SIZE = 100
-const DEFAULT_COUNTDOWN_DURATION = 60
-const ABANDONED_ROOM_PRUNE_THRESHOLD = 3_600
+const DEFAULT_COUNTDOWN_DURATION = 60 // ticks (1 tick = 1 second at TICK_COUNTDOWN_INTERVAL)
+const ABANDONED_ROOM_PRUNE_THRESHOLD = 3_600 // ticks (3600 = 1 hour)
+const COUNTDOWN_TICK = -1 // countdown decrements by 1 each interval
 const TICK_COUNTDOWN_INTERVAL = 1000 // one second in Millis
 
 export const Config = {
@@ -74,17 +76,17 @@ export const SocketHandlers = {
     state.SetName(roomName)
     await socket.join(roomName)
     const room = await Functions.GetRoomAndIncrementImage(knex, roomName)
-    socket.emit('new-image', room.uriSafeImage)
+    socket.emit(SocketEvents.ImageChanged, room.uriSafeImage)
   },
   prevImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
     if (state.roomName === null) return
-    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, ALTER_COUNTER.DECREMENT)
-    io.to(room.path).emit('new-image', room.uriSafeImage)
+    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, STEP.BACK)
+    io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
   },
   nextImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
     if (state.roomName === null) return
-    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, ALTER_COUNTER.INCREMENT)
-    io.to(room.path).emit('new-image', room.uriSafeImage)
+    const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, STEP.FORWARD)
+    io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
   },
   gotoImage: async (callback: SocketCallback, state: HandleSocketState, knex: Knex) => {
     if (state.roomName === null) {
@@ -119,11 +121,11 @@ export class HandleSocketState {
   }
 }
 export const Functions = {
-  GetImageCount: async (knex: Knex, path: string, unreadOnly = false): Promise<number> => {
+  GetImageCount: async (knex: Knex, path: string, filter: 'all' | 'unread' = 'all'): Promise<number> => {
     let query = knex('pictures')
       .count({ count: 'path' })
       .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
-    if (unreadOnly) {
+    if (filter === 'unread') {
       query = query.andWhere('seen', '=', false)
     }
     try {
@@ -140,7 +142,7 @@ export const Functions = {
     currentPage?: number,
     mutator = (page: number): number => page,
   ): Promise<SlideshowPages> => {
-    const unreadcount = await Functions.GetImageCount(knex, path, true)
+    const unreadcount = await Functions.GetImageCount(knex, path, 'unread')
     const allcount = await Functions.GetImageCount(knex, path)
     let pages = Math.ceil(allcount / Config.memorySize)
     if (pages === ZERO_COUNT) {
@@ -156,7 +158,7 @@ export const Functions = {
     } else if (currentPage !== undefined) {
       resultPage = mutator(currentPage)
       if (resultPage < ZERO_COUNT) {
-        resultPage = pages + ALTER_COUNTER.DECREMENT
+        resultPage = pages + STEP.BACK
       } else if (resultPage >= pages) {
         resultPage = ZERO_COUNT
       }
@@ -186,24 +188,18 @@ export const Functions = {
     if (!HasValues(picture)) {
       return
     }
-    await knex('folders')
-      .increment('seenCount', ALTER_COUNTER.INCREMENT)
-      .whereIn('path', Imports.GetParentFolders(image))
+    await knex('folders').increment('seenCount', STEP.FORWARD).whereIn('path', Imports.GetParentFolders(image))
     await knex('pictures').update({ seen: true }).where({ path: image })
   },
-  GetRoomAndIncrementImage: async (
-    knex: Knex,
-    name: string,
-    increment: ALTER_COUNTER = ALTER_COUNTER.NONE,
-  ): Promise<SlideshowRoom> => {
+  GetRoomAndIncrementImage: async (knex: Knex, name: string, increment: STEP = STEP.NONE): Promise<SlideshowRoom> => {
     const advancePage = async (
       currentPage: number,
       currentUnread: number,
-      direction: ALTER_COUNTER,
+      direction: STEP,
     ): Promise<{ pages: SlideshowPages; images: string[] }> => {
-      const wasUnread = currentUnread > ZERO_COUNT
+      const hadUnread = currentUnread > ZERO_COUNT
       let pages = await Functions.GetCounts(knex, name, currentPage, (x) => x + direction)
-      if (wasUnread && pages.unread === ZERO_COUNT) {
+      if (hadUnread && pages.unread === ZERO_COUNT) {
         pages = await Functions.GetCounts(knex, name)
       }
       const images = await Functions.GetImages(knex, name, pages.page, Config.memorySize)
@@ -224,14 +220,16 @@ export const Functions = {
     } else {
       room.index += increment
       if (room.images.length === ZERO_COUNT) {
-        room.index = ZERO_COUNT
+        room.index = ZERO_COUNT // no images on this page — stay at zero
       } else if (room.index < ZERO_COUNT) {
-        const result = await advancePage(room.pages.page, room.pages.unread, ALTER_COUNTER.DECREMENT)
+        // stepped before first image — load previous page and land on its last image
+        const result = await advancePage(room.pages.page, room.pages.unread, STEP.BACK)
         room.pages = result.pages
         room.images = result.images
-        room.index = Math.max(room.images.length + ALTER_COUNTER.DECREMENT, ZERO_COUNT)
+        room.index = Math.max(room.images.length + STEP.BACK, ZERO_COUNT)
       } else if (room.index >= room.images.length) {
-        const result = await advancePage(room.pages.page, room.pages.unread, ALTER_COUNTER.INCREMENT)
+        // stepped past last image — load next page and land on its first image
+        const result = await advancePage(room.pages.page, room.pages.unread, STEP.FORWARD)
         room.pages = result.pages
         room.images = result.images
         room.index = ZERO_COUNT
@@ -242,7 +240,7 @@ export const Functions = {
       await Functions.MarkImageRead(knex, image)
     }
     room.uriSafeImage = UriSafePath.encode(room.images[room.index] ?? '')
-    if (increment !== ALTER_COUNTER.NONE) {
+    if (increment !== STEP.NONE) {
       room.countdown = Config.countdownDuration
     }
     return room
@@ -252,7 +250,7 @@ export const Functions = {
       const roomsToUpdate: SlideshowRoom[] = []
       const newRooms: Record<string, SlideshowRoom> = {}
       for (const room of Object.values(Config.rooms)) {
-        room.countdown += ALTER_COUNTER.DECREMENT
+        room.countdown += COUNTDOWN_TICK
         if (room.countdown <= -ABANDONED_ROOM_PRUNE_THRESHOLD) {
           continue
         }
@@ -269,9 +267,9 @@ export const Functions = {
       Config.rooms = newRooms
       await Promise.all(
         roomsToUpdate.map(async (room) => {
-          await Functions.GetRoomAndIncrementImage(knex, room.path, ALTER_COUNTER.INCREMENT)
+          await Functions.GetRoomAndIncrementImage(knex, room.path, STEP.FORWARD)
           if (HasValues(room.images)) {
-            io.to(room.path).emit('new-image', room.uriSafeImage)
+            io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
           }
         }),
       )
@@ -281,19 +279,19 @@ export const Functions = {
   },
   HandleSocket: (knex: Knex, io: WebSocketServer, socket: Socket): HandleSocketState => {
     const state = new HandleSocketState()
-    socket.on('get-launchId', (callback: SocketCallback) => {
+    socket.on(SocketEvents.GetLaunchId, (callback: SocketCallback) => {
       SocketHandlers.getLaunchId(callback)
     })
-    socket.on('join-slideshow', (roomName?: string) => {
+    socket.on(SocketEvents.JoinSlideshow, (roomName?: string) => {
       void SocketHandlers.joinSlideshow(roomName, state, socket, knex)
     })
-    socket.on('prev-image', () => {
+    socket.on(SocketEvents.PrevImage, () => {
       void SocketHandlers.prevImage(state, io, knex)
     })
-    socket.on('next-image', () => {
+    socket.on(SocketEvents.NextImage, () => {
       void SocketHandlers.nextImage(state, io, knex)
     })
-    socket.on('goto-image', (callback: SocketCallback) => {
+    socket.on(SocketEvents.GotoImage, (callback: SocketCallback) => {
       void SocketHandlers.gotoImage(callback, state, knex)
     })
     return state

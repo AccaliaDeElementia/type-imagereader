@@ -1,31 +1,31 @@
 'use sanity'
 
-import { DefaultLocationAssign, DefaultLocationReload } from '#public/scripts/slideshow/sockets'
+import { UninitializedLocationAssign, UninitializedLocationReload } from '#public/scripts/slideshow/sockets'
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import { DefinitelyThrows } from '#testutils/Errors'
 
-describe('public/slideshow/sockets defaults()', () => {
-  it('should definitely throw for DefaultLocationAssign()', () => {
+describe('public/slideshow/sockets uninitialized sentinels', () => {
+  it('should definitely throw for UninitializedLocationAssign()', () => {
     DefinitelyThrows(() => {
-      DefaultLocationAssign('')
+      UninitializedLocationAssign('')
     })
   })
-  it('should definitely throw expected error DefaultLocationAssign()', () => {
+  it('should throw expected error for UninitializedLocationAssign()', () => {
     const err = DefinitelyThrows(() => {
-      DefaultLocationAssign('')
+      UninitializedLocationAssign('')
     })
-    expect(err.message).to.equal('Should not call default value!')
+    expect(err.message).to.equal('LocationAssign called before Connect()')
   })
-  it('should definitely throw for DefaultLocationReload()', () => {
+  it('should definitely throw for UninitializedLocationReload()', () => {
     DefinitelyThrows(() => {
-      DefaultLocationReload()
+      UninitializedLocationReload()
     })
   })
-  it('should definitely throw expected error DefaultLocationReload()', () => {
+  it('should throw expected error for UninitializedLocationReload()', () => {
     const err = DefinitelyThrows(() => {
-      DefaultLocationReload()
+      UninitializedLocationReload()
     })
-    expect(err.message).to.equal('Should not call default value!')
+    expect(err.message).to.equal('LocationReload called before Connect()')
   })
 })

@@ -16,7 +16,8 @@ import { handleErrors as _handleErrors } from '#utils/Express'
 import { isPathTraversal as _isPathTraversal } from '#utils/Path'
 
 const CACHE_SIZE = 25
-const ONE_MONTH = 2_592_000_000
+const ONE_MONTH_MS = 2_592_000_000
+const NO_ERROR_STATUS = 0 // sentinel: ImageData created via fromImage(), not fromError()
 const PREVIEW_WIDTH = 240
 const PREVIEW_HEIGHT = 320
 const KIOSK_WIDTH = 1280
@@ -29,7 +30,7 @@ export class ImageData {
   data: Buffer = ImageData.defaultData
   extension: string | null = null
   code: string | null = null
-  statusCode = Number.NaN
+  statusCode = NO_ERROR_STATUS
   message: string | null = null
   path = ''
 
@@ -109,7 +110,7 @@ export class ImageCache {
         image: this.cacheFunction(path, width, height),
       }
     } else {
-      this.items = this.items.filter((entry) => entry !== item)
+      this.items = this.items.filter((entry) => entry !== item) // remove from current position before promoting to front
     }
     this.items.unshift(item)
     if (this.items.length >= ImageCache.cacheSize) {
@@ -124,12 +125,8 @@ export const Functions = {
     if (Imports.isPathTraversal(path)) {
       return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
     }
-    const regexResult = /^(?:\.)?(?<ext>.+)/v.exec(extname(path))
-    if (regexResult === null) {
-      return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
-    }
-    const ext = regexResult.groups?.ext
-    if (ext === undefined || !allowedExtensions.test(ext)) {
+    const ext = extname(path).replace(/^\./v, '')
+    if (!allowedExtensions.test(ext)) {
       return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
     }
     try {
@@ -160,8 +157,8 @@ export const Functions = {
     }
     res
       .set('Content-Type', `image/${image.extension}`)
-      .set('Cache-Control', `public, max-age=${ONE_MONTH}`)
-      .set('Expires', new Date(Date.now() + ONE_MONTH).toUTCString())
+      .set('Cache-Control', `public, max-age=${ONE_MONTH_MS}`)
+      .set('Expires', new Date(Date.now() + ONE_MONTH_MS).toUTCString())
       .send(image.data)
   },
 }

@@ -3,18 +3,14 @@
 import { isHTMLElement } from './markup'
 
 function hasOptionalKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {
-  const entries = Object.entries(obj)
-  const e = entries.find(([k]) => k === key) as [string, unknown] | undefined
-  if (e === undefined) return true
-  const [, value] = e
+  if (!(key in obj)) return true
+  const value: unknown = Object.getOwnPropertyDescriptor(obj, key)?.value
   return value === undefined || isT(value)
 }
 
 function hasRequiredKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {
-  const entries = Object.entries(obj)
-  const e = entries.find(([k]) => k === key) as [string, unknown] | undefined
-  if (e === undefined) return false
-  const [, value] = e
+  if (!(key in obj)) return false
+  const value: unknown = Object.getOwnPropertyDescriptor(obj, key)?.value
   return isT(value)
 }
 
@@ -61,7 +57,7 @@ export interface Folder {
 
 export interface FolderWithCounts extends Folder {
   totalCount: number
-  totalSeen: number
+  seenCount: number
 }
 
 export function isFolder(obj: unknown): obj is Folder {
@@ -75,7 +71,7 @@ export function isFolder(obj: unknown): obj is Folder {
 export function isFolderWithCounts(obj: unknown): obj is FolderWithCounts {
   if (!isFolder(obj)) return false
   if (!('totalCount' in obj) || typeof obj.totalCount !== 'number') return false
-  if (!('totalSeen' in obj) || typeof obj.totalSeen !== 'number') return false
+  if (!('seenCount' in obj) || typeof obj.seenCount !== 'number') return false
   return true
 }
 

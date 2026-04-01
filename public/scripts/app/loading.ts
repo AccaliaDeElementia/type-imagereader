@@ -4,6 +4,8 @@ import { HasValue } from '#utils/helpers'
 import { Subscribe, Publish, Defer } from './pubsub'
 
 const ANIMATION_RESET_DELAY = 100
+const DISPLAY_VISIBLE = 'block'
+const DISPLAY_HIDDEN = 'none'
 export const Loading = {
   overlay: null as HTMLElement | null,
   navbar: null as HTMLElement | null,
@@ -34,13 +36,13 @@ export const Loading = {
       }, ANIMATION_RESET_DELAY)
     })
     Subscribe('Loading:Hide', async () => {
-      Loading.overlay?.style.setProperty('display', 'none')
+      Loading.overlay?.style.setProperty('display', DISPLAY_HIDDEN)
       await Promise.resolve()
     })
     Subscribe('Loading:Show', async () => {
-      Loading.overlay?.style.setProperty('display', 'block')
+      Loading.overlay?.style.setProperty('display', DISPLAY_VISIBLE)
       await Promise.resolve()
     })
   },
-  IsLoading: (): boolean => Loading.overlay?.style.getPropertyValue('display') === 'block',
+  IsLoading: (): boolean => Loading.overlay?.style.getPropertyValue('display') === DISPLAY_VISIBLE,
 }

@@ -26,14 +26,14 @@ export const Folders = {
       card.querySelector('i')?.remove()
       card.style.backgroundImage = `url("/images/preview${folder.cover}-image.webp")`
     }
-    if (folder.totalSeen >= folder.totalCount) {
+    if (folder.seenCount >= folder.totalCount) {
       card.classList.add('seen')
     }
 
-    const txtSeen = folder.totalSeen.toLocaleString()
+    const txtSeen = folder.seenCount.toLocaleString()
     const txtCount = folder.totalCount.toLocaleString()
     const percentSeen =
-      folder.totalCount === ZERO_COUNT ? PERCENT_MULT : (PERCENT_MULT * folder.totalSeen) / folder.totalCount
+      folder.totalCount === ZERO_COUNT ? PERCENT_MULT : (PERCENT_MULT * folder.seenCount) / folder.totalCount
 
     const header = card.querySelector('h5')
     if (header !== null) header.innerText = folder.name

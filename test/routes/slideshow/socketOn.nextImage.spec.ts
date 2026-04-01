@@ -45,7 +45,7 @@ describe('routes/slideshow socket next-image', () => {
     ['broadcast message for valid room', '/foo', () => expect(ioStub.to.callCount).to.equal(1)],
     ['broadcast message to room name', '/foo', () => expect(ioStub.to.firstCall.args).to.deep.equal(['/foo/bar'])],
     ['emit message for valid room', '/foo', () => expect(ioStub.emit.callCount).to.equal(1)],
-    ["emit 'new-image' message", '/foo', () => expect(ioStub.emit.firstCall.args[0]).to.equal('new-image')],
+    ["emit 'image-changed' message", '/foo', () => expect(ioStub.emit.firstCall.args[0]).to.equal('image-changed')],
     ['emit message for image', '/foo', () => expect(ioStub.emit.firstCall.args[1]).to.equal('/foo/quux.png')],
   ]
   tests.forEach(([title, room, validationFn]) => {

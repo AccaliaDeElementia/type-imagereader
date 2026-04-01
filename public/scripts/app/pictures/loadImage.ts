@@ -13,7 +13,7 @@ const MINIMUM_MOD_COUNT = 0
 const DEFAULT_INDEX = 0
 const DEFAULT_PAGE = 1
 
-const isValidModCount = (n: number | undefined): n is number => n !== undefined && n >= MINIMUM_MOD_COUNT
+const isUsableModCount = (n: number | undefined): n is number => n !== undefined && n >= MINIMUM_MOD_COUNT
 
 export async function LoadImage(): Promise<void> {
   if (Pictures.current === null) return
@@ -30,7 +30,7 @@ export async function LoadImage(): Promise<void> {
       { path: Pictures.current.path, modCount },
       (o): o is number | undefined => (typeof o === 'number' && Number.isFinite(o)) || o === undefined,
     )
-    if (!isValidModCount(newModCount)) {
+    if (!isUsableModCount(newModCount)) {
       Publish('Navigate:Reload')
       return
     }

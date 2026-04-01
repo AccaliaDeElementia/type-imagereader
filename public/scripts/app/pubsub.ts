@@ -17,7 +17,7 @@ interface IntervalMethod {
 
 const PUBLISH_CYCLE_TIME = 10 // ms
 const MINIMUM_CYCLE_COUNT = 1
-const CYCLES_DUE_AT = 0
+const CYCLES_DUE_THRESHOLD = 0
 const INCREMENT_CYCLES = 1
 export const PubSub = {
   subscribers: ((): Record<string, SubscriberFunction[]> => ({}))(),
@@ -80,7 +80,7 @@ export const PubSub = {
     PubSub.intervals[name] = {
       method,
       intervalCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), MINIMUM_CYCLE_COUNT),
-      delayCycles: CYCLES_DUE_AT,
+      delayCycles: CYCLES_DUE_THRESHOLD,
     }
   },
   RemoveInterval: (name: string): void => {
@@ -93,14 +93,14 @@ export const PubSub = {
   },
   ExecuteInterval: (): void => {
     PubSub.deferred
-      .filter((delay) => delay.delayCycles <= CYCLES_DUE_AT)
+      .filter((delay) => delay.delayCycles <= CYCLES_DUE_THRESHOLD)
       .forEach((delay) => {
         try {
           delay.method()
         } catch {}
       })
     for (const delay of Object.values(PubSub.intervals)) {
-      if (delay.delayCycles <= CYCLES_DUE_AT) {
+      if (delay.delayCycles <= CYCLES_DUE_THRESHOLD) {
         delay.delayCycles = delay.intervalCycles
         try {
           delay.method()
@@ -111,7 +111,7 @@ export const PubSub = {
     }
     const newDeferred = []
     for (const method of PubSub.deferred) {
-      if (method.delayCycles <= CYCLES_DUE_AT) continue
+      if (method.delayCycles <= CYCLES_DUE_THRESHOLD) continue
       method.delayCycles -= INCREMENT_CYCLES
       newDeferred.push(method)
     }

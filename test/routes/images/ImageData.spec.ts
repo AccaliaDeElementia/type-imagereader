@@ -1,6 +1,6 @@
 'use sanity'
 
-import { assert, expect } from 'chai'
+import { expect } from 'chai'
 import { ImageData } from '#routes/images'
 
 describe('routes/images class ImageData', () => {
@@ -15,7 +15,7 @@ describe('routes/images class ImageData', () => {
     })
     it('should not set statusCode', () => {
       const result = ImageData.fromImage(Buffer.from('foo'), 'blep', 'foo.blep')
-      assert.isNaN(result.statusCode)
+      expect(result.statusCode).to.equal(0)
     })
     it('should not set error message', () => {
       const result = ImageData.fromImage(Buffer.from('foo'), 'blep', 'foo.blep')

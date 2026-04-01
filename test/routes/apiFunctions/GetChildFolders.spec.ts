@@ -63,10 +63,10 @@ describe('routes/apiFunctions function GetChildFolders', () => {
     const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
     expect(result[0]?.totalCount).to.equal(42)
   })
-  it('should select totalSeen from folders', async () => {
+  it('should select seenCount from folders', async () => {
     knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', seenCount: 69 }])
     const result = await Functions.GetChildFolders(knexFake, '/foo/bar/')
-    expect(result[0]?.totalSeen).to.equal(69)
+    expect(result[0]?.seenCount).to.equal(69)
   })
   it('should call where once when filtering query by folder', async () => {
     await Functions.GetChildFolders(knexFake, '/foo/bar/')

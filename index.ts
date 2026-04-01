@@ -18,8 +18,8 @@ const DEFAULT_PORT = 3030
 const MINIMUM_PORT = 0
 const MAXIMUM_PORT = 65535
 
-const runIfNotSuppressed = async (triggerVar: string, fn: () => Promise<void>): Promise<void> => {
-  const envvar = `${process.env[triggerVar]}`.toLocaleUpperCase()
+const runIfNotSuppressed = async (skipVar: string, fn: () => Promise<void>): Promise<void> => {
+  const envvar = `${process.env[skipVar]}`.toLocaleUpperCase()
   if (envvar === '1' || envvar === 'TRUE') return
   await fn()
 }
@@ -67,7 +67,7 @@ export async function RunSync(): Promise<void> {
 export const ImageReader = {
   StartServer: start,
   Synchronize: synchronize,
-  Interval: ((): number | NodeJS.Timeout | undefined => undefined)(),
+  Interval: undefined as number | NodeJS.Timeout | undefined,
   SyncLock: new LockResource(),
   SyncInterval: THREE_HOURS,
   Run: async (): Promise<void> => {

@@ -11,9 +11,9 @@ export async function ChangePicture(pic: Picture | undefined): Promise<void> {
   }
   if (pic === undefined) {
     Publish('Loading:Error', 'Change Picture called with No Picture to change to')
-  } else {
-    Pictures.current = pic
-    await Pictures.LoadImage().catch(() => null)
-    Publish('Menu:Hide')
+    return
   }
+  Pictures.current = pic
+  await Pictures.LoadImage().catch(() => null)
+  Publish('Menu:Hide')
 }

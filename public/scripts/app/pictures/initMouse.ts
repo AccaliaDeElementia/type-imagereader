@@ -1,6 +1,6 @@
 'use sanity'
 
-import { DEFAULT_SCALE, Pictures } from '.'
+import { UNINITIALIZED_SCALE, Pictures } from '.'
 import { HasValue, ZERO_LENGTH } from '#utils/helpers'
 import { Publish } from '../pubsub'
 
@@ -8,7 +8,7 @@ const LEFT_THIRD = 0.3333333333333333
 const RIGHT_THIRD = 0.6666666666666666
 
 export function InitMouse(): void {
-  Pictures.initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_SCALE
+  Pictures.initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
   Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
     if (HasValue(window.visualViewport) && Pictures.initialScale < window.visualViewport.scale) {
       Publish('Ignored Mouse Click', evt)

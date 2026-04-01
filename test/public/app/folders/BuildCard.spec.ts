@@ -69,7 +69,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result).to.equal(null)
   })
@@ -82,7 +82,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result).to.equal(null)
   })
@@ -92,7 +92,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: null,
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result?.querySelector('i.material-icons') ?? null).to.not.equal(null)
   })
@@ -102,7 +102,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: null,
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result?.querySelector('i.material-icons')?.innerHTML).to.equal('folder')
   })
@@ -112,7 +112,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '',
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result?.querySelector('i.material-icons') ?? null).to.not.equal(null)
   })
@@ -122,7 +122,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '',
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result?.querySelector('i.material-icons')?.innerHTML).to.equal('folder')
   })
@@ -132,7 +132,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     const icon = result?.querySelector('i.material-icons') ?? null
     expect(icon).to.equal(null)
@@ -143,7 +143,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result?.style.backgroundImage).to.equal('url("/images/preview/path/foo/cover.png-image.webp")')
   })
@@ -153,7 +153,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result?.classList.contains('seen')).to.equal(false)
   })
@@ -163,7 +163,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 50,
+      seenCount: 50,
     })
     expect(result?.classList.contains('seen')).to.equal(false)
   })
@@ -173,7 +173,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 100,
+      seenCount: 100,
     })
     expect(result?.classList.contains('seen')).to.equal(true)
   })
@@ -183,7 +183,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 101,
+      seenCount: 101,
     })
     expect(result?.classList.contains('seen')).to.equal(true)
   })
@@ -193,7 +193,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 101,
+      seenCount: 101,
     })
     expect(result?.querySelector('h5')?.innerText).to.equal('foo')
   })
@@ -204,7 +204,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 10,
+      seenCount: 10,
     })
     expect(result?.querySelector('h5')).to.equal(null)
   })
@@ -214,7 +214,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 42,
+      seenCount: 42,
     })
     expect(result?.querySelector<HTMLDivElement>('div.text')?.innerText).to.equal('42/100')
   })
@@ -225,7 +225,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 101,
+      seenCount: 101,
     })
     expect(result?.querySelector('div.text')).to.equal(null)
   })
@@ -235,7 +235,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 10000,
-      totalSeen: 666,
+      seenCount: 666,
     })
     expect(result?.querySelector<HTMLDivElement>('div.slider')?.style.width).to.equal('6.66%')
   })
@@ -245,7 +245,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 0,
-      totalSeen: 0,
+      seenCount: 0,
     })
     expect(result?.querySelector<HTMLDivElement>('div.slider')?.style.width).to.equal('100%')
   })
@@ -256,7 +256,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 101,
+      seenCount: 101,
     })
     expect(result?.querySelector('div.slider')).to.equal(null)
   })
@@ -267,7 +267,7 @@ describe('public/app/folders function BuildCard()', () => {
       path: '/path/foo',
       cover: '/path/foo/cover.png',
       totalCount: 100,
-      totalSeen: 101,
+      seenCount: 101,
     })
     const spy = Sinon.stub().resolves()
     PubSub.subscribers['NAVIGATE:LOAD'] = [spy]

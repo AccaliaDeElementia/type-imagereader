@@ -8,10 +8,10 @@ export function isPathTraversal(path: string): boolean {
 
 export function GetParentFolders(path: string): string[] {
   const results = []
-  let parent = path
-  while (parent !== sep) {
-    parent = normalize(dirname(parent) + sep)
-    results.push(parent)
+  let current = path
+  while (current !== sep) {
+    current = normalize(dirname(current) + sep)
+    results.push(current)
   }
   return results
 }

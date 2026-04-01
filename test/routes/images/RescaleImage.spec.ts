@@ -1,6 +1,6 @@
 'use sanity'
 
-import { assert, expect } from 'chai'
+import { expect } from 'chai'
 import { Imports, Functions, ImageData } from '#routes/images'
 import Sharp from 'sharp'
 import Sinon from 'sinon'
@@ -111,7 +111,7 @@ describe('routes/images function RescaleImage()', () => {
     const img = new ImageData()
     sharpStub.throws(new Error('OOPS'))
     await Functions.RescaleImage(img, 1280, 720)
-    assert.isNaN(img.statusCode)
+    expect(img.statusCode).to.equal(0)
   })
   it('should not set error message when sharp throws', async () => {
     const img = new ImageData()
@@ -129,7 +129,7 @@ describe('routes/images function RescaleImage()', () => {
     const img = new ImageData()
     sharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
     await Functions.RescaleImage(img, 1280, 720)
-    assert.isNaN(img.statusCode)
+    expect(img.statusCode).to.equal(0)
   })
   it('should not set error message when sharp rejects', async () => {
     const img = new ImageData()

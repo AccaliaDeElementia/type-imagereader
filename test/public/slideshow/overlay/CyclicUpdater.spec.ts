@@ -17,14 +17,14 @@ html
 
 describe('public/slideshow/overlay CyclicUpdater()', () => {
   let fakeShowHide: Sinon.SinonStub | undefined = undefined
-  let fakeCalculateOffset: Sinon.SinonStub | undefined = undefined
+  let fakeCalculateDarknessMs: Sinon.SinonStub | undefined = undefined
   let fakeGetOpacity: Sinon.SinonStub | undefined = undefined
   let dom = new JSDOM()
   const baseWindow = global.window
   const baseDocument = global.document
   beforeEach(() => {
     fakeShowHide = sandbox.stub(Functions, 'ShowHideKiosk')
-    fakeCalculateOffset = sandbox.stub(Functions, 'CalculateOffset').returns(0)
+    fakeCalculateDarknessMs = sandbox.stub(Functions, 'CalculateDarknessMs').returns(0)
     fakeGetOpacity = sandbox.stub(Functions, 'GetOpacity').returns(0)
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
@@ -84,9 +84,9 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
       expect(fakeShowHide?.firstCall.args[1]).to.equal(expected)
     })
   })
-  it('should call CalculateOffset to get timer offset', async () => {
+  it('should call CalculateDarknessMs to get timer offset', async () => {
     await Updater.updateFn()
-    expect(fakeCalculateOffset?.callCount).to.equal(1)
+    expect(fakeCalculateDarknessMs?.callCount).to.equal(1)
   })
   it('should call GetOpacity to turn offset into opacity valie', async () => {
     await Updater.updateFn()
@@ -94,7 +94,7 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
   })
   it('should call GetOpacity with offset valueto turn offset into opacity valie', async () => {
     const value = Math.random()
-    fakeCalculateOffset?.returns(value)
+    fakeCalculateDarknessMs?.returns(value)
     await Updater.updateFn()
     expect(fakeGetOpacity?.firstCall.args).to.deep.equal([value])
   })

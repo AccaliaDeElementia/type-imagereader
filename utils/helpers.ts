@@ -1,6 +1,6 @@
-export enum ALTER_COUNTER {
-  INCREMENT = 1,
-  DECREMENT = -1,
+export enum STEP {
+  FORWARD = 1,
+  BACK = -1,
   NONE = 0,
 }
 
@@ -51,13 +51,15 @@ export function EscapeLikeWildcards(s: string): string {
   return s.replace(/\\/gv, '\\\\').replace(/%/gv, '\\%').replace(/_/gv, '\\_')
 }
 
-const PERCENT_MULT = 1000
-const PERCENT_DIV = 10
+const PERCENT_SCALE = 100
+const ONE_DECIMAL_FACTOR = 10
 const INDEX_OFFSET = 1
 export function IndexToText(index: number): string {
   return (index + INDEX_OFFSET).toLocaleString()
 }
 export function IndexPercentToText(index: number, total: number): string {
   if (total === ZERO_COUNT) return ZERO_COUNT.toLocaleString()
-  return (Math.floor((PERCENT_MULT * (index + INDEX_OFFSET)) / total) / PERCENT_DIV).toLocaleString()
+  return (
+    Math.floor((PERCENT_SCALE * ONE_DECIMAL_FACTOR * (index + INDEX_OFFSET)) / total) / ONE_DECIMAL_FACTOR
+  ).toLocaleString()
 }

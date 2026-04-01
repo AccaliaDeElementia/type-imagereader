@@ -26,6 +26,7 @@ interface SyncItem {
   path: string
   isFile: boolean
   sortKey: string
+  pathHash: string
 }
 interface SyncItemChunks {
   files: number
@@ -95,7 +96,7 @@ export const Functions = {
           dirs += ONE
         }
         let folder = posix.dirname(item.path)
-        if (folder.length > ONE) {
+        if (folder !== posix.sep) {
           folder += posix.sep
         }
         const path = item.path + (item.isFile ? '' : posix.sep)
@@ -253,7 +254,8 @@ export const Functions = {
       .count('* as totalCount')
       .sum({ seenCount: knex.raw('CASE WHEN seen THEN 1 ELSE 0 END') })
       .groupBy('folder')
-    // force the total count to be a number in case postgres is silly
+    // Knex's PostgreSQL driver returns aggregate results (COUNT, SUM) as strings
+    // to avoid precision loss — coerce them to numbers explicitly
     for (const info of folderInfos) {
       info.totalCount = Number.parseInt(`${info.totalCount}`, 10)
       info.seenCount = Number.parseInt(`${info.seenCount}`, 10)
