@@ -237,7 +237,7 @@ export const Functions = {
       results: BookmarkFolder[]
       pendingFolder: BookmarkFolder | null
     }
-    return bookmarks.reduce<Acc>(
+    const { results, pendingFolder } = bookmarks.reduce<Acc>(
       ({ results, pendingFolder }, bookmark) => {
         const entry = {
           name: basename(bookmark.path),
@@ -253,7 +253,8 @@ export const Functions = {
         }
       },
       { results: [], pendingFolder: null },
-    ).results
+    )
+    return pendingFolder === null ? results : [...results, pendingFolder]
   },
   GetListing: async (knex: Knex, path: string): Promise<Listing | null> => {
     const folder = await Functions.GetFolder(knex, path)

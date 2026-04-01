@@ -163,6 +163,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     handleErrors(async (req, res) => {
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
+      logger(path ?? 'NULL PATH!')
       if (path !== null) {
         await Functions.AddBookmark(knex, path)
         res.status(StatusCodes.OK).end()

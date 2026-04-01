@@ -79,6 +79,16 @@ describe('routes/apiFunctions function GetBookmarks', () => {
       'pictures.path',
     ])
   })
+  it('should include the only bookmark folder in results', async () => {
+    knexInstance.orderBy.resolves([{ path: '/foo/bar/quux.png', folder: '/foo/bar/' }])
+    const bookmarks = await Functions.GetBookmarks(knexFake)
+    expect(bookmarks).to.have.lengthOf(1)
+    expect(bookmarks[0]).to.deep.equal({
+      name: '/foo/bar/',
+      path: '/foo/bar/',
+      bookmarks: [{ name: 'quux.png', path: '/foo/bar/quux.png', folder: '/foo/bar/' }],
+    })
+  })
   it('should resolve to empty with no bookmarks', async () => {
     knexInstance.orderBy.resolves([])
     const bookmarks = await Functions.GetBookmarks(knexFake)

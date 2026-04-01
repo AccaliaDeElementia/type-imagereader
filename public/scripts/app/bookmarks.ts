@@ -160,7 +160,7 @@ export const Bookmarks = {
           Publish('Loading:Success')
         },
         (err: unknown) => {
-          Publish('Loading:Error', err)
+          Publish('Loading:Error', err instanceof Error ? err : new Error('Non Error rejection!'))
         },
       )
     }
