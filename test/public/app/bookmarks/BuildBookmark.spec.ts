@@ -14,6 +14,7 @@ import { resetPubSub } from '#testutils/PubSub'
 import { Bookmarks } from '#public/scripts/app/bookmarks'
 import assert from 'node:assert'
 import type { Bookmark } from '#contracts/listing'
+import { isListing } from '#contracts/listing'
 
 const sandbox = Sinon.createSandbox()
 
@@ -239,10 +240,20 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     })
     expect(navigateLoadSpy.firstCall.args[0]).to.deep.equal({
       path: '/path/to/foo/folder',
+      name: '',
+      parent: '',
       noMenu: true,
     })
   })
 
+  it('should publish Navigate:Load with a payload that satisfies isListing', async () => {
+    await ClickBookmarkAndWait({
+      name: '',
+      path: '/path/to/foo/folder/foo',
+      folder: '/path/to/foo/folder',
+    })
+    expect(isListing(navigateLoadSpy.firstCall.args[0])).to.equal(true)
+  })
   it('should not publish Navigate:Load when PostJSON rejects', async () => {
     postJSONSpy.rejects('FOO')
     await ClickBookmarkAndWait({

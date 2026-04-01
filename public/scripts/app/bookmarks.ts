@@ -81,6 +81,8 @@ export const Bookmarks = {
         () => {
           Publish('Navigate:Load', {
             path: bookmark.folder,
+            name: '',
+            parent: '',
             noMenu: true,
           })
         },
