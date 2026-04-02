@@ -109,7 +109,7 @@ export const Navigation = {
       await Promise.resolve()
     })
     Subscribe('Action:Execute:MarkAllSeen', async () => {
-      if (!(await Confirm.Show('Mark all images in this folder as seen?'))) return
+      if (!(await Confirm.Show('Mark all images in this folder as seen?', 'Mark All Seen'))) return
       await Net.PostJSON('/api/mark/read', { path: Navigation.current.path }, acceptAnyResponse)
         .then(
           async () => {
@@ -122,7 +122,7 @@ export const Navigation = {
         .catch(() => null)
     })
     Subscribe('Action:Execute:MarkAllUnseen', async () => {
-      if (!(await Confirm.Show('Mark all images in this folder as unseen?'))) return
+      if (!(await Confirm.Show('Mark all images in this folder as unseen?', 'Mark All Unseen'))) return
       await Net.PostJSON('/api/mark/unread', { path: Navigation.current.path }, acceptAnyResponse)
         .then(
           async () => {

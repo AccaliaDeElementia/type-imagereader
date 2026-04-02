@@ -11,6 +11,7 @@ html
   body
     div#confirmDialog.hidden
       div.dialog-box
+        h3.title
         p.message
         div.dialog-buttons
           button.cancel Cancel
@@ -28,6 +29,7 @@ describe('public/app/confirm function Show()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     Confirm.dialogElement = null
+    Confirm.titleElement = null
     Confirm.messageElement = null
     Confirm.resolve = undefined
     Confirm.Init()
@@ -41,37 +43,43 @@ describe('public/app/confirm function Show()', () => {
   })
 
   it('should remove .hidden from the dialog element', () => {
-    void Confirm.Show('test')
+    void Confirm.Show('test', 'Test Title')
     expect(Confirm.dialogElement?.classList.contains('hidden')).to.equal(false)
   })
 
   it('should set the message text on the message element', () => {
     const message = 'Are you sure?'
-    void Confirm.Show(message)
+    void Confirm.Show(message, 'Test Title')
     expect(Confirm.messageElement?.innerText).to.equal(message)
   })
 
+  it('should set the title text on the title element', () => {
+    const title = 'My Dialog Title'
+    void Confirm.Show('test', title)
+    expect(Confirm.titleElement?.innerText).to.equal(title)
+  })
+
   it('should resolve true when confirm button is clicked', async () => {
-    const result = Confirm.Show('test')
+    const result = Confirm.Show('test', 'Test Title')
     confirmButton?.click()
     expect(await result).to.equal(true)
   })
 
   it('should resolve false when cancel button is clicked', async () => {
-    const result = Confirm.Show('test')
+    const result = Confirm.Show('test', 'Test Title')
     cancelButton?.click()
     expect(await result).to.equal(false)
   })
 
   it('should add .hidden to the dialog after confirm button is clicked', async () => {
-    const result = Confirm.Show('test')
+    const result = Confirm.Show('test', 'Test Title')
     confirmButton?.click()
     await result
     expect(Confirm.dialogElement?.classList.contains('hidden')).to.equal(true)
   })
 
   it('should add .hidden to the dialog after cancel button is clicked', async () => {
-    const result = Confirm.Show('test')
+    const result = Confirm.Show('test', 'Test Title')
     cancelButton?.click()
     await result
     expect(Confirm.dialogElement?.classList.contains('hidden')).to.equal(true)

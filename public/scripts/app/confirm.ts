@@ -2,9 +2,13 @@
 
 export const Confirm = {
   dialogElement: null as HTMLElement | null,
+  titleElement: null as HTMLElement | null,
   messageElement: null as HTMLElement | null,
   resolve: undefined as ((value: boolean) => void) | undefined,
-  Show: async (message: string): Promise<boolean> => {
+  Show: async (message: string, title: string): Promise<boolean> => {
+    if (Confirm.titleElement !== null) {
+      Confirm.titleElement.innerText = title
+    }
     if (Confirm.messageElement !== null) {
       Confirm.messageElement.innerText = message
     }
@@ -16,6 +20,7 @@ export const Confirm = {
   },
   Init: (): void => {
     Confirm.dialogElement = document.querySelector<HTMLElement>('#confirmDialog')
+    Confirm.titleElement = document.querySelector<HTMLElement>('#confirmDialog .title')
     Confirm.messageElement = document.querySelector<HTMLElement>('#confirmDialog .message')
     document.querySelector<HTMLElement>('#confirmDialog .confirm')?.addEventListener('click', () => {
       Confirm.dialogElement?.classList.add('hidden')

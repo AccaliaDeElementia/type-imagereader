@@ -11,6 +11,7 @@ html
   body
     div#confirmDialog.hidden
       div.dialog-box
+        h3.title
         p.message
         div.dialog-buttons
           button.cancel Cancel
@@ -26,6 +27,7 @@ describe('public/app/confirm function Init()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
     Confirm.dialogElement = null
+    Confirm.titleElement = null
     Confirm.messageElement = null
     Confirm.resolve = undefined
     Confirm.Init()
@@ -44,14 +46,18 @@ describe('public/app/confirm function Init()', () => {
     expect(Confirm.messageElement).to.not.equal(null)
   })
 
+  it('should set titleElement to .title within #confirmDialog', () => {
+    expect(Confirm.titleElement).to.not.equal(null)
+  })
+
   it('should resolve true when confirm button is clicked', async () => {
-    const result = Confirm.Show('test')
+    const result = Confirm.Show('test', 'Test Title')
     document.querySelector<HTMLElement>('#confirmDialog .confirm')?.click()
     expect(await result).to.equal(true)
   })
 
   it('should resolve false when cancel button is clicked', async () => {
-    const result = Confirm.Show('test')
+    const result = Confirm.Show('test', 'Test Title')
     document.querySelector<HTMLElement>('#confirmDialog .cancel')?.click()
     expect(await result).to.equal(false)
   })
