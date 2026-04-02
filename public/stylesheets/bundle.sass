@@ -1,54 +1,65 @@
-@font-face 
-    font-family: 'Material Icons'
-    font-style: normal
-    font-weight: 400
-    src: url(/fonts/MaterialIcons-Regular.eot)
-    src: local('Material Icons'), local('MaterialIcons-Regular'), url(/fonts/MaterialIcons-Regular.woff2) format('woff2'), url(/fonts/MaterialIcons-Regular.woff) format('woff'), url(/fonts/MaterialIcons-Regular.ttf) format('truetype')
+// Colors
+$color-text: #FFFFFF
+$color-bg-body: #222222
+$color-bg-dark: #303030
+$color-bg-medium: #333333
+$color-bg-card: #444444
+$color-border: #555555
+$color-accent-green: #00bc8c
+$color-accent-green-active: #00efb2
+$color-accent-blue: #375a7f
+$color-accent-red: #e74c3c
+
+@font-face
+  font-family: 'Material Icons'
+  font-style: normal
+  font-weight: 400
+  src: url(/fonts/MaterialIcons-Regular.eot)
+  src: local('Material Icons'), local('MaterialIcons-Regular'), url(/fonts/MaterialIcons-Regular.woff2) format('woff2'), url(/fonts/MaterialIcons-Regular.woff) format('woff'), url(/fonts/MaterialIcons-Regular.ttf) format('truetype')
 
 .material-icons
-    font-family: 'Material Icons'
-    font-weight: normal
-    font-style: normal
-    /*font-size: 24px;  /* Preferred icon size */
-    display: inline-block
-    line-height: 1
-    text-transform: none
-    letter-spacing: normal
-    word-wrap: normal
-    white-space: nowrap
-    direction: ltr
-    -webkit-font-smoothing: antialiased
-    text-rendering: optimizeLegibility
-    -moz-osx-font-smoothing: grayscale
-    font-feature-settings: 'liga'
+  font-family: 'Material Icons'
+  font-weight: normal
+  font-style: normal
+  display: inline-block
+  line-height: 1
+  text-transform: none
+  letter-spacing: normal
+  word-wrap: normal
+  white-space: nowrap
+  direction: ltr
+  -webkit-font-smoothing: antialiased
+  text-rendering: optimizeLegibility
+  -moz-osx-font-smoothing: grayscale
+  font-feature-settings: 'liga'
 
 *, ::after, ::before
-    box-sizing: border-box
+  box-sizing: border-box
 
 body
+  margin: 0
+  padding: 0
+  color: $color-text
+  background-color: $color-bg-body
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif
+  text-align: left
+  h1
     margin: 0
-    padding: 0
-    color: #FFFFFF
-    background-color: #222222
-    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif
-    text-align: left
-    h1
-      margin: 0
-      font-size: 1.75rem
-    a
-      color: #FFFFFF
-      text-decoration: none
-    .hidden
-      display: none !important
+    font-size: 1.75rem
+  a
+    color: $color-text
+    text-decoration: none
+  .hidden
+    display: none !important
 
 #navbar
   display: flex
   flex-wrap: wrap
   align-items: center
   justify-content: space-between
-  background-color: #303030
+  background-color: $color-bg-dark
   position: fixed
-  padding: .25rem
+  padding: 0.25rem
   padding-left: 1rem
   height: 2.5rem
   top: 0
@@ -74,43 +85,43 @@ body
     object-fit: contain
 
 .menuButton
-  background-color: #444444
+  background-color: $color-bg-card
   line-height: 0
   padding: 0.25rem
   border-radius: 0.25rem
   cursor: pointer
 
 .selectUnreadAll
-    display: inline-block
-    padding: 0
-    width: 7rem
-    height: 2.1rem
-    position: relative
-    overflow: hidden
-    border-radius: 0.25rem
-    cursor: pointer
-    div.unread
-        left: -7rem
-        transition: left 0.5s ease-in-out
-    div.all
-        left: 0
-        transition: left 0.5s ease-in-out
-    div
-        width: 200%
-        position: absolute
-        top: 0
-        bottom: 0
-        left: 0
-        span
-            display: inline-block
-            padding: 0.5rem
-            margin: 0
-            width: 7rem
-            text-align: center
-        .all
-            background-color: #00bc8c
-        .unread
-            background-color: #375a7f
+  display: inline-block
+  padding: 0
+  width: 7rem
+  height: 2.1rem
+  position: relative
+  overflow: hidden
+  border-radius: 0.25rem
+  cursor: pointer
+  div.unread
+    left: -7rem
+    transition: left 0.5s ease-in-out
+  div.all
+    left: 0
+    transition: left 0.5s ease-in-out
+  div
+    width: 200%
+    position: absolute
+    top: 0
+    bottom: 0
+    left: 0
+    span
+      display: inline-block
+      padding: 0.5rem
+      margin: 0
+      width: 7rem
+      text-align: center
+    .all
+      background-color: $color-accent-green
+    .unread
+      background-color: $color-accent-blue
 
 #mainMenu
   position: absolute
@@ -124,14 +135,14 @@ body
     width: 80%
     height: 100%
     margin: auto
-    background-color: #333333
+    background-color: $color-bg-medium
   .tab-list
     position: fixed
     height: 2.5rem
     max-width: 1400px
     width: 80%
-    border-bottom: 1px solid #555555
-    background-color: #333333
+    border-bottom: 1px solid $color-border
+    background-color: $color-bg-medium
     z-index: 100
     ul
       list-style: none
@@ -143,14 +154,14 @@ body
       margin: 0
       vertical-align: middle
       li
-        background-color: #333333
+        background-color: $color-bg-medium
         padding-left: 1rem
         padding-right: 1rem
-        border-bottom: 1px solid #555555
+        border-bottom: 1px solid $color-border
       li.active
-        background-color: #444444
-        border: 1px solid #555555
-        border-bottom: 0px solid #555555
+        background-color: $color-bg-card
+        border: 1px solid $color-border
+        border-bottom: 0
   .tab-content
     height: 100%
     width: 100%
@@ -177,7 +188,7 @@ body
     display: flex
     justify-content: space-between
     text-shadow: 2px 2px 1px #000000, -1px 2px 1px #000000, 2px -1px 1px #000000, -1px -1px 1px #000000
-    color: #FFFFFF
+    color: $color-text
     div
       display: inline-block
 
@@ -193,8 +204,8 @@ body
   justify-content: center
   background-color: rgba(0, 0, 0, 0.6)
   div.dialog-box
-    background-color: #333333
-    border: 1px solid #555555
+    background-color: $color-bg-medium
+    border: 1px solid $color-border
     border-radius: 0.5rem
     padding: 2rem
     min-width: 20rem
@@ -202,7 +213,7 @@ body
       margin-top: 0
       margin-bottom: 1rem
       padding-bottom: 0.5rem
-      border-bottom: 1px solid #555555
+      border-bottom: 1px solid $color-border
     p.message
       margin-top: 0
       margin-bottom: 1.5rem
@@ -216,12 +227,12 @@ body
         border: none
         border-radius: 0.25rem
         cursor: pointer
-        color: #fff
+        color: $color-text
         font-size: 1rem
       button.confirm
-        background-color: #00bc8c
+        background-color: $color-accent-green
       button.cancel
-        background-color: #375a7f
+        background-color: $color-accent-blue
 
 #loadingScreen
   position: absolute
@@ -229,8 +240,8 @@ body
   bottom: 0
   left: 0
   right: 0
-  background-color: #303030
-  opacity: .9
+  background-color: $color-bg-dark
+  opacity: 0.9
   z-index: 9001
   div.centerblock
     position: absolute
@@ -274,8 +285,8 @@ body
   padding-top: 1rem
   margin: 0.5rem
   overflow: hidden
-  background-color: #444444
-  border: 1px solid rgba(0,0,0,0.125)
+  background-color: $color-bg-card
+  border: 1px solid rgba(0, 0, 0, 0.125)
   border-radius: 0.25rem
   cursor: pointer
   position: relative
@@ -306,7 +317,7 @@ body
     border: 1px solid rgba(170, 170, 170, 0.3)
     border-radius: 0.5rem
     height: 1.25rem
-    background-color: #444444
+    background-color: $color-bg-card
     div.text
       position: absolute
       top: 0
@@ -321,40 +332,40 @@ body
       bottom: 0
       left: 0
       z-index: 1
-      background-color: #375a7f
-      border: 0px solid #000000
+      background-color: $color-accent-blue
+      border: 0
       border-radius: 0.5rem
 
 .folders
   .card
     .progress
       .slider
-        background-color: #375a7f
+        background-color: $color-accent-blue
   .card.seen
     .progress
       .slider
-        background-color: #00bc8c
+        background-color: $color-accent-green
 
 #tabBookmarks
   div.folder
     margin: 0.5rem
-    padding: .5rem
-    border: #666 solid 1px
+    padding: 0.5rem
+    border: 1px solid #666666
     border-radius: 0.25rem
     .title
       font-weight: bold
-      cursor: pointer 
+      cursor: pointer
   div.folder.closed
     .card
       display: none
   .card
     position: relative
     button
-      color: #FFFFFF
-      background-color: #e74c3c
-      border-color: #e74c3c
+      color: $color-text
+      background-color: $color-accent-red
+      border-color: $color-accent-red
       border-radius: 0.25rem
-      padding: .5rem
+      padding: 0.5rem
       position: absolute
       bottom: 0.25rem
       display: block
@@ -364,9 +375,9 @@ body
 .page
   .card
     text-shadow: 2px 2px 1px #FFFFFF, -1px 2px 1px #FFFFFF, 2px -1px 1px #FFFFFF, -1px -1px 1px #FFFFFF
-    color: #375a7f
+    color: $color-accent-blue
   .card.seen
-    color: #00bc8c
+    color: $color-accent-green
 
 nav.pages ul
   display: flex
@@ -374,19 +385,19 @@ nav.pages ul
   justify-content: center
   list-style: none
   .page-item
-      padding: 0.5rem 0.75rem
-      margin-left: 0
-      line-height: 1.25
-      color: #fff
-      background-color: #00bc8c
-      border: 0 solid transparent
+    padding: 0.5rem 0.75rem
+    margin-left: 0
+    line-height: 1.25
+    color: $color-text
+    background-color: $color-accent-green
+    border: 0 solid transparent
   .page-item:first-child
-      margin-left: 0
-      border-top-left-radius: 0.25rem
-      border-bottom-left-radius: 0.25rem
+    margin-left: 0
+    border-top-left-radius: 0.25rem
+    border-bottom-left-radius: 0.25rem
   .page-item:last-child
-      margin-right: 0
-      border-top-right-radius: 0.25rem
-      border-bottom-right-radius: 0.25rem
+    margin-right: 0
+    border-top-right-radius: 0.25rem
+    border-bottom-right-radius: 0.25rem
   .page-item.active
-      background-color: #00efb2
+    background-color: $color-accent-green-active
