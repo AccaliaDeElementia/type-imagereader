@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '#utils/syncfolders'
+import { Functions, Imports } from '#utils/incrementalsync'
 import type { FolderInfo } from '#utils/syncfolders'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
@@ -59,11 +59,11 @@ describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
     knexFnStub.withArgs('folders').returns(foldersStub)
     Cast<Record<string, unknown>>(knexFnStub).raw = Sinon.stub().returns('CASE WHEN seen THEN 1 ELSE 0 END')
     knexFnFake = StubToKnex(knexFnStub)
-    getAllFolderInfosStub = sandbox.stub(Functions, 'GetAllFolderInfos').resolves({})
-    getFolderInfosWithPicturesStub = sandbox.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
-    calculateFolderInfosStub = sandbox.stub(Functions, 'CalculateFolderInfos').returns([])
-    chunkStub = sandbox.stub(Functions, 'Chunk').returns([])
-    execChunksSynchronouslyStub = sandbox.stub(Functions, 'ExecChunksSynchronously').resolves()
+    getAllFolderInfosStub = sandbox.stub(Imports.SyncFunctions, 'GetAllFolderInfos').resolves({})
+    getFolderInfosWithPicturesStub = sandbox.stub(Imports.SyncFunctions, 'GetFolderInfosWithPictures').resolves([])
+    calculateFolderInfosStub = sandbox.stub(Imports.SyncFunctions, 'CalculateFolderInfos').returns([])
+    chunkStub = sandbox.stub(Imports.SyncFunctions, 'Chunk').returns([])
+    execChunksSynchronouslyStub = sandbox.stub(Imports.SyncFunctions, 'ExecChunksSynchronously').resolves()
   })
 
   afterEach(() => {

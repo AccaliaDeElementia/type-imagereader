@@ -5,7 +5,8 @@ import 'dotenv/config'
 
 import debug from 'debug'
 
-import synchronize, { Functions as SyncFunctions } from './utils/syncfolders'
+import synchronize from './utils/syncfolders'
+import { Functions as IncrementalSyncFunctions } from './utils/incrementalsync'
 import startWatcher from './utils/filewatcher'
 import type { Changeset, WatcherSubscription } from './utils/filewatcher'
 import persistance from './utils/persistance'
@@ -16,7 +17,7 @@ export const Imports = {
   logger: debug('type-imagereader:sync'),
   startWatcher,
   persistance,
-  SyncFunctions,
+  IncrementalSyncFunctions,
 }
 
 const THREE_HOURS = 10_800_000
@@ -126,7 +127,7 @@ export const ImageReader = {
             if (!ImageReader.SyncLock.Take()) return
             try {
               const knex = await Imports.persistance.initialize()
-              await Imports.SyncFunctions.IncrementalSync(knex, changeset)
+              await Imports.IncrementalSyncFunctions.IncrementalSync(knex, changeset)
             } finally {
               ImageReader.SyncLock.Release()
             }

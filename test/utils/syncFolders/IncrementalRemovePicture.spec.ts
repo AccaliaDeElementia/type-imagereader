@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '#utils/syncfolders'
+import { Functions, Imports } from '#utils/incrementalsync'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import type { Debugger } from 'debug'

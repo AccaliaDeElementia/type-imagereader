@@ -8,7 +8,7 @@ const DEFAULT_DEBOUNCE_MS = 5000
 const ZERO = 0
 const allowedExtensions = /^\.(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/iv
 
-export type ChangeType = 'create' | 'delete'
+export type ChangeType = 'create' | 'delete' | 'dir-create' | 'dir-delete'
 export type Changeset = Map<string, ChangeType>
 export type FlushCallback = (changeset: Changeset) => Promise<void>
 
@@ -41,13 +41,19 @@ export const Functions = {
     return `/${rel}`
   },
 
+  isDirPath: (filePath: string): boolean => extname(filePath) === '',
+
   processEvents: (dataDir: string, events: WatcherEvent[], changeset: Changeset): void => {
     for (const event of events) {
       if (event.type === 'update') continue
       const relPath = Functions.toRelativePath(dataDir, event.path)
       if (Functions.isHiddenPath(relPath)) continue
-      if (!Functions.isImagePath(relPath)) continue
-      changeset.set(relPath, event.type === 'create' ? 'create' : 'delete')
+      if (Functions.isImagePath(relPath)) {
+        changeset.set(relPath, event.type === 'create' ? 'create' : 'delete')
+      } else if (Functions.isDirPath(relPath)) {
+        const dirPath = `${relPath}/`
+        changeset.set(dirPath, event.type === 'create' ? 'dir-create' : 'dir-delete')
+      }
     }
   },
 

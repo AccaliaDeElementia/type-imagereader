@@ -34,7 +34,7 @@ describe('/index.ts tests', (): void => {
     PersistanceStub = { initialize: Sinon.stub().resolves({}) }
     sandbox.stub(Imports, 'persistance').value(PersistanceStub)
     IncrementalSyncStub = Sinon.stub().resolves()
-    sandbox.stub(Imports, 'SyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
+    sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
   })
 
   afterEach(() => {
