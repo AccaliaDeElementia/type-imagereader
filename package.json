@@ -99,13 +99,11 @@
     "functions": 80,
     "branches": 80,
     "include": [
-      "**/*.ts",
-      "utils/*.ts"
+      "**/*.ts"
     ],
     "exclude": [
       "**/*.spec.ts",
       "knexfile.ts",
-      "test.ts",
       "migrations/**"
     ],
     "reporter": [
