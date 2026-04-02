@@ -6,6 +6,7 @@ import wordsToNumbers from 'words-to-numbers'
 import posix from 'node:path'
 import { createHash } from 'node:crypto'
 import type { Knex } from 'knex'
+import type { Changeset } from './filewatcher'
 
 import _debug from 'debug'
 import type { Debugger } from 'debug'
@@ -305,6 +306,90 @@ export const Functions = {
     const logger = Imports.debug(`${Imports.logPrefix}:pruneEmpty`)
     const deletedfolders = await knex('folders').where('totalCount', '=', ZERO).delete()
     logger(`Removed ${deletedfolders} empty folders`)
+  },
+  IncrementalAddPicture: async (logger: Debugger, knex: Knex, path: string): Promise<void> => {
+    const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
+    const sortKey = Functions.ToSortKey(posix.basename(path))
+    const pathHash = createHash('sha512').update(path).digest('base64')
+    const existing = await knex('pictures').select<Array<{ path: string }>>('path').where({ path }).first()
+    if (existing !== undefined) return
+    await knex('pictures').insert({ folder, path, sortKey, pathHash })
+    const existingFolder = await knex('folders').select<Array<{ path: string }>>('path').where({ path: folder }).first()
+    if (existingFolder === undefined) {
+      const folderSortKey = Functions.ToSortKey(posix.basename(posix.dirname(path)))
+      const parentFolder = posix.dirname(posix.dirname(path))
+      const parentPath = parentFolder === posix.sep ? posix.sep : parentFolder + posix.sep
+      await knex('folders')
+        .insert({ folder: parentPath, path: folder, sortKey: folderSortKey })
+        .onConflict('path')
+        .ignore()
+    }
+    logger(`Incremental add: ${path}`)
+  },
+  IncrementalRemovePicture: async (logger: Debugger, knex: Knex, path: string): Promise<void> => {
+    await knex('pictures').where({ path }).delete()
+    await knex('bookmarks').where({ path }).delete()
+    logger(`Incremental remove: ${path}`)
+  },
+  IncrementalUpdateFolders: async (logger: Debugger, knex: Knex, affectedFolders: Set<string>): Promise<void> => {
+    for (const folder of affectedFolders) {
+      //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous for folder-by-folder update
+      const [result]: FolderInfo[] = await knex('pictures')
+        .select('folder as path')
+        .count('* as totalCount')
+        .sum({ seenCount: knex.raw('CASE WHEN seen THEN 1 ELSE 0 END') })
+        .where('folder', folder)
+        .groupBy('folder')
+      if (result !== undefined) {
+        //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous for folder-by-folder update
+        await knex('folders')
+          .where({ path: folder })
+          .update({
+            totalCount: Number.parseInt(`${result.totalCount}`, 10),
+            seenCount: Number.parseInt(`${result.seenCount}`, 10),
+          })
+      }
+    }
+    // Propagate counts up parent chains
+    const allFolders = await Functions.GetAllFolderInfos(knex)
+    const folderInfos = await Functions.GetFolderInfosWithPictures(knex)
+    const resultFolders = Functions.CalculateFolderInfos(allFolders, folderInfos)
+    await Functions.ExecChunksSynchronously(Functions.Chunk(resultFolders), async (chunk) => {
+      await knex('folders').insert(chunk).onConflict('path').merge()
+    })
+    const deletedfolders = await knex('folders').where('totalCount', '=', ZERO).delete()
+    logger(`Incremental folder update: ${affectedFolders.size} folders checked, ${deletedfolders} empty folders pruned`)
+  },
+  IncrementalSync: async (knex: Knex, changeset: Changeset): Promise<void> => {
+    const logger = Imports.debug(`${Imports.logPrefix}:incremental`)
+    logger(`Processing ${changeset.size} incremental changes`)
+    const affectedFolders = new Set<string>()
+    for (const [path, type] of changeset) {
+      const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
+      affectedFolders.add(folder)
+      if (type === 'create') {
+        //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
+        await Functions.IncrementalAddPicture(logger, knex, path)
+      } else {
+        //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
+        await Functions.IncrementalRemovePicture(logger, knex, path)
+      }
+    }
+    await Functions.IncrementalUpdateFolders(logger, knex, affectedFolders)
+    // Update first images for affected folders
+    for (const folder of affectedFolders) {
+      //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous for folder-by-folder update
+      const first = await knex('pictures')
+        .select<Array<{ path: string }>>('path')
+        .where({ folder })
+        .orderBy('sortKey')
+        .first()
+      if (first !== undefined) {
+        //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous for folder-by-folder update
+        await knex('folders').where({ path: folder }).update({ firstPicture: first.path })
+      }
+    }
+    logger(`Incremental sync complete`)
   },
 }
 

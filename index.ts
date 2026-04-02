@@ -5,18 +5,26 @@ import 'dotenv/config'
 
 import debug from 'debug'
 
-import synchronize from './utils/syncfolders'
+import synchronize, { Functions as SyncFunctions } from './utils/syncfolders'
+import startWatcher from './utils/filewatcher'
+import type { Changeset, WatcherSubscription } from './utils/filewatcher'
+import persistance from './utils/persistance'
 import start from './Server'
 import { StringIsNullOrEmpty } from './utils/helpers'
 
 export const Imports = {
   logger: debug('type-imagereader:sync'),
+  startWatcher,
+  persistance,
+  SyncFunctions,
 }
 
 const THREE_HOURS = 10_800_000
+const TWENTY_FOUR_HOURS = 86_400_000
 const DEFAULT_PORT = 3030
 const MINIMUM_PORT = 0
 const MAXIMUM_PORT = 65535
+const ZERO = 0
 
 const runIfNotSuppressed = async (skipVar: string, fn: () => Promise<void>): Promise<void> => {
   const envvar = `${process.env[skipVar]}`.toLocaleUpperCase()
@@ -64,12 +72,27 @@ export async function RunSync(): Promise<void> {
   await promise.catch(() => null)
 }
 
+const isSuppressed = (skipVar: string): boolean => {
+  const envvar = `${process.env[skipVar]}`.toLocaleUpperCase()
+  return envvar === '1' || envvar === 'TRUE'
+}
+
+const parseSyncInterval = (): number | undefined => {
+  const raw = process.env.SYNC_INTERVAL
+  if (StringIsNullOrEmpty(raw)) return undefined
+  const parsed = Number(raw)
+  if (Number.isNaN(parsed) || !Number.isFinite(parsed) || parsed <= ZERO) return undefined
+  return parsed
+}
+
 export const ImageReader = {
   StartServer: start,
   Synchronize: synchronize,
   Interval: undefined as number | NodeJS.Timeout | undefined,
+  WatcherSubscription: undefined as WatcherSubscription | undefined,
   SyncLock: new LockResource(),
   SyncInterval: THREE_HOURS,
+  WatcherEnabled: false,
   Run: async (): Promise<void> => {
     await runIfNotSuppressed('SKIP_SERVE', async () => {
       const port = Number(StringIsNullOrEmpty(process.env.PORT) ? DEFAULT_PORT : process.env.PORT)
@@ -85,6 +108,7 @@ export const ImageReader = {
       await ImageReader.StartServer(port)
     })
     await runIfNotSuppressed('SKIP_SYNC', async () => {
+      const watcherSuppressed = isSuppressed('DISABLE_WATCHER')
       const doSync = async (): Promise<void> => {
         if (!ImageReader.SyncLock.Take()) return
         try {
@@ -96,6 +120,25 @@ export const ImageReader = {
       doSync().catch((err: unknown) => {
         Imports.logger('sync error', err)
       })
+      if (!watcherSuppressed) {
+        try {
+          const onFlush = async (changeset: Changeset): Promise<void> => {
+            if (!ImageReader.SyncLock.Take()) return
+            try {
+              const knex = await Imports.persistance.initialize()
+              await Imports.SyncFunctions.IncrementalSync(knex, changeset)
+            } finally {
+              ImageReader.SyncLock.Release()
+            }
+          }
+          ImageReader.WatcherSubscription = await Imports.startWatcher('/data', onFlush)
+          ImageReader.WatcherEnabled = true
+        } catch (err: unknown) {
+          Imports.logger('watcher start failed, falling back to polling only', err)
+        }
+      }
+      const customInterval = parseSyncInterval()
+      ImageReader.SyncInterval = customInterval ?? (ImageReader.WatcherEnabled ? TWENTY_FOUR_HOURS : THREE_HOURS)
       ImageReader.Interval = setInterval(() => {
         doSync().catch((err: unknown) => {
           Imports.logger('sync interval error', err)

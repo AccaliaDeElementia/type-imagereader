@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors'
+import { Cast } from '#testutils/TypeGuards'
+import type { Changeset, FlushCallback } from '#utils/filewatcher'
 
 import { ImageReader, Imports } from '#app'
 
@@ -15,20 +17,33 @@ describe('/index.ts tests', (): void => {
   let SynchronizeStub: Sinon.SinonStub | undefined = undefined
   let ClockFake: Sinon.SinonFakeTimers | undefined = undefined
   let LoggerStub: Sinon.SinonStub | undefined = undefined
+  let StartWatcherStub: Sinon.SinonStub | undefined = undefined
+  let PersistanceStub: { initialize: Sinon.SinonStub } | undefined = undefined
+  let IncrementalSyncStub: Sinon.SinonStub | undefined = undefined
 
   beforeEach(() => {
     delete process.env.PORT
     delete process.env.SKIP_SYNC
+    delete process.env.DISABLE_WATCHER
+    delete process.env.SYNC_INTERVAL
     StartServerStub = sandbox.stub(ImageReader, 'StartServer').resolves()
     SynchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
     ClockFake = sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
+    StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: Sinon.stub().resolves() })
+    PersistanceStub = { initialize: Sinon.stub().resolves({}) }
+    sandbox.stub(Imports, 'persistance').value(PersistanceStub)
+    IncrementalSyncStub = Sinon.stub().resolves()
+    sandbox.stub(Imports, 'SyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
   })
 
   afterEach(() => {
     sandbox.restore()
     ImageReader.Interval = undefined
+    ImageReader.WatcherSubscription = undefined
+    ImageReader.WatcherEnabled = false
     ImageReader.SyncLock._locked = false
+    ImageReader.SyncInterval = 10_800_000
   })
 
   it('should reject when StartServer throws', async () => {
@@ -200,7 +215,7 @@ describe('/index.ts tests', (): void => {
   })
 
   it('should run Synchronization again after SyncInterval miliseconds', async () => {
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     SynchronizeStub?.resetHistory()
     ClockFake?.tick(99)
@@ -210,7 +225,7 @@ describe('/index.ts tests', (): void => {
   })
 
   it('should skip Synchronization if a previous run is still running', async () => {
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     SynchronizeStub?.resetHistory()
     // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
@@ -221,20 +236,20 @@ describe('/index.ts tests', (): void => {
 
   it('should reset sync running if Synchronization throws', async () => {
     SynchronizeStub?.throws(new Error('FOO!'))
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
   it('should reset sync running if Synchronization rejects', async () => {
     SynchronizeStub?.rejects(new Error('FOO!'))
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
   it('should tolerate Synchronization rejects in interval', async () => {
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     SynchronizeStub?.rejects(new Error('FOO!'))
     ClockFake?.tick(105)
@@ -268,7 +283,7 @@ describe('/index.ts tests', (): void => {
   })
 
   it('should log once when interval sync rejects', async () => {
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     SynchronizeStub?.rejects(new Error('INTERVAL SYNC FAILED'))
     await ClockFake?.tickAsync(101)
@@ -276,7 +291,7 @@ describe('/index.ts tests', (): void => {
   })
 
   it("should log with message 'sync interval error' when interval sync rejects", async () => {
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     SynchronizeStub?.rejects(new Error('INTERVAL SYNC FAILED'))
     await ClockFake?.tickAsync(101)
@@ -285,7 +300,7 @@ describe('/index.ts tests', (): void => {
 
   it('should log the error object when interval sync rejects', async () => {
     const err = new Error('INTERVAL SYNC FAILED')
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     SynchronizeStub?.rejects(err)
     await ClockFake?.tickAsync(101)
@@ -293,10 +308,190 @@ describe('/index.ts tests', (): void => {
   })
 
   it('should not log when interval sync resolves', async () => {
-    ImageReader.SyncInterval = 100
+    process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     ClockFake?.tick(101)
     await Promise.resolve()
     expect(LoggerStub?.callCount).to.equal(0)
+  })
+
+  it('should start watcher by default', async () => {
+    await ImageReader.Run()
+    expect(StartWatcherStub?.called).to.equal(true)
+  })
+
+  it('should start watcher on /data', async () => {
+    await ImageReader.Run()
+    expect(StartWatcherStub?.firstCall.args[0]).to.equal('/data')
+  })
+
+  it('should set WatcherEnabled to true when watcher starts', async () => {
+    await ImageReader.Run()
+    expect(ImageReader.WatcherEnabled).to.equal(true)
+  })
+
+  it('should store watcher subscription', async () => {
+    const sub = { unsubscribe: Sinon.stub().resolves() }
+    StartWatcherStub?.resolves(sub)
+    await ImageReader.Run()
+    expect(ImageReader.WatcherSubscription).to.equal(sub)
+  })
+
+  it('should not start watcher when DISABLE_WATCHER is 1', async () => {
+    process.env.DISABLE_WATCHER = '1'
+    await ImageReader.Run()
+    expect(StartWatcherStub?.called).to.equal(false)
+  })
+
+  it('should not start watcher when DISABLE_WATCHER is true', async () => {
+    process.env.DISABLE_WATCHER = 'true'
+    await ImageReader.Run()
+    expect(StartWatcherStub?.called).to.equal(false)
+  })
+
+  it('should set WatcherEnabled to false when DISABLE_WATCHER is 1', async () => {
+    process.env.DISABLE_WATCHER = '1'
+    await ImageReader.Run()
+    expect(ImageReader.WatcherEnabled).to.equal(false)
+  })
+
+  it('should not start watcher when SKIP_SYNC is 1', async () => {
+    process.env.SKIP_SYNC = '1'
+    await ImageReader.Run()
+    expect(StartWatcherStub?.called).to.equal(false)
+  })
+
+  it('should fall back gracefully when watcher fails to start', async () => {
+    StartWatcherStub?.rejects(new Error('inotify failed'))
+    await ImageReader.Run()
+    expect(ImageReader.WatcherEnabled).to.equal(false)
+  })
+
+  it('should log when watcher fails to start', async () => {
+    StartWatcherStub?.rejects(new Error('inotify failed'))
+    await ImageReader.Run()
+    const hasWatcherFailLog = (LoggerStub?.getCalls() ?? []).some(
+      (c) => c.args[0] === 'watcher start failed, falling back to polling only',
+    )
+    expect(hasWatcherFailLog).to.equal(true)
+  })
+
+  it('should default SyncInterval to 24 hours when watcher is enabled', async () => {
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(86_400_000)
+  })
+
+  it('should default SyncInterval to 3 hours when watcher is disabled', async () => {
+    process.env.DISABLE_WATCHER = '1'
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(10_800_000)
+  })
+
+  it('should default SyncInterval to 3 hours when watcher fails to start', async () => {
+    StartWatcherStub?.rejects(new Error('nope'))
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(10_800_000)
+  })
+
+  it('should use SYNC_INTERVAL env var when set', async () => {
+    process.env.SYNC_INTERVAL = '60000'
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(60000)
+  })
+
+  it('should use SYNC_INTERVAL even when watcher is enabled', async () => {
+    process.env.SYNC_INTERVAL = '60000'
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(60000)
+  })
+
+  it('should use SYNC_INTERVAL even when watcher is disabled', async () => {
+    process.env.DISABLE_WATCHER = '1'
+    process.env.SYNC_INTERVAL = '60000'
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(60000)
+  })
+
+  it('should ignore invalid SYNC_INTERVAL', async () => {
+    process.env.SYNC_INTERVAL = 'banana'
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(86_400_000)
+  })
+
+  it('should ignore negative SYNC_INTERVAL', async () => {
+    process.env.SYNC_INTERVAL = '-1000'
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(86_400_000)
+  })
+
+  it('should ignore zero SYNC_INTERVAL', async () => {
+    process.env.SYNC_INTERVAL = '0'
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(86_400_000)
+  })
+
+  it('should ignore empty SYNC_INTERVAL', async () => {
+    process.env.SYNC_INTERVAL = ''
+    await ImageReader.Run()
+    expect(ImageReader.SyncInterval).to.equal(86_400_000)
+  })
+
+  it('should acquire SyncLock when flush callback is invoked', async () => {
+    await ImageReader.Run()
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await onFlush(changeset)
+    expect(ImageReader.SyncLock._locked).to.equal(false)
+  })
+
+  it('should call persistance.initialize in flush callback', async () => {
+    await ImageReader.Run()
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await onFlush(changeset)
+    expect(PersistanceStub?.initialize.callCount).to.equal(1)
+  })
+
+  it('should call IncrementalSync in flush callback', async () => {
+    const fakeKnex = { fake: true }
+    PersistanceStub?.initialize.resolves(fakeKnex)
+    await ImageReader.Run()
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await onFlush(changeset)
+    expect(IncrementalSyncStub?.callCount).to.equal(1)
+    expect(IncrementalSyncStub?.firstCall.args[0]).to.equal(fakeKnex)
+    expect(IncrementalSyncStub?.firstCall.args[1]).to.equal(changeset)
+  })
+
+  it('should release SyncLock after flush callback completes', async () => {
+    await ImageReader.Run()
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await onFlush(changeset)
+    expect(ImageReader.SyncLock._locked).to.equal(false)
+  })
+
+  it('should release SyncLock when IncrementalSync rejects', async () => {
+    IncrementalSyncStub?.rejects(new Error('incremental failed'))
+    await ImageReader.Run()
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    try {
+      await onFlush(changeset)
+    } catch {
+      // expected
+    }
+    expect(ImageReader.SyncLock._locked).to.equal(false)
+  })
+
+  it('should skip flush when SyncLock is already held', async () => {
+    await ImageReader.Run()
+    // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
+    ImageReader.SyncLock._locked = true
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await onFlush(changeset)
+    expect(IncrementalSyncStub?.callCount).to.equal(0)
   })
 })
