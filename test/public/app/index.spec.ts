@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { Loading } from '#public/scripts/app/loading'
+import { Confirm } from '#public/scripts/app/confirm'
 import { WakeLock } from '#public/scripts/app/wakelock'
 import { Actions } from '#public/scripts/app/actions'
 import { Tabs } from '#public/scripts/app/tabs'
@@ -17,6 +18,7 @@ const sandbox = Sinon.createSandbox()
 
 describe('public/app initialzation', () => {
   let loadingInitSpy: Sinon.SinonStub = Sinon.stub()
+  let confirmInitSpy: Sinon.SinonStub = Sinon.stub()
   let actionsInitSpy: Sinon.SinonStub = Sinon.stub()
   let tabsInitSpy: Sinon.SinonStub = Sinon.stub()
   let foldersInitSpy: Sinon.SinonStub = Sinon.stub()
@@ -27,6 +29,7 @@ describe('public/app initialzation', () => {
   let wakeLockInitSpy: Sinon.SinonStub = Sinon.stub()
   before(async () => {
     loadingInitSpy = sandbox.stub(Loading, 'Init')
+    confirmInitSpy = sandbox.stub(Confirm, 'Init')
     actionsInitSpy = sandbox.stub(Actions, 'Init')
     tabsInitSpy = sandbox.stub(Tabs, 'Init')
     foldersInitSpy = sandbox.stub(Folders, 'Init')
@@ -42,6 +45,9 @@ describe('public/app initialzation', () => {
   })
   it('should call Loading.Init()', () => {
     expect(loadingInitSpy.called).to.equal(true)
+  })
+  it('should call Confirm.Init()', () => {
+    expect(confirmInitSpy.called).to.equal(true)
   })
   it('should call Actions.Init()', () => {
     expect(actionsInitSpy.called).to.equal(true)

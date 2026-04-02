@@ -181,6 +181,31 @@ body
     div
       display: inline-block
 
+#confirmDialog
+  position: absolute
+  top: 0
+  bottom: 0
+  left: 0
+  right: 0
+  z-index: 950
+  display: flex
+  align-items: center
+  justify-content: center
+  background-color: rgba(0, 0, 0, 0.6)
+  div.dialog-box
+    background-color: #333333
+    border: 1px solid #555555
+    border-radius: 0.5rem
+    padding: 2rem
+    min-width: 20rem
+    p.message
+      margin-top: 0
+      margin-bottom: 1.5rem
+    div.dialog-buttons
+      display: flex
+      justify-content: flex-end
+      gap: 1rem
+
 #loadingScreen
   position: absolute
   top: 0

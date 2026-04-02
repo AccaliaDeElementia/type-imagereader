@@ -5,6 +5,7 @@ import { Net, acceptAnyResponse } from './net'
 import { Publish, Subscribe } from './pubsub'
 import { isListing, type Listing } from '#contracts/listing'
 import { HasValue, HasValues, StringishHasValue } from '#utils/helpers'
+import { Confirm } from './confirm'
 
 export const Navigation = {
   GetBaseUrl: (): string => {
@@ -108,6 +109,7 @@ export const Navigation = {
       await Promise.resolve()
     })
     Subscribe('Action:Execute:MarkAllSeen', async () => {
+      if (!(await Confirm.Show('Mark all images in this folder as seen?'))) return
       await Net.PostJSON('/api/mark/read', { path: Navigation.current.path }, acceptAnyResponse)
         .then(
           async () => {
@@ -120,6 +122,7 @@ export const Navigation = {
         .catch(() => null)
     })
     Subscribe('Action:Execute:MarkAllUnseen', async () => {
+      if (!(await Confirm.Show('Mark all images in this folder as unseen?'))) return
       await Net.PostJSON('/api/mark/unread', { path: Navigation.current.path }, acceptAnyResponse)
         .then(
           async () => {

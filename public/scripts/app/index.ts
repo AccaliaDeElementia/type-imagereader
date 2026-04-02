@@ -1,6 +1,7 @@
 'use sanity'
 
 import { Loading } from './loading'
+import { Confirm } from './confirm'
 import { Actions } from './actions'
 import { Tabs } from './tabs'
 import { Folders } from './folders'
@@ -11,6 +12,7 @@ import { WakeLock } from './wakelock'
 import { PubSub } from './pubsub'
 
 Loading.Init()
+Confirm.Init()
 WakeLock.Init()
 Actions.Init()
 Tabs.Init()
