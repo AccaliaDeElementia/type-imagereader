@@ -17,7 +17,11 @@ describe('Server function ConfigureLoggingAndErrors', () => {
   let { stub: responseStub } = createResponseFake()
   beforeEach(() => {
     helmetStub = sandbox.stub(Imports, 'helmet')
-    morganStub = sandbox.stub(Imports, 'morgan')
+    // sandbox.stub(Imports, 'morgan') would trigger morgan's deprecated `default`
+    // property getter via sinon's mirrorProperties, emitting a spurious warning.
+    // sandbox.replace bypasses mirrorProperties, avoiding the read entirely.
+    morganStub = sandbox.stub()
+    sandbox.replace(Imports, 'morgan', Cast<typeof Imports.morgan>(morganStub))
     appStub = { use: Sinon.stub() }
     appFake = Cast<Express>(appStub)
     ;({ stub: responseStub } = createResponseFake())
