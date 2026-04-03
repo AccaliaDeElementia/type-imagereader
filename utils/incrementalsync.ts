@@ -15,6 +15,7 @@ import { Functions as _SyncFunctions } from './syncfolders'
 const ZERO = 0
 const ONE = 1
 const TRAILING_SLASH_OFFSET = -1
+const LOGGING_INTERVAL = 100
 
 export const Imports = {
   logPrefix: 'type-imagereader:syncfolders',
@@ -24,7 +25,7 @@ export const Imports = {
 }
 
 export const Functions = {
-  IncrementalAddPicture: async (logger: Debugger, knex: Knex, path: string): Promise<void> => {
+  IncrementalAddPicture: async (knex: Knex, path: string): Promise<void> => {
     const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
     const sortKey = Imports.SyncFunctions.ToSortKey(posix.basename(path))
     const pathHash = createHash('sha512').update(path).digest('base64')
@@ -41,7 +42,6 @@ export const Functions = {
         .onConflict('path')
         .ignore()
     }
-    logger(`Incremental add: ${path}`)
   },
   IncrementalRemovePicture: async (logger: Debugger, knex: Knex, path: string): Promise<void> => {
     await knex('pictures').where({ path }).delete()
@@ -71,13 +71,18 @@ export const Functions = {
     const scanRoot = posix.join(dataDir, dirPath)
     await Functions.IncrementalEnsureFolder(knex, dirPath)
     let added = ZERO
+    let counter = ZERO
     await Imports.fsWalker(scanRoot, async (items) => {
       for (const item of items) {
         if (item.isFile) {
           const picPath = posix.join(dirPath, item.path)
           //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
-          await Functions.IncrementalAddPicture(logger, knex, picPath)
+          await Functions.IncrementalAddPicture(knex, picPath)
           added += ONE
+          if (counter === ZERO) {
+            logger(`Incremental scan: ${dirPath} ${added} pictures added so far`)
+          }
+          counter = (counter + ONE) % LOGGING_INTERVAL
         } else {
           const subDirPath = posix.join(dirPath, item.path) + posix.sep
           //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
@@ -159,11 +164,18 @@ export const Functions = {
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalScanFolder(logger, knex, dirPath, dataDir)
     }
+    let added = ZERO
+    let counter = ZERO
     for (const path of fileCreates) {
       const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
       affectedFolders.add(folder)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
-      await Functions.IncrementalAddPicture(logger, knex, path)
+      await Functions.IncrementalAddPicture(knex, path)
+      added += ONE
+      if (counter === ZERO) {
+        logger(`Incremental add: ${added} of ${fileCreates.length} pictures`)
+      }
+      counter = (counter + ONE) % LOGGING_INTERVAL
     }
     await Functions.IncrementalUpdateFolders(logger, knex, affectedFolders)
     await Functions.IncrementalUpdateFirstImages(logger, knex)

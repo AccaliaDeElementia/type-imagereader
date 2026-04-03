@@ -41,7 +41,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await Functions.IncrementalSync(knexFnFake, changeset)
     expect(incrementalAddStub.callCount).to.equal(1)
-    expect(incrementalAddStub.firstCall.args[2]).to.equal('/comics/page.jpg')
+    expect(incrementalAddStub.firstCall.args[1]).to.equal('/comics/page.jpg')
   })
 
   it('should call IncrementalRemovePicture for delete entries', async () => {

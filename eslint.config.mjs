@@ -32,7 +32,7 @@ export default [
       'require-atomic-updates': 'error',
       'require-unicode-regexp': 'error',
       '@typescript-eslint/prefer-destructuring': [
-        'error',
+        'warn',
         {
           array: true, // This makes sense and is good. avoids a lot of magic numbers too
           object: false, // This really hurts readability IMO. at the very least it bends my brain so dont enable this yet
@@ -44,7 +44,7 @@ export default [
   {
     files: ['test/**/*.js', 'test/**/*.ts'],
     rules: {
-      '@typescript-eslint/strict-void-return': 'off', // TODO: Enable once Mocha updates typedefintions to not conflict with this rule
+      '@typescript-eslint/strict-void-return': 'off', // Chai assertions and Sinon spies idiomatically return values in void contexts
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
     },
   },

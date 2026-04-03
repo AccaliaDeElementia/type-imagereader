@@ -485,13 +485,14 @@ describe('/index.ts tests', (): void => {
     expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
-  it('should skip flush when SyncLock is already held', async () => {
+  it('should reject flush when SyncLock is already held', async () => {
     await ImageReader.Run()
     // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
     ImageReader.SyncLock._locked = true
     const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
-    await onFlush(changeset)
+    const err = await EventuallyRejects(onFlush(changeset))
+    expect(err.message).to.equal('sync locked')
     expect(IncrementalSyncStub?.callCount).to.equal(0)
   })
 })

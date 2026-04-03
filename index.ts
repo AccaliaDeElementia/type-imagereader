@@ -124,7 +124,7 @@ export const ImageReader = {
       if (!watcherSuppressed) {
         try {
           const onFlush = async (changeset: Changeset): Promise<void> => {
-            if (!ImageReader.SyncLock.Take()) return
+            if (!ImageReader.SyncLock.Take()) throw new Error('sync locked')
             try {
               const knex = await Imports.persistance.initialize()
               await Imports.IncrementalSyncFunctions.IncrementalSync(knex, changeset)

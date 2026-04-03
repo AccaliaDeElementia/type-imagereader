@@ -68,7 +68,7 @@ describe('utils/syncfolders function IncrementalScanFolder()', () => {
       },
     )
     await Functions.IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
-    expect(incrementalAddPictureStub.firstCall.args[2]).to.equal('/comics/new/sub/page.jpg')
+    expect(incrementalAddPictureStub.firstCall.args[1]).to.equal('/comics/new/sub/page.jpg')
   })
 
   it('should ensure folder rows for subdirectories', async () => {
