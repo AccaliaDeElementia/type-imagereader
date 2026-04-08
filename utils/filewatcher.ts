@@ -5,6 +5,7 @@ import _debug from 'debug'
 import { extname, relative, sep, posix } from 'node:path'
 
 const DEFAULT_DEBOUNCE_MS = 5000
+const DEFAULT_MAX_PENDING = 500
 const ZERO = 0
 const allowedExtensions = /^\.(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/iv
 
@@ -31,6 +32,7 @@ export const Imports = {
 
 export const Functions = {
   debounceMs: DEFAULT_DEBOUNCE_MS,
+  maxPendingChanges: DEFAULT_MAX_PENDING,
 
   isImagePath: (filePath: string): boolean => allowedExtensions.test(extname(filePath)),
 
@@ -61,24 +63,50 @@ export const Functions = {
     const logger = Imports.debug(Imports.logPrefix)
     const changeset: Changeset = new Map()
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
-
+    let flushInProgress = false
     const flush = async (): Promise<void> => {
       debounceTimer = null
-      if (changeset.size === ZERO) return
-      const batch: Changeset = new Map(changeset)
+      flushInProgress = true
       try {
-        await onFlush(batch)
-        for (const key of batch.keys()) {
-          changeset.delete(key)
+        if (changeset.size === ZERO) return
+        const batch: Changeset = new Map(changeset)
+        try {
+          await onFlush(batch)
+          for (const key of batch.keys()) {
+            changeset.delete(key)
+          }
+          logger(`Flushed ${batch.size} changes`)
+        } catch {
+          logger('Flush deferred, will retry')
+          scheduleRetry()
         }
-        logger(`Flushed ${batch.size} changes`)
-      } catch {
-        logger('Flush deferred, will retry')
-        scheduleFlush()
+      } finally {
+        flushInProgress = false
       }
     }
 
+    const scheduleRetry = (): void => {
+      if (debounceTimer !== null) {
+        Imports.clearTimeout(debounceTimer)
+      }
+      debounceTimer = Imports.setTimeout(() => {
+        flush().catch((err: unknown) => {
+          logger('flush error', err)
+        })
+      }, Functions.debounceMs)
+    }
+
     const scheduleFlush = (): void => {
+      if (changeset.size >= Functions.maxPendingChanges && !flushInProgress) {
+        if (debounceTimer !== null) {
+          Imports.clearTimeout(debounceTimer)
+          debounceTimer = null
+        }
+        flush().catch((err: unknown) => {
+          logger('flush error', err)
+        })
+        return
+      }
       if (debounceTimer !== null) {
         Imports.clearTimeout(debounceTimer)
       }

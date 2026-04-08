@@ -66,28 +66,48 @@ describe('utils/syncfolders function IncrementalRemoveFolder()', () => {
     sandbox.restore()
   })
 
-  it('should delete pictures by folder prefix', async () => {
+  it('should query pictures by folder prefix', async () => {
     await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(picturesStub.where.calledWith('folder', 'like', '/comics/series/%')).to.equal(true)
+  })
+
+  it('should call delete on pictures', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(picturesStub.delete.callCount).to.equal(1)
   })
 
-  it('should delete orphaned bookmarks', async () => {
+  it('should call whereNotExists for orphaned bookmarks', async () => {
     await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(bookmarksStub.whereNotExists.callCount).to.equal(1)
+  })
+
+  it('should call delete on bookmarks', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(bookmarksStub.delete.callCount).to.equal(1)
   })
 
-  it('should use correct subquery for orphaned bookmarks', async () => {
+  it('should select all columns in bookmarks subquery', async () => {
     await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(bookmarksInnerStub.select.calledWith('*')).to.equal(true)
+  })
+
+  it('should query from pictures in bookmarks subquery', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(bookmarksInnerStub.from.calledWith('pictures')).to.equal(true)
+  })
+
+  it('should join on path in bookmarks subquery', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(bookmarksInnerStub.whereRaw.calledWith('pictures.path = bookmarks.path')).to.equal(true)
   })
 
-  it('should delete folders by path prefix', async () => {
+  it('should query folders by path prefix', async () => {
     await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(foldersStub.where.calledWith('path', 'like', '/comics/series/%')).to.equal(true)
+  })
+
+  it('should call delete on folders', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(foldersStub.delete.callCount).to.equal(1)
   })
 

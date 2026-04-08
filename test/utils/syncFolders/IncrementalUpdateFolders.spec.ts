@@ -70,11 +70,21 @@ describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
     sandbox.restore()
   })
 
-  it('should query picture counts for each affected folder', async () => {
+  it('should query picture counts once per affected folder', async () => {
     const folders = new Set(['/comics/', '/photos/'])
     await Functions.IncrementalUpdateFolders(loggerFake, knexFnFake, folders)
     expect(picturesStub.where.callCount).to.equal(2)
+  })
+
+  it('should query pictures for first affected folder', async () => {
+    const folders = new Set(['/comics/', '/photos/'])
+    await Functions.IncrementalUpdateFolders(loggerFake, knexFnFake, folders)
     expect(picturesStub.where.firstCall.args).to.deep.equal(['folder', '/comics/'])
+  })
+
+  it('should query pictures for second affected folder', async () => {
+    const folders = new Set(['/comics/', '/photos/'])
+    await Functions.IncrementalUpdateFolders(loggerFake, knexFnFake, folders)
     expect(picturesStub.where.secondCall.args).to.deep.equal(['folder', '/photos/'])
   })
 
@@ -96,11 +106,17 @@ describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
     expect(picturesStub.groupBy.calledWith('folder')).to.equal(true)
   })
 
-  it('should update folder counts when pictures exist', async () => {
+  it('should call update once when pictures exist', async () => {
     picturesStub.groupBy.resolves([{ path: '/comics/', totalCount: '5', seenCount: '3' }])
     const folders = new Set(['/comics/'])
     await Functions.IncrementalUpdateFolders(loggerFake, knexFnFake, folders)
     expect(foldersStub.update.callCount).to.equal(1)
+  })
+
+  it('should pass parsed counts to folder update', async () => {
+    picturesStub.groupBy.resolves([{ path: '/comics/', totalCount: '5', seenCount: '3' }])
+    const folders = new Set(['/comics/'])
+    await Functions.IncrementalUpdateFolders(loggerFake, knexFnFake, folders)
     expect(foldersStub.update.firstCall.args[0]).to.deep.equal({ totalCount: 5, seenCount: 3 })
   })
 
@@ -155,7 +171,7 @@ describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
     expect(execChunksSynchronouslyStub.callCount).to.equal(1)
   })
 
-  it('should insert folder chunks with onConflict merge', async () => {
+  it('should insert folder chunk', async () => {
     const chunk = [{ path: '/', totalCount: 5, seenCount: 3 }]
     calculateFolderInfosStub.returns(chunk)
     chunkStub.returns([chunk])
@@ -163,7 +179,25 @@ describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
     const folders = new Set(['/comics/'])
     await Functions.IncrementalUpdateFolders(loggerFake, knexFnFake, folders)
     expect(foldersStub.insert.calledWith(chunk)).to.equal(true)
+  })
+
+  it('should call onConflict with path for folder upsert', async () => {
+    const chunk = [{ path: '/', totalCount: 5, seenCount: 3 }]
+    calculateFolderInfosStub.returns(chunk)
+    chunkStub.returns([chunk])
+    execChunksSynchronouslyStub.restore()
+    const folders = new Set(['/comics/'])
+    await Functions.IncrementalUpdateFolders(loggerFake, knexFnFake, folders)
     expect(foldersStub.onConflict.calledWith('path')).to.equal(true)
+  })
+
+  it('should call merge for folder upsert', async () => {
+    const chunk = [{ path: '/', totalCount: 5, seenCount: 3 }]
+    calculateFolderInfosStub.returns(chunk)
+    chunkStub.returns([chunk])
+    execChunksSynchronouslyStub.restore()
+    const folders = new Set(['/comics/'])
+    await Functions.IncrementalUpdateFolders(loggerFake, knexFnFake, folders)
     expect(foldersStub.merge.callCount).to.equal(1)
   })
 

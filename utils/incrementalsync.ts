@@ -43,10 +43,9 @@ export const Functions = {
         .ignore()
     }
   },
-  IncrementalRemovePicture: async (logger: Debugger, knex: Knex, path: string): Promise<void> => {
+  IncrementalRemovePicture: async (knex: Knex, path: string): Promise<void> => {
     await knex('pictures').where({ path }).delete()
     await knex('bookmarks').where({ path }).delete()
-    logger(`Incremental remove: ${path}`)
   },
   IncrementalRemoveFolder: async (logger: Debugger, knex: Knex, dirPath: string): Promise<void> => {
     const deletedPics = await knex('pictures').where('folder', 'like', `${dirPath}%`).delete()
@@ -153,11 +152,18 @@ export const Functions = {
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalRemoveFolder(logger, knex, dirPath)
     }
+    let removed = ZERO
+    let removeCounter = ZERO
     for (const path of fileDeletes) {
       const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
       affectedFolders.add(folder)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
-      await Functions.IncrementalRemovePicture(logger, knex, path)
+      await Functions.IncrementalRemovePicture(knex, path)
+      removed += ONE
+      if (removeCounter === ZERO) {
+        logger(`Incremental remove: ${removed} of ${fileDeletes.length} pictures`)
+      }
+      removeCounter = (removeCounter + ONE) % LOGGING_INTERVAL
     }
     for (const dirPath of dirCreates) {
       affectedFolders.add(dirPath)

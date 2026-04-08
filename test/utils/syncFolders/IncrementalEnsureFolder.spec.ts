@@ -39,9 +39,13 @@ describe('utils/syncfolders function IncrementalEnsureFolder()', () => {
     sandbox.restore()
   })
 
-  it('should check if folder already exists', async () => {
+  it('should query folders where path matches', async () => {
     await Functions.IncrementalEnsureFolder(knexFnFake, '/comics/')
     expect(foldersStub.where.calledWith({ path: '/comics/' })).to.equal(true)
+  })
+
+  it('should call first when checking for existing folder', async () => {
+    await Functions.IncrementalEnsureFolder(knexFnFake, '/comics/')
     expect(foldersStub.first.callCount).to.equal(1)
   })
 
@@ -80,9 +84,13 @@ describe('utils/syncfolders function IncrementalEnsureFolder()', () => {
     expect(inserted.path).to.equal('/comics/')
   })
 
-  it('should use onConflict ignore', async () => {
+  it('should call onConflict with path on folder insert', async () => {
     await Functions.IncrementalEnsureFolder(knexFnFake, '/comics/')
     expect(foldersStub.onConflict.calledWith('path')).to.equal(true)
+  })
+
+  it('should call ignore on folder insert', async () => {
+    await Functions.IncrementalEnsureFolder(knexFnFake, '/comics/')
     expect(foldersStub.ignore.callCount).to.equal(1)
   })
 })

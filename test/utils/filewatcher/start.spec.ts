@@ -34,6 +34,7 @@ describe('utils/filewatcher Functions.start()', () => {
     clearTimeoutStub = sandbox.stub(Imports, 'clearTimeout')
     flushCallback = Sinon.stub().resolves()
     Functions.debounceMs = 5000
+    Functions.maxPendingChanges = 500
   })
 
   afterEach(() => {
@@ -55,9 +56,13 @@ describe('utils/filewatcher Functions.start()', () => {
     expect(result).to.equal(fakeSubscription)
   })
 
-  it('should log that watcher started', async () => {
+  it('should log watcher started message', async () => {
     await Functions.start('/data', flushCallback)
     expect(loggerStub.firstCall.args[0]).to.equal('File watcher started on')
+  })
+
+  it('should log data directory in startup message', async () => {
+    await Functions.start('/data', flushCallback)
     expect(loggerStub.firstCall.args[1]).to.equal('/data')
   })
 
@@ -80,11 +85,17 @@ describe('utils/filewatcher Functions.start()', () => {
     expect(setTimeoutStub.callCount).to.equal(0)
   })
 
-  it('should clear previous timer when new events arrive', async () => {
+  it('should call clearTimeout once when new events arrive', async () => {
     await Functions.start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     expect(clearTimeoutStub.callCount).to.equal(1)
+  })
+
+  it('should pass timer id to clearTimeout when new events arrive', async () => {
+    await Functions.start('/data', flushCallback)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     expect(clearTimeoutStub.firstCall.args[0]).to.equal(42)
   })
 
@@ -206,5 +217,234 @@ describe('utils/filewatcher Functions.start()', () => {
     await Promise.resolve()
     const hasFlushError = loggerStub.getCalls().some((c) => c.args[0] === 'flush error')
     expect(hasFlushError).to.equal(true)
+  })
+
+  it('should flush immediately when changeset reaches maxPendingChanges', async () => {
+    Functions.maxPendingChanges = 2
+    await Functions.start('/data', flushCallback)
+    subscriberCallback(null, [
+      { type: 'create', path: '/data/foo.jpg' },
+      { type: 'create', path: '/data/bar.jpg' },
+    ])
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(Cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
+  })
+
+  it('should not schedule a timer when force-flushing at threshold', async () => {
+    Functions.maxPendingChanges = 2
+    await Functions.start('/data', flushCallback)
+    subscriberCallback(null, [
+      { type: 'create', path: '/data/foo.jpg' },
+      { type: 'create', path: '/data/bar.jpg' },
+    ])
+    expect(setTimeoutStub.callCount).to.equal(0)
+  })
+
+  it('should clear existing timer when force-flushing at threshold', async () => {
+    Functions.maxPendingChanges = 2
+    await Functions.start('/data', flushCallback)
+    // First event: below threshold, schedules a timer
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    expect(setTimeoutStub.callCount).to.equal(1)
+    // Second event: reaches threshold, should clear the pending timer
+    subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
+    expect(clearTimeoutStub.callCount).to.equal(1)
+  })
+
+  it('should schedule a timer below maxPendingChanges', async () => {
+    Functions.maxPendingChanges = 10
+    await Functions.start('/data', flushCallback)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    expect(setTimeoutStub.callCount).to.equal(1)
+  })
+
+  it('should not call flush callback immediately below maxPendingChanges', async () => {
+    Functions.maxPendingChanges = 10
+    await Functions.start('/data', flushCallback)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    expect(Cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(0)
+  })
+
+  it('should clear pending timer in scheduleRetry when events arrive during flush', async () => {
+    const delayedReject: FlushCallback = Sinon.stub().callsFake(async () => {
+      await Promise.resolve()
+      throw new Error('flush failed')
+    })
+    let flushFn: (() => void) | undefined = undefined
+    setTimeoutStub.callsFake((fn: () => void) => {
+      flushFn = fn
+      return 42
+    })
+    await Functions.start('/data', delayedReject)
+    // Event arrives, scheduleFlush sets debounce timer
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    const callFlush = Cast<() => void>(flushFn)
+    // Timer fires — flush() sets debounceTimer = null, then awaits onFlush
+    callFlush()
+    // While onFlush is pending, new events arrive — scheduleFlush sets a new timer
+    subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
+    // onFlush rejects on next microtick — flush catch calls scheduleRetry with timer active
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    // scheduleRetry should have cleared the timer set during the pending flush
+    expect(clearTimeoutStub.callCount).to.equal(1)
+  })
+
+  it('should log flush error when force-flush and scheduleRetry both fail', async () => {
+    Functions.maxPendingChanges = 1
+    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    setTimeoutStub.throws(new Error('setTimeout broke'))
+    await Functions.start('/data', rejectingFlush)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    const hasFlushError = loggerStub.getCalls().some((c) => c.args[0] === 'flush error')
+    expect(hasFlushError).to.equal(true)
+  })
+
+  it('should log flush error from scheduleRetry timer when nested retry fails', async () => {
+    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    let callCount = 0
+    setTimeoutStub.callsFake((fn: () => void) => {
+      callCount += 1
+      if (callCount <= 2) {
+        fn()
+      }
+      if (callCount > 2) {
+        throw new Error('setTimeout broke')
+      }
+      return 42
+    })
+    await Functions.start('/data', rejectingFlush)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    const flushErrors = loggerStub.getCalls().filter((c) => c.args[0] === 'flush error')
+    expect(flushErrors.length).to.be.above(0)
+  })
+
+  it('should not schedule a timer for initial force-flush', async () => {
+    Functions.maxPendingChanges = 1
+    const delayedFlush: FlushCallback = Sinon.stub().callsFake(async () => {
+      await Promise.resolve()
+    })
+    await Functions.start('/data', delayedFlush)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    expect(setTimeoutStub.callCount).to.equal(0)
+  })
+
+  it('should schedule debounce timer for events during in-flight force-flush', async () => {
+    Functions.maxPendingChanges = 1
+    const delayedFlush: FlushCallback = Sinon.stub().callsFake(async () => {
+      await Promise.resolve()
+    })
+    await Functions.start('/data', delayedFlush)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
+    expect(setTimeoutStub.callCount).to.equal(1)
+  })
+
+  it('should not call flush a second time while force-flush is in progress', async () => {
+    Functions.maxPendingChanges = 1
+    const delayedFlush: FlushCallback = Sinon.stub().callsFake(async () => {
+      await Promise.resolve()
+    })
+    await Functions.start('/data', delayedFlush)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(Cast<Sinon.SinonStub>(delayedFlush).callCount).to.equal(1)
+  })
+
+  it('should allow a new force-flush after previous force-flush completes', async () => {
+    Functions.maxPendingChanges = 1
+    let flushCount = 0
+    const delayedFlush: FlushCallback = Sinon.stub().callsFake(async () => {
+      flushCount += 1
+      await Promise.resolve()
+    })
+    await Functions.start('/data', delayedFlush)
+    // First event triggers force-flush
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    // Let force-flush complete
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(flushCount).to.equal(1)
+    // Second event should trigger a new force-flush since the first completed
+    subscriberCallback(null, [{ type: 'create', path: '/data/baz.jpg' }])
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(flushCount).to.equal(2)
+  })
+
+  it('should allow a new force-flush after previous force-flush rejects', async () => {
+    Functions.maxPendingChanges = 1
+    const rejectOnce: FlushCallback = Sinon.stub()
+      .onFirstCall()
+      .callsFake(async () => {
+        await Promise.resolve()
+        throw new Error('flush failed')
+      })
+      .onSecondCall()
+      .callsFake(async () => {
+        await Promise.resolve()
+      })
+    await Functions.start('/data', rejectOnce)
+    // First event triggers force-flush which will reject
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    // Rejection schedules a debounced retry; fire new events to trigger force-flush again
+    subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(Cast<Sinon.SinonStub>(rejectOnce).callCount).to.equal(2)
+  })
+
+  it('should log retry message when immediate force-flush fails', async () => {
+    Functions.maxPendingChanges = 1
+    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    await Functions.start('/data', rejectingFlush)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    const hasRetryLog = loggerStub.getCalls().some((c) => c.args[0] === 'Flush deferred, will retry')
+    expect(hasRetryLog).to.equal(true)
+  })
+
+  it('should schedule one debounce timer when immediate force-flush fails', async () => {
+    Functions.maxPendingChanges = 1
+    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    await Functions.start('/data', rejectingFlush)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(setTimeoutStub.callCount).to.equal(1)
   })
 })

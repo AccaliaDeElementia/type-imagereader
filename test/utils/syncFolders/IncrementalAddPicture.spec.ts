@@ -52,9 +52,13 @@ describe('utils/incrementalsync function IncrementalAddPicture()', () => {
     sandbox.restore()
   })
 
-  it('should check if picture already exists', async () => {
+  it('should query pictures where path matches', async () => {
     await Functions.IncrementalAddPicture(knexFnFake, '/comics/page.jpg')
     expect(picturesStub.where.firstCall.args[0]).to.deep.equal({ path: '/comics/page.jpg' })
+  })
+
+  it('should call first when checking for existing picture', async () => {
+    await Functions.IncrementalAddPicture(knexFnFake, '/comics/page.jpg')
     expect(picturesStub.first.callCount).to.be.above(0)
   })
 
@@ -112,10 +116,15 @@ describe('utils/incrementalsync function IncrementalAddPicture()', () => {
     expect(foldersStub.insert.callCount).to.equal(0)
   })
 
-  it('should use onConflict ignore when creating folder', async () => {
+  it('should call onConflict with path when creating folder', async () => {
     foldersStub.first.resolves(undefined)
     await Functions.IncrementalAddPicture(knexFnFake, '/comics/page.jpg')
     expect(foldersStub.onConflict.calledWith('path')).to.equal(true)
+  })
+
+  it('should call ignore when creating folder', async () => {
+    foldersStub.first.resolves(undefined)
+    await Functions.IncrementalAddPicture(knexFnFake, '/comics/page.jpg')
     expect(foldersStub.ignore.callCount).to.equal(1)
   })
 

@@ -42,9 +42,13 @@ describe('utils/syncfolders function IncrementalScanFolder()', () => {
     expect(incrementalEnsureFolderStub.calledBefore(fsWalkerStub)).to.equal(true)
   })
 
-  it('should call fsWalker with the correct root path', async () => {
+  it('should call fsWalker once', async () => {
     await Functions.IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
     expect(fsWalkerStub.callCount).to.equal(1)
+  })
+
+  it('should pass joined root path to fsWalker', async () => {
+    await Functions.IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
     expect(fsWalkerStub.firstCall.args[0]).to.equal('/data/comics/new/')
   })
 
@@ -71,7 +75,7 @@ describe('utils/syncfolders function IncrementalScanFolder()', () => {
     expect(incrementalAddPictureStub.firstCall.args[1]).to.equal('/comics/new/sub/page.jpg')
   })
 
-  it('should ensure folder rows for subdirectories', async () => {
+  it('should only add files as pictures not directories', async () => {
     fsWalkerStub.callsFake(
       async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
         await cb([
@@ -82,6 +86,18 @@ describe('utils/syncfolders function IncrementalScanFolder()', () => {
     )
     await Functions.IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
     expect(incrementalAddPictureStub.callCount).to.equal(1)
+  })
+
+  it('should ensure folder for subdirectory items', async () => {
+    fsWalkerStub.callsFake(
+      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await cb([
+          { path: '/subdir', isFile: false },
+          { path: '/page.jpg', isFile: true },
+        ])
+      },
+    )
+    await Functions.IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
     const ensureCalls = incrementalEnsureFolderStub.getCalls()
     const subDirCall = ensureCalls.find((c) => c.args[1] === '/comics/new/subdir/')
     expect(subDirCall).to.not.equal(undefined)

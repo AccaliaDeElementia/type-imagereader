@@ -452,7 +452,7 @@ describe('/index.ts tests', (): void => {
     expect(PersistanceStub?.initialize.callCount).to.equal(1)
   })
 
-  it('should call IncrementalSync in flush callback', async () => {
+  it('should call IncrementalSync once in flush callback', async () => {
     const fakeKnex = { fake: true }
     PersistanceStub?.initialize.resolves(fakeKnex)
     await ImageReader.Run()
@@ -460,7 +460,25 @@ describe('/index.ts tests', (): void => {
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
     expect(IncrementalSyncStub?.callCount).to.equal(1)
+  })
+
+  it('should pass knex to IncrementalSync in flush callback', async () => {
+    const fakeKnex = { fake: true }
+    PersistanceStub?.initialize.resolves(fakeKnex)
+    await ImageReader.Run()
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await onFlush(changeset)
     expect(IncrementalSyncStub?.firstCall.args[0]).to.equal(fakeKnex)
+  })
+
+  it('should pass changeset to IncrementalSync in flush callback', async () => {
+    const fakeKnex = { fake: true }
+    PersistanceStub?.initialize.resolves(fakeKnex)
+    await ImageReader.Run()
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await onFlush(changeset)
     expect(IncrementalSyncStub?.firstCall.args[1]).to.equal(changeset)
   })
 
@@ -485,7 +503,7 @@ describe('/index.ts tests', (): void => {
     expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
-  it('should reject flush when SyncLock is already held', async () => {
+  it('should reject with sync locked message when SyncLock is held', async () => {
     await ImageReader.Run()
     // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
     ImageReader.SyncLock._locked = true
@@ -493,6 +511,15 @@ describe('/index.ts tests', (): void => {
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     const err = await EventuallyRejects(onFlush(changeset))
     expect(err.message).to.equal('sync locked')
+  })
+
+  it('should not call IncrementalSync when SyncLock is held', async () => {
+    await ImageReader.Run()
+    // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
+    ImageReader.SyncLock._locked = true
+    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await EventuallyRejects(onFlush(changeset))
     expect(IncrementalSyncStub?.callCount).to.equal(0)
   })
 })
