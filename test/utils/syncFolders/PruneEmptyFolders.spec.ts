@@ -16,14 +16,14 @@ describe('utils/syncfolders function PruneEmptyFolders()', () => {
     instance: knexStub,
     stub: knexFnStub,
     fake: knexFnFake,
-  } = createKnexChainFake(['where'] as const, ['delete'] as const, undefined)
+  } = createKnexChainFake(['where', 'andWhere'] as const, ['delete'] as const, undefined)
   beforeEach(() => {
     loggerStub = Sinon.stub()
     ;({
       instance: knexStub,
       stub: knexFnStub,
       fake: knexFnFake,
-    } = createKnexChainFake(['where'] as const, ['delete'] as const, undefined))
+    } = createKnexChainFake(['where', 'andWhere'] as const, ['delete'] as const, undefined))
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
   })
   afterEach(() => {
@@ -55,6 +55,14 @@ describe('utils/syncfolders function PruneEmptyFolders()', () => {
   it('should filter folders with totalCount=0', async () => {
     await Functions.PruneEmptyFolders(knexFnFake)
     expect(knexStub.where.firstCall.args).to.deep.equal(['totalCount', '=', 0])
+  })
+  it('should call andWhere once when excluding root', async () => {
+    await Functions.PruneEmptyFolders(knexFnFake)
+    expect(knexStub.andWhere.callCount).to.equal(1)
+  })
+  it('should exclude root folder from prune delete', async () => {
+    await Functions.PruneEmptyFolders(knexFnFake)
+    expect(knexStub.andWhere.firstCall.args).to.deep.equal(['path', '<>', '/'])
   })
   it('should call delete once', async () => {
     await Functions.PruneEmptyFolders(knexFnFake)

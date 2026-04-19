@@ -302,7 +302,10 @@ export const Functions = {
   },
   PruneEmptyFolders: async (knex: Knex): Promise<void> => {
     const logger = Imports.debug(`${Imports.logPrefix}:pruneEmpty`)
-    const deletedfolders = await knex('folders').where('totalCount', '=', ZERO).delete()
+    const deletedfolders = await knex('folders')
+      .where('totalCount', '=', ZERO)
+      .andWhere('path', '<>', posix.sep)
+      .delete()
     logger(`Removed ${deletedfolders} empty folders`)
   },
 }

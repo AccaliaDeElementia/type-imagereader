@@ -4,7 +4,6 @@ import posix from 'node:path'
 import { createHash } from 'node:crypto'
 import type { Knex } from 'knex'
 import type { Changeset } from './filewatcher'
-import type { FolderInfo } from './syncfolders'
 
 import _debug from 'debug'
 import type { Debugger } from 'debug'
@@ -94,30 +93,31 @@ export const Functions = {
   IncrementalUpdateFolders: async (logger: Debugger, knex: Knex, affectedFolders: Set<string>): Promise<void> => {
     for (const folder of affectedFolders) {
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous for folder-by-folder update
-      const [result]: FolderInfo[] = await knex('pictures')
-        .select('folder as path')
-        .count('* as totalCount')
+      const [result]: Array<{ totalCount: number | string | null; seenCount: number | string | null }> = await knex(
+        'pictures',
+      )
+        .where('folder', 'like', `${folder}%`)
+        .count({ totalCount: '*' })
         .sum({ seenCount: knex.raw('CASE WHEN seen THEN 1 ELSE 0 END') })
-        .where('folder', folder)
-        .groupBy('folder')
-      if (result !== undefined) {
-        //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous for folder-by-folder update
-        await knex('folders')
-          .where({ path: folder })
-          .update({
-            totalCount: Number.parseInt(`${result.totalCount}`, 10),
-            seenCount: Number.parseInt(`${result.seenCount}`, 10),
-          })
-      }
+      const totalCount = Number.parseInt(`${result?.totalCount ?? ZERO}`, 10)
+      const seenCount = Number.parseInt(`${result?.seenCount ?? ZERO}`, 10)
+      //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous for folder-by-folder update
+      await knex('folders').where({ path: folder }).update({ totalCount, seenCount })
     }
-    const allFolders = await Imports.SyncFunctions.GetAllFolderInfos(knex)
-    const folderInfos = await Imports.SyncFunctions.GetFolderInfosWithPictures(knex)
-    const resultFolders = Imports.SyncFunctions.CalculateFolderInfos(allFolders, folderInfos)
-    await Imports.SyncFunctions.ExecChunksSynchronously(Imports.SyncFunctions.Chunk(resultFolders), async (chunk) => {
-      await knex('folders').insert(chunk).onConflict('path').merge()
-    })
-    const deletedfolders = await knex('folders').where('totalCount', '=', ZERO).delete()
+    const deletedfolders = await knex('folders')
+      .where('totalCount', '=', ZERO)
+      .andWhere('path', '<>', posix.sep)
+      .delete()
     logger(`Incremental folder update: ${affectedFolders.size} folders checked, ${deletedfolders} empty folders pruned`)
+  },
+  AddFolderAndAncestors: (affected: Set<string>, folderPath: string): void => {
+    let current = folderPath
+    while (true) {
+      affected.add(current)
+      if (current === posix.sep) return
+      const parent = posix.dirname(current.slice(ZERO, TRAILING_SLASH_OFFSET))
+      current = parent === posix.sep ? posix.sep : parent + posix.sep
+    }
   },
   CategorizeChangeset: (
     changeset: Changeset,
@@ -148,7 +148,7 @@ export const Functions = {
     const { dirDeletes, fileDeletes, dirCreates, fileCreates } = Functions.CategorizeChangeset(changeset)
     const affectedFolders = new Set<string>()
     for (const dirPath of dirDeletes) {
-      affectedFolders.add(dirPath)
+      Functions.AddFolderAndAncestors(affectedFolders, dirPath)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalRemoveFolder(logger, knex, dirPath)
     }
@@ -156,7 +156,7 @@ export const Functions = {
     let removeCounter = ZERO
     for (const path of fileDeletes) {
       const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
-      affectedFolders.add(folder)
+      Functions.AddFolderAndAncestors(affectedFolders, folder)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalRemovePicture(knex, path)
       removed += ONE
@@ -166,7 +166,7 @@ export const Functions = {
       removeCounter = (removeCounter + ONE) % LOGGING_INTERVAL
     }
     for (const dirPath of dirCreates) {
-      affectedFolders.add(dirPath)
+      Functions.AddFolderAndAncestors(affectedFolders, dirPath)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalScanFolder(logger, knex, dirPath, dataDir)
     }
@@ -174,7 +174,7 @@ export const Functions = {
     let counter = ZERO
     for (const path of fileCreates) {
       const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
-      affectedFolders.add(folder)
+      Functions.AddFolderAndAncestors(affectedFolders, folder)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalAddPicture(knex, path)
       added += ONE

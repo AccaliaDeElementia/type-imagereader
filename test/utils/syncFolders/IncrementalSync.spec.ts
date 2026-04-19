@@ -229,6 +229,97 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     expect(affectedFolders.has('/')).to.equal(true)
   })
 
+  it('should include immediate parent folder of a deep create path', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/b/c/')).to.equal(true)
+  })
+
+  it('should include grandparent folder of a deep create path', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/b/')).to.equal(true)
+  })
+
+  it('should include great-grandparent folder of a deep create path', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/')).to.equal(true)
+  })
+
+  it('should include root folder when adding a deep create path', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/')).to.equal(true)
+  })
+
+  it('should include immediate parent folder of a deep delete path', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'delete']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/b/c/')).to.equal(true)
+  })
+
+  it('should include grandparent folder of a deep delete path', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'delete']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/b/')).to.equal(true)
+  })
+
+  it('should include great-grandparent folder of a deep delete path', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'delete']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/')).to.equal(true)
+  })
+
+  it('should include root folder when deleting a deep path', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'delete']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/')).to.equal(true)
+  })
+
+  it('should include parent of a deleted directory in affected folders', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/', 'dir-delete']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/b/')).to.equal(true)
+  })
+
+  it('should include grandparent of a deleted directory in affected folders', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/', 'dir-delete']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/')).to.equal(true)
+  })
+
+  it('should include root when deleting a deep directory', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/', 'dir-delete']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/')).to.equal(true)
+  })
+
+  it('should include parent of a created directory in affected folders', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/', 'dir-create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/a/b/')).to.equal(true)
+  })
+
+  it('should include root when creating a deep directory', async () => {
+    const changeset: Changeset = new Map([['/a/b/c/', 'dir-create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(affectedFolders.has('/')).to.equal(true)
+  })
+
   it('should log batched progress for file deletes', async () => {
     const changeset: Changeset = new Map([
       ['/comics/page1.jpg', 'delete'],
