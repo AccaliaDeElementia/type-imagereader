@@ -110,15 +110,6 @@ export const Functions = {
       .delete()
     logger(`Incremental folder update: ${affectedFolders.size} folders checked, ${deletedfolders} empty folders pruned`)
   },
-  AddFolderAndAncestors: (affected: Set<string>, folderPath: string): void => {
-    let current = folderPath
-    while (true) {
-      affected.add(current)
-      if (current === posix.sep) return
-      const parent = posix.dirname(current.slice(ZERO, TRAILING_SLASH_OFFSET))
-      current = parent === posix.sep ? posix.sep : parent + posix.sep
-    }
-  },
   CategorizeChangeset: (
     changeset: Changeset,
   ): {
@@ -148,7 +139,7 @@ export const Functions = {
     const { dirDeletes, fileDeletes, dirCreates, fileCreates } = Functions.CategorizeChangeset(changeset)
     const affectedFolders = new Set<string>()
     for (const dirPath of dirDeletes) {
-      Functions.AddFolderAndAncestors(affectedFolders, dirPath)
+      Imports.SyncFunctions.AddFolderAndAncestors(affectedFolders, dirPath)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalRemoveFolder(logger, knex, dirPath)
     }
@@ -156,7 +147,7 @@ export const Functions = {
     let removeCounter = ZERO
     for (const path of fileDeletes) {
       const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
-      Functions.AddFolderAndAncestors(affectedFolders, folder)
+      Imports.SyncFunctions.AddFolderAndAncestors(affectedFolders, folder)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalRemovePicture(knex, path)
       removed += ONE
@@ -166,7 +157,7 @@ export const Functions = {
       removeCounter = (removeCounter + ONE) % LOGGING_INTERVAL
     }
     for (const dirPath of dirCreates) {
-      Functions.AddFolderAndAncestors(affectedFolders, dirPath)
+      Imports.SyncFunctions.AddFolderAndAncestors(affectedFolders, dirPath)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalScanFolder(logger, knex, dirPath, dataDir)
     }
@@ -174,7 +165,7 @@ export const Functions = {
     let counter = ZERO
     for (const path of fileCreates) {
       const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
-      Functions.AddFolderAndAncestors(affectedFolders, folder)
+      Imports.SyncFunctions.AddFolderAndAncestors(affectedFolders, folder)
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
       await Functions.IncrementalAddPicture(knex, path)
       added += ONE

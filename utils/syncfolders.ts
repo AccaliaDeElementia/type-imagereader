@@ -14,6 +14,7 @@ const ONE = 1
 const NUMBER_PAD_LENGTH = 20
 const DEFAULT_CHUNK_SIZE = 1000
 const LOGGING_INTERVAL = 100
+const TRAILING_SLASH_OFFSET = -1
 
 interface DirEntryItem {
   path: string
@@ -199,6 +200,49 @@ export const Functions = {
       .delete()
     logger(`Removed ${deletedfolders} missing folders`)
   },
+  AddFolderAndAncestors: (affected: Set<string>, folderPath: string): void => {
+    let current = folderPath
+    while (true) {
+      affected.add(current)
+      if (current === posix.sep) return
+      const parent = posix.dirname(current.slice(ZERO, TRAILING_SLASH_OFFSET))
+      current = parent === posix.sep ? posix.sep : parent + posix.sep
+    }
+  },
+  SyncMissingAncestorFolders: async (logger: Debugger, knex: Knex): Promise<void> => {
+    const leafRows = await knex('pictures').distinct<Array<{ folder: string }>>('folder').whereNotNull('folder')
+    const candidates = new Set<string>()
+    for (const { folder } of leafRows) {
+      Functions.AddFolderAndAncestors(candidates, folder)
+    }
+    candidates.delete(posix.sep)
+    if (candidates.size === ZERO) {
+      logger('Added 0 missing ancestor folders')
+      return
+    }
+    const candidateList = [...candidates]
+    const existing = new Set<string>()
+    await Functions.ExecChunksSynchronously(Functions.Chunk(candidateList), async (chunk) => {
+      const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
+      for (const row of rows) existing.add(row.path)
+    })
+    const missing = candidateList.filter((p) => !existing.has(p))
+    if (missing.length === ZERO) {
+      logger('Added 0 missing ancestor folders')
+      return
+    }
+    const rows = missing.map((path) => {
+      const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
+      const parentDir = posix.dirname(withoutSlash)
+      const folder = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
+      const sortKey = Functions.ToSortKey(posix.basename(withoutSlash))
+      return { folder, path, sortKey }
+    })
+    await Functions.ExecChunksSynchronously(Functions.Chunk(rows), async (chunk) => {
+      await knex('folders').insert(chunk).onConflict('path').ignore()
+    })
+    logger(`Added ${missing.length} missing ancestor folders`)
+  },
   SyncMissingCoverImages: async (logger: Debugger, knex: Knex): Promise<void> => {
     const removedCoverImages = await knex('folders')
       .whereNotExists(function () {
@@ -232,6 +276,7 @@ export const Functions = {
     const logger = Imports.debug(`${Imports.logPrefix}:syncFolders`)
     await Functions.SyncNewFolders(logger, knex)
     await Functions.SyncRemovedFolders(logger, knex)
+    await Functions.SyncMissingAncestorFolders(logger, knex)
     await Functions.SyncMissingCoverImages(logger, knex)
     await Functions.SyncFolderFirstImages(logger, knex)
   },

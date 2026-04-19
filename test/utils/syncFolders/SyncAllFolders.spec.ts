@@ -11,6 +11,7 @@ const sandbox = Sinon.createSandbox()
 describe('utils/syncfolders function SyncAllFolders()', () => {
   let syncNewFoldersStub = Sinon.stub()
   let syncRemovedFoldersStub = Sinon.stub()
+  let syncMissingAncestorFoldersStub = Sinon.stub()
   let syncMissingCoverImagesStub = Sinon.stub()
   let syncFolderFirstImagesStub = Sinon.stub()
   let loggerStub = Sinon.stub()
@@ -21,6 +22,7 @@ describe('utils/syncfolders function SyncAllFolders()', () => {
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     syncNewFoldersStub = sandbox.stub(Functions, 'SyncNewFolders').resolves()
     syncRemovedFoldersStub = sandbox.stub(Functions, 'SyncRemovedFolders').resolves()
+    syncMissingAncestorFoldersStub = sandbox.stub(Functions, 'SyncMissingAncestorFolders').resolves()
     syncMissingCoverImagesStub = sandbox.stub(Functions, 'SyncMissingCoverImages').resolves()
     syncFolderFirstImagesStub = sandbox.stub(Functions, 'SyncFolderFirstImages').resolves()
     knexFake = StubToKnex({ id: Math.random() })
@@ -54,6 +56,22 @@ describe('utils/syncfolders function SyncAllFolders()', () => {
   it('should call SyncRemovedFolders with expected args', async () => {
     await Functions.SyncAllFolders(knexFake)
     expect(syncRemovedFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
+  })
+  it('should call SyncMissingAncestorFolders once', async () => {
+    await Functions.SyncAllFolders(knexFake)
+    expect(syncMissingAncestorFoldersStub.callCount).to.equal(1)
+  })
+  it('should call SyncMissingAncestorFolders with expected args', async () => {
+    await Functions.SyncAllFolders(knexFake)
+    expect(syncMissingAncestorFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
+  })
+  it('should call SyncMissingAncestorFolders after SyncRemovedFolders', async () => {
+    await Functions.SyncAllFolders(knexFake)
+    expect(syncMissingAncestorFoldersStub.calledAfter(syncRemovedFoldersStub)).to.equal(true)
+  })
+  it('should call SyncMissingAncestorFolders before SyncFolderFirstImages', async () => {
+    await Functions.SyncAllFolders(knexFake)
+    expect(syncMissingAncestorFoldersStub.calledBefore(syncFolderFirstImagesStub)).to.equal(true)
   })
   it('should call SyncMissingCoverImages once', async () => {
     await Functions.SyncAllFolders(knexFake)
