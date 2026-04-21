@@ -5,6 +5,7 @@ import type { Application, Request, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
+import debug from 'debug'
 import { StringishHasValue } from '#utils/helpers'
 
 const KELVIN_TO_CELCIUS_OFFSET = -273.15
@@ -109,6 +110,7 @@ function getTimeOfDay(envVar: string | undefined, defaultHour: number, defaultMi
 export const Imports = {
   getEarliestSunset: (): number => getTimeOfDay(process.env.NIGHT_NOT_BEFORE, DEFAULT_DUSK_HOUR, DEFAULT_DUSK_MINUTES),
   getLatestSunrise: (): number => getTimeOfDay(process.env.NIGHT_NOT_AFTER, DEFAULT_DAWN_HOUR, DEFAULT_DAWN_MINUTES),
+  logger: debug('type-imagereader:weather'),
   Router,
 }
 const defaultWeather: WeatherResults = {
@@ -154,7 +156,8 @@ export const Functions = {
       weather.icon = firstForecast?.icon
       weather.sunrise = Math.min(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunrise, latestSunrise)
       weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, earliestSunset)
-    } catch (_) {
+    } catch (err) {
+      Imports.logger('UpdateWeather error', err)
       weather.temp = undefined
       weather.pressure = undefined
       weather.humidity = undefined

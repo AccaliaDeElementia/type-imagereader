@@ -436,6 +436,25 @@ describe('utils/filewatcher Functions.start()', () => {
     expect(hasRetryLog).to.equal(true)
   })
 
+  it('should log the underlying error object alongside the retry message when onFlush rejects', async () => {
+    const flushErr = new Error('db auth failed')
+    let flushFn: (() => void) | undefined = undefined
+    setTimeoutStub.callsFake((fn: () => void) => {
+      flushFn = fn
+      return 42
+    })
+    const rejectingFlush: FlushCallback = Sinon.stub().rejects(flushErr)
+    await Functions.start('/data', rejectingFlush)
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    const callFlush = Cast<() => void>(flushFn)
+    callFlush()
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    const retryCall = loggerStub.getCalls().find((c) => c.args[0] === 'Flush deferred, will retry')
+    expect(retryCall?.args[1]).to.equal(flushErr)
+  })
+
   it('should schedule one debounce timer when immediate force-flush fails', async () => {
     Functions.maxPendingChanges = 1
     const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))

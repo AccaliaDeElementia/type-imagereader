@@ -2,7 +2,10 @@
 
 import { createKnexChainFake } from '#testutils/Knex'
 import { expect } from 'chai'
-import { Functions } from '#routes/slideshow'
+import Sinon from 'sinon'
+import { Functions, Imports } from '#routes/slideshow'
+
+const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow function GetImageCount()', () => {
   describe('with default unreadOnly', () => {
@@ -153,6 +156,46 @@ describe('routes/slideshow function GetImageCount()', () => {
     it('should escape % in path for LIKE query', async () => {
       await Functions.GetImageCount(knexFake, '/foo%bar/', 'unread')
       expect(knexInstanceStub.where.firstCall.args).to.deep.equal(['path', 'like', '/foo\\%bar/%'])
+    })
+  })
+  describe('when the query rejects', () => {
+    let {
+      instance: knexInstanceStub,
+      stub: knexStub,
+      fake: knexFake,
+    } = createKnexChainFake(['count'] as const, ['where'] as const)
+    let loggerStub = Sinon.stub()
+    beforeEach(() => {
+      ;({
+        instance: knexInstanceStub,
+        stub: knexStub,
+        fake: knexFake,
+      } = createKnexChainFake(['count'] as const, ['where'] as const))
+      knexInstanceStub.where.rejects(new Error('db exploded'))
+      loggerStub = sandbox.stub(Imports, 'logger')
+    })
+    afterEach(() => {
+      sandbox.restore()
+    })
+    it('should still resolve to ZERO_COUNT as a safe fallback', async () => {
+      const actual = await Functions.GetImageCount(knexFake, '/foo')
+      expect(actual).to.equal(0)
+    })
+    it('should log the query failure', async () => {
+      await Functions.GetImageCount(knexFake, '/foo')
+      const hasLog = loggerStub.getCalls().some((c) => c.args[0] === 'GetImageCount query error')
+      expect(hasLog).to.equal(true)
+    })
+    it('should include the rejection error in the log arguments', async () => {
+      const err = new Error('db exploded')
+      knexInstanceStub.where.rejects(err)
+      await Functions.GetImageCount(knexFake, '/foo')
+      const logCall = loggerStub.getCalls().find((c) => c.args[0] === 'GetImageCount query error')
+      expect(logCall?.args[1]).to.equal(err)
+    })
+    it('should still call the query once before logging', async () => {
+      await Functions.GetImageCount(knexFake, '/foo')
+      expect(knexStub.callCount).to.equal(1)
     })
   })
 })

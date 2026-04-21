@@ -133,7 +133,9 @@ export const Functions = {
       if (HasValue(count)) {
         return Number.parseInt(`${count}`, 10)
       }
-    } catch {}
+    } catch (err) {
+      Imports.logger('GetImageCount query error', err)
+    }
     return ZERO_COUNT
   },
   GetCounts: async (

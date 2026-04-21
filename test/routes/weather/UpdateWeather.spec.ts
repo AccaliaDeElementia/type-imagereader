@@ -156,4 +156,29 @@ describe('routes/weather function UpdateWeather', () => {
     const result = await Functions.UpdateWeather()
     expect(result.temp).to.equal(-273.15)
   })
+  describe('logging when GetWeather rejects', () => {
+    let loggerStub = Sinon.stub()
+    beforeEach(() => {
+      loggerStub = sandbox.stub(Imports, 'logger')
+    })
+    it('should log the weather-update failure', async () => {
+      getWeatherStub.rejects(new Error('openweather down'))
+      await Functions.UpdateWeather()
+      const hasLog = loggerStub.getCalls().some((c) => c.args[0] === 'UpdateWeather error')
+      expect(hasLog).to.equal(true)
+    })
+    it('should include the rejection error in the log arguments', async () => {
+      const err = new Error('openweather down')
+      getWeatherStub.rejects(err)
+      await Functions.UpdateWeather()
+      const logCall = loggerStub.getCalls().find((c) => c.args[0] === 'UpdateWeather error')
+      expect(logCall?.args[1]).to.equal(err)
+    })
+    it('should log once per failed call even though fields are reset', async () => {
+      getWeatherStub.rejects(new Error('openweather down'))
+      await Functions.UpdateWeather()
+      const matching = loggerStub.getCalls().filter((c) => c.args[0] === 'UpdateWeather error')
+      expect(matching).to.have.lengthOf(1)
+    })
+  })
 })

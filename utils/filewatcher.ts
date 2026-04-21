@@ -76,8 +76,8 @@ export const Functions = {
             changeset.delete(key)
           }
           logger(`Flushed ${batch.size} changes`)
-        } catch {
-          logger('Flush deferred, will retry')
+        } catch (err) {
+          logger('Flush deferred, will retry', err)
           scheduleRetry()
         }
       } finally {
