@@ -92,7 +92,8 @@ describe('routes/apiFunctions function GetFolder', () => {
   })
   const folderTests: Array<[string, string | null, string]> = [
     ['folder from db', '/foo/', '/foo/'],
-    ['default folder when db returns null', null, '/'],
+    ['default folder when db returns the root sentinel', '', '/'],
+    ['default folder when db returns null (legacy, pre-migration)', null, '/'],
     ['uri safe folder from db', '/<foo>/', '/%3Cfoo%3E/'],
   ]
   folderTests.forEach(([title, folder, expected]) => {

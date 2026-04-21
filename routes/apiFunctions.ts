@@ -175,7 +175,7 @@ export const Functions = {
     return {
       name: basename(folder.path),
       path: UriSafePath.encode(folder.path),
-      folder: UriSafePath.encode(folder.folder ?? '/'),
+      folder: UriSafePath.encode(folder.folder === null || folder.folder === '' ? '/' : folder.folder),
       sortKey: folder.sortKey,
       cover: UriSafePath.encodeNullable(getCoverPath(folder)),
     }

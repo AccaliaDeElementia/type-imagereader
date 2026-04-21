@@ -127,7 +127,7 @@ export const Functions = {
     const logger = Imports.debug(`${Imports.logPrefix}:findItems`)
     await knex('syncitems').truncate()
     await knex('syncitems').insert({
-      folder: null,
+      folder: '',
       path: '/',
       isFile: false,
       sortKey: '',

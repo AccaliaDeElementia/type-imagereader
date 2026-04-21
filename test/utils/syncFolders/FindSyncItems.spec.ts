@@ -104,10 +104,10 @@ describe('utils/syncfolders function FindSyncItems()', () => {
     await Functions.FindSyncItems(knexFnFake)
     expect(knexInstanceStub.insert.callCount).to.equal(1)
   })
-  it('should insert the root folder row with expected shape', async () => {
+  it('should insert the root folder row with the root sentinel in the folder column', async () => {
     await Functions.FindSyncItems(knexFnFake)
     expect(knexInstanceStub.insert.firstCall.args).to.deep.equal([
-      { folder: null, path: '/', isFile: false, sortKey: '' },
+      { folder: '', path: '/', isFile: false, sortKey: '' },
     ])
   })
   it('should request syncitems on the first knex call', async () => {
