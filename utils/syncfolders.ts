@@ -295,14 +295,6 @@ export const Functions = {
     })
     logger(`Added ${missing.length} missing ancestor folders`)
   },
-  HealBrokenFolderMetadataSql:
-    'UPDATE folders SET folder = syncitems.folder, "sortKey" = syncitems."sortKey" FROM syncitems ' +
-    'WHERE syncitems.path = folders.path AND syncitems."isFile" = false ' +
-    'AND (folders.folder IS NULL OR folders."sortKey" IS NULL)',
-  HealBrokenFolderMetadata: async (logger: Debugger, knex: Knex): Promise<void> => {
-    const result: unknown = await knex.raw(Functions.HealBrokenFolderMetadataSql)
-    logger(`Healed ${Functions.ExtractInsertCount(result)} folders with missing metadata`)
-  },
   SyncMissingCoverImages: async (logger: Debugger, knex: Knex): Promise<void> => {
     const removedCoverImages = await knex('folders')
       .whereNotExists(function () {
@@ -337,7 +329,6 @@ export const Functions = {
     const logger = Imports.debug(`${Imports.logPrefix}:syncFolders`)
     await Functions.SyncNewFolders(logger, knex)
     await Functions.SyncRemovedFolders(logger, knex)
-    await Functions.HealBrokenFolderMetadata(logger, knex)
     await Functions.SyncMissingAncestorFolders(logger, knex)
     await Functions.SyncMissingCoverImages(logger, knex)
     await Functions.SyncFolderFirstImages(logger, knex)
