@@ -283,16 +283,25 @@ export const Functions = {
       SocketHandlers.getLaunchId(callback)
     })
     socket.on(SocketEvents.JoinSlideshow, (roomName?: string) => {
-      void SocketHandlers.joinSlideshow(roomName, state, socket, knex)
+      SocketHandlers.joinSlideshow(roomName, state, socket, knex).catch((err: unknown) => {
+        Imports.logger('joinSlideshow error', err)
+      })
     })
     socket.on(SocketEvents.PrevImage, () => {
-      void SocketHandlers.prevImage(state, io, knex)
+      SocketHandlers.prevImage(state, io, knex).catch((err: unknown) => {
+        Imports.logger('prevImage error', err)
+      })
     })
     socket.on(SocketEvents.NextImage, () => {
-      void SocketHandlers.nextImage(state, io, knex)
+      SocketHandlers.nextImage(state, io, knex).catch((err: unknown) => {
+        Imports.logger('nextImage error', err)
+      })
     })
     socket.on(SocketEvents.GotoImage, (callback: SocketCallback) => {
-      void SocketHandlers.gotoImage(callback, state, knex)
+      SocketHandlers.gotoImage(callback, state, knex).catch((err: unknown) => {
+        Imports.logger('gotoImage error', err)
+        callback(null)
+      })
     })
     return state
   },

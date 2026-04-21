@@ -3,8 +3,9 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import { assert, expect } from 'chai'
-import { Functions, SocketHandlers } from '#routes/slideshow'
+import { Functions, Imports, SocketHandlers } from '#routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
+import { setImmediate as yieldMacro } from 'node:timers/promises'
 
 const sandbox = Sinon.createSandbox()
 
@@ -14,17 +15,19 @@ describe('routes/slideshow function HandleSocket()', () => {
   let socketStub = { on: Sinon.stub() }
   let socketFake = Cast<Socket>(socketStub)
   let socketStubs: Array<[string, Sinon.SinonStub]> = []
+  let loggerStub = Sinon.stub()
   beforeEach(() => {
     knexFake = StubToKnex({})
     serverFake = Cast<WebSocketServer>({})
     socketStub = { on: Sinon.stub() }
     socketFake = Cast<Socket>(socketStub)
+    loggerStub = sandbox.stub(Imports, 'logger')
     socketStubs = [
       ['get-launchId', sandbox.stub(SocketHandlers, 'getLaunchId')],
-      ['join-slideshow', sandbox.stub(SocketHandlers, 'joinSlideshow')],
-      ['prev-image', sandbox.stub(SocketHandlers, 'prevImage')],
-      ['next-image', sandbox.stub(SocketHandlers, 'nextImage')],
-      ['goto-image', sandbox.stub(SocketHandlers, 'gotoImage')],
+      ['join-slideshow', sandbox.stub(SocketHandlers, 'joinSlideshow').resolves()],
+      ['prev-image', sandbox.stub(SocketHandlers, 'prevImage').resolves()],
+      ['next-image', sandbox.stub(SocketHandlers, 'nextImage').resolves()],
+      ['goto-image', sandbox.stub(SocketHandlers, 'gotoImage').resolves()],
     ]
   })
   afterEach(() => {
@@ -57,6 +60,37 @@ describe('routes/slideshow function HandleSocket()', () => {
       assert(stub !== undefined)
       expect(stub[1].callCount).to.equal(1)
     })
+  })
+  const asyncEndpoints: Array<[string, string]> = [
+    ['join-slideshow', 'joinSlideshow'],
+    ['prev-image', 'prevImage'],
+    ['next-image', 'nextImage'],
+    ['goto-image', 'gotoImage'],
+  ]
+  asyncEndpoints.forEach(([endpoint, handlerName]) => {
+    it(`should log the error when ${endpoint} handler rejects`, async () => {
+      const stub = socketStubs.find(([name]) => name === endpoint)
+      assert(stub !== undefined)
+      const err = new Error(`boom-${handlerName}`)
+      stub[1].rejects(err)
+      Functions.HandleSocket(knexFake, serverFake, socketFake)
+      const fn = Cast<(cb?: () => void) => void>(getCallback(endpoint))
+      fn(() => undefined)
+      await yieldMacro()
+      const matching = loggerStub.getCalls().find((call) => call.args[1] === err)
+      assert(matching !== undefined, `expected logger to be called with the ${handlerName} error`)
+    })
+  })
+  it('should invoke the client callback with null when goto-image rejects', async () => {
+    const stub = socketStubs.find(([name]) => name === 'goto-image')
+    assert(stub !== undefined)
+    stub[1].rejects(new Error('goto failed'))
+    Functions.HandleSocket(knexFake, serverFake, socketFake)
+    const fn = Cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
+    const callbackStub = Sinon.stub()
+    fn(callbackStub)
+    await yieldMacro()
+    expect(callbackStub.firstCall.args).to.deep.equal([null])
   })
   it('should return an object for state storage', () => {
     const state = Functions.HandleSocket(knexFake, serverFake, socketFake)

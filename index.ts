@@ -71,7 +71,9 @@ export async function RunSync(): Promise<void> {
       Imports.logger('sync interval error', err)
     }
   }, ImageReader.SyncInterval)
-  await promise.catch(() => null)
+  await promise.catch((err: unknown) => {
+    Imports.logger('initial sync error', err)
+  })
 }
 
 const isSuppressed = (skipVar: string): boolean => {

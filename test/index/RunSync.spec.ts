@@ -41,6 +41,22 @@ describe('index.ts RunSync() tests', () => {
     actuallyRunSpy.rejects('foo!')
     await EventuallyFullfills(RunSync())
   })
+  it('should log once when the initial sync rejects', async () => {
+    actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))
+    await RunSync()
+    expect(loggerStub.callCount).to.equal(1)
+  })
+  it("should log with message 'initial sync error' when the initial sync rejects", async () => {
+    actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))
+    await RunSync()
+    expect(loggerStub.firstCall.args[0]).to.equal('initial sync error')
+  })
+  it('should log the error object when the initial sync rejects', async () => {
+    const err = new Error('INITIAL SYNC FAILED')
+    actuallyRunSpy.rejects(err)
+    await RunSync()
+    expect(loggerStub.firstCall.args[1]).to.equal(err)
+  })
   it('should log once when interval callback rejects', async () => {
     actuallyRunSpy.resolves()
     setIntervalFake.callsFake(fireImmediately)
