@@ -23,6 +23,7 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
     min: Sinon.stub().returnsThis(),
     from: Sinon.stub().returnsThis(),
     join: Sinon.stub().returnsThis(),
+    innerJoin: Sinon.stub().returnsThis(),
     groupBy: Sinon.stub().returnsThis(),
     orderBy: Sinon.stub().resolves([]),
   }
@@ -50,6 +51,7 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
       min: Sinon.stub().returnsThis(),
       from: Sinon.stub().returnsThis(),
       join: Sinon.stub().returnsThis(),
+      innerJoin: Sinon.stub().returnsThis(),
       groupBy: Sinon.stub().returnsThis(),
       orderBy: Sinon.stub().resolves([]),
     }
@@ -158,6 +160,14 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
       'pictures',
       { 'firsts.folder': 'pictures.folder', 'firsts.sortKey': 'pictures.sortKey' },
     ])
+  })
+  it('should call innerJoin once to restrict updates to existing folders', async () => {
+    await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
+    expect(queryBuilder.innerJoin.callCount).to.equal(1)
+  })
+  it('should innerJoin folders on path to prevent inserting rows with null folder/sortKey', async () => {
+    await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
+    expect(queryBuilder.innerJoin.firstCall.args).to.deep.equal(['folders', 'folders.path', 'pictures.folder'])
   })
   it('should call groupBy once for update', async () => {
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)

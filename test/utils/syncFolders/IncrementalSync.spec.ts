@@ -15,6 +15,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
   let incrementalRemoveStub = Sinon.stub()
   let incrementalRemoveFolderStub = Sinon.stub()
   let incrementalScanFolderStub = Sinon.stub()
+  let incrementalEnsureAncestorsStub = Sinon.stub()
   let incrementalUpdateFoldersStub = Sinon.stub()
   let incrementalUpdateFirstImagesStub = Sinon.stub()
   let knexFnStub = Sinon.stub()
@@ -27,6 +28,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     incrementalRemoveStub = sandbox.stub(Functions, 'IncrementalRemovePicture').resolves()
     incrementalRemoveFolderStub = sandbox.stub(Functions, 'IncrementalRemoveFolder').resolves()
     incrementalScanFolderStub = sandbox.stub(Functions, 'IncrementalScanFolder').resolves()
+    incrementalEnsureAncestorsStub = sandbox.stub(Functions, 'IncrementalEnsureAncestors').resolves()
     incrementalUpdateFoldersStub = sandbox.stub(Functions, 'IncrementalUpdateFolders').resolves()
     incrementalUpdateFirstImagesStub = sandbox.stub(Functions, 'IncrementalUpdateFirstImages').resolves()
     knexFnStub = Sinon.stub()
@@ -138,6 +140,23 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     expect(incrementalScanFolderStub.calledBefore(incrementalAddStub)).to.equal(true)
   })
 
+  it('should call IncrementalEnsureAncestors once', async () => {
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    expect(incrementalEnsureAncestorsStub.callCount).to.equal(1)
+  })
+  it('should call IncrementalEnsureAncestors before IncrementalUpdateFolders', async () => {
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    expect(incrementalEnsureAncestorsStub.calledBefore(incrementalUpdateFoldersStub)).to.equal(true)
+  })
+  it('should pass the affected folders set to IncrementalEnsureAncestors', async () => {
+    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+    await Functions.IncrementalSync(knexFnFake, changeset)
+    const ensuredSet = Cast<Set<string>>(incrementalEnsureAncestorsStub.firstCall.args[2])
+    const updatedSet = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    expect(ensuredSet).to.equal(updatedSet)
+  })
   it('should call IncrementalUpdateFolders once', async () => {
     const changeset: Changeset = new Map([
       ['/comics/page.jpg', 'create'],

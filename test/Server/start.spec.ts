@@ -20,6 +20,7 @@ describe('Server function RegisterRouters', () => {
   let registerRoutersStub = Sinon.stub()
   let configureLoggingStub = Sinon.stub()
   let registerViewsStub = Sinon.stub()
+  let listenOnPortStub = Sinon.stub()
   beforeEach(() => {
     appStub = { get: Sinon.stub() }
     appFake = Cast<Express>(appStub)
@@ -30,13 +31,14 @@ describe('Server function RegisterRouters', () => {
     registerRoutersStub = sandbox.stub(Functions, 'RegisterRouters').resolves()
     configureLoggingStub = sandbox.stub(Functions, 'ConfigureLoggingAndErrors')
     registerViewsStub = sandbox.stub(Functions, 'RegisterViewsAndMiddleware')
+    listenOnPortStub = sandbox.stub(Functions, 'ListenOnPort')
   })
   afterEach(() => {
     sandbox.restore()
   })
   const baseTests: Array<[string, () => void]> = [
     ['create app', () => expect(createAppStub.callCount).to.equal(1)],
-    ['create app with provided port', () => expect(createAppStub.firstCall.args).to.deep.equal([65535])],
+    ['create app with no arguments', () => expect(createAppStub.firstCall.args).to.have.lengthOf(0)],
     ['congifure base app', () => expect(configureBaseAppStub.callCount).to.equal(1)],
     ['configure base app with correct args', () => expect(configureBaseAppStub.firstCall.args).to.have.lengthOf(1)],
     ['configure base app with app', () => expect(configureBaseAppStub.firstCall.args[0]).to.equal(appFake)],
@@ -51,6 +53,9 @@ describe('Server function RegisterRouters', () => {
     ['register views', () => expect(registerViewsStub.callCount).to.equal(1)],
     ['register views with correct args', () => expect(registerViewsStub.firstCall.args).to.have.lengthOf(1)],
     ['register views with app', () => expect(registerViewsStub.firstCall.args[0]).to.equal(appFake)],
+    ['listen on port', () => expect(listenOnPortStub.callCount).to.equal(1)],
+    ['listen on port with the http server', () => expect(listenOnPortStub.firstCall.args[0]).to.equal(serverFake)],
+    ['listen on port with the provided port', () => expect(listenOnPortStub.firstCall.args[1]).to.equal(65535)],
   ]
   baseTests.forEach(([title, validationFn]) => {
     it(`should ${title}`, async () => {
@@ -61,6 +66,22 @@ describe('Server function RegisterRouters', () => {
   it('should register views before configuring logging', async () => {
     await start(65535)
     expect(registerViewsStub.calledBefore(configureLoggingStub)).to.equal(true)
+  })
+  it('should register views before registering routers so view engine is set before any router can handle a request', async () => {
+    await start(65535)
+    expect(registerViewsStub.calledBefore(registerRoutersStub)).to.equal(true)
+  })
+  it('should configure base app before registering views', async () => {
+    await start(65535)
+    expect(configureBaseAppStub.calledBefore(registerViewsStub)).to.equal(true)
+  })
+  it('should listen on port only after all setup is complete', async () => {
+    await start(65535)
+    expect(listenOnPortStub.calledAfter(configureLoggingStub)).to.equal(true)
+  })
+  it('should listen on port only after the clacks catch-all is registered', async () => {
+    await start(65535)
+    expect(listenOnPortStub.calledAfter(appStub.get)).to.equal(true)
   })
   it('should return app', async () => {
     const { app } = await start(1024)
@@ -87,7 +108,10 @@ describe('Server function RegisterRouters', () => {
     const clacksTests: Array<[string, () => void]> = [
       ['register get filter', () => expect(appStub.get.callCount).to.equal(1)],
       ['register full get filter', () => expect(appStub.get.firstCall.args).to.have.lengthOf(2)],
-      ['register get filter for all paths', () => expect(appStub.get.firstCall.args[0]).to.equal('/*')],
+      [
+        'register get filter on a valid Express 5 wildcard path',
+        () => expect(appStub.get.firstCall.args[0]).to.equal('/*splat'),
+      ],
       ['register get filter function', () => expect(filterFn).to.be.a('function')],
       ['set response header on filter', () => expect(resposnseStub.set.callCount).to.equal(1)],
       ['set full response header', () => expect(resposnseStub.set.firstCall.args).to.have.lengthOf(2)],

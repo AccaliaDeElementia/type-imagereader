@@ -90,6 +90,49 @@ export const Functions = {
     })
     logger(`Incremental scan folder: ${dirPath} (${added} pictures added)`)
   },
+  IncrementalEnsureAncestors: async (logger: Debugger, knex: Knex, affectedFolders: Set<string>): Promise<void> => {
+    const ancestors = new Set<string>()
+    for (const folder of affectedFolders) {
+      if (folder === posix.sep) continue
+      const withoutSlash = folder.slice(ZERO, TRAILING_SLASH_OFFSET)
+      const parentDir = posix.dirname(withoutSlash)
+      const parentPath = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
+      Imports.SyncFunctions.AddFolderAndAncestors(ancestors, parentPath)
+    }
+    ancestors.delete(posix.sep)
+    if (ancestors.size === ZERO) {
+      logger('Ensured 0 ancestor folders')
+      return
+    }
+    const ancestorList = [...ancestors]
+    const existing = new Set<string>()
+    await Imports.SyncFunctions.ExecChunksSynchronously(
+      Imports.SyncFunctions.Chunk(ancestorList),
+      async (chunk: string[]) => {
+        const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
+        for (const row of rows) existing.add(row.path)
+      },
+    )
+    const missing = ancestorList.filter((p) => !existing.has(p))
+    if (missing.length === ZERO) {
+      logger('Ensured 0 ancestor folders')
+      return
+    }
+    const rows = missing.map((path) => {
+      const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
+      const parentDir = posix.dirname(withoutSlash)
+      const folder = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
+      const sortKey = Imports.SyncFunctions.ToSortKey(posix.basename(withoutSlash))
+      return { folder, path, sortKey }
+    })
+    await Imports.SyncFunctions.ExecChunksSynchronously(
+      Imports.SyncFunctions.Chunk(rows),
+      async (chunk: Array<{ folder: string; path: string; sortKey: string }>) => {
+        await knex('folders').insert(chunk).onConflict('path').ignore()
+      },
+    )
+    logger(`Ensured ${rows.length} ancestor folders`)
+  },
   IncrementalUpdateFolders: async (logger: Debugger, knex: Knex, affectedFolders: Set<string>): Promise<void> => {
     for (const folder of affectedFolders) {
       //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous for folder-by-folder update
@@ -174,6 +217,7 @@ export const Functions = {
       }
       counter = (counter + ONE) % LOGGING_INTERVAL
     }
+    await Functions.IncrementalEnsureAncestors(logger, knex, affectedFolders)
     await Functions.IncrementalUpdateFolders(logger, knex, affectedFolders)
     await Functions.IncrementalUpdateFirstImages(logger, knex)
     logger(`Incremental sync complete`)

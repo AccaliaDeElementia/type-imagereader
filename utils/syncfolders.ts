@@ -295,6 +295,14 @@ export const Functions = {
     })
     logger(`Added ${missing.length} missing ancestor folders`)
   },
+  HealBrokenFolderMetadataSql:
+    'UPDATE folders SET folder = syncitems.folder, "sortKey" = syncitems."sortKey" FROM syncitems ' +
+    'WHERE syncitems.path = folders.path AND syncitems."isFile" = false ' +
+    'AND (folders.folder IS NULL OR folders."sortKey" IS NULL)',
+  HealBrokenFolderMetadata: async (logger: Debugger, knex: Knex): Promise<void> => {
+    const result: unknown = await knex.raw(Functions.HealBrokenFolderMetadataSql)
+    logger(`Healed ${Functions.ExtractInsertCount(result)} folders with missing metadata`)
+  },
   SyncMissingCoverImages: async (logger: Debugger, knex: Knex): Promise<void> => {
     const removedCoverImages = await knex('folders')
       .whereNotExists(function () {
@@ -317,6 +325,7 @@ export const Functions = {
         'firsts.folder': 'pictures.folder',
         'firsts.sortKey': 'pictures.sortKey',
       })
+      .innerJoin('folders', 'folders.path', 'pictures.folder')
       .groupBy('pictures.folder')
       .orderBy([{ column: 'pictures.folder' }])
     await Functions.ExecChunksSynchronously(Functions.Chunk(toUpdate), async (chunk) => {
@@ -328,6 +337,7 @@ export const Functions = {
     const logger = Imports.debug(`${Imports.logPrefix}:syncFolders`)
     await Functions.SyncNewFolders(logger, knex)
     await Functions.SyncRemovedFolders(logger, knex)
+    await Functions.HealBrokenFolderMetadata(logger, knex)
     await Functions.SyncMissingAncestorFolders(logger, knex)
     await Functions.SyncMissingCoverImages(logger, knex)
     await Functions.SyncFolderFirstImages(logger, knex)
@@ -390,7 +400,9 @@ export const Functions = {
     logger(`Found ${folderInfos.length} Folders to Update`)
     const allFolders = await Functions.GetAllFolderInfos(knex)
     logger(`Found ${Object.keys(allFolders).length} Folders in the DB`)
-    const resultFolders = Functions.CalculateFolderInfos(allFolders, folderInfos)
+    const resultFolders = Functions.CalculateFolderInfos(allFolders, folderInfos).filter(
+      (info) => allFolders[info.path] !== undefined,
+    )
     logger(`Calculated ${resultFolders.length} Folders Seen Counts`)
     await Functions.ExecChunksSynchronously(Functions.Chunk(resultFolders), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').merge()

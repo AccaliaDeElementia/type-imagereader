@@ -26,6 +26,7 @@ const DEFAULT_PORT = 3030
 const MINIMUM_PORT = 0
 const MAXIMUM_PORT = 65535
 const ZERO = 0
+const EXIT_FAILURE = 1
 
 const runIfNotSuppressed = async (skipVar: string, fn: () => Promise<void>): Promise<void> => {
   const envvar = `${process.env[skipVar]}`.toLocaleUpperCase()
@@ -153,7 +154,10 @@ export const ImageReader = {
 // This is the actual main entry point of the app. we can't run it during test
 // and it will be blindingly obvious if it's not run on app start so it's fine
 // to ignore.
-/* c8 ignore next 3 */
+/* c8 ignore next 6 */
 if (require.main === module) {
-  ImageReader.Run().catch(() => null)
+  ImageReader.Run().catch((err: unknown) => {
+    Imports.logger('startup failed', err)
+    process.exitCode = EXIT_FAILURE
+  })
 }

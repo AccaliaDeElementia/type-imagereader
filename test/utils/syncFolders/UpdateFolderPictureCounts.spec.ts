@@ -114,21 +114,40 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
   })
   it('should call Chunk once', async () => {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]
+    getAllFolderInfosStub.resolves({ 'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 } })
     calculateFolderInfosStub.returns(results)
     await Functions.UpdateFolderPictureCounts(knexFnFake)
     expect(chunkStub.callCount).to.equal(1)
   })
   it('should call Chunk with one argument', async () => {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]
+    getAllFolderInfosStub.resolves({ 'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 } })
     calculateFolderInfosStub.returns(results)
     await Functions.UpdateFolderPictureCounts(knexFnFake)
     expect(chunkStub.firstCall.args).to.have.lengthOf(1)
   })
-  it('should chunk the results of calculation', async () => {
+  it('should chunk the filtered results of calculation', async () => {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]
+    getAllFolderInfosStub.resolves({ 'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 } })
     calculateFolderInfosStub.returns(results)
     await Functions.UpdateFolderPictureCounts(knexFnFake)
-    expect(chunkStub.firstCall.args[0]).to.equal(results)
+    expect(chunkStub.firstCall.args[0]).to.deep.equal(results)
+  })
+  it('should drop calculated folders whose path is not in the folders table', async () => {
+    getAllFolderInfosStub.resolves({ '/existing/': { path: '/existing/', totalCount: 0, seenCount: 0 } })
+    calculateFolderInfosStub.returns([
+      { path: '/existing/', totalCount: 1, seenCount: 0 },
+      { path: '/orphan/', totalCount: 1, seenCount: 0 },
+    ])
+    await Functions.UpdateFolderPictureCounts(knexFnFake)
+    const chunked = Cast<Array<{ path: string }>>(chunkStub.firstCall.args[0])
+    expect(chunked.map((r) => r.path)).to.deep.equal(['/existing/'])
+  })
+  it('should drop every calculated folder when none exist in the folders table', async () => {
+    getAllFolderInfosStub.resolves({})
+    calculateFolderInfosStub.returns([{ path: '/orphan/', totalCount: 1, seenCount: 0 }])
+    await Functions.UpdateFolderPictureCounts(knexFnFake)
+    expect(chunkStub.firstCall.args[0]).to.deep.equal([])
   })
   it('should call knex with folders table when inserting', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
@@ -213,7 +232,9 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     ]
     getFolderInfosWithPicturesStub.resolves(pictureFolders)
     const allFolders = {
-      'Test Path': { path: 'Test Path', totalCount: 0, seenCount: 0 },
+      'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 },
+      'OTHER PATH': { path: 'OTHER PATH', totalCount: 0, seenCount: 0 },
+      'LAST PATH': { path: 'LAST PATH', totalCount: 0, seenCount: 0 },
     }
     getAllFolderInfosStub.resolves(allFolders)
     const results = [
@@ -247,6 +268,12 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     expect(loggerStub.getCall(2).args).to.deep.equal(['Found 1 Folders in the DB'])
   })
   it('should log calculated folder count', async () => {
+    const allFolders = {
+      'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 },
+      'OTHER PATH': { path: 'OTHER PATH', totalCount: 0, seenCount: 0 },
+      'LAST PATH': { path: 'LAST PATH', totalCount: 0, seenCount: 0 },
+    }
+    getAllFolderInfosStub.resolves(allFolders)
     const results = [
       { path: 'SOME PATH', totalCount: 0, seenCount: 0 },
       { path: 'OTHER PATH', totalCount: 1, seenCount: 1 },
@@ -257,6 +284,12 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     expect(loggerStub.getCall(3).args).to.deep.equal(['Calculated 3 Folders Seen Counts'])
   })
   it('should log updated folder count', async () => {
+    const allFolders = {
+      'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 },
+      'OTHER PATH': { path: 'OTHER PATH', totalCount: 0, seenCount: 0 },
+      'LAST PATH': { path: 'LAST PATH', totalCount: 0, seenCount: 0 },
+    }
+    getAllFolderInfosStub.resolves(allFolders)
     const results = [
       { path: 'SOME PATH', totalCount: 0, seenCount: 0 },
       { path: 'OTHER PATH', totalCount: 1, seenCount: 1 },

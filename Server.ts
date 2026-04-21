@@ -9,7 +9,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import favicon from 'serve-favicon'
 import StatusCodes from 'http-status-codes'
 
-import type { Server as HttpServer } from 'node:http'
+import { createServer, type Server as HttpServer } from 'node:http'
 import { Server as WebSocketServer } from 'socket.io'
 
 import { getRouter as getApiRouter } from './routes/api'
@@ -24,6 +24,7 @@ export const Imports = {
   dirname: __dirname,
   logger: debug('type-imagereader:Server'),
   express,
+  createServer,
   cookieParser,
   favicon,
   morgan,
@@ -40,16 +41,21 @@ export const Routers = {
 }
 
 export const Functions = {
-  CreateApp: (port: number): [Express, HttpServer, WebSocketServer] => {
+  CreateApp: (): [Express, HttpServer, WebSocketServer] => {
     const app = Imports.express()
-    const server = app.listen(port, (err) => {
+    const server = Imports.createServer((req, res) => {
+      app(req, res)
+    })
+    const websockets = new Imports.WebSocketServer(server)
+    return [app, server, websockets]
+  },
+  ListenOnPort: (server: HttpServer, port: number): void => {
+    server.listen(port, (err?: Error) => {
       if (err !== undefined) {
         Imports.logger('Error encountered creating server')
         Imports.logger(err)
       }
     })
-    const websockets = new Imports.WebSocketServer(server)
-    return [app, server, websockets]
   },
   ConfigureBaseApp: (app: Express): void => {
     app.use(express.json())
@@ -89,17 +95,19 @@ export const Functions = {
 }
 
 export default async function start(port: number): Promise<{ app: Express; server: HttpServer }> {
-  const [app, server, websockets] = Functions.CreateApp(port)
+  const [app, server, websockets] = Functions.CreateApp()
 
   Functions.ConfigureBaseApp(app)
-  await Functions.RegisterRouters(app, server, websockets)
   Functions.RegisterViewsAndMiddleware(app)
+  await Functions.RegisterRouters(app, server, websockets)
   Functions.ConfigureLoggingAndErrors(app)
 
-  app.get('/*', (_, res, next) => {
+  app.get('/*splat', (_, res, next) => {
     res.set('X-Clacks-Overhead', 'GNU Terry Pratchett')
     next()
   })
+
+  Functions.ListenOnPort(server, port)
 
   return { app, server }
 }
