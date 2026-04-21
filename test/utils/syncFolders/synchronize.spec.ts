@@ -9,6 +9,12 @@ import type { Debugger } from 'debug'
 
 const sandbox = Sinon.createSandbox()
 
+const findCall = (stub: Sinon.SinonStub, predicate: (args: unknown[]) => boolean): Sinon.SinonSpyCall | undefined =>
+  stub.getCalls().find((c) => predicate(c.args))
+
+const stepLog = /^[A-Za-z]+ completed in \d+\.\d+s$/v
+const completeLog = /^Folder Synchronization Complete after \d+\.\d+s$/v
+
 describe('utils/syncfolders function synchronize()', () => {
   let loggerStub = Sinon.stub()
   let debugStub = Sinon.stub()
@@ -69,6 +75,34 @@ describe('utils/syncfolders function synchronize()', () => {
     await synchronize()
     expect(findSyncItemsStub.firstCall.args[0]).to.equal(knexFnStub)
   })
+  it('should log elapsed time for FindSyncItems step', async () => {
+    await synchronize()
+    const call = findCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('FindSyncItems '))
+    expect(call?.args[0]).to.match(stepLog)
+  })
+  it('should log elapsed time for SyncAllPictures step', async () => {
+    await synchronize()
+    const call = findCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllPictures '))
+    expect(call?.args[0]).to.match(stepLog)
+  })
+  it('should log elapsed time for SyncAllFolders step', async () => {
+    await synchronize()
+    const call = findCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllFolders '))
+    expect(call?.args[0]).to.match(stepLog)
+  })
+  it('should log elapsed time for UpdateFolderPictureCounts step', async () => {
+    await synchronize()
+    const call = findCall(
+      loggerStub,
+      (args) => typeof args[0] === 'string' && args[0].startsWith('UpdateFolderPictureCounts '),
+    )
+    expect(call?.args[0]).to.match(stepLog)
+  })
+  it('should log elapsed time for PruneEmptyFolders step', async () => {
+    await synchronize()
+    const call = findCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('PruneEmptyFolders '))
+    expect(call?.args[0]).to.match(stepLog)
+  })
   it('should not call SyncAllPictures when zero images found', async () => {
     findSyncItemsStub.resolves(0)
     await synchronize()
@@ -92,23 +126,27 @@ describe('utils/syncfolders function synchronize()', () => {
   it('should log error with two arguments when aborting', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize()
-    expect(loggerStub.secondCall.args).to.have.lengthOf(2)
+    const call = findCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
+    expect(call?.args).to.have.lengthOf(2)
   })
   it('should log error label when aborting synchronizing with zero images found', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize()
-    expect(loggerStub.secondCall.args[0]).to.equal('Folder Synchronization Failed')
+    const call = findCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
+    expect(call?.args[0]).to.equal('Folder Synchronization Failed')
   })
   it('should log an Error instance when aborting synchronizing with zero images found', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize()
-    const error = Cast(loggerStub.secondCall.args[1], (e) => e instanceof Error)
+    const call = findCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
+    const error = Cast(call?.args[1], (e) => e instanceof Error)
     expect(error).to.be.an('Error')
   })
   it('should log error message when aborting synchronizing with zero images found', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize()
-    const error = Cast(loggerStub.secondCall.args[1], (e) => e instanceof Error)
+    const call = findCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
+    const error = Cast(call?.args[1], (e) => e instanceof Error)
     expect(error.message).to.equal('Found Zero images, refusing to process empty base folder')
   })
   it('should log success message at end of successful processing', async () => {
@@ -116,19 +154,19 @@ describe('utils/syncfolders function synchronize()', () => {
     await synchronize()
     expect(loggerStub.lastCall.args).to.have.lengthOf(1)
   })
-  it('should log success at end of processing with success', async () => {
+  it('should log elapsed total time in seconds at end of processing with success', async () => {
     findSyncItemsStub.resolves(45)
     await synchronize()
-    expect(loggerStub.lastCall.args[0]).to.equal('Folder Synchronization Complete')
+    expect(loggerStub.lastCall.args[0]).to.match(completeLog)
   })
   it('should log success message at end of failed processing', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize()
     expect(loggerStub.lastCall.args).to.have.lengthOf(1)
   })
-  it('should log success at end of processing with error', async () => {
+  it('should log elapsed total time in seconds at end of processing with error', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize()
-    expect(loggerStub.lastCall.args[0]).to.equal('Folder Synchronization Complete')
+    expect(loggerStub.lastCall.args[0]).to.match(completeLog)
   })
 })

@@ -3,6 +3,8 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
+import { setImmediate as yieldMacro } from 'node:timers/promises'
+
 import fsWalker from '#utils/fswalker'
 import { EventuallyRejects } from '#testutils/Errors'
 
@@ -10,12 +12,14 @@ const sandbox = Sinon.createSandbox()
 
 describe('utils/fswalker function fsWalker()', () => {
   let readdirSpy = Sinon.stub()
+  const originalConcurrency = fsWalker.concurrency
   beforeEach(() => {
     readdirSpy = sandbox.stub(fsWalker.fn, 'readdir')
     readdirSpy.resolves([])
   })
   afterEach(() => {
     sandbox.restore()
+    fsWalker.concurrency = originalConcurrency
   })
   it('should call readdir starting at root', async () => {
     await fsWalker('/foo/bar/baz', async () => {
@@ -161,5 +165,50 @@ describe('utils/fswalker function fsWalker()', () => {
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([])
+  })
+  it('should run multiple readdirs in flight once the queue has siblings', async () => {
+    fsWalker.concurrency = 3
+    const inFlight = { count: 0, peak: 0 }
+    const release: Array<() => void> = []
+    let drain = false
+    const subdirs = ['a', 'b', 'c', 'd', 'e'].map((name) => ({ name, isDirectory: () => true }))
+    readdirSpy.callsFake(async (path: string) => {
+      if (path === '/root/') {
+        return subdirs
+      }
+      inFlight.count += 1
+      inFlight.peak = Math.max(inFlight.peak, inFlight.count)
+      if (!drain) {
+        const { promise, resolve } = Promise.withResolvers<undefined>()
+        release.push(() => {
+          resolve(undefined)
+        })
+        await promise
+      }
+      inFlight.count -= 1
+      return []
+    })
+    const walk = fsWalker('/root', Sinon.stub().resolves())
+    while (inFlight.count < 3) {
+      // eslint-disable-next-line no-await-in-loop -- waiting for workers to saturate
+      await yieldMacro()
+    }
+    drain = true
+    while (release.length > 0) release.shift()?.()
+    await walk
+    expect(inFlight.peak).to.equal(3)
+  })
+  it('should process all nested directories when concurrency exceeds queue depth', async () => {
+    fsWalker.concurrency = 4
+    readdirSpy.onCall(0).resolves([
+      { name: 'a', isDirectory: () => true },
+      { name: 'b', isDirectory: () => true },
+      { name: 'c', isDirectory: () => true },
+    ])
+    readdirSpy.onCall(1).resolves([])
+    readdirSpy.onCall(2).resolves([])
+    readdirSpy.onCall(3).resolves([])
+    await fsWalker('/root', Sinon.stub().resolves())
+    expect(readdirSpy.callCount).to.equal(4)
   })
 })

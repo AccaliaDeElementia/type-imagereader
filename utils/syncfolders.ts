@@ -8,11 +8,13 @@ import { createHash } from 'node:crypto'
 import type { Knex } from 'knex'
 import _debug from 'debug'
 import type { Debugger } from 'debug'
+import { from as _copyFrom } from 'pg-copy-streams'
+import type { PoolClient } from 'pg'
 
 const ZERO = 0
 const ONE = 1
 const NUMBER_PAD_LENGTH = 20
-const DEFAULT_CHUNK_SIZE = 1000
+const DEFAULT_CHUNK_SIZE = 5000
 const LOGGING_INTERVAL = 100
 const TRAILING_SLASH_OFFSET = -1
 
@@ -28,10 +30,10 @@ interface SyncItem {
   sortKey: string
   pathHash: string
 }
-interface SyncItemChunks {
+interface SyncItemRows {
   files: number
   dirs: number
-  chunks: SyncItem[][]
+  rows: SyncItem[]
 }
 
 export interface FolderInfo {
@@ -53,6 +55,14 @@ export const Imports = {
   logPrefix: 'type-imagereader:syncfolders',
   debug: _debug,
   fsWalker: _fsWalker,
+  copyFrom: _copyFrom,
+  acquireCopyConnection: async (knex: Knex): Promise<PoolClient> =>
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.acquireConnection is typed `any`; PoolClient is the concrete shape for the pg dialect
+    await knex.client.acquireConnection(),
+  releaseCopyConnection: async (knex: Knex, client: PoolClient): Promise<void> => {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.releaseConnection is typed `any`; we hand back the same PoolClient we acquired
+    await knex.client.releaseConnection(client)
+  },
 }
 
 export const Functions = {
@@ -85,39 +95,37 @@ export const Functions = {
       await execFn(chunk)
     }
   },
-  ChunkSyncItemsForInsert: (items: DirEntryItem[]): SyncItemChunks => {
+  BuildSyncItemRows: (items: DirEntryItem[]): SyncItemRows => {
     let files = ZERO
     let dirs = ZERO
-    const chunks = Functions.Chunk(
-      items.map((item) => {
-        if (item.isFile) {
-          files += ONE
-        } else {
-          dirs += ONE
-        }
-        let folder = posix.dirname(item.path)
-        if (folder !== posix.sep) {
-          folder += posix.sep
-        }
-        const path = item.path + (item.isFile ? '' : posix.sep)
-        return {
-          folder,
-          path,
-          isFile: item.isFile,
-          sortKey: Functions.ToSortKey(posix.basename(item.path)),
-          pathHash: createHash('sha512').update(path).digest('base64'),
-        }
-      }),
-    )
-    return {
-      files,
-      dirs,
-      chunks,
-    }
+    const rows = items.map((item) => {
+      if (item.isFile) {
+        files += ONE
+      } else {
+        dirs += ONE
+      }
+      let folder = posix.dirname(item.path)
+      if (folder !== posix.sep) {
+        folder += posix.sep
+      }
+      const path = item.path + (item.isFile ? '' : posix.sep)
+      return {
+        folder,
+        path,
+        isFile: item.isFile,
+        sortKey: Functions.ToSortKey(posix.basename(item.path)),
+        pathHash: createHash('sha512').update(path).digest('base64'),
+      }
+    })
+    return { files, dirs, rows }
+  },
+  FormatSyncItemCsv: (row: SyncItem): string => {
+    const q = (value: string): string => `"${value.replaceAll('"', '""')}"`
+    return `${q(row.folder)},${q(row.path)},${row.isFile ? 't' : 'f'},${q(row.sortKey)},${q(row.pathHash)}\n`
   },
   FindSyncItems: async (knex: Knex): Promise<number> => {
     const logger = Imports.debug(`${Imports.logPrefix}:findItems`)
-    await knex('syncitems').del()
+    await knex('syncitems').truncate()
     await knex('syncitems').insert({
       folder: null,
       path: '/',
@@ -127,18 +135,62 @@ export const Functions = {
     let dirs = ZERO
     let files = ZERO
     let counter = ZERO
-    await Imports.fsWalker('/data', async (items: DirEntryItem[], pending: number) => {
-      const { files: chunkFiles, dirs: chunkDirs, chunks } = Functions.ChunkSyncItemsForInsert(items)
-      files += chunkFiles
-      dirs += chunkDirs
-      await Functions.ExecChunksSynchronously(chunks, async (chunk) => {
-        await knex('syncitems').insert(chunk)
-      })
-      if (counter === ZERO) {
-        logger(`Found ${dirs} dirs (${pending} pending) and ${files} files`)
+    const buffer: string[] = []
+    const client = await Imports.acquireCopyConnection(knex)
+    try {
+      const stream = client.query(
+        Imports.copyFrom('COPY syncitems (folder, path, "isFile", "sortKey", "pathHash") FROM STDIN WITH (FORMAT csv)'),
+      )
+      let chain = Promise.resolve()
+      const flushBuffer = async (): Promise<void> => {
+        if (buffer.length === ZERO) return
+        const payload = buffer.splice(ZERO).join('')
+        if (!stream.write(payload)) {
+          const { promise, resolve } = Promise.withResolvers<undefined>()
+          stream.once('drain', () => {
+            resolve(undefined)
+          })
+          await promise
+        }
       }
-      counter = (counter + ONE) % LOGGING_INTERVAL
-    })
+      const scheduleFlush = async (): Promise<void> => {
+        chain = chain.then(flushBuffer)
+        await chain
+      }
+      try {
+        await Imports.fsWalker('/data', async (items: DirEntryItem[], pending: number) => {
+          const { files: chunkFiles, dirs: chunkDirs, rows } = Functions.BuildSyncItemRows(items)
+          files += chunkFiles
+          dirs += chunkDirs
+          for (const row of rows) {
+            buffer.push(Functions.FormatSyncItemCsv(row))
+          }
+          if (buffer.length >= DEFAULT_CHUNK_SIZE) {
+            await scheduleFlush()
+          }
+          if (counter === ZERO) {
+            logger(`Found ${dirs} dirs (${pending} pending) and ${files} files`)
+          }
+          counter = (counter + ONE) % LOGGING_INTERVAL
+        })
+        await chain
+        await scheduleFlush()
+        stream.end()
+        const { promise, resolve, reject } = Promise.withResolvers<undefined>()
+        stream.on('finish', () => {
+          resolve(undefined)
+        })
+        stream.on('error', (err: Error) => {
+          reject(err)
+        })
+        await promise
+      } catch (err) {
+        stream.destroy(err instanceof Error ? err : new Error(String(err)))
+        throw err
+      }
+    } finally {
+      await Imports.releaseCopyConnection(knex, client)
+    }
     logger(`Found all ${dirs} dirs and ${files} files`)
     return files
   },
@@ -355,22 +407,41 @@ export const Functions = {
   },
 }
 
+const MS_PER_SECOND = 1000
+const ELAPSED_DECIMALS = 2
+const elapsedSeconds = (since: number): string => ((Date.now() - since) / MS_PER_SECOND).toFixed(ELAPSED_DECIMALS)
+
 const synchronize = async (): Promise<void> => {
   const logger = Imports.debug(Imports.logPrefix)
+  const start = Date.now()
   logger('Folder Synchronization Begins')
   const knex = await persistance.initialize()
+  const runStep = async <T>(label: string, step: () => Promise<T>): Promise<T> => {
+    const stepStart = Date.now()
+    const result = await step()
+    logger(`${label} completed in ${elapsedSeconds(stepStart)}s`)
+    return result
+  }
   try {
-    const foundPics = await Functions.FindSyncItems(knex)
+    const foundPics = await runStep('FindSyncItems', async () => await Functions.FindSyncItems(knex))
     if (foundPics <= ZERO) {
       throw new Error('Found Zero images, refusing to process empty base folder')
     }
-    await Functions.SyncAllPictures(knex)
-    await Functions.SyncAllFolders(knex)
-    await Functions.UpdateFolderPictureCounts(knex)
-    await Functions.PruneEmptyFolders(knex)
+    await runStep('SyncAllPictures', async () => {
+      await Functions.SyncAllPictures(knex)
+    })
+    await runStep('SyncAllFolders', async () => {
+      await Functions.SyncAllFolders(knex)
+    })
+    await runStep('UpdateFolderPictureCounts', async () => {
+      await Functions.UpdateFolderPictureCounts(knex)
+    })
+    await runStep('PruneEmptyFolders', async () => {
+      await Functions.PruneEmptyFolders(knex)
+    })
   } catch (e) {
     logger('Folder Synchronization Failed', e)
   }
-  logger('Folder Synchronization Complete')
+  logger(`Folder Synchronization Complete after ${elapsedSeconds(start)}s`)
 }
 export default synchronize
