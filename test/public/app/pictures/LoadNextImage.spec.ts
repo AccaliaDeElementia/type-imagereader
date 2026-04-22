@@ -21,9 +21,9 @@ describe('public/app/pictures function LoadNextImage()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  const fetchStub = Sinon.stub()
-  let getPictureStub = Sinon.stub()
-  let getShowUnreadOnlyStub = Sinon.stub()
+  const fetchStub = sandbox.stub()
+  let getPictureStub = sandbox.stub()
+  let getShowUnreadOnlyStub = sandbox.stub()
   const next: Picture = {
     name: 'foobar',
     path: '/foobar.png',

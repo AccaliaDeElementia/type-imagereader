@@ -16,9 +16,9 @@ describe('routes/weather function GetWeather', () => {
       sunset: 0,
     },
   }
-  let fetchStub = Sinon.stub()
+  let fetchStub = sandbox.stub()
   let fetchResult = {
-    json: Sinon.stub().resolves(weatherData),
+    json: sandbox.stub().resolves(weatherData),
   }
 
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe('routes/weather function GetWeather', () => {
       },
     }
     fetchResult = {
-      json: Sinon.stub().resolves(weatherData),
+      json: sandbox.stub().resolves(weatherData),
     }
     fetchStub = sandbox.stub(global, 'fetch').resolves(Cast<globalThis.Response>(fetchResult))
   })

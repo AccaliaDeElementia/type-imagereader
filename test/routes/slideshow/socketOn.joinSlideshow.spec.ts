@@ -11,17 +11,17 @@ const sandbox = Sinon.createSandbox()
 describe('routes/slideshow socket join-slideshow()', () => {
   let knexFake = StubToKnex({})
   let serverFake = Cast<WebSocketServer>({})
-  let socketStub = { on: Sinon.stub(), join: Sinon.stub().resolves(), emit: Sinon.stub() }
+  let socketStub = { on: sandbox.stub(), join: sandbox.stub().resolves(), emit: sandbox.stub() }
   let socketFake = Cast<Socket>(socketStub)
   let socketState = new HandleSocketState()
   let roomData = {
     uriSafeImage: '/foo/bar/quux.png',
   }
-  let getRoomStub = Sinon.stub().resolves(roomData)
+  let getRoomStub = sandbox.stub().resolves(roomData)
   beforeEach(() => {
     knexFake = StubToKnex({})
     serverFake = Cast<WebSocketServer>({})
-    socketStub = { on: Sinon.stub(), join: Sinon.stub().resolves(), emit: Sinon.stub() }
+    socketStub = { on: sandbox.stub(), join: sandbox.stub().resolves(), emit: sandbox.stub() }
     socketFake = Cast<Socket>(socketStub)
     socketState = Functions.HandleSocket(knexFake, serverFake, socketFake)
     socketState.roomName = 'NO_ROOM' // assign sentical value to test against later

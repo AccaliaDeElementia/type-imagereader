@@ -39,7 +39,7 @@ describe('public/app/tabs function Init()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  let selectTabSpy = Sinon.stub()
+  let selectTabSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'https://127.1.1.1:5050/',

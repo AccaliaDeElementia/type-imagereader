@@ -27,7 +27,7 @@ describe('public/app/pictures function SetPicturesGetFirst()', () => {
   let dom = new JSDOM('<html></html>', {})
 
   let element: HTMLElement | null = null
-  const menuShow = Sinon.stub().resolves()
+  const menuShow = sandbox.stub().resolves()
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     global.window = Cast<Window & typeof globalThis>(dom.window)

@@ -20,20 +20,20 @@ describe('routes/images export getRouter()', () => {
   let serverFake = Cast<Server>({})
   let websocketsFake = Cast<WebSocketServer>({})
   let routerFake = {
-    get: Sinon.stub().returnsThis(),
+    get: sandbox.stub().returnsThis(),
   }
-  let getRouterStub = Sinon.stub()
-  let loggerStub = Sinon.stub()
-  let debugStub = Sinon.stub()
+  let getRouterStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
+  let debugStub = sandbox.stub()
   beforeEach(() => {
     applicationFake = Cast<Application>({})
     serverFake = Cast<Server>({})
     websocketsFake = Cast<WebSocketServer>({})
     routerFake = {
-      get: Sinon.stub().returnsThis(),
+      get: sandbox.stub().returnsThis(),
     }
     getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
   })
   afterEach(() => {

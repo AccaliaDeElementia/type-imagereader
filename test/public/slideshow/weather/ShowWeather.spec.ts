@@ -28,8 +28,8 @@ describe('public/slideshow/weather ShowWeather()', () => {
   let dom = new JSDOM('')
   let weather: WeatherResults = {}
 
-  let showDataStub = Sinon.stub()
-  let showIconStub = Sinon.stub()
+  let showDataStub = sandbox.stub()
+  let showIconStub = sandbox.stub()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {

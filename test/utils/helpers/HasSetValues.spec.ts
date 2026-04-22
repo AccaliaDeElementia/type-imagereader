@@ -5,8 +5,13 @@ import { HasSetValues } from '#utils/helpers'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/helpers function HasSetValues()', () => {
-  const add = Sinon.stub()
+  afterEach(() => {
+    sandbox.restore()
+  })
+  const add = sandbox.stub()
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],

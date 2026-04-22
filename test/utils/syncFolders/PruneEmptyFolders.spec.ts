@@ -10,15 +10,15 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function PruneEmptyFolders()', () => {
-  let loggerStub = Sinon.stub()
-  let debugStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
+  let debugStub = sandbox.stub()
   let {
     instance: knexStub,
     stub: knexFnStub,
     fake: knexFnFake,
   } = createKnexChainFake(['where', 'andWhere'] as const, ['delete'] as const, undefined)
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     ;({
       instance: knexStub,
       stub: knexFnStub,

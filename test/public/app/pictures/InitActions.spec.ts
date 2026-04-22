@@ -17,13 +17,13 @@ describe('public/app/pictures function InitActions()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  let isMenuActiveSpy = Sinon.stub()
-  let getShowUnreadOnly = Sinon.stub()
+  let isMenuActiveSpy = sandbox.stub()
+  let getShowUnreadOnly = sandbox.stub()
   let getPictureFake = { number: Math.random() }
-  let getPictureSpy = Sinon.stub()
-  let changePictureSpy = Sinon.stub()
-  let loadCurrentPageSpy = Sinon.stub()
-  let windowOpenSpy = Sinon.stub()
+  let getPictureSpy = sandbox.stub()
+  let changePictureSpy = sandbox.stub()
+  let loadCurrentPageSpy = sandbox.stub()
+  let windowOpenSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
@@ -92,7 +92,7 @@ describe('public/app/pictures function InitActions()', () => {
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
       assert(fn !== undefined)
       isMenuActiveSpy.returns(false)
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers[`Action:Execute:${expected}`.toUpperCase()] = [spy]
       await fn(undefined)
       expect(spy.callCount).to.equal(1)
@@ -103,7 +103,7 @@ describe('public/app/pictures function InitActions()', () => {
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
       assert(fn !== undefined)
       isMenuActiveSpy.returns(false)
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers[`Action:Execute:${expected}`.toUpperCase()] = [spy]
       await fn(undefined)
       expect(spy.firstCall.args).to.deep.equal([undefined, subscriberName])
@@ -114,7 +114,7 @@ describe('public/app/pictures function InitActions()', () => {
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
       assert(fn !== undefined)
       isMenuActiveSpy.returns(true)
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers[`Action:Execute:HideMenu`.toUpperCase()] = [spy]
       await fn(undefined)
       expect(spy.callCount).to.equal(1)
@@ -126,7 +126,7 @@ describe('public/app/pictures function InitActions()', () => {
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
       assert(fn !== undefined)
       isMenuActiveSpy.returns(true)
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers[`Action:Execute:HideMenu`.toUpperCase()] = [spy]
       await fn(undefined)
       expect(spy.firstCall.args).to.deep.equal([undefined, subscriberName])
@@ -137,7 +137,7 @@ describe('public/app/pictures function InitActions()', () => {
       const fn = PubSub.subscribers[action.toUpperCase()]?.pop()
       assert(fn !== undefined)
       isMenuActiveSpy.returns(true)
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers[`Action:Execute:`.toUpperCase()] = [spy]
       await fn(undefined)
       expect(spy.callCount).to.equal(0)
@@ -184,7 +184,7 @@ describe('public/app/pictures function InitActions()', () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:PREVIOUS']?.pop()
     assert(fn !== undefined)
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:PREVIOUSUNSEEN'] = [spy]
     getShowUnreadOnly.returns(true)
     await fn(undefined)
@@ -194,7 +194,7 @@ describe('public/app/pictures function InitActions()', () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:PREVIOUS']?.pop()
     assert(fn !== undefined)
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:PREVIOUSIMAGE'] = [spy]
     getShowUnreadOnly.returns(false)
     await fn(undefined)
@@ -204,7 +204,7 @@ describe('public/app/pictures function InitActions()', () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:NEXT']?.pop()
     assert(fn !== undefined)
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:NEXTUNSEEN'] = [spy]
     getShowUnreadOnly.returns(true)
     await fn(undefined)
@@ -214,7 +214,7 @@ describe('public/app/pictures function InitActions()', () => {
     Pictures.InitActions()
     const fn = PubSub.subscribers['ACTION:EXECUTE:NEXT']?.pop()
     assert(fn !== undefined)
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:NEXTIMAGE'] = [spy]
     getShowUnreadOnly.returns(false)
     await fn(undefined)
@@ -249,7 +249,7 @@ describe('public/app/pictures function InitActions()', () => {
     const fn = PubSub.subscribers['ACTION:EXECUTE:BOOKMARK']?.pop()
     assert(fn !== undefined)
     Pictures.current = { path: '/this/is/my/foo', name: 'foo', seen: false }
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['BOOKMARKS:ADD'] = [spy]
     await fn(undefined)
     expect(spy.callCount).to.equal(1)
@@ -259,7 +259,7 @@ describe('public/app/pictures function InitActions()', () => {
     const fn = PubSub.subscribers['ACTION:EXECUTE:BOOKMARK']?.pop()
     assert(fn !== undefined)
     Pictures.current = { path: '/this/is/my/foo', name: 'foo', seen: false }
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['BOOKMARKS:ADD'] = [spy]
     await fn(undefined)
     expect(spy.firstCall.args).to.deep.equal(['/this/is/my/foo', 'BOOKMARKS:ADD'])
@@ -269,7 +269,7 @@ describe('public/app/pictures function InitActions()', () => {
     const fn = PubSub.subscribers['ACTION:EXECUTE:BOOKMARK']?.pop()
     assert(fn !== undefined)
     Pictures.current = null
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['BOOKMARKS:ADD'] = [spy]
     await fn(undefined)
     expect(spy.callCount).to.equal(0)

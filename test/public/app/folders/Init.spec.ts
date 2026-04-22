@@ -43,7 +43,7 @@ describe('public/app/folders function Init()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let buildFoldersSpy: Sinon.SinonStub = Sinon.stub()
+  let buildFoldersSpy: Sinon.SinonStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',

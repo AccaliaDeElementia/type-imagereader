@@ -12,13 +12,13 @@ import type { Picture } from '#contracts/listing'
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures function LoadData()', () => {
-  let resetMarkupSpy = Sinon.stub()
-  let setPicturesSpy = Sinon.stub()
-  let makeTabSpy = Sinon.stub()
-  let loadImageSpy = Sinon.stub()
-  const tabSelectSpy = Sinon.stub().resolves()
-  const menuShowSpy = Sinon.stub().resolves()
-  const menuHideSpy = Sinon.stub().resolves()
+  let resetMarkupSpy = sandbox.stub()
+  let setPicturesSpy = sandbox.stub()
+  let makeTabSpy = sandbox.stub()
+  let loadImageSpy = sandbox.stub()
+  const tabSelectSpy = sandbox.stub().resolves()
+  const menuShowSpy = sandbox.stub().resolves()
+  const menuHideSpy = sandbox.stub().resolves()
   beforeEach(() => {
     resetPubSub()
     PubSub.subscribers = {

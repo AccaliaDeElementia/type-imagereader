@@ -7,17 +7,22 @@ import {
   WebSockets,
   type WebSocket,
 } from '#public/scripts/slideshow/sockets'
-import { beforeEach, describe, it } from 'mocha'
+import { afterEach, beforeEach, describe, it } from 'mocha'
 import { Cast } from '#testutils/TypeGuards'
 import { expect } from 'chai'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/sockets Disconnect()', () => {
-  const fakeDisconnect = Sinon.stub()
+  const fakeDisconnect = sandbox.stub()
   const fakeSocket = Cast<WebSocket>({ disconnect: fakeDisconnect })
   beforeEach(() => {
     WebSockets.socket = fakeSocket
     fakeDisconnect.reset()
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   it('should allow disconnect without socket', () => {
     WebSockets.socket = undefined
@@ -40,24 +45,24 @@ describe('public/slideshow/sockets Disconnect()', () => {
     expect(WebSockets.launchId).to.equal(undefined)
   })
   it('should clear LocationAssign with socket', () => {
-    WebSockets.LocationAssign = Sinon.stub()
+    WebSockets.LocationAssign = sandbox.stub()
     WebSockets.disconnect()
     expect(WebSockets.LocationAssign).to.equal(UninitializedLocationAssign)
   })
   it('should clear LocationAssign without socket', () => {
     WebSockets.socket = undefined
-    WebSockets.LocationAssign = Sinon.stub()
+    WebSockets.LocationAssign = sandbox.stub()
     WebSockets.disconnect()
     expect(WebSockets.LocationAssign).to.equal(UninitializedLocationAssign)
   })
   it('should clear LocationReload with socket', () => {
-    WebSockets.LocationReload = Sinon.stub()
+    WebSockets.LocationReload = sandbox.stub()
     WebSockets.disconnect()
     expect(WebSockets.LocationReload).to.equal(UninitializedLocationReload)
   })
   it('should clear LocationReload without socket', () => {
     WebSockets.socket = undefined
-    WebSockets.LocationReload = Sinon.stub()
+    WebSockets.LocationReload = sandbox.stub()
     WebSockets.disconnect()
     expect(WebSockets.LocationReload).to.equal(UninitializedLocationReload)
   })

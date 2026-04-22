@@ -38,7 +38,7 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
   let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
-  let BuildBookmarksSpy = Sinon.stub()
+  let BuildBookmarksSpy = sandbox.stub()
 
   beforeEach(() => {
     existingWindow = global.window

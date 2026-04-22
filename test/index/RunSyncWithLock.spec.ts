@@ -8,9 +8,9 @@ import { EventuallyRejects } from '#testutils/Errors'
 const sandbox = Sinon.createSandbox()
 
 describe('index.ts Functions.RunSyncWithLock()', () => {
-  let synchronizeStub = Sinon.stub()
-  let takeStub = Sinon.stub()
-  let releaseStub = Sinon.stub()
+  let synchronizeStub = sandbox.stub()
+  let takeStub = sandbox.stub()
+  let releaseStub = sandbox.stub()
   beforeEach(() => {
     synchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
     takeStub = sandbox.stub(ImageReader.SyncLock, 'Take').returns(true)

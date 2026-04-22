@@ -9,9 +9,9 @@ const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow function GetRoomAndIncrementImage() unread to all-images mode transition', () => {
   let knexFake = StubToKnex({ knex: Math.random() })
-  let getImagesStub = Sinon.stub()
-  let getCountsStub = Sinon.stub()
-  let markImageReadStub = Sinon.stub()
+  let getImagesStub = sandbox.stub()
+  let getCountsStub = sandbox.stub()
+  let markImageReadStub = sandbox.stub()
   let transitionPages = { pages: 3, page: 1, unread: 0, all: 30 }
   let freshPages = { pages: 3, page: 2, unread: 0, all: 30 }
   let unreadRoom = {

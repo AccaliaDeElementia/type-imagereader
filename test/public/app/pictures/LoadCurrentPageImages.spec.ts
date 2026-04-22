@@ -15,8 +15,8 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  const selectPageSpy = Sinon.stub().resolves()
-  const loadingErrorSpy = Sinon.stub().resolves()
+  const selectPageSpy = sandbox.stub().resolves()
+  const loadingErrorSpy = sandbox.stub().resolves()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',

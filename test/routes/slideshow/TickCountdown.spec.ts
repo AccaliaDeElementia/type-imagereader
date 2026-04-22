@@ -11,25 +11,25 @@ const sandbox = Sinon.createSandbox()
 describe('routes/slideshow function TickCountdown()', () => {
   let knexFake = StubToKnex({ knex: Math.random() })
   let ioStub = {
-    of: Sinon.stub().returnsThis(),
+    of: sandbox.stub().returnsThis(),
     adapter: {},
     rooms: {},
-    to: Sinon.stub().returnsThis(),
-    get: Sinon.stub().returns([]),
-    emit: Sinon.stub().returnsThis(),
+    to: sandbox.stub().returnsThis(),
+    get: sandbox.stub().returns([]),
+    emit: sandbox.stub().returnsThis(),
   }
   let ioFake = Cast<WebSocketServer>(ioStub)
-  let getRoomStub = Sinon.stub()
-  let loggerStub = Sinon.stub()
+  let getRoomStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
   beforeEach(() => {
     knexFake = StubToKnex({ knex: Math.random() })
     ioStub = {
-      of: Sinon.stub().returnsThis(),
+      of: sandbox.stub().returnsThis(),
       adapter: {},
       rooms: {},
-      to: Sinon.stub().returnsThis(),
-      get: Sinon.stub().returns([]),
-      emit: Sinon.stub().returnsThis(),
+      to: sandbox.stub().returnsThis(),
+      get: sandbox.stub().returns([]),
+      emit: sandbox.stub().returnsThis(),
     }
     ioFake = Cast<WebSocketServer>(ioStub)
     ioStub.adapter = ioStub

@@ -29,7 +29,7 @@ describe('public/app/navigation function Init()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('', {})
-  const tabSelectedSpy = Sinon.stub()
+  const tabSelectedSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -57,8 +57,8 @@ describe('public/app/navigation function Init()', () => {
     Sinon.restore()
   })
   describe('Action:Execute:PreviousFolder message Handler', () => {
-    let navigateToStub = Sinon.stub()
-    let showUnreadOnlyStub = Sinon.stub()
+    let navigateToStub = sandbox.stub()
+    let showUnreadOnlyStub = sandbox.stub()
     let previousFolder = {
       name: 'FOO',
       path: '/FOO',
@@ -142,8 +142,8 @@ describe('public/app/navigation function Init()', () => {
     })
   })
   describe('Action:Execute:NextFolder message Handler', () => {
-    let navigateToStub = Sinon.stub()
-    let showUnreadOnlyStub = Sinon.stub()
+    let navigateToStub = sandbox.stub()
+    let showUnreadOnlyStub = sandbox.stub()
     let nextFolder = {
       name: 'FOO',
       path: '/FOO',
@@ -227,7 +227,7 @@ describe('public/app/navigation function Init()', () => {
     })
   })
   describe('Action:Execute:ParentFolder message Handler', () => {
-    let navigateToStub = Sinon.stub()
+    let navigateToStub = sandbox.stub()
     let parentFolder = ''
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
@@ -269,7 +269,7 @@ describe('public/app/navigation function Init()', () => {
     })
   })
   describe('Action:Execute:FirstUnfinished message Handler', () => {
-    let navigateToStub = Sinon.stub()
+    let navigateToStub = sandbox.stub()
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }

@@ -11,8 +11,8 @@ import assert from 'node:assert'
 const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/sockets HandleKeys()', () => {
-  const fakeEmit = Sinon.stub()
-  const fakeOn = Sinon.stub()
+  const fakeEmit = sandbox.stub()
+  const fakeOn = sandbox.stub()
   const fakeSocket = Cast<WebSocket>({ emit: fakeEmit, on: fakeOn, disconnect: Sinon.spy() })
   let fakeParseRoom: Sinon.SinonStub | undefined = undefined
   let fakeIO: Sinon.SinonStub | undefined = undefined

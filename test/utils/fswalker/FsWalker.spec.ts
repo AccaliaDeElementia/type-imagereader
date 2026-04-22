@@ -11,7 +11,7 @@ import { EventuallyRejects } from '#testutils/Errors'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/fswalker function fsWalker()', () => {
-  let readdirSpy = Sinon.stub()
+  let readdirSpy = sandbox.stub()
   const originalConcurrency = fsWalker.concurrency
   beforeEach(() => {
     readdirSpy = sandbox.stub(fsWalker.fn, 'readdir')
@@ -34,7 +34,7 @@ describe('utils/fswalker function fsWalker()', () => {
         isDirectory: () => false,
       },
     ])
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.callCount).to.equal(1)
@@ -46,7 +46,7 @@ describe('utils/fswalker function fsWalker()', () => {
         isDirectory: () => false,
       },
     ])
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([
@@ -63,7 +63,7 @@ describe('utils/fswalker function fsWalker()', () => {
         isDirectory: () => true,
       },
     ])
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.callCount).to.equal(2)
@@ -75,7 +75,7 @@ describe('utils/fswalker function fsWalker()', () => {
         isDirectory: () => true,
       },
     ])
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([
@@ -92,7 +92,7 @@ describe('utils/fswalker function fsWalker()', () => {
         isDirectory: () => false,
       },
     ])
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.callCount).to.equal(1)
@@ -104,7 +104,7 @@ describe('utils/fswalker function fsWalker()', () => {
         isDirectory: () => false,
       },
     ])
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([])
@@ -113,7 +113,7 @@ describe('utils/fswalker function fsWalker()', () => {
   upperCaseExtensions.forEach((ext) => {
     it(`should accept uppercase .${ext} extension`, async () => {
       readdirSpy.resolves([{ name: `foo.${ext}`, isDirectory: () => false }])
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       await fsWalker('/bar/baz', spy)
       expect(spy.firstCall.args[0]).to.deep.equal([{ path: `/foo.${ext}`, isFile: true }])
     })
@@ -122,7 +122,7 @@ describe('utils/fswalker function fsWalker()', () => {
   mixedCaseExtensions.forEach((ext) => {
     it(`should accept mixed-case .${ext} extension`, async () => {
       readdirSpy.resolves([{ name: `foo.${ext}`, isDirectory: () => false }])
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       await fsWalker('/bar/baz', spy)
       expect(spy.firstCall.args[0]).to.deep.equal([{ path: `/foo.${ext}`, isFile: true }])
     })
@@ -130,7 +130,7 @@ describe('utils/fswalker function fsWalker()', () => {
   it('should propagate rejection from eachItem callback', async () => {
     readdirSpy.resolves([{ name: 'foo.png', isDirectory: () => false }])
     const error = new Error('callback failed')
-    const err = await EventuallyRejects(fsWalker('/bar/baz', Sinon.stub().rejects(error)))
+    const err = await EventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(error)))
     expect(err).to.equal(error)
   })
   it('should stop walking when eachItem rejects mid-walk', async () => {
@@ -139,7 +139,7 @@ describe('utils/fswalker function fsWalker()', () => {
       { name: 'foo.png', isDirectory: () => false },
     ])
     readdirSpy.onSecondCall().resolves([])
-    await EventuallyRejects(fsWalker('/bar/baz', Sinon.stub().rejects(new Error('stop'))))
+    await EventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(new Error('stop'))))
     expect(readdirSpy.callCount).to.equal(1)
   })
   it('should call the item callback once when hidden folder present', async () => {
@@ -149,7 +149,7 @@ describe('utils/fswalker function fsWalker()', () => {
         isDirectory: () => true,
       },
     ])
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.callCount).to.equal(1)
@@ -161,7 +161,7 @@ describe('utils/fswalker function fsWalker()', () => {
         isDirectory: () => true,
       },
     ])
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([])
@@ -188,7 +188,7 @@ describe('utils/fswalker function fsWalker()', () => {
       inFlight.count -= 1
       return []
     })
-    const walk = fsWalker('/root', Sinon.stub().resolves())
+    const walk = fsWalker('/root', sandbox.stub().resolves())
     while (inFlight.count < 3) {
       // eslint-disable-next-line no-await-in-loop -- waiting for workers to saturate
       await yieldMacro()
@@ -208,7 +208,7 @@ describe('utils/fswalker function fsWalker()', () => {
     readdirSpy.onCall(1).resolves([])
     readdirSpy.onCall(2).resolves([])
     readdirSpy.onCall(3).resolves([])
-    await fsWalker('/root', Sinon.stub().resolves())
+    await fsWalker('/root', sandbox.stub().resolves())
     expect(readdirSpy.callCount).to.equal(4)
   })
 })

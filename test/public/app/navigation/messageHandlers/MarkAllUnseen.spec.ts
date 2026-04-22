@@ -29,7 +29,7 @@ html
 describe('public/app/navigation function Init()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
-  let loadDataStub = Sinon.stub()
+  let loadDataStub = sandbox.stub()
   beforeEach(() => {
     const dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })
     global.window = Cast<Window & typeof globalThis>(dom.window)
@@ -47,9 +47,9 @@ describe('public/app/navigation function Init()', () => {
     Sinon.restore()
   })
   describe('Action:Execute:MarkAllUnseen Message Handler', () => {
-    let postJSONSpy = Sinon.stub().resolves(undefined as unknown)
-    let errorSpy = Sinon.stub().resolves()
-    let confirmShowStub = Sinon.stub().resolves(true)
+    let postJSONSpy = sandbox.stub().resolves(undefined as unknown)
+    let errorSpy = sandbox.stub().resolves()
+    let confirmShowStub = sandbox.stub().resolves(true)
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
@@ -58,7 +58,7 @@ describe('public/app/navigation function Init()', () => {
       confirmShowStub = sandbox.stub(Confirm, 'Show').resolves(true)
       Navigation.Init()
       loadDataStub.resetHistory()
-      errorSpy = Sinon.stub().resolves()
+      errorSpy = sandbox.stub().resolves()
       PubSub.subscribers['LOADING:ERROR'] = [errorSpy]
       const h = PubSub.subscribers['ACTION:EXECUTE:MARKALLUNSEEN']?.pop()
       assert(h !== undefined)

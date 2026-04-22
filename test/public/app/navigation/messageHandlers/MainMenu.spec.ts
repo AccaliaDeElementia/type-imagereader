@@ -28,7 +28,7 @@ describe('public/app/navigation function Init()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('', {})
-  const tabSelectedSpy = Sinon.stub()
+  const tabSelectedSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -145,7 +145,7 @@ describe('public/app/navigation function Init()', () => {
           seen: false,
         },
       ]
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
       const target = dom.window.document.querySelector('.innerTarget')
       assert(target !== null, 'target must exist')
@@ -163,7 +163,7 @@ describe('public/app/navigation function Init()', () => {
           seen: false,
         },
       ]
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
       const target = dom.window.document.querySelector('.navbar-brand')
       assert(target !== null, 'target must exist')
@@ -174,7 +174,7 @@ describe('public/app/navigation function Init()', () => {
     it('should ignore click event will missing pictures list', () => {
       Navigation.Init()
       Navigation.current.pictures = undefined
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
@@ -185,7 +185,7 @@ describe('public/app/navigation function Init()', () => {
     it('should ignore click event will empty pictures list', () => {
       Navigation.Init()
       Navigation.current.pictures = []
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
@@ -202,7 +202,7 @@ describe('public/app/navigation function Init()', () => {
           seen: true,
         },
       ]
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
@@ -214,7 +214,7 @@ describe('public/app/navigation function Init()', () => {
   describe('.menuButton click handler', () => {
     it('should publish Menu:Show', () => {
       Navigation.Init()
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:SHOW'] = [spy]
       const target = dom.window.document.querySelector('.menuButton')
       assert(target !== null, 'target must exist')

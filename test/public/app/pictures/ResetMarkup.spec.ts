@@ -53,8 +53,8 @@ describe('public/app/pictures function ResetMarkup()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM(render(markup), {})
-  const loadingErrorSpy = Sinon.stub().resolves()
-  const loadingHideSpy = Sinon.stub().resolves()
+  const loadingErrorSpy = sandbox.stub().resolves()
+  const loadingHideSpy = sandbox.stub().resolves()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',

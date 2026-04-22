@@ -164,7 +164,7 @@ describe('routes/slideshow function GetImageCount()', () => {
       stub: knexStub,
       fake: knexFake,
     } = createKnexChainFake(['count'] as const, ['where'] as const)
-    let loggerStub = Sinon.stub()
+    let loggerStub = sandbox.stub()
     beforeEach(() => {
       ;({
         instance: knexInstanceStub,

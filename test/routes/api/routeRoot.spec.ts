@@ -23,7 +23,7 @@ describe('routes/api route GET /', () => {
   }
   let requestFake = Cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
+  let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
   beforeEach(async () => {
     requestStub = {
       body: { Body: -1 },
@@ -31,15 +31,15 @@ describe('routes/api route GET /', () => {
     }
     requestFake = Cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
-    const getFn = Sinon.stub()
+    const getFn = sandbox.stub()
     const InitializeStub = sandbox.stub(persistance, 'initialize').resolves()
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         get: getFn,
-        post: Sinon.stub(),
+        post: sandbox.stub(),
       }),
     )
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(

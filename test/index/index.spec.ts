@@ -30,10 +30,10 @@ describe('/index.ts tests', (): void => {
     SynchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
     ClockFake = sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
-    StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: Sinon.stub().resolves() })
-    PersistanceStub = { initialize: Sinon.stub().resolves({}) }
+    StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
+    PersistanceStub = { initialize: sandbox.stub().resolves({}) }
     sandbox.stub(Imports, 'persistance').value(PersistanceStub)
-    IncrementalSyncStub = Sinon.stub().resolves()
+    IncrementalSyncStub = sandbox.stub().resolves()
     sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
   })
 
@@ -331,7 +331,7 @@ describe('/index.ts tests', (): void => {
   })
 
   it('should store watcher subscription', async () => {
-    const sub = { unsubscribe: Sinon.stub().resolves() }
+    const sub = { unsubscribe: sandbox.stub().resolves() }
     StartWatcherStub?.resolves(sub)
     await ImageReader.Run()
     expect(ImageReader.WatcherSubscription).to.equal(sub)

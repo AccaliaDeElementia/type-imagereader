@@ -10,9 +10,9 @@ import { Functions, Imports } from '#Server'
 const sandbox = Sinon.createSandbox()
 
 describe('Server function ConfigureLoggingAndErrors', () => {
-  let helmetStub = Sinon.stub()
-  let morganStub = Sinon.stub()
-  let appStub = { use: Sinon.stub() }
+  let helmetStub = sandbox.stub()
+  let morganStub = sandbox.stub()
+  let appStub = { use: sandbox.stub() }
   let appFake = Cast<Express>(appStub)
   let { stub: responseStub } = createResponseFake()
   beforeEach(() => {
@@ -22,7 +22,7 @@ describe('Server function ConfigureLoggingAndErrors', () => {
     // sandbox.replace bypasses mirrorProperties, avoiding the read entirely.
     morganStub = sandbox.stub()
     sandbox.replace(Imports, 'morgan', Cast<typeof Imports.morgan>(morganStub))
-    appStub = { use: Sinon.stub() }
+    appStub = { use: sandbox.stub() }
     appFake = Cast<Express>(appStub)
     ;({ stub: responseStub } = createResponseFake())
     delete process.env.NODE_ENV

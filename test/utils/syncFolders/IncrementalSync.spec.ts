@@ -10,19 +10,19 @@ import type { Changeset } from '#utils/filewatcher'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/incrementalsync function IncrementalSync()', () => {
-  let loggerStub = Sinon.stub()
-  let incrementalAddStub = Sinon.stub()
-  let incrementalRemoveStub = Sinon.stub()
-  let incrementalRemoveFolderStub = Sinon.stub()
-  let incrementalScanFolderStub = Sinon.stub()
-  let incrementalEnsureAncestorsStub = Sinon.stub()
-  let incrementalUpdateFoldersStub = Sinon.stub()
-  let incrementalUpdateFirstImagesStub = Sinon.stub()
-  let knexFnStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
+  let incrementalAddStub = sandbox.stub()
+  let incrementalRemoveStub = sandbox.stub()
+  let incrementalRemoveFolderStub = sandbox.stub()
+  let incrementalScanFolderStub = sandbox.stub()
+  let incrementalEnsureAncestorsStub = sandbox.stub()
+  let incrementalUpdateFoldersStub = sandbox.stub()
+  let incrementalUpdateFirstImagesStub = sandbox.stub()
+  let knexFnStub = sandbox.stub()
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     incrementalAddStub = sandbox.stub(Functions, 'IncrementalAddPicture').resolves()
     incrementalRemoveStub = sandbox.stub(Functions, 'IncrementalRemovePicture').resolves()
@@ -31,7 +31,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     incrementalEnsureAncestorsStub = sandbox.stub(Functions, 'IncrementalEnsureAncestors').resolves()
     incrementalUpdateFoldersStub = sandbox.stub(Functions, 'IncrementalUpdateFolders').resolves()
     incrementalUpdateFirstImagesStub = sandbox.stub(Functions, 'IncrementalUpdateFirstImages').resolves()
-    knexFnStub = Sinon.stub()
+    knexFnStub = sandbox.stub()
     knexFnFake = StubToKnex(knexFnStub)
   })
 

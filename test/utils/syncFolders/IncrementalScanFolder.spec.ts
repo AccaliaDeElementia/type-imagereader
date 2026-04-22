@@ -9,22 +9,22 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function IncrementalScanFolder()', () => {
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
-  let fsWalkerStub = Sinon.stub()
-  let incrementalAddPictureStub = Sinon.stub()
-  let incrementalEnsureFolderStub = Sinon.stub()
-  let knexFnStub = Sinon.stub()
+  let fsWalkerStub = sandbox.stub()
+  let incrementalAddPictureStub = sandbox.stub()
+  let incrementalEnsureFolderStub = sandbox.stub()
+  let knexFnStub = sandbox.stub()
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
     incrementalAddPictureStub = sandbox.stub(Functions, 'IncrementalAddPicture').resolves()
     incrementalEnsureFolderStub = sandbox.stub(Functions, 'IncrementalEnsureFolder').resolves()
-    knexFnStub = Sinon.stub()
+    knexFnStub = sandbox.stub()
     knexFnFake = StubToKnex(knexFnStub)
   })
 

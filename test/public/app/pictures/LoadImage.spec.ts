@@ -40,13 +40,13 @@ describe('public/app/pictures function LoadImage()', () => {
   }
 
   let element: HTMLElement | null = null
-  let postJSONSpy = Sinon.stub()
-  let selectPageSpy = Sinon.stub()
-  let loadNextImageSpy = Sinon.stub()
-  const loadingShowSpy = Sinon.stub().resolves()
-  const loadingErrorSpy = Sinon.stub().resolves()
-  const loadNewSpy = Sinon.stub().resolves()
-  const reloadSpy = Sinon.stub().resolves()
+  let postJSONSpy = sandbox.stub()
+  let selectPageSpy = sandbox.stub()
+  let loadNextImageSpy = sandbox.stub()
+  const loadingShowSpy = sandbox.stub().resolves()
+  const loadingErrorSpy = sandbox.stub().resolves()
+  const loadNewSpy = sandbox.stub().resolves()
+  const reloadSpy = sandbox.stub().resolves()
   let bottomLeftText: HTMLElement | null = null
   let bottomCenterText: HTMLElement | null = null
   let bottomRightText: HTMLElement | null = null

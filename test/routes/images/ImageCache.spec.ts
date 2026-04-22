@@ -4,26 +4,31 @@ import { expect } from 'chai'
 import { type CacheItem, ImageCache, ImageData } from '#routes/images'
 import Sinon from 'sinon'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/images class ImageData', () => {
   const defaultCacheSize = ImageCache.cacheSize
-  let createSpy = Sinon.stub()
+  let createSpy = sandbox.stub()
   let imageCache = new ImageCache(createSpy)
   beforeEach(() => {
     ImageCache.cacheSize = 5
-    createSpy = Sinon.stub().resolves()
+    createSpy = sandbox.stub().resolves()
     imageCache = new ImageCache(createSpy)
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   after(() => {
     ImageCache.cacheSize = defaultCacheSize
   })
   describe('ctor', () => {
     it('should store cache item creation function', () => {
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       const cache = new ImageCache(spy)
       expect(cache.cacheFunction).to.equal(spy)
     })
     it('should create cache with empty cache', () => {
-      const cache = new ImageCache(Sinon.stub())
+      const cache = new ImageCache(sandbox.stub())
       expect(cache.items).to.have.lengthOf(0)
     })
   })

@@ -18,9 +18,9 @@ const isNumberMutator = (o: unknown): o is (_: number) => number => typeof o ===
 describe('routes/slideshow function GetRoomAndIncrementImage() index navigation', () => {
   let stockImages = pagedImages(Config.memorySize)
   let knexFake = StubToKnex({ knex: Math.random() })
-  let getImagesStub = Sinon.stub()
-  let getCountsStub = Sinon.stub()
-  let markImageReadStub = Sinon.stub()
+  let getImagesStub = sandbox.stub()
+  let getCountsStub = sandbox.stub()
+  let markImageReadStub = sandbox.stub()
   let pages = { pages: 0, page: 0, unread: 0, all: 0 }
   beforeEach(() => {
     stockImages = pagedImages(Config.memorySize)

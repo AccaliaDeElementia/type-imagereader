@@ -28,8 +28,8 @@ describe('public/app/navigation function Init()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('', {})
-  const tabSelectedSpy = Sinon.stub()
-  let loadDataStub = Sinon.stub()
+  const tabSelectedSpy = sandbox.stub()
+  let loadDataStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -200,7 +200,7 @@ describe('public/app/navigation function Init()', () => {
     })
   })
   describe('Navigate:Data Message Handler', () => {
-    let consoleLogSpy = Sinon.stub()
+    let consoleLogSpy = sandbox.stub()
     beforeEach(() => {
       consoleLogSpy = sandbox.stub(global.window.console, 'log')
     })

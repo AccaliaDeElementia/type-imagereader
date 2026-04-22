@@ -6,42 +6,47 @@ import Sinon from 'sinon'
 import { StubToKnex } from '#testutils/TypeGuards'
 import assert from 'node:assert'
 
+const sandbox = Sinon.createSandbox()
+
 describe('routes/apiFunctions function GetDirectionFolder queries part 2', () => {
   let knexFirstCall = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    andWhere: Sinon.stub().returnsThis(),
-    orderBy: Sinon.stub().returnsThis(),
-    limit: Sinon.stub().returns([]),
+    select: sandbox.stub().returnsThis(),
+    where: sandbox.stub().returnsThis(),
+    andWhere: sandbox.stub().returnsThis(),
+    orderBy: sandbox.stub().returnsThis(),
+    limit: sandbox.stub().returns([]),
   }
   let knexSecondCall = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    andWhere: Sinon.stub().returnsThis(),
-    orderBy: Sinon.stub().returnsThis(),
-    limit: Sinon.stub().returns([]),
+    select: sandbox.stub().returnsThis(),
+    where: sandbox.stub().returnsThis(),
+    andWhere: sandbox.stub().returnsThis(),
+    orderBy: sandbox.stub().returnsThis(),
+    limit: sandbox.stub().returns([]),
   }
-  let knexStub = Sinon.stub().onFirstCall().returns(knexFirstCall).onSecondCall().returns(knexSecondCall)
+  let knexStub = sandbox.stub().onFirstCall().returns(knexFirstCall).onSecondCall().returns(knexSecondCall)
   let knexFake = StubToKnex(knexStub)
-  const rawStub = Sinon.stub()
+  const rawStub = sandbox.stub()
   beforeEach(() => {
     knexFirstCall = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      andWhere: Sinon.stub().returnsThis(),
-      orderBy: Sinon.stub().returnsThis(),
-      limit: Sinon.stub().returns([]),
+      select: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      andWhere: sandbox.stub().returnsThis(),
+      orderBy: sandbox.stub().returnsThis(),
+      limit: sandbox.stub().returns([]),
     }
     knexSecondCall = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      andWhere: Sinon.stub().returnsThis(),
-      orderBy: Sinon.stub().returnsThis(),
-      limit: Sinon.stub().returns([]),
+      select: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      andWhere: sandbox.stub().returnsThis(),
+      orderBy: sandbox.stub().returnsThis(),
+      limit: sandbox.stub().returns([]),
     }
-    knexStub = Sinon.stub().onFirstCall().returns(knexFirstCall).onSecondCall().returns(knexSecondCall)
+    knexStub = sandbox.stub().onFirstCall().returns(knexFirstCall).onSecondCall().returns(knexSecondCall)
     knexFake = StubToKnex(knexStub)
     knexFake.raw = rawStub
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   it('should call where once for different sort key for desc', async () => {
     const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }

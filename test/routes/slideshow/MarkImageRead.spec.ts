@@ -9,18 +9,19 @@ const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow function MarkImageRead()', () => {
   let knexQueryOne = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().resolves(),
+    select: sandbox.stub().returnsThis(),
+    where: sandbox.stub().resolves(),
   }
   let knexQueryTwo = {
-    increment: Sinon.stub().returnsThis(),
-    whereIn: Sinon.stub().resolves(),
+    increment: sandbox.stub().returnsThis(),
+    whereIn: sandbox.stub().resolves(),
   }
   let knexQueryThree = {
-    update: Sinon.stub().returnsThis(),
-    where: Sinon.stub().resolves(),
+    update: sandbox.stub().returnsThis(),
+    where: sandbox.stub().resolves(),
   }
-  let knexStub = Sinon.stub()
+  let knexStub = sandbox
+    .stub()
     .onFirstCall()
     .returns(knexQueryOne)
     .onSecondCall()
@@ -29,21 +30,22 @@ describe('routes/slideshow function MarkImageRead()', () => {
     .returns(knexQueryThree)
 
   let knexFake = StubToKnex(knexStub)
-  let getParentFoldersStub = Sinon.stub()
+  let getParentFoldersStub = sandbox.stub()
   beforeEach(() => {
     knexQueryOne = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().resolves(),
+      select: sandbox.stub().returnsThis(),
+      where: sandbox.stub().resolves(),
     }
     knexQueryTwo = {
-      increment: Sinon.stub().returnsThis(),
-      whereIn: Sinon.stub().resolves(),
+      increment: sandbox.stub().returnsThis(),
+      whereIn: sandbox.stub().resolves(),
     }
     knexQueryThree = {
-      update: Sinon.stub().returnsThis(),
-      where: Sinon.stub().resolves(),
+      update: sandbox.stub().returnsThis(),
+      where: sandbox.stub().resolves(),
     }
-    knexStub = Sinon.stub()
+    knexStub = sandbox
+      .stub()
       .onFirstCall()
       .returns(knexQueryOne)
       .onSecondCall()

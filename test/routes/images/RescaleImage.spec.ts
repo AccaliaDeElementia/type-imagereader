@@ -9,22 +9,22 @@ import { Cast } from '#testutils/TypeGuards'
 const sandbox = Sinon.createSandbox()
 describe('routes/images function RescaleImage()', () => {
   let sharpInstanceStub = {
-    rotate: Sinon.stub().returnsThis(),
-    resize: Sinon.stub().returnsThis(),
-    webp: Sinon.stub().returnsThis(),
-    toBuffer: Sinon.stub().resolves(),
+    rotate: sandbox.stub().returnsThis(),
+    resize: sandbox.stub().returnsThis(),
+    webp: sandbox.stub().returnsThis(),
+    toBuffer: sandbox.stub().resolves(),
   }
-  let sharpStub = Sinon.stub()
+  let sharpStub = sandbox.stub()
   beforeEach(() => {
     sharpStub = sandbox.stub(Imports, 'Sharp').returns(Cast<Sharp.Sharp>(sharpInstanceStub))
   })
   afterEach(() => {
     sandbox.restore()
     sharpInstanceStub = {
-      rotate: Sinon.stub().returnsThis(),
-      resize: Sinon.stub().returnsThis(),
-      webp: Sinon.stub().returnsThis(),
-      toBuffer: Sinon.stub().resolves(),
+      rotate: sandbox.stub().returnsThis(),
+      resize: sandbox.stub().returnsThis(),
+      webp: sandbox.stub().returnsThis(),
+      toBuffer: sandbox.stub().resolves(),
     }
   })
   it('should abort when error already detected', async () => {

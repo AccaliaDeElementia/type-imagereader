@@ -10,39 +10,39 @@ const sandbox = Sinon.createSandbox()
 
 describe('utils/incrementalsync function IncrementalAddPicture()', () => {
   let picturesStub = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    insert: Sinon.stub().resolves(),
-    first: Sinon.stub().resolves(undefined),
+    select: sandbox.stub().returnsThis(),
+    where: sandbox.stub().returnsThis(),
+    insert: sandbox.stub().resolves(),
+    first: sandbox.stub().resolves(undefined),
   }
   let foldersStub = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    insert: Sinon.stub().returnsThis(),
-    first: Sinon.stub().resolves(undefined),
-    onConflict: Sinon.stub().returnsThis(),
-    ignore: Sinon.stub().resolves(),
+    select: sandbox.stub().returnsThis(),
+    where: sandbox.stub().returnsThis(),
+    insert: sandbox.stub().returnsThis(),
+    first: sandbox.stub().resolves(undefined),
+    onConflict: sandbox.stub().returnsThis(),
+    ignore: sandbox.stub().resolves(),
   }
-  let knexFnStub = Sinon.stub()
+  let knexFnStub = sandbox.stub()
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     picturesStub = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      insert: Sinon.stub().resolves(),
-      first: Sinon.stub().resolves(undefined),
+      select: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      insert: sandbox.stub().resolves(),
+      first: sandbox.stub().resolves(undefined),
     }
     foldersStub = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      insert: Sinon.stub().returnsThis(),
-      first: Sinon.stub().resolves(undefined),
-      onConflict: Sinon.stub().returnsThis(),
-      ignore: Sinon.stub().resolves(),
+      select: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      insert: sandbox.stub().returnsThis(),
+      first: sandbox.stub().resolves(undefined),
+      onConflict: sandbox.stub().returnsThis(),
+      ignore: sandbox.stub().resolves(),
     }
-    knexFnStub = Sinon.stub()
+    knexFnStub = sandbox.stub()
     knexFnStub.withArgs('pictures').returns(picturesStub)
     knexFnStub.withArgs('folders').returns(foldersStub)
     knexFnFake = StubToKnex(knexFnStub)

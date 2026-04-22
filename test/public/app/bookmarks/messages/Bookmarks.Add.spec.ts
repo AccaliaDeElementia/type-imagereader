@@ -39,10 +39,10 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
   let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
-  let postJSONSpy = Sinon.stub()
-  let bookmarksLoadSpy = Sinon.stub()
-  let loadingErrorSpy = Sinon.stub()
-  let loadingSuccessSpy = Sinon.stub()
+  let postJSONSpy = sandbox.stub()
+  let bookmarksLoadSpy = sandbox.stub()
+  let loadingErrorSpy = sandbox.stub()
+  let loadingSuccessSpy = sandbox.stub()
 
   beforeEach(() => {
     existingWindow = global.window
@@ -53,9 +53,9 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    bookmarksLoadSpy = Sinon.stub().resolves()
-    loadingErrorSpy = Sinon.stub().resolves()
-    loadingSuccessSpy = Sinon.stub().resolves()
+    bookmarksLoadSpy = sandbox.stub().resolves()
+    loadingErrorSpy = sandbox.stub().resolves()
+    loadingSuccessSpy = sandbox.stub().resolves()
     resetPubSub()
     PubSub.subscribers = {
       'BOOKMARKS:LOAD': [bookmarksLoadSpy],

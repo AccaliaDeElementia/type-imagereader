@@ -10,18 +10,18 @@ import { Functions, Imports } from '#Server'
 const sandbox = Sinon.createSandbox()
 
 describe('Server function ConfigureBaseApp', () => {
-  let jsonifyStub = Sinon.stub().returns({})
-  let urlEncoderStub = Sinon.stub().returns({})
-  let cookieParserStub = Sinon.stub().returns({})
-  let faviconStub = Sinon.stub().returns({})
-  let appStub = { use: Sinon.stub() }
+  let jsonifyStub = sandbox.stub().returns({})
+  let urlEncoderStub = sandbox.stub().returns({})
+  let cookieParserStub = sandbox.stub().returns({})
+  let faviconStub = sandbox.stub().returns({})
+  let appStub = { use: sandbox.stub() }
   let appFake = Cast<Express>(appStub)
   beforeEach(() => {
     jsonifyStub = sandbox.stub(express, 'json')
     urlEncoderStub = sandbox.stub(express, 'urlencoded')
     cookieParserStub = sandbox.stub(Imports, 'cookieParser')
     faviconStub = sandbox.stub(Imports, 'favicon')
-    appStub = { use: Sinon.stub() }
+    appStub = { use: sandbox.stub() }
     appFake = Cast<Express>(appStub)
   })
   afterEach(() => {

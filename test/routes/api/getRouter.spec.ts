@@ -17,16 +17,16 @@ describe('routes/api function getRouter()', () => {
   let serverFake = Cast<Server>({ Server: Math.random() })
   let socketServerFake = Cast<WebSocketServer>({ Sockets: Math.random() })
   let routerStub = {
-    get: Sinon.stub(),
-    post: Sinon.stub(),
+    get: sandbox.stub(),
+    post: sandbox.stub(),
   }
   beforeEach(() => {
     applicationFake = Cast<Application>({ App: Math.random() })
     serverFake = Cast<Server>({ Server: Math.random() })
     socketServerFake = Cast<WebSocketServer>({ Sockets: Math.random() })
     routerStub = {
-      get: Sinon.stub(),
-      post: Sinon.stub(),
+      get: sandbox.stub(),
+      post: sandbox.stub(),
     }
     sandbox.stub(persistance, 'initialize').resolves()
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))

@@ -12,25 +12,25 @@ import persistance from '#utils/persistance'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow function getRouter', () => {
-  let routerStub = { get: Sinon.stub() }
+  let routerStub = { get: sandbox.stub() }
   let knexFake = StubToKnex({})
-  Sinon.stub().resolves(knexFake)
-  let rootRouteStub = Sinon.stub()
-  let handleSocketStub = Sinon.stub()
-  let setIntervalStub = Sinon.stub()
-  let tickCountdownStub = Sinon.stub()
+  sandbox.stub().resolves(knexFake)
+  let rootRouteStub = sandbox.stub()
+  let handleSocketStub = sandbox.stub()
+  let setIntervalStub = sandbox.stub()
+  let tickCountdownStub = sandbox.stub()
   let applicationFake = Cast<Application>({})
   let serverFake = Cast<Server>({})
   let ioStub = {
-    on: Sinon.stub(),
+    on: sandbox.stub(),
   }
   let socketsFake = Cast<WebSocketServer>(ioStub)
   let requestFake = Cast<Request>({})
-  let responseStub = { json: Sinon.stub() }
+  let responseStub = { json: sandbox.stub() }
   let responseFake = Cast<Response>(responseStub)
   beforeEach(() => {
     sandbox.useFakeTimers({ now: 3141592 })
-    routerStub = { get: Sinon.stub() }
+    routerStub = { get: sandbox.stub() }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
     knexFake = StubToKnex({})
     sandbox.stub(persistance, 'initialize').resolves(knexFake)
@@ -41,12 +41,12 @@ describe('routes/slideshow function getRouter', () => {
     applicationFake = Cast<Application>({})
     serverFake = Cast<Server>({})
     ioStub = {
-      on: Sinon.stub(),
+      on: sandbox.stub(),
     }
     socketsFake = Cast<WebSocketServer>(ioStub)
     Config.launchId = -1
     requestFake = Cast<Request>({})
-    responseStub = { json: Sinon.stub() }
+    responseStub = { json: sandbox.stub() }
     responseFake = Cast<Response>(responseStub)
   })
   afterEach(() => {

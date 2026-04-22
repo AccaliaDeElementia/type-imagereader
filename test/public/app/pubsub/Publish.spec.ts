@@ -12,7 +12,7 @@ import assert from 'node:assert'
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pubsub function Publish()', () => {
-  let publishAsyncSpy = Sinon.stub().resolves()
+  let publishAsyncSpy = sandbox.stub().resolves()
   beforeEach(() => {
     publishAsyncSpy = sandbox.stub(PubSub, 'PublishAsync').resolves()
   })
@@ -34,12 +34,12 @@ describe('public/app/pubsub function Publish()', () => {
 })
 
 describe('public/app/pubsub function PublishAsync()', () => {
-  let subscriber = Sinon.stub().resolves()
+  let subscriber = sandbox.stub().resolves()
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html')
-  let consoleWarn = Sinon.stub()
-  let consoleError = Sinon.stub()
+  let consoleWarn = sandbox.stub()
+  let consoleError = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html')
     global.window = Cast<Window & typeof globalThis>(dom.window)
@@ -47,7 +47,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
     consoleWarn = sandbox.stub(global.window.console, 'warn')
     consoleError = sandbox.stub(global.window.console, 'error')
 
-    subscriber = Sinon.stub().resolves()
+    subscriber = sandbox.stub().resolves()
     resetPubSub()
     PubSub.subscribers = {
       'FOO:BAR': [subscriber],
@@ -104,7 +104,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   it('should call all subscribers when publishing', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
-      PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')
     expect(subscriber.callCount).to.equal(1)
@@ -116,7 +116,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   it('should publish to all subscribers in order', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
-      PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')
     for (let i = 1; i <= 10; i += 1) {
@@ -126,61 +126,61 @@ describe('public/app/pubsub function PublishAsync()', () => {
     }
   })
   it('should call a subscriber when publishing top down', async () => {
-    const a = Sinon.stub().resolves()
+    const a = sandbox.stub().resolves()
     PubSub.subscribers['_:A'] = [a]
-    PubSub.subscribers['_:A:B'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C:D'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C:D:E'] = [Sinon.stub().resolves()]
+    PubSub.subscribers['_:A:B'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C:D'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C:D:E'] = [sandbox.stub().resolves()]
     await PubSub.PublishAsync('_:a:b:c:d:e', 'FOO')
     expect(a.callCount).to.equal(1)
   })
   it('should call ab subscriber when publishing top down', async () => {
-    const ab = Sinon.stub().resolves()
-    PubSub.subscribers['_:A'] = [Sinon.stub().resolves()]
+    const ab = sandbox.stub().resolves()
+    PubSub.subscribers['_:A'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B'] = [ab]
-    PubSub.subscribers['_:A:B:C'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C:D'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C:D:E'] = [Sinon.stub().resolves()]
+    PubSub.subscribers['_:A:B:C'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C:D'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C:D:E'] = [sandbox.stub().resolves()]
     await PubSub.PublishAsync('_:a:b:c:d:e', 'FOO')
     expect(ab.callCount).to.equal(1)
   })
   it('should call abc subscriber when publishing top down', async () => {
-    const abc = Sinon.stub().resolves()
-    PubSub.subscribers['_:A'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B'] = [Sinon.stub().resolves()]
+    const abc = sandbox.stub().resolves()
+    PubSub.subscribers['_:A'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C'] = [abc]
-    PubSub.subscribers['_:A:B:C:D'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C:D:E'] = [Sinon.stub().resolves()]
+    PubSub.subscribers['_:A:B:C:D'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C:D:E'] = [sandbox.stub().resolves()]
     await PubSub.PublishAsync('_:a:b:c:d:e', 'FOO')
     expect(abc.callCount).to.equal(1)
   })
   it('should call abcd subscriber when publishing top down', async () => {
-    const abcd = Sinon.stub().resolves()
-    PubSub.subscribers['_:A'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C'] = [Sinon.stub().resolves()]
+    const abcd = sandbox.stub().resolves()
+    PubSub.subscribers['_:A'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D'] = [abcd]
-    PubSub.subscribers['_:A:B:C:D:E'] = [Sinon.stub().resolves()]
+    PubSub.subscribers['_:A:B:C:D:E'] = [sandbox.stub().resolves()]
     await PubSub.PublishAsync('_:a:b:c:d:e', 'FOO')
     expect(abcd.callCount).to.equal(1)
   })
   it('should call abcde subscriber when publishing top down', async () => {
-    const abcde = Sinon.stub().resolves()
-    PubSub.subscribers['_:A'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C'] = [Sinon.stub().resolves()]
-    PubSub.subscribers['_:A:B:C:D'] = [Sinon.stub().resolves()]
+    const abcde = sandbox.stub().resolves()
+    PubSub.subscribers['_:A'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C'] = [sandbox.stub().resolves()]
+    PubSub.subscribers['_:A:B:C:D'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D:E'] = [abcde]
     await PubSub.PublishAsync('_:a:b:c:d:e', 'FOO')
     expect(abcde.callCount).to.equal(1)
   })
   it('should publish ab after a in hierarchy top down', async () => {
-    const a = Sinon.stub().resolves()
-    const ab = Sinon.stub().resolves()
-    const abc = Sinon.stub().resolves()
-    const abcd = Sinon.stub().resolves()
-    const abcde = Sinon.stub().resolves()
+    const a = sandbox.stub().resolves()
+    const ab = sandbox.stub().resolves()
+    const abc = sandbox.stub().resolves()
+    const abcd = sandbox.stub().resolves()
+    const abcde = sandbox.stub().resolves()
     PubSub.subscribers['_:A'] = [a]
     PubSub.subscribers['_:A:B'] = [ab]
     PubSub.subscribers['_:A:B:C'] = [abc]
@@ -190,11 +190,11 @@ describe('public/app/pubsub function PublishAsync()', () => {
     expect(ab.calledAfter(a)).to.equal(true)
   })
   it('should publish abc after ab in hierarchy top down', async () => {
-    const a = Sinon.stub().resolves()
-    const ab = Sinon.stub().resolves()
-    const abc = Sinon.stub().resolves()
-    const abcd = Sinon.stub().resolves()
-    const abcde = Sinon.stub().resolves()
+    const a = sandbox.stub().resolves()
+    const ab = sandbox.stub().resolves()
+    const abc = sandbox.stub().resolves()
+    const abcd = sandbox.stub().resolves()
+    const abcde = sandbox.stub().resolves()
     PubSub.subscribers['_:A'] = [a]
     PubSub.subscribers['_:A:B'] = [ab]
     PubSub.subscribers['_:A:B:C'] = [abc]
@@ -204,11 +204,11 @@ describe('public/app/pubsub function PublishAsync()', () => {
     expect(abc.calledAfter(ab)).to.equal(true)
   })
   it('should publish abcd after abc in hierarchy top down', async () => {
-    const a = Sinon.stub().resolves()
-    const ab = Sinon.stub().resolves()
-    const abc = Sinon.stub().resolves()
-    const abcd = Sinon.stub().resolves()
-    const abcde = Sinon.stub().resolves()
+    const a = sandbox.stub().resolves()
+    const ab = sandbox.stub().resolves()
+    const abc = sandbox.stub().resolves()
+    const abcd = sandbox.stub().resolves()
+    const abcde = sandbox.stub().resolves()
     PubSub.subscribers['_:A'] = [a]
     PubSub.subscribers['_:A:B'] = [ab]
     PubSub.subscribers['_:A:B:C'] = [abc]
@@ -218,11 +218,11 @@ describe('public/app/pubsub function PublishAsync()', () => {
     expect(abcd.calledAfter(abc)).to.equal(true)
   })
   it('should publish abcde after abcd in hierarchy top down', async () => {
-    const a = Sinon.stub().resolves()
-    const ab = Sinon.stub().resolves()
-    const abc = Sinon.stub().resolves()
-    const abcd = Sinon.stub().resolves()
-    const abcde = Sinon.stub().resolves()
+    const a = sandbox.stub().resolves()
+    const ab = sandbox.stub().resolves()
+    const abc = sandbox.stub().resolves()
+    const abcd = sandbox.stub().resolves()
+    const abcde = sandbox.stub().resolves()
     PubSub.subscribers['_:A'] = [a]
     PubSub.subscribers['_:A:B'] = [ab]
     PubSub.subscribers['_:A:B:C'] = [abc]
@@ -234,7 +234,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   it('should still call all subscribers when one rejects', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
-      PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.rejects('foo rejects!')
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')
@@ -246,7 +246,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   it('should log error once when one subscriber rejects', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
-      PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.rejects('foo rejects!')
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')
@@ -255,7 +255,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   it('should log expected message when one subscriber rejects', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
-      PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.rejects('foo rejects!')
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')
@@ -264,7 +264,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   it('should still call all subscribers when one throws', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
-      PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.throws('foo throws!')
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')
@@ -276,7 +276,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   it('should log error once when one subscriber throws', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
-      PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.throws('foo throws!')
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')
@@ -285,7 +285,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   it('should log expected message when one subscriber throws', async () => {
     assert(PubSub.subscribers['FOO:BAR'] !== undefined)
     for (let i = 1; i <= 10; i += 1) {
-      PubSub.subscribers['FOO:BAR'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.throws('foo throws!')
     await PubSub.PublishAsync('Foo:bar', 'Digital Life')

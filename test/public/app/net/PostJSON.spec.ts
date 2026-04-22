@@ -18,7 +18,7 @@ describe('public/app/net function PostJSON()', () => {
   let contentLengthFake = '2'
   let dataFake: Record<string, number> = {}
   const isUnknown = (_: unknown): _ is unknown => true
-  let fetchStub = Sinon.stub()
+  let fetchStub = sandbox.stub()
   beforeEach(() => {
     contentLengthFake = '2'
     dataFake = {}

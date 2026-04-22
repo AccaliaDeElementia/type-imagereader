@@ -18,11 +18,11 @@ describe('utils/persistance function initialize()', () => {
       tableName: 'migrations tablename',
     },
   }
-  let stubEnvironment = Sinon.stub()
-  let stubKnex = Sinon.stub()
+  let stubEnvironment = sandbox.stub()
+  let stubKnex = sandbox.stub()
   let stubKnexInstance = {
     migrate: {
-      latest: Sinon.stub().resolves(),
+      latest: sandbox.stub().resolves(),
     },
   }
 
@@ -39,7 +39,7 @@ describe('utils/persistance function initialize()', () => {
     }
     stubKnexInstance = {
       migrate: {
-        latest: Sinon.stub().resolves(),
+        latest: sandbox.stub().resolves(),
       },
     }
     stubKnex = sandbox.stub(Imports, 'knex').returns(StubToKnex(stubKnexInstance))

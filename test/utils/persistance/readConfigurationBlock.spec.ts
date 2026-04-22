@@ -18,7 +18,7 @@ describe('utils/persistance function readConfigurationBlock()', () => {
     },
   }
   let configName = 'testtest'
-  let readFileStub = Sinon.stub()
+  let readFileStub = sandbox.stub()
   beforeEach(() => {
     configContent = {
       testtest: {

@@ -6,8 +6,8 @@ import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 describe('routes/images function ReadAndRescaleImage()', () => {
-  let readImageStub = Sinon.stub()
-  let rescaleImageStub = Sinon.stub()
+  let readImageStub = sandbox.stub()
+  let rescaleImageStub = sandbox.stub()
   beforeEach(() => {
     readImageStub = sandbox.stub(Functions, 'ReadImage').resolves()
     rescaleImageStub = sandbox.stub(Functions, 'RescaleImage').resolves()

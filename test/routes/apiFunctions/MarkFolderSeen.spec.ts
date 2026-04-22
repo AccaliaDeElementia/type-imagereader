@@ -11,14 +11,14 @@ const sandbox = Sinon.createSandbox()
 const chainMethods = ['select', 'increment', 'update', 'where'] as const
 const terminalMethods = ['whereIn', 'orWhere', 'andWhere'] as const
 describe('routes/apiFunctions function MarkFolderSeen', () => {
-  let knexStub = Sinon.stub()
+  let knexStub = sandbox.stub()
   let knexFake = StubToKnex(knexStub)
-  let knexRawStub = Sinon.stub()
-  let getParentFoldersStub = Sinon.stub()
+  let knexRawStub = sandbox.stub()
+  let getParentFoldersStub = sandbox.stub()
   beforeEach(() => {
-    knexStub = Sinon.stub().callsFake(() => createKnexChainFake(chainMethods, terminalMethods).instance)
+    knexStub = sandbox.stub().callsFake(() => createKnexChainFake(chainMethods, terminalMethods).instance)
     knexFake = StubToKnex(knexStub)
-    knexRawStub = Sinon.stub()
+    knexRawStub = sandbox.stub()
     knexFake.raw = knexRawStub
     getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns([])
   })

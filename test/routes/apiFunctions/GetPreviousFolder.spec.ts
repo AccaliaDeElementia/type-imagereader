@@ -11,7 +11,7 @@ const sandbox = Sinon.createSandbox()
 
 describe('routes/apiFunctions function GetPreviousFolder', () => {
   let { fake: knexFake } = createKnexChainFake([] as const, [] as const)
-  let getDirectionFolderStub = Sinon.stub()
+  let getDirectionFolderStub = sandbox.stub()
 
   beforeEach(() => {
     ;({ fake: knexFake } = createKnexChainFake([] as const, [] as const))

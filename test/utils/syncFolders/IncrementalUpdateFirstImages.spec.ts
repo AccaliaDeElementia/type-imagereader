@@ -9,18 +9,18 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/incrementalsync function IncrementalUpdateFirstImages()', () => {
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
-  let syncFolderFirstImagesStub = Sinon.stub()
-  let knexFnStub = Sinon.stub()
+  let syncFolderFirstImagesStub = sandbox.stub()
+  let knexFnStub = sandbox.stub()
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     syncFolderFirstImagesStub = sandbox.stub(Imports.SyncFunctions, 'SyncFolderFirstImages').resolves()
-    knexFnStub = Sinon.stub()
+    knexFnStub = sandbox.stub()
     knexFnFake = StubToKnex(knexFnStub)
   })
 

@@ -11,9 +11,9 @@ import { expect } from 'chai'
 const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/sockets HandleKeys()', () => {
-  const fakeEmit = Sinon.stub()
+  const fakeEmit = sandbox.stub()
   const fakeSocket = Cast<WebSocket>({ emit: fakeEmit })
-  let fakeAssign = Sinon.stub()
+  let fakeAssign = sandbox.stub()
   const fakeViewport = { scale: 1 }
   const existingWindow = global.window
   const existingDocument = global.document

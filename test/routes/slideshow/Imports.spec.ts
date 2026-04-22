@@ -10,7 +10,7 @@ import { EventuallyRejects } from '#testutils/Errors'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow Imports', () => {
-  let setLatestPictureStub = Sinon.stub()
+  let setLatestPictureStub = sandbox.stub()
   let knexFake = StubToKnex({})
   beforeEach(() => {
     knexFake = StubToKnex({})

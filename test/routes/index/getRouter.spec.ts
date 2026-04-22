@@ -14,9 +14,9 @@ describe('routes/index function getRouter()', () => {
   const applicationFake = Cast<Application>({})
   const serverFake = Cast<Server>({})
   const socketsFake = Cast<WebSocketServer>({})
-  let routerStub = { get: Sinon.stub() }
+  let routerStub = { get: sandbox.stub() }
   beforeEach(() => {
-    routerStub = { get: Sinon.stub() }
+    routerStub = { get: sandbox.stub() }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
   })
   afterEach(() => {

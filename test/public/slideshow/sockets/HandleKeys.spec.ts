@@ -2,14 +2,16 @@
 
 import Sinon from 'sinon'
 import { Functions, type WebSocket } from '#public/scripts/slideshow/sockets'
-import { after, before, beforeEach, describe, it } from 'mocha'
+import { after, afterEach, before, beforeEach, describe, it } from 'mocha'
 import { Cast } from '#testutils/TypeGuards'
 import { JSDOM } from 'jsdom'
 import assert from 'node:assert'
 import { expect } from 'chai'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/sockets HandleKeys()', () => {
-  const fakeEmit = Sinon.stub()
+  const fakeEmit = sandbox.stub()
   const fakeSocket = Cast<WebSocket>({ emit: fakeEmit })
   const existingWindow = global.window
   const existingDocument = global.document
@@ -30,6 +32,9 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   beforeEach(() => {
     fakeEmit.reset()
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   it('should not break if socket is null', () => {
     const evt = new global.window.KeyboardEvent('keyup', { key: 'a' })

@@ -5,12 +5,17 @@ import { PubSub } from '#public/scripts/app/pubsub'
 import { resetPubSub } from '#testutils/PubSub'
 import { expect } from 'chai'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/app/pubsub function Subscribe()', () => {
-  let subscriber = Sinon.stub().resolves()
+  let subscriber = sandbox.stub().resolves()
   beforeEach(() => {
     resetPubSub()
     PubSub.cycleTime = 10
-    subscriber = Sinon.stub().resolves()
+    subscriber = sandbox.stub().resolves()
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
 
   const topics = ['foobar:baz', 'Foobar:Baz', 'fOoBaR:bAz', 'FoOBaR:BaZ', 'FOOBAR:BAZ', 'foobar:BAZ', 'FOOBAR:baz']
@@ -27,7 +32,7 @@ describe('public/app/pubsub function Subscribe()', () => {
   it('should grow subscriber list length to 11 when appending to 10 existing', () => {
     PubSub.subscribers['FOOBAR:BAZ'] = []
     for (let i = 0; i < 10; i += 1) {
-      PubSub.subscribers['FOOBAR:BAZ'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOOBAR:BAZ'].push(sandbox.stub().resolves())
     }
     PubSub.Subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ']).to.have.lengthOf(11)
@@ -35,7 +40,7 @@ describe('public/app/pubsub function Subscribe()', () => {
   it('should append subscriber as last element in subscriber list', () => {
     PubSub.subscribers['FOOBAR:BAZ'] = []
     for (let i = 0; i < 10; i += 1) {
-      PubSub.subscribers['FOOBAR:BAZ'].push(Sinon.stub().resolves())
+      PubSub.subscribers['FOOBAR:BAZ'].push(sandbox.stub().resolves())
     }
     PubSub.Subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ'][10]).to.equal(subscriber)

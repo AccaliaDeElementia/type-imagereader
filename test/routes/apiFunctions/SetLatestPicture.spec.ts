@@ -16,19 +16,19 @@ interface KnexStub {
   where: Sinon.SinonStub
 }
 const makeKnexInstance = (): KnexStub => ({
-  select: Sinon.stub().returnsThis(),
-  increment: Sinon.stub().returnsThis(),
-  update: Sinon.stub().returnsThis(),
-  whereIn: Sinon.stub().resolves([]),
-  orWhere: Sinon.stub().resolves([]),
-  where: Sinon.stub().resolves([]),
+  select: sandbox.stub().returnsThis(),
+  increment: sandbox.stub().returnsThis(),
+  update: sandbox.stub().returnsThis(),
+  whereIn: sandbox.stub().resolves([]),
+  orWhere: sandbox.stub().resolves([]),
+  where: sandbox.stub().resolves([]),
 })
 describe('routes/apiFunctions function SetLatestPicture', () => {
-  let knexStub = Sinon.stub()
+  let knexStub = sandbox.stub()
   let knexFake = StubToKnex(knexStub)
-  let getParentFoldersStub = Sinon.stub()
+  let getParentFoldersStub = sandbox.stub()
   beforeEach(() => {
-    knexStub = Sinon.stub().callsFake(() => StubToKnex(makeKnexInstance()))
+    knexStub = sandbox.stub().callsFake(() => StubToKnex(makeKnexInstance()))
     knexFake = StubToKnex(knexStub)
     getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns([])
   })

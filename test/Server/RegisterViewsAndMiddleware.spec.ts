@@ -12,12 +12,12 @@ const sandbox = Sinon.createSandbox()
 type MiddlewareFn = (req: unknown, res: unknown, next: Sinon.SinonStub) => void
 
 describe('Server function RegisterRouters', () => {
-  let staticStub = Sinon.stub()
-  let appStub = { use: Sinon.stub(), set: Sinon.stub() }
+  let staticStub = sandbox.stub()
+  let appStub = { use: sandbox.stub(), set: sandbox.stub() }
   let appFake = Cast<Express>(appStub)
   beforeEach(() => {
     staticStub = sandbox.stub(express, 'static')
-    appStub = { use: Sinon.stub(), set: Sinon.stub() }
+    appStub = { use: sandbox.stub(), set: sandbox.stub() }
     appFake = Cast<Express>(appStub)
   })
   afterEach(() => {
@@ -61,7 +61,7 @@ describe('Server function RegisterRouters', () => {
       expect(staticStub.firstCall.args).to.deep.equal([`${Imports.dirname}/dist`])
     })
     it('should register serve static function as middleware', () => {
-      const fn = Cast<MiddlewareFn>(Sinon.stub())
+      const fn = Cast<MiddlewareFn>(sandbox.stub())
       staticStub.returns(fn)
       Functions.RegisterViewsAndMiddleware(appFake)
       expect(appStub.use.firstCall.args[0]).to.equal(fn)

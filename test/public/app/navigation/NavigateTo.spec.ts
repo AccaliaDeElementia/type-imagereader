@@ -9,8 +9,8 @@ import { EventuallyFullfills } from '#testutils/Errors'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/navigation function NavigateTo()', () => {
-  const errorSpy = Sinon.stub()
-  let loadDataSpy = Sinon.stub()
+  const errorSpy = sandbox.stub()
+  let loadDataSpy = sandbox.stub()
   beforeEach(() => {
     errorSpy.resolves()
     PubSub.subscribers = {

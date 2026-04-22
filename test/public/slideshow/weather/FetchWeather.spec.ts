@@ -9,25 +9,28 @@ import { JSDOM } from 'jsdom'
 import { EventuallyRejects } from '#testutils/Errors'
 import { Cast } from '#testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('public/slideshow/weather FetchWeather()', () => {
-  let fetchStub = Sinon.stub()
+  let fetchStub = sandbox.stub()
 
   const existingWindow = global.window
   const dom = new JSDOM('<html></html>')
   beforeEach(() => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
-    fetchStub = Sinon.stub()
+    fetchStub = sandbox.stub()
     fetchStub.resolves({ json: async () => await Promise.resolve({}) })
     dom.window.fetch = fetchStub
   })
 
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
   })
 
   it('should return expected data on success', async () => {
     const data = { extraData: Math.random() }
-    fetchStub.resolves({ json: Sinon.stub().resolves(data) })
+    fetchStub.resolves({ json: sandbox.stub().resolves(data) })
     expect(await Functions.FetchWeather('foo!')).to.equal(data)
   })
 
@@ -72,13 +75,13 @@ describe('public/slideshow/weather FetchWeather()', () => {
 
   it('should reject when json rejects', async () => {
     const err = new Error('I AM ERROR')
-    fetchStub.resolves({ json: Sinon.stub().rejects(err) })
+    fetchStub.resolves({ json: sandbox.stub().rejects(err) })
     const result = await EventuallyRejects(Functions.FetchWeather('FOO'))
     expect(result).to.equal(err)
   })
 
   it('should reject when fetch resolves invalid WeatherResultsjects', async () => {
-    fetchStub.resolves({ json: Sinon.stub().resolves(42) })
+    fetchStub.resolves({ json: sandbox.stub().resolves(42) })
     const result = await EventuallyRejects(Functions.FetchWeather('FOO'))
     expect(result.message).to.equal('Invalid WeatherResponse Retrieved')
   })

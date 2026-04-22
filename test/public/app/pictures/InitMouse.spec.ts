@@ -19,10 +19,10 @@ describe('public/app/pictures function InitMouse()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html><body><div id="bigImage"><img class="hidden"/></div></body></html>', {})
-  const ignoreClickSpy = Sinon.stub().resolves()
-  const executePreviousSpy = Sinon.stub().resolves()
-  const executeNextSpy = Sinon.stub().resolves()
-  const executeMenuSpy = Sinon.stub().resolves()
+  const ignoreClickSpy = sandbox.stub().resolves()
+  const executePreviousSpy = sandbox.stub().resolves()
+  const executeNextSpy = sandbox.stub().resolves()
+  const executeMenuSpy = sandbox.stub().resolves()
   let visualViewport: TestVisualViewport = { scale: 1 }
   let boundingRect = {
     x: 0,

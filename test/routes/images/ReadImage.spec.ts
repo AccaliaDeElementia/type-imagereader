@@ -9,10 +9,10 @@ import { Cast } from '#testutils/TypeGuards'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/images function ReadImage()', () => {
-  let fromErrorStub = Sinon.stub()
-  let fromImageStub = Sinon.stub()
-  let readFileStub = Sinon.stub()
-  let isPathTraversalStub = Sinon.stub()
+  let fromErrorStub = sandbox.stub()
+  let fromImageStub = sandbox.stub()
+  let readFileStub = sandbox.stub()
+  let isPathTraversalStub = sandbox.stub()
   beforeEach(() => {
     fromErrorStub = sandbox.stub(ImageData, 'fromError')
     fromImageStub = sandbox.stub(ImageData, 'fromImage')

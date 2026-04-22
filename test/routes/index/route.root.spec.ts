@@ -11,15 +11,15 @@ import { Cast } from '#testutils/TypeGuards'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/index route /', () => {
-  let routeFn: (_: Request, __: Response) => void = Sinon.stub()
+  let routeFn: (_: Request, __: Response) => void = sandbox.stub()
   let requestFake = Cast<Request>({})
-  let resposeStub = { redirect: Sinon.stub() }
+  let resposeStub = { redirect: sandbox.stub() }
   let responseFake = Cast<Response>(resposeStub)
   beforeEach(async () => {
     const applicationFake = Cast<Application>({})
     const serverFake = Cast<Server>({})
     const socketsFake = Cast<WebSocketServer>({})
-    const routerStub = { get: Sinon.stub() }
+    const routerStub = { get: sandbox.stub() }
     let getRouterStub: Sinon.SinonStub | undefined = undefined
     try {
       getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
@@ -31,8 +31,11 @@ describe('routes/index route /', () => {
       getRouterStub?.restore()
     }
     requestFake = Cast<Request>({})
-    resposeStub = { redirect: Sinon.stub() }
+    resposeStub = { redirect: sandbox.stub() }
     responseFake = Cast<Response>(resposeStub)
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   it('should redirect response', () => {
     routeFn(requestFake, responseFake)

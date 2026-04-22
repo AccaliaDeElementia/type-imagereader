@@ -14,7 +14,7 @@ describe('public/app/pictures function MakePaginatorItem()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  let selectPageSpy = Sinon.stub().resolves()
+  let selectPageSpy = sandbox.stub().resolves()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
@@ -43,7 +43,7 @@ describe('public/app/pictures function MakePaginatorItem()', () => {
     expect(label).to.equal('frobitz')
   })
   it('should add click handler that calls provided selector to determine page to navigate to', () => {
-    const spy = Sinon.stub().returns(71)
+    const spy = sandbox.stub().returns(71)
     const result = Pictures.MakePaginatorItem('frobitz', spy)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)

@@ -54,11 +54,11 @@ describe('public/app/pictures function Init()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM(render(markup), {})
-  let resetMarkupSpy = Sinon.stub()
-  let initActionsSpy = Sinon.stub()
-  let initMouseSpy = Sinon.stub()
-  let initUnreadSliderSpy = Sinon.stub()
-  let loadDataSpy = Sinon.stub()
+  let resetMarkupSpy = sandbox.stub()
+  let initActionsSpy = sandbox.stub()
+  let initMouseSpy = sandbox.stub()
+  let initUnreadSliderSpy = sandbox.stub()
+  let loadDataSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',

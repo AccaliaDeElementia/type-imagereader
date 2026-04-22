@@ -27,12 +27,12 @@ describe('routes/api route POST /navigate/latest', () => {
   }
   let requestFake = Cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
-  let isPathTraversalStub = Sinon.stub()
-  let setLatestPictureStub = Sinon.stub()
-  let validateModcountStub = Sinon.stub()
-  let incrementModcountStub = Sinon.stub()
-  let getModcountStub = Sinon.stub()
+  let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
+  let isPathTraversalStub = sandbox.stub()
+  let setLatestPictureStub = sandbox.stub()
+  let validateModcountStub = sandbox.stub()
+  let incrementModcountStub = sandbox.stub()
+  let getModcountStub = sandbox.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -45,19 +45,19 @@ describe('routes/api route POST /navigate/latest', () => {
     requestFake = Cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     knexFake = { Knex: Math.random() }
-    const postFn = Sinon.stub()
+    const postFn = sandbox.stub()
     const InitializeStub = sandbox.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         post: postFn,
-        get: Sinon.stub(),
+        get: sandbox.stub(),
       }),
     )
     setLatestPictureStub = sandbox.stub(Functions, 'SetLatestPicture').resolves()
     validateModcountStub = sandbox.stub(ModCount, 'Validate').returns(true)
     incrementModcountStub = sandbox.stub(ModCount, 'Increment').returns(1)
     getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))

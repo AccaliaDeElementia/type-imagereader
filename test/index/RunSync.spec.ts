@@ -13,9 +13,9 @@ const fireImmediately = (fn: () => Promise<void>): number => {
 }
 
 describe('index.ts RunSync() tests', () => {
-  let actuallyRunSpy = Sinon.stub().resolves()
-  let setIntervalFake = Sinon.stub()
-  let loggerStub = Sinon.stub()
+  let actuallyRunSpy = sandbox.stub().resolves()
+  let setIntervalFake = sandbox.stub()
+  let loggerStub = sandbox.stub()
   const defaultInterval = ImageReader.SyncInterval
   beforeEach(() => {
     ImageReader.Interval = undefined

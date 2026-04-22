@@ -18,7 +18,7 @@ html
     div#loadingScreen
 `
 describe('public/app/loading subscriber "Loading:Error"', () => {
-  let consoleError = Sinon.stub()
+  let consoleError = sandbox.stub()
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
@@ -35,6 +35,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     Loading.Init()
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
   })

@@ -16,8 +16,8 @@ describe('public/app/pictures function MakePicturesPage()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  const menuHideSpy = Sinon.stub().resolves()
-  let makePictureCardSpy = Sinon.stub()
+  const menuHideSpy = sandbox.stub().resolves()
+  let makePictureCardSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',

@@ -6,40 +6,45 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function SyncMissingCoverImages()', () => {
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
   let knexInnerInstanceStub = {
-    select: Sinon.stub().returnsThis(),
-    from: Sinon.stub().returnsThis(),
-    whereRaw: Sinon.stub().returnsThis(),
-    catch: Sinon.stub(),
+    select: sandbox.stub().returnsThis(),
+    from: sandbox.stub().returnsThis(),
+    whereRaw: sandbox.stub().returnsThis(),
+    catch: sandbox.stub(),
   }
   let knexInstanceStub = {
-    whereNotExists: Sinon.stub().returnsThis(),
-    whereRaw: Sinon.stub().returnsThis(),
-    update: Sinon.stub().resolves(0),
-    catch: Sinon.stub(),
+    whereNotExists: sandbox.stub().returnsThis(),
+    whereRaw: sandbox.stub().returnsThis(),
+    update: sandbox.stub().resolves(0),
+    catch: sandbox.stub(),
   }
-  let knexFnStub = Sinon.stub().returns(knexInstanceStub)
+  let knexFnStub = sandbox.stub().returns(knexInstanceStub)
   let knexFnFake = StubToKnex(knexFnStub)
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
     knexInnerInstanceStub = {
-      select: Sinon.stub().returnsThis(),
-      from: Sinon.stub().returnsThis(),
-      whereRaw: Sinon.stub().returnsThis(),
-      catch: Sinon.stub(),
+      select: sandbox.stub().returnsThis(),
+      from: sandbox.stub().returnsThis(),
+      whereRaw: sandbox.stub().returnsThis(),
+      catch: sandbox.stub(),
     }
     knexInstanceStub = {
-      whereNotExists: Sinon.stub().returnsThis(),
-      whereRaw: Sinon.stub().returnsThis(),
-      update: Sinon.stub().resolves(0),
-      catch: Sinon.stub(),
+      whereNotExists: sandbox.stub().returnsThis(),
+      whereRaw: sandbox.stub().returnsThis(),
+      update: sandbox.stub().resolves(0),
+      catch: sandbox.stub(),
     }
-    knexFnStub = Sinon.stub().returns(knexInstanceStub)
+    knexFnStub = sandbox.stub().returns(knexInstanceStub)
     knexFnFake = StubToKnex(knexFnStub)
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   it("should call knex with 'folders' table", async () => {
     await Functions.SyncMissingCoverImages(loggerFake, knexFnFake)

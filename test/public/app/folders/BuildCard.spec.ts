@@ -269,7 +269,7 @@ describe('public/app/folders function BuildCard()', () => {
       totalCount: 100,
       seenCount: 101,
     })
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['NAVIGATE:LOAD'] = [spy]
     assert(result !== null, 'result is required for valid test')
     result.dispatchEvent(evt)

@@ -41,6 +41,7 @@ describe('public/app/actions function createButtons()', () => {
     resetPubSub()
   })
   afterEach(() => {
+    sandbox.restore()
     global.window = existingWindow
     global.document = existingDocument
   })
@@ -125,7 +126,7 @@ describe('public/app/actions function createButtons()', () => {
         image: 'icon',
       },
     ])
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [spy]
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
@@ -139,7 +140,7 @@ describe('public/app/actions function createButtons()', () => {
         image: 'icon',
       },
     ])
-    const spy = Sinon.stub().resolves()
+    const spy = sandbox.stub().resolves()
     PubSub.subscribers['ACTION:EXECUTE:THISISNOTABUTTON'] = [spy]
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')

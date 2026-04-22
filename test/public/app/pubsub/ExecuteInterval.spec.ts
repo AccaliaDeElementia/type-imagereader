@@ -8,12 +8,12 @@ import { PubSub } from '#public/scripts/app/pubsub'
 const sandbox = Sinon.createSandbox()
 describe('public/app/pubsub function ExecuteInterval()', () => {
   const testInterval = {
-    method: Sinon.stub(),
+    method: sandbox.stub(),
     delayCycles: 10,
     intervalCycles: 10,
   }
   const testDefer = {
-    method: Sinon.stub(),
+    method: sandbox.stub(),
     delayCycles: 10,
   }
   beforeEach(() => {

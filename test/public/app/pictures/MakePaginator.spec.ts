@@ -24,8 +24,8 @@ describe('public/app/pictures function MakePaginator()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
-  let makePageItemSpy = Sinon.stub()
-  let getCurrentPageSpy = Sinon.stub()
+  let makePageItemSpy = sandbox.stub()
+  let getCurrentPageSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',

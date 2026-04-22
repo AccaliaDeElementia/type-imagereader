@@ -5,8 +5,11 @@ import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub'
 import { resetPubSub } from '#testutils/PubSub'
 
+const sandbox = Sinon.createSandbox()
+
 describe('testutils/PubSub resetPubSub()', () => {
   afterEach(() => {
+    sandbox.restore()
     resetPubSub()
   })
   it('should clear subscribers', () => {
@@ -15,12 +18,12 @@ describe('testutils/PubSub resetPubSub()', () => {
     expect(PubSub.subscribers).to.deep.equal({})
   })
   it('should clear deferred', () => {
-    PubSub.deferred = [{ method: Sinon.stub(), delayCycles: 1 }]
+    PubSub.deferred = [{ method: sandbox.stub(), delayCycles: 1 }]
     resetPubSub()
     expect(PubSub.deferred).to.deep.equal([])
   })
   it('should clear intervals', () => {
-    PubSub.intervals = { test: { method: Sinon.stub(), delayCycles: 0, intervalCycles: 5 } }
+    PubSub.intervals = { test: { method: sandbox.stub(), delayCycles: 0, intervalCycles: 5 } }
     resetPubSub()
     expect(PubSub.intervals).to.deep.equal({})
   })

@@ -13,12 +13,12 @@ import { createResponseFake } from '#testutils/Express'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/weather function getRouter()', () => {
-  let setIntervalStub = Sinon.stub()
-  let updateWeatherStub = Sinon.stub()
+  let setIntervalStub = sandbox.stub()
+  let updateWeatherStub = sandbox.stub()
   let routerStub = {
-    get: Sinon.stub(),
+    get: sandbox.stub(),
   }
-  let getRouterStub = Sinon.stub().returns(Cast<Router>(routerStub))
+  let getRouterStub = sandbox.stub().returns(Cast<Router>(routerStub))
   let applicationFake = Cast<Application>({})
   let serverFake = Cast<Server>({})
   let socketFake = Cast<WebSocketServer>({})
@@ -27,7 +27,7 @@ describe('routes/weather function getRouter()', () => {
     setIntervalStub = sandbox.stub(global, 'setInterval')
     updateWeatherStub = sandbox.stub(Functions, 'UpdateWeather').resolves()
     routerStub = {
-      get: Sinon.stub(),
+      get: sandbox.stub(),
     }
     applicationFake = Cast<Application>({})
     serverFake = Cast<Server>({})

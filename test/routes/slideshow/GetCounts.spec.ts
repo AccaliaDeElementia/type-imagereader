@@ -9,8 +9,8 @@ const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow function GetCounts()', () => {
   let knexFake = StubToKnex({})
-  let getImageCountStub = Sinon.stub().resolves()
-  let randomStub = Sinon.stub()
+  let getImageCountStub = sandbox.stub().resolves()
+  let randomStub = sandbox.stub()
   beforeEach(() => {
     Config.memorySize = 10
     knexFake = StubToKnex({})
@@ -65,7 +65,7 @@ describe('routes/slideshow function GetCounts()', () => {
   })
   it('should not mutate page when unread images exist', async () => {
     getImageCountStub.onFirstCall().resolves(99)
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     await Functions.GetCounts(knexFake, 'foo', 7, spy)
     expect(spy.callCount).to.equal(0)
   })
@@ -96,21 +96,21 @@ describe('routes/slideshow function GetCounts()', () => {
   it('should not mutate page when no unread images exist and current page is unset', async () => {
     getImageCountStub.onSecondCall().resolves(999)
     Config.memorySize = 10
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     await Functions.GetCounts(knexFake, 'foo', undefined, spy)
     expect(spy.called).to.equal(false)
   })
   it('should mutate page when current page is set', async () => {
     getImageCountStub.onSecondCall().resolves(999)
     Config.memorySize = 10
-    const spy = Sinon.stub().returns(3)
+    const spy = sandbox.stub().returns(3)
     await Functions.GetCounts(knexFake, 'foo', 7, spy)
     expect(spy.callCount).to.equal(1)
   })
   it('should mutate page with current page value as argument', async () => {
     getImageCountStub.onSecondCall().resolves(999)
     Config.memorySize = 10
-    const spy = Sinon.stub().returns(3)
+    const spy = sandbox.stub().returns(3)
     await Functions.GetCounts(knexFake, 'foo', 7, spy)
     expect(spy.firstCall.args).to.deep.equal([7])
   })
@@ -123,14 +123,14 @@ describe('routes/slideshow function GetCounts()', () => {
   it('should wrap page to end mutate is negative', async () => {
     getImageCountStub.onSecondCall().resolves(1001)
     Config.memorySize = 10
-    const spy = Sinon.stub().returns(-1)
+    const spy = sandbox.stub().returns(-1)
     const result = await Functions.GetCounts(knexFake, 'foo', 7, spy)
     expect(result.page).to.equal(100)
   })
   it('should wrap page to begin mutate is out of bounds', async () => {
     getImageCountStub.onSecondCall().resolves(1001)
     Config.memorySize = 10
-    const spy = Sinon.stub().returns(101)
+    const spy = sandbox.stub().returns(101)
     const result = await Functions.GetCounts(knexFake, 'foo', 7, spy)
     expect(result.page).to.equal(0)
   })
@@ -153,7 +153,7 @@ describe('routes/slideshow function GetCounts()', () => {
     expect(randomStub.callCount).to.equal(0)
   })
   it('should not call mutator when folder is empty', async () => {
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     await Functions.GetCounts(knexFake, 'foo', 0, spy)
     expect(spy.callCount).to.equal(0)
   })

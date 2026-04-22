@@ -40,9 +40,9 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
   let existingDocument: Document = global.document
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let bookmarksRemoveSpy = Sinon.stub()
-  let navigateLoadSpy = Sinon.stub()
-  let postJSONSpy = Sinon.stub()
+  let bookmarksRemoveSpy = sandbox.stub()
+  let navigateLoadSpy = sandbox.stub()
+  let postJSONSpy = sandbox.stub()
 
   beforeEach(() => {
     existingWindow = global.window
@@ -55,8 +55,8 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     global.document = dom.window.document
 
-    navigateLoadSpy = Sinon.stub().resolves()
-    bookmarksRemoveSpy = Sinon.stub().resolves()
+    navigateLoadSpy = sandbox.stub().resolves()
+    bookmarksRemoveSpy = sandbox.stub().resolves()
     resetPubSub()
     PubSub.subscribers = {
       'NAVIGATE:LOAD': [navigateLoadSpy],

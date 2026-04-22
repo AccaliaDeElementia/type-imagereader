@@ -15,7 +15,7 @@ interface InsertedRow {
 }
 
 describe('utils/syncfolders function SyncMissingAncestorFolders()', () => {
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
 
   let distinctPictureFolders: Array<{ folder: string }> = []
@@ -24,30 +24,30 @@ describe('utils/syncfolders function SyncMissingAncestorFolders()', () => {
   let whereInCalls: unknown[][] = []
 
   let picturesQuery = {
-    distinct: Sinon.stub(),
-    whereNotNull: Sinon.stub(),
+    distinct: sandbox.stub(),
+    whereNotNull: sandbox.stub(),
   }
   let foldersSelectQuery = {
-    select: Sinon.stub().returnsThis(),
-    whereIn: Sinon.stub(),
+    select: sandbox.stub().returnsThis(),
+    whereIn: sandbox.stub(),
   }
   let foldersInsertQuery = {
-    insert: Sinon.stub().returnsThis(),
-    onConflict: Sinon.stub().returnsThis(),
-    ignore: Sinon.stub(),
+    insert: sandbox.stub().returnsThis(),
+    onConflict: sandbox.stub().returnsThis(),
+    ignore: sandbox.stub(),
   }
-  let knexFnStub = Sinon.stub()
+  let knexFnStub = sandbox.stub()
   let knexFnFake = StubToKnex(knexFnStub)
 
   const setup = (): void => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
     insertedChunks = []
     whereInCalls = []
 
     picturesQuery = {
-      distinct: Sinon.stub().returnsThis(),
-      whereNotNull: Sinon.stub().resolves(distinctPictureFolders),
+      distinct: sandbox.stub().returnsThis(),
+      whereNotNull: sandbox.stub().resolves(distinctPictureFolders),
     }
     const runWhereIn = async (_col: string, values: unknown[]): Promise<Array<{ path: string }>> => {
       whereInCalls.push(values)
@@ -55,20 +55,20 @@ describe('utils/syncfolders function SyncMissingAncestorFolders()', () => {
       return existingFolderPaths.filter((r) => values.includes(r.path))
     }
     foldersSelectQuery = {
-      select: Sinon.stub().returnsThis(),
-      whereIn: Sinon.stub().callsFake(runWhereIn),
+      select: sandbox.stub().returnsThis(),
+      whereIn: sandbox.stub().callsFake(runWhereIn),
     }
     foldersInsertQuery = {
-      insert: Sinon.stub().callsFake((chunk: InsertedRow[]) => {
+      insert: sandbox.stub().callsFake((chunk: InsertedRow[]) => {
         insertedChunks.push(chunk)
         return foldersInsertQuery
       }),
-      onConflict: Sinon.stub().returnsThis(),
-      ignore: Sinon.stub().resolves(),
+      onConflict: sandbox.stub().returnsThis(),
+      ignore: sandbox.stub().resolves(),
     }
 
     let foldersCallCount = 0
-    knexFnStub = Sinon.stub().callsFake((table: string) => {
+    knexFnStub = sandbox.stub().callsFake((table: string) => {
       if (table === 'pictures') return picturesQuery
       if (table === 'folders') {
         foldersCallCount += 1

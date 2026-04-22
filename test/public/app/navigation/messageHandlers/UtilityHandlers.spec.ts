@@ -27,7 +27,7 @@ describe('public/app/navigation function Init()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   let dom = new JSDOM('', {})
-  const tabSelectedSpy = Sinon.stub()
+  const tabSelectedSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -55,7 +55,7 @@ describe('public/app/navigation function Init()', () => {
     Sinon.restore()
   })
   describe('Action:Execute:Slideshow Message Handler', () => {
-    let locationAssignSpy = Sinon.stub()
+    let locationAssignSpy = sandbox.stub()
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
@@ -85,9 +85,9 @@ describe('public/app/navigation function Init()', () => {
     })
   })
   describe('Action:Execute:Fullscreen Message Handler', () => {
-    const requestFullscreenStub = Sinon.stub()
-    const exitFullscreenStub = Sinon.stub()
-    const errorSpy = Sinon.stub()
+    const requestFullscreenStub = sandbox.stub()
+    const exitFullscreenStub = sandbox.stub()
+    const errorSpy = sandbox.stub()
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
@@ -203,7 +203,7 @@ describe('public/app/navigation function Init()', () => {
     ]
     mappers.forEach(([from, to]) => {
       it(`should map event ${from} to ${to}`, async () => {
-        const spy = Sinon.stub().resolves()
+        const spy = sandbox.stub().resolves()
         PubSub.subscribers[to.toUpperCase()] = [spy]
         const handler = PubSub.subscribers[from.toUpperCase()]?.pop()
         assert(handler !== undefined)

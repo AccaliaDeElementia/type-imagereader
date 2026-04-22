@@ -17,14 +17,14 @@ const sandbox = Sinon.createSandbox()
 type RequestHandler = (req: Request, res: ExpressResponse) => Promise<void>
 
 describe('routes/api route GET /bookmarks', () => {
-  let getBookmarkStub = Sinon.stub()
+  let getBookmarkStub = sandbox.stub()
   let requestStub = {
     body: {},
     originalUrl: '/',
   }
   let requestFake = Cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let routeHandler = Cast<RequestHandler>(Sinon.stub().throws('WRONG CALL'))
+  let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -33,17 +33,17 @@ describe('routes/api route GET /bookmarks', () => {
     }
     requestFake = Cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
-    const getFn = Sinon.stub()
+    const getFn = sandbox.stub()
     knexFake = { Knex: Math.random() }
     const InitializeStub = sandbox.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         get: getFn,
-        post: Sinon.stub(),
+        post: sandbox.stub(),
       }),
     )
     getBookmarkStub = sandbox.stub(Functions, 'GetBookmarks').resolves()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     const fn = getFn.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1] as unknown

@@ -9,53 +9,53 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function IncrementalRemoveFolder()', () => {
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
   let picturesStub = {
-    where: Sinon.stub().returnsThis(),
-    delete: Sinon.stub().resolves(0),
+    where: sandbox.stub().returnsThis(),
+    delete: sandbox.stub().resolves(0),
   }
   let bookmarksStub = {
-    whereNotExists: Sinon.stub().returnsThis(),
-    delete: Sinon.stub().resolves(0),
+    whereNotExists: sandbox.stub().returnsThis(),
+    delete: sandbox.stub().resolves(0),
   }
   let bookmarksInnerStub = {
-    select: Sinon.stub().returnsThis(),
-    from: Sinon.stub().returnsThis(),
-    whereRaw: Sinon.stub().returnsThis(),
+    select: sandbox.stub().returnsThis(),
+    from: sandbox.stub().returnsThis(),
+    whereRaw: sandbox.stub().returnsThis(),
   }
   let foldersStub = {
-    where: Sinon.stub().returnsThis(),
-    delete: Sinon.stub().resolves(0),
+    where: sandbox.stub().returnsThis(),
+    delete: sandbox.stub().resolves(0),
   }
-  let knexFnStub = Sinon.stub()
+  let knexFnStub = sandbox.stub()
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     picturesStub = {
-      where: Sinon.stub().returnsThis(),
-      delete: Sinon.stub().resolves(5),
+      where: sandbox.stub().returnsThis(),
+      delete: sandbox.stub().resolves(5),
     }
     bookmarksInnerStub = {
-      select: Sinon.stub().returnsThis(),
-      from: Sinon.stub().returnsThis(),
-      whereRaw: Sinon.stub().returnsThis(),
+      select: sandbox.stub().returnsThis(),
+      from: sandbox.stub().returnsThis(),
+      whereRaw: sandbox.stub().returnsThis(),
     }
     bookmarksStub = {
-      whereNotExists: Sinon.stub().callsFake((fn: (this: unknown) => void) => {
+      whereNotExists: sandbox.stub().callsFake((fn: (this: unknown) => void) => {
         fn.apply(bookmarksInnerStub)
         return bookmarksStub
       }),
-      delete: Sinon.stub().resolves(2),
+      delete: sandbox.stub().resolves(2),
     }
     foldersStub = {
-      where: Sinon.stub().returnsThis(),
-      delete: Sinon.stub().resolves(3),
+      where: sandbox.stub().returnsThis(),
+      delete: sandbox.stub().resolves(3),
     }
-    knexFnStub = Sinon.stub()
+    knexFnStub = sandbox.stub()
     knexFnStub.withArgs('pictures').returns(picturesStub)
     knexFnStub.withArgs('bookmarks').returns(bookmarksStub)
     knexFnStub.withArgs('folders').returns(foldersStub)

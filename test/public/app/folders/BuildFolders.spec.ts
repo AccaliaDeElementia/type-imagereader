@@ -28,10 +28,10 @@ describe('public/app/folders function BuildFolders()', () => {
   const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   let tabFolders: HTMLDivElement | null = null
-  let hideTabStub = Sinon.stub()
-  let unhideTabStub = Sinon.stub()
-  let buildAllCardsStub = Sinon.stub()
-  let tabSelectStub = Sinon.stub()
+  let hideTabStub = sandbox.stub()
+  let unhideTabStub = sandbox.stub()
+  let buildAllCardsStub = sandbox.stub()
+  let tabSelectStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -42,7 +42,7 @@ describe('public/app/folders function BuildFolders()', () => {
     hideTabStub = sandbox.stub(Folders, 'HideTab')
     unhideTabStub = sandbox.stub(Folders, 'UnhideTab')
     buildAllCardsStub = sandbox.stub(Folders, 'BuildAllCards')
-    tabSelectStub = Sinon.stub().resolves()
+    tabSelectStub = sandbox.stub().resolves()
     PubSub.subscribers['TAB:SELECT'] = [tabSelectStub]
   })
   afterEach(() => {

@@ -44,21 +44,21 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   let requestFake = Cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routerFake = {
-    get: Sinon.stub().returnsThis(),
+    get: sandbox.stub().returnsThis(),
   }
-  let loggerStub = Sinon.stub()
-  let router = Cast<(req: Request, res: Response) => Promise<void>>(Sinon.stub())
-  let fetchImageStub = Sinon.stub()
-  let sendImageStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
+  let router = Cast<(req: Request, res: Response) => Promise<void>>(sandbox.stub())
+  let fetchImageStub = sandbox.stub()
+  let sendImageStub = sandbox.stub()
   beforeEach(async () => {
     applicationFake = Cast<Application>({})
     serverFake = Cast<Server>({})
     websocketsFake = Cast<WebSocketServer>({})
     routerFake = {
-      get: Sinon.stub().returnsThis(),
+      get: sandbox.stub().returnsThis(),
     }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)

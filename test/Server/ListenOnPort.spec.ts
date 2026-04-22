@@ -9,11 +9,11 @@ import { Functions, Imports } from '#Server'
 const sandbox = Sinon.createSandbox()
 
 describe('Server function ListenOnPort', () => {
-  let listenStub = Sinon.stub()
+  let listenStub = sandbox.stub()
   let serverFake = Cast<Server>({ listen: listenStub })
-  let loggerFake = Sinon.stub()
+  let loggerFake = sandbox.stub()
   beforeEach(() => {
-    listenStub = Sinon.stub()
+    listenStub = sandbox.stub()
     serverFake = Cast<Server>({ listen: listenStub })
     loggerFake = sandbox.stub(Imports, 'logger')
   })

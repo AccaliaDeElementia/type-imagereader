@@ -11,18 +11,18 @@ import type { Server as WebSocketServer } from 'socket.io'
 const sandbox = Sinon.createSandbox()
 
 describe('Server function RegisterRouters', () => {
-  let appStub = { get: Sinon.stub() }
+  let appStub = { get: sandbox.stub() }
   let appFake = Cast<Express>(appStub)
   let serverFake = Cast<HttpServer>({})
   let socketsFake = Cast<WebSocketServer>({})
-  let createAppStub = Sinon.stub()
-  let configureBaseAppStub = Sinon.stub()
-  let registerRoutersStub = Sinon.stub()
-  let configureLoggingStub = Sinon.stub()
-  let registerViewsStub = Sinon.stub()
-  let listenOnPortStub = Sinon.stub()
+  let createAppStub = sandbox.stub()
+  let configureBaseAppStub = sandbox.stub()
+  let registerRoutersStub = sandbox.stub()
+  let configureLoggingStub = sandbox.stub()
+  let registerViewsStub = sandbox.stub()
+  let listenOnPortStub = sandbox.stub()
   beforeEach(() => {
-    appStub = { get: Sinon.stub() }
+    appStub = { get: sandbox.stub() }
     appFake = Cast<Express>(appStub)
     serverFake = Cast<HttpServer>({})
     socketsFake = Cast<WebSocketServer>({})
@@ -93,16 +93,16 @@ describe('Server function RegisterRouters', () => {
   })
   describe('X-Clacks-Overhead', () => {
     let requestStub = {}
-    let resposnseStub = { set: Sinon.stub() }
-    let nextStub = Sinon.stub()
+    let resposnseStub = { set: sandbox.stub() }
+    let nextStub = sandbox.stub()
     let filterFn = (_a: unknown, _b: unknown, _c: Sinon.SinonStub): void => {
       assert.isTrue(false)
     }
     beforeEach(async () => {
       await start(4096)
       requestStub = {}
-      resposnseStub = { set: Sinon.stub() }
-      nextStub = Sinon.stub()
+      resposnseStub = { set: sandbox.stub() }
+      nextStub = sandbox.stub()
       filterFn = Cast<(req: unknown, res: unknown, next: Sinon.SinonStub) => void>(appStub.get.firstCall.args[1])
     })
     const clacksTests: Array<[string, () => void]> = [

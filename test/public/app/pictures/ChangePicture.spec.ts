@@ -9,10 +9,10 @@ import { PubSub } from '#public/scripts/app/pubsub'
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures function ChangePicture()', () => {
-  const menuHideSpy = Sinon.stub().resolves()
-  const loadingErrorSpy = Sinon.stub().resolves()
-  let isLoadingSpy = Sinon.stub()
-  let loadImageSpy = Sinon.stub()
+  const menuHideSpy = sandbox.stub().resolves()
+  const loadingErrorSpy = sandbox.stub().resolves()
+  let isLoadingSpy = sandbox.stub()
+  let loadImageSpy = sandbox.stub()
   beforeEach(() => {
     Pictures.current = null
     PubSub.subscribers = {

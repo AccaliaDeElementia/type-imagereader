@@ -12,27 +12,27 @@ type SubscriberCallback = (err: Error | null, events: Array<{ type: string; path
 const sandbox = Sinon.createSandbox()
 
 describe('utils/filewatcher Functions.start()', () => {
-  let loggerStub = Sinon.stub()
-  let debugStub = Sinon.stub()
-  let subscribeStub = Sinon.stub()
-  let setTimeoutStub = Sinon.stub()
-  let clearTimeoutStub = Sinon.stub()
-  let flushCallback: FlushCallback = Sinon.stub().resolves()
-  let fakeSubscription: WatcherSubscription = { unsubscribe: Sinon.stub().resolves() }
-  let subscriberCallback: SubscriberCallback = Sinon.stub()
+  let loggerStub = sandbox.stub()
+  let debugStub = sandbox.stub()
+  let subscribeStub = sandbox.stub()
+  let setTimeoutStub = sandbox.stub()
+  let clearTimeoutStub = sandbox.stub()
+  let flushCallback: FlushCallback = sandbox.stub().resolves()
+  let fakeSubscription: WatcherSubscription = { unsubscribe: sandbox.stub().resolves() }
+  let subscriberCallback: SubscriberCallback = sandbox.stub()
 
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    fakeSubscription = { unsubscribe: Sinon.stub().resolves() }
-    subscriberCallback = Sinon.stub()
+    fakeSubscription = { unsubscribe: sandbox.stub().resolves() }
+    subscriberCallback = sandbox.stub()
     subscribeStub = sandbox.stub(Imports, 'subscribe').callsFake(async (_dir, fn) => {
       subscriberCallback = Cast<SubscriberCallback>(fn)
       return await Promise.resolve(fakeSubscription)
     })
     setTimeoutStub = sandbox.stub(Imports, 'setTimeout').returns(Cast<ReturnType<typeof setTimeout>>(42))
     clearTimeoutStub = sandbox.stub(Imports, 'clearTimeout')
-    flushCallback = Sinon.stub().resolves()
+    flushCallback = sandbox.stub().resolves()
     Functions.debounceMs = 5000
     Functions.maxPendingChanges = 500
   })
@@ -155,7 +155,7 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should reschedule flush when flush callback rejects', async () => {
-    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
     let flushFn: (() => void) | undefined = undefined
     setTimeoutStub.callsFake((fn: () => void) => {
       flushFn = fn
@@ -195,7 +195,7 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should log flush error when retry scheduling throws', async () => {
-    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
     let callCount = 0
     setTimeoutStub.callsFake((fn: () => void) => {
       callCount += 1
@@ -267,7 +267,7 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should clear pending timer in scheduleRetry when events arrive during flush', async () => {
-    const delayedReject: FlushCallback = Sinon.stub().callsFake(async () => {
+    const delayedReject: FlushCallback = sandbox.stub().callsFake(async () => {
       await Promise.resolve()
       throw new Error('flush failed')
     })
@@ -295,7 +295,7 @@ describe('utils/filewatcher Functions.start()', () => {
 
   it('should log flush error when force-flush and scheduleRetry both fail', async () => {
     Functions.maxPendingChanges = 1
-    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
     setTimeoutStub.throws(new Error('setTimeout broke'))
     await Functions.start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
@@ -308,7 +308,7 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should log flush error from scheduleRetry timer when nested retry fails', async () => {
-    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
     let callCount = 0
     setTimeoutStub.callsFake((fn: () => void) => {
       callCount += 1
@@ -336,7 +336,7 @@ describe('utils/filewatcher Functions.start()', () => {
 
   it('should not schedule a timer for initial force-flush', async () => {
     Functions.maxPendingChanges = 1
-    const delayedFlush: FlushCallback = Sinon.stub().callsFake(async () => {
+    const delayedFlush: FlushCallback = sandbox.stub().callsFake(async () => {
       await Promise.resolve()
     })
     await Functions.start('/data', delayedFlush)
@@ -346,7 +346,7 @@ describe('utils/filewatcher Functions.start()', () => {
 
   it('should schedule debounce timer for events during in-flight force-flush', async () => {
     Functions.maxPendingChanges = 1
-    const delayedFlush: FlushCallback = Sinon.stub().callsFake(async () => {
+    const delayedFlush: FlushCallback = sandbox.stub().callsFake(async () => {
       await Promise.resolve()
     })
     await Functions.start('/data', delayedFlush)
@@ -357,7 +357,7 @@ describe('utils/filewatcher Functions.start()', () => {
 
   it('should not call flush a second time while force-flush is in progress', async () => {
     Functions.maxPendingChanges = 1
-    const delayedFlush: FlushCallback = Sinon.stub().callsFake(async () => {
+    const delayedFlush: FlushCallback = sandbox.stub().callsFake(async () => {
       await Promise.resolve()
     })
     await Functions.start('/data', delayedFlush)
@@ -373,7 +373,7 @@ describe('utils/filewatcher Functions.start()', () => {
   it('should allow a new force-flush after previous force-flush completes', async () => {
     Functions.maxPendingChanges = 1
     let flushCount = 0
-    const delayedFlush: FlushCallback = Sinon.stub().callsFake(async () => {
+    const delayedFlush: FlushCallback = sandbox.stub().callsFake(async () => {
       flushCount += 1
       await Promise.resolve()
     })
@@ -397,7 +397,8 @@ describe('utils/filewatcher Functions.start()', () => {
 
   it('should allow a new force-flush after previous force-flush rejects', async () => {
     Functions.maxPendingChanges = 1
-    const rejectOnce: FlushCallback = Sinon.stub()
+    const rejectOnce: FlushCallback = sandbox
+      .stub()
       .onFirstCall()
       .callsFake(async () => {
         await Promise.resolve()
@@ -425,7 +426,7 @@ describe('utils/filewatcher Functions.start()', () => {
 
   it('should log retry message when immediate force-flush fails', async () => {
     Functions.maxPendingChanges = 1
-    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
     await Functions.start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
@@ -443,7 +444,7 @@ describe('utils/filewatcher Functions.start()', () => {
       flushFn = fn
       return 42
     })
-    const rejectingFlush: FlushCallback = Sinon.stub().rejects(flushErr)
+    const rejectingFlush: FlushCallback = sandbox.stub().rejects(flushErr)
     await Functions.start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = Cast<() => void>(flushFn)
@@ -457,7 +458,7 @@ describe('utils/filewatcher Functions.start()', () => {
 
   it('should schedule one debounce timer when immediate force-flush fails', async () => {
     Functions.maxPendingChanges = 1
-    const rejectingFlush: FlushCallback = Sinon.stub().rejects(new Error('flush failed'))
+    const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
     await Functions.start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()

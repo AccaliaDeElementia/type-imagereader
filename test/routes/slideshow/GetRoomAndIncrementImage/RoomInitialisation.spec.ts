@@ -13,9 +13,9 @@ describe('routes/slideshow function GetRoomAndIncrementImage() room initialisati
     .fill(undefined)
     .map((_, i) => `/image${i}.png`)
   let knexFake = StubToKnex({ knex: Math.random() })
-  let getImagesStub = Sinon.stub()
-  let getCountsStub = Sinon.stub()
-  let markImageReadStub = Sinon.stub()
+  let getImagesStub = sandbox.stub()
+  let getCountsStub = sandbox.stub()
+  let markImageReadStub = sandbox.stub()
   let pages = {
     pages: 0,
     page: 0,

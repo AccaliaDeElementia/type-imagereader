@@ -12,19 +12,19 @@ describe('routes/slideshow socket goto-image', () => {
   let knexFake = StubToKnex({})
   let ioStub = {}
   let serverFake = Cast<WebSocketServer>(ioStub)
-  let socketStub = { on: Sinon.stub() }
+  let socketStub = { on: sandbox.stub() }
   let socketFake = Cast<Socket>(socketStub)
   let socketState = new HandleSocketState()
   let folder = { path: '/foo/bar' }
   let roomData = { images: [folder], index: -1 }
-  let getRoomStub = Sinon.stub().resolves(roomData)
+  let getRoomStub = sandbox.stub().resolves(roomData)
   let picturePath = ''
-  let setLatestStub = Sinon.stub().resolves(picturePath)
+  let setLatestStub = sandbox.stub().resolves(picturePath)
   beforeEach(() => {
     knexFake = StubToKnex({})
     ioStub = {}
     serverFake = Cast<WebSocketServer>(ioStub)
-    socketStub = { on: Sinon.stub() }
+    socketStub = { on: sandbox.stub() }
     socketFake = Cast<Socket>(socketStub)
     socketState = Functions.HandleSocket(knexFake, serverFake, socketFake)
     folder = { path: '/foo/bar' }
@@ -74,7 +74,7 @@ describe('routes/slideshow socket goto-image', () => {
     it(`should ${title}`, async () => {
       socketState.roomName = room
       roomData.index = index
-      const spy = Sinon.stub()
+      const spy = sandbox.stub()
       await SocketHandlers.gotoImage(spy, socketState, knexFake)
       validationFn(spy)
     })
@@ -83,7 +83,7 @@ describe('routes/slideshow socket goto-image', () => {
     setLatestStub.resolves(null)
     socketState.roomName = '/foo'
     roomData.index = 0
-    const spy = Sinon.stub()
+    const spy = sandbox.stub()
     await SocketHandlers.gotoImage(spy, socketState, knexFake)
     expect(spy.firstCall.args[0]).to.equal(null)
   })

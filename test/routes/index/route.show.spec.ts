@@ -13,17 +13,17 @@ import { createResponseFake } from '#testutils/Express'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/index route /show', () => {
-  let routeFn: (_: Request, __: ExpressResponse) => void = Sinon.stub()
-  let routeAltFn: (_: Request, __: ExpressResponse) => void = Sinon.stub()
+  let routeFn: (_: Request, __: ExpressResponse) => void = sandbox.stub()
+  let routeAltFn: (_: Request, __: ExpressResponse) => void = sandbox.stub()
   let requestStub = { params: { path: undefined as string[] | string | undefined } }
   let requestFake = Cast<Request>(requestStub)
   let { stub: resposeStub, fake: responseFake } = createResponseFake()
-  let isPathTraversalStub = Sinon.stub()
+  let isPathTraversalStub = sandbox.stub()
   beforeEach(async () => {
     const applicationFake = Cast<Application>({})
     const serverFake = Cast<Server>({})
     const socketsFake = Cast<WebSocketServer>({})
-    const routerStub = { get: Sinon.stub() }
+    const routerStub = { get: sandbox.stub() }
     let getRouterStub: Sinon.SinonStub | undefined = undefined
     try {
       getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
@@ -37,13 +37,13 @@ describe('routes/index route /show', () => {
     } finally {
       getRouterStub?.restore()
     }
-    isPathTraversalStub = Sinon.stub(Imports, 'isPathTraversal').returns(false)
+    isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     requestStub = { params: { path: undefined } }
     requestFake = Cast<Request>(requestStub)
     ;({ stub: resposeStub, fake: responseFake } = createResponseFake())
   })
   afterEach(() => {
-    isPathTraversalStub.restore()
+    sandbox.restore()
   })
   it("should alias same handler for both '/show' and '/show/*path' routes", () => {
     expect(routeFn).to.equal(routeAltFn)

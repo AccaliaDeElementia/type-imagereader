@@ -9,16 +9,16 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function IncrementalRemovePicture()', () => {
-  let knexFnStub = Sinon.stub()
-  let picturesStub = { where: Sinon.stub().returnsThis(), delete: Sinon.stub().resolves(1) }
-  let bookmarksStub = { where: Sinon.stub().returnsThis(), delete: Sinon.stub().resolves(0) }
+  let knexFnStub = sandbox.stub()
+  let picturesStub = { where: sandbox.stub().returnsThis(), delete: sandbox.stub().resolves(1) }
+  let bookmarksStub = { where: sandbox.stub().returnsThis(), delete: sandbox.stub().resolves(0) }
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
-    picturesStub = { where: Sinon.stub().returnsThis(), delete: Sinon.stub().resolves(1) }
-    bookmarksStub = { where: Sinon.stub().returnsThis(), delete: Sinon.stub().resolves(0) }
-    knexFnStub = Sinon.stub()
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
+    picturesStub = { where: sandbox.stub().returnsThis(), delete: sandbox.stub().resolves(1) }
+    bookmarksStub = { where: sandbox.stub().returnsThis(), delete: sandbox.stub().resolves(0) }
+    knexFnStub = sandbox.stub()
     knexFnStub.withArgs('pictures').returns(picturesStub)
     knexFnStub.withArgs('bookmarks').returns(bookmarksStub)
     knexFnFake = StubToKnex(knexFnStub)

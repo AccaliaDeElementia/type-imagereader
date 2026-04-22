@@ -9,43 +9,43 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
   let picturesStub = {
-    count: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    sum: Sinon.stub().resolves([]),
+    count: sandbox.stub().returnsThis(),
+    where: sandbox.stub().returnsThis(),
+    sum: sandbox.stub().resolves([]),
   }
   let foldersStub = {
-    where: Sinon.stub().returnsThis(),
-    andWhere: Sinon.stub().returnsThis(),
-    whereNot: Sinon.stub().returnsThis(),
-    update: Sinon.stub().resolves(),
-    delete: Sinon.stub().resolves(0),
+    where: sandbox.stub().returnsThis(),
+    andWhere: sandbox.stub().returnsThis(),
+    whereNot: sandbox.stub().returnsThis(),
+    update: sandbox.stub().resolves(),
+    delete: sandbox.stub().resolves(0),
   }
-  let knexFnStub = Sinon.stub()
+  let knexFnStub = sandbox.stub()
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     picturesStub = {
-      count: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      sum: Sinon.stub().resolves([]),
+      count: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      sum: sandbox.stub().resolves([]),
     }
     foldersStub = {
-      where: Sinon.stub().returnsThis(),
-      andWhere: Sinon.stub().returnsThis(),
-      whereNot: Sinon.stub().returnsThis(),
-      update: Sinon.stub().resolves(),
-      delete: Sinon.stub().resolves(0),
+      where: sandbox.stub().returnsThis(),
+      andWhere: sandbox.stub().returnsThis(),
+      whereNot: sandbox.stub().returnsThis(),
+      update: sandbox.stub().resolves(),
+      delete: sandbox.stub().resolves(0),
     }
-    knexFnStub = Sinon.stub()
+    knexFnStub = sandbox.stub()
     knexFnStub.withArgs('pictures').returns(picturesStub)
     knexFnStub.withArgs('folders').returns(foldersStub)
-    Cast<Record<string, unknown>>(knexFnStub).raw = Sinon.stub().returns('CASE WHEN seen THEN 1 ELSE 0 END')
+    Cast<Record<string, unknown>>(knexFnStub).raw = sandbox.stub().returns('CASE WHEN seen THEN 1 ELSE 0 END')
     knexFnFake = StubToKnex(knexFnStub)
   })
 

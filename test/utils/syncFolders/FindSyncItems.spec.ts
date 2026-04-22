@@ -27,9 +27,9 @@ const makeRows = (count: number): Array<{ path: string; marker: number }> =>
 
 const makeStream = (): StreamFake => {
   const emitter = Cast<StreamFake>(new EventEmitter())
-  emitter.write = Sinon.stub().returns(true)
-  emitter.destroy = Sinon.stub()
-  emitter.end = Sinon.stub().callsFake(() => {
+  emitter.write = sandbox.stub().returns(true)
+  emitter.destroy = sandbox.stub()
+  emitter.end = sandbox.stub().callsFake(() => {
     queueMicrotask(() => emitter.emit('finish'))
   })
   return emitter
@@ -43,16 +43,16 @@ const scheduleEmit = (target: EventEmitter, event: string, arg?: unknown): void 
 }
 
 describe('utils/syncfolders function FindSyncItems()', () => {
-  let loggerStub = Sinon.stub()
-  let debugStub = Sinon.stub()
-  let fsWalkerStub = Sinon.stub()
-  let buildSyncItemRowsStub = Sinon.stub()
-  let formatSyncItemCsvStub = Sinon.stub()
-  let copyFromStub = Sinon.stub()
-  let acquireStub = Sinon.stub()
-  let releaseStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
+  let debugStub = sandbox.stub()
+  let fsWalkerStub = sandbox.stub()
+  let buildSyncItemRowsStub = sandbox.stub()
+  let formatSyncItemCsvStub = sandbox.stub()
+  let copyFromStub = sandbox.stub()
+  let acquireStub = sandbox.stub()
+  let releaseStub = sandbox.stub()
   let streamFake = makeStream()
-  let pgClientStub = { query: Sinon.stub().returns(streamFake) }
+  let pgClientStub = { query: sandbox.stub().returns(streamFake) }
   let {
     instance: knexInstanceStub,
     stub: knexFnStub,
@@ -65,13 +65,13 @@ describe('utils/syncfolders function FindSyncItems()', () => {
       fake: knexFnFake,
     } = createKnexChainFake([] as const, ['truncate', 'insert'] as const, undefined))
     streamFake = makeStream()
-    pgClientStub = { query: Sinon.stub().returns(streamFake) }
-    loggerStub = Sinon.stub()
+    pgClientStub = { query: sandbox.stub().returns(streamFake) }
+    loggerStub = sandbox.stub()
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
     buildSyncItemRowsStub = sandbox.stub(Functions, 'BuildSyncItemRows').returns({ files: 0, dirs: 0, rows: [] })
     formatSyncItemCsvStub = sandbox.stub(Functions, 'FormatSyncItemCsv').returns('csv-row\n')
-    copyFromStub = sandbox.stub(Imports, 'copyFrom').returns(Cast<CopyStreamQuery>(Sinon.stub()))
+    copyFromStub = sandbox.stub(Imports, 'copyFrom').returns(Cast<CopyStreamQuery>(sandbox.stub()))
     acquireStub = sandbox.stub(Imports, 'acquireCopyConnection').resolves(Cast<PoolClient>(pgClientStub))
     releaseStub = sandbox.stub(Imports, 'releaseCopyConnection').resolves()
   })

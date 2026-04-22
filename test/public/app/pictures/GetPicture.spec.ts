@@ -8,7 +8,7 @@ import assert from 'node:assert'
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures function GetPicture()', () => {
-  let choosePictureIndexSpy = Sinon.stub()
+  let choosePictureIndexSpy = sandbox.stub()
   beforeEach(() => {
     Pictures.pictures = Array.from({ length: 64 }).map((_, i) => ({
       path: `/some/path/${i}.png`,

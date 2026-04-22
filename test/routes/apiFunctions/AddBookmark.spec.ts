@@ -8,14 +8,20 @@ import { createKnexChainFake } from '#testutils/Knex'
 
 const chainMethods = ['insert', 'onConflict', 'ignore'] as const
 const terminalMethods = [] as const
+
+const sandbox = Sinon.createSandbox()
+
 describe('routes/apiFunctions function AddBookmark', () => {
   let knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
-  let knexStub = Sinon.stub()
+  let knexStub = sandbox.stub()
   let knexFake = StubToKnex(knexStub)
   beforeEach(() => {
     knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
-    knexStub = Sinon.stub().returns(knexInstance)
+    knexStub = sandbox.stub().returns(knexInstance)
     knexFake = StubToKnex(knexStub)
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   it('should query bookmarks table once to set bookmark', async () => {
     await Functions.AddBookmark(knexFake, '/foo/bar/baz.png')

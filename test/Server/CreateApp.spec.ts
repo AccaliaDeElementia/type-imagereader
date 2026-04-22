@@ -13,10 +13,10 @@ const sandbox = Sinon.createSandbox()
 describe('Server function CreateApp', () => {
   let serverFake = Cast<Server>({})
   let socketsFake = Cast<WebSocketServer>({})
-  let socketsServerStub = Sinon.stub()
+  let socketsServerStub = sandbox.stub()
   let appFake = Cast<Express>({})
-  let expressStub = Sinon.stub().returns(appFake)
-  let createServerStub = Sinon.stub().returns(serverFake)
+  let expressStub = sandbox.stub().returns(appFake)
+  let createServerStub = sandbox.stub().returns(serverFake)
   beforeEach(() => {
     serverFake = Cast<Server>({})
     socketsFake = Cast<WebSocketServer>({})
@@ -41,7 +41,7 @@ describe('Server function CreateApp', () => {
     expect(createServerStub.callCount).to.equal(1)
   })
   it('should delegate incoming requests to the express app via the createServer listener', () => {
-    const appCallStub = Sinon.stub()
+    const appCallStub = sandbox.stub()
     expressStub.returns(Cast<Express>(appCallStub))
     Functions.CreateApp()
     const listener = Cast<(req: unknown, res: unknown) => void>(createServerStub.firstCall.args[0])

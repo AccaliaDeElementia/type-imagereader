@@ -7,9 +7,9 @@ import Sinon from 'sinon'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/persistance function isKnexOptions()', () => {
-  let isMigrationsValidStub = Sinon.stub()
-  let isConnectionValid = Sinon.stub()
-  let isPoolValid = Sinon.stub()
+  let isMigrationsValidStub = sandbox.stub()
+  let isConnectionValid = sandbox.stub()
+  let isPoolValid = sandbox.stub()
   beforeEach(() => {
     isMigrationsValidStub = sandbox.stub(TypeGuards, 'isMigrationsValid').returns(true)
     isConnectionValid = sandbox.stub(TypeGuards, 'isConnectionValid').returns(true)

@@ -9,61 +9,61 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function SyncFolderFirstImages()', () => {
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
   let innerQueryBuilder = {
-    select: Sinon.stub().returnsThis(),
-    min: Sinon.stub().returnsThis(),
-    from: Sinon.stub().returnsThis(),
-    groupBy: Sinon.stub().returnsThis(),
+    select: sandbox.stub().returnsThis(),
+    min: sandbox.stub().returnsThis(),
+    from: sandbox.stub().returnsThis(),
+    groupBy: sandbox.stub().returnsThis(),
   }
   let queryBuilder = {
-    with: Sinon.stub().returnsThis(),
-    select: Sinon.stub().returnsThis(),
-    min: Sinon.stub().returnsThis(),
-    from: Sinon.stub().returnsThis(),
-    join: Sinon.stub().returnsThis(),
-    innerJoin: Sinon.stub().returnsThis(),
-    groupBy: Sinon.stub().returnsThis(),
-    orderBy: Sinon.stub().resolves([]),
+    with: sandbox.stub().returnsThis(),
+    select: sandbox.stub().returnsThis(),
+    min: sandbox.stub().returnsThis(),
+    from: sandbox.stub().returnsThis(),
+    join: sandbox.stub().returnsThis(),
+    innerJoin: sandbox.stub().returnsThis(),
+    groupBy: sandbox.stub().returnsThis(),
+    orderBy: sandbox.stub().resolves([]),
   }
-  let queryBuilderStub = Sinon.stub().returns(queryBuilder)
+  let queryBuilderStub = sandbox.stub().returns(queryBuilder)
   let knexInstanceStub = {
-    insert: Sinon.stub().returnsThis(),
-    onConflict: Sinon.stub().returnsThis(),
-    merge: Sinon.stub().resolves(0),
+    insert: sandbox.stub().returnsThis(),
+    onConflict: sandbox.stub().returnsThis(),
+    merge: sandbox.stub().resolves(0),
   }
-  let knexFnStub = Sinon.stub().returns(knexInstanceStub)
+  let knexFnStub = sandbox.stub().returns(knexInstanceStub)
   let knexFnFake = StubToKnex(knexFnStub)
-  let chunkStub = Sinon.stub()
+  let chunkStub = sandbox.stub()
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
     innerQueryBuilder = {
-      select: Sinon.stub().returnsThis(),
-      min: Sinon.stub().returnsThis(),
-      from: Sinon.stub().returnsThis(),
-      groupBy: Sinon.stub().returnsThis(),
+      select: sandbox.stub().returnsThis(),
+      min: sandbox.stub().returnsThis(),
+      from: sandbox.stub().returnsThis(),
+      groupBy: sandbox.stub().returnsThis(),
     }
     queryBuilder = {
-      with: Sinon.stub().returnsThis(),
-      select: Sinon.stub().returnsThis(),
-      min: Sinon.stub().returnsThis(),
-      from: Sinon.stub().returnsThis(),
-      join: Sinon.stub().returnsThis(),
-      innerJoin: Sinon.stub().returnsThis(),
-      groupBy: Sinon.stub().returnsThis(),
-      orderBy: Sinon.stub().resolves([]),
+      with: sandbox.stub().returnsThis(),
+      select: sandbox.stub().returnsThis(),
+      min: sandbox.stub().returnsThis(),
+      from: sandbox.stub().returnsThis(),
+      join: sandbox.stub().returnsThis(),
+      innerJoin: sandbox.stub().returnsThis(),
+      groupBy: sandbox.stub().returnsThis(),
+      orderBy: sandbox.stub().resolves([]),
     }
-    queryBuilderStub = Sinon.stub().returns(queryBuilder)
+    queryBuilderStub = sandbox.stub().returns(queryBuilder)
     knexInstanceStub = {
-      insert: Sinon.stub().returnsThis(),
-      onConflict: Sinon.stub().returnsThis(),
-      merge: Sinon.stub().resolves(0),
+      insert: sandbox.stub().returnsThis(),
+      onConflict: sandbox.stub().returnsThis(),
+      merge: sandbox.stub().resolves(0),
     }
-    knexFnStub = Sinon.stub().returns(knexInstanceStub)
+    knexFnStub = sandbox.stub().returns(knexInstanceStub)
     knexFnFake = StubToKnex(knexFnStub)
-    chunkStub = Sinon.stub()
+    chunkStub = sandbox.stub()
     knexFnFake.queryBuilder = queryBuilderStub
     chunkStub = sandbox.stub(Functions, 'Chunk').returns([])
   })

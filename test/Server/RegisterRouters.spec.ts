@@ -11,12 +11,12 @@ import { Routers, Functions } from '#Server'
 const sandbox = Sinon.createSandbox()
 
 describe('Server function RegisterRouters', () => {
-  let getRootRouter = Sinon.stub()
-  let getApiRouter = Sinon.stub()
-  let getImagesRouter = Sinon.stub()
-  let getSlideshowRouter = Sinon.stub()
-  let getWeatherRouter = Sinon.stub()
-  let appStub = { use: Sinon.stub() }
+  let getRootRouter = sandbox.stub()
+  let getApiRouter = sandbox.stub()
+  let getImagesRouter = sandbox.stub()
+  let getSlideshowRouter = sandbox.stub()
+  let getWeatherRouter = sandbox.stub()
+  let appStub = { use: sandbox.stub() }
   let appFake = Cast<Express>(appStub)
   let serverFake = Cast<HttpServer>({})
   let socketsFake = Cast<WebSocketServer>({})
@@ -26,7 +26,7 @@ describe('Server function RegisterRouters', () => {
     getImagesRouter = sandbox.stub(Routers, 'Images').resolves()
     getSlideshowRouter = sandbox.stub(Routers, 'Slideshow').resolves()
     getWeatherRouter = sandbox.stub(Routers, 'Weather').resolves()
-    appStub = { use: Sinon.stub() }
+    appStub = { use: sandbox.stub() }
     appFake = Cast<Express>(appStub)
     serverFake = Cast<HttpServer>({})
     socketsFake = Cast<WebSocketServer>({})

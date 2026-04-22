@@ -13,9 +13,9 @@ describe('routes/weather function UpdateWeather', () => {
     weather: [{ main: 'weatherMain', icon: 'weatherIcon' }],
     sys: { sunrise: 123.5, sunset: 455.5 },
   }
-  let getLatestSunriseStub = Sinon.stub()
-  let getEarliestSunsetStub = Sinon.stub()
-  let getWeatherStub = Sinon.stub()
+  let getLatestSunriseStub = sandbox.stub()
+  let getEarliestSunsetStub = sandbox.stub()
+  let getWeatherStub = sandbox.stub()
 
   beforeEach(() => {
     weatherData = {
@@ -157,7 +157,7 @@ describe('routes/weather function UpdateWeather', () => {
     expect(result.temp).to.equal(-273.15)
   })
   describe('logging when GetWeather rejects', () => {
-    let loggerStub = Sinon.stub()
+    let loggerStub = sandbox.stub()
     beforeEach(() => {
       loggerStub = sandbox.stub(Imports, 'logger')
     })

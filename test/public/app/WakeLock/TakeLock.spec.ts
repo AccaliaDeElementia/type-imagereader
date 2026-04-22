@@ -11,9 +11,9 @@ describe('public/app/wakelock function TakeLock()', () => {
   const existingNavigator = global.navigator
 
   let clock: sinon.SinonFakeTimers | undefined = undefined
-  let wakelockRequest = Sinon.stub()
+  let wakelockRequest = sandbox.stub()
   let sentinel: WakeLockSentinel = {
-    release: Sinon.stub().resolves(),
+    release: sandbox.stub().resolves(),
     released: false,
   }
   let dom = new JSDOM('<html></html>', {})
@@ -23,11 +23,11 @@ describe('public/app/wakelock function TakeLock()', () => {
     WakeLock.sentinel = null
     WakeLock.timeout = 0
     sentinel = {
-      release: Sinon.stub().resolves(),
+      release: sandbox.stub().resolves(),
       released: false,
     }
 
-    wakelockRequest = Sinon.stub()
+    wakelockRequest = sandbox.stub()
     wakelockRequest.resolves(sentinel)
     Object.defineProperty(global, 'navigator', {
       configurable: true,
@@ -66,7 +66,7 @@ describe('public/app/wakelock function TakeLock()', () => {
   })
   it('should take lock when sentinal is already released', async () => {
     WakeLock.sentinel = {
-      release: Sinon.stub().resolves(),
+      release: sandbox.stub().resolves(),
       released: true,
     }
     await WakeLock.TakeLock()
@@ -74,7 +74,7 @@ describe('public/app/wakelock function TakeLock()', () => {
   })
   it('should save sentinel when taking lock because sentinel already released', async () => {
     WakeLock.sentinel = {
-      release: Sinon.stub().resolves(),
+      release: sandbox.stub().resolves(),
       released: true,
     }
     await WakeLock.TakeLock()
@@ -88,7 +88,7 @@ describe('public/app/wakelock function TakeLock()', () => {
   })
   it('should not overwrite sentinel when lock already held', async () => {
     const sent = {
-      release: Sinon.stub().resolves(),
+      release: sandbox.stub().resolves(),
       released: false,
     }
     WakeLock.sentinel = sent
@@ -108,7 +108,7 @@ describe('public/app/wakelock function TakeLock()', () => {
   })
   it('should reset sentinal when lock request throws', async () => {
     WakeLock.sentinel = {
-      release: Sinon.stub().resolves(),
+      release: sandbox.stub().resolves(),
       released: true,
     }
     wakelockRequest.throws('FOO')
@@ -123,7 +123,7 @@ describe('public/app/wakelock function TakeLock()', () => {
   })
   it('should reset sentinal when lock request rejects', async () => {
     WakeLock.sentinel = {
-      release: Sinon.stub().resolves(),
+      release: sandbox.stub().resolves(),
       released: true,
     }
     wakelockRequest.rejects('FOO')

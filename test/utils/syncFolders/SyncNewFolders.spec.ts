@@ -6,40 +6,45 @@ import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import type { Debugger } from 'debug'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function SyncNewFolders()', () => {
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   let loggerFake = Cast<Debugger>(loggerStub)
   let knexInnerInstanceStub = {
-    select: Sinon.stub().returnsThis(),
-    from: Sinon.stub().returnsThis(),
-    leftJoin: Sinon.stub().returnsThis(),
-    andWhere: Sinon.stub().returnsThis(),
-    catch: Sinon.stub(),
+    select: sandbox.stub().returnsThis(),
+    from: sandbox.stub().returnsThis(),
+    leftJoin: sandbox.stub().returnsThis(),
+    andWhere: sandbox.stub().returnsThis(),
+    catch: sandbox.stub(),
   }
   let knexInstanceStub = {
-    raw: Sinon.stub(),
-    from: Sinon.stub().returnsThis(),
-    insert: Sinon.stub().resolves([0]),
-    catch: Sinon.stub(),
+    raw: sandbox.stub(),
+    from: sandbox.stub().returnsThis(),
+    insert: sandbox.stub().resolves([0]),
+    catch: sandbox.stub(),
   }
   let knexFnFake = StubToKnex(knexInstanceStub)
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
     knexInnerInstanceStub = {
-      select: Sinon.stub().returnsThis(),
-      from: Sinon.stub().returnsThis(),
-      leftJoin: Sinon.stub().returnsThis(),
-      andWhere: Sinon.stub().returnsThis(),
-      catch: Sinon.stub(),
+      select: sandbox.stub().returnsThis(),
+      from: sandbox.stub().returnsThis(),
+      leftJoin: sandbox.stub().returnsThis(),
+      andWhere: sandbox.stub().returnsThis(),
+      catch: sandbox.stub(),
     }
     knexInstanceStub = {
-      raw: Sinon.stub(),
-      from: Sinon.stub().returnsThis(),
-      insert: Sinon.stub().resolves([0]),
-      catch: Sinon.stub(),
+      raw: sandbox.stub(),
+      from: sandbox.stub().returnsThis(),
+      insert: sandbox.stub().resolves([0]),
+      catch: sandbox.stub(),
     }
     knexFnFake = StubToKnex(knexInstanceStub)
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   it('should call raw once for folders table', async () => {
     await Functions.SyncNewFolders(loggerFake, knexFnFake)

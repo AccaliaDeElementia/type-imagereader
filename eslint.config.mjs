@@ -46,6 +46,14 @@ export default [
     rules: {
       '@typescript-eslint/strict-void-return': 'off', // Chai assertions and Sinon spies idiomatically return values in void contexts
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.object.name='Sinon'][callee.property.name='stub']",
+          message:
+            'Do not use Sinon.stub() — it registers into the default sandbox and leaks across the full test run. Use sandbox.stub() via a per-describe sandbox (const sandbox = Sinon.createSandbox(), plus sandbox.restore() in afterEach).',
+        },
+      ],
     },
   },
   {

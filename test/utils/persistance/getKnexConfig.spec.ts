@@ -19,7 +19,7 @@ describe('utils/persistance function getKnexConfig()', () => {
     },
     migrations: { tableName: '' },
   }
-  let readConfigurationBlockStub = Sinon.stub()
+  let readConfigurationBlockStub = sandbox.stub()
   beforeEach(() => {
     delete process.env.DB_HOST
     delete process.env.DB_DATABASE

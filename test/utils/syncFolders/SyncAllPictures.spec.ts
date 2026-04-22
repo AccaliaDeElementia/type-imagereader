@@ -9,14 +9,14 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function SyncAllPictures()', () => {
-  let syncNewPicturesStub = Sinon.stub()
-  let syncRemovedPicturesStub = Sinon.stub()
-  let syncRemovedBookmarksStub = Sinon.stub()
-  let loggerStub = Sinon.stub()
-  let debugStub = Sinon.stub()
+  let syncNewPicturesStub = sandbox.stub()
+  let syncRemovedPicturesStub = sandbox.stub()
+  let syncRemovedBookmarksStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
+  let debugStub = sandbox.stub()
   let knexFake = StubToKnex({ id: Math.random() })
   beforeEach(() => {
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     knexFake = StubToKnex({ id: Math.random() })
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     syncNewPicturesStub = sandbox.stub(Functions, 'SyncNewPictures').resolves()

@@ -26,8 +26,8 @@ html
         img.icon
 `
 describe('public/slideshow/weather LocalWeatherUpdater', () => {
-  let fetchWeatherStub = Sinon.stub()
-  let showWeatherStub = Sinon.stub()
+  let fetchWeatherStub = sandbox.stub()
+  let showWeatherStub = sandbox.stub()
 
   const baseWindow = global.window
   const baseDocument = global.document

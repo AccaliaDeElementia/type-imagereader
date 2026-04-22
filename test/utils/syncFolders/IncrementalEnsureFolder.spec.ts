@@ -10,27 +10,27 @@ const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function IncrementalEnsureFolder()', () => {
   let foldersStub = {
-    select: Sinon.stub().returnsThis(),
-    where: Sinon.stub().returnsThis(),
-    first: Sinon.stub().resolves(undefined),
-    insert: Sinon.stub().returnsThis(),
-    onConflict: Sinon.stub().returnsThis(),
-    ignore: Sinon.stub().resolves(),
+    select: sandbox.stub().returnsThis(),
+    where: sandbox.stub().returnsThis(),
+    first: sandbox.stub().resolves(undefined),
+    insert: sandbox.stub().returnsThis(),
+    onConflict: sandbox.stub().returnsThis(),
+    ignore: sandbox.stub().resolves(),
   }
-  let knexFnStub = Sinon.stub()
+  let knexFnStub = sandbox.stub()
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(Sinon.stub()))
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     foldersStub = {
-      select: Sinon.stub().returnsThis(),
-      where: Sinon.stub().returnsThis(),
-      first: Sinon.stub().resolves(undefined),
-      insert: Sinon.stub().returnsThis(),
-      onConflict: Sinon.stub().returnsThis(),
-      ignore: Sinon.stub().resolves(),
+      select: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      first: sandbox.stub().resolves(undefined),
+      insert: sandbox.stub().returnsThis(),
+      onConflict: sandbox.stub().returnsThis(),
+      ignore: sandbox.stub().resolves(),
     }
-    knexFnStub = Sinon.stub()
+    knexFnStub = sandbox.stub()
     knexFnStub.withArgs('folders').returns(foldersStub)
     knexFnFake = StubToKnex(knexFnStub)
   })

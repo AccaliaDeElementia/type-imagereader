@@ -15,7 +15,7 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
     expect(test.updateFn).to.equal(defaultUpdateFn)
   })
   it('should set proviced update function', () => {
-    const fn = Sinon.stub().resolves()
+    const fn = sandbox.stub().resolves()
     const test = new CyclicUpdater(fn, undefined)
     expect(test.updateFn).to.equal(fn)
   })
@@ -52,8 +52,8 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
     const existingWindow = Cast<Window & typeof globalThis>(global.window)
     const existingDocument = global.document
     const dom = new JSDOM('', {})
-    let errorStub = Sinon.stub()
-    const updateFn = Sinon.stub().resolves()
+    let errorStub = sandbox.stub()
+    const updateFn = sandbox.stub().resolves()
     const updater = new CyclicUpdater(updateFn, undefined)
     before(() => {
       global.window = Cast<Window & typeof globalThis>(dom.window)

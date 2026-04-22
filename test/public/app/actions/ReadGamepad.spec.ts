@@ -17,7 +17,7 @@ describe('public/app/actions function ReadGamepad()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   const dom: JSDOM = new JSDOM('', {})
-  let GamepadResetSpy = Sinon.stub()
+  let GamepadResetSpy = sandbox.stub()
 
   let existingNavigator: Navigator = global.navigator
   const testGamePad: {
@@ -28,11 +28,11 @@ describe('public/app/actions function ReadGamepad()', () => {
     buttons: [],
   }
 
-  let getTestGamepads = Sinon.stub()
-  let actionGamepadListener = Sinon.stub()
+  let getTestGamepads = sandbox.stub()
+  let actionGamepadListener = sandbox.stub()
   let documentHidden = false
 
-  let gamepadsReadStub = Sinon.stub()
+  let gamepadsReadStub = sandbox.stub()
 
   beforeEach(() => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
@@ -47,7 +47,7 @@ describe('public/app/actions function ReadGamepad()', () => {
       configurable: true,
       get: () => dom.window.navigator,
     })
-    getTestGamepads = Sinon.stub()
+    getTestGamepads = sandbox.stub()
     dom.window.navigator.getGamepads = getTestGamepads
     Object.defineProperty(dom.window.document, 'hidden', {
       configurable: true,
@@ -55,7 +55,7 @@ describe('public/app/actions function ReadGamepad()', () => {
     })
     getTestGamepads.returns([testGamePad])
     gamepadsReadStub = sandbox.stub(Actions.gamepads, 'Read').returns(false)
-    actionGamepadListener = Sinon.stub().resolves()
+    actionGamepadListener = sandbox.stub().resolves()
     PubSub.Subscribe('Action:Gamepad', actionGamepadListener)
   })
   afterEach(() => {

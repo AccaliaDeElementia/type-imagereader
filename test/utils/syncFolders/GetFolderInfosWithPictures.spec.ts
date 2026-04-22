@@ -5,25 +5,30 @@ import { type FolderInfo, Functions } from '#utils/syncfolders'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 
+const sandbox = Sinon.createSandbox()
+
 describe('utils/syncfolders function GetFolderInfosWithPictures()', () => {
   let knexStub = {
-    select: Sinon.stub().returnsThis(),
-    count: Sinon.stub().returnsThis(),
-    sum: Sinon.stub().returnsThis(),
-    groupBy: Sinon.stub().resolves([]),
+    select: sandbox.stub().returnsThis(),
+    count: sandbox.stub().returnsThis(),
+    sum: sandbox.stub().returnsThis(),
+    groupBy: sandbox.stub().resolves([]),
   }
-  let knexFnStub: Sinon.SinonStub & { raw?: Sinon.SinonStub } = Sinon.stub().returns(knexStub)
+  let knexFnStub: Sinon.SinonStub & { raw?: Sinon.SinonStub } = sandbox.stub().returns(knexStub)
   let knexFnFake = StubToKnex(knexFnStub)
   beforeEach(() => {
     knexStub = {
-      select: Sinon.stub().returnsThis(),
-      count: Sinon.stub().returnsThis(),
-      sum: Sinon.stub().returnsThis(),
-      groupBy: Sinon.stub().resolves([]),
+      select: sandbox.stub().returnsThis(),
+      count: sandbox.stub().returnsThis(),
+      sum: sandbox.stub().returnsThis(),
+      groupBy: sandbox.stub().resolves([]),
     }
-    knexFnStub = Sinon.stub().returns(knexStub)
+    knexFnStub = sandbox.stub().returns(knexStub)
     knexFnFake = StubToKnex(knexFnStub)
-    knexFnStub.raw = Sinon.stub()
+    knexFnStub.raw = sandbox.stub()
+  })
+  afterEach(() => {
+    sandbox.restore()
   })
   it('should handle empty results gracefully', async () => {
     const result = await Functions.GetFolderInfosWithPictures(knexFnFake)

@@ -34,8 +34,8 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
   let existingWindow: Window & typeof globalThis = global.window
   let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let getFolderSpy = Sinon.stub()
-  let buildBookmarkSpy = Sinon.stub()
+  let getFolderSpy = sandbox.stub()
+  let buildBookmarkSpy = sandbox.stub()
 
   beforeEach(() => {
     existingWindow = global.window

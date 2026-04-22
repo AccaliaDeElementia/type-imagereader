@@ -12,14 +12,14 @@ const sandbox = Sinon.createSandbox()
 describe('routes/slideshow function HandleSocket()', () => {
   let knexFake = StubToKnex({})
   let serverFake = Cast<WebSocketServer>({})
-  let socketStub = { on: Sinon.stub() }
+  let socketStub = { on: sandbox.stub() }
   let socketFake = Cast<Socket>(socketStub)
   let socketStubs: Array<[string, Sinon.SinonStub]> = []
-  let loggerStub = Sinon.stub()
+  let loggerStub = sandbox.stub()
   beforeEach(() => {
     knexFake = StubToKnex({})
     serverFake = Cast<WebSocketServer>({})
-    socketStub = { on: Sinon.stub() }
+    socketStub = { on: sandbox.stub() }
     socketFake = Cast<Socket>(socketStub)
     loggerStub = sandbox.stub(Imports, 'logger')
     socketStubs = [
@@ -87,7 +87,7 @@ describe('routes/slideshow function HandleSocket()', () => {
     stub[1].rejects(new Error('goto failed'))
     Functions.HandleSocket(knexFake, serverFake, socketFake)
     const fn = Cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
-    const callbackStub = Sinon.stub()
+    const callbackStub = sandbox.stub()
     fn(callbackStub)
     await yieldMacro()
     expect(callbackStub.firstCall.args).to.deep.equal([null])

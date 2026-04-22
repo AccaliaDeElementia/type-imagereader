@@ -19,8 +19,8 @@ describe('public/app/actions function Init()', () => {
   const existingWindow: Window & typeof globalThis = global.window
   const existingDocument: Document = global.document
   const dom: JSDOM = new JSDOM('', {})
-  let BuildActionsSpy = Sinon.stub()
-  let GamepadResetSpy = Sinon.stub()
+  let BuildActionsSpy = sandbox.stub()
+  let GamepadResetSpy = sandbox.stub()
 
   beforeEach(() => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
@@ -162,7 +162,7 @@ describe('public/app/actions function Init()', () => {
       Actions.Init()
       const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
       assert(handler !== undefined, 'Navigate:Data handler must be defined')
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers['TAB:SELECT'] = [spy]
       await handler(listing)
       return spy
@@ -209,7 +209,7 @@ describe('public/app/actions function Init()', () => {
   keyUpTestCases.forEach(([event, expected]) => {
     const doKeypress = (): Sinon.SinonStub => {
       const documentSpy = sandbox.stub(document, 'addEventListener')
-      const spy = Sinon.stub().resolves()
+      const spy = sandbox.stub().resolves()
       PubSub.subscribers['ACTION:KEYPRESS'] = [spy]
       let handler: (o: unknown) => void = (_) => {
         expect.fail('Base Function should not be called!')

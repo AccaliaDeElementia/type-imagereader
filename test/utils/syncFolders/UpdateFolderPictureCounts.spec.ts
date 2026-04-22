@@ -10,12 +10,12 @@ import type { Debugger } from 'debug'
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
-  let getFolderInfosWithPicturesStub = Sinon.stub()
-  let getAllFolderInfosStub = Sinon.stub()
-  let calculateFolderInfosStub = Sinon.stub()
-  let chunkStub = Sinon.stub()
-  let loggerStub = Sinon.stub()
-  let debugStub = Sinon.stub()
+  let getFolderInfosWithPicturesStub = sandbox.stub()
+  let getAllFolderInfosStub = sandbox.stub()
+  let calculateFolderInfosStub = sandbox.stub()
+  let chunkStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
+  let debugStub = sandbox.stub()
   let {
     instance: knexStub,
     stub: knexFnStub,
@@ -27,7 +27,7 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
       stub: knexFnStub,
       fake: knexFnFake,
     } = createKnexChainFake(['insert', 'onConflict'] as const, ['merge'] as const, undefined))
-    loggerStub = Sinon.stub()
+    loggerStub = sandbox.stub()
     debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     getFolderInfosWithPicturesStub = sandbox.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
     getAllFolderInfosStub = sandbox.stub(Functions, 'GetAllFolderInfos').resolves({})
