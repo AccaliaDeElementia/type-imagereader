@@ -11,8 +11,8 @@ const sandbox = Sinon.createSandbox()
 
 describe('utils/incrementalsync function IncrementalSync()', () => {
   let loggerStub = sandbox.stub()
-  let incrementalAddStub = sandbox.stub()
-  let incrementalRemoveStub = sandbox.stub()
+  let incrementalAddBulkStub = sandbox.stub()
+  let incrementalRemoveBulkStub = sandbox.stub()
   let incrementalRemoveFolderStub = sandbox.stub()
   let incrementalScanFolderStub = sandbox.stub()
   let incrementalEnsureAncestorsStub = sandbox.stub()
@@ -24,8 +24,8 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
   beforeEach(() => {
     loggerStub = sandbox.stub()
     sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
-    incrementalAddStub = sandbox.stub(Functions, 'IncrementalAddPicture').resolves()
-    incrementalRemoveStub = sandbox.stub(Functions, 'IncrementalRemovePicture').resolves()
+    incrementalAddBulkStub = sandbox.stub(Functions, 'IncrementalAddPicturesBulk').resolves()
+    incrementalRemoveBulkStub = sandbox.stub(Functions, 'IncrementalRemovePicturesBulk').resolves()
     incrementalRemoveFolderStub = sandbox.stub(Functions, 'IncrementalRemoveFolder').resolves()
     incrementalScanFolderStub = sandbox.stub(Functions, 'IncrementalScanFolder').resolves()
     incrementalEnsureAncestorsStub = sandbox.stub(Functions, 'IncrementalEnsureAncestors').resolves()
@@ -39,28 +39,42 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     sandbox.restore()
   })
 
-  it('should call IncrementalAddPicture once for create entry', async () => {
-    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+  it('should call IncrementalAddPicturesBulk once for any number of create entries', async () => {
+    const changeset: Changeset = new Map([
+      ['/comics/page1.jpg', 'create'],
+      ['/comics/page2.jpg', 'create'],
+      ['/comics/page3.jpg', 'create'],
+    ])
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalAddStub.callCount).to.equal(1)
+    expect(incrementalAddBulkStub.callCount).to.equal(1)
   })
 
-  it('should pass path to IncrementalAddPicture for create entry', async () => {
-    const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
+  it('should pass all create paths in a single bulk call', async () => {
+    const changeset: Changeset = new Map([
+      ['/comics/page1.jpg', 'create'],
+      ['/comics/page2.jpg', 'create'],
+    ])
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalAddStub.firstCall.args[1]).to.equal('/comics/page.jpg')
+    expect(incrementalAddBulkStub.firstCall.args[1]).to.deep.equal(['/comics/page1.jpg', '/comics/page2.jpg'])
   })
 
-  it('should call IncrementalRemovePicture once for delete entry', async () => {
-    const changeset: Changeset = new Map([['/comics/page.jpg', 'delete']])
+  it('should call IncrementalRemovePicturesBulk once for any number of delete entries', async () => {
+    const changeset: Changeset = new Map([
+      ['/comics/page1.jpg', 'delete'],
+      ['/comics/page2.jpg', 'delete'],
+      ['/comics/page3.jpg', 'delete'],
+    ])
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalRemoveStub.callCount).to.equal(1)
+    expect(incrementalRemoveBulkStub.callCount).to.equal(1)
   })
 
-  it('should pass path to IncrementalRemovePicture for delete entry', async () => {
-    const changeset: Changeset = new Map([['/comics/page.jpg', 'delete']])
+  it('should pass all delete paths in a single bulk call', async () => {
+    const changeset: Changeset = new Map([
+      ['/comics/page1.jpg', 'delete'],
+      ['/comics/page2.jpg', 'delete'],
+    ])
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalRemoveStub.firstCall.args[1]).to.equal('/comics/page.jpg')
+    expect(incrementalRemoveBulkStub.firstCall.args[1]).to.deep.equal(['/comics/page1.jpg', '/comics/page2.jpg'])
   })
 
   it('should call IncrementalRemoveFolder once for dir-delete entry', async () => {
@@ -119,7 +133,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
       ['/old/', 'dir-delete'],
     ])
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalRemoveFolderStub.calledBefore(incrementalRemoveStub)).to.equal(true)
+    expect(incrementalRemoveFolderStub.calledBefore(incrementalRemoveBulkStub)).to.equal(true)
   })
 
   it('should process file-deletes before dir-creates', async () => {
@@ -128,7 +142,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
       ['/comics/page.jpg', 'delete'],
     ])
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalRemoveStub.calledBefore(incrementalScanFolderStub)).to.equal(true)
+    expect(incrementalRemoveBulkStub.calledBefore(incrementalScanFolderStub)).to.equal(true)
   })
 
   it('should process dir-creates before file-creates', async () => {
@@ -137,7 +151,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
       ['/new/', 'dir-create'],
     ])
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalScanFolderStub.calledBefore(incrementalAddStub)).to.equal(true)
+    expect(incrementalScanFolderStub.calledBefore(incrementalAddBulkStub)).to.equal(true)
   })
 
   it('should call IncrementalEnsureAncestors once', async () => {
@@ -198,16 +212,16 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     expect(incrementalUpdateFoldersStub.calledBefore(incrementalUpdateFirstImagesStub)).to.equal(true)
   })
 
-  it('should not call IncrementalAddPicture for empty changeset', async () => {
+  it('should not call IncrementalAddPicturesBulk for empty changeset', async () => {
     const changeset: Changeset = new Map()
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalAddStub.callCount).to.equal(0)
+    expect(incrementalAddBulkStub.callCount).to.equal(0)
   })
 
-  it('should not call IncrementalRemovePicture for empty changeset', async () => {
+  it('should not call IncrementalRemovePicturesBulk for empty changeset', async () => {
     const changeset: Changeset = new Map()
     await Functions.IncrementalSync(knexFnFake, changeset)
-    expect(incrementalRemoveStub.callCount).to.equal(0)
+    expect(incrementalRemoveBulkStub.callCount).to.equal(0)
   })
 
   it('should not call IncrementalRemoveFolder for empty changeset', async () => {
@@ -339,7 +353,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     expect(affectedFolders.has('/')).to.equal(true)
   })
 
-  it('should log batched progress for file deletes', async () => {
+  it('should log a single summary line for bulk file deletes', async () => {
     const changeset: Changeset = new Map([
       ['/comics/page1.jpg', 'delete'],
       ['/comics/page2.jpg', 'delete'],
@@ -347,7 +361,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
     ])
     await Functions.IncrementalSync(knexFnFake, changeset)
     const logCalls = loggerStub.args.map((a: string[]) => a[0])
-    expect(logCalls).to.include('Incremental remove: 1 of 3 pictures')
+    expect(logCalls).to.include('Incremental remove: 3 pictures')
   })
 
   it('should not log every individual file delete', async () => {

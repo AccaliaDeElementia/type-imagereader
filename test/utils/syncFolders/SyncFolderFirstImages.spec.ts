@@ -132,7 +132,15 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
   })
   it('should select folder path for update', async () => {
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.select.firstCall.args[0]).to.equal('pictures.folder as path')
+    expect(queryBuilder.select.firstCall.args).to.include('pictures.folder as path')
+  })
+  it('should also select folders.folder so the upsert satisfies NOT NULL on folder', async () => {
+    await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
+    expect(queryBuilder.select.firstCall.args).to.include('folders.folder as folder')
+  })
+  it('should also select folders.sortKey so the upsert satisfies NOT NULL on sortKey', async () => {
+    await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
+    expect(queryBuilder.select.firstCall.args).to.include('folders.sortKey as sortKey')
   })
   it('should call min once for update', async () => {
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
@@ -175,7 +183,15 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
   })
   it('should group by foldername to prevent duplicates when first picture has non unique sortkey', async () => {
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.groupBy.firstCall.args[0]).to.equal('pictures.folder')
+    expect(queryBuilder.groupBy.firstCall.args).to.include('pictures.folder')
+  })
+  it('should also group by folders.folder so non-aggregated select column is permitted by Postgres', async () => {
+    await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
+    expect(queryBuilder.groupBy.firstCall.args).to.include('folders.folder')
+  })
+  it('should also group by folders.sortKey so non-aggregated select column is permitted by Postgres', async () => {
+    await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
+    expect(queryBuilder.groupBy.firstCall.args).to.include('folders.sortKey')
   })
   it('should call orderBy once', async () => {
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
@@ -239,10 +255,10 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
     expect(knexInstanceStub.merge.callCount).to.equal(1)
   })
-  it('should merge with no arguments', async () => {
+  it('should merge only the firstPicture column on conflict', async () => {
     const chunk = { chunk: Math.random() }
     chunkStub.returns([chunk])
     await Functions.SyncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexInstanceStub.merge.firstCall.args).to.have.lengthOf(0)
+    expect(knexInstanceStub.merge.firstCall.args[0]).to.deep.equal(['firstPicture'])
   })
 })

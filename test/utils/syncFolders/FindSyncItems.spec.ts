@@ -107,8 +107,19 @@ describe('utils/syncfolders function FindSyncItems()', () => {
   it('should insert the root folder row with the root sentinel in the folder column', async () => {
     await Functions.FindSyncItems(knexFnFake)
     expect(knexInstanceStub.insert.firstCall.args).to.deep.equal([
-      { folder: '', path: '/', isFile: false, sortKey: '' },
+      {
+        folder: '',
+        path: '/',
+        isFile: false,
+        sortKey: '',
+        pathHash: 'XIbwNE7SSUJciq0/Jytyos4P84h5HzFJfq8lf6cmKUh/qv1/0n6w3WNV1VCeLz+vdnEQFc2SB9JI1VD96hUnTw==',
+      },
     ])
+  })
+  it('should insert the root folder row with a non-empty pathHash to satisfy NOT NULL', async () => {
+    await Functions.FindSyncItems(knexFnFake)
+    const row = Cast<{ pathHash: string }>(knexInstanceStub.insert.firstCall.args[0])
+    expect(row.pathHash.length).to.be.above(0)
   })
   it('should request syncitems on the first knex call', async () => {
     await Functions.FindSyncItems(knexFnFake)

@@ -40,6 +40,8 @@ export interface FolderInfo {
   path: string
   totalCount: number
   seenCount: number
+  folder?: string
+  sortKey?: string
 }
 
 interface RowCountResult {
@@ -128,9 +130,10 @@ export const Functions = {
     await knex('syncitems').truncate()
     await knex('syncitems').insert({
       folder: '',
-      path: '/',
+      path: posix.sep,
       isFile: false,
       sortKey: '',
+      pathHash: createHash('sha512').update(posix.sep).digest('base64'),
     })
     let dirs = ZERO
     let files = ZERO
@@ -310,7 +313,7 @@ export const Functions = {
       .with('firsts', (qb) =>
         qb.select('pictures.folder').min('pictures.sortKey as sortKey').from('pictures').groupBy('pictures.folder'),
       )
-      .select('pictures.folder as path')
+      .select('pictures.folder as path', 'folders.folder as folder', 'folders.sortKey as sortKey')
       .min('pictures.path as firstPicture')
       .from('firsts')
       .join('pictures', {
@@ -318,10 +321,10 @@ export const Functions = {
         'firsts.sortKey': 'pictures.sortKey',
       })
       .innerJoin('folders', 'folders.path', 'pictures.folder')
-      .groupBy('pictures.folder')
+      .groupBy('pictures.folder', 'folders.folder', 'folders.sortKey')
       .orderBy([{ column: 'pictures.folder' }])
     await Functions.ExecChunksSynchronously(Functions.Chunk(toUpdate), async (chunk) => {
-      await knex('folders').insert(chunk).onConflict('path').merge()
+      await knex('folders').insert(chunk).onConflict('path').merge(['firstPicture'])
     })
     logger(`Updated ${toUpdate.length} folder first-item images`)
   },
@@ -334,14 +337,15 @@ export const Functions = {
     await Functions.SyncFolderFirstImages(logger, knex)
   },
   GetAllFolderInfos: async (knex: Knex): Promise<Record<string, FolderInfo>> => {
-    const rawFolders = (await knex('folders').select('path')) as Array<{ path: string }>
+    interface Row {
+      path: string
+      folder: string
+      sortKey: string
+    }
+    const rawFolders = (await knex('folders').select('path', 'folder', 'sortKey')) as Row[]
     const folders: Record<string, FolderInfo> = {}
-    for (const folder of rawFolders) {
-      folders[folder.path] = {
-        path: folder.path,
-        totalCount: ZERO,
-        seenCount: ZERO,
-      }
+    for (const f of rawFolders) {
+      folders[f.path] = { path: f.path, folder: f.folder, sortKey: f.sortKey, totalCount: ZERO, seenCount: ZERO }
     }
     return folders
   },
@@ -391,12 +395,15 @@ export const Functions = {
     logger(`Found ${folderInfos.length} Folders to Update`)
     const allFolders = await Functions.GetAllFolderInfos(knex)
     logger(`Found ${Object.keys(allFolders).length} Folders in the DB`)
-    const resultFolders = Functions.CalculateFolderInfos(allFolders, folderInfos).filter(
-      (info) => allFolders[info.path] !== undefined,
-    )
+    const resultFolders = Functions.CalculateFolderInfos(allFolders, folderInfos).flatMap((info) => {
+      const base = allFolders[info.path]
+      if (base === undefined) return []
+      const { folder = '', sortKey = '' } = base
+      return [{ path: info.path, folder, sortKey, totalCount: info.totalCount, seenCount: info.seenCount }]
+    })
     logger(`Calculated ${resultFolders.length} Folders Seen Counts`)
     await Functions.ExecChunksSynchronously(Functions.Chunk(resultFolders), async (chunk) => {
-      await knex('folders').insert(chunk).onConflict('path').merge()
+      await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
     })
     logger(`Updated ${resultFolders.length} Folders Seen Counts`)
   },

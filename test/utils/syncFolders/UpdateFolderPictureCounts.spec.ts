@@ -128,13 +128,19 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
   })
   it('should chunk the filtered results of calculation', async () => {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]
-    getAllFolderInfosStub.resolves({ 'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 } })
+    getAllFolderInfosStub.resolves({
+      'SOME PATH': { path: 'SOME PATH', folder: '/', sortKey: 'some', totalCount: 0, seenCount: 0 },
+    })
     calculateFolderInfosStub.returns(results)
     await Functions.UpdateFolderPictureCounts(knexFnFake)
-    expect(chunkStub.firstCall.args[0]).to.deep.equal(results)
+    expect(chunkStub.firstCall.args[0]).to.deep.equal([
+      { path: 'SOME PATH', folder: '/', sortKey: 'some', totalCount: 0, seenCount: 0 },
+    ])
   })
   it('should drop calculated folders whose path is not in the folders table', async () => {
-    getAllFolderInfosStub.resolves({ '/existing/': { path: '/existing/', totalCount: 0, seenCount: 0 } })
+    getAllFolderInfosStub.resolves({
+      '/existing/': { path: '/existing/', folder: '/', sortKey: 'existing', totalCount: 0, seenCount: 0 },
+    })
     calculateFolderInfosStub.returns([
       { path: '/existing/', totalCount: 1, seenCount: 0 },
       { path: '/orphan/', totalCount: 1, seenCount: 0 },
@@ -148,6 +154,24 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     calculateFolderInfosStub.returns([{ path: '/orphan/', totalCount: 1, seenCount: 0 }])
     await Functions.UpdateFolderPictureCounts(knexFnFake)
     expect(chunkStub.firstCall.args[0]).to.deep.equal([])
+  })
+  it('should enrich the upsert payload with folder column from the existing row', async () => {
+    getAllFolderInfosStub.resolves({
+      '/existing/': { path: '/existing/', folder: '/', sortKey: 'existing', totalCount: 0, seenCount: 0 },
+    })
+    calculateFolderInfosStub.returns([{ path: '/existing/', totalCount: 1, seenCount: 0 }])
+    await Functions.UpdateFolderPictureCounts(knexFnFake)
+    const chunked = Cast<Array<{ folder: string }>>(chunkStub.firstCall.args[0])
+    expect(chunked[0]?.folder).to.equal('/')
+  })
+  it('should enrich the upsert payload with sortKey column from the existing row', async () => {
+    getAllFolderInfosStub.resolves({
+      '/existing/': { path: '/existing/', folder: '/', sortKey: 'existing', totalCount: 0, seenCount: 0 },
+    })
+    calculateFolderInfosStub.returns([{ path: '/existing/', totalCount: 1, seenCount: 0 }])
+    await Functions.UpdateFolderPictureCounts(knexFnFake)
+    const chunked = Cast<Array<{ sortKey: string }>>(chunkStub.firstCall.args[0])
+    expect(chunked[0]?.sortKey).to.equal('existing')
   })
   it('should call knex with folders table when inserting', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
@@ -184,6 +208,12 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     chunkStub.returns(records)
     await Functions.UpdateFolderPictureCounts(knexFnFake)
     expect(knexStub.merge.callCount).to.equal(1)
+  })
+  it('should merge only totalCount and seenCount on conflict', async () => {
+    const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
+    chunkStub.returns(records)
+    await Functions.UpdateFolderPictureCounts(knexFnFake)
+    expect(knexStub.merge.firstCall.args[0]).to.deep.equal(['totalCount', 'seenCount'])
   })
   it('should insert results for each chunk', async () => {
     const records = [
