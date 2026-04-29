@@ -72,8 +72,9 @@ export const Functions = {
         const batch: Changeset = new Map(changeset)
         try {
           await onFlush(batch)
-          for (const key of batch.keys()) {
-            changeset.delete(key)
+          for (const [key, value] of batch) {
+            // Only drop the entry if a concurrent event hasn't re-set it during the flush
+            if (changeset.get(key) === value) changeset.delete(key)
           }
           logger(`Flushed ${batch.size} changes`)
         } catch (err) {

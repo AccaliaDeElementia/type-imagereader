@@ -456,6 +456,42 @@ describe('utils/filewatcher Functions.start()', () => {
     expect(retryCall?.args[1]).to.equal(flushErr)
   })
 
+  const runFlushRaceScenario = async (): Promise<Sinon.SinonStub> => {
+    const { promise, resolve: resolveFlush } = Promise.withResolvers<undefined>()
+    const delayedFlush = sandbox.stub().callsFake(async () => {
+      await promise
+    })
+    let flushFn: (() => void) | undefined = undefined
+    setTimeoutStub.callsFake((fn: () => void) => {
+      flushFn = fn
+      return 42
+    })
+    await Functions.start('/data', Cast<FlushCallback>(delayedFlush))
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    Cast<() => void>(flushFn)()
+    await Promise.resolve()
+    await Promise.resolve()
+    subscriberCallback(null, [{ type: 'delete', path: '/data/foo.jpg' }])
+    resolveFlush(undefined)
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    Cast<() => void>(flushFn)()
+    await Promise.resolve()
+    await Promise.resolve()
+    return delayedFlush
+  }
+
+  it('should call onFlush a second time when an event re-sets a flushed key during flush', async () => {
+    const stub = await runFlushRaceScenario()
+    expect(stub.callCount).to.equal(2)
+  })
+
+  it('should pass the re-set value to the second flush when an event arrives during flush', async () => {
+    const stub = await runFlushRaceScenario()
+    expect(Cast<Map<string, string>>(stub.secondCall.args[0]).get('/foo.jpg')).to.equal('delete')
+  })
+
   it('should schedule one debounce timer when immediate force-flush fails', async () => {
     Functions.maxPendingChanges = 1
     const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
