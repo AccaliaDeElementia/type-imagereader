@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Subscribe, Publish, AddInterval } from './pubsub'
+import { Subscribe, Publish, AddInterval, RemoveInterval } from './pubsub'
 import { CloneNode, isHTMLElement } from './utils'
 
 import { isListing } from '#contracts/listing'
@@ -31,6 +31,7 @@ const AXIS_Y = 1
 const AXIS_CENTERED = 0
 const AXIS_ACTIVATION_THRESHOLD = 0.5
 const POLLING_INTERVAL = 20
+const ZERO_REMAINING_PADS = 0
 
 export class GamepadButtons {
   public Buttons: Record<string, number> = {
@@ -328,6 +329,12 @@ export const Actions = {
         },
         POLLING_INTERVAL,
       )
+    })
+    window.addEventListener('gamepaddisconnected', () => {
+      const remaining = navigator.getGamepads().filter((p) => p !== null)
+      if (remaining.length === ZERO_REMAINING_PADS) {
+        RemoveInterval('ReadGamepad')
+      }
     })
   },
 }

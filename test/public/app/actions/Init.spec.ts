@@ -233,11 +233,11 @@ describe('public/app/actions function Init()', () => {
     })
   })
 
-  it('should add exactly one event listener to window', () => {
+  it('should add exactly two event listeners to window', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
       Actions.Init()
-      expect(spy.callCount).to.equal(1)
+      expect(spy.callCount).to.equal(2)
     } finally {
       spy.restore()
     }
@@ -275,6 +275,54 @@ describe('public/app/actions function Init()', () => {
     } finally {
       readspy.restore()
       spy.restore()
+    }
+  })
+  it('should add gamepaddisconnected event listener to window', () => {
+    const spy = sandbox.stub(window, 'addEventListener')
+    try {
+      Actions.Init()
+      expect(spy.secondCall.calledWith('gamepaddisconnected')).to.equal(true)
+    } finally {
+      spy.restore()
+    }
+  })
+  it('should remove ReadGamepad interval when gamepaddisconnected fires and no gamepads remain', () => {
+    const addSpy = sandbox.stub(window, 'addEventListener')
+    const existingNavigator = global.navigator
+    Object.defineProperty(global, 'navigator', {
+      configurable: true,
+      get: () => dom.window.navigator,
+    })
+    dom.window.navigator.getGamepads = sandbox.stub().returns([null, null])
+    try {
+      Actions.Init()
+      Cast<() => void>(addSpy.firstCall.args[1])()
+      assert(PubSub.intervals.ReadGamepad !== undefined)
+      Cast<() => void>(addSpy.secondCall.args[1])()
+      expect(PubSub.intervals.ReadGamepad).to.equal(undefined)
+    } finally {
+      Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
+      addSpy.restore()
+    }
+  })
+  it('should keep ReadGamepad interval when gamepaddisconnected fires but other gamepads remain', () => {
+    const addSpy = sandbox.stub(window, 'addEventListener')
+    const existingNavigator = global.navigator
+    Object.defineProperty(global, 'navigator', {
+      configurable: true,
+      get: () => dom.window.navigator,
+    })
+    const fakePad = Cast<Gamepad>({ id: 'pad' })
+    dom.window.navigator.getGamepads = sandbox.stub().returns([fakePad, null])
+    try {
+      Actions.Init()
+      Cast<() => void>(addSpy.firstCall.args[1])()
+      assert(PubSub.intervals.ReadGamepad !== undefined)
+      Cast<() => void>(addSpy.secondCall.args[1])()
+      expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
+    } finally {
+      Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
+      addSpy.restore()
     }
   })
 })
