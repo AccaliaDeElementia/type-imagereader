@@ -65,6 +65,22 @@ describe('routes/slideshow function GetRoomAndIncrementImage() room initialisati
     await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
     expect(Config.rooms['/images!/']).to.equal(concurrentRoom)
   })
+  it('it should return the canonical room when a concurrent call populates it during async initialization', async () => {
+    const concurrentRoom = {
+      countdown: Config.countdownDuration,
+      path: '/images!/',
+      pages: { unread: 0, all: 0, pages: 0, page: 0 },
+      images: ['/concurrentImage.png'],
+      index: 0,
+      uriSafeImage: undefined,
+    }
+    getCountsStub.callsFake(async () => {
+      Config.rooms['/images!/'] = concurrentRoom
+      return await Promise.resolve(pages)
+    })
+    const result = await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
+    expect(result).to.equal(concurrentRoom)
+  })
   it('it should set expected countdown duration on new room', async () => {
     Config.countdownDuration = 69
     const room = await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')

@@ -8,105 +8,106 @@ import { Functions, Imports } from '#routes/slideshow'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow function MarkImageRead()', () => {
-  let knexQueryOne = {
-    select: sandbox.stub().returnsThis(),
-    where: sandbox.stub().resolves(),
+  let conditionalUpdate = {
+    update: sandbox.stub().returnsThis(),
+    where: sandbox.stub().resolves(0),
   }
-  let knexQueryTwo = {
+  let incrementer = {
     increment: sandbox.stub().returnsThis(),
     whereIn: sandbox.stub().resolves(),
   }
-  let knexQueryThree = {
-    update: sandbox.stub().returnsThis(),
-    where: sandbox.stub().resolves(),
-  }
-  let knexStub = sandbox
-    .stub()
-    .onFirstCall()
-    .returns(knexQueryOne)
-    .onSecondCall()
-    .returns(knexQueryTwo)
-    .onThirdCall()
-    .returns(knexQueryThree)
-
+  let knexStub = sandbox.stub().onFirstCall().returns(conditionalUpdate).onSecondCall().returns(incrementer)
   let knexFake = StubToKnex(knexStub)
   let getParentFoldersStub = sandbox.stub()
   beforeEach(() => {
-    knexQueryOne = {
-      select: sandbox.stub().returnsThis(),
-      where: sandbox.stub().resolves(),
+    conditionalUpdate = {
+      update: sandbox.stub().returnsThis(),
+      where: sandbox.stub().resolves(0),
     }
-    knexQueryTwo = {
+    incrementer = {
       increment: sandbox.stub().returnsThis(),
       whereIn: sandbox.stub().resolves(),
     }
-    knexQueryThree = {
-      update: sandbox.stub().returnsThis(),
-      where: sandbox.stub().resolves(),
-    }
-    knexStub = sandbox
-      .stub()
-      .onFirstCall()
-      .returns(knexQueryOne)
-      .onSecondCall()
-      .returns(knexQueryTwo)
-      .onThirdCall()
-      .returns(knexQueryThree)
-
+    knexStub = sandbox.stub().onFirstCall().returns(conditionalUpdate).onSecondCall().returns(incrementer)
     knexFake = StubToKnex(knexStub)
     getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns(['/foo/bar/', '/foo/', '/'])
   })
   afterEach(() => {
     sandbox.restore()
   })
-  const picWhereQuery = { seen: false, path: '/foo/bar/baz.png' }
-  const updateFlags = { seen: true }
-  const updateFilter = { path: '/foo/bar/baz.png' }
-  const tests: Array<[string, unknown, () => void]> = [
-    ['make single knex call when null results found', null, () => expect(knexStub.callCount).to.equal(1)],
-    ['make single knex call when undefined results found', undefined, () => expect(knexStub.callCount).to.equal(1)],
-    ['make single knex call when no results found', [], () => expect(knexStub.callCount).to.equal(1)],
-    ['make all knex call when no results found', [{}], () => expect(knexStub.callCount).to.equal(3)],
-    ['query pictures table to find image', [], () => expect(knexStub.firstCall.args).to.deep.equal(['pictures'])],
-    ['select from pictures table', [], () => expect(knexQueryOne.select.callCount).to.equal(1)],
-    ['select only seen flag', [], () => expect(knexQueryOne.select.firstCall.args).to.deep.equal(['seen'])],
-    ['filter pictures query', [], () => expect(knexQueryOne.where.callCount).to.equal(1)],
-    ['filter by path+seen', [], () => expect(knexQueryOne.where.firstCall.args).to.deep.equal([picWhereQuery])],
-    ['query folder to increment', [{}], () => expect(knexStub.secondCall.args).to.deep.equal(['folders'])],
-    ['increment folder query', [{}], () => expect(knexQueryTwo.increment.callCount).to.equal(1)],
-    ['increment seenCount', [{}], () => expect(knexQueryTwo.increment.firstCall.args).to.deep.equal(['seenCount', 1])],
-    ['filter increment query in', [{}], () => expect(knexQueryTwo.whereIn.callCount).to.equal(1)],
-    [
-      'filter increment paths using GetParentFolders result',
-      [{}],
-      () => expect(knexQueryTwo.whereIn.firstCall.args).to.deep.equal(['path', ['/foo/bar/', '/foo/', '/']]),
-    ],
-    ['query pictures to update flags', [{}], () => expect(knexStub.thirdCall.args).to.deep.equal(['pictures'])],
-    ['update pictures table', [{}], () => expect(knexQueryThree.update.callCount).to.equal(1)],
-    ['update seen flag', [{}], () => expect(knexQueryThree.update.firstCall.args).to.deep.equal([updateFlags])],
-    ['filter update query', [{}], () => expect(knexQueryThree.where.callCount).to.equal(1)],
-    ['filter by path', [{}], () => expect(knexQueryThree.where.firstCall.args).to.deep.equal([updateFilter])],
-  ]
-  tests.forEach(([title, results, validationFn]) => {
-    it(`should ${title}`, async () => {
-      knexQueryOne.where.resolves(results)
-      await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
-      validationFn()
-    })
+
+  // ---- Conditional UPDATE on pictures ----
+
+  it('should call knex with the pictures table for the conditional UPDATE', async () => {
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(knexStub.firstCall.args).to.deep.equal(['pictures'])
   })
-  it('should call GetParentFolders once when image is found', async () => {
-    knexQueryOne.where.resolves([{}])
+  it('should call update once on the conditional UPDATE', async () => {
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(conditionalUpdate.update.callCount).to.equal(1)
+  })
+  it('should set seen=true on the conditional UPDATE', async () => {
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(conditionalUpdate.update.firstCall.args).to.deep.equal([{ seen: true }])
+  })
+  it('should atomically gate the conditional UPDATE on path AND seen=false', async () => {
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(conditionalUpdate.where.firstCall.args).to.deep.equal([{ path: '/foo/bar/baz.png', seen: false }])
+  })
+
+  // ---- Conditional update flipped 0 rows (already seen / lost the race) ----
+
+  it('should make only one knex call when conditional update flips zero rows', async () => {
+    conditionalUpdate.where.resolves(0)
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(knexStub.callCount).to.equal(1)
+  })
+  it('should not call GetParentFolders when conditional update flips zero rows', async () => {
+    conditionalUpdate.where.resolves(0)
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(getParentFoldersStub.callCount).to.equal(0)
+  })
+
+  // ---- Conditional update flipped a row (caller is the flipper) ----
+
+  it('should make two knex calls when conditional update flips a row', async () => {
+    conditionalUpdate.where.resolves(1)
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(knexStub.callCount).to.equal(2)
+  })
+  it('should query the folders table to increment seenCount when conditional update flips a row', async () => {
+    conditionalUpdate.where.resolves(1)
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(knexStub.secondCall.args).to.deep.equal(['folders'])
+  })
+  it('should call increment once when conditional update flips a row', async () => {
+    conditionalUpdate.where.resolves(1)
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(incrementer.increment.callCount).to.equal(1)
+  })
+  it('should increment seenCount by 1 when conditional update flips a row', async () => {
+    conditionalUpdate.where.resolves(1)
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(incrementer.increment.firstCall.args).to.deep.equal(['seenCount', 1])
+  })
+  it('should call GetParentFolders once when conditional update flips a row', async () => {
+    conditionalUpdate.where.resolves(1)
     await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(getParentFoldersStub.callCount).to.equal(1)
   })
-  it('should call GetParentFolders with image path', async () => {
-    knexQueryOne.where.resolves([{}])
+  it('should pass the image path to GetParentFolders when conditional update flips a row', async () => {
+    conditionalUpdate.where.resolves(1)
     await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(getParentFoldersStub.firstCall.args).to.deep.equal(['/foo/bar/baz.png'])
   })
-  it('should not call GetParentFolders when image is not found', async () => {
-    knexQueryOne.where.resolves([])
+  it('should call whereIn once when filtering ancestor folders for the increment', async () => {
+    conditionalUpdate.where.resolves(1)
     await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
-    expect(getParentFoldersStub.callCount).to.equal(0)
+    expect(incrementer.whereIn.callCount).to.equal(1)
+  })
+  it('should filter ancestor folders using the result of GetParentFolders', async () => {
+    conditionalUpdate.where.resolves(1)
+    await Functions.MarkImageRead(knexFake, '/foo/bar/baz.png')
+    expect(incrementer.whereIn.firstCall.args).to.deep.equal(['path', ['/foo/bar/', '/foo/', '/']])
   })
 })

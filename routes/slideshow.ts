@@ -144,8 +144,10 @@ export const Functions = {
     currentPage?: number,
     mutator = (page: number): number => page,
   ): Promise<SlideshowPages> => {
-    const unreadcount = await Functions.GetImageCount(knex, path, 'unread')
-    const allcount = await Functions.GetImageCount(knex, path)
+    const [unreadcount, allcount] = await Promise.all([
+      Functions.GetImageCount(knex, path, 'unread'),
+      Functions.GetImageCount(knex, path),
+    ])
     let pages = Math.ceil(allcount / Config.memorySize)
     if (pages === ZERO_COUNT) {
       return { unread: unreadcount, all: allcount, pages: ZERO_COUNT, page: ZERO_COUNT }
@@ -183,15 +185,11 @@ export const Functions = {
         .limit(count)
     ).map((img: ImageWithPath) => img.path),
   MarkImageRead: async (knex: Knex, image: string): Promise<void> => {
-    const picture = (await knex('pictures').select('seen').where({
-      seen: false,
-      path: image,
-    })) as string[] | undefined | null
-    if (!HasValues(picture)) {
-      return
-    }
+    // Atomic conditional flip: PostgreSQL serializes concurrent flippers via the seen=false guard,
+    // so only one caller's UPDATE returns a non-zero rowcount and only that caller increments seenCount.
+    const flipped = await knex('pictures').update({ seen: true }).where({ path: image, seen: false })
+    if (flipped <= ZERO_COUNT) return
     await knex('folders').increment('seenCount', STEP.FORWARD).whereIn('path', Imports.GetParentFolders(image))
-    await knex('pictures').update({ seen: true }).where({ path: image })
   },
   GetRoomAndIncrementImage: async (knex: Knex, name: string, increment: STEP = STEP.NONE): Promise<SlideshowRoom> => {
     const advancePage = async (
@@ -210,7 +208,7 @@ export const Functions = {
     let room = Config.rooms[name]
     if (room === undefined) {
       const pages = await Functions.GetCounts(knex, name)
-      room = {
+      const newRoom: SlideshowRoom = {
         countdown: Config.countdownDuration,
         path: name,
         pages,
@@ -218,7 +216,9 @@ export const Functions = {
         index: ZERO_COUNT,
         uriSafeImage: undefined,
       }
-      Config.rooms[name] ??= room
+      // If a concurrent call already populated the room, surrender to it so all callers share state
+      Config.rooms[name] ??= newRoom
+      room = Config.rooms[name]
     } else {
       room.index += increment
       if (room.images.length === ZERO_COUNT) {
