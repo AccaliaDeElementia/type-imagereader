@@ -262,4 +262,48 @@ describe('public/app/navigation function LoadData()', () => {
     await Navigation.LoadData()
     expect(loadingErrorSpy.firstCall.args[0]).to.equal(err)
   })
+
+  const runStaleResponseScenario = async (): Promise<{
+    secondData: { name: string; path: string; parent: string }
+  }> => {
+    const { promise: firstPromise, resolve: resolveFirst } = Promise.withResolvers<unknown>()
+    const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
+    const secondData = { name: 'second', path: '/second', parent: '/' }
+    getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
+    const a = Navigation.LoadData()
+    const b = Navigation.LoadData()
+    resolveSecond(secondData)
+    await b
+    resolveFirst({ name: 'first', path: '/first', parent: '/' })
+    await a
+    return { secondData }
+  }
+
+  it('should not overwrite Navigation.current with a stale response', async () => {
+    const { secondData } = await runStaleResponseScenario()
+    expect(Navigation.current).to.equal(secondData)
+  })
+
+  it('should push history exactly once when a stale response arrives after a newer one', async () => {
+    await runStaleResponseScenario()
+    expect(historySpy.callCount).to.equal(1)
+  })
+
+  it('should publish Navigate:Data exactly once when a stale response arrives after a newer one', async () => {
+    await runStaleResponseScenario()
+    expect(navigateDataSpy.callCount).to.equal(1)
+  })
+
+  it('should not publish Loading:Error for a stale rejection', async () => {
+    const { promise: firstPromise, reject: rejectFirst } = Promise.withResolvers<unknown>()
+    const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
+    getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
+    const a = Navigation.LoadData()
+    const b = Navigation.LoadData()
+    resolveSecond({ name: 'second', path: '/second', parent: '/' })
+    await b
+    rejectFirst(new Error('stale'))
+    await a
+    expect(loadingErrorSpy.called).to.equal(false)
+  })
 })

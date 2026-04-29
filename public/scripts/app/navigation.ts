@@ -7,6 +7,9 @@ import { isListing, type Listing } from '#contracts/listing'
 import { HasValue, HasValues, StringishHasValue } from '#utils/helpers'
 import { Confirm } from './confirm'
 
+const INITIAL_LOAD_TOKEN = 0
+const TOKEN_STEP = 1
+
 export const Navigation = {
   GetBaseUrl: (): string => {
     const [pathA, pathB] = window.location.pathname.split('/')
@@ -29,6 +32,7 @@ export const Navigation = {
   },
   IsSuppressMenu: (): boolean => new URLSearchParams(window.location.search).has('noMenu'),
   current: ((): Listing => ({ path: '', name: '', parent: '' }))(),
+  loadToken: INITIAL_LOAD_TOKEN,
   NavigateTo: async (path: string | undefined, action: string): Promise<void> => {
     if (!StringishHasValue(path)) {
       Publish('Loading:Error', `Action ${action} has no target`)
@@ -185,12 +189,14 @@ export const Navigation = {
     })
   },
   LoadData: async (noHistory = false, suppressMenu = false): Promise<void> => {
+    Navigation.loadToken += TOKEN_STEP
+    const token = Navigation.loadToken
     try {
       Publish('Loading:Show')
       const path = Navigation.current.path
-      // eslint-disable-next-line require-atomic-updates -- Navigation.current is intentionally replaced with the fetched result
-      Navigation.current = await Net.GetJSON<Listing>(`/api/listing${path}`, isListing)
-      // eslint-disable-next-line require-atomic-updates -- suppressMenu is a captured function parameter; assigning it onto the freshly fetched Navigation.current is intentional
+      const data = await Net.GetJSON<Listing>(`/api/listing${path}`, isListing)
+      if (token !== Navigation.loadToken) return
+      Navigation.current = data
       Navigation.current.noMenu = suppressMenu || Navigation.IsSuppressMenu()
       for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
         let name = Navigation.current.name
@@ -205,6 +211,7 @@ export const Navigation = {
       Publish('Loading:Hide')
       Publish('Navigate:Data', Navigation.current)
     } catch (err) {
+      if (token !== Navigation.loadToken) return
       Publish('Loading:Error', err)
     }
   },
