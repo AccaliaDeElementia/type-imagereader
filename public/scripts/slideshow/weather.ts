@@ -6,6 +6,7 @@ import { HasValue, StringishHasValue } from '#utils/helpers'
 
 type HTMLElementish = HTMLElement | null | undefined
 type stringish = string | null | undefined
+const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
 export const Functions = {
   FetchWeather,
   ShowData,
@@ -15,7 +16,7 @@ export const Functions = {
 }
 
 async function FetchWeather(uri: string | URL): Promise<WeatherResults> {
-  const response = await window.fetch(uri)
+  const response = await window.fetch(uri, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   const data: unknown = await response.json()
   if (!isWeatherResults(data)) throw new Error('Invalid WeatherResponse Retrieved')
   return data

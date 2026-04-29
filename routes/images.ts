@@ -116,7 +116,12 @@ export class ImageCache {
     if (this.items.length >= ImageCache.cacheSize) {
       this.items = this.items.filter((_, i) => i < ImageCache.cacheSize)
     }
-    return await item.image
+    const result = await item.image
+    // Don't poison the cache with errors — let subsequent requests retry from disk.
+    if (result.code !== null) {
+      this.items = this.items.filter((entry) => entry !== item)
+    }
+    return result
   }
 }
 

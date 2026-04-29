@@ -12,7 +12,7 @@ describe('routes/images class ImageData', () => {
   let imageCache = new ImageCache(createSpy)
   beforeEach(() => {
     ImageCache.cacheSize = 5
-    createSpy = sandbox.stub().resolves()
+    createSpy = sandbox.stub().resolves(ImageData.fromImage(Buffer.from(''), '', ''))
     imageCache = new ImageCache(createSpy)
   })
   afterEach(() => {
@@ -247,6 +247,28 @@ describe('routes/images class ImageData', () => {
 
       expect(imageCache.items).to.have.lengthOf(1)
     })
+    it('should remove a cache item from the cache after fetch returns an error result', async () => {
+      const errorImg = ImageData.fromError('NOT_FOUND', 404, 'oops', '/missing.jpg')
+      imageCache.items.push({
+        path: '/missing.jpg',
+        width: 50,
+        height: 50,
+        image: Promise.resolve(errorImg),
+      })
+      await imageCache.fetch('/missing.jpg', 50, 50)
+      expect(imageCache.items.find((i) => i.path === '/missing.jpg')).to.equal(undefined)
+    })
+    it('should keep a cache item in the cache after fetch returns a successful result', async () => {
+      const img = ImageData.fromImage(Buffer.from(''), 'jpg', '/ok.jpg')
+      imageCache.items.push({
+        path: '/ok.jpg',
+        width: 50,
+        height: 50,
+        image: Promise.resolve(img),
+      })
+      await imageCache.fetch('/ok.jpg', 50, 50)
+      expect(imageCache.items.find((i) => i.path === '/ok.jpg')).to.not.equal(undefined)
+    })
     it('should prune older unused cache items when cache is full and new item is added', async () => {
       for (let i = 0; i < 10; i += 1) {
         imageCache.items.push({
@@ -267,7 +289,7 @@ describe('routes/images class ImageData', () => {
         path,
         width: 100,
         height: 100,
-        image: Promise.resolve(ImageData.fromError('foo', 600, 'bar', path)),
+        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), 'jpg', path)),
       })
 
       beforeEach(() => {

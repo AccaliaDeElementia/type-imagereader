@@ -66,7 +66,16 @@ export const Functions = {
   ConfigureLogging: (app: Express): void => {
     switch (process.env.NODE_ENV) {
       case 'production':
-        app.use(Imports.helmet())
+        app.use(
+          Imports.helmet({
+            // Slideshow weather icons are served from openweathermap.org; default img-src ('self' data:) blocks them.
+            contentSecurityPolicy: {
+              directives: {
+                'img-src': ["'self'", 'data:', 'https://openweathermap.org'],
+              },
+            },
+          }),
+        )
         break
       case 'development':
         app.use(Imports.morgan('dev'))

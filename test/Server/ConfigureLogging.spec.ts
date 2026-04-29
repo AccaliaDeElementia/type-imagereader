@@ -75,10 +75,18 @@ describe('Server function ConfigureLogging', () => {
     Functions.ConfigureLogging(appFake)
     expect(appStub.use.firstCall.args[0]).to.equal(middleware)
   })
-  it('should call helmet with default options', () => {
+  it('should call helmet with one configuration argument', () => {
     process.env.NODE_ENV = 'production'
     Functions.ConfigureLogging(appFake)
-    expect(helmetStub.firstCall.args).to.have.lengthOf(0)
+    expect(helmetStub.firstCall.args).to.have.lengthOf(1)
+  })
+  it('should allow openweathermap.org images in the helmet CSP img-src directive', () => {
+    process.env.NODE_ENV = 'production'
+    Functions.ConfigureLogging(appFake)
+    const opts = Cast<{ contentSecurityPolicy?: { directives?: Record<string, string[]> } }>(
+      helmetStub.firstCall.args[0],
+    )
+    expect(opts.contentSecurityPolicy?.directives?.['img-src']).to.include('https://openweathermap.org')
   })
   it('should not call morgan in production mode', () => {
     process.env.NODE_ENV = 'production'

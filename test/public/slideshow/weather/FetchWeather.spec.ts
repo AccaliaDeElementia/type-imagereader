@@ -39,10 +39,10 @@ describe('public/slideshow/weather FetchWeather()', () => {
     await Functions.FetchWeather(target)
     expect(fetchStub.callCount).to.equal(1)
   })
-  it('should call fetch with one argument for provided uri', async () => {
+  it('should call fetch with two arguments for provided uri', async () => {
     const target = new URL('https://localhost:8192/foo')
     await Functions.FetchWeather(target)
-    expect(fetchStub.firstCall.args).to.have.length(1)
+    expect(fetchStub.firstCall.args).to.have.length(2)
   })
   it('should call fetch with the provided uri', async () => {
     const target = new URL('https://localhost:8192/foo')
@@ -55,15 +55,26 @@ describe('public/slideshow/weather FetchWeather()', () => {
     await Functions.FetchWeather(target)
     expect(fetchStub.callCount).to.equal(1)
   })
-  it('should call fetch with one argument for provided string', async () => {
+  it('should call fetch with two arguments for provided string', async () => {
     const target = 'https://localhost:8192/foo'
     await Functions.FetchWeather(target)
-    expect(fetchStub.firstCall.args).to.have.length(1)
+    expect(fetchStub.firstCall.args).to.have.length(2)
   })
   it('should call fetch with the provided string', async () => {
     const target = 'https://localhost:8192/foo'
     await Functions.FetchWeather(target)
     expect(fetchStub.firstCall.args[0]).to.equal(target)
+  })
+  it('should pass an AbortSignal in the fetch options', async () => {
+    const sentinelSignal = Cast<AbortSignal>({})
+    sandbox.stub(AbortSignal, 'timeout').returns(sentinelSignal)
+    await Functions.FetchWeather('https://localhost/x')
+    expect(Cast<{ signal: unknown }>(fetchStub.firstCall.args[1]).signal).to.equal(sentinelSignal)
+  })
+  it('should set the AbortSignal timeout to 60 seconds', async () => {
+    const timeoutStub = sandbox.stub(AbortSignal, 'timeout').returns(Cast<AbortSignal>({}))
+    await Functions.FetchWeather('https://localhost/x')
+    expect(timeoutStub.firstCall.args).to.deep.equal([60_000])
   })
 
   it('should reject when fetch rejects', async () => {
