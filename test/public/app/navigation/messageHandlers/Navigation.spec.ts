@@ -113,13 +113,62 @@ describe('public/app/navigation function Init()', () => {
       await handler('a string')
       expect(loadDataStub.callCount).to.equal(1)
     })
-    it('should call LoadData() with defaults', async () => {
+    it('should call LoadData() with noHistory=false for string path', async () => {
       Navigation.Init()
       loadDataStub.resetHistory()
       const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
       assert(handler !== undefined, 'handler must have a value')
       await handler('a string')
-      expect(loadDataStub.firstCall.args).to.deep.equal([])
+      expect(loadDataStub.firstCall.args[0]).to.equal(false)
+    })
+    it('should call LoadData() with suppressMenu=false for string path', async () => {
+      Navigation.Init()
+      loadDataStub.resetHistory()
+      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
+      assert(handler !== undefined, 'handler must have a value')
+      await handler('a string')
+      expect(loadDataStub.firstCall.args[1]).to.equal(false)
+    })
+    it('should call LoadData() with suppressMenu=true when listing has noMenu=true', async () => {
+      const data: Listing = {
+        path: '/foo/bar/baz',
+        name: 'Baz',
+        parent: '/foo/bar',
+        noMenu: true,
+      }
+      Navigation.Init()
+      loadDataStub.resetHistory()
+      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
+      assert(handler !== undefined, 'handler must have a value')
+      await handler(data)
+      expect(loadDataStub.firstCall.args[1]).to.equal(true)
+    })
+    it('should call LoadData() with suppressMenu=false when listing has noMenu=false', async () => {
+      const data: Listing = {
+        path: '/foo/bar/baz',
+        name: 'Baz',
+        parent: '/foo/bar',
+        noMenu: false,
+      }
+      Navigation.Init()
+      loadDataStub.resetHistory()
+      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
+      assert(handler !== undefined, 'handler must have a value')
+      await handler(data)
+      expect(loadDataStub.firstCall.args[1]).to.equal(false)
+    })
+    it('should call LoadData() with suppressMenu=false when listing has no noMenu key', async () => {
+      const data: Listing = {
+        path: '/foo/bar/baz',
+        name: 'Baz',
+        parent: '/foo/bar',
+      }
+      Navigation.Init()
+      loadDataStub.resetHistory()
+      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
+      assert(handler !== undefined, 'handler must have a value')
+      await handler(data)
+      expect(loadDataStub.firstCall.args[1]).to.equal(false)
     })
   })
   describe('Navigate:Reload Message Handler', () => {

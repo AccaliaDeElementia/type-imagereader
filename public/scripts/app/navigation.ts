@@ -42,14 +42,16 @@ export const Navigation = {
     Navigation.current.path = Navigation.GetFolderPath()
     Navigation.LoadData().catch(() => null)
     Subscribe('Navigate:Load', async (path) => {
+      let suppressMenu = false
       if (typeof path === 'string') {
         Navigation.current = { path, name: '', parent: '' }
       } else if (isListing(path)) {
         Navigation.current = path
+        suppressMenu = path.noMenu === true
       } else {
         return
       }
-      await Navigation.LoadData().catch(() => null)
+      await Navigation.LoadData(false, suppressMenu).catch(() => null)
     })
     Subscribe('Navigate:Reload', async () => {
       await Navigation.LoadData().catch(() => null)
@@ -182,13 +184,14 @@ export const Navigation = {
       await Promise.resolve()
     })
   },
-  LoadData: async (noHistory = false): Promise<void> => {
+  LoadData: async (noHistory = false, suppressMenu = false): Promise<void> => {
     try {
       Publish('Loading:Show')
       const path = Navigation.current.path
       // eslint-disable-next-line require-atomic-updates -- Navigation.current is intentionally replaced with the fetched result
       Navigation.current = await Net.GetJSON<Listing>(`/api/listing${path}`, isListing)
-      Navigation.current.noMenu = Navigation.IsSuppressMenu()
+      // eslint-disable-next-line require-atomic-updates -- suppressMenu is a captured function parameter; assigning it onto the freshly fetched Navigation.current is intentional
+      Navigation.current.noMenu = suppressMenu || Navigation.IsSuppressMenu()
       for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
         let name = Navigation.current.name
         if (!StringishHasValue(name)) {

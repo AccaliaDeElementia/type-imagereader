@@ -131,6 +131,37 @@ describe('public/app/navigation function LoadData()', () => {
     await Navigation.LoadData()
     expect(Navigation.current.noMenu).to.equal(true)
   })
+  it('should set noMenu as true when suppressMenu argument is true', async () => {
+    suppressMenuSpy.returns(false)
+    await Navigation.LoadData(false, true)
+    expect(Navigation.current.noMenu).to.equal(true)
+  })
+  it('should set noMenu as true when suppressMenu argument is true and IsSuppressMenu is true', async () => {
+    suppressMenuSpy.returns(true)
+    await Navigation.LoadData(false, true)
+    expect(Navigation.current.noMenu).to.equal(true)
+  })
+  it('should set noMenu as false when suppressMenu argument is false and IsSuppressMenu is false', async () => {
+    suppressMenuSpy.returns(false)
+    await Navigation.LoadData(false, false)
+    expect(Navigation.current.noMenu).to.equal(false)
+  })
+  it('should set noMenu as true when suppressMenu argument is false and IsSuppressMenu is true', async () => {
+    suppressMenuSpy.returns(true)
+    await Navigation.LoadData(false, false)
+    expect(Navigation.current.noMenu).to.equal(true)
+  })
+  it('should not inherit noMenu from prior Navigation.current state when suppressMenu argument is omitted', async () => {
+    suppressMenuSpy.returns(false)
+    Navigation.current = {
+      path: '/',
+      name: '',
+      parent: '',
+      noMenu: true,
+    }
+    await Navigation.LoadData()
+    expect(Navigation.current.noMenu).to.equal(false)
+  })
   it('should set title element content as retrieved name', async () => {
     getJSONSpy.resolves({ name: 'Nude in Bar', path: '/N/Nude in Bar' })
     await Navigation.LoadData()
