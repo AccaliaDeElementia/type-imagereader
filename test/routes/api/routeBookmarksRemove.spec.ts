@@ -29,6 +29,7 @@ describe('routes/api route POST /bookmarks/remove', () => {
   let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
   let isPathTraversalStub = sandbox.stub()
   let removeBookmarkStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -49,7 +50,8 @@ describe('routes/api route POST /bookmarks/remove', () => {
       }),
     )
     removeBookmarkStub = sandbox.stub(Functions, 'RemoveBookmark').resolves()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
+    loggerStub = sandbox.stub()
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
@@ -95,5 +97,10 @@ describe('routes/api route POST /bookmarks/remove', () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.firstCall.args[0]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
+  })
+  it('should log on entry to bookmarks/remove handler', async () => {
+    await routeHandler(requestFake, responseFake)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('POST /bookmarks/remove'))
+    expect(matched).to.equal(true)
   })
 })

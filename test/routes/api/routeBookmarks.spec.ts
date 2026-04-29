@@ -25,6 +25,7 @@ describe('routes/api route GET /bookmarks', () => {
   let requestFake = Cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
+  let loggerStub = sandbox.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -43,7 +44,8 @@ describe('routes/api route GET /bookmarks', () => {
       }),
     )
     getBookmarkStub = sandbox.stub(Functions, 'GetBookmarks').resolves()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
+    loggerStub = sandbox.stub()
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     const fn = getFn.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1] as unknown
@@ -64,5 +66,10 @@ describe('routes/api route GET /bookmarks', () => {
   it('should pass knex to GetBookmarks', async () => {
     await routeHandler(requestFake, responseFake)
     expect(getBookmarkStub.firstCall.args[0]).to.equal(knexFake)
+  })
+  it('should log on entry to bookmarks handler', async () => {
+    await routeHandler(requestFake, responseFake)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GET /bookmarks'))
+    expect(matched).to.equal(true)
   })
 })

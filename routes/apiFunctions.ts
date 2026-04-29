@@ -3,10 +3,15 @@
 import { normalize, basename, dirname, extname, sep } from 'node:path'
 
 import type { Knex } from 'knex'
+import _debug from 'debug'
+import type { Debugger } from 'debug'
 import { EscapeLikeWildcards, StringishHasValue, ZERO_COUNT } from '#utils/helpers'
 import { GetParentFolders as _GetParentFolders } from '#utils/Path'
 
-export const Imports = { GetParentFolders: _GetParentFolders }
+export const Imports: { GetParentFolders: typeof _GetParentFolders; logger: Debugger } = {
+  GetParentFolders: _GetParentFolders,
+  logger: _debug('type-imagereader:apiFunctions'),
+}
 
 export const INVALID_MOD_COUNT = -1
 const RESET_MOD_COUNT = 0
@@ -297,6 +302,7 @@ export const Functions = {
     const folder = normalize(dirname(path) + sep)
     const picture = (await knex('pictures').select<DbPicture[]>('seen').where({ path })).shift()
     if (picture === undefined) {
+      Imports.logger('SetLatestPicture: picture not found: %s', path)
       return null
     }
     if (!picture.seen) {
@@ -312,6 +318,9 @@ export const Functions = {
       .update({ seen: markAsSeen })
       .where({ seen: currentSeenState })
       .andWhere('folder', 'like', `${EscapeLikeWildcards(path)}%`)
+    if (updates <= ZERO_COUNT) {
+      Imports.logger('MarkFolderSeen: no rows updated for %s (markAsSeen=%s)', path, markAsSeen)
+    }
     if (updates > ZERO_COUNT) {
       const increment = markAsSeen ? updates : -updates
       await knex('folders').increment('seenCount', increment).whereIn('path', Imports.GetParentFolders(path))

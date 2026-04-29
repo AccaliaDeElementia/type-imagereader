@@ -33,6 +33,7 @@ describe('routes/api route POST /navigate/latest', () => {
   let validateModcountStub = sandbox.stub()
   let incrementModcountStub = sandbox.stub()
   let getModcountStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -57,7 +58,8 @@ describe('routes/api route POST /navigate/latest', () => {
     validateModcountStub = sandbox.stub(ModCount, 'Validate').returns(true)
     incrementModcountStub = sandbox.stub(ModCount, 'Increment').returns(1)
     getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
+    loggerStub = sandbox.stub()
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
@@ -162,5 +164,16 @@ describe('routes/api route POST /navigate/latest', () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.firstCall.args[0]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
+  })
+  it('should log on entry to navigate/latest handler', async () => {
+    await routeHandler(requestFake, responseFake)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('POST /navigate/latest'))
+    expect(matched).to.equal(true)
+  })
+  it('should log when modcount validation fails', async () => {
+    validateModcountStub.returns(false)
+    await routeHandler(requestFake, responseFake)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('modcount mismatch'))
+    expect(matched).to.equal(true)
   })
 })

@@ -27,10 +27,12 @@ describe('routes/apiFunctions function SetLatestPicture', () => {
   let knexStub = sandbox.stub()
   let knexFake = StubToKnex(knexStub)
   let getParentFoldersStub = sandbox.stub()
+  let loggerStub: Sinon.SinonStub = sandbox.stub()
   beforeEach(() => {
     knexStub = sandbox.stub().callsFake(() => StubToKnex(makeKnexInstance()))
     knexFake = StubToKnex(knexStub)
     getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns([])
+    loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
     sandbox.restore()
@@ -334,5 +336,13 @@ describe('routes/apiFunctions function SetLatestPicture', () => {
     knexStub.onCall(2).returns(instance)
     await Functions.SetLatestPicture(knexFake, '/foo/bar/image.pdf')
     expect(instance.update.firstCall.args).to.deep.equal([{ seen: true }])
+  })
+  it('should log when picture is not found in pictures table', async () => {
+    const instance = makeKnexInstance()
+    knexStub.onFirstCall().returns(instance)
+    instance.where.resolves([])
+    await Functions.SetLatestPicture(knexFake, '/foo/bar/image.pdf')
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('SetLatestPicture: picture not found'))
+    expect(matched).to.equal(true)
   })
 })

@@ -52,6 +52,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
 
   const parsePath = (path: string, res: Response): string | null => {
     if (Imports.isPathTraversal(path)) {
+      logger('path traversal blocked: %s', path)
       res.status(StatusCodes.FORBIDDEN).json({
         error: {
           code: 'E_NO_TRAVERSE',
@@ -82,12 +83,14 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
 
   const listing = handleErrors(async (req, res) => {
     let path: string | null = `/${ReqParamToString(req.params.path)}`
+    logger('GET /listing %s', path)
     path = parsePath(path, res)
     if (path === null) {
       return
     }
     const folder = await Functions.GetListing(knex, normalize(`${path}/`))
     if (folder === null) {
+      logger('listing not found: %s', path)
       res.status(StatusCodes.NOT_FOUND).json({
         error: {
           code: 'E_NOT_FOUND',
@@ -113,12 +116,14 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       if (path === null) {
         return
       }
+      logger('POST /navigate/latest %s', path)
       if (incomingModCount === INVALID_MOD_COUNT) {
         await Functions.SetLatestPicture(knex, path)
       } else if (ModCount.Validate(incomingModCount)) {
         response = ModCount.Increment()
         await Functions.SetLatestPicture(knex, path)
       } else {
+        logger('modcount mismatch: client=%d server=%d for %s', incomingModCount, ModCount.Get(), path)
         res.status(StatusCodes.BAD_REQUEST).send(`${INVALID_MOD_COUNT}`)
         return
       }
@@ -132,6 +137,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
+        logger('POST /mark/read %s', path)
         await Functions.MarkFolderSeen(knex, normalize(`${path}/`), true)
         res.status(StatusCodes.OK).end()
       }
@@ -144,6 +150,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
+        logger('POST /mark/unread %s', path)
         await Functions.MarkFolderSeen(knex, normalize(`${path}/`), false)
         res.status(StatusCodes.OK).end()
       }
@@ -151,6 +158,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   )
 
   const getBookmarks = handleErrors(async (_, res) => {
+    logger('GET /bookmarks')
     res.json(await Functions.GetBookmarks(knex))
   })
 
@@ -163,8 +171,8 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     handleErrors(async (req, res) => {
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
-      logger(path ?? 'NULL PATH!')
       if (path !== null) {
+        logger('POST /bookmarks/add %s', path)
         await Functions.AddBookmark(knex, path)
         res.status(StatusCodes.OK).end()
       }
@@ -177,6 +185,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const body = ReadBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
+        logger('POST /bookmarks/remove %s', path)
         await Functions.RemoveBookmark(knex, path)
         res.status(StatusCodes.OK).end()
       }

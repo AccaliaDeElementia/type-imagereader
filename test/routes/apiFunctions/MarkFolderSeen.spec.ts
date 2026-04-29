@@ -15,12 +15,14 @@ describe('routes/apiFunctions function MarkFolderSeen', () => {
   let knexFake = StubToKnex(knexStub)
   let knexRawStub = sandbox.stub()
   let getParentFoldersStub = sandbox.stub()
+  let loggerStub: Sinon.SinonStub = sandbox.stub()
   beforeEach(() => {
     knexStub = sandbox.stub().callsFake(() => createKnexChainFake(chainMethods, terminalMethods).instance)
     knexFake = StubToKnex(knexStub)
     knexRawStub = sandbox.stub()
     knexFake.raw = knexRawStub
     getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns([])
+    loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
     sandbox.restore()
@@ -299,5 +301,13 @@ describe('routes/apiFunctions function MarkFolderSeen', () => {
       await Functions.MarkFolderSeen(knexFake, '/foo/bar/baz/quux/', false)
       expect(knexStub.callCount).to.equal(1)
     })
+  })
+  it('should log when zero rows are updated for marking seen', async () => {
+    const query = createKnexChainFake(chainMethods, terminalMethods).instance
+    query.andWhere.resolves(0)
+    knexStub.onFirstCall().returns(query)
+    await Functions.MarkFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('MarkFolderSeen: no rows updated'))
+    expect(matched).to.equal(true)
   })
 })

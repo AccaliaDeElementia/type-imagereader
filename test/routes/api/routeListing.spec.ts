@@ -28,6 +28,7 @@ describe('routes/api route GET /listing', () => {
   let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
   let isPathTraversalStub = sandbox.stub()
   let getListingStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -47,7 +48,8 @@ describe('routes/api route GET /listing', () => {
       }),
     )
     getListingStub = sandbox.stub(Functions, 'GetListing').resolves()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
+    loggerStub = sandbox.stub()
+    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
@@ -128,5 +130,23 @@ describe('routes/api route GET /listing', () => {
     getListingStub.resolves(null)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
+  })
+  it('should log on entry to listing handler', async () => {
+    getListingStub.resolves({})
+    await routeHandler(requestFake, responseFake)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GET /listing'))
+    expect(matched).to.equal(true)
+  })
+  it('should log a path traversal attempt', async () => {
+    isPathTraversalStub.returns(true)
+    await routeHandler(requestFake, responseFake)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('path traversal blocked'))
+    expect(matched).to.equal(true)
+  })
+  it('should log when listing is not found', async () => {
+    getListingStub.resolves(null)
+    await routeHandler(requestFake, responseFake)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('listing not found'))
+    expect(matched).to.equal(true)
   })
 })
