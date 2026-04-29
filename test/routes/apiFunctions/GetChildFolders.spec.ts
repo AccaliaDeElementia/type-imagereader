@@ -50,6 +50,13 @@ describe('routes/apiFunctions function GetChildFolders', () => {
     ['uri safe cover as current', '/foo/bar/<baz>.zip', '/foo/bar/quuz.bmp', '/foo/bar/%3Cbaz%3E.zip'],
     ['firstPicture as cover when current is null', null, '/foo/bar/quuz.bmp', '/foo/bar/quuz.bmp'],
     ['uri safe firstPicture as cover when null', null, '/foo/bar/<quuz>.bmp', '/foo/bar/%3Cquuz%3E.bmp'],
+    ['firstPicture as cover when current is empty-string sentinel', '', '/foo/bar/quuz.bmp', '/foo/bar/quuz.bmp'],
+    [
+      'uri safe firstPicture as cover when current is empty-string sentinel',
+      '',
+      '/foo/bar/<quuz>.bmp',
+      '/foo/bar/%3Cquuz%3E.bmp',
+    ],
   ]
   coverTests.forEach(([title, current, firstPicture, expected]) => {
     it(`should select ${title} from folders`, async () => {

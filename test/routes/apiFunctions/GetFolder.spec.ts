@@ -125,6 +125,18 @@ describe('routes/apiFunctions function GetFolder', () => {
       '/foo/bar/other image.png',
       '/foo/bar/other%20image.png',
     ],
+    [
+      'cover from first image when current is empty-string sentinel from db',
+      '',
+      '/foo/bar/otherImage.png',
+      '/foo/bar/otherImage.png',
+    ],
+    [
+      'uri safe cover from first image when current is empty-string sentinel from db',
+      '',
+      '/foo/bar/other image.png',
+      '/foo/bar/other%20image.png',
+    ],
   ]
   coverTests.forEach(([title, current, firstPicture, expected]) => {
     it(`should set ${title}`, async () => {

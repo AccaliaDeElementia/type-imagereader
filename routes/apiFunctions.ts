@@ -144,7 +144,8 @@ interface DbBookmark {
 }
 
 function getCoverPath(folder: { current: string | null; firstPicture: string | null }): string | null {
-  return folder.current ?? folder.firstPicture // prefer last-viewed image; fall back to first image if never visited
+  // SyncMissingCoverImages writes '' as a "no valid cover" sentinel, so treat empty-string the same as null
+  return StringishHasValue(folder.current) ? folder.current : folder.firstPicture
 }
 
 export interface SiblingFolderSearch {
