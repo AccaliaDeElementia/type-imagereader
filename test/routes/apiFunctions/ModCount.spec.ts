@@ -62,29 +62,30 @@ describe('routes/apiFunctions ModCount functions', () => {
     modCountInternals.modCount = 69420
     expect(ModCount.Get()).to.equal(69420)
   })
-  it('Validate() It should return true when modcount matches', () => {
+  it('ValidateAndIncrement() should return null when modcount mismatches', () => {
     modCountInternals.modCount = 69420
-    expect(ModCount.Validate(69420)).to.equal(true)
+    expect(ModCount.ValidateAndIncrement(8675309)).to.equal(null)
   })
-  it('Validate() It should return false when modcount mismatches', () => {
+  it('ValidateAndIncrement() should not change stored modcount when mismatch', () => {
     modCountInternals.modCount = 69420
-    expect(ModCount.Validate(8675309)).to.equal(false)
+    ModCount.ValidateAndIncrement(8675309)
+    expect(modCountInternals.modCount).to.equal(69420)
   })
-  it('Increment() It should increment returned modcount by one', () => {
+  it('ValidateAndIncrement() should return incremented modcount when match', () => {
     modCountInternals.modCount = 69420
-    expect(ModCount.Increment()).to.equal(69421)
+    expect(ModCount.ValidateAndIncrement(69420)).to.equal(69421)
   })
-  it('Increment() It should increment stored modcount by one', () => {
+  it('ValidateAndIncrement() should update stored modcount when match', () => {
     modCountInternals.modCount = 69420
-    ModCount.Increment()
+    ModCount.ValidateAndIncrement(69420)
     expect(modCountInternals.modCount).to.equal(69421)
   })
-  it('Increment() It should reset modcount on rollover', () => {
+  it('ValidateAndIncrement() should reset modcount on rollover', () => {
     modCountInternals.modCount = Number.MAX_SAFE_INTEGER
-    expect(ModCount.Increment()).to.equal(1)
+    expect(ModCount.ValidateAndIncrement(Number.MAX_SAFE_INTEGER)).to.equal(1)
   })
-  it('Increment() It should reset modcount at exact rollover boundary', () => {
+  it('ValidateAndIncrement() should reset modcount at exact rollover boundary', () => {
     modCountInternals.modCount = Number.MAX_SAFE_INTEGER - 1
-    expect(ModCount.Increment()).to.equal(1)
+    expect(ModCount.ValidateAndIncrement(Number.MAX_SAFE_INTEGER - 1)).to.equal(1)
   })
 })

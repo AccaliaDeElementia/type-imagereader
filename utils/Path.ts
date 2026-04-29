@@ -3,7 +3,7 @@
 import { normalize, dirname, sep } from 'node:path'
 
 export function isPathTraversal(path: string): boolean {
-  return normalize(path) !== path || path.startsWith('/~')
+  return normalize(path) !== path
 }
 
 export function GetParentFolders(path: string): string[] {

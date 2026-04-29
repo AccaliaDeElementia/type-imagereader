@@ -30,8 +30,7 @@ describe('routes/api route POST /navigate/latest', () => {
   let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
   let isPathTraversalStub = sandbox.stub()
   let setLatestPictureStub = sandbox.stub()
-  let validateModcountStub = sandbox.stub()
-  let incrementModcountStub = sandbox.stub()
+  let validateAndIncrementStub = sandbox.stub()
   let getModcountStub = sandbox.stub()
   let loggerStub = sandbox.stub()
   let knexFake = { Knex: Math.random() }
@@ -55,8 +54,7 @@ describe('routes/api route POST /navigate/latest', () => {
       }),
     )
     setLatestPictureStub = sandbox.stub(Functions, 'SetLatestPicture').resolves()
-    validateModcountStub = sandbox.stub(ModCount, 'Validate').returns(true)
-    incrementModcountStub = sandbox.stub(ModCount, 'Increment').returns(1)
+    validateAndIncrementStub = sandbox.stub(ModCount, 'ValidateAndIncrement').returns(1)
     getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
     loggerStub = sandbox.stub()
     sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
@@ -78,18 +76,17 @@ describe('routes/api route POST /navigate/latest', () => {
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
   })
   it('should set status BAD_REQUEST when modcount is invalid', async () => {
-    validateModcountStub.returns(false)
+    validateAndIncrementStub.returns(null)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
   })
   it('should accept missing modcount and handle as invalid modcount', async () => {
-    validateModcountStub.returns(false)
+    validateAndIncrementStub.returns(null)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.send.firstCall.args).to.deep.equal(['-1'])
   })
   it('should return new modcount when validate passes', async () => {
-    validateModcountStub.returns(true)
-    incrementModcountStub.returns(5050)
+    validateAndIncrementStub.returns(5050)
     const req = Cast<Request>({ body: { path: '/image.png' }, originalUrl: '/' })
     await routeHandler(req, responseFake)
     expect(responseStub.send.firstCall.args).to.deep.equal(['5050'])
@@ -105,47 +102,42 @@ describe('routes/api route POST /navigate/latest', () => {
     expect(responseStub.send.firstCall.args).to.deep.equal(['-1'])
   })
   it('should call SetLatestPicture when validate is bypassed', async () => {
-    validateModcountStub.returns(false)
+    validateAndIncrementStub.returns(null)
     requestStub.body.modCount = -1
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.firstCall.args).to.deep.equal([knexFake, '/foo/bar/a image.png'])
   })
-  it('should not call Validate when validate is bypassed', async () => {
+  it('should not call ValidateAndIncrement when validate is bypassed', async () => {
     requestStub.body.modCount = -1
     await routeHandler(requestFake, responseFake)
-    expect(validateModcountStub.callCount).to.equal(0)
+    expect(validateAndIncrementStub.callCount).to.equal(0)
   })
   it('should not call Get when validate is bypassed', async () => {
     requestStub.body.modCount = -1
     await routeHandler(requestFake, responseFake)
     expect(getModcountStub.callCount).to.equal(0)
   })
-  it('should not call Increment when validate is bypassed', async () => {
-    requestStub.body.modCount = -1
-    await routeHandler(requestFake, responseFake)
-    expect(incrementModcountStub.callCount).to.equal(0)
-  })
   it('should call SetLatestPicture when validate passes', async () => {
-    validateModcountStub.returns(true)
+    validateAndIncrementStub.returns(5050)
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.firstCall.args).to.deep.equal([knexFake, '/foo/bar/a image.png'])
   })
   it('should set status BAD_REQUEST when validate fails', async () => {
-    validateModcountStub.returns(false)
+    validateAndIncrementStub.returns(null)
     getModcountStub.returns(69_420)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.BAD_REQUEST])
   })
   it('should return invalid when validate fails', async () => {
-    validateModcountStub.returns(false)
+    validateAndIncrementStub.returns(null)
     getModcountStub.returns(69_420)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.send.firstCall.args).to.deep.equal(['-1'])
   })
   it('should not call SetLatestPicture when validate fails', async () => {
-    validateModcountStub.returns(false)
+    validateAndIncrementStub.returns(null)
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.callCount).to.equal(0)
@@ -171,7 +163,7 @@ describe('routes/api route POST /navigate/latest', () => {
     expect(matched).to.equal(true)
   })
   it('should log when modcount validation fails', async () => {
-    validateModcountStub.returns(false)
+    validateAndIncrementStub.returns(null)
     await routeHandler(requestFake, responseFake)
     const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('modcount mismatch'))
     expect(matched).to.equal(true)

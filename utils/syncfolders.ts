@@ -428,9 +428,14 @@ const synchronize = async (): Promise<void> => {
   const knex = await persistance.initialize()
   const runStep = async <T>(label: string, step: () => Promise<T>): Promise<T> => {
     const stepStart = Date.now()
-    const result = await step()
-    logger(`${label} completed in ${elapsedSeconds(stepStart)}s`)
-    return result
+    try {
+      const result = await step()
+      logger(`${label} completed in ${elapsedSeconds(stepStart)}s`)
+      return result
+    } catch (e) {
+      logger(`${label} failed after ${elapsedSeconds(stepStart)}s`, e)
+      throw e
+    }
   }
   try {
     const foundPics = await runStep('FindSyncItems', async () => await Functions.FindSyncItems(knex))
@@ -451,6 +456,8 @@ const synchronize = async (): Promise<void> => {
     })
   } catch (e) {
     logger('Folder Synchronization Failed', e)
+    logger(`Folder Synchronization Failed after ${elapsedSeconds(start)}s`)
+    throw e
   }
   logger(`Folder Synchronization Complete after ${elapsedSeconds(start)}s`)
 }

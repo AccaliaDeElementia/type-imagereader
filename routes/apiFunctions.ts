@@ -71,8 +71,10 @@ interface Listing {
 }
 interface ModCountPublic {
   Get: () => number
-  Validate: (incoming: number) => boolean
-  Increment: () => number
+  // Atomic compare-and-increment: returns the new (post-increment) count on match, null on mismatch.
+  // Combining the validate and increment steps into a single synchronous call removes the temptation
+  // for callers to interleave an `await` between them and silently race concurrent requests.
+  ValidateAndIncrement: (incoming: number) => number | null
 }
 export interface ModCountInternals {
   modCount: number
@@ -86,8 +88,8 @@ const modCountImpl: ModCountPublic & ModCountInternals = {
     return modCountImpl.modCount
   },
   Get: (): number => modCountImpl.modCount,
-  Validate: (incoming: number): boolean => modCountImpl.modCount === incoming,
-  Increment: (): number => {
+  ValidateAndIncrement: (incoming: number): number | null => {
+    if (modCountImpl.modCount !== incoming) return null
     if (modCountImpl.modCount >= MAXIMUM_MOD_COUNT) {
       modCountImpl.modCount = RESET_MOD_COUNT
     }
@@ -306,14 +308,18 @@ export const Functions = {
   },
   SetLatestPicture: async (knex: Knex, path: string): Promise<string | null> => {
     const folder = normalize(dirname(path) + sep)
-    const picture = (await knex('pictures').select<DbPicture[]>('seen').where({ path })).shift()
+    const picture = (
+      await knex('pictures').select<DbPicture[]>('path').where({ path }).limit(LIMIT_SINGLE_RECORD)
+    ).shift()
     if (picture === undefined) {
       Imports.logger('SetLatestPicture: picture not found: %s', path)
       return null
     }
-    if (!picture.seen) {
+    // Atomic conditional flip: PostgreSQL serializes concurrent flippers via the seen=false guard,
+    // so only one caller's UPDATE returns a non-zero rowcount and only that caller increments seenCount.
+    const flipped = await knex('pictures').update({ seen: true }).where({ path, seen: false })
+    if (flipped > ZERO_COUNT) {
       await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Imports.GetParentFolders(path))
-      await knex('pictures').update({ seen: true }).where({ path })
     }
     await knex('folders').update({ current: path }).where({ path: folder })
     return UriSafePath.encode(folder)
