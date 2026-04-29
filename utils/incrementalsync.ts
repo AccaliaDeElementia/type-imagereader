@@ -10,6 +10,7 @@ import type { Debugger } from 'debug'
 
 import _fsWalker from './fswalker'
 import { Functions as _SyncFunctions } from './syncfolders'
+import { EscapeLikeWildcards } from './helpers'
 
 const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1
@@ -68,13 +69,14 @@ export const Functions = {
     })
   },
   IncrementalRemoveFolder: async (logger: Debugger, knex: Knex, dirPath: string): Promise<void> => {
-    const deletedPics = await knex('pictures').where('folder', 'like', `${dirPath}%`).delete()
+    const escapedPrefix = `${EscapeLikeWildcards(dirPath)}%`
+    const deletedPics = await knex('pictures').where('folder', 'like', escapedPrefix).delete()
     await knex('bookmarks')
       .whereNotExists(function () {
         this.select('*').from('pictures').whereRaw('pictures.path = bookmarks.path')
       })
       .delete()
-    const deletedFolders = await knex('folders').where('path', 'like', `${dirPath}%`).delete()
+    const deletedFolders = await knex('folders').where('path', 'like', escapedPrefix).delete()
     logger(`Incremental remove folder: ${dirPath} (${deletedPics} pictures, ${deletedFolders} folders)`)
   },
   IncrementalScanFolder: async (logger: Debugger, knex: Knex, dirPath: string, dataDir: string): Promise<void> => {

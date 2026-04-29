@@ -115,4 +115,24 @@ describe('utils/syncfolders function IncrementalRemoveFolder()', () => {
     await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(loggerStub.calledWith('Incremental remove folder: /comics/series/ (5 pictures, 3 folders)')).to.equal(true)
   })
+
+  it('should escape underscore wildcards when querying pictures', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/foo_bar/')
+    expect(picturesStub.where.calledWith('folder', 'like', '/foo\\_bar/%')).to.equal(true)
+  })
+
+  it('should escape percent wildcards when querying pictures', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/foo%bar/')
+    expect(picturesStub.where.calledWith('folder', 'like', '/foo\\%bar/%')).to.equal(true)
+  })
+
+  it('should escape underscore wildcards when querying folders', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/foo_bar/')
+    expect(foldersStub.where.calledWith('path', 'like', '/foo\\_bar/%')).to.equal(true)
+  })
+
+  it('should escape percent wildcards when querying folders', async () => {
+    await Functions.IncrementalRemoveFolder(loggerFake, knexFnFake, '/foo%bar/')
+    expect(foldersStub.where.calledWith('path', 'like', '/foo\\%bar/%')).to.equal(true)
+  })
 })
