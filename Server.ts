@@ -63,7 +63,7 @@ export const Functions = {
     app.use(Imports.cookieParser())
     app.use(Imports.favicon(join(__dirname, 'dist', 'images', 'favicon.ico')))
   },
-  ConfigureLoggingAndErrors: (app: Express): void => {
+  ConfigureLogging: (app: Express): void => {
     switch (process.env.NODE_ENV) {
       case 'production':
         app.use(Imports.helmet())
@@ -74,10 +74,15 @@ export const Functions = {
       default:
         break
     }
-
+  },
+  ConfigureErrorHandler: (app: Express): void => {
     app.use((err: Error, _: Request, res: Response, __: NextFunction) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ error: err.message }),
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: err.message }),
     )
+  },
+  SetClacksOverhead: (_: Request, res: Response, next: NextFunction): void => {
+    res.set('X-Clacks-Overhead', 'GNU Terry Pratchett')
+    next()
   },
   RegisterRouters: async (app: Express, server: HttpServer, websockets: WebSocketServer): Promise<void> => {
     app.use('/', await Routers.Root(app, server, websockets))
@@ -98,14 +103,11 @@ export default async function start(port: number): Promise<{ app: Express; serve
   const [app, server, websockets] = Functions.CreateApp()
 
   Functions.ConfigureBaseApp(app)
+  Functions.ConfigureLogging(app) // helmet/morgan must run before routers so headers/logs apply to handled responses
+  app.use(Functions.SetClacksOverhead) // header on every response, not just 404s
   Functions.RegisterViewsAndMiddleware(app)
   await Functions.RegisterRouters(app, server, websockets)
-  Functions.ConfigureLoggingAndErrors(app)
-
-  app.get('/*splat', (_, res, next) => {
-    res.set('X-Clacks-Overhead', 'GNU Terry Pratchett')
-    next()
-  })
+  Functions.ConfigureErrorHandler(app) // Express error-handling middleware must be registered last
 
   Functions.ListenOnPort(server, port)
 
