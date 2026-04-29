@@ -66,9 +66,20 @@ describe('routes/weather function GetWeather', () => {
   })
   it('should request expected openweather api url', async () => {
     await Functions.GetWeather()
-    expect(fetchStub.firstCall.args).to.deep.equal([
+    expect(fetchStub.firstCall.args[0]).to.equal(
       'https://api.openweathermap.org/data/2.5/weather?q=location&appid=appid',
-    ])
+    )
+  })
+  it('should pass an AbortSignal in the fetch options', async () => {
+    const sentinelSignal = Cast<AbortSignal>({})
+    sandbox.stub(AbortSignal, 'timeout').returns(sentinelSignal)
+    await Functions.GetWeather()
+    expect(Cast<{ signal: unknown }>(fetchStub.firstCall.args[1]).signal).to.equal(sentinelSignal)
+  })
+  it('should set the AbortSignal timeout to 60 seconds', async () => {
+    const timeoutStub = sandbox.stub(AbortSignal, 'timeout').returns(Cast<AbortSignal>({}))
+    await Functions.GetWeather()
+    expect(timeoutStub.firstCall.args).to.deep.equal([60_000])
   })
   it('should return JSON as parsed', async () => {
     const result = await Functions.GetWeather()

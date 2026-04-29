@@ -11,6 +11,7 @@ import { StringishHasValue } from '#utils/helpers'
 const KELVIN_TO_CELCIUS_OFFSET = -273.15
 const SECONDS_TO_MILLISECONDS_MULTIPLE = 1000
 const UPDATE_INTERVAL = 600_000 // Ten Minutes in Milliseconds
+const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
 
 export interface WeatherResults {
   temp: number | undefined
@@ -135,7 +136,9 @@ export const Functions = {
     if (!StringishHasValue(appId)) throw new Error('no OpenWeather AppId Defined!')
     const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
     if (!StringishHasValue(location)) throw new Error('no OpenWeather Location Defined!')
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`)
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
     const data: unknown = await response.json()
     if (!Functions.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
     return data
