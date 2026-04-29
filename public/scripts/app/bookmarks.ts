@@ -22,11 +22,14 @@ const UNINITIALIZED_MOD_COUNT = -1
 const SORT_BEFORE = -1
 const SORT_AFTER = 1
 const SORT_EQUAL = 0
+const INITIAL_LOAD_TOKEN = 0
+const TOKEN_STEP = 1
 export const Bookmarks = {
   bookmarkCard: undefined as DocumentFragment | undefined,
   bookmarkFolder: undefined as DocumentFragment | undefined,
   bookmarksTab: null as HTMLElement | null,
   BookmarkFolders: [] as WebBookmarkFolder[],
+  loadToken: INITIAL_LOAD_TOKEN,
   GetOrCreateFolderElement: (openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null => {
     let folder = Bookmarks.BookmarkFolders.find((e) => e.path === bookmarkFolder.path)
     if (folder === undefined) {
@@ -144,11 +147,15 @@ export const Bookmarks = {
     })
 
     Subscribe('Bookmarks:Load', async () => {
+      Bookmarks.loadToken += TOKEN_STEP
+      const token = Bookmarks.loadToken
       await Net.GetJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder)).then(
         (bookmarks) => {
+          if (token !== Bookmarks.loadToken) return
           Bookmarks.buildBookmarks({ name: '', parent: '', path: '', bookmarks })
         },
         (err: unknown) => {
+          if (token !== Bookmarks.loadToken) return
           Publish('Loading:Error', err)
         },
       )

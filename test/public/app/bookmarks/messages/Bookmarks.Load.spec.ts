@@ -168,4 +168,43 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     await fn(undefined)
     expect(loadingErrorSpy.firstCall.args[0]).to.equal(data)
   })
+
+  const runStaleResponseScenario = async (): Promise<{ secondData: unknown }> => {
+    const { promise: firstPromise, resolve: resolveFirst } = Promise.withResolvers<unknown>()
+    const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
+    const secondData = [{ name: 'second', path: '/second', bookmarks: [] }]
+    getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
+    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
+    assert(fn !== undefined)
+    const a = fn(undefined)
+    const b = fn(undefined)
+    resolveSecond(secondData)
+    await b
+    resolveFirst([{ name: 'first', path: '/first', bookmarks: [] }])
+    await a
+    return { secondData }
+  }
+
+  it('should call buildBookmarks exactly once when a stale response arrives after a newer one', async () => {
+    await runStaleResponseScenario()
+    expect(BuildBookmarksSpy.callCount).to.equal(1)
+  })
+  it('should pass the newer response to buildBookmarks when a stale response arrives later', async () => {
+    const { secondData } = await runStaleResponseScenario()
+    expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(secondData)
+  })
+  it('should not publish Loading:Error for a stale rejection', async () => {
+    const { promise: firstPromise, reject: rejectFirst } = Promise.withResolvers<unknown>()
+    const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
+    getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
+    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
+    assert(fn !== undefined)
+    const a = fn(undefined)
+    const b = fn(undefined)
+    resolveSecond([{ name: 'second', path: '/second', bookmarks: [] }])
+    await b
+    rejectFirst(new Error('stale'))
+    await a
+    expect(loadingErrorSpy.callCount).to.equal(0)
+  })
 })
