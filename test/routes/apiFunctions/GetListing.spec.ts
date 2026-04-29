@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, ModCount, type ModCountInternals } from '#routes/apiFunctions'
+import { Functions, Imports, ModCount, type ModCountInternals } from '#routes/apiFunctions'
 import { Cast } from '#testutils/TypeGuards'
 import { createKnexChainFake } from '#testutils/Knex'
 import Sinon from 'sinon'
@@ -16,6 +16,7 @@ describe('routes/apiFunctions function GetListing', () => {
   let getChildFoldersStub = sandbox.stub()
   let getPicturesStub = sandbox.stub()
   let getBookmarksStub = sandbox.stub()
+  let loggerStub: Sinon.SinonStub = sandbox.stub()
   let { fake: knexFake } = createKnexChainFake([] as const, [] as const)
   beforeEach(() => {
     modCountInternals.modCount = 32_768
@@ -27,6 +28,7 @@ describe('routes/apiFunctions function GetListing', () => {
     getChildFoldersStub = sandbox.stub(Functions, 'GetChildFolders').resolves(undefined)
     getPicturesStub = sandbox.stub(Functions, 'GetPictures').resolves(undefined)
     getBookmarksStub = sandbox.stub(Functions, 'GetBookmarks').resolves(undefined)
+    loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
     sandbox.restore()
@@ -362,5 +364,23 @@ describe('routes/apiFunctions function GetListing', () => {
     })
     await Functions.GetListing(knexFake, '/foo/bar/')
     expect(getBookmarksStub.firstCall.args[0]).to.equal(knexFake)
+  })
+  it('should log GetListing timing on success path', async () => {
+    getFolderStub.resolves({
+      name: 'bar<=>',
+      path: '/foo/bar/',
+      folder: '/foo/',
+      cover: '/foo/bar/image.png',
+      sortKey: 'bar>-<',
+    })
+    await Functions.GetListing(knexFake, '/foo/bar/')
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GetListing'))
+    expect(matched).to.equal(true)
+  })
+  it('should not log GetListing timing when folder is not found', async () => {
+    getFolderStub.resolves(null)
+    await Functions.GetListing(knexFake, '/foo/bar/')
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GetListing'))
+    expect(matched).to.equal(false)
   })
 })

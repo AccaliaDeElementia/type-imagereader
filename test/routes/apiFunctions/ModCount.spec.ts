@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { ModCount, type ModCountInternals } from '#routes/apiFunctions'
+import { Imports, ModCount, type ModCountInternals } from '#routes/apiFunctions'
 import { Cast } from '#testutils/TypeGuards'
 import Sinon from 'sinon'
 
@@ -12,10 +12,12 @@ const sandbox = Sinon.createSandbox()
 describe('routes/apiFunctions ModCount functions', () => {
   let mathFloorSpy = Sinon.spy()
   let mathRandomSpy = Sinon.spy()
+  let loggerStub: Sinon.SinonStub = sandbox.stub()
   beforeEach(() => {
     mathFloorSpy = sandbox.spy(Math, 'floor')
     mathRandomSpy = sandbox.spy(Math, 'random')
     modCountInternals.modCount = 5050
+    loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
     sandbox.restore()
@@ -50,6 +52,11 @@ describe('routes/apiFunctions ModCount functions', () => {
     modCountInternals.Reset()
     const value = mathFloorSpy.firstCall.returnValue as unknown
     expect(modCountInternals.modCount).to.equal(value)
+  })
+  it('Reset() should log the new modcount value', () => {
+    modCountInternals.Reset()
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('ModCount reset'))
+    expect(matched).to.equal(true)
   })
   it('Get() It should return modcount value', () => {
     modCountInternals.modCount = 69420

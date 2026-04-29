@@ -82,6 +82,7 @@ const modCountImpl: ModCountPublic & ModCountInternals = {
   modCount: RESET_MOD_COUNT,
   Reset: (): number => {
     modCountImpl.modCount = Math.floor(Math.random() * MODCOUNT_INITIAL_MAGNITUDE)
+    Imports.logger('ModCount reset to %d', modCountImpl.modCount)
     return modCountImpl.modCount
   },
   Get: (): number => modCountImpl.modCount,
@@ -259,9 +260,12 @@ export const Functions = {
       },
       { results: [], pendingFolder: null },
     )
-    return pendingFolder === null ? results : [...results, pendingFolder]
+    const finalResults = pendingFolder === null ? results : [...results, pendingFolder]
+    Imports.logger('GetBookmarks: %d bookmarks in %d folders', bookmarks.length, finalResults.length)
+    return finalResults
   },
   GetListing: async (knex: Knex, path: string): Promise<Listing | null> => {
+    const start = Date.now()
     const folder = await Functions.GetFolder(knex, path)
     if (folder === null) {
       return null
@@ -283,6 +287,7 @@ export const Functions = {
     const children = await Functions.GetChildFolders(knex, path)
     const pictures = await Functions.GetPictures(knex, path)
     const bookmarks = await Functions.GetBookmarks(knex)
+    Imports.logger('GetListing %s took %dms', path, Date.now() - start)
     return {
       name: folder.name,
       path: folder.path,
