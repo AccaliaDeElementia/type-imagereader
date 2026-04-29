@@ -122,6 +122,26 @@ describe('public/app/wakelock function TakeLock()', () => {
     await WakeLock.ReleaseLock()
     expect(WakeLock.sentinel).to.equal(null)
   })
+  it('should preserve a sentinel installed during an in-flight release', async () => {
+    const { promise: releasePromise, resolve: resolveRelease } = Promise.withResolvers<undefined>()
+    const sentinelA: WakeLockSentinel = {
+      release: sandbox.stub().returns(releasePromise),
+      released: false,
+    }
+    const sentinelB: WakeLockSentinel = {
+      release: sandbox.stub().resolves(),
+      released: false,
+    }
+    WakeLock.sentinel = sentinelA
+    WakeLock.timeout = 99
+    clock?.tick(100)
+    const releasing = WakeLock.ReleaseLock()
+    WakeLock.sentinel = sentinelB
+    resolveRelease(undefined)
+    await releasing
+    expect(WakeLock.sentinel).to.equal(sentinelB)
+  })
+
   it('should reset timeout when timeout equals current time with no sentinel', async () => {
     WakeLock.sentinel = null
     WakeLock.timeout = 100

@@ -161,6 +161,16 @@ describe('public/app/wakelock function TakeLock()', () => {
     await WakeLock.TakeLock()
     expect(WakeLock.sentinel).to.equal(null)
   })
+  it('should request the wake lock only once when TakeLock is called concurrently', async () => {
+    const { promise, resolve } = Promise.withResolvers<WakeLockSentinel>()
+    wakelockRequest.returns(promise)
+    const a = WakeLock.TakeLock()
+    const b = WakeLock.TakeLock()
+    resolve(sentinel)
+    await Promise.all([a, b])
+    expect(wakelockRequest.callCount).to.equal(1)
+  })
+
   it('should reset timeout when missing wakelock functionality', async () => {
     WakeLock.sentinel = sentinel
     sentinel.released = true
