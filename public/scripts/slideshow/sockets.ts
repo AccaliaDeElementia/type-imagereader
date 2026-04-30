@@ -67,6 +67,7 @@ export const Functions = {
     return decodeURIComponent(uri)
   },
   HandleGetLaunchId: (launchId: unknown): void => {
+    if (typeof launchId !== 'number' || !Number.isFinite(launchId)) return
     if (WebSockets.launchId === undefined) {
       WebSockets.launchId = launchId
     } else if (WebSockets.launchId !== launchId) {

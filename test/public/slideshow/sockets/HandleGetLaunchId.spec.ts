@@ -44,4 +44,17 @@ describe('public/slideshow/sockets HandleGetLaunchId()', () => {
     Functions.HandleGetLaunchId(8675309)
     expect(fakeReload?.callCount).to.equal(1)
   })
+  it('should ignore a non-number launchId on first call', () => {
+    Functions.HandleGetLaunchId(null)
+    expect(WebSockets.launchId).to.equal(undefined)
+  })
+  it('should ignore a NaN launchId on first call', () => {
+    Functions.HandleGetLaunchId(Number.NaN)
+    expect(WebSockets.launchId).to.equal(undefined)
+  })
+  it('should not reload when receiving an invalid launchId after a valid one was stored', () => {
+    WebSockets.launchId = 8675309
+    Functions.HandleGetLaunchId(null)
+    expect(fakeReload?.callCount).to.equal(0)
+  })
 })
