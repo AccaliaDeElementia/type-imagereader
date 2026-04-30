@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vscode
+.claude
+node_modules
+dist
+coverage
+.env
+.env.*
+*.log
+screenshot*
+.dockerignore
+Dockerfile
+README.md
