@@ -65,6 +65,7 @@ export const CyclicManager = {
     CyclicManager.__updaters.push(...updaters)
   },
   Start: (interval: number): void => {
+    if (CyclicManager.__timer !== undefined) return
     CyclicManager.__timer = setInterval(() => {
       CyclicManager.__triggerUpdaters(interval).catch(() => null)
     }, interval)

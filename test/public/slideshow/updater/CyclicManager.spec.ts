@@ -163,6 +163,21 @@ describe('public/slideshow/updater class CyclicManager', () => {
       await a
       assert(true, 'the error should have been thrown aweay and not treated as uncaught error')
     })
+    it('should not call setInterval when a timer is already running', () => {
+      CyclicManager.__timer = 42
+      CyclicManager.Start(1000)
+      expect(fakeSetInterval?.callCount).to.equal(0)
+    })
+    it('should preserve the existing timer when Start is called again', () => {
+      CyclicManager.__timer = 42
+      CyclicManager.Start(1000)
+      expect(CyclicManager.__timer).to.equal(42)
+    })
+    it('should not call clearInterval when Start is called again', () => {
+      CyclicManager.__timer = 42
+      CyclicManager.Start(1000)
+      expect(fakeClearInterval?.callCount).to.equal(0)
+    })
   })
   describe('Stop()', () => {
     it('should not clear interval without starting', () => {
