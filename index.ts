@@ -112,6 +112,19 @@ export const ImageReader = {
       await ImageReader.StartServer(port)
     })
     await runIfNotSuppressed('SKIP_SYNC', async () => {
+      if (isSuppressed('ONESHOT')) {
+        try {
+          await ImageReader.Synchronize()
+        } finally {
+          try {
+            const knex = await Imports.persistance.initialize()
+            await knex.destroy()
+          } catch (err: unknown) {
+            Imports.logger('failed to release knex pool in oneshot mode', err)
+          }
+        }
+        return
+      }
       const watcherSuppressed = isSuppressed('DISABLE_WATCHER')
       const doSync = async (): Promise<void> => {
         if (!ImageReader.SyncLock.Take()) return
