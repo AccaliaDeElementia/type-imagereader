@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports, type OpenWeatherData, type WeatherResults } from '#routes/weather'
+import { Functions, Imports, WeatherConfigError, type OpenWeatherData, type WeatherResults } from '#routes/weather'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors'
 
@@ -179,6 +179,28 @@ describe('routes/weather function UpdateWeather', () => {
       await Functions.UpdateWeather()
       const matching = loggerStub.getCalls().filter((c) => c.args[0] === 'UpdateWeather error')
       expect(matching).to.have.lengthOf(1)
+    })
+    it('should log skipped-format when GetWeather rejects with WeatherConfigError', async () => {
+      getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
+      await Functions.UpdateWeather()
+      expect(loggerStub.firstCall.args[0]).to.equal('UpdateWeather skipped: %s')
+    })
+    it('should pass the error message string when GetWeather rejects with WeatherConfigError', async () => {
+      getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
+      await Functions.UpdateWeather()
+      expect(loggerStub.firstCall.args[1]).to.equal('no OpenWeather AppId Defined!')
+    })
+    it('should not include any Error instance in log args when GetWeather rejects with WeatherConfigError', async () => {
+      getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
+      await Functions.UpdateWeather()
+      const hasErrorArg = loggerStub.firstCall.args.some((a: unknown) => a instanceof Error)
+      expect(hasErrorArg).to.equal(false)
+    })
+    it('should not log error-format when GetWeather rejects with WeatherConfigError', async () => {
+      getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
+      await Functions.UpdateWeather()
+      const hasErrorFormat = loggerStub.getCalls().some((c) => c.args[0] === 'UpdateWeather error')
+      expect(hasErrorFormat).to.equal(false)
     })
   })
 })

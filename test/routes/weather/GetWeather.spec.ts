@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#routes/weather'
+import { Functions, WeatherConfigError } from '#routes/weather'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards'
 import { EventuallyRejects } from '#testutils/Errors'
@@ -47,10 +47,21 @@ describe('routes/weather function GetWeather', () => {
     const err = await EventuallyRejects(Functions.GetWeather())
     expect(err.message).to.equal('no OpenWeather AppId Defined!')
   })
+  it('should reject with WeatherConfigError when appId is missing', async () => {
+    delete process.env.OPENWEATHER_APPID
+    delete process.env.OPENWEATHER_LOCATION
+    const err = await EventuallyRejects(Functions.GetWeather())
+    expect(err).to.be.instanceOf(WeatherConfigError)
+  })
   it('should reject missing location', async () => {
     delete process.env.OPENWEATHER_LOCATION
     const err = await EventuallyRejects(Functions.GetWeather())
     expect(err.message).to.equal('no OpenWeather Location Defined!')
+  })
+  it('should reject with WeatherConfigError when location is missing', async () => {
+    delete process.env.OPENWEATHER_LOCATION
+    const err = await EventuallyRejects(Functions.GetWeather())
+    expect(err).to.be.instanceOf(WeatherConfigError)
   })
   it('should reject when fetch fails', async () => {
     const err = new Error('FOO')

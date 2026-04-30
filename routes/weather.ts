@@ -39,6 +39,8 @@ export interface OpenWeatherData {
   }
 }
 
+export class WeatherConfigError extends Error {}
+
 function isOptionalMainValid(data: object): boolean {
   if ('main' in data) {
     if (typeof data.main !== 'object' || data.main === null) return false
@@ -133,9 +135,9 @@ export const Functions = {
   },
   GetWeather: async (): Promise<OpenWeatherData> => {
     const appId = process.env.OPENWEATHER_APPID
-    if (!StringishHasValue(appId)) throw new Error('no OpenWeather AppId Defined!')
+    if (!StringishHasValue(appId)) throw new WeatherConfigError('no OpenWeather AppId Defined!')
     const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
-    if (!StringishHasValue(location)) throw new Error('no OpenWeather Location Defined!')
+    if (!StringishHasValue(location)) throw new WeatherConfigError('no OpenWeather Location Defined!')
     const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     })
@@ -160,7 +162,11 @@ export const Functions = {
       weather.sunrise = Math.min(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunrise, latestSunrise)
       weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, earliestSunset)
     } catch (err) {
-      Imports.logger('UpdateWeather error', err)
+      if (err instanceof WeatherConfigError) {
+        Imports.logger('UpdateWeather skipped: %s', err.message)
+      } else {
+        Imports.logger('UpdateWeather error', err)
+      }
       weather.temp = undefined
       weather.pressure = undefined
       weather.humidity = undefined
