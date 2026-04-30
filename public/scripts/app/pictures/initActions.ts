@@ -20,9 +20,9 @@ export function InitActions(): void {
   Subscribe('Action:Gamepad:Right', doIfNoMenu('Next'))
   Subscribe('Action:Gamepad:LRight', doIfNoMenu('NextUnseen'))
   Subscribe('Action:Gamepad:RRight', doIfNoMenu('NextImage'))
-  Subscribe('Action:GamePad:Left', doIfNoMenu('Previous'))
-  Subscribe('Action:GamePad:LLeft', doIfNoMenu('PreviousUnseen'))
-  Subscribe('Action:GamePad:RLeft', doIfNoMenu('PreviousImage'))
+  Subscribe('Action:Gamepad:Left', doIfNoMenu('Previous'))
+  Subscribe('Action:Gamepad:LLeft', doIfNoMenu('PreviousUnseen'))
+  Subscribe('Action:Gamepad:RLeft', doIfNoMenu('PreviousImage'))
   Subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ShowMenu'))
 
   const changeTo = async (direction: NavigateTo): Promise<void> => {

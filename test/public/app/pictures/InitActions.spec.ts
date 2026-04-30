@@ -53,9 +53,9 @@ describe('public/app/pictures function InitActions()', () => {
     ['Action:Gamepad:Right', 'Next'],
     ['Action:Gamepad:LRight', 'NextUnseen'],
     ['Action:Gamepad:RRight', 'NextImage'],
-    ['Action:GamePad:Left', 'Previous'],
-    ['Action:GamePad:LLeft', 'PreviousUnseen'],
-    ['Action:GamePad:RLeft', 'PreviousImage'],
+    ['Action:Gamepad:Left', 'Previous'],
+    ['Action:Gamepad:LLeft', 'PreviousUnseen'],
+    ['Action:Gamepad:RLeft', 'PreviousImage'],
     ['Action:Keypress:ArrowDown', 'ShowMenu'],
   ]
   const changeToSubscribers: Array<[string, NavigateTo]> = [
