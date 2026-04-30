@@ -131,7 +131,7 @@ describe('utils/syncfolders function IncrementalScanFolder()', () => {
     expect(picturePaths).to.deep.equal(['/comics/new/page.jpg'])
   })
 
-  it('should handle empty directory by passing empty paths to bulk add', async () => {
+  it('should handle empty directory by sending empty paths to bulk add', async () => {
     fsWalkerStub.callsFake(
       async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
         await cb([])

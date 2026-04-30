@@ -29,7 +29,7 @@ inline-diffs: false
 # needs to be used with grep or fgrep
 # invert: false
 recursive: false
-reporter: 'spec'
+reporter: 'dot'
 #reporter-option:
 #  - 'foo=bar'
 #  - 'baz=quux'

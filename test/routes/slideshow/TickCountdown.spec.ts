@@ -258,7 +258,7 @@ describe('routes/slideshow function TickCountdown()', () => {
     await Functions.TickCountdown(knexFake, ioFake)
     expect(loggerStub.callCount).to.equal(1)
   })
-  it('should log the failing room error when one of two due rooms fails', async () => {
+  it('should log the rejecting room error when one of two due rooms rejects', async () => {
     const err = new Error('ROOM B FAILED')
     Config.rooms['/RoomA'] = {
       countdown: -99,
