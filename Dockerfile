@@ -10,7 +10,6 @@ ADD . /app
 
 RUN mkdir /data
 RUN chown node:node /app /app/*
-#RUN chown -R node:node /data
 
 USER node
 RUN /usr/local/bin/npm install

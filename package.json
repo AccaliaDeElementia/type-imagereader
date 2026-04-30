@@ -1,7 +1,7 @@
 {
   "name": "type-imagereader",
   "version": "1.0.0",
-  "description": "A typscript powered web based image and comic reader pulling from local files",
+  "description": "Self-hosted web app for browsing local image and comic collections, with PostgreSQL-backed indexing and live filesystem sync",
   "scripts": {
     "prebuild": "npm run lint",
     "build:client": "esbuild app=public/scripts/app/index.ts slideshow=public/scripts/slideshow/index.ts --bundle --minify --target=es2024 --format=iife --outdir=dist/scripts --sourcemap",
