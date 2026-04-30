@@ -44,7 +44,7 @@ describe('routes/images route /preview/*-image.webp', () => {
     }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get
@@ -73,7 +73,9 @@ describe('routes/images route /preview/*-image.webp', () => {
   const successTests: Array<[string, (data: ImageData) => void]> = [
     ['not set response status', () => expect(responseStub.status.callCount).to.equal(0)],
     ['not send json data response', () => expect(responseStub.json.callCount).to.equal(0)],
-    ['not log messages', () => expect(loggerStub.callCount).to.equal(0)],
+    ['log invocation once', () => expect(loggerStub.callCount).to.equal(1)],
+    ['log invocation with GET-format', () => expect(loggerStub.firstCall.args[0]).to.equal('GET /images/preview %s')],
+    ['log invocation with filename', () => expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar.png')],
     ['read image', () => expect(readImageStub.callCount).to.equal(1)],
     ['read image withprovided filename', () => expect(readImageStub.firstCall.args).to.deep.equal(['/foo/bar.png'])],
     ['rescale image', () => expect(rescaleImageStub.callCount).to.equal(1)],

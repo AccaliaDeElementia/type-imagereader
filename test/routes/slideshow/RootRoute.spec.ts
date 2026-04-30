@@ -113,4 +113,60 @@ describe('routes/slideshow function RootRoute', () => {
       validationFn(successData)
     })
   })
+
+  describe('logging', () => {
+    let loggerStub = sandbox.stub()
+    beforeEach(() => {
+      loggerStub = sandbox.stub(Imports, 'logger')
+    })
+
+    it('should log GET-format on RootRoute invocation', async () => {
+      reqStub.params.path = 'foo'
+      roomData.images = fullImages
+      getRoomStub.resolves(roomData)
+      await Functions.RootRoute(knexFake, requestFake, responseFake)
+      expect(loggerStub.firstCall.args[0]).to.equal('GET /slideshow %s')
+    })
+
+    it('should log the folder path on RootRoute invocation', async () => {
+      reqStub.params.path = 'foo'
+      roomData.images = fullImages
+      getRoomStub.resolves(roomData)
+      await Functions.RootRoute(knexFake, requestFake, responseFake)
+      expect(loggerStub.firstCall.args[1]).to.equal('/foo')
+    })
+
+    it('should log path-traversal-blocked when isPathTraversal returns true', async () => {
+      isPathTraversalStub.returns(true)
+      reqStub.params.path = 'evil'
+      await Functions.RootRoute(knexFake, requestFake, responseFake)
+      const hasTraversalLog = loggerStub.getCalls().some((c) => c.args[0] === 'path traversal blocked: %s')
+      expect(hasTraversalLog).to.equal(true)
+    })
+
+    it('should log slideshow-folder-empty when room has no images', async () => {
+      reqStub.params.path = 'foo'
+      roomData.images = noImages
+      getRoomStub.resolves(roomData)
+      await Functions.RootRoute(knexFake, requestFake, responseFake)
+      const hasEmptyLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow folder empty: %s')
+      expect(hasEmptyLog).to.equal(true)
+    })
+
+    it('should log slideshow-render-error when GetRoomAndIncrementImage rejects', async () => {
+      reqStub.params.path = 'foo'
+      getRoomStub.rejects(getRoomError)
+      await Functions.RootRoute(knexFake, requestFake, responseFake)
+      const hasRenderErrorLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow render error: %s')
+      expect(hasRenderErrorLog).to.equal(true)
+    })
+
+    it('should log a string fallback when GetRoomAndIncrementImage rejects with a non-Error', async () => {
+      reqStub.params.path = 'foo'
+      getRoomStub.rejects(Cast<Error>({ toString: () => 'rejection-token' }))
+      await Functions.RootRoute(knexFake, requestFake, responseFake)
+      const renderErrorCall = loggerStub.getCalls().find((c) => c.args[0] === 'slideshow render error: %s')
+      expect(renderErrorCall?.args[1]).to.equal('rejection-token')
+    })
+  })
 })

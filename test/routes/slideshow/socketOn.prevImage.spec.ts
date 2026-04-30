@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import { expect } from 'chai'
-import { HandleSocketState, Functions, SocketHandlers } from '#routes/slideshow'
+import { HandleSocketState, Functions, Imports, SocketHandlers } from '#routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -53,6 +53,31 @@ describe('routes/slideshow socket prev-image', () => {
       socketState.roomName = room
       await SocketHandlers.prevImage(socketState, serverFake, knexFake)
       validationFn()
+    })
+  })
+
+  describe('logging', () => {
+    let loggerStub = sandbox.stub()
+    beforeEach(() => {
+      loggerStub = sandbox.stub(Imports, 'logger')
+    })
+
+    it('should log prevImage format on valid invocation', async () => {
+      socketState.roomName = '/foo'
+      await SocketHandlers.prevImage(socketState, serverFake, knexFake)
+      expect(loggerStub.firstCall.args[0]).to.equal('prevImage in %s')
+    })
+
+    it('should log the room name on valid invocation', async () => {
+      socketState.roomName = '/foo'
+      await SocketHandlers.prevImage(socketState, serverFake, knexFake)
+      expect(loggerStub.firstCall.args[1]).to.equal('/foo')
+    })
+
+    it('should not log when room name is null', async () => {
+      socketState.roomName = null
+      await SocketHandlers.prevImage(socketState, serverFake, knexFake)
+      expect(loggerStub.callCount).to.equal(0)
     })
   })
 })

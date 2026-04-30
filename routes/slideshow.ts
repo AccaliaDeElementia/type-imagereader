@@ -73,6 +73,7 @@ export const SocketHandlers = {
     knex: Knex,
   ): Promise<void> => {
     if (!StringishHasValue(roomName)) return
+    Imports.logger('joinSlideshow %s (socket=%s)', roomName, socket.id)
     state.SetName(roomName)
     await socket.join(roomName)
     const room = await Functions.GetRoomAndIncrementImage(knex, roomName)
@@ -80,11 +81,13 @@ export const SocketHandlers = {
   },
   prevImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
     if (state.roomName === null) return
+    Imports.logger('prevImage in %s', state.roomName)
     const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, STEP.BACK)
     io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
   },
   nextImage: async (state: HandleSocketState, io: WebSocketServer, knex: Knex) => {
     if (state.roomName === null) return
+    Imports.logger('nextImage in %s', state.roomName)
     const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName, STEP.FORWARD)
     io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
   },
@@ -93,6 +96,7 @@ export const SocketHandlers = {
       callback(null)
       return
     }
+    Imports.logger('gotoImage in %s', state.roomName)
     const room = await Functions.GetRoomAndIncrementImage(knex, state.roomName)
     const picture = room.images[room.index]
     if (picture === undefined) {
@@ -208,6 +212,7 @@ export const Functions = {
     let room = Config.rooms[name]
     if (room === undefined) {
       const pages = await Functions.GetCounts(knex, name)
+      Imports.logger('slideshow room created: %s (pages=%d unread=%d)', name, pages.pages, pages.unread)
       const newRoom: SlideshowRoom = {
         countdown: Config.countdownDuration,
         path: name,
@@ -254,6 +259,7 @@ export const Functions = {
       for (const room of Object.values(Config.rooms)) {
         room.countdown += COUNTDOWN_TICK
         if (room.countdown <= -ABANDONED_ROOM_PRUNE_THRESHOLD) {
+          Imports.logger('slideshow room pruned: %s (idle %ds)', room.path, ABANDONED_ROOM_PRUNE_THRESHOLD)
           continue
         }
         newRooms[room.path] = room
@@ -309,7 +315,9 @@ export const Functions = {
   },
   RootRoute: async (knex: Knex, req: Request, res: Response): Promise<void> => {
     const folder = `/${ReqParamToString(req.params.path)}`
+    Imports.logger('GET /slideshow %s', folder)
     if (Imports.isPathTraversal(folder)) {
+      Imports.logger('path traversal blocked: %s', folder)
       res.status(StatusCodes.FORBIDDEN).render('error', {
         title: 'ERROR',
         code: 'E_NO_TRAVERSE',
@@ -320,6 +328,7 @@ export const Functions = {
     await Functions.GetRoomAndIncrementImage(knex, folder).then(
       (room) => {
         if (!HasValues(room.images)) {
+          Imports.logger('slideshow folder empty: %s', folder)
           res.status(StatusCodes.NOT_FOUND).render('error', {
             title: 'ERROR',
             code: 'E_NOT_FOUND',
@@ -334,6 +343,7 @@ export const Functions = {
         })
       },
       (err: unknown) => {
+        Imports.logger('slideshow render error: %s', err instanceof Error ? err.message : String(err))
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).render('error', {
           title: 'ERROR',
           code: 'INTERNAL_SERVER_ERROR',

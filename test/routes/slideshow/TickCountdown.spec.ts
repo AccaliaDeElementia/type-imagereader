@@ -375,4 +375,38 @@ describe('routes/slideshow function TickCountdown()', () => {
     await Functions.TickCountdown(knexFake, ioFake)
     expect(ioStub.emit.callCount).to.equal(1)
   })
+
+  describe('room pruning logging', () => {
+    const buildRoom = (countdown: number, path = '/PrunedRoom'): void => {
+      Config.rooms[path] = {
+        countdown,
+        path,
+        images: ['/a.png'],
+        index: 0,
+        uriSafeImage: '/a.png',
+        pages: { unread: 0, all: 0, pages: 0, page: 0 },
+      }
+    }
+
+    it('should log room-pruned format when countdown ticks past prune threshold', async () => {
+      buildRoom(-3600) // ticks to -3601, past the -3600 threshold
+      await Functions.TickCountdown(knexFake, ioFake)
+      const hasPruneLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
+      expect(hasPruneLog).to.equal(true)
+    })
+
+    it('should log the pruned room name', async () => {
+      buildRoom(-3600, '/SpecificRoom')
+      await Functions.TickCountdown(knexFake, ioFake)
+      const pruneCall = loggerStub.getCalls().find((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
+      expect(pruneCall?.args[1]).to.equal('/SpecificRoom')
+    })
+
+    it('should not log room-pruned when room is still alive', async () => {
+      buildRoom(5)
+      await Functions.TickCountdown(knexFake, ioFake)
+      const hasPruneLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
+      expect(hasPruneLog).to.equal(false)
+    })
+  })
 })

@@ -1,6 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
+import type { Debugger } from 'debug'
 import { Imports, Functions, ImageData } from '#routes/images'
 import Sharp from 'sharp'
 import Sinon from 'sinon'
@@ -15,8 +16,11 @@ describe('routes/images function RescaleImage()', () => {
     toBuffer: sandbox.stub().resolves(),
   }
   let sharpStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
   beforeEach(() => {
     sharpStub = sandbox.stub(Imports, 'Sharp').returns(Cast<Sharp.Sharp>(sharpInstanceStub))
+    loggerStub = sandbox.stub()
+    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
   })
   afterEach(() => {
     sandbox.restore()
@@ -166,5 +170,58 @@ describe('routes/images function RescaleImage()', () => {
     sharpInstanceStub.toBuffer.rejects(new Error('OOPS'))
     await Functions.RescaleImage(img, 1280, 720)
     expect(img.data).to.equal(originalData)
+  })
+
+  describe('failure logging', () => {
+    it('should log rescale-failed format when sharp throws', async () => {
+      const img = new ImageData()
+      img.path = '/foo/bar.jpg'
+      sharpStub.throws(new Error('OOPS'))
+      await Functions.RescaleImage(img, 1280, 720)
+      expect(loggerStub.firstCall.args[0]).to.equal('rescale failed for %s: %s')
+    })
+
+    it('should log the image path when sharp throws', async () => {
+      const img = new ImageData()
+      img.path = '/foo/bar.jpg'
+      sharpStub.throws(new Error('OOPS'))
+      await Functions.RescaleImage(img, 1280, 720)
+      expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar.jpg')
+    })
+
+    it('should log the error message when sharp throws an Error', async () => {
+      const img = new ImageData()
+      img.path = '/foo/bar.jpg'
+      sharpStub.throws(new Error('OOPS'))
+      await Functions.RescaleImage(img, 1280, 720)
+      expect(loggerStub.firstCall.args[2]).to.equal('OOPS')
+    })
+
+    it('should log a string fallback when sharp rejects with a non-Error', async () => {
+      const img = new ImageData()
+      img.path = '/foo/bar.jpg'
+      sharpInstanceStub.toBuffer.callsFake(async () => {
+        await Promise.resolve()
+        throw Cast<Error>({ toString: () => 'rejection-token' })
+      })
+      await Functions.RescaleImage(img, 1280, 720)
+      expect(loggerStub.firstCall.args[2]).to.equal('rejection-token')
+    })
+
+    it('should not log on successful rescale', async () => {
+      const img = new ImageData()
+      img.path = '/foo/bar.jpg'
+      img.data = Buffer.from('data')
+      await Functions.RescaleImage(img, 1280, 720)
+      expect(loggerStub.callCount).to.equal(0)
+    })
+
+    it('should not log when image already has an error code', async () => {
+      const img = new ImageData()
+      img.code = 'E_PRIOR'
+      sharpStub.throws(new Error('OOPS'))
+      await Functions.RescaleImage(img, 1280, 720)
+      expect(loggerStub.callCount).to.equal(0)
+    })
   })
 })

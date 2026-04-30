@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import { StubToKnex } from '#testutils/TypeGuards'
 import { STEP } from '#utils/helpers'
 import { expect } from 'chai'
-import { Config, Functions } from '#routes/slideshow'
+import { Config, Functions, Imports } from '#routes/slideshow'
 
 const sandbox = Sinon.createSandbox()
 
@@ -194,5 +194,55 @@ describe('routes/slideshow function GetRoomAndIncrementImage() room initialisati
     getImagesStub.resolves([])
     await Functions.GetRoomAndIncrementImage(knexFake, '/images!/')
     expect(markImageReadStub.callCount).to.equal(0)
+  })
+
+  describe('logging', () => {
+    let loggerStub = sandbox.stub()
+    const ROOM_CREATED_FORMAT = 'slideshow room created: %s (pages=%d unread=%d)'
+    const isRoomCreatedCall = (c: Sinon.SinonSpyCall): boolean => c.args[0] === ROOM_CREATED_FORMAT
+    beforeEach(() => {
+      loggerStub = sandbox.stub(Imports, 'logger')
+    })
+
+    it('should log room-created format when creating a new room', async () => {
+      pages.pages = 5
+      pages.unread = 12
+      getCountsStub.resolves(pages)
+      await Functions.GetRoomAndIncrementImage(knexFake, '/new-room/')
+      expect(loggerStub.firstCall.args[0]).to.equal('slideshow room created: %s (pages=%d unread=%d)')
+    })
+
+    it('should log the room name when creating a new room', async () => {
+      await Functions.GetRoomAndIncrementImage(knexFake, '/new-room/')
+      expect(loggerStub.firstCall.args[1]).to.equal('/new-room/')
+    })
+
+    it('should log the page count when creating a new room', async () => {
+      pages.pages = 7
+      getCountsStub.resolves(pages)
+      await Functions.GetRoomAndIncrementImage(knexFake, '/new-room/')
+      expect(loggerStub.firstCall.args[2]).to.equal(7)
+    })
+
+    it('should log the unread count when creating a new room', async () => {
+      pages.unread = 42
+      getCountsStub.resolves(pages)
+      await Functions.GetRoomAndIncrementImage(knexFake, '/new-room/')
+      expect(loggerStub.firstCall.args[3]).to.equal(42)
+    })
+
+    it('should not log room-created when room already exists', async () => {
+      Config.rooms['/existing/'] = {
+        countdown: 60,
+        path: '/existing/',
+        pages: { pages: 0, page: 0, unread: 0, all: 0 },
+        images: stockImages,
+        index: 0,
+        uriSafeImage: undefined,
+      }
+      await Functions.GetRoomAndIncrementImage(knexFake, '/existing/')
+      const hasCreateLog = loggerStub.getCalls().some(isRoomCreatedCall)
+      expect(hasCreateLog).to.equal(false)
+    })
   })
 })

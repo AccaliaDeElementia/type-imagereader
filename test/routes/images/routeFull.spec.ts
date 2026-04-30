@@ -43,7 +43,7 @@ describe('routes/images route /full/*', () => {
     }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get
@@ -72,7 +72,9 @@ describe('routes/images route /full/*', () => {
   const successTests: Array<[string, (path: string, image: ImageData) => void]> = [
     ['not generate error status call', () => expect(responseStub.status.callCount).to.equal(0)],
     ['not generate error json call', () => expect(responseStub.json.callCount).to.equal(0)],
-    ['not generate error logging', () => expect(loggerStub.callCount).to.equal(0)],
+    ['log invocation once', () => expect(loggerStub.callCount).to.equal(1)],
+    ['log invocation with GET-format', () => expect(loggerStub.firstCall.args[0]).to.equal('GET /images/full %s')],
+    ['log invocation with filename', (path) => expect(loggerStub.firstCall.args[1]).to.equal(`/${path}`)],
     ['read image using ReadImage()', () => expect(readImageStub.callCount).to.equal(1)],
     ['read image with filename', (path) => expect(readImageStub.firstCall.args).to.deep.equal([`/${path}`])],
     ['send retrieved image with SendImage()', () => expect(sendImageStub.callCount).to.equal(1)],

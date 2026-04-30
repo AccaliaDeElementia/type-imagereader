@@ -98,4 +98,41 @@ describe('routes/index route /show', () => {
       expect(resposeStub.status.callCount).to.equal(0)
     })
   })
+
+  describe('logging', () => {
+    let loggerStub = sandbox.stub()
+    const TRAVERSAL_FORMAT = 'path traversal blocked: %s'
+    const isTraversalCall = (c: Sinon.SinonSpyCall): boolean => c.args[0] === TRAVERSAL_FORMAT
+    beforeEach(() => {
+      loggerStub = sandbox.stub(Imports, 'logger')
+    })
+
+    it('should log GET-format on rootRoute invocation', () => {
+      requestStub.params.path = 'foo/bar'
+      routeFn(requestFake, responseFake)
+      expect(loggerStub.firstCall.args[0]).to.equal('GET %s')
+    })
+
+    it('should log the folder path on rootRoute invocation', () => {
+      requestStub.params.path = 'foo/bar'
+      routeFn(requestFake, responseFake)
+      expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar')
+    })
+
+    it('should log path-traversal-blocked format when isPathTraversal returns true', () => {
+      isPathTraversalStub.returns(true)
+      requestStub.params.path = 'evil'
+      routeFn(requestFake, responseFake)
+      const hasTraversalLog = loggerStub.getCalls().some(isTraversalCall)
+      expect(hasTraversalLog).to.equal(true)
+    })
+
+    it('should log the blocked folder path when isPathTraversal returns true', () => {
+      isPathTraversalStub.returns(true)
+      requestStub.params.path = 'evil'
+      routeFn(requestFake, responseFake)
+      const traversalCall = loggerStub.getCalls().find(isTraversalCall)
+      expect(traversalCall?.args[1]).to.equal('/evil')
+    })
+  })
 })

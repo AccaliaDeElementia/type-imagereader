@@ -11,6 +11,7 @@ import Sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
+import type { Debugger } from 'debug'
 import { ReqParamToString } from '#utils/helpers'
 import { handleErrors as _handleErrors } from '#utils/Express'
 import { isPathTraversal as _isPathTraversal } from '#utils/Path'
@@ -67,14 +68,16 @@ export class ImageData {
         .webp()
         .toBuffer()
       this.extension = 'webp'
-    } catch (e) {
-      // Do nothing.... we tried
+    } catch (err) {
+      Imports.logger('rescale failed for %s: %s', this.path, err instanceof Error ? err.message : String(err))
     }
   }
 }
 
+const logger: Debugger = debug('type-imagereader:images')
+
 export const Imports = {
-  debug,
+  logger,
   readFile,
   Sharp,
   Router,
@@ -128,16 +131,19 @@ export class ImageCache {
 export const Functions = {
   ReadImage: async (path: string): Promise<ImageData> => {
     if (Imports.isPathTraversal(path)) {
+      Imports.logger('path traversal blocked: %s', path)
       return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
     }
     const ext = extname(path).replace(/^\./v, '')
     if (!allowedExtensions.test(ext)) {
+      Imports.logger('not an image: ext=%s for %s', ext, path)
       return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
     }
     try {
       const data = await Imports.readFile(join('/data', path))
       return ImageData.fromImage(data, ext, path)
-    } catch (e) {
+    } catch (err) {
+      Imports.logger('image not found: %s (%s)', path, err instanceof Error ? err.message : String(err))
       return ImageData.fromError('E_NOT_FOUND', StatusCodes.NOT_FOUND, 'Requested Path Not Found!', path)
     }
   },
@@ -184,8 +190,6 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   // Init router and path
   const router = Imports.Router()
 
-  const logger = Imports.debug('type-imagereader:images')
-
   CacheStorage.kioskCache = new ImageCache(Functions.ReadAndRescaleImage)
   CacheStorage.scaledCache = new ImageCache(Functions.ReadAndRescaleImage)
 
@@ -199,12 +203,13 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   }
 
   const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
-    Imports.handleErrors(logger, action)
+    Imports.handleErrors(Imports.logger, action)
 
   router.get(
     '/full/*path',
     handleErrors(async (req, res) => {
       const filename = `/${ReqParamToString(req.params.path)}`
+      Imports.logger('GET /images/full %s', filename)
       const image = await Functions.ReadImage(filename)
       Functions.SendImage(image, res)
     }),
@@ -237,6 +242,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be positive integer')
         return
       }
+      Imports.logger('GET /images/scaled %dx%d %s', width, height, filename)
       const image = await CacheStorage.scaledCache.fetch(filename, width, height)
       Functions.SendImage(image, res)
     }),
@@ -246,6 +252,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     '/preview/*path-image.webp',
     handleErrors(async (req, res) => {
       const filename = `/${ReqParamToString(req.params.path)}`
+      Imports.logger('GET /images/preview %s', filename)
       const image = await Functions.ReadImage(filename)
       await Functions.RescaleImage(image, PREVIEW_WIDTH, PREVIEW_HEIGHT, false)
       Functions.SendImage(image, res)
@@ -256,6 +263,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     '/kiosk/*path-image.webp',
     handleErrors(async (req, res) => {
       const filename = `/${ReqParamToString(req.params.path)}`
+      Imports.logger('GET /images/kiosk %s', filename)
       const image = await CacheStorage.kioskCache.fetch(filename, KIOSK_WIDTH, KIOSK_HEIGHT)
       Functions.SendImage(image, res)
     }),

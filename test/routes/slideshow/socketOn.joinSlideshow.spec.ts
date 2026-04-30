@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards'
 import { expect } from 'chai'
-import { HandleSocketState, Functions, SocketHandlers } from '#routes/slideshow'
+import { HandleSocketState, Functions, Imports, SocketHandlers } from '#routes/slideshow'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -62,6 +62,34 @@ describe('routes/slideshow socket join-slideshow()', () => {
     it(`should ${title}`, async () => {
       await SocketHandlers.joinSlideshow(room, socketState, socketFake, knexFake)
       validationFn()
+    })
+  })
+
+  describe('logging', () => {
+    let loggerStub = sandbox.stub()
+    beforeEach(() => {
+      loggerStub = sandbox.stub(Imports, 'logger')
+      Cast<{ id: string }>(socketStub).id = 'socket-id-123'
+    })
+
+    it('should log joinSlideshow format on valid invocation', async () => {
+      await SocketHandlers.joinSlideshow('/foo', socketState, socketFake, knexFake)
+      expect(loggerStub.firstCall.args[0]).to.equal('joinSlideshow %s (socket=%s)')
+    })
+
+    it('should log the room name on valid invocation', async () => {
+      await SocketHandlers.joinSlideshow('/foo', socketState, socketFake, knexFake)
+      expect(loggerStub.firstCall.args[1]).to.equal('/foo')
+    })
+
+    it('should log the socket id on valid invocation', async () => {
+      await SocketHandlers.joinSlideshow('/foo', socketState, socketFake, knexFake)
+      expect(loggerStub.firstCall.args[2]).to.equal('socket-id-123')
+    })
+
+    it('should not log when room name is missing', async () => {
+      await SocketHandlers.joinSlideshow(undefined, socketState, socketFake, knexFake)
+      expect(loggerStub.callCount).to.equal(0)
     })
   })
 })

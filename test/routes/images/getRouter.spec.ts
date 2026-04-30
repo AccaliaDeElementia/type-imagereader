@@ -24,7 +24,6 @@ describe('routes/images export getRouter()', () => {
   }
   let getRouterStub = sandbox.stub()
   let loggerStub = sandbox.stub()
-  let debugStub = sandbox.stub()
   beforeEach(() => {
     applicationFake = Cast<Application>({})
     serverFake = Cast<Server>({})
@@ -34,7 +33,7 @@ describe('routes/images export getRouter()', () => {
     }
     getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = sandbox.stub()
-    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
   })
   afterEach(() => {
     sandbox.restore()
@@ -50,14 +49,6 @@ describe('routes/images export getRouter()', () => {
   it('should call router import with no arguments', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(getRouterStub.firstCall.args).to.deep.equal([])
-  })
-  it('should construct logger', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(debugStub.callCount).to.equal(1)
-  })
-  it('should namespace constructed logger', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(debugStub.firstCall.args).to.deep.equal(['type-imagereader:images'])
   })
   it('should not generate logging messages on construction', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)

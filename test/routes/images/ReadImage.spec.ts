@@ -1,6 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
+import type { Debugger } from 'debug'
 import { Imports, Functions, ImageData } from '#routes/images'
 import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
@@ -13,11 +14,14 @@ describe('routes/images function ReadImage()', () => {
   let fromImageStub = sandbox.stub()
   let readFileStub = sandbox.stub()
   let isPathTraversalStub = sandbox.stub()
+  let loggerStub = sandbox.stub()
   beforeEach(() => {
     fromErrorStub = sandbox.stub(ImageData, 'fromError')
     fromImageStub = sandbox.stub(ImageData, 'fromImage')
     readFileStub = sandbox.stub(Imports, 'readFile').resolves()
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
+    loggerStub = sandbox.stub()
+    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
   })
   afterEach(() => {
     sandbox.restore()
@@ -201,5 +205,78 @@ describe('routes/images function ReadImage()', () => {
     fromImageStub.returns(img)
     const result = await Functions.ReadImage('/foo/.hidden.jpg')
     expect(result).to.equal(img)
+  })
+
+  describe('logging', () => {
+    it('should log path-traversal-blocked format when isPathTraversal returns true', async () => {
+      isPathTraversalStub.returns(true)
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.png')
+      expect(loggerStub.firstCall.args[0]).to.equal('path traversal blocked: %s')
+    })
+
+    it('should log the blocked path when isPathTraversal returns true', async () => {
+      isPathTraversalStub.returns(true)
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.png')
+      expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar/image.png')
+    })
+
+    it('should log not-an-image format when extension is not allowed', async () => {
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.exe')
+      expect(loggerStub.firstCall.args[0]).to.equal('not an image: ext=%s for %s')
+    })
+
+    it('should log the disallowed extension when extension is not allowed', async () => {
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.exe')
+      expect(loggerStub.firstCall.args[1]).to.equal('exe')
+    })
+
+    it('should log the path when extension is not allowed', async () => {
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.exe')
+      expect(loggerStub.firstCall.args[2]).to.equal('/foo/bar/image.exe')
+    })
+
+    it('should log image-not-found format when readFile rejects', async () => {
+      readFileStub.rejects(new Error('disk failure'))
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.png')
+      expect(loggerStub.firstCall.args[0]).to.equal('image not found: %s (%s)')
+    })
+
+    it('should log the missing path when readFile rejects', async () => {
+      readFileStub.rejects(new Error('disk failure'))
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.png')
+      expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar/image.png')
+    })
+
+    it('should log the underlying error message when readFile rejects with Error', async () => {
+      readFileStub.rejects(new Error('disk failure'))
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.png')
+      expect(loggerStub.firstCall.args[2]).to.equal('disk failure')
+    })
+
+    it('should log a string fallback when readFile rejects with a non-Error', async () => {
+      readFileStub.callsFake(async () => {
+        await Promise.resolve()
+        throw Cast<Error>({ toString: () => 'rejection-token' })
+      })
+      fromErrorStub.returns({})
+      await Functions.ReadImage('/foo/bar/image.png')
+      expect(loggerStub.firstCall.args[2]).to.equal('rejection-token')
+    })
+
+    it('should not log when readFile resolves and image is valid', async () => {
+      const img = { img: Math.random() }
+      fromImageStub.returns(img)
+      readFileStub.resolves(Buffer.from('data'))
+      await Functions.ReadImage('/foo/bar/image.png')
+      expect(loggerStub.callCount).to.equal(0)
+    })
   })
 })

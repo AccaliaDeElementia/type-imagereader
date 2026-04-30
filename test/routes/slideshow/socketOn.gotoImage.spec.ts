@@ -87,4 +87,31 @@ describe('routes/slideshow socket goto-image', () => {
     await SocketHandlers.gotoImage(spy, socketState, knexFake)
     expect(spy.firstCall.args[0]).to.equal(null)
   })
+
+  describe('logging', () => {
+    let loggerStub = sandbox.stub()
+    beforeEach(() => {
+      loggerStub = sandbox.stub(Imports, 'logger')
+    })
+
+    it('should log gotoImage format on valid invocation', async () => {
+      socketState.roomName = '/foo'
+      roomData.index = 0
+      await SocketHandlers.gotoImage(sandbox.stub(), socketState, knexFake)
+      expect(loggerStub.firstCall.args[0]).to.equal('gotoImage in %s')
+    })
+
+    it('should log the room name on valid invocation', async () => {
+      socketState.roomName = '/foo'
+      roomData.index = 0
+      await SocketHandlers.gotoImage(sandbox.stub(), socketState, knexFake)
+      expect(loggerStub.firstCall.args[1]).to.equal('/foo')
+    })
+
+    it('should not log when room name is null', async () => {
+      socketState.roomName = null
+      await SocketHandlers.gotoImage(sandbox.stub(), socketState, knexFake)
+      expect(loggerStub.callCount).to.equal(0)
+    })
+  })
 })

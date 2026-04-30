@@ -59,7 +59,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
     loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get
@@ -87,7 +87,14 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   const successTests: Array<[string, (data: ImageData) => void]> = [
     ['not set response status', () => expect(responseStub.status.callCount).to.equal(0)],
     ['not send json data response', () => expect(responseStub.json.callCount).to.equal(0)],
-    ['not log messages', () => expect(loggerStub.callCount).to.equal(0)],
+    ['log invocation once', () => expect(loggerStub.callCount).to.equal(1)],
+    [
+      'log invocation with GET-format',
+      () => expect(loggerStub.firstCall.args[0]).to.equal('GET /images/scaled %dx%d %s'),
+    ],
+    ['log invocation with width arg', () => expect(loggerStub.firstCall.args[1]).to.equal(123)],
+    ['log invocation with height arg', () => expect(loggerStub.firstCall.args[2]).to.equal(456)],
+    ['log invocation with filename arg', () => expect(loggerStub.firstCall.args[3]).to.equal('/full/image/test.png')],
     ['fetch image from cache', () => expect(fetchImageStub.callCount).to.equal(1)],
     ['fetch image from cache', () => expect(fetchImageStub.firstCall.args[0]).to.equal('/full/image/test.png')],
     ['fetch image from cache', () => expect(fetchImageStub.firstCall.args[1]).to.equal(123)],
