@@ -173,6 +173,12 @@ export const Functions = {
   },
 }
 
+const findMissingWeatherConfigVar = (): string | undefined => {
+  if (!StringishHasValue(process.env.OPENWEATHER_APPID)) return 'OPENWEATHER_APPID'
+  if (!StringishHasValue(process.env.OPENWEATHER_LOCATION)) return 'OPENWEATHER_LOCATION'
+  return undefined
+}
+
 // Export the base-router
 export async function getRouter(_app: Application, _server: Server, _sockets: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
@@ -181,10 +187,15 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
     res.status(StatusCodes.OK).json(Functions.weather)
   })
 
-  setInterval(() => {
+  const missingVar = findMissingWeatherConfigVar()
+  if (missingVar === undefined) {
+    setInterval(() => {
+      void Functions.UpdateWeather()
+    }, UPDATE_INTERVAL)
     void Functions.UpdateWeather()
-  }, UPDATE_INTERVAL)
-  void Functions.UpdateWeather()
+  } else {
+    Imports.logger('weather updates disabled: %s is not configured', missingVar)
+  }
 
   await Promise.resolve() // async required by getRouter signature
   return router
