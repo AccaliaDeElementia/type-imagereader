@@ -3,7 +3,8 @@
 .vscode
 .claude
 node_modules
-dist
+dist/scripts
+dist/stylesheets
 coverage
 .env
 .env.*
