@@ -14,13 +14,17 @@ describe('Server function ConfigureBaseApp', () => {
   let urlEncoderStub = sandbox.stub().returns({})
   let cookieParserStub = sandbox.stub().returns({})
   let faviconStub = sandbox.stub().returns({})
+  let loggerStub = sandbox.stub()
   let appStub = { use: sandbox.stub() }
   let appFake = Cast<Express>(appStub)
+  const FAVICON_ERROR_MESSAGE = "ENOENT: no such file or directory, stat '/app/dist/images/favicon.ico'"
+  const isErrorInstance = (a: unknown): boolean => a instanceof Error
   beforeEach(() => {
     jsonifyStub = sandbox.stub(express, 'json')
     urlEncoderStub = sandbox.stub(express, 'urlencoded')
     cookieParserStub = sandbox.stub(Imports, 'cookieParser')
     faviconStub = sandbox.stub(Imports, 'favicon')
+    loggerStub = sandbox.stub(Imports, 'logger')
     appStub = { use: sandbox.stub() }
     appFake = Cast<Express>(appStub)
   })
@@ -94,5 +98,50 @@ describe('Server function ConfigureBaseApp', () => {
     faviconStub.returns(favicon)
     Functions.ConfigureBaseApp(appFake)
     expect(appStub.use.calledWithExactly(favicon)).to.equal(true)
+  })
+
+  it('should not throw when favicon registration fails', () => {
+    faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
+    const action = (): void => {
+      Functions.ConfigureBaseApp(appFake)
+    }
+    expect(action).to.not.throw()
+  })
+
+  it('should not register favicon middleware when favicon registration fails', () => {
+    faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
+    Functions.ConfigureBaseApp(appFake)
+    expect(appStub.use.callCount).to.equal(3)
+  })
+
+  it('should log skipped-format when favicon registration fails', () => {
+    faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
+    Functions.ConfigureBaseApp(appFake)
+    expect(loggerStub.firstCall.args[0]).to.equal('favicon middleware skipped: %s')
+  })
+
+  it('should pass the error message string when favicon registration fails', () => {
+    faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
+    Functions.ConfigureBaseApp(appFake)
+    expect(loggerStub.firstCall.args[1]).to.equal(FAVICON_ERROR_MESSAGE)
+  })
+
+  it('should not include any Error instance in log args when favicon registration fails', () => {
+    faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
+    Functions.ConfigureBaseApp(appFake)
+    const hasErrorArg = loggerStub.firstCall.args.some(isErrorInstance)
+    expect(hasErrorArg).to.equal(false)
+  })
+
+  it('should still register the other three middlewares when favicon registration fails', () => {
+    faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
+    Functions.ConfigureBaseApp(appFake)
+    expect(jsonifyStub.callCount + urlEncoderStub.callCount + cookieParserStub.callCount).to.equal(3)
+  })
+
+  it('should coerce non-Error throws to a string in the log', () => {
+    faviconStub.throws(Cast<Error>({ toString: () => 'plain-rejection' }))
+    Functions.ConfigureBaseApp(appFake)
+    expect(loggerStub.firstCall.args[1]).to.equal('plain-rejection')
   })
 })

@@ -61,7 +61,13 @@ export const Functions = {
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
     app.use(Imports.cookieParser())
-    app.use(Imports.favicon(join(__dirname, 'dist', 'images', 'favicon.ico')))
+    const faviconPath = join(__dirname, 'dist', 'images', 'favicon.ico')
+    try {
+      app.use(Imports.favicon(faviconPath))
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      Imports.logger('favicon middleware skipped: %s', message)
+    }
   },
   ConfigureLogging: (app: Express): void => {
     switch (process.env.NODE_ENV) {
