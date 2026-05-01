@@ -10,6 +10,7 @@ import type { Debugger } from 'debug'
 
 import _fsWalker from './fswalker'
 import { Functions as _SyncFunctions } from './syncfolders'
+import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect'
 import { EscapeLikeWildcards } from './helpers'
 
 const ZERO = 0
@@ -21,6 +22,7 @@ export const Imports = {
   debug: _debug,
   fsWalker: _fsWalker,
   SyncFunctions: _SyncFunctions,
+  getDbChunkSize: _getDbChunkSize,
 }
 
 export const Functions = {
@@ -36,9 +38,12 @@ export const Functions = {
         pathHash: createHash('sha512').update(path).digest('base64'),
       }
     })
-    await Imports.SyncFunctions.ExecChunksSynchronously(Imports.SyncFunctions.Chunk(pictureRows), async (chunk) => {
-      await knex('pictures').insert(chunk).onConflict('path').ignore()
-    })
+    await Imports.SyncFunctions.ExecChunksSynchronously(
+      Imports.SyncFunctions.Chunk(pictureRows, Imports.getDbChunkSize(knex)),
+      async (chunk) => {
+        await knex('pictures').insert(chunk).onConflict('path').ignore()
+      },
+    )
     const parentFolders = pictureRows.map((row) => row.folder)
     await Functions.IncrementalEnsureFoldersBulk(knex, parentFolders)
   },
@@ -57,16 +62,22 @@ export const Functions = {
         sortKey: Imports.SyncFunctions.ToSortKey(posix.basename(withoutSlash)),
       }
     })
-    await Imports.SyncFunctions.ExecChunksSynchronously(Imports.SyncFunctions.Chunk(rows), async (chunk) => {
-      await knex('folders').insert(chunk).onConflict('path').ignore()
-    })
+    await Imports.SyncFunctions.ExecChunksSynchronously(
+      Imports.SyncFunctions.Chunk(rows, Imports.getDbChunkSize(knex)),
+      async (chunk) => {
+        await knex('folders').insert(chunk).onConflict('path').ignore()
+      },
+    )
   },
   IncrementalRemovePicturesBulk: async (knex: Knex, paths: string[]): Promise<void> => {
     if (paths.length === ZERO) return
-    await Imports.SyncFunctions.ExecChunksSynchronously(Imports.SyncFunctions.Chunk(paths), async (chunk) => {
-      await knex('pictures').whereIn('path', chunk).delete()
-      await knex('bookmarks').whereIn('path', chunk).delete()
-    })
+    await Imports.SyncFunctions.ExecChunksSynchronously(
+      Imports.SyncFunctions.Chunk(paths, Imports.getDbChunkSize(knex)),
+      async (chunk) => {
+        await knex('pictures').whereIn('path', chunk).delete()
+        await knex('bookmarks').whereIn('path', chunk).delete()
+      },
+    )
   },
   IncrementalRemoveFolder: async (logger: Debugger, knex: Knex, dirPath: string): Promise<void> => {
     const escapedPrefix = `${EscapeLikeWildcards(dirPath)}%`
@@ -114,7 +125,7 @@ export const Functions = {
     const ancestorList = [...ancestors]
     const existing = new Set<string>()
     await Imports.SyncFunctions.ExecChunksSynchronously(
-      Imports.SyncFunctions.Chunk(ancestorList),
+      Imports.SyncFunctions.Chunk(ancestorList, Imports.getDbChunkSize(knex)),
       async (chunk: string[]) => {
         const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
         for (const row of rows) existing.add(row.path)
@@ -133,7 +144,7 @@ export const Functions = {
       return { folder, path, sortKey }
     })
     await Imports.SyncFunctions.ExecChunksSynchronously(
-      Imports.SyncFunctions.Chunk(rows),
+      Imports.SyncFunctions.Chunk(rows, Imports.getDbChunkSize(knex)),
       async (chunk: Array<{ folder: string; path: string; sortKey: string }>) => {
         await knex('folders').insert(chunk).onConflict('path').ignore()
       },
@@ -145,7 +156,7 @@ export const Functions = {
     if (folderList.length > ZERO) {
       const perFolderCounts: Array<{ folder: string; totalCount: number; seenCount: number }> = []
       await Imports.SyncFunctions.ExecChunksSynchronously(
-        Imports.SyncFunctions.Chunk(folderList),
+        Imports.SyncFunctions.Chunk(folderList, Imports.getDbChunkSize(knex)),
         async (chunk: string[]) => {
           const orLike = chunk.map(() => 'folder LIKE ?').join(' OR ')
           const bindings = chunk.map((af) => `${af}%`)
@@ -183,9 +194,12 @@ export const Functions = {
         const sortKey = path === posix.sep ? '' : Imports.SyncFunctions.ToSortKey(posix.basename(withoutSlash))
         return { path, totalCount, seenCount, folder: parent, sortKey }
       })
-      await Imports.SyncFunctions.ExecChunksSynchronously(Imports.SyncFunctions.Chunk(updateRows), async (chunk) => {
-        await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
-      })
+      await Imports.SyncFunctions.ExecChunksSynchronously(
+        Imports.SyncFunctions.Chunk(updateRows, Imports.getDbChunkSize(knex)),
+        async (chunk) => {
+          await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
+        },
+      )
     }
     const deletedfolders = await knex('folders')
       .where('totalCount', '=', ZERO)

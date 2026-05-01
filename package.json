@@ -122,5 +122,8 @@
       "text-summary"
     ],
     "all": true
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.9.0"
   }
 }

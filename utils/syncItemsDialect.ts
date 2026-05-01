@@ -10,6 +10,14 @@ const ONE = 1
 const DEFAULT_CHUNK_SIZE = 5000
 const LOGGING_INTERVAL = 100
 
+// PG can absorb a 5000-row bulk insert in a single round-trip; SQLite caps
+// SQLITE_LIMIT_COMPOUND_SELECT at 500, so knex's UNION ALL bulk-insert form
+// fails. 200 stays well under the cap (and under SQLITE_MAX_VARIABLE_NUMBER
+// for whereIn() patterns with multi-column rows) while keeping per-load
+// round-trip count manageable.
+const PG_DB_CHUNK_SIZE = 5000
+const SQLITE_DB_CHUNK_SIZE = 200
+
 interface DirEntryItem {
   path: string
   isFile: boolean
@@ -58,6 +66,10 @@ export function IsPostgres(knex: Knex): boolean {
   return client === 'pg' || client === 'postgresql'
 }
 
+export function getDbChunkSize(knex: Knex): number {
+  return IsPostgres(knex) ? PG_DB_CHUNK_SIZE : SQLITE_DB_CHUNK_SIZE
+}
+
 export const FindSyncItemsViaInsert = async (
   knex: Knex,
   logger: Debugger,
@@ -71,7 +83,7 @@ export const FindSyncItemsViaInsert = async (
     files += cf
     dirs += cd
     if (rows.length > ZERO) {
-      await helpers.execChunksSynchronously(helpers.chunk(rows), async (chunk) => {
+      await helpers.execChunksSynchronously(helpers.chunk(rows, SQLITE_DB_CHUNK_SIZE), async (chunk) => {
         await knex('syncitems').insert(chunk)
       })
     }

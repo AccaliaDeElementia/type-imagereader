@@ -7,6 +7,7 @@ import {
   IsPostgres as _IsPostgres,
   FindSyncItemsViaCopy as _FindSyncItemsViaCopy,
   FindSyncItemsViaInsert as _FindSyncItemsViaInsert,
+  getDbChunkSize as _getDbChunkSize,
 } from './syncItemsDialect'
 import wordsToNumbers from 'words-to-numbers'
 import posix from 'node:path'
@@ -67,6 +68,7 @@ export const Imports = {
   IsPostgres: _IsPostgres,
   FindSyncItemsViaCopy: _FindSyncItemsViaCopy,
   FindSyncItemsViaInsert: _FindSyncItemsViaInsert,
+  getDbChunkSize: _getDbChunkSize,
   acquireCopyConnection: async (knex: Knex): Promise<PoolClient> =>
     //eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.acquireConnection is typed `any`; PoolClient is the concrete shape for the pg dialect
     await knex.client.acquireConnection(),
@@ -245,10 +247,13 @@ export const Functions = {
     }
     const candidateList = [...candidates]
     const existing = new Set<string>()
-    await Functions.ExecChunksSynchronously(Functions.Chunk(candidateList), async (chunk) => {
-      const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
-      for (const row of rows) existing.add(row.path)
-    })
+    await Functions.ExecChunksSynchronously(
+      Functions.Chunk(candidateList, Imports.getDbChunkSize(knex)),
+      async (chunk) => {
+        const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
+        for (const row of rows) existing.add(row.path)
+      },
+    )
     const missing = candidateList.filter((p) => !existing.has(p))
     if (missing.length === ZERO) {
       logger('Added 0 missing ancestor folders')
@@ -261,7 +266,7 @@ export const Functions = {
       const sortKey = Functions.ToSortKey(posix.basename(withoutSlash))
       return { folder, path, sortKey }
     })
-    await Functions.ExecChunksSynchronously(Functions.Chunk(rows), async (chunk) => {
+    await Functions.ExecChunksSynchronously(Functions.Chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').ignore()
     })
     logger(`Added ${missing.length} missing ancestor folders`)
@@ -291,7 +296,7 @@ export const Functions = {
       .innerJoin('folders', 'folders.path', 'pictures.folder')
       .groupBy('pictures.folder', 'folders.folder', 'folders.sortKey')
       .orderBy([{ column: 'pictures.folder' }])
-    await Functions.ExecChunksSynchronously(Functions.Chunk(toUpdate), async (chunk) => {
+    await Functions.ExecChunksSynchronously(Functions.Chunk(toUpdate, Imports.getDbChunkSize(knex)), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').merge(['firstPicture'])
     })
     logger(`Updated ${toUpdate.length} folder first-item images`)
@@ -370,9 +375,12 @@ export const Functions = {
       return [{ path: info.path, folder, sortKey, totalCount: info.totalCount, seenCount: info.seenCount }]
     })
     logger(`Calculated ${resultFolders.length} Folders Seen Counts`)
-    await Functions.ExecChunksSynchronously(Functions.Chunk(resultFolders), async (chunk) => {
-      await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
-    })
+    await Functions.ExecChunksSynchronously(
+      Functions.Chunk(resultFolders, Imports.getDbChunkSize(knex)),
+      async (chunk) => {
+        await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
+      },
+    )
     logger(`Updated ${resultFolders.length} Folders Seen Counts`)
   },
   PruneEmptyFolders: async (knex: Knex): Promise<void> => {

@@ -119,12 +119,12 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     await Functions.UpdateFolderPictureCounts(knexFnFake)
     expect(chunkStub.callCount).to.equal(1)
   })
-  it('should call Chunk with one argument', async () => {
+  it('should call Chunk with the dialect-aware chunk size', async () => {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]
     getAllFolderInfosStub.resolves({ 'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 } })
     calculateFolderInfosStub.returns(results)
     await Functions.UpdateFolderPictureCounts(knexFnFake)
-    expect(chunkStub.firstCall.args).to.have.lengthOf(1)
+    expect(chunkStub.firstCall.args[1]).to.be.a('number')
   })
   it('should chunk the filtered results of calculation', async () => {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]

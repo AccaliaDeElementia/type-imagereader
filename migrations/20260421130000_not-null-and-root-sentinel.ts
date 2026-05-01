@@ -3,6 +3,7 @@
 import type { Knex } from 'knex'
 import { createHash } from 'node:crypto'
 import posix from 'node:path'
+import { IsPostgres } from '../utils/syncItemsDialect'
 
 const PAD_LENGTH = 20
 const TRAILING_SLASH_OFFSET = -1
@@ -133,8 +134,12 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-  await knex.raw('ALTER TABLE ?? DROP CONSTRAINT IF EXISTS folders_root_sentinel_check', ['folders'])
-  await knex.raw('ALTER TABLE ?? DROP CONSTRAINT IF EXISTS syncitems_root_sentinel_check', ['syncitems'])
+  // SQLite has no DROP CONSTRAINT; the constraints are rebuilt away when the table is rebuilt
+  // by the column-NOT-NULL operations below. PostgreSQL needs the explicit drop.
+  if (IsPostgres(knex)) {
+    await knex.raw('ALTER TABLE ?? DROP CONSTRAINT IF EXISTS folders_root_sentinel_check', ['folders'])
+    await knex.raw('ALTER TABLE ?? DROP CONSTRAINT IF EXISTS syncitems_root_sentinel_check', ['syncitems'])
+  }
 
   const notNullColumns: Array<[string, string]> = [
     ['folders', 'folder'],

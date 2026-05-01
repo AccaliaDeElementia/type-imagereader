@@ -315,8 +315,9 @@ export const Functions = {
       Imports.logger('SetLatestPicture: picture not found: %s', path)
       return null
     }
-    // Atomic conditional flip: PostgreSQL serializes concurrent flippers via the seen=false guard,
-    // so only one caller's UPDATE returns a non-zero rowcount and only that caller increments seenCount.
+    // Atomic conditional flip: the seen=false guard means only one concurrent UPDATE matches a row;
+    // the others see a zero rowcount and skip the seenCount increment. PostgreSQL serializes via row
+    // locks; SQLite via its whole-database write lock — same end-state either way.
     const flipped = await knex('pictures').update({ seen: true }).where({ path, seen: false })
     if (flipped > ZERO_COUNT) {
       await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Imports.GetParentFolders(path))

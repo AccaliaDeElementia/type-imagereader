@@ -28,16 +28,18 @@ All configuration is via environment variables. A `.env` file in the project roo
 
 ### Database (override `knexfile.json`)
 
-| Variable      | Default       | Notes                                                                 |
-| ------------- | ------------- | --------------------------------------------------------------------- |
-| `DB_CLIENT`   | `development` | Selects the block in `knexfile.json` (`development` or `postgresql`). |
-| `DB_HOST`     | from knexfile | PostgreSQL host.                                                      |
-| `DB_DATABASE` | from knexfile | Database name.                                                        |
-| `DB_USER`     | from knexfile | Username.                                                             |
-| `DB_PASSWORD` | from knexfile | Password.                                                             |
-| `DB_FILENAME` | —             | Reserved for SQLite-style configs.                                    |
+| Variable      | Default       | Notes                                                                                |
+| ------------- | ------------- | ------------------------------------------------------------------------------------ |
+| `DB_CLIENT`   | `development` | Selects the block in `knexfile.json` (`development`, `postgresql`, or `sqlite`).     |
+| `DB_HOST`     | from knexfile | PostgreSQL host.                                                                     |
+| `DB_DATABASE` | from knexfile | Database name.                                                                       |
+| `DB_USER`     | from knexfile | Username.                                                                            |
+| `DB_PASSWORD` | from knexfile | Password.                                                                            |
+| `DB_FILENAME` | from knexfile | SQLite database file path (defaults to `./database.sqlite3` for the `sqlite` block). |
 
 Migrations run automatically on first DB connection — see [migrations/](migrations/).
+
+PostgreSQL is the primary target. SQLite (via `better-sqlite3`) is supported for single-user setups; the COPY-based bulk-load path falls back to chunked `INSERT`s, so initial sync is significantly slower on large libraries. The `better-sqlite3` driver is listed in `optionalDependencies`, so `npm install` will fetch it automatically when the platform supports it; if you skipped optional deps, install it explicitly with `npm install better-sqlite3`.
 
 ### Server
 

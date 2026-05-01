@@ -189,8 +189,9 @@ export const Functions = {
         .limit(count)
     ).map((img: ImageWithPath) => img.path),
   MarkImageRead: async (knex: Knex, image: string): Promise<void> => {
-    // Atomic conditional flip: PostgreSQL serializes concurrent flippers via the seen=false guard,
-    // so only one caller's UPDATE returns a non-zero rowcount and only that caller increments seenCount.
+    // Atomic conditional flip: the seen=false guard means only one concurrent UPDATE matches a row;
+    // the others see a zero rowcount and skip the seenCount increment. PostgreSQL serializes via row
+    // locks; SQLite via its whole-database write lock — same end-state either way.
     const flipped = await knex('pictures').update({ seen: true }).where({ path: image, seen: false })
     if (flipped <= ZERO_COUNT) return
     await knex('folders').increment('seenCount', STEP.FORWARD).whereIn('path', Imports.GetParentFolders(image))
