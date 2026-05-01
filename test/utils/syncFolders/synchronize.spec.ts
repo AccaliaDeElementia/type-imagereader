@@ -25,6 +25,7 @@ describe('utils/syncfolders function synchronize()', () => {
   let syncAllFoldersStub = sandbox.stub()
   let updateFolderPictureCountsStub = sandbox.stub()
   let pruneEmptyFoldersStub = sandbox.stub()
+  let emitSqliteSizeWarningStub = sandbox.stub()
   let persistenceIntitializerStub = sandbox.stub()
   let knexFnStub = sandbox.stub().returnsThis()
   beforeEach(() => {
@@ -37,6 +38,7 @@ describe('utils/syncfolders function synchronize()', () => {
     syncAllFoldersStub = sandbox.stub(Functions, 'SyncAllFolders').resolves()
     updateFolderPictureCountsStub = sandbox.stub(Functions, 'UpdateFolderPictureCounts').resolves()
     pruneEmptyFoldersStub = sandbox.stub(Functions, 'PruneEmptyFolders').resolves()
+    emitSqliteSizeWarningStub = sandbox.stub(Functions, 'EmitSqliteSizeWarning')
   })
   afterEach(() => {
     sandbox.restore()
@@ -219,5 +221,42 @@ describe('utils/syncfolders function synchronize()', () => {
       rejected = true
     }
     expect(rejected).to.equal(true)
+  })
+
+  it('should call EmitSqliteSizeWarning once on a successful sync', async () => {
+    findSyncItemsStub.resolves(45)
+    await synchronize()
+    expect(emitSqliteSizeWarningStub.callCount).to.equal(1)
+  })
+
+  it('should pass the logger as the first argument to EmitSqliteSizeWarning', async () => {
+    findSyncItemsStub.resolves(45)
+    await synchronize()
+    expect(emitSqliteSizeWarningStub.firstCall.args[0]).to.equal(loggerStub)
+  })
+
+  it('should pass the knex instance as the second argument to EmitSqliteSizeWarning', async () => {
+    findSyncItemsStub.resolves(45)
+    await synchronize()
+    expect(emitSqliteSizeWarningStub.firstCall.args[1]).to.equal(knexFnStub)
+  })
+
+  it('should pass the picture count from FindSyncItems as the third argument to EmitSqliteSizeWarning', async () => {
+    findSyncItemsStub.resolves(12345)
+    await synchronize()
+    expect(emitSqliteSizeWarningStub.firstCall.args[2]).to.equal(12345)
+  })
+
+  it('should not call EmitSqliteSizeWarning when zero images found', async () => {
+    findSyncItemsStub.resolves(0)
+    await synchronize().catch(() => null)
+    expect(emitSqliteSizeWarningStub.callCount).to.equal(0)
+  })
+
+  it('should not call EmitSqliteSizeWarning when a step rejects', async () => {
+    findSyncItemsStub.resolves(45)
+    syncAllPicturesStub.rejects(new Error('boom'))
+    await synchronize().catch(() => null)
+    expect(emitSqliteSizeWarningStub.callCount).to.equal(0)
   })
 })

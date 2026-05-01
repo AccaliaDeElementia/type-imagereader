@@ -41,6 +41,25 @@ Migrations run automatically on first DB connection — see [migrations/](migrat
 
 PostgreSQL is the primary target. SQLite (via `better-sqlite3`) is supported for single-user setups; the COPY-based bulk-load path falls back to chunked `INSERT`s, so initial sync is significantly slower on large libraries. The `better-sqlite3` driver is listed in `optionalDependencies`, so `npm install` will fetch it automatically when the platform supports it; if you skipped optional deps, install it explicitly with `npm install better-sqlite3`.
 
+#### SQLite recommended library size
+
+Library size has a steep effect on SQLite performance — chunked `INSERT` bulk loads, the whole-database write lock, and disk page-cache pressure all scale unfavourably. Indicative numbers from production (one library, one disk):
+
+| Picture count | Initial sync | DB file size | Experience                         |
+| ------------: | -----------: | -----------: | ---------------------------------- |
+|       100,000 |        ~35 s |       ~80 MB | Comfortable                        |
+|       250,000 |        ~85 s |      ~200 MB | Tolerable on first run             |
+|       500,000 |       ~3 min |      ~400 MB | Painful first run; OK steady-state |
+|     1,000,000 |       ~6 min |      ~800 MB | First run feels broken             |
+|     2,300,000 |      ~13 min |       1.8 GB | Migrate to PostgreSQL              |
+
+Two recommended ceilings for the SQLite backend:
+
+- **Soft limit: 100,000 pictures.** Below this, the experience matches PostgreSQL closely. Above it, performance degrades steadily as the library grows.
+- **Firm limit: 250,000 pictures.** Above this, the initial sync and the periodic 24-hour full re-sync take long enough to be a real operational concern. **PostgreSQL is strongly recommended past this point.**
+
+Neither limit is enforced — both produce a one-time startup warning in the standard debug log (visible with `DEBUG=type-imagereader:*`) and the app continues normally.
+
 ### Server
 
 | Variable   | Default | Notes                                                                                                                                         |
