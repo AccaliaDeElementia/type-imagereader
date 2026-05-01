@@ -137,7 +137,9 @@ interface DbFolder {
 
 interface DbPicture {
   path: string
-  seen: boolean
+  // PostgreSQL returns the boolean column as `boolean`; SQLite stores it as INTEGER 0/1
+  // and surfaces it as `number`. Both shapes coerce cleanly via Boolean(...).
+  seen: boolean | number
 }
 
 interface DbBookmark {
@@ -233,7 +235,7 @@ export const Functions = {
       name: basename(pic.path, extname(pic.path)),
       path: UriSafePath.encode(pic.path),
       index,
-      seen: pic.seen,
+      seen: Boolean(pic.seen),
     }))
   },
   GetBookmarks: async (knex: Knex): Promise<BookmarkFolder[]> => {

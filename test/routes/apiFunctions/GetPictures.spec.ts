@@ -127,6 +127,21 @@ describe('routes/apiFunctions function GetPictures', () => {
     const result = await Functions.GetPictures(knexFake, '/foo/bar/')
     expect(result[1]?.seen).to.equal(false)
   })
+  it('should coerce sqlite-style seen=1 to true', async () => {
+    knexInstance.orderBy.resolves([{ path: '/foo/bar/baz.png', seen: 1 }])
+    const result = await Functions.GetPictures(knexFake, '/foo/bar/')
+    expect(result[0]?.seen).to.equal(true)
+  })
+  it('should coerce sqlite-style seen=0 to false', async () => {
+    knexInstance.orderBy.resolves([{ path: '/foo/bar/baz.png', seen: 0 }])
+    const result = await Functions.GetPictures(knexFake, '/foo/bar/')
+    expect(result[0]?.seen).to.equal(false)
+  })
+  it('should produce a boolean-typed seen value for sqlite-style integer input', async () => {
+    knexInstance.orderBy.resolves([{ path: '/foo/bar/baz.png', seen: 1 }])
+    const result = await Functions.GetPictures(knexFake, '/foo/bar/')
+    expect(typeof result[0]?.seen).to.equal('boolean')
+  })
   it('should map index onto picture list', async () => {
     const data = Array(100).fill({
       path: '/foo/bar/baz.png',
