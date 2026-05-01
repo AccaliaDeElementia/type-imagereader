@@ -207,6 +207,18 @@ describe('routes/images function ReadImage()', () => {
     expect(result).to.equal(img)
   })
 
+  it('should join DATA_DIR with the requested path when DATA_DIR is set', async () => {
+    process.env.DATA_DIR = '/library/images'
+    try {
+      readFileStub.resolves(Buffer.from('SOME DATA HERE'))
+      fromImageStub.returns(Cast<ImageData>({}))
+      await Functions.ReadImage('/foo/bar/image.gif')
+      expect(readFileStub.firstCall.args[0]).to.equal('/library/images/foo/bar/image.gif')
+    } finally {
+      delete process.env.DATA_DIR
+    }
+  })
+
   describe('logging', () => {
     it('should log path-traversal-blocked format when isPathTraversal returns true', async () => {
       isPathTraversalStub.returns(true)

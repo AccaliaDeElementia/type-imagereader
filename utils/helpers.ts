@@ -11,6 +11,13 @@ export function StringIsNullOrEmpty(str: string | null | undefined): boolean {
   return str === null || str === undefined || str.length === ZERO_LENGTH
 }
 
+export function getDataDir(): string {
+  const raw = process.env.DATA_DIR
+  if (!StringishHasValue(raw)) return '/data'
+  const trimmed = raw.replace(/\/+$/v, '')
+  return trimmed === '' ? '/' : trimmed
+}
+
 export function ReqParamToString(input: string | string[] | undefined | null, defaultValue = ''): string {
   if (input === undefined || input === null) return defaultValue
   if (input instanceof Array) {

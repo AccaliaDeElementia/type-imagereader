@@ -6,6 +6,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors'
 import { Cast } from '#testutils/TypeGuards'
+import type { Stats } from 'node:fs'
 import type { Changeset, FlushCallback } from '#utils/filewatcher'
 
 import { ImageReader, Imports } from '#app'
@@ -31,6 +32,7 @@ describe('/index.ts tests', (): void => {
     ClockFake = sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
+    sandbox.stub(Imports, 'stat').resolves(Cast<Stats>({ isDirectory: () => true }))
     PersistanceStub = { initialize: sandbox.stub().resolves({}) }
     sandbox.stub(Imports, 'persistance').value(PersistanceStub)
     IncrementalSyncStub = sandbox.stub().resolves()
@@ -257,29 +259,32 @@ describe('/index.ts tests', (): void => {
     assert(true, 'should not throw or reject because inner promise rejects')
   })
 
+  const syncLogCalls = (): Sinon.SinonSpyCall[] =>
+    (LoggerStub?.getCalls() ?? []).filter((c) => c.args[0] !== 'using data directory: %s')
+
   it('should log once when initial sync rejects', async () => {
     const err = new Error('SYNC FAILED')
     SynchronizeStub?.rejects(err)
     await ImageReader.Run()
-    expect(LoggerStub?.callCount).to.equal(1)
+    expect(syncLogCalls().length).to.equal(1)
   })
 
   it("should log with message 'sync error' when initial sync rejects", async () => {
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
     await ImageReader.Run()
-    expect(LoggerStub?.firstCall.args[0]).to.equal('sync error')
+    expect(syncLogCalls()[0]?.args[0]).to.equal('sync error')
   })
 
   it('should log the error object when initial sync rejects', async () => {
     const err = new Error('SYNC FAILED')
     SynchronizeStub?.rejects(err)
     await ImageReader.Run()
-    expect(LoggerStub?.firstCall.args[1]).to.equal(err)
+    expect(syncLogCalls()[0]?.args[1]).to.equal(err)
   })
 
-  it('should not log when initial sync resolves', async () => {
+  it('should not log sync errors when initial sync resolves', async () => {
     await ImageReader.Run()
-    expect(LoggerStub?.callCount).to.equal(0)
+    expect(syncLogCalls().length).to.equal(0)
   })
 
   it('should log once when interval sync rejects', async () => {
@@ -287,7 +292,7 @@ describe('/index.ts tests', (): void => {
     await ImageReader.Run()
     SynchronizeStub?.rejects(new Error('INTERVAL SYNC FAILED'))
     await ClockFake?.tickAsync(101)
-    expect(LoggerStub?.callCount).to.equal(1)
+    expect(syncLogCalls().length).to.equal(1)
   })
 
   it("should log with message 'sync interval error' when interval sync rejects", async () => {
@@ -295,7 +300,7 @@ describe('/index.ts tests', (): void => {
     await ImageReader.Run()
     SynchronizeStub?.rejects(new Error('INTERVAL SYNC FAILED'))
     await ClockFake?.tickAsync(101)
-    expect(LoggerStub?.firstCall.args[0]).to.equal('sync interval error')
+    expect(syncLogCalls()[0]?.args[0]).to.equal('sync interval error')
   })
 
   it('should log the error object when interval sync rejects', async () => {
@@ -304,15 +309,15 @@ describe('/index.ts tests', (): void => {
     await ImageReader.Run()
     SynchronizeStub?.rejects(err)
     await ClockFake?.tickAsync(101)
-    expect(LoggerStub?.firstCall.args[1]).to.equal(err)
+    expect(syncLogCalls()[0]?.args[1]).to.equal(err)
   })
 
-  it('should not log when interval sync resolves', async () => {
+  it('should not log sync errors when interval sync resolves', async () => {
     process.env.SYNC_INTERVAL = '100'
     await ImageReader.Run()
     ClockFake?.tick(101)
     await Promise.resolve()
-    expect(LoggerStub?.callCount).to.equal(0)
+    expect(syncLogCalls().length).to.equal(0)
   })
 
   it('should start watcher by default', async () => {

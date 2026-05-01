@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors'
+import { Cast } from '#testutils/TypeGuards'
+import type { Stats } from 'node:fs'
 
 import { ImageReader, Imports } from '#app'
 
@@ -28,6 +30,7 @@ describe('index.ts ONESHOT mode tests', (): void => {
     ClockFake = sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
+    sandbox.stub(Imports, 'stat').resolves(Cast<Stats>({ isDirectory: () => true }))
     DestroyStub = sandbox.stub().resolves()
     PersistanceStub = { initialize: sandbox.stub().resolves({ destroy: DestroyStub }) }
     sandbox.stub(Imports, 'persistance').value(PersistanceStub)

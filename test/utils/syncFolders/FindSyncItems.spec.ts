@@ -74,6 +74,7 @@ describe('utils/syncfolders function FindSyncItems()', () => {
     copyFromStub = sandbox.stub(Imports, 'copyFrom').returns(Cast<CopyStreamQuery>(sandbox.stub()))
     acquireStub = sandbox.stub(Imports, 'acquireCopyConnection').resolves(Cast<PoolClient>(pgClientStub))
     releaseStub = sandbox.stub(Imports, 'releaseCopyConnection').resolves()
+    sandbox.stub(Imports, 'IsPostgres').returns(true)
   })
   afterEach(() => {
     sandbox.restore()
@@ -184,6 +185,15 @@ describe('utils/syncfolders function FindSyncItems()', () => {
   it('should walk filesystem starting at /data', async () => {
     await Functions.FindSyncItems(knexFnFake)
     expect(fsWalkerStub.calledWith('/data')).to.equal(true)
+  })
+  it('should walk filesystem starting at DATA_DIR when set', async () => {
+    process.env.DATA_DIR = '/library/images'
+    try {
+      await Functions.FindSyncItems(knexFnFake)
+      expect(fsWalkerStub.calledWith('/library/images')).to.equal(true)
+    } finally {
+      delete process.env.DATA_DIR
+    }
   })
   it('should pass walker items through BuildSyncItemRows', async () => {
     await Functions.FindSyncItems(knexFnFake)

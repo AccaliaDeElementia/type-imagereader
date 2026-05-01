@@ -4,6 +4,7 @@
 import 'dotenv/config'
 
 import debug from 'debug'
+import { stat } from 'node:fs/promises'
 
 import synchronize from './utils/syncfolders'
 import { Functions as IncrementalSyncFunctions } from './utils/incrementalsync'
@@ -11,13 +12,15 @@ import startWatcher from './utils/filewatcher'
 import type { Changeset, WatcherSubscription } from './utils/filewatcher'
 import persistance from './utils/persistance'
 import start from './Server'
-import { StringIsNullOrEmpty } from './utils/helpers'
+import { StringIsNullOrEmpty, getDataDir } from './utils/helpers'
 
 export const Imports = {
   logger: debug('type-imagereader:sync'),
   startWatcher,
   persistance,
   IncrementalSyncFunctions,
+  stat,
+  getDataDir,
 }
 
 const THREE_HOURS = 10_800_000
@@ -60,6 +63,14 @@ export const Functions = {
       ImageReader.SyncLock.Release()
     }
   },
+  ValidateDataDir: async (dataDir: string): Promise<void> => {
+    const stats = await Imports.stat(dataDir).catch((err: unknown) => {
+      throw new Error(`DATA_DIR ${dataDir} is not accessible`, { cause: err })
+    })
+    if (!stats.isDirectory()) {
+      throw new Error(`DATA_DIR ${dataDir} is not a directory`)
+    }
+  },
 }
 
 export async function RunSync(): Promise<void> {
@@ -98,6 +109,9 @@ export const ImageReader = {
   SyncInterval: THREE_HOURS,
   WatcherEnabled: false,
   Run: async (): Promise<void> => {
+    const dataDir = Imports.getDataDir()
+    Imports.logger('using data directory: %s', dataDir)
+    await Functions.ValidateDataDir(dataDir)
     await runIfNotSuppressed('SKIP_SERVE', async () => {
       const port = Number(StringIsNullOrEmpty(process.env.PORT) ? DEFAULT_PORT : process.env.PORT)
       if (Number.isNaN(port)) {
@@ -143,12 +157,12 @@ export const ImageReader = {
             if (!ImageReader.SyncLock.Take()) throw new Error('sync locked')
             try {
               const knex = await Imports.persistance.initialize()
-              await Imports.IncrementalSyncFunctions.IncrementalSync(knex, changeset)
+              await Imports.IncrementalSyncFunctions.IncrementalSync(knex, changeset, dataDir)
             } finally {
               ImageReader.SyncLock.Release()
             }
           }
-          ImageReader.WatcherSubscription = await Imports.startWatcher('/data', onFlush)
+          ImageReader.WatcherSubscription = await Imports.startWatcher(dataDir, onFlush)
           ImageReader.WatcherEnabled = true
         } catch (err: unknown) {
           Imports.logger('watcher start failed, falling back to polling only', err)

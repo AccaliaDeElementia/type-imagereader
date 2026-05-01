@@ -12,7 +12,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
 import type { Debugger } from 'debug'
-import { ReqParamToString } from '#utils/helpers'
+import { ReqParamToString, getDataDir as _getDataDir } from '#utils/helpers'
 import { handleErrors as _handleErrors } from '#utils/Express'
 import { isPathTraversal as _isPathTraversal } from '#utils/Path'
 
@@ -83,6 +83,7 @@ export const Imports = {
   Router,
   handleErrors: _handleErrors,
   isPathTraversal: _isPathTraversal,
+  getDataDir: _getDataDir,
 }
 
 export interface CacheItem {
@@ -140,7 +141,7 @@ export const Functions = {
       return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
     }
     try {
-      const data = await Imports.readFile(join('/data', path))
+      const data = await Imports.readFile(join(Imports.getDataDir(), path))
       return ImageData.fromImage(data, ext, path)
     } catch (err) {
       Imports.logger('image not found: %s (%s)', path, err instanceof Error ? err.message : String(err))

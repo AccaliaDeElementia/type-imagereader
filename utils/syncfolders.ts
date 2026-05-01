@@ -2,6 +2,12 @@
 
 import persistance from './persistance'
 import _fsWalker from './fswalker'
+import { getDataDir as _getDataDir } from './helpers'
+import {
+  IsPostgres as _IsPostgres,
+  FindSyncItemsViaCopy as _FindSyncItemsViaCopy,
+  FindSyncItemsViaInsert as _FindSyncItemsViaInsert,
+} from './syncItemsDialect'
 import wordsToNumbers from 'words-to-numbers'
 import posix from 'node:path'
 import { createHash } from 'node:crypto'
@@ -15,7 +21,6 @@ const ZERO = 0
 const ONE = 1
 const NUMBER_PAD_LENGTH = 20
 const DEFAULT_CHUNK_SIZE = 5000
-const LOGGING_INTERVAL = 100
 const TRAILING_SLASH_OFFSET = -1
 
 interface DirEntryItem {
@@ -57,7 +62,11 @@ export const Imports = {
   logPrefix: 'type-imagereader:syncfolders',
   debug: _debug,
   fsWalker: _fsWalker,
+  getDataDir: _getDataDir,
   copyFrom: _copyFrom,
+  IsPostgres: _IsPostgres,
+  FindSyncItemsViaCopy: _FindSyncItemsViaCopy,
+  FindSyncItemsViaInsert: _FindSyncItemsViaInsert,
   acquireCopyConnection: async (knex: Knex): Promise<PoolClient> =>
     //eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.acquireConnection is typed `any`; PoolClient is the concrete shape for the pg dialect
     await knex.client.acquireConnection(),
@@ -135,67 +144,26 @@ export const Functions = {
       sortKey: '',
       pathHash: createHash('sha512').update(posix.sep).digest('base64'),
     })
-    let dirs = ZERO
-    let files = ZERO
-    let counter = ZERO
-    const buffer: string[] = []
-    const client = await Imports.acquireCopyConnection(knex)
-    try {
-      const stream = client.query(
-        Imports.copyFrom('COPY syncitems (folder, path, "isFile", "sortKey", "pathHash") FROM STDIN WITH (FORMAT csv)'),
-      )
-      let chain = Promise.resolve()
-      const flushBuffer = async (): Promise<void> => {
-        if (buffer.length === ZERO) return
-        const payload = buffer.splice(ZERO).join('')
-        if (!stream.write(payload)) {
-          const { promise, resolve } = Promise.withResolvers<undefined>()
-          stream.once('drain', () => {
-            resolve(undefined)
-          })
-          await promise
-        }
-      }
-      const scheduleFlush = async (): Promise<void> => {
-        chain = chain.then(flushBuffer)
-        await chain
-      }
-      try {
-        await Imports.fsWalker('/data', async (items: DirEntryItem[], pending: number) => {
-          const { files: chunkFiles, dirs: chunkDirs, rows } = Functions.BuildSyncItemRows(items)
-          files += chunkFiles
-          dirs += chunkDirs
-          for (const row of rows) {
-            buffer.push(Functions.FormatSyncItemCsv(row))
-          }
-          if (buffer.length >= DEFAULT_CHUNK_SIZE) {
-            await scheduleFlush()
-          }
-          if (counter === ZERO) {
-            logger(`Found ${dirs} dirs (${pending} pending) and ${files} files`)
-          }
-          counter = (counter + ONE) % LOGGING_INTERVAL
-        })
-        await chain
-        await scheduleFlush()
-        stream.end()
-        const { promise, resolve, reject } = Promise.withResolvers<undefined>()
-        stream.on('finish', () => {
-          resolve(undefined)
-        })
-        stream.on('error', (err: Error) => {
-          reject(err)
-        })
-        await promise
-      } catch (err) {
-        stream.destroy(err instanceof Error ? err : new Error(String(err)))
-        throw err
-      }
-    } finally {
-      await Imports.releaseCopyConnection(knex, client)
+    const shared = {
+      fsWalker: Imports.fsWalker,
+      buildSyncItemRows: Functions.BuildSyncItemRows,
+      getDataDir: Imports.getDataDir,
     }
-    logger(`Found all ${dirs} dirs and ${files} files`)
-    return files
+    const counts = Imports.IsPostgres(knex)
+      ? await Imports.FindSyncItemsViaCopy(knex, logger, {
+          ...shared,
+          formatSyncItemCsv: Functions.FormatSyncItemCsv,
+          copyFrom: Imports.copyFrom,
+          acquireCopyConnection: Imports.acquireCopyConnection,
+          releaseCopyConnection: Imports.releaseCopyConnection,
+        })
+      : await Imports.FindSyncItemsViaInsert(knex, logger, {
+          ...shared,
+          chunk: Functions.Chunk,
+          execChunksSynchronously: Functions.ExecChunksSynchronously,
+        })
+    logger(`Found all ${counts.dirs} dirs and ${counts.files} files`)
+    return counts.files
   },
   SyncNewPictures: async (logger: Debugger, knex: Knex): Promise<void> => {
     const insertedpics = await knex
