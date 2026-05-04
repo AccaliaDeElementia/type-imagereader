@@ -79,3 +79,6 @@ typings/
 # esbuild client bundles
 dist/scripts/*.js
 dist/scripts/*.js.map
+
+#ansible scripting
+dashboard/

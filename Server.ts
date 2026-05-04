@@ -75,9 +75,12 @@ export const Functions = {
         app.use(
           Imports.helmet({
             // Slideshow weather icons are served from openweathermap.org; default img-src ('self' data:) blocks them.
+            // connect-src must include https://localhost:8443 so the slideshow can fetch the per-device EnvSensorServer;
+            // default connect-src ('self') would block it as a cross-origin request.
             contentSecurityPolicy: {
               directives: {
                 'img-src': ["'self'", 'data:', 'https://openweathermap.org'],
+                'connect-src': ["'self'", 'https://localhost:8443'],
               },
             },
           }),

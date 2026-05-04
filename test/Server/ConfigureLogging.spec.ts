@@ -88,6 +88,14 @@ describe('Server function ConfigureLogging', () => {
     )
     expect(opts.contentSecurityPolicy?.directives?.['img-src']).to.include('https://openweathermap.org')
   })
+  it('should allow https://localhost:8443 in the helmet CSP connect-src directive so the slideshow can fetch local weather', () => {
+    process.env.NODE_ENV = 'production'
+    Functions.ConfigureLogging(appFake)
+    const opts = Cast<{ contentSecurityPolicy?: { directives?: Record<string, string[]> } }>(
+      helmetStub.firstCall.args[0],
+    )
+    expect(opts.contentSecurityPolicy?.directives?.['connect-src']).to.include('https://localhost:8443')
+  })
   it('should not call morgan in production mode', () => {
     process.env.NODE_ENV = 'production'
     Functions.ConfigureLogging(appFake)
