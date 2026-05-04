@@ -119,6 +119,6 @@ export default [
     },
   },
   {
-    ignores: ['coverage/**', 'eslint.config.mjs', 'dist/**'],
+    ignores: ['coverage/**', 'eslint.config.mjs', 'dist/**', 'deploy/**'],
   },
 ]

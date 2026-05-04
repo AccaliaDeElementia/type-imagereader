@@ -114,7 +114,8 @@
     "exclude": [
       "**/*.spec.ts",
       "knexfile.ts",
-      "migrations/**"
+      "migrations/**",
+      "deploy/**"
     ],
     "reporter": [
       "lcov",

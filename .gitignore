@@ -80,5 +80,5 @@ typings/
 dist/scripts/*.js
 dist/scripts/*.js.map
 
-#ansible scripting
-dashboard/
+# Deployment configurations (ansible, docker compose, secrets)
+deploy/
