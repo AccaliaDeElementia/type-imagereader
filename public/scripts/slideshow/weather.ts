@@ -94,7 +94,7 @@ function SetAlmanac(weather: WeatherResults): void {
 
 const LOCAL_WEATHER_UPDATE_INTERVAL = 1_000
 export const LocalWeatherUpdater = new CyclicUpdater(async () => {
-  await Functions.FetchWeather('http://localhost:8080/').then((weather) =>
+  await Functions.FetchWeather('https://localhost:8443/').then((weather) =>
     Functions.ShowWeather(document.querySelector<HTMLElement>('.localweather'), weather),
   )
 }, LOCAL_WEATHER_UPDATE_INTERVAL)

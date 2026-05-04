@@ -68,7 +68,7 @@ describe('public/slideshow/weather LocalWeatherUpdater', () => {
 
   it('should fetch weather from expected url when triggered', async () => {
     await LocalWeatherUpdater.updateFn()
-    expect(fetchWeatherStub.firstCall.args).to.deep.equal(['http://localhost:8080/'])
+    expect(fetchWeatherStub.firstCall.args).to.deep.equal(['https://localhost:8443/'])
   })
 
   it('should show fetched data once after retrieval', async () => {
