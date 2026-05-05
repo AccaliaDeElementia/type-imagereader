@@ -41,7 +41,7 @@ describe('public/app/navigation function Init()', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  after(() => {
+  afterAll(() => {
     global.window = existingWindow
     global.document = existingDocument
     Sinon.restore()

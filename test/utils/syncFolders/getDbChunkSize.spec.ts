@@ -1,6 +1,5 @@
 'use sanity'
 
-import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import type { Knex } from 'knex'
 import { getDbChunkSize } from '#utils/syncItemsDialect.js'

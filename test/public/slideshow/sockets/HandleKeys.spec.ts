@@ -2,7 +2,6 @@
 
 import Sinon from 'sinon'
 import { Functions, type WebSocket } from '#public/scripts/slideshow/sockets.js'
-import { after, afterEach, before, beforeEach, describe, it } from 'mocha'
 import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import assert from 'node:assert'
@@ -16,14 +15,14 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   const dom = new JSDOM('<html></html>')
-  before(() => {
+  beforeAll(() => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     Object.defineProperty(global, 'document', {
       configurable: true,
       get: () => dom.window.document,
     })
   })
-  after(() => {
+  afterAll(() => {
     global.window = existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,

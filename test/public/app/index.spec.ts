@@ -28,7 +28,7 @@ describe('public/app initialzation', () => {
   let navigationInitSpy: Sinon.SinonStub = sandbox.stub()
   let pubsubDeferredSpy: Sinon.SinonStub = sandbox.stub()
   let wakeLockInitSpy: Sinon.SinonStub = sandbox.stub()
-  before(() => {
+  beforeAll(() => {
     loadingInitSpy = sandbox.stub(Loading, 'Init')
     confirmInitSpy = sandbox.stub(Confirm, 'Init')
     actionsInitSpy = sandbox.stub(Actions, 'Init')
@@ -41,7 +41,7 @@ describe('public/app initialzation', () => {
     wakeLockInitSpy = sandbox.stub(WakeLock, 'Init')
     bootstrap()
   })
-  after(() => {
+  afterAll(() => {
     sandbox.restore()
   })
   it('should call Loading.Init()', () => {

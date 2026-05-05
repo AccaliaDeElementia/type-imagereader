@@ -38,7 +38,7 @@ describe('routes/images export getRouter()', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  after(() => {
+  afterAll(() => {
     CacheStorage.kioskCache = defaultKioskCache
     CacheStorage.scaledCache = defaultScaledCache
   })

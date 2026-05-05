@@ -1,7 +1,6 @@
 'use sanity'
 
 import { Functions } from '#public/scripts/slideshow/sockets.js'
-import { after, before, describe, it } from 'mocha'
 import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import { expect } from 'chai'
@@ -10,14 +9,14 @@ describe('public/slideshow/sockets ParseRoomName()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   const dom = new JSDOM('<html></html>')
-  before(() => {
+  beforeAll(() => {
     global.window = Cast<Window & typeof globalThis>(dom.window)
     Object.defineProperty(global, 'document', {
       configurable: true,
       get: () => dom.window.document,
     })
   })
-  after(() => {
+  afterAll(() => {
     global.window = existingWindow
     Object.defineProperty(global, 'document', {
       configurable: true,

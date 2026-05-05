@@ -188,7 +188,7 @@ export const ImageReader = {
 // resolve the entry. Both should trigger startup; tests that import this module
 // (e.g., `#app.js`) leave argv[1] pointing at the test runner, so the guard stays
 // false there and Run() does not fire.
-/* c8 ignore next 10 */
+/* v8 ignore start */
 const entryFile = fileURLToPath(import.meta.url)
 const entryDir = dirname(entryFile)
 const invokedAs = process.argv[ENTRY_ARGV_INDEX]
@@ -198,3 +198,4 @@ if (invokedAs !== undefined && [entryFile, entryDir].includes(resolve(invokedAs)
     process.exitCode = EXIT_FAILURE
   })
 }
+/* v8 ignore stop */

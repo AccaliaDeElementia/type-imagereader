@@ -1,7 +1,6 @@
 'use sanity'
 
 import { assert, expect } from 'chai'
-import { describe, it } from 'mocha'
 import { Actions } from '#public/scripts/app/actions.js'
 import { JSDOM } from 'jsdom'
 import { Cast } from '#testutils/TypeGuards.js'

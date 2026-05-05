@@ -51,7 +51,7 @@ describe('public/app/navigation function Init()', () => {
     sandbox.restore()
     tabSelectedSpy.reset()
   })
-  after(() => {
+  afterAll(() => {
     global.window = existingWindow
     global.document = existingDocument
     Sinon.restore()

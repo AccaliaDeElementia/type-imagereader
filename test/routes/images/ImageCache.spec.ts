@@ -18,7 +18,7 @@ describe('routes/images class ImageData', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  after(() => {
+  afterAll(() => {
     ImageCache.cacheSize = defaultCacheSize
   })
   describe('ctor', () => {

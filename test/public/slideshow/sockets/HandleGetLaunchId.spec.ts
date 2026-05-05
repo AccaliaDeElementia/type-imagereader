@@ -2,7 +2,6 @@
 
 import Sinon from 'sinon'
 import { Functions, WebSockets } from '#public/scripts/slideshow/sockets.js'
-import { beforeEach, afterEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()

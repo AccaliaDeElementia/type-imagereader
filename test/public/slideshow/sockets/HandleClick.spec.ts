@@ -2,7 +2,6 @@
 
 import Sinon from 'sinon'
 import { Functions, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
-import { after, before, beforeEach, describe, it } from 'mocha'
 import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import assert from 'node:assert'
@@ -18,7 +17,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   const existingWindow = global.window
   const existingDocument = global.document
   const dom = new JSDOM('<html></html>')
-  before(() => {
+  beforeAll(() => {
     fakeAssign = sandbox.stub(WebSockets, 'LocationAssign')
     global.window = Cast<Window & typeof globalThis>(dom.window)
     Object.defineProperty(global, 'document', {
@@ -27,7 +26,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     })
     global.window.visualViewport = Cast<VisualViewport>(fakeViewport)
   })
-  after(() => {
+  afterAll(() => {
     fakeAssign.restore()
     global.window = existingWindow
     Object.defineProperty(global, 'document', {

@@ -2,8 +2,6 @@
 
 import { Functions } from '#public/scripts/slideshow/time.js'
 import { expect } from 'chai'
-import { describe } from 'mocha'
-
 describe('public/slideshow/time FormatDate()', () => {
   const makeDate = (year: number, month: number, day: number): Date => {
     const now = new Date()

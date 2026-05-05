@@ -1,7 +1,6 @@
 'use sanity'
 
 import assert from 'node:assert'
-import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors.js'

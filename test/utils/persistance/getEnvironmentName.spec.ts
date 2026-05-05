@@ -5,10 +5,10 @@ import { Functions } from '#utils/persistance.js'
 
 describe('utils/persistance function getEnvironmentName()', () => {
   let envValue: string | undefined = undefined
-  before(() => {
+  beforeAll(() => {
     envValue = process.env.DB_CLIENT
   })
-  after(() => {
+  afterAll(() => {
     if (envValue === undefined) {
       delete process.env.DB_CLIENT
     } else {

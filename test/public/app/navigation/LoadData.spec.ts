@@ -81,7 +81,7 @@ describe('public/app/navigation function LoadData()', () => {
     loadingShowSpy.reset()
     navigateDataSpy.reset()
   })
-  after(() => {
+  afterAll(() => {
     global.window = existingWindow
     global.document = existingDocument
     Sinon.restore()

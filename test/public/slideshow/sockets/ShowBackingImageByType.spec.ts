@@ -1,7 +1,6 @@
 'use sanity'
 
 import { Functions } from '#public/scripts/slideshow/sockets.js'
-import { afterEach, beforeEach, describe, it } from 'mocha'
 import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import { JSDOM } from 'jsdom'

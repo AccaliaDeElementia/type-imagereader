@@ -1,6 +1,5 @@
 'use sanity'
 
-import { describe, it } from 'mocha'
 import { EventuallyRejects } from '#testutils/Errors.js'
 import { defaultUpdateFn } from '#public/scripts/slideshow/updater.js'
 import { expect } from 'chai'

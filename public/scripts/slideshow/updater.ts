@@ -6,7 +6,7 @@ export async function defaultUpdateFn(): Promise<void> {
   // V8 block coverage splits async functions at every `await` into a pre-suspension
   // block and a post-suspension resume block. When the awaited Promise rejects the
   // resume block never executes, leaving two ranges uncovered on the lines below.
-  /* c8 ignore next 2 */
+  /* v8 ignore next 2 */
   await Promise.reject(err)
 }
 const INCREMENT = 1

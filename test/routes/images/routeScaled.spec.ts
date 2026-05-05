@@ -80,7 +80,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  after(() => {
+  afterAll(() => {
     CacheStorage.kioskCache = defaultKioskCache
     CacheStorage.scaledCache = defaultScaledCache
   })

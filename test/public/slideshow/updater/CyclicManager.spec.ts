@@ -1,6 +1,5 @@
 'use sanity'
 
-import { describe, beforeEach, afterEach, it } from 'mocha'
 import { CyclicManager, CyclicUpdater } from '#public/scripts/slideshow/updater.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'

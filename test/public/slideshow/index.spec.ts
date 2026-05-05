@@ -18,13 +18,13 @@ describe('public/slideshow/index', () => {
   let fakeCyclicAdd: Sinon.SinonStub | undefined = undefined
   let fakeCyclicStart: Sinon.SinonStub | undefined = undefined
   let fakeSocketConnect: Sinon.SinonStub | undefined = undefined
-  before(() => {
+  beforeAll(() => {
     fakeCyclicAdd = sandbox.stub(CyclicManager, 'Add')
     fakeCyclicStart = sandbox.stub(CyclicManager, 'Start')
     fakeSocketConnect = sandbox.stub(WebSockets, 'connect')
     bootstrap()
   })
-  after(() => {
+  afterAll(() => {
     fakeSocketConnect?.restore()
     fakeCyclicStart?.restore()
     fakeCyclicAdd?.restore()

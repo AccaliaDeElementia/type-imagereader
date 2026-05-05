@@ -1,7 +1,6 @@
 'use sanity'
 
 import { UninitializedLocationAssign, UninitializedLocationReload } from '#public/scripts/slideshow/sockets.js'
-import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import { DefinitelyThrows } from '#testutils/Errors.js'
 

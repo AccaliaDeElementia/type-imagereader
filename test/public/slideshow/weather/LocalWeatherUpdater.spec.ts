@@ -1,6 +1,5 @@
 'use sanity'
 
-import { afterEach, beforeEach, describe, it } from 'mocha'
 import { Functions, LocalWeatherUpdater } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
 import { Cast } from '#testutils/TypeGuards.js'

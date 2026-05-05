@@ -1,6 +1,5 @@
 'use sanity'
 
-import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Debugger } from 'debug'

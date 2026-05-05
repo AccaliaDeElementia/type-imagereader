@@ -2,7 +2,6 @@
 
 import Sinon from 'sinon'
 import { Imports, Functions, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
-import { afterEach, beforeEach, describe, it } from 'mocha'
 import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import { expect } from 'chai'

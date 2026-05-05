@@ -1,6 +1,5 @@
 'use sanity'
 
-import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import { isListing } from '#contracts/listing.js'
 

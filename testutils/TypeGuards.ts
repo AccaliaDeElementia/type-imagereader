@@ -20,6 +20,6 @@ export function StubToKnex(stub: unknown): KnexDefault {
     Object.assign(stub, { client: { config: { client: 'postgresql' } } })
   }
   if (IsKnex(stub)) return stub
-  /* c8 ignore next 2 -- IsKnex always returns true; this throw is unreachable dead code */
+  /* v8 ignore next 2 -- IsKnex always returns true; this throw is unreachable dead code */
   throw new Error('Stub is not KNEX')
 }

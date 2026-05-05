@@ -1,6 +1,5 @@
 'use sanity'
 
-import { beforeEach, afterEach, before, after, describe } from 'mocha'
 import { CyclicUpdater, defaultUpdateFn } from '#public/scripts/slideshow/updater.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
@@ -55,14 +54,14 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
     let errorStub = sandbox.stub()
     const updateFn = sandbox.stub().resolves()
     const updater = new CyclicUpdater(updateFn, undefined)
-    before(() => {
+    beforeAll(() => {
       global.window = Cast<Window & typeof globalThis>(dom.window)
       Object.defineProperty(global, 'document', {
         configurable: true,
         get: () => dom.window.document,
       })
     })
-    after(() => {
+    afterAll(() => {
       global.window = existingWindow
       Object.defineProperty(global, 'document', {
         configurable: true,
