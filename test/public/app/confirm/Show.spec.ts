@@ -84,4 +84,20 @@ describe('public/app/confirm function Show()', () => {
     await result
     expect(Confirm.dialogElement?.classList.contains('hidden')).to.equal(true)
   })
+
+  it('should still set messageElement.innerText when titleElement is null', async () => {
+    Confirm.titleElement = null
+    const result = Confirm.Show('msg-only', 'unused-title')
+    confirmButton?.click()
+    await result
+    expect(Confirm.messageElement?.innerText).to.equal('msg-only')
+  })
+
+  it('should still set titleElement.innerText when messageElement is null', async () => {
+    Confirm.messageElement = null
+    const result = Confirm.Show('unused-msg', 'title-only')
+    confirmButton?.click()
+    await result
+    expect(Confirm.titleElement?.innerText).to.equal('title-only')
+  })
 })

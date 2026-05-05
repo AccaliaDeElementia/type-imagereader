@@ -142,6 +142,16 @@ describe('utils/fswalker function fsWalker()', () => {
     await EventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(new Error('stop'))))
     expect(readdirSpy.callCount).to.equal(1)
   })
+  it('should preserve a single error when concurrent peer workers both reject', async () => {
+    readdirSpy.onFirstCall().resolves([
+      { name: 'subA', isDirectory: () => true },
+      { name: 'subB', isDirectory: () => true },
+    ])
+    readdirSpy.onSecondCall().rejects(new Error('errA'))
+    readdirSpy.onThirdCall().rejects(new Error('errB'))
+    const err = await EventuallyRejects(fsWalker('/bar/baz', sandbox.stub().resolves()))
+    expect(err.message).to.match(/^err[AB]$/v)
+  })
   it('should call the item callback once when hidden folder present', async () => {
     readdirSpy.onFirstCall().resolves([
       {

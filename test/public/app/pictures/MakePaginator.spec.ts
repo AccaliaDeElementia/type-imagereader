@@ -185,4 +185,22 @@ describe('public/app/pictures function MakePaginator()', () => {
       expect(fn()).to.equal(i)
     }
   })
+  it('should skip the previousPage child when MakePaginatorItem returns undefined for it', () => {
+    makePageItemSpy.onFirstCall().returns(undefined)
+    const result = Pictures.MakePaginator(7)
+    const pages = result?.querySelector('.pagination')
+    expect(pages?.children.length).to.equal(8)
+  })
+  it('should skip a page child when MakePaginatorItem returns undefined for it', () => {
+    makePageItemSpy.onCall(3).returns(undefined)
+    const result = Pictures.MakePaginator(7)
+    const pages = result?.querySelector('.pagination')
+    expect(pages?.children.length).to.equal(8)
+  })
+  it('should skip the nextPage child when MakePaginatorItem returns undefined for it', () => {
+    makePageItemSpy.onCall(8).returns(undefined)
+    const result = Pictures.MakePaginator(7)
+    const pages = result?.querySelector('.pagination')
+    expect(pages?.children.length).to.equal(8)
+  })
 })
