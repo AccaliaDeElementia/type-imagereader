@@ -114,4 +114,8 @@ describe('testutils/Errors function AlwaysFails()', () => {
   it('should produce a callable that throws an assertion error when invoked', () => {
     expect(AlwaysFails<() => void>('failure message')).to.throw()
   })
+
+  it('should default to "Assertion Failed" when no message argument is provided', () => {
+    expect(AlwaysFails<() => void>()).to.throw('Assertion Failed')
+  })
 })

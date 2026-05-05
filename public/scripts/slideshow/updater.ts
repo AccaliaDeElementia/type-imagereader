@@ -3,10 +3,10 @@
 type UpdateFn = () => Promise<void>
 export async function defaultUpdateFn(): Promise<void> {
   const err = new Error('CyclicUpdater fired before an updateFn was provided to the constructor')
-  // V8 block coverage splits async functions at every `await` into a pre-suspension
-  // block and a post-suspension resume block. When the awaited Promise rejects the
-  // resume block never executes, leaving two ranges uncovered on the lines below.
-  /* v8 ignore next 2 */
+  // The post-suspension resume after a rejecting `await` doesn't execute, so
+  // tooling reports the line as partially uncovered. Ignored — the rejection
+  // path is the only behaviour worth verifying here, which we test elsewhere.
+  /* istanbul ignore next */
   await Promise.reject(err)
 }
 const INCREMENT = 1

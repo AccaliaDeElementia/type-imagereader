@@ -25,4 +25,7 @@ describe('utils/syncfolders function Chunk()', () => {
       expect(Functions.Chunk(value, spread)).to.deep.equal(expected)
     })
   })
+  it('should default to DEFAULT_CHUNK_SIZE (5000) when no size argument is provided', () => {
+    expect(Functions.Chunk([1, 2, 3])).to.deep.equal([[1, 2, 3]])
+  })
 })

@@ -9,6 +9,7 @@ const ZERO = 0
 const ONE = 1
 const DEFAULT_CHUNK_SIZE = 5000
 const LOGGING_INTERVAL = 100
+const COPY_SQL = 'COPY syncitems (folder, path, "isFile", "sortKey", "pathHash") FROM STDIN WITH (FORMAT csv)'
 
 // PG can absorb a 5000-row bulk insert in a single round-trip; SQLite caps
 // SQLITE_LIMIT_COMPOUND_SELECT at 500, so knex's UNION ALL bulk-insert form
@@ -70,29 +71,154 @@ export function getDbChunkSize(knex: Knex): number {
   return IsPostgres(knex) ? PG_DB_CHUNK_SIZE : SQLITE_DB_CHUNK_SIZE
 }
 
-export const FindSyncItemsViaInsert = async (
-  knex: Knex,
-  logger: Debugger,
-  helpers: InsertFallbackHelpers,
-): Promise<SyncItemCounts> => {
-  let dirs = ZERO
-  let files = ZERO
-  let counter = ZERO
-  await helpers.fsWalker(helpers.getDataDir(), async (items, pending) => {
+// Resolves on the stream's 'finish' event, rejects on 'error'.
+export const awaitCopyStreamCompletion = async (stream: CopyStreamQuery): Promise<void> => {
+  const { promise, resolve, reject } = Promise.withResolvers<undefined>()
+  stream.on('finish', () => {
+    resolve(undefined)
+  })
+  stream.on('error', (err: Error) => {
+    reject(err)
+  })
+  await promise
+}
+
+// Tracks per-walk progress and decides when to log. Each iteration is a single
+// `advance()` call; when the walk completes, `toCounts()` returns the totals.
+export class InsertState {
+  files = ZERO
+  dirs = ZERO
+  counter = ZERO
+
+  addCounts(cf: number, cd: number): void {
+    this.files += cf
+    this.dirs += cd
+  }
+
+  shouldLog(): boolean {
+    return this.counter === ZERO
+  }
+
+  formatProgressMessage(pending: number): string {
+    return `Found ${this.dirs} dirs (${pending} pending) and ${this.files} files`
+  }
+
+  tickCounter(): void {
+    this.counter = (this.counter + ONE) % LOGGING_INTERVAL
+  }
+
+  toCounts(): SyncItemCounts {
+    return { files: this.files, dirs: this.dirs }
+  }
+
+  async advance(deps: {
+    knex: Knex
+    helpers: InsertFallbackHelpers
+    logger: Debugger
+    items: DirEntryItem[]
+    pending: number
+  }): Promise<void> {
+    const { knex, helpers, logger, items, pending } = deps
     const { files: cf, dirs: cd, rows } = helpers.buildSyncItemRows(items)
-    files += cf
-    dirs += cd
+    this.addCounts(cf, cd)
     if (rows.length > ZERO) {
       await helpers.execChunksSynchronously(helpers.chunk(rows, SQLITE_DB_CHUNK_SIZE), async (chunk) => {
         await knex('syncitems').insert(chunk)
       })
     }
-    if (counter === ZERO) {
-      logger(`Found ${dirs} dirs (${pending} pending) and ${files} files`)
+    if (this.shouldLog()) logger(this.formatProgressMessage(pending))
+    this.tickCounter()
+  }
+}
+
+// Like InsertState but also owns the CSV row buffer and the flush-chain
+// promise that serialises stream.write() calls behind a single in-flight flush.
+export class CopyState {
+  files = ZERO
+  dirs = ZERO
+  counter = ZERO
+  readonly buffer: string[] = []
+  chain: Promise<void> = Promise.resolve()
+
+  addCounts(cf: number, cd: number): void {
+    this.files += cf
+    this.dirs += cd
+  }
+
+  pushRow(formatted: string): void {
+    this.buffer.push(formatted)
+  }
+
+  needsFlush(): boolean {
+    return this.buffer.length >= DEFAULT_CHUNK_SIZE
+  }
+
+  // Drains the buffer into the stream as a single payload, awaiting a 'drain'
+  // event when the stream signals backpressure. No-op for empty buffers.
+  async flushBuffer(stream: CopyStreamQuery): Promise<void> {
+    if (this.buffer.length === ZERO) return
+    const payload = this.buffer.splice(ZERO).join('')
+    if (!stream.write(payload)) {
+      const { promise, resolve } = Promise.withResolvers<undefined>()
+      stream.once('drain', () => {
+        resolve(undefined)
+      })
+      await promise
     }
-    counter = (counter + ONE) % LOGGING_INTERVAL
+  }
+
+  async scheduleFlush(stream: CopyStreamQuery): Promise<void> {
+    this.chain = this.chain.then(async () => {
+      await this.flushBuffer(stream)
+    })
+    await this.chain
+  }
+
+  shouldLog(): boolean {
+    return this.counter === ZERO
+  }
+
+  formatProgressMessage(pending: number): string {
+    return `Found ${this.dirs} dirs (${pending} pending) and ${this.files} files`
+  }
+
+  tickCounter(): void {
+    this.counter = (this.counter + ONE) % LOGGING_INTERVAL
+  }
+
+  toCounts(): SyncItemCounts {
+    return { files: this.files, dirs: this.dirs }
+  }
+
+  async advance(deps: {
+    stream: CopyStreamQuery
+    helpers: CopyHelpers
+    logger: Debugger
+    items: DirEntryItem[]
+    pending: number
+  }): Promise<void> {
+    const { stream, helpers, logger, items, pending } = deps
+    const { files: cf, dirs: cd, rows } = helpers.buildSyncItemRows(items)
+    this.addCounts(cf, cd)
+    for (const row of rows) {
+      this.pushRow(helpers.formatSyncItemCsv(row))
+    }
+    if (this.needsFlush()) await this.scheduleFlush(stream)
+    if (this.shouldLog()) logger(this.formatProgressMessage(pending))
+    this.tickCounter()
+  }
+}
+
+export const FindSyncItemsViaInsert = async (
+  knex: Knex,
+  logger: Debugger,
+  helpers: InsertFallbackHelpers,
+): Promise<SyncItemCounts> => {
+  const state = new InsertState()
+  await helpers.fsWalker(helpers.getDataDir(), async (items, pending) => {
+    await state.advance({ knex, helpers, logger, items, pending })
   })
-  return { files, dirs }
+  return state.toCounts()
 }
 
 export const FindSyncItemsViaCopy = async (
@@ -100,58 +226,18 @@ export const FindSyncItemsViaCopy = async (
   logger: Debugger,
   helpers: CopyHelpers,
 ): Promise<SyncItemCounts> => {
-  let dirs = ZERO
-  let files = ZERO
-  let counter = ZERO
-  const buffer: string[] = []
+  const state = new CopyState()
   const client = await helpers.acquireCopyConnection(knex)
   try {
-    const stream = client.query(
-      helpers.copyFrom('COPY syncitems (folder, path, "isFile", "sortKey", "pathHash") FROM STDIN WITH (FORMAT csv)'),
-    )
-    let chain = Promise.resolve()
-    const flushBuffer = async (): Promise<void> => {
-      if (buffer.length === ZERO) return
-      const payload = buffer.splice(ZERO).join('')
-      if (!stream.write(payload)) {
-        const { promise, resolve } = Promise.withResolvers<undefined>()
-        stream.once('drain', () => {
-          resolve(undefined)
-        })
-        await promise
-      }
-    }
-    const scheduleFlush = async (): Promise<void> => {
-      chain = chain.then(flushBuffer)
-      await chain
-    }
+    const stream = client.query(helpers.copyFrom(COPY_SQL))
     try {
       await helpers.fsWalker(helpers.getDataDir(), async (items, pending) => {
-        const { files: cf, dirs: cd, rows } = helpers.buildSyncItemRows(items)
-        files += cf
-        dirs += cd
-        for (const row of rows) {
-          buffer.push(helpers.formatSyncItemCsv(row))
-        }
-        if (buffer.length >= DEFAULT_CHUNK_SIZE) {
-          await scheduleFlush()
-        }
-        if (counter === ZERO) {
-          logger(`Found ${dirs} dirs (${pending} pending) and ${files} files`)
-        }
-        counter = (counter + ONE) % LOGGING_INTERVAL
+        await state.advance({ stream, helpers, logger, items, pending })
       })
-      await chain
-      await scheduleFlush()
+      await state.chain
+      await state.scheduleFlush(stream)
       stream.end()
-      const { promise, resolve, reject } = Promise.withResolvers<undefined>()
-      stream.on('finish', () => {
-        resolve(undefined)
-      })
-      stream.on('error', (err: Error) => {
-        reject(err)
-      })
-      await promise
+      await awaitCopyStreamCompletion(stream)
     } catch (err) {
       stream.destroy(err instanceof Error ? err : new Error(String(err)))
       throw err
@@ -159,5 +245,5 @@ export const FindSyncItemsViaCopy = async (
   } finally {
     await helpers.releaseCopyConnection(knex, client)
   }
-  return { files, dirs }
+  return state.toCounts()
 }
