@@ -1,10 +1,9 @@
 'use sanity'
 
 import { io, type Socket } from 'socket.io-client'
-import type { DefaultEventsMap } from 'socket.io/dist/typed-events'
 import { HasValue, StringishHasValue } from '#utils/helpers'
 import { SocketEvents } from '#contracts/socketEvents'
-export type WebSocket = Socket<DefaultEventsMap, DefaultEventsMap>
+export type WebSocket = Socket
 
 export const Imports = {
   io,

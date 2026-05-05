@@ -27,7 +27,7 @@ describe('public/app initialzation', () => {
   let navigationInitSpy: Sinon.SinonStub = sandbox.stub()
   let pubsubDeferredSpy: Sinon.SinonStub = sandbox.stub()
   let wakeLockInitSpy: Sinon.SinonStub = sandbox.stub()
-  before(async () => {
+  before(() => {
     loadingInitSpy = sandbox.stub(Loading, 'Init')
     confirmInitSpy = sandbox.stub(Confirm, 'Init')
     actionsInitSpy = sandbox.stub(Actions, 'Init')
@@ -38,7 +38,8 @@ describe('public/app initialzation', () => {
     navigationInitSpy = sandbox.stub(Navigation, 'Init')
     pubsubDeferredSpy = sandbox.stub(PubSub, 'StartDeferred')
     wakeLockInitSpy = sandbox.stub(WakeLock, 'Init')
-    await import('../../../public/scripts/app/index')
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- side-effect load after stubs; native import() would force ESM resolution that ts-node's CJS hook can't intercept
+    require('../../../public/scripts/app/index')
   })
   after(() => {
     sandbox.restore()

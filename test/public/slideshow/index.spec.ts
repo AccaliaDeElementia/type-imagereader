@@ -17,11 +17,12 @@ describe('public/slideshow/index', () => {
   let fakeCyclicAdd: Sinon.SinonStub | undefined = undefined
   let fakeCyclicStart: Sinon.SinonStub | undefined = undefined
   let fakeSocketConnect: Sinon.SinonStub | undefined = undefined
-  before(async () => {
+  before(() => {
     fakeCyclicAdd = sandbox.stub(CyclicManager, 'Add')
     fakeCyclicStart = sandbox.stub(CyclicManager, 'Start')
     fakeSocketConnect = sandbox.stub(WebSockets, 'connect')
-    await import('../../../public/scripts/slideshow/index')
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- side-effect load after stubs; native import() would force ESM resolution that ts-node's CJS hook can't intercept
+    require('../../../public/scripts/slideshow/index')
   })
   after(() => {
     fakeSocketConnect?.restore()
