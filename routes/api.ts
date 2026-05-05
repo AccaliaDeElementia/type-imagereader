@@ -7,14 +7,14 @@ import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'node:path'
 
-import persistance from '#utils/persistance'
+import persistance from '#utils/persistance.js'
 
-import { ModCount, UriSafePath, Functions, INVALID_MOD_COUNT } from './apiFunctions'
+import { ModCount, UriSafePath, Functions, INVALID_MOD_COUNT } from './apiFunctions.js'
 
 import debug from 'debug'
-import { ReqParamToString } from '#utils/helpers'
-import { handleErrors as _handleErrors } from '#utils/Express'
-import { isPathTraversal as _isPathTraversal } from '#utils/Path'
+import { ReqParamToString } from '#utils/helpers.js'
+import { handleErrors as _handleErrors } from '#utils/Express.js'
+import { isPathTraversal as _isPathTraversal } from '#utils/Path.js'
 
 export const Imports = { Router, debug, handleErrors: _handleErrors, isPathTraversal: _isPathTraversal }
 

@@ -1,9 +1,9 @@
 'use sanity'
 
-import { createKnexChainFake } from '#testutils/Knex'
+import { createKnexChainFake } from '#testutils/Knex.js'
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { Functions, Imports } from '#routes/slideshow'
+import { Functions, Imports } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
 

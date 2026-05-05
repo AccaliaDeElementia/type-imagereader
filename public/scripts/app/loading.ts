@@ -1,7 +1,7 @@
 'use sanity'
 
-import { HasValue } from '#utils/helpers'
-import { Subscribe, Publish, Defer } from './pubsub'
+import { HasValue } from '#utils/helpers.js'
+import { Subscribe, Publish, Defer } from './pubsub.js'
 
 const ANIMATION_RESET_DELAY = 100
 const DISPLAY_VISIBLE = 'block'

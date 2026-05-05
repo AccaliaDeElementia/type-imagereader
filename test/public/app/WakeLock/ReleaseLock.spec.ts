@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 
-import { WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock'
+import { WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/wakelock function TakeLock()', () => {

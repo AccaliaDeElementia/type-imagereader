@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { GetParentFolders } from '#utils/Path'
+import { GetParentFolders } from '#utils/Path.js'
 
 describe('utils/Path function GetParentFolders', () => {
   it('should resolve to expected paths for root image', () => {

@@ -1,14 +1,14 @@
 'use sanity'
 
 import { assert, expect } from 'chai'
-import { Functions, getRouter, Imports } from '#routes/weather'
+import { Functions, getRouter, Imports } from '#routes/weather.js'
 import Sinon from 'sinon'
 
 import type { Application, Router, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { Cast } from '#testutils/TypeGuards'
-import { createResponseFake } from '#testutils/Express'
+import { Cast } from '#testutils/TypeGuards.js'
+import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
 

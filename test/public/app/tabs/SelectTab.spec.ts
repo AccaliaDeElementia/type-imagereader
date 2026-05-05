@@ -5,11 +5,11 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
-import { PubSub } from '#public/scripts/app/pubsub'
-import { Cast } from '#testutils/TypeGuards'
-import { resetPubSub } from '#testutils/PubSub'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { Cast } from '#testutils/TypeGuards.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
-import { Tabs } from '#public/scripts/app/tabs'
+import { Tabs } from '#public/scripts/app/tabs.js'
 
 const sandbox = Sinon.createSandbox()
 

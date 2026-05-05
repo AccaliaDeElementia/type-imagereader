@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, WeatherConfigError } from '#routes/weather'
+import { Functions, WeatherConfigError } from '#routes/weather.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards'
-import { EventuallyRejects } from '#testutils/Errors'
+import { Cast } from '#testutils/TypeGuards.js'
+import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 

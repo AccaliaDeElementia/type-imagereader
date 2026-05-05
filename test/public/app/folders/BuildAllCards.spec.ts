@@ -5,12 +5,12 @@ import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 
-import { Folders } from '#public/scripts/app/folders'
+import { Folders } from '#public/scripts/app/folders.js'
 import assert from 'node:assert'
 import Sinon from 'sinon'
-import type { Listing } from '#contracts/listing'
+import type { Listing } from '#contracts/listing.js'
 
 const sandbox = Sinon.createSandbox()
 

@@ -4,11 +4,11 @@ import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 
-import { PubSub } from '#public/scripts/app/pubsub'
-import { Cast } from '#testutils/TypeGuards'
-import { resetPubSub } from '#testutils/PubSub'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { Cast } from '#testutils/TypeGuards.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
-import { WakeLock } from '#public/scripts/app/wakelock'
+import { WakeLock } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
 

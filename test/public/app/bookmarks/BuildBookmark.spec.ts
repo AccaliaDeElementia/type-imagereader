@@ -6,15 +6,15 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 
-import { Net } from '#public/scripts/app/net'
-import { PubSub } from '#public/scripts/app/pubsub'
-import { resetPubSub } from '#testutils/PubSub'
-import { Bookmarks } from '#public/scripts/app/bookmarks'
+import { Net } from '#public/scripts/app/net.js'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { resetPubSub } from '#testutils/PubSub.js'
+import { Bookmarks } from '#public/scripts/app/bookmarks.js'
 import assert from 'node:assert'
-import type { Bookmark } from '#contracts/listing'
-import { isListing } from '#contracts/listing'
+import type { Bookmark } from '#contracts/listing.js'
+import { isListing } from '#contracts/listing.js'
 
 const sandbox = Sinon.createSandbox()
 

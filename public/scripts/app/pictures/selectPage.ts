@@ -1,7 +1,7 @@
 'use sanity'
 
-import { HasValues } from '#utils/helpers'
-import { Publish } from '../pubsub'
+import { HasValues } from '#utils/helpers.js'
+import { Publish } from '../pubsub.js'
 
 const LAST_LINK_OFFSET = 1
 const PREV_BUTTON_OFFSET = 1

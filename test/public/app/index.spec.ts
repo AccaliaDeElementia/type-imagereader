@@ -3,16 +3,17 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { Loading } from '#public/scripts/app/loading'
-import { Confirm } from '#public/scripts/app/confirm'
-import { WakeLock } from '#public/scripts/app/wakelock'
-import { Actions } from '#public/scripts/app/actions'
-import { Tabs } from '#public/scripts/app/tabs'
-import { Folders } from '#public/scripts/app/folders'
-import { Pictures } from '#public/scripts/app/pictures'
-import { Bookmarks } from '#public/scripts/app/bookmarks'
-import { Navigation } from '#public/scripts/app/navigation'
-import { PubSub } from '#public/scripts/app/pubsub'
+import { Loading } from '#public/scripts/app/loading.js'
+import { Confirm } from '#public/scripts/app/confirm.js'
+import { WakeLock } from '#public/scripts/app/wakelock.js'
+import { Actions } from '#public/scripts/app/actions.js'
+import { Tabs } from '#public/scripts/app/tabs.js'
+import { Folders } from '#public/scripts/app/folders.js'
+import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Bookmarks } from '#public/scripts/app/bookmarks.js'
+import { Navigation } from '#public/scripts/app/navigation.js'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { bootstrap } from '#public/scripts/app/index.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -38,8 +39,7 @@ describe('public/app initialzation', () => {
     navigationInitSpy = sandbox.stub(Navigation, 'Init')
     pubsubDeferredSpy = sandbox.stub(PubSub, 'StartDeferred')
     wakeLockInitSpy = sandbox.stub(WakeLock, 'Init')
-    // eslint-disable-next-line @typescript-eslint/no-require-imports -- side-effect load after stubs; native import() would force ESM resolution that ts-node's CJS hook can't intercept
-    require('../../../public/scripts/app/index')
+    bootstrap()
   })
   after(() => {
     sandbox.restore()

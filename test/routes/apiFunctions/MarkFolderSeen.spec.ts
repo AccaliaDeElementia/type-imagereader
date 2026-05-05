@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '#routes/apiFunctions'
-import { StubToKnex } from '#testutils/TypeGuards'
+import { Functions, Imports } from '#routes/apiFunctions.js'
+import { StubToKnex } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
-import { createKnexChainFake } from '#testutils/Knex'
+import { createKnexChainFake } from '#testutils/Knex.js'
 
 const sandbox = Sinon.createSandbox()
 

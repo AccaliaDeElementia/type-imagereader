@@ -2,12 +2,12 @@
 
 import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
-import { Functions } from '#public/scripts/slideshow/weather'
+import { Functions } from '#public/scripts/slideshow/weather.js'
 import Sinon from 'sinon'
 import { URL } from 'node:url'
 import { JSDOM } from 'jsdom'
-import { EventuallyRejects } from '#testutils/Errors'
-import { Cast } from '#testutils/TypeGuards'
+import { EventuallyRejects } from '#testutils/Errors.js'
+import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 

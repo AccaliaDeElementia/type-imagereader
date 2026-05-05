@@ -1,8 +1,8 @@
 'use sanity'
 
-import { CyclicUpdater } from './updater'
-import { type WeatherResults, isWeatherResults } from '#contracts/weather'
-import { HasValue, StringishHasValue } from '#utils/helpers'
+import { CyclicUpdater } from './updater.js'
+import { type WeatherResults, isWeatherResults } from '#contracts/weather.js'
+import { HasValue, StringishHasValue } from '#utils/helpers.js'
 
 type HTMLElementish = HTMLElement | null | undefined
 type stringish = string | null | undefined

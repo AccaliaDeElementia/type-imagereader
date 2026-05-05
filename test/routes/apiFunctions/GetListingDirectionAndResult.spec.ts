@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, ModCount, type ModCountInternals } from '#routes/apiFunctions'
-import { Cast } from '#testutils/TypeGuards'
-import { createKnexChainFake } from '#testutils/Knex'
+import { Functions, ModCount, type ModCountInternals } from '#routes/apiFunctions.js'
+import { Cast } from '#testutils/TypeGuards.js'
+import { createKnexChainFake } from '#testutils/Knex.js'
 import assert from 'node:assert'
 import Sinon from 'sinon'
 

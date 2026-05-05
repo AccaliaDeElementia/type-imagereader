@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 
 describe('testutils/TypeGuards function Cast()', () => {
   it('should return the value when isT returns true', () => {

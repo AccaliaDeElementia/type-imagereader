@@ -7,10 +7,10 @@ import type { Request, RequestHandler, Response, Application, Router } from 'exp
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
-import { CacheStorage, Functions, getRouter, ImageData, Imports } from '#routes/images'
+import { CacheStorage, Functions, getRouter, ImageData, Imports } from '#routes/images.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards'
-import { createResponseFake } from '#testutils/Express'
+import { Cast } from '#testutils/TypeGuards.js'
+import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
 

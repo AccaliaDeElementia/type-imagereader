@@ -1,8 +1,8 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { PubSub } from '#public/scripts/app/pubsub'
-import { resetPubSub } from '#testutils/PubSub'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()

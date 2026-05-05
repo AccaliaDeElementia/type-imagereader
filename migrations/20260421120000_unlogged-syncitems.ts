@@ -1,7 +1,7 @@
 'use sanity'
 
 import type { Knex } from 'knex'
-import { IsPostgres } from '../utils/syncItemsDialect'
+import { IsPostgres } from '../utils/syncItemsDialect.js'
 
 export async function up(knex: Knex): Promise<void> {
   if (!IsPostgres(knex)) return

@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Pictures } from '.'
+import { Pictures } from './index.js'
 
 const INDEX_TO_PAGE_OFFSET = 1
 

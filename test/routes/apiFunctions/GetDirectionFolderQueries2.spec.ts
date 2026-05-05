@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, type SiblingFolderSearch } from '#routes/apiFunctions'
+import { Functions, type SiblingFolderSearch } from '#routes/apiFunctions.js'
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards'
+import { StubToKnex } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

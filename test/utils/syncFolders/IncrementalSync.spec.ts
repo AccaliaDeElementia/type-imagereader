@@ -1,11 +1,11 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '#utils/incrementalsync'
+import { Functions, Imports } from '#utils/incrementalsync.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import type { Debugger } from 'debug'
-import type { Changeset } from '#utils/filewatcher'
+import type { Changeset } from '#utils/filewatcher.js'
 
 const sandbox = Sinon.createSandbox()
 

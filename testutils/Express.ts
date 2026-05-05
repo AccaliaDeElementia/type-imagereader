@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import type { Response } from 'express'
 
-import { Cast } from './TypeGuards'
+import { Cast } from './TypeGuards.js'
 
 export interface ResponseStub {
   status: Sinon.SinonStub

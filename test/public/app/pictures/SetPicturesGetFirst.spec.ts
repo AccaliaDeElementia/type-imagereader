@@ -4,12 +4,12 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
-import { Pictures } from '#public/scripts/app/pictures'
-import { Cast } from '#testutils/TypeGuards'
+import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub'
-import type { Picture } from '#contracts/listing'
-import { resetPubSub } from '#testutils/PubSub'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import type { Picture } from '#contracts/listing.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 

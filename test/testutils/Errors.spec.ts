@@ -2,7 +2,13 @@
 
 import { expect } from 'chai'
 
-import { AlwaysFails, DefinitelyThrows, DoesNotThrow, EventuallyFullfills, EventuallyRejects } from '#testutils/Errors'
+import {
+  AlwaysFails,
+  DefinitelyThrows,
+  DoesNotThrow,
+  EventuallyFullfills,
+  EventuallyRejects,
+} from '#testutils/Errors.js'
 
 describe('testutils/Errors function EventuallyRejects()', () => {
   it('should return the Error when promise rejects with an Error', async () => {

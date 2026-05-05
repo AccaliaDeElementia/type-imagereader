@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { isReqWithBodyData } from '#routes/api'
+import { isReqWithBodyData } from '#routes/api.js'
 
 describe('routes/api function isReqWithBodyData()', () => {
   const tests: Array<[string, unknown, boolean]> = [

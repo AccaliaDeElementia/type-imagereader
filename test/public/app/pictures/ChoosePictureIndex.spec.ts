@@ -1,6 +1,6 @@
 'use sanity'
 
-import { NavigateTo, Pictures } from '#public/scripts/app/pictures'
+import { NavigateTo, Pictures } from '#public/scripts/app/pictures/index.js'
 import { expect } from 'chai'
 
 describe('public/app/pictures function ChoosePictureIndex()', () => {

@@ -1,30 +1,31 @@
 {
   "name": "type-imagereader",
   "version": "1.0.0",
+  "type": "module",
   "description": "Self-hosted web app for browsing local image and comic collections, with PostgreSQL-backed indexing and live filesystem sync",
   "scripts": {
     "prebuild": "npm run lint",
-    "build:client": "esbuild app=public/scripts/app/index.ts slideshow=public/scripts/slideshow/index.ts --bundle --minify --target=es2024 --format=iife --outdir=dist/scripts --sourcemap",
+    "build:client": "esbuild app=public/scripts/app/main.ts slideshow=public/scripts/slideshow/main.ts --bundle --minify --target=es2024 --format=iife --outdir=dist/scripts --sourcemap",
     "build:sass": "sass public/stylesheets:dist/stylesheets --style=compressed",
     "build": "run-p build:client build:sass typecheck",
     "typecheck": "tsc --build tsconfig.json",
     "pretty": "prettier . --write --log-level=warn",
     "prelint": "npm run pretty",
     "lint": "eslint .",
-    "start": "DEBUG='type-imagereader:*' ts-node .",
+    "start": "DEBUG='type-imagereader:*' tsx .",
     "pretest": "npm run lint && npm run typecheck",
     "test": "c8 mocha",
     "pretest:detailed": "npm run lint && npm run typecheck",
     "test:detailed": "c8 mocha --reporter spec",
-    "knex": "knex --knexfile knexfile.json",
+    "knex": "tsx ./node_modules/knex/bin/cli.js --knexfile knexfile.json",
     "predev": "npm run build",
-    "dev": "DEBUG='type-imagereader:*' ts-node .",
+    "dev": "DEBUG='type-imagereader:*' tsx .",
     "predev:serve": "npm run build",
-    "dev:serve": "DEBUG='type-imagereader:*' SKIP_SYNC=1 ts-node .",
+    "dev:serve": "DEBUG='type-imagereader:*' SKIP_SYNC=1 tsx .",
     "predev:watch": "npm run typecheck",
-    "dev:watch": "DEBUG='type-imagereader:*' SKIP_SERVE=1 ts-node .",
+    "dev:watch": "DEBUG='type-imagereader:*' SKIP_SERVE=1 tsx .",
     "predev:scan": "npm run typecheck",
-    "dev:scan": "DEBUG='type-imagereader:*' SKIP_SERVE=1 ONESHOT=1 ts-node ."
+    "dev:scan": "DEBUG='type-imagereader:*' SKIP_SERVE=1 ONESHOT=1 tsx ."
   },
   "repository": {
     "type": "git",
@@ -37,13 +38,13 @@
   },
   "homepage": "https://github.com/AccaliaDeElementia/type-imagereader#readme",
   "imports": {
-    "#testutils/*": "./testutils/*.ts",
-    "#public/*": "./public/*.ts",
-    "#routes/*": "./routes/*.ts",
-    "#utils/*": "./utils/*.ts",
-    "#contracts/*": "./contracts/*.ts",
-    "#Server": "./Server.ts",
-    "#app": "./index.ts"
+    "#testutils/*.js": "./testutils/*.ts",
+    "#public/*.js": "./public/*.ts",
+    "#routes/*.js": "./routes/*.ts",
+    "#utils/*.js": "./utils/*.ts",
+    "#contracts/*.js": "./contracts/*.ts",
+    "#Server.js": "./Server.ts",
+    "#app.js": "./index.ts"
   },
   "dependencies": {
     "@parcel/watcher": "^2.5.6",
@@ -62,7 +63,7 @@
     "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "words-to-numbers": "^1.5.1"
   },
@@ -98,31 +99,7 @@
     "prettier": "^3.8.1",
     "sass": "^1.97.3",
     "sinon": "^21.0.1",
-    "source-map-support": "^0.5.21",
-    "tsconfig-paths": "^4.2.0",
     "typescript-eslint": "^8.56.0"
-  },
-  "c8": {
-    "check-coverage": true,
-    "lines": 100,
-    "statements": 100,
-    "functions": 100,
-    "branches": 100,
-    "include": [
-      "**/*.ts"
-    ],
-    "exclude": [
-      "**/*.spec.ts",
-      "knexfile.ts",
-      "migrations/**",
-      "deploy/**"
-    ],
-    "reporter": [
-      "lcov",
-      "text",
-      "text-summary"
-    ],
-    "all": true
   },
   "optionalDependencies": {
     "better-sqlite3": "^12.9.0"

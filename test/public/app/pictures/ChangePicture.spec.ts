@@ -1,10 +1,10 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Pictures } from '#public/scripts/app/pictures'
+import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { expect } from 'chai'
-import { Loading } from '#public/scripts/app/loading'
-import { PubSub } from '#public/scripts/app/pubsub'
+import { Loading } from '#public/scripts/app/loading.js'
+import { PubSub } from '#public/scripts/app/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 

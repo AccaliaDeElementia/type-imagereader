@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#routes/weather'
+import { Functions } from '#routes/weather.js'
 
 describe('routes/weather function isOpenWeatherData', () => {
   const minMain = { temp: 0, pressure: 0, humidity: 0 }

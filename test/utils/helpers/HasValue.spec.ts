@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { HasValue } from '#utils/helpers'
+import { HasValue } from '#utils/helpers.js'
 
 describe('utils/helpers function HasValue()', () => {
   const tests: Array<[string, unknown, boolean]> = [

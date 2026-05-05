@@ -3,13 +3,13 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
-import { NavigateTo, Pictures } from '#public/scripts/app/pictures'
-import { PubSub } from '#public/scripts/app/pubsub'
-import { Navigation } from '#public/scripts/app/navigation'
-import { resetPubSub } from '#testutils/PubSub'
+import { NavigateTo, Pictures } from '#public/scripts/app/pictures/index.js'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { Navigation } from '#public/scripts/app/navigation.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
-import type { Picture } from '#contracts/listing'
-import { Cast } from '#testutils/TypeGuards'
+import type { Picture } from '#contracts/listing.js'
+import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 

@@ -1,10 +1,10 @@
 'use sanity'
 
-import { Subscribe, Publish, AddInterval, RemoveInterval } from './pubsub'
-import { CloneNode, isHTMLElement } from './utils'
+import { Subscribe, Publish, AddInterval, RemoveInterval } from './pubsub.js'
+import { CloneNode, isHTMLElement } from './utils.js'
 
-import { isListing } from '#contracts/listing'
-import { HasValue, HasValues } from '#utils/helpers'
+import { isListing } from '#contracts/listing.js'
+import { HasValue, HasValues } from '#utils/helpers.js'
 
 interface ButtonDefinition {
   name: string

@@ -4,10 +4,10 @@ import Sinon from 'sinon'
 import type { Request, Response, Application, Router } from 'express'
 import type { Socket, Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { Cast, StubToKnex } from '#testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { assert, expect } from 'chai'
-import { Config, Functions, getRouter, Imports } from '#routes/slideshow'
-import persistance from '#utils/persistance'
+import { Config, Functions, getRouter, Imports } from '#routes/slideshow.js'
+import persistance from '#utils/persistance.js'
 
 const sandbox = Sinon.createSandbox()
 

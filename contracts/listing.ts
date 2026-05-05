@@ -1,6 +1,6 @@
 'use sanity'
 
-import { isHTMLElement } from './markup'
+import { isHTMLElement } from './markup.js'
 
 function hasOptionalKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {
   if (!(key in obj)) return true

@@ -2,7 +2,7 @@
 
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { isHTMLElement } from '#contracts/markup'
+import { isHTMLElement } from '#contracts/markup.js'
 
 describe('Contracts: isHTMLElement()', () => {
   const cases: Array<[string, unknown, boolean]> = [

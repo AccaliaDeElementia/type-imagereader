@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#routes/images'
+import { Functions } from '#routes/images.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()

@@ -3,11 +3,11 @@
 import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '#testutils/Errors'
-import { Cast } from '#testutils/TypeGuards'
+import { EventuallyRejects } from '#testutils/Errors.js'
+import { Cast } from '#testutils/TypeGuards.js'
 import type { Stats } from 'node:fs'
 
-import { ImageReader, Imports } from '#app'
+import { ImageReader, Imports } from '#app.js'
 
 const sandbox = Sinon.createSandbox()
 

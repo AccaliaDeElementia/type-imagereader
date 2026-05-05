@@ -1,6 +1,6 @@
 'use sanity'
 
-import { CyclicUpdater } from './updater'
+import { CyclicUpdater } from './updater.js'
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const months = [

@@ -1,9 +1,9 @@
 'use sanity'
 
-import { HasValues } from '#utils/helpers'
-import { Navigation } from '../navigation'
-import { NavigateTo, Pictures } from '.'
-import { Publish, Subscribe } from '../pubsub'
+import { HasValues } from '#utils/helpers.js'
+import { Navigation } from '../navigation.js'
+import { NavigateTo, Pictures } from './index.js'
+import { Publish, Subscribe } from '../pubsub.js'
 
 export function InitActions(): void {
   const doIfNoMenu = (action: string) => async () => {

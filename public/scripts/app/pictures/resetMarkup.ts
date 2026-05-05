@@ -1,8 +1,8 @@
 'use sanity'
 
-import { Pictures } from '.'
-import { StringishHasValue } from '#utils/helpers'
-import { Publish } from '../pubsub'
+import { Pictures } from './index.js'
+import { StringishHasValue } from '#utils/helpers.js'
+import { Publish } from '../pubsub.js'
 
 export function ResetMarkup(): void {
   Pictures.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')

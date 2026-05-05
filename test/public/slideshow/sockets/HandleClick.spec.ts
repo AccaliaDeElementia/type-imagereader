@@ -1,9 +1,9 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Functions, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets'
+import { Functions, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { after, before, beforeEach, describe, it } from 'mocha'
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import assert from 'node:assert'
 import { expect } from 'chai'

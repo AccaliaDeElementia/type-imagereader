@@ -1,9 +1,9 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { ImageReader, RunSync, Functions, Imports } from '#app'
+import { ImageReader, RunSync, Functions, Imports } from '#app.js'
 import { expect } from 'chai'
-import { EventuallyFullfills } from '#testutils/Errors'
+import { EventuallyFullfills } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 

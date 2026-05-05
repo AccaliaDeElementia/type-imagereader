@@ -5,12 +5,12 @@ import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
-import { getRouter, Imports } from '#routes/api'
-import { Functions } from '#routes/apiFunctions'
-import persistance from '#utils/persistance'
-import { Cast, StubToKnex } from '#testutils/TypeGuards'
+import { getRouter, Imports } from '#routes/api.js'
+import { Functions } from '#routes/apiFunctions.js'
+import persistance from '#utils/persistance.js'
+import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import type { Debugger } from 'debug'
-import { createResponseFake } from '#testutils/Express'
+import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
 

@@ -1,11 +1,11 @@
 'use sanity'
 
 import { beforeEach, afterEach, before, after, describe } from 'mocha'
-import { CyclicUpdater, defaultUpdateFn } from '#public/scripts/slideshow/updater'
+import { CyclicUpdater, defaultUpdateFn } from '#public/scripts/slideshow/updater.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 

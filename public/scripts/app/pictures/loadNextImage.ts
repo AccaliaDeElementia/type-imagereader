@@ -1,6 +1,6 @@
 'use sanity'
 
-import { makeURI, NavigateTo, Pictures } from '.'
+import { makeURI, NavigateTo, Pictures } from './index.js'
 
 export async function LoadNextImage(): Promise<void> {
   const next = Pictures.GetPicture(Pictures.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)

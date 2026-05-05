@@ -1,7 +1,7 @@
 'use sanity'
 
-import { Pictures } from '.'
-import { CloneNode, isHTMLElement } from '../utils'
+import { Pictures } from './index.js'
+import { CloneNode, isHTMLElement } from '../utils.js'
 
 const MINIMUM_PAGE_COUNT = 2
 const FIRST_PAGE_NUMBER = 1

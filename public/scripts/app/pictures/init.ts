@@ -1,8 +1,8 @@
 'use sanity'
 
-import { CACHE_SIZE, Pictures } from '.'
-import { isListing } from '#contracts/listing'
-import { Subscribe } from '../pubsub'
+import { CACHE_SIZE, Pictures } from './index.js'
+import { isListing } from '#contracts/listing.js'
+import { Subscribe } from '../pubsub.js'
 
 export function Init(): void {
   Pictures.pictures = []

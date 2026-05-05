@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Pictures } from '.'
+import { Pictures } from './index.js'
 
 export function InitUnreadSelectorSlider(): void {
   Pictures.UpdateUnreadSelectorSlider()

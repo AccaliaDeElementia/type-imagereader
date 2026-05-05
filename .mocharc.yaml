@@ -33,7 +33,7 @@ reporter: 'dot'
 #reporter-option:
 #  - 'foo=bar'
 #  - 'baz=quux'
-require: ['source-map-support/register', 'ts-node/register', 'tsconfig-paths/register']
+node-option: ['import=tsx', 'enable-source-maps']
 retries: 1
 slow: 75
 sort: false

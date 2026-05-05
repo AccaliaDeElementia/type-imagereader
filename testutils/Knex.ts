@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from './TypeGuards'
+import { Cast, StubToKnex } from './TypeGuards.js'
 
 type KnexQueryStub = Record<string, Sinon.SinonStub>
 

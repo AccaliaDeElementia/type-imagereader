@@ -1,8 +1,8 @@
 'use sanity'
 
 import { io, type Socket } from 'socket.io-client'
-import { HasValue, StringishHasValue } from '#utils/helpers'
-import { SocketEvents } from '#contracts/socketEvents'
+import { HasValue, StringishHasValue } from '#utils/helpers.js'
+import { SocketEvents } from '#contracts/socketEvents.js'
 export type WebSocket = Socket
 
 export const Imports = {

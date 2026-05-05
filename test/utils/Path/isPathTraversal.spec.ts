@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { isPathTraversal } from '#utils/Path'
+import { isPathTraversal } from '#utils/Path.js'
 
 describe('utils/Path function isPathTraversal', () => {
   it('should return false for a clean absolute path', () => {

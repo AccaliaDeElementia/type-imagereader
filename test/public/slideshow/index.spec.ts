@@ -3,12 +3,13 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { WebSockets } from '#public/scripts/slideshow/sockets'
+import { WebSockets } from '#public/scripts/slideshow/sockets.js'
 
-import TimeUpdater from '#public/scripts/slideshow/time'
-import OverlayUpdater from '#public/scripts/slideshow/overlay'
-import { WeatherUpdater, LocalWeatherUpdater } from '#public/scripts/slideshow/weather'
-import { CyclicManager } from '#public/scripts/slideshow/updater'
+import TimeUpdater from '#public/scripts/slideshow/time.js'
+import OverlayUpdater from '#public/scripts/slideshow/overlay.js'
+import { WeatherUpdater, LocalWeatherUpdater } from '#public/scripts/slideshow/weather.js'
+import { CyclicManager } from '#public/scripts/slideshow/updater.js'
+import { bootstrap } from '#public/scripts/slideshow/index.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
@@ -21,8 +22,7 @@ describe('public/slideshow/index', () => {
     fakeCyclicAdd = sandbox.stub(CyclicManager, 'Add')
     fakeCyclicStart = sandbox.stub(CyclicManager, 'Start')
     fakeSocketConnect = sandbox.stub(WebSockets, 'connect')
-    // eslint-disable-next-line @typescript-eslint/no-require-imports -- side-effect load after stubs; native import() would force ESM resolution that ts-node's CJS hook can't intercept
-    require('../../../public/scripts/slideshow/index')
+    bootstrap()
   })
   after(() => {
     fakeSocketConnect?.restore()

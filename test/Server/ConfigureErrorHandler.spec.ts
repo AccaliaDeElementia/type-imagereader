@@ -4,9 +4,9 @@ import { assert, expect } from 'chai'
 import type { Express, Response } from 'express'
 import Sinon from 'sinon'
 import { StatusCodes } from 'http-status-codes'
-import { Cast } from '#testutils/TypeGuards'
-import { createResponseFake } from '#testutils/Express'
-import { Functions } from '#Server'
+import { Cast } from '#testutils/TypeGuards.js'
+import { createResponseFake } from '#testutils/Express.js'
+import { Functions } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 

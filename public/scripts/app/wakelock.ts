@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Subscribe, AddInterval } from './pubsub'
+import { Subscribe, AddInterval } from './pubsub.js'
 
 export interface WakeLockSentinel {
   released: boolean

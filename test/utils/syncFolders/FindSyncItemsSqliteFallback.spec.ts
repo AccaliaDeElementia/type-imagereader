@@ -2,10 +2,10 @@
 
 import { expect } from 'chai'
 import { EventEmitter } from 'node:events'
-import { Functions, Imports } from '#utils/syncfolders'
+import { Functions, Imports } from '#utils/syncfolders.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards'
-import { createKnexChainFake } from '#testutils/Knex'
+import { Cast } from '#testutils/TypeGuards.js'
+import { createKnexChainFake } from '#testutils/Knex.js'
 import type { Debugger } from 'debug'
 import type { PoolClient } from 'pg'
 import type { CopyStreamQuery } from 'pg-copy-streams'

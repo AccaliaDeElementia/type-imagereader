@@ -5,14 +5,14 @@ import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards'
-import { resetPubSub } from '#testutils/PubSub'
+import { Cast } from '#testutils/TypeGuards.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 
-import { PubSub } from '#public/scripts/app/pubsub'
-import { Folders } from '#public/scripts/app/folders'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { Folders } from '#public/scripts/app/folders.js'
 import assert from 'node:assert'
 import Sinon from 'sinon'
-import type { Listing } from '#contracts/listing'
+import type { Listing } from '#contracts/listing.js'
 
 const sandbox = Sinon.createSandbox()
 

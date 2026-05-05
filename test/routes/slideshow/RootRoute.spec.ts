@@ -2,10 +2,10 @@
 
 import Sinon from 'sinon'
 import type { Request } from 'express'
-import { Cast, StubToKnex } from '#testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { Functions, Imports } from '#routes/slideshow'
-import { createResponseFake } from '#testutils/Express'
+import { Functions, Imports } from '#routes/slideshow.js'
+import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
 

@@ -1,9 +1,9 @@
 'use sanity'
 
-import { Pictures } from '.'
-import type { Listing, Picture } from '#contracts/listing'
-import { GetFirst } from '#utils/helpers'
-import { Publish } from '../pubsub'
+import { Pictures } from './index.js'
+import type { Listing, Picture } from '#contracts/listing.js'
+import { GetFirst } from '#utils/helpers.js'
+import { Publish } from '../pubsub.js'
 
 const DEFAULT_MOD_COUNT = -1
 

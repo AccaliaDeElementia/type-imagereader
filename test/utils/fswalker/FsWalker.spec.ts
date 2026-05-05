@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 
-import fsWalker from '#utils/fswalker'
-import { EventuallyRejects } from '#testutils/Errors'
+import fsWalker from '#utils/fswalker.js'
+import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 

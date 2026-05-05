@@ -1,7 +1,7 @@
 'use sanity'
 
-import { CyclicUpdater } from './updater'
-import { GetAlmanac } from './weather'
+import { CyclicUpdater } from './updater.js'
+import { GetAlmanac } from './weather.js'
 
 const FADE_IN_MINUTES = 15
 const SECONDS_PER_MINUTE = 60

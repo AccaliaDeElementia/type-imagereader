@@ -1,9 +1,9 @@
 'use sanity'
 
-import { makeURI, Pictures } from '.'
-import { IndexPercentToText, IndexToText } from '#utils/helpers'
-import { Net } from '../net'
-import { Publish } from '../pubsub'
+import { makeURI, Pictures } from './index.js'
+import { IndexPercentToText, IndexToText } from '#utils/helpers.js'
+import { Net } from '../net.js'
+import { Publish } from '../pubsub.js'
 
 function setTextContent(selector: string, content: string): void {
   document.querySelector(selector)?.replaceChildren(document.createTextNode(content))

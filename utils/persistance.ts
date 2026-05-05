@@ -1,11 +1,14 @@
 'use sanity'
 
 import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import type { Knex } from 'knex'
 import knex from 'knex'
-import { StringishHasValue, StringIsNullOrEmpty } from './helpers'
+import { StringishHasValue, StringIsNullOrEmpty } from './helpers.js'
+
+const moduleDir = dirname(fileURLToPath(import.meta.url))
 
 const initialize = async (): Promise<Knex> => {
   const config = await Functions.getKnexConfig()
@@ -92,7 +95,7 @@ export const Functions = {
     return process.env.DB_CLIENT
   },
   readConfigurationBlock: async (): Promise<KnexOptions> => {
-    const content = await Imports.readFile(join(__dirname, '../knexfile.json'), { encoding: 'utf-8' })
+    const content = await Imports.readFile(join(moduleDir, '../knexfile.json'), { encoding: 'utf-8' })
     if (StringIsNullOrEmpty(content)) throw new Error('Invalid Configuration Detected!')
     const data = JSON.parse(content) as unknown
     if (!isDictionary(data)) throw new Error('Invalid Configuration Detected!')

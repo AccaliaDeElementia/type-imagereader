@@ -6,7 +6,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
-import { StringishHasValue } from '#utils/helpers'
+import { StringishHasValue } from '#utils/helpers.js'
 
 const KELVIN_TO_CELCIUS_OFFSET = -273.15
 const SECONDS_TO_MILLISECONDS_MULTIPLE = 1000

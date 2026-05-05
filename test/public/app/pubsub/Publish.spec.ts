@@ -4,9 +4,9 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { expect } from 'chai'
 
-import { PubSub } from '#public/scripts/app/pubsub'
-import { resetPubSub } from '#testutils/PubSub'
-import { Cast } from '#testutils/TypeGuards'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { resetPubSub } from '#testutils/PubSub.js'
+import { Cast } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

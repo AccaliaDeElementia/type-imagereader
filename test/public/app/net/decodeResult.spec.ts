@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { decodeResult } from '#public/scripts/app/net'
-import { Cast } from '#testutils/TypeGuards'
-import { EventuallyRejects } from '#testutils/Errors'
+import { decodeResult } from '#public/scripts/app/net.js'
+import { Cast } from '#testutils/TypeGuards.js'
+import { EventuallyRejects } from '#testutils/Errors.js'
 
 describe('public/app/net function decodeResult()', () => {
   let response = Cast<Response>(null)

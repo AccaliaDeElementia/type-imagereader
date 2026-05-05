@@ -1,8 +1,8 @@
 'use sanity'
 
-import { Publish, Subscribe } from './pubsub'
-import { Net, acceptAnyResponse } from './net'
-import { CloneNode, isHTMLElement } from './utils'
+import { Publish, Subscribe } from './pubsub.js'
+import { Net, acceptAnyResponse } from './net.js'
+import { CloneNode, isHTMLElement } from './utils.js'
 
 import {
   type Bookmark,
@@ -11,7 +11,7 @@ import {
   isArray,
   type Listing,
   isListing,
-} from '#contracts/listing'
+} from '#contracts/listing.js'
 
 interface WebBookmarkFolder {
   path: string

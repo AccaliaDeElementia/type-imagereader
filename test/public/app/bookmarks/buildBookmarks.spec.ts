@@ -5,10 +5,10 @@ import { beforeEach, afterEach, describe, it } from 'mocha'
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 
-import { resetPubSub } from '#testutils/PubSub'
-import { Bookmarks } from '#public/scripts/app/bookmarks'
+import { resetPubSub } from '#testutils/PubSub.js'
+import { Bookmarks } from '#public/scripts/app/bookmarks.js'
 import Sinon from 'sinon'
 import assert from 'node:assert'
 

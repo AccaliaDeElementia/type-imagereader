@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Pictures } from '#public/scripts/app/pictures'
-import type { Picture } from '#contracts/listing'
+import { Pictures } from '#public/scripts/app/pictures/index.js'
+import type { Picture } from '#contracts/listing.js'
 
 const makePicture = (name: string, overrides: Partial<Picture> = {}): Picture => ({
   name,

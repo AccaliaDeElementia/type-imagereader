@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { PubSub } from '#public/scripts/app/pubsub'
-import { resetPubSub } from '#testutils/PubSub'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 

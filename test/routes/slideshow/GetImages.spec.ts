@@ -1,8 +1,8 @@
 'use sanity'
 
-import { createKnexChainFake } from '#testutils/Knex'
+import { createKnexChainFake } from '#testutils/Knex.js'
 import { expect } from 'chai'
-import { Functions } from '#routes/slideshow'
+import { Functions } from '#routes/slideshow.js'
 
 describe('routes/slideshow function GetImages()', () => {
   let {

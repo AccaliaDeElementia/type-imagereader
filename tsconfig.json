@@ -27,19 +27,14 @@
       "#routes/*": ["./routes/*"],
       "#utils/*": ["./utils/*"],
       "#contracts/*": ["./contracts/*"],
-      "#Server": ["./Server"],
-      "#app": ["./index"]
+      "#Server.js": ["./Server.js"],
+      "#app.js": ["./index.js"]
     },
     "typeRoots": ["node_modules/@types", "@types"],
     "esModuleInterop": true,
 
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
-  },
-  "ts-node": {
-    // No module/moduleResolution overlay needed: package.json has no "type": "module",
-    // so nodenext treats every file as CJS and ts-node's CJS loader handles them natively.
-    "transpileOnly": true
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules/**", "deploy/**"]

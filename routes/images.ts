@@ -12,9 +12,9 @@ import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
 import type { Debugger } from 'debug'
-import { ReqParamToString, getDataDir as _getDataDir } from '#utils/helpers'
-import { handleErrors as _handleErrors } from '#utils/Express'
-import { isPathTraversal as _isPathTraversal } from '#utils/Path'
+import { ReqParamToString, getDataDir as _getDataDir } from '#utils/helpers.js'
+import { handleErrors as _handleErrors } from '#utils/Express.js'
+import { isPathTraversal as _isPathTraversal } from '#utils/Path.js'
 
 const CACHE_SIZE = 25
 const ONE_MONTH_MS = 2_592_000_000

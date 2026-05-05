@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports, ModCount, type ModCountInternals } from '#routes/apiFunctions'
-import { Cast } from '#testutils/TypeGuards'
-import { createKnexChainFake } from '#testutils/Knex'
+import { Functions, Imports, ModCount, type ModCountInternals } from '#routes/apiFunctions.js'
+import { Cast } from '#testutils/TypeGuards.js'
+import { createKnexChainFake } from '#testutils/Knex.js'
 import Sinon from 'sinon'
 
 const modCountInternals = Cast<ModCountInternals>(ModCount)

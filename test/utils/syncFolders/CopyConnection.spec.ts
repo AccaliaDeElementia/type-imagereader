@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { Imports } from '#utils/syncfolders'
-import { Cast } from '#testutils/TypeGuards'
+import { Imports } from '#utils/syncfolders.js'
+import { Cast } from '#testutils/TypeGuards.js'
 import type { Knex } from 'knex'
 import type { PoolClient } from 'pg'
 

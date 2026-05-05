@@ -1,10 +1,10 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { Config, Functions, type SlideshowRoom } from '#routes/slideshow'
-import { STEP } from '#utils/helpers'
+import { Config, Functions, type SlideshowRoom } from '#routes/slideshow.js'
+import { STEP } from '#utils/helpers.js'
 
 const sandbox = Sinon.createSandbox()
 

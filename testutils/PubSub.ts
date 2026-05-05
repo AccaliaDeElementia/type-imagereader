@@ -1,6 +1,6 @@
 'use sanity'
 
-import { PubSub } from '#public/scripts/app/pubsub'
+import { PubSub } from '#public/scripts/app/pubsub.js'
 
 export function resetPubSub(): void {
   PubSub.subscribers = {}

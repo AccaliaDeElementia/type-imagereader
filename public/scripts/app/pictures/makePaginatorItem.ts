@@ -1,7 +1,7 @@
 'use sanity'
 
-import { Pictures } from '.'
-import { CloneNode, isHTMLElement } from '../utils'
+import { Pictures } from './index.js'
+import { CloneNode, isHTMLElement } from '../utils.js'
 
 export type PageSelector = () => number
 export function MakePaginatorItem(label: string, selector: PageSelector): HTMLElement | undefined {

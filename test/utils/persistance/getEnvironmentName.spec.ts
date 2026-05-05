@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#utils/persistance'
+import { Functions } from '#utils/persistance.js'
 
 describe('utils/persistance function getEnvironmentName()', () => {
   let envValue: string | undefined = undefined

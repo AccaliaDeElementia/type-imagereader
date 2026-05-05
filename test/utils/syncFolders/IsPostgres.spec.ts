@@ -3,8 +3,8 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import type { Knex } from 'knex'
-import { IsPostgres } from '#utils/syncItemsDialect'
-import { Cast } from '#testutils/TypeGuards'
+import { IsPostgres } from '#utils/syncItemsDialect.js'
+import { Cast } from '#testutils/TypeGuards.js'
 
 const fakeKnex = (clientName: string): Knex => Cast<Knex>({ client: { config: { client: clientName } } })
 

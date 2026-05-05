@@ -1,9 +1,9 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { Config, Functions, Imports } from '#routes/slideshow'
+import { Config, Functions, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()

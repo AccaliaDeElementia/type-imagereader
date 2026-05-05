@@ -1,9 +1,9 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards'
+import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { assert, expect } from 'chai'
-import { Functions, Imports, SocketHandlers } from '#routes/slideshow'
+import { Functions, Imports, SocketHandlers } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 

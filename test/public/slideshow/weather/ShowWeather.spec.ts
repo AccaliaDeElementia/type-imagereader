@@ -1,13 +1,13 @@
 'use sanity'
 
 import { afterEach, beforeEach, describe, it } from 'mocha'
-import { Functions } from '#public/scripts/slideshow/weather'
+import { Functions } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 
-import { Cast } from '#testutils/TypeGuards'
-import type { WeatherResults } from '#contracts/weather'
+import { Cast } from '#testutils/TypeGuards.js'
+import type { WeatherResults } from '#contracts/weather.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()

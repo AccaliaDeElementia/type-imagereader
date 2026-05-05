@@ -1,8 +1,8 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/sockets'
+import { Functions } from '#public/scripts/slideshow/sockets.js'
 import { after, before, describe, it } from 'mocha'
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import { expect } from 'chai'
 

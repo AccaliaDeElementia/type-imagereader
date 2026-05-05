@@ -1,5 +1,5 @@
 import { expect, assert } from 'chai'
-import { Cast } from './TypeGuards'
+import { Cast } from './TypeGuards.js'
 
 export async function EventuallyRejects(promise: Promise<unknown>): Promise<Error> {
   try {

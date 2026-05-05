@@ -5,14 +5,16 @@ import 'dotenv/config'
 
 import debug from 'debug'
 import { stat } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-import synchronize from './utils/syncfolders'
-import { Functions as IncrementalSyncFunctions } from './utils/incrementalsync'
-import startWatcher from './utils/filewatcher'
-import type { Changeset, WatcherSubscription } from './utils/filewatcher'
-import persistance from './utils/persistance'
-import start from './Server'
-import { StringIsNullOrEmpty, getDataDir } from './utils/helpers'
+import synchronize from './utils/syncfolders.js'
+import { Functions as IncrementalSyncFunctions } from './utils/incrementalsync.js'
+import startWatcher from './utils/filewatcher.js'
+import type { Changeset, WatcherSubscription } from './utils/filewatcher.js'
+import persistance from './utils/persistance.js'
+import start from './Server.js'
+import { StringIsNullOrEmpty, getDataDir } from './utils/helpers.js'
 
 export const Imports = {
   logger: debug('type-imagereader:sync'),
@@ -30,6 +32,7 @@ const MINIMUM_PORT = 0
 const MAXIMUM_PORT = 65535
 const ZERO = 0
 const EXIT_FAILURE = 1
+const ENTRY_ARGV_INDEX = 1
 
 const runIfNotSuppressed = async (skipVar: string, fn: () => Promise<void>): Promise<void> => {
   const envvar = `${process.env[skipVar]}`.toLocaleUpperCase()
@@ -180,11 +183,16 @@ export const ImageReader = {
   },
 }
 
-// This is the actual main entry point of the app. we can't run it during test
-// and it will be blindingly obvious if it's not run on app start so it's fine
-// to ignore.
-/* c8 ignore next 6 */
-if (require.main === module) {
+// Match argv[1] against either this file or its directory: `tsx ./index.ts` sets
+// argv[1] to the file path, while `tsx .` sets it to the directory and lets Node
+// resolve the entry. Both should trigger startup; tests that import this module
+// (e.g., `#app.js`) leave argv[1] pointing at the test runner, so the guard stays
+// false there and Run() does not fire.
+/* c8 ignore next 10 */
+const entryFile = fileURLToPath(import.meta.url)
+const entryDir = dirname(entryFile)
+const invokedAs = process.argv[ENTRY_ARGV_INDEX]
+if (invokedAs !== undefined && [entryFile, entryDir].includes(resolve(invokedAs))) {
   ImageReader.Run().catch((err: unknown) => {
     Imports.logger('startup failed', err)
     process.exitCode = EXIT_FAILURE

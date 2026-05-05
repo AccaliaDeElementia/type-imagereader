@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, it } from 'mocha'
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Debugger } from 'debug'
-import { Functions, Imports } from '#utils/syncfolders'
-import { Cast, StubToKnex } from '#testutils/TypeGuards'
+import { Functions, Imports } from '#utils/syncfolders.js'
+import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 

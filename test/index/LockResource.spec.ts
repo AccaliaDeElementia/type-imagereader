@@ -3,7 +3,7 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 
-import { LockResource } from '#app'
+import { LockResource } from '#app.js'
 
 describe('LockResource', () => {
   describe('Take()', () => {

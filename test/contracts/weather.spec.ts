@@ -2,7 +2,7 @@
 
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { isWeatherResults } from '#contracts/weather'
+import { isWeatherResults } from '#contracts/weather.js'
 
 describe('Contracts: IsWeatherResults()', () => {
   const testCases: Array<[string, unknown, boolean]> = [

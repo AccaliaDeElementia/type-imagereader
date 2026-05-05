@@ -1,9 +1,9 @@
 'use sanity'
 
-import { Pictures } from '.'
-import type { Picture } from '#contracts/listing'
-import { Loading } from '../loading'
-import { Publish } from '../pubsub'
+import { Pictures } from './index.js'
+import type { Picture } from '#contracts/listing.js'
+import { Loading } from '../loading.js'
+import { Publish } from '../pubsub.js'
 
 export async function ChangePicture(pic: Picture | undefined): Promise<void> {
   if (Loading.IsLoading()) {

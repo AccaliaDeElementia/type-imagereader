@@ -4,10 +4,10 @@ import { expect } from 'chai'
 import { beforeEach, afterEach, describe, it } from 'mocha'
 import Sinon from 'sinon'
 
-import { Actions } from '#public/scripts/app/actions'
+import { Actions } from '#public/scripts/app/actions.js'
 
-import { Cast } from '#testutils/TypeGuards'
-import { resetPubSub } from '#testutils/PubSub'
+import { Cast } from '#testutils/TypeGuards.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 

@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { type CacheItem, ImageCache, ImageData } from '#routes/images'
+import { type CacheItem, ImageCache, ImageData } from '#routes/images.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()

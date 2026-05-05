@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { CacheStorage } from '#routes/images'
+import { CacheStorage } from '#routes/images.js'
 describe('routes/images export CacheStorage()', () => {
   it('should have default Kiosk Cache report error code', async () => {
     const image = await CacheStorage.kioskCache.fetch('/foo.png', 1280, 800)

@@ -1,10 +1,10 @@
 'use sanity'
 
-import { Publish, Subscribe } from './pubsub'
+import { Publish, Subscribe } from './pubsub.js'
 
-import { isHTMLElement, CloneNode } from './utils'
-import { type FolderWithCounts, isListing, type Listing } from '#contracts/listing'
-import { HasValue, HasValues, StringishHasValue, ZERO_COUNT } from '#utils/helpers'
+import { isHTMLElement, CloneNode } from './utils.js'
+import { type FolderWithCounts, isListing, type Listing } from '#contracts/listing.js'
+import { HasValue, HasValues, StringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
 
 const PERCENT_MULT = 100
 const FIXED_DECIMAL_PLACES = 2

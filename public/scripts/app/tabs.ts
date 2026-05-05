@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Subscribe, Publish } from './pubsub'
+import { Subscribe, Publish } from './pubsub.js'
 
 const DEFAULT_TAB = 0
 const SCROLL_TOP = 0

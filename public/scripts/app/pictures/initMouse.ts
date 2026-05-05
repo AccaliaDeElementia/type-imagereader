@@ -1,8 +1,8 @@
 'use sanity'
 
-import { UNINITIALIZED_SCALE, Pictures } from '.'
-import { HasValue, ZERO_LENGTH } from '#utils/helpers'
-import { Publish } from '../pubsub'
+import { UNINITIALIZED_SCALE, Pictures } from './index.js'
+import { HasValue, ZERO_LENGTH } from '#utils/helpers.js'
+import { Publish } from '../pubsub.js'
 
 const LEFT_THIRD = 0.3333333333333333
 const RIGHT_THIRD = 0.6666666666666666

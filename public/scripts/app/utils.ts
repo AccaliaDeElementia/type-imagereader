@@ -1,4 +1,4 @@
-import { HasValue } from '#utils/helpers'
+import { HasValue } from '#utils/helpers.js'
 
 function isHTMLTemplateElement(obj: HTMLElement | DocumentFragment): obj is HTMLTemplateElement {
   return obj.nodeName === 'TEMPLATE' && 'content' in obj && obj.content !== null

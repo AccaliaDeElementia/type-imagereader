@@ -1,8 +1,8 @@
 'use sanity'
 
 import { afterEach, beforeEach, describe, it } from 'mocha'
-import { Functions, GetAlmanac } from '#public/scripts/slideshow/weather'
-import type { WeatherResults } from '#contracts/weather'
+import { Functions, GetAlmanac } from '#public/scripts/slideshow/weather.js'
+import type { WeatherResults } from '#contracts/weather.js'
 import { expect } from 'chai'
 import Sinon from 'sinon'
 

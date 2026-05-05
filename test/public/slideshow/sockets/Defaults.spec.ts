@@ -1,9 +1,9 @@
 'use sanity'
 
-import { UninitializedLocationAssign, UninitializedLocationReload } from '#public/scripts/slideshow/sockets'
+import { UninitializedLocationAssign, UninitializedLocationReload } from '#public/scripts/slideshow/sockets.js'
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { DefinitelyThrows } from '#testutils/Errors'
+import { DefinitelyThrows } from '#testutils/Errors.js'
 
 describe('public/slideshow/sockets uninitialized sentinels', () => {
   it('should definitely throw for UninitializedLocationAssign()', () => {

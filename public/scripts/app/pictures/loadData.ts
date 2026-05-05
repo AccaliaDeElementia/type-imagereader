@@ -1,8 +1,8 @@
 'use sanity'
 
-import { Pictures } from '.'
-import type { Listing } from '#contracts/listing'
-import { Publish } from '../pubsub'
+import { Pictures } from './index.js'
+import type { Listing } from '#contracts/listing.js'
+import { Publish } from '../pubsub.js'
 
 export async function LoadData(data: Listing): Promise<void> {
   Pictures.ResetMarkup()

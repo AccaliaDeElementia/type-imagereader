@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Confirm } from '#public/scripts/app/confirm'
-import { Cast } from '#testutils/TypeGuards'
+import { Confirm } from '#public/scripts/app/confirm.js'
+import { Cast } from '#testutils/TypeGuards.js'
 
 const markup = `
 html

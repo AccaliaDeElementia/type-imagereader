@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '#routes/apiFunctions'
-import { createKnexChainFake } from '#testutils/Knex'
+import { Functions, Imports } from '#routes/apiFunctions.js'
+import { createKnexChainFake } from '#testutils/Knex.js'
 import assert from 'node:assert'
 import Sinon from 'sinon'
 

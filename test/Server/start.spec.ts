@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards'
-import start, { Functions } from '#Server'
+import { Cast } from '#testutils/TypeGuards.js'
+import start, { Functions } from '#Server.js'
 import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'

@@ -2,26 +2,29 @@
 
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import helmet from 'helmet'
 
 import express, { type Express, type Request, type Response, type NextFunction } from 'express'
 import favicon from 'serve-favicon'
-import StatusCodes from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { createServer, type Server as HttpServer } from 'node:http'
 import { Server as WebSocketServer } from 'socket.io'
 
-import { getRouter as getApiRouter } from './routes/api'
-import { getRouter as getImagesRouter } from './routes/images'
-import { getRouter as getRootRouter } from './routes/index'
-import { getRouter as getSlideshowRouter } from './routes/slideshow'
-import { getRouter as getWeatherRouter } from './routes/weather'
+import { getRouter as getApiRouter } from './routes/api.js'
+import { getRouter as getImagesRouter } from './routes/images.js'
+import { getRouter as getRootRouter } from './routes/index.js'
+import { getRouter as getSlideshowRouter } from './routes/slideshow.js'
+import { getRouter as getWeatherRouter } from './routes/weather.js'
 
 import debug from 'debug'
 
+const moduleDir = dirname(fileURLToPath(import.meta.url))
+
 export const Imports = {
-  dirname: __dirname,
+  dirname: moduleDir,
   logger: debug('type-imagereader:Server'),
   express,
   createServer,
@@ -61,7 +64,7 @@ export const Functions = {
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
     app.use(Imports.cookieParser())
-    const faviconPath = join(__dirname, 'dist', 'images', 'favicon.ico')
+    const faviconPath = join(moduleDir, 'dist', 'images', 'favicon.ico')
     try {
       app.use(Imports.favicon(faviconPath))
     } catch (err) {
@@ -110,10 +113,10 @@ export const Functions = {
     app.use('/weather', await Routers.Weather(app, server, websockets))
   },
   RegisterViewsAndMiddleware: (app: Express): void => {
-    app.set('views', join(__dirname, 'views'))
+    app.set('views', join(moduleDir, 'views'))
     app.set('view engine', 'pug')
 
-    app.use(express.static(join(__dirname, 'dist')))
+    app.use(express.static(join(moduleDir, 'dist')))
   },
 }
 

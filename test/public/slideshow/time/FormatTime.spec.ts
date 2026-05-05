@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/time'
+import { Functions } from '#public/scripts/slideshow/time.js'
 import { expect } from 'chai'
 import { describe } from 'mocha'
 

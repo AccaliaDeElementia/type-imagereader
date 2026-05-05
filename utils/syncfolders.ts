@@ -1,15 +1,15 @@
 'use sanity'
 
-import persistance from './persistance'
-import _fsWalker from './fswalker'
-import { getDataDir as _getDataDir } from './helpers'
+import persistance from './persistance.js'
+import _fsWalker from './fswalker.js'
+import { getDataDir as _getDataDir } from './helpers.js'
 import {
   IsPostgres as _IsPostgres,
   FindSyncItemsViaCopy as _FindSyncItemsViaCopy,
   FindSyncItemsViaInsert as _FindSyncItemsViaInsert,
   getDbChunkSize as _getDbChunkSize,
-} from './syncItemsDialect'
-import wordsToNumbers from 'words-to-numbers'
+} from './syncItemsDialect.js'
+import { wordsToNumbers } from 'words-to-numbers'
 import posix from 'node:path'
 import { createHash } from 'node:crypto'
 import type { Knex } from 'knex'

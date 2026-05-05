@@ -2,7 +2,7 @@
 
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { isBookmarkFolder } from '#contracts/listing'
+import { isBookmarkFolder } from '#contracts/listing.js'
 
 describe('Contracts: isBookmarkFolder()', () => {
   const bookmark = {

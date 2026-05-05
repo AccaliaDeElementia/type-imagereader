@@ -5,14 +5,16 @@ import { expect } from 'chai'
 import knex from 'knex'
 import type { Knex } from 'knex'
 import type { Debugger } from 'debug'
-import { join } from 'node:path'
-import { Functions as SyncFunctions } from '#utils/syncfolders'
-import { IsPostgres, FindSyncItemsViaInsert } from '#utils/syncItemsDialect'
-import { Cast } from '#testutils/TypeGuards'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { Functions as SyncFunctions } from '#utils/syncfolders.js'
+import { IsPostgres, FindSyncItemsViaInsert } from '#utils/syncItemsDialect.js'
+import { Cast } from '#testutils/TypeGuards.js'
 
 const noopLogger = Cast<Debugger>(() => undefined)
 
-const MIGRATIONS_DIR = join(__dirname, '..', '..', 'migrations')
+const moduleDir = dirname(fileURLToPath(import.meta.url))
+const MIGRATIONS_DIR = join(moduleDir, '..', '..', 'migrations')
 
 type WalkerCallback = (items: Array<{ path: string; isFile: boolean }>, pending: number) => Promise<void>
 

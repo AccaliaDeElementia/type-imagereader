@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#utils/filewatcher'
-import type { Changeset } from '#utils/filewatcher'
+import { Functions } from '#utils/filewatcher.js'
+import type { Changeset } from '#utils/filewatcher.js'
 
 describe('utils/filewatcher Functions', () => {
   describe('isImagePath()', () => {

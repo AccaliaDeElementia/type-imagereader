@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/overlay'
+import { Functions } from '#public/scripts/slideshow/overlay.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 

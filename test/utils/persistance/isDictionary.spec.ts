@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { TypeGuards } from '#utils/persistance'
+import { TypeGuards } from '#utils/persistance.js'
 
 describe('utils/persistance function isDictionary()', () => {
   const tests: Array<[string, unknown, boolean]> = [

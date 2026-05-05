@@ -7,11 +7,11 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
-import { isPathTraversal as _isPathTraversal, GetParentFolders as _GetParentFolders } from '#utils/Path'
+import { isPathTraversal as _isPathTraversal, GetParentFolders as _GetParentFolders } from '#utils/Path.js'
 
-import persistance from '#utils/persistance'
-import { UriSafePath, Functions as api } from './apiFunctions'
-import { SocketEvents } from '#contracts/socketEvents'
+import persistance from '#utils/persistance.js'
+import { UriSafePath, Functions as api } from './apiFunctions.js'
+import { SocketEvents } from '#contracts/socketEvents.js'
 
 import type { Knex } from 'knex'
 import {
@@ -23,7 +23,7 @@ import {
   ReqParamToString,
   StringishHasValue,
   ZERO_COUNT,
-} from '#utils/helpers'
+} from '#utils/helpers.js'
 
 interface SlideshowPages {
   pages: number

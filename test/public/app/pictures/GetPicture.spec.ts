@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { NavigateTo, Pictures } from '#public/scripts/app/pictures'
+import { NavigateTo, Pictures } from '#public/scripts/app/pictures/index.js'
 import { expect } from 'chai'
 import assert from 'node:assert'
 

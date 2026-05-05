@@ -3,15 +3,15 @@
 import posix from 'node:path'
 import { createHash } from 'node:crypto'
 import type { Knex } from 'knex'
-import type { Changeset } from './filewatcher'
+import type { Changeset } from './filewatcher.js'
 
 import _debug from 'debug'
 import type { Debugger } from 'debug'
 
-import _fsWalker from './fswalker'
-import { Functions as _SyncFunctions } from './syncfolders'
-import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect'
-import { EscapeLikeWildcards } from './helpers'
+import _fsWalker from './fswalker.js'
+import { Functions as _SyncFunctions } from './syncfolders.js'
+import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
+import { EscapeLikeWildcards } from './helpers.js'
 
 const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1

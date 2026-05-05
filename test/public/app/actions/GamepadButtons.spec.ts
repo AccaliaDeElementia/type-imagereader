@@ -2,9 +2,9 @@
 
 import { expect } from 'chai'
 import { beforeEach, describe, it } from 'mocha'
-import { GamepadButtons } from '#public/scripts/app/actions'
+import { GamepadButtons } from '#public/scripts/app/actions.js'
 
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 interface TestGamepadButton {

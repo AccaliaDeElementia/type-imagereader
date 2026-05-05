@@ -1,8 +1,8 @@
 'use sanity'
 
-import { NavigateTo, Pictures } from '.'
-import type { Picture } from '#contracts/listing'
-import { HasValues } from '#utils/helpers'
+import { NavigateTo, Pictures } from './index.js'
+import type { Picture } from '#contracts/listing.js'
+import { HasValues } from '#utils/helpers.js'
 
 const NO_SUCH_INDEX = -1
 const MINIMUM_INDEX = 0

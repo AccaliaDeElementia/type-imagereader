@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import type { Express } from 'express'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards'
-import { Functions, Imports } from '#Server'
+import { Cast } from '#testutils/TypeGuards.js'
+import { Functions, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 

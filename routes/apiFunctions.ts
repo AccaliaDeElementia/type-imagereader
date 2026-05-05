@@ -5,8 +5,8 @@ import { normalize, basename, dirname, extname, sep } from 'node:path'
 import type { Knex } from 'knex'
 import _debug from 'debug'
 import type { Debugger } from 'debug'
-import { EscapeLikeWildcards, StringishHasValue, ZERO_COUNT } from '#utils/helpers'
-import { GetParentFolders as _GetParentFolders } from '#utils/Path'
+import { EscapeLikeWildcards, StringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
+import { GetParentFolders as _GetParentFolders } from '#utils/Path.js'
 
 export const Imports: { GetParentFolders: typeof _GetParentFolders; logger: Debugger } = {
   GetParentFolders: _GetParentFolders,

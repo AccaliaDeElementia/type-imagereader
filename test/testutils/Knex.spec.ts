@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { createKnexChainFake } from '#testutils/Knex'
+import { createKnexChainFake } from '#testutils/Knex.js'
 
 describe('testutils/Knex createKnexChainFake()', () => {
   it('should create a stub for chain method select', () => {

@@ -1,0 +1,47 @@
+# c8 coverage configuration
+#
+# Coverage thresholds are NOT 100% due to a tsx + mocha tooling artifact:
+# mocha 12.0.0-beta-10 is itself CJS-typed, so it loads test files via
+# require() even though our package is "type": "module". tsx's CJS hook
+# transpiles each file via esbuild, which injects CJS-interop helpers
+# (__name, __toCommonJS, __copyProps, __toESM, __export, get) at the top
+# of every transpiled file. The source maps attribute these helpers to
+# source line 1, c8 instruments them as functions/branches, and some
+# never execute -> measured coverage caps below 100%.
+#
+# TODO: restore 100% gates once one of the following lands:
+#   - mocha 12 stable adds first-class ESM test loading (drops the
+#     require()-based fallback that forces tsx into CJS mode), OR
+#   - we migrate the test runner to one that is ESM-native end-to-end
+#     (e.g., node --test, vitest), OR
+#   - tsx exposes a configuration to suppress the CJS-interop helper
+#     emit when the consuming package is "type": "module".
+#
+# Branches is lower than statements/lines/functions because the unexecuted
+# code paths inside the synthetic helpers are predominantly branches.
+
+check-coverage: true
+statements: 95
+lines: 95
+functions: 95
+branches: 90
+
+include:
+  - '**/*.ts'
+
+exclude:
+  - '**/*.spec.ts'
+  - knexfile.ts
+  - migrations/**
+  - deploy/**
+  - public/scripts/app/main.ts
+  - public/scripts/slideshow/main.ts
+
+exclude-after-remap: true
+
+reporter:
+  - lcov
+  - text
+  - text-summary
+
+all: true

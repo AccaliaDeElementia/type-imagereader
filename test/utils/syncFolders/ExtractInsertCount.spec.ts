@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#utils/syncfolders'
+import { Functions } from '#utils/syncfolders.js'
 
 describe('utils/syncfolders function ExtractInsertCount()', () => {
   it('should return rowCount for postgresql style result', () => {

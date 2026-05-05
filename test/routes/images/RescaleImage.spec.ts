@@ -2,10 +2,10 @@
 
 import { expect } from 'chai'
 import type { Debugger } from 'debug'
-import { Imports, Functions, ImageData } from '#routes/images'
+import { Imports, Functions, ImageData } from '#routes/images.js'
 import Sharp from 'sharp'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 describe('routes/images function RescaleImage()', () => {

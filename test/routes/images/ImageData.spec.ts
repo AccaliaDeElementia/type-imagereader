@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { ImageData } from '#routes/images'
+import { ImageData } from '#routes/images.js'
 
 describe('routes/images class ImageData', () => {
   describe('fromImage()', () => {

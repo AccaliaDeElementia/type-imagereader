@@ -2,9 +2,9 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { Imports, Functions } from '#utils/filewatcher'
-import type { FlushCallback, WatcherSubscription } from '#utils/filewatcher'
-import { Cast } from '#testutils/TypeGuards'
+import { Imports, Functions } from '#utils/filewatcher.js'
+import type { FlushCallback, WatcherSubscription } from '#utils/filewatcher.js'
+import { Cast } from '#testutils/TypeGuards.js'
 import type { Debugger } from 'debug'
 
 type SubscriberCallback = (err: Error | null, events: Array<{ type: string; path: string }>) => unknown

@@ -1,13 +1,13 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Routers } from '#Server'
+import { Routers } from '#Server.js'
 
-import { getRouter as getApiRouter } from '#routes/api'
-import { getRouter as getImagesRouter } from '#routes/images'
-import { getRouter as getRootRouter } from '#routes/index'
-import { getRouter as getSlideshowRouter } from '#routes/slideshow'
-import { getRouter as getWeatherRouter } from '#routes/weather'
+import { getRouter as getApiRouter } from '#routes/api.js'
+import { getRouter as getImagesRouter } from '#routes/images.js'
+import { getRouter as getRootRouter } from '#routes/index.js'
+import { getRouter as getSlideshowRouter } from '#routes/slideshow.js'
+import { getRouter as getWeatherRouter } from '#routes/weather.js'
 
 describe('Server function RegisterRouters', () => {
   it('should store root router', () => {

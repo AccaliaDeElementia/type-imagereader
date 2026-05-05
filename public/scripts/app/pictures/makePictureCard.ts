@@ -1,9 +1,9 @@
 'use sanity'
 
-import { Pictures } from '.'
-import type { Picture } from '#contracts/listing'
-import { Publish } from '../pubsub'
-import { CloneNode, isHTMLElement } from '../utils'
+import { Pictures } from './index.js'
+import type { Picture } from '#contracts/listing.js'
+import { Publish } from '../pubsub.js'
+import { CloneNode, isHTMLElement } from '../utils.js'
 
 export function MakePictureCard(picture: Picture): HTMLElement | undefined {
   const card = CloneNode(Pictures.imageCard, isHTMLElement)

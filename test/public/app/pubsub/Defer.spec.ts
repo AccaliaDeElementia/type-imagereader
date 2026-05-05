@@ -3,8 +3,8 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 
-import { PubSub } from '#public/scripts/app/pubsub'
-import { resetPubSub } from '#testutils/PubSub'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { resetPubSub } from '#testutils/PubSub.js'
 
 describe('public/app/pubsub function Defer()', () => {
   beforeEach(() => {

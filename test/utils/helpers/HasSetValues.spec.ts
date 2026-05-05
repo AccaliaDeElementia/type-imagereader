@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { HasSetValues } from '#utils/helpers'
+import { HasSetValues } from '#utils/helpers.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards'
+import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 

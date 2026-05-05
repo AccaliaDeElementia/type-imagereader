@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { StringishHasValue } from '#utils/helpers'
+import { StringishHasValue } from '#utils/helpers.js'
 
 describe('utils/helpers function StringishHasValue()', () => {
   const tests: Array<[string, string | null | undefined, boolean]> = [

@@ -1,8 +1,8 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Functions } from '#public/scripts/slideshow/overlay'
-import { GetAlmanac } from '#public/scripts/slideshow/weather'
+import { Functions } from '#public/scripts/slideshow/overlay.js'
+import { GetAlmanac } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()

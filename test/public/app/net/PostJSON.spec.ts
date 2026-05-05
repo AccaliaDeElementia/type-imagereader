@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Net } from '#public/scripts/app/net'
-import { Cast } from '#testutils/TypeGuards'
+import { Net } from '#public/scripts/app/net.js'
+import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
