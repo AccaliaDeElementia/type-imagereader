@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import { Functions, Imports } from '#sync/pictures.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -16,9 +16,8 @@ describe('utils/syncfolders function SyncAllPictures()', () => {
   let debugStub = sandbox.stub()
   let knexFake = StubToKnex({ id: Math.random() })
   beforeEach(() => {
-    loggerStub = sandbox.stub()
     knexFake = StubToKnex({ id: Math.random() })
-    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
     syncNewPicturesStub = sandbox.stub(Functions, 'SyncNewPictures').resolves()
     syncRemovedPicturesStub = sandbox.stub(Functions, 'SyncRemovedPictures').resolves()
     syncRemovedBookmarksStub = sandbox.stub(Functions, 'SyncRemovedBookmarks').resolves()

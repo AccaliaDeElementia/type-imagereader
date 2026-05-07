@@ -10,7 +10,7 @@ import { getRouter, Imports } from '#routes/api.js'
 import persistance from '#utils/persistance.js'
 import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { stubDebug } from '#testutils/Debug.js'
 import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
@@ -56,8 +56,7 @@ describe('routes/api route POST /navigate/latest', () => {
     setLatestPictureStub = sandbox.stub(Functions, 'SetLatestPicture').resolves()
     validateAndIncrementStub = sandbox.stub(ModCount, 'ValidateAndIncrement').returns(1)
     getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
-    loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    ;({ loggerStub } = stubDebug(sandbox, Imports))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))

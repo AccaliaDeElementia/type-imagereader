@@ -5,7 +5,7 @@ import persistence from '#utils/persistance.js'
 import synchronize, { Imports } from '#sync/synchronize.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -29,9 +29,8 @@ describe('sync/synchronize function synchronize()', () => {
   let persistenceIntitializerStub = sandbox.stub()
   let knexFnStub = sandbox.stub().returnsThis()
   beforeEach(() => {
-    loggerStub = sandbox.stub()
     knexFnStub = sandbox.stub().returnsThis()
-    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
     persistenceIntitializerStub = sandbox.stub(persistence, 'initialize').resolves(StubToKnex(knexFnStub))
     findSyncItemsStub = sandbox.stub(Imports.FindItems, 'FindSyncItems').resolves(1)
     syncAllPicturesStub = sandbox.stub(Imports.Pictures, 'SyncAllPictures').resolves()

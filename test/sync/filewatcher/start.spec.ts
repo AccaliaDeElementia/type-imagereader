@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { Imports, Functions } from '#sync/filewatcher.js'
 import type { FlushCallback, WatcherSubscription } from '#sync/filewatcher.js'
 import { Cast } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { stubDebug } from '#testutils/Debug.js'
 
 type SubscriberCallback = (err: Error | null, events: Array<{ type: string; path: string }>) => unknown
 
@@ -22,8 +22,7 @@ describe('utils/filewatcher Functions.start()', () => {
   let subscriberCallback: SubscriberCallback = sandbox.stub()
 
   beforeEach(() => {
-    loggerStub = sandbox.stub()
-    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
     fakeSubscription = { unsubscribe: sandbox.stub().resolves() }
     subscriberCallback = sandbox.stub()
     subscribeStub = sandbox.stub(Imports, 'subscribe').callsFake(async (_dir, fn) => {

@@ -6,7 +6,7 @@ import { Functions as Helpers } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
-import type { Debugger } from 'debug'
+import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -28,8 +28,7 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
       stub: knexFnStub,
       fake: knexFnFake,
     } = createKnexChainFake(['insert', 'onConflict'] as const, ['merge'] as const, undefined))
-    loggerStub = sandbox.stub()
-    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
     getFolderInfosWithPicturesStub = sandbox.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
     getAllFolderInfosStub = sandbox.stub(Functions, 'GetAllFolderInfos').resolves({})
     calculateFolderInfosStub = sandbox.stub(Functions, 'CalculateFolderInfos').returns([])

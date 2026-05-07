@@ -3,9 +3,8 @@
 import { expect } from 'chai'
 import { Functions, Imports } from '#sync/folderCounts.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
-import type { Debugger } from 'debug'
+import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -18,13 +17,12 @@ describe('utils/syncfolders function PruneEmptyFolders()', () => {
     fake: knexFnFake,
   } = createKnexChainFake(['where', 'andWhere'] as const, ['delete'] as const, undefined)
   beforeEach(() => {
-    loggerStub = sandbox.stub()
     ;({
       instance: knexStub,
       stub: knexFnStub,
       fake: knexFnFake,
     } = createKnexChainFake(['where', 'andWhere'] as const, ['delete'] as const, undefined))
-    debugStub = sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
   })
   afterEach(() => {
     sandbox.restore()

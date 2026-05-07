@@ -7,7 +7,7 @@ import { Functions as Helpers } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
-import type { Debugger } from 'debug'
+import { stubDebug } from '#testutils/Debug.js'
 import type { PoolClient } from 'pg'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 
@@ -55,8 +55,7 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
     ))
     streamFake = makeStream()
     pgClientStub = { query: sandbox.stub().returns(streamFake) }
-    loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    ;({ loggerStub } = stubDebug(sandbox, Imports))
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
     buildSyncItemRowsStub = sandbox.stub(Helpers, 'BuildSyncItemRows').returns({ files: 0, dirs: 0, rows: [] })
     formatSyncItemCsvStub = sandbox.stub(Helpers, 'FormatSyncItemCsv').returns('csv-row\n')

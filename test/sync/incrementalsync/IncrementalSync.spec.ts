@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { Functions, Imports } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { stubDebug } from '#testutils/Debug.js'
 import type { Changeset } from '#sync/filewatcher.js'
 
 const sandbox = Sinon.createSandbox()
@@ -22,8 +22,7 @@ describe('utils/incrementalsync function IncrementalSync()', () => {
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(loggerStub))
+    ;({ loggerStub } = stubDebug(sandbox, Imports))
     incrementalAddBulkStub = sandbox.stub(Functions, 'IncrementalAddPicturesBulk').resolves()
     incrementalRemoveBulkStub = sandbox.stub(Functions, 'IncrementalRemovePicturesBulk').resolves()
     incrementalRemoveFolderStub = sandbox.stub(Functions, 'IncrementalRemoveFolder').resolves()

@@ -9,7 +9,7 @@ import { getRouter, Imports } from '#routes/api.js'
 import persistance from '#utils/persistance.js'
 import { StatusCodes } from 'http-status-codes'
 import { Cast } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { stubDebug } from '#testutils/Debug.js'
 import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
@@ -39,7 +39,7 @@ describe('routes/api route GET /healthcheck', () => {
         post: sandbox.stub(),
       }),
     )
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
+    stubDebug(sandbox, Imports)
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
     routeHandler = Cast(
