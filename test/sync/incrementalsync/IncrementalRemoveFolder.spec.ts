@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '#sync/incrementalsync.js'
+import { Functions } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import type { Debugger } from 'debug'
@@ -34,7 +34,6 @@ describe('utils/syncfolders function IncrementalRemoveFolder()', () => {
   beforeEach(() => {
     loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     picturesStub = {
       where: sandbox.stub().returnsThis(),
       delete: sandbox.stub().resolves(5),

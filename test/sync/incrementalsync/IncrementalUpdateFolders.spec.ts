@@ -118,7 +118,6 @@ describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
   let upsertCallExpectation = 1
 
   beforeEach(() => {
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     aggregateRowsForReturn = []
     pruneDeletedRows = 0
     upsertCallExpectation = 1

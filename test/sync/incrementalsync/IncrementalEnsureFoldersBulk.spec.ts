@@ -3,8 +3,7 @@
 import { expect } from 'chai'
 import { Functions, Imports } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { StubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -42,7 +41,6 @@ describe('utils/incrementalsync function IncrementalEnsureFoldersBulk()', () => 
   }
 
   beforeEach(() => {
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     setup()
   })
 

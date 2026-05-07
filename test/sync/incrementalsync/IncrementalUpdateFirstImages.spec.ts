@@ -18,7 +18,6 @@ describe('utils/incrementalsync function IncrementalUpdateFirstImages()', () => 
   beforeEach(() => {
     loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     syncFolderFirstImagesStub = sandbox.stub(Imports.FolderFunctions, 'SyncFolderFirstImages').resolves()
     knexFnStub = sandbox.stub()
     knexFnFake = StubToKnex(knexFnStub)

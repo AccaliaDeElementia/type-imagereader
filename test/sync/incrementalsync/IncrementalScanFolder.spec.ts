@@ -20,7 +20,6 @@ describe('utils/syncfolders function IncrementalScanFolder()', () => {
   beforeEach(() => {
     loggerStub = sandbox.stub()
     loggerFake = Cast<Debugger>(loggerStub)
-    sandbox.stub(Imports, 'debug').returns(Cast<Debugger>(sandbox.stub()))
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
     incrementalAddPicturesBulkStub = sandbox.stub(Functions, 'IncrementalAddPicturesBulk').resolves()
     incrementalEnsureFoldersBulkStub = sandbox.stub(Functions, 'IncrementalEnsureFoldersBulk').resolves()
