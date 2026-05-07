@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import type { Stats } from 'node:fs'
-import type { Changeset, FlushCallback } from '#utils/filewatcher.js'
+import type { Changeset, FlushCallback } from '#sync/filewatcher.js'
 
 import { ImageReader, Imports } from '#app.js'
 

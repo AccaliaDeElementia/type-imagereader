@@ -27,6 +27,7 @@
       "#public/*": ["./public/*"],
       "#routes/*": ["./routes/*"],
       "#utils/*": ["./utils/*"],
+      "#sync/*": ["./sync/*"],
       "#contracts/*": ["./contracts/*"],
       "#Server.js": ["./Server.js"],
       "#app.js": ["./index.js"]

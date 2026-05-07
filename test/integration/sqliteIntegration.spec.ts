@@ -6,8 +6,8 @@ import type { Knex } from 'knex'
 import type { Debugger } from 'debug'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Functions as SyncFunctions } from '#utils/syncfolders.js'
-import { IsPostgres, FindSyncItemsViaInsert } from '#utils/syncItemsDialect.js'
+import { Functions as SyncFunctions } from '#sync/helpers.js'
+import { IsPostgres, FindSyncItemsViaInsert } from '#sync/syncItemsDialect.js'
 import { Cast } from '#testutils/TypeGuards.js'
 
 const noopLogger = Cast<Debugger>(() => undefined)
