@@ -34,12 +34,9 @@ describe('utils/syncfolders function SyncAllFolders()', () => {
     await Functions.SyncAllFolders(knexFake)
     expect(debugStub.callCount).to.equal(1)
   })
-  it('should construct prefixed logger', async () => {
+  it('should construct logger with the module prefix', async () => {
     await Functions.SyncAllFolders(knexFake)
-    expect(debugStub.firstCall.args[0])
-      .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
-      .and.satisfy((msg: string) => msg.endsWith(':syncFolders'), 'Logger should be suffixed with `syncFolders`')
+    expect(debugStub.firstCall.args[0]).to.equal(Imports.logPrefix)
   })
   it('should call SyncNewFolders once', async () => {
     await Functions.SyncAllFolders(knexFake)

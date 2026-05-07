@@ -7,7 +7,7 @@ import type { Knex } from 'knex'
 import { Functions as _Helpers } from './helpers.js'
 
 export const Imports = {
-  logPrefix: 'type-imagereader:syncfolders',
+  logPrefix: 'type-imagereader:sync:pictures',
   debug: _debug,
 }
 
@@ -43,7 +43,7 @@ export const Functions = {
     logger(`Removed ${removedBookmarks} missing bookmarks`)
   },
   SyncAllPictures: async (knex: Knex): Promise<void> => {
-    const logger = Imports.debug(`${Imports.logPrefix}:syncPictures`)
+    const logger = Imports.debug(Imports.logPrefix)
     await Functions.SyncNewPictures(logger, knex)
     await Functions.SyncRemovedPictures(logger, knex)
     await Functions.SyncRemovedBookmarks(logger, knex)

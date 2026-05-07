@@ -12,7 +12,7 @@ const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1
 
 export const Imports = {
-  logPrefix: 'type-imagereader:syncfolders',
+  logPrefix: 'type-imagereader:sync:folders',
   debug: _debug,
   getDbChunkSize: _getDbChunkSize,
 }
@@ -108,7 +108,7 @@ export const Functions = {
     logger(`Updated ${toUpdate.length} folder first-item images`)
   },
   SyncAllFolders: async (knex: Knex): Promise<void> => {
-    const logger = Imports.debug(`${Imports.logPrefix}:syncFolders`)
+    const logger = Imports.debug(Imports.logPrefix)
     await Functions.SyncNewFolders(logger, knex)
     await Functions.SyncRemovedFolders(logger, knex)
     await Functions.SyncMissingAncestorFolders(logger, knex)

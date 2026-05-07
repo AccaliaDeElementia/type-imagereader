@@ -5,6 +5,8 @@ import type { Debugger } from 'debug'
 import type { PoolClient } from 'pg'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 
+import type { DirEntryItem, SyncItem, SyncItemRows } from './helpers.js'
+
 const ZERO = 0
 const ONE = 1
 const DEFAULT_CHUNK_SIZE = 5000
@@ -18,25 +20,6 @@ const COPY_SQL = 'COPY syncitems (folder, path, "isFile", "sortKey", "pathHash")
 // round-trip count manageable.
 const PG_DB_CHUNK_SIZE = 5000
 const SQLITE_DB_CHUNK_SIZE = 200
-
-interface DirEntryItem {
-  path: string
-  isFile: boolean
-}
-
-interface SyncItem {
-  folder: string
-  path: string
-  isFile: boolean
-  sortKey: string
-  pathHash: string
-}
-
-interface SyncItemRows {
-  files: number
-  dirs: number
-  rows: SyncItem[]
-}
 
 interface SyncItemCounts {
   files: number

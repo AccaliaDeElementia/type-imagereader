@@ -19,7 +19,7 @@ export interface FolderInfo {
 }
 
 export const Imports = {
-  logPrefix: 'type-imagereader:syncfolders',
+  logPrefix: 'type-imagereader:sync:folderCounts',
   debug: _debug,
   getDbChunkSize: _getDbChunkSize,
 }

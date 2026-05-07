@@ -17,7 +17,7 @@ import {
 import { getDataDir as _getDataDir } from '../utils/helpers.js'
 
 export const Imports = {
-  logPrefix: 'type-imagereader:syncfolders',
+  logPrefix: 'type-imagereader:sync:findItems',
   debug: _debug,
   fsWalker: _fsWalker,
   getDataDir: _getDataDir,
@@ -36,7 +36,7 @@ export const Imports = {
 
 export const Functions = {
   FindSyncItems: async (knex: Knex): Promise<number> => {
-    const logger = Imports.debug(`${Imports.logPrefix}:findItems`)
+    const logger = Imports.debug(Imports.logPrefix)
     await knex('syncitems').truncate()
     await knex('syncitems').insert({
       folder: '',

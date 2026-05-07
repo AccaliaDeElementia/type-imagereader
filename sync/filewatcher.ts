@@ -23,7 +23,7 @@ export interface WatcherEvent {
 }
 
 export const Imports = {
-  logPrefix: 'type-imagereader:filewatcher',
+  logPrefix: 'type-imagereader:sync:filewatcher',
   debug: _debug,
   subscribe: _subscribe,
   setTimeout: globalThis.setTimeout as (fn: () => void, ms: number) => ReturnType<typeof setTimeout>,

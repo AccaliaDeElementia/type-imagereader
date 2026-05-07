@@ -84,19 +84,9 @@ describe('utils/syncfolders function FindSyncItems()', () => {
     await Functions.FindSyncItems(knexFnFake)
     expect(debugStub.callCount).to.equal(1)
   })
-  it('should create logger with prefixed name', async () => {
+  it('should create logger with the module prefix', async () => {
     await Functions.FindSyncItems(knexFnFake)
-    const name = Cast(debugStub.firstCall.args[0], (o) => typeof o === 'string')
-    expect(name)
-      .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`))
-  })
-  it('should create prefixed logger', async () => {
-    await Functions.FindSyncItems(knexFnFake)
-    const name = Cast(debugStub.firstCall.args[0], (o) => typeof o === 'string')
-    expect(name)
-      .to.be.a('string')
-      .and.satisfy((msg: string) => msg.endsWith(':findItems'))
+    expect(debugStub.firstCall.args[0]).to.equal(Imports.logPrefix)
   })
   it('should truncate syncitems once to clear prior contents', async () => {
     await Functions.FindSyncItems(knexFnFake)

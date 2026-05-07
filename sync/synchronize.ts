@@ -14,7 +14,7 @@ const MS_PER_SECOND = 1000
 const ELAPSED_DECIMALS = 2
 
 export const Imports = {
-  logPrefix: 'type-imagereader:syncfolders',
+  logPrefix: 'type-imagereader:sync:synchronize',
   debug: _debug,
   persistance: _persistance,
   FindItems: _FindItems,

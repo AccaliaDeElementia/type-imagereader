@@ -19,7 +19,7 @@ const TRAILING_SLASH_OFFSET = -1
 const DECIMAL_RADIX = 10
 
 export const Imports = {
-  logPrefix: 'type-imagereader:syncfolders',
+  logPrefix: 'type-imagereader:sync:incrementalsync',
   debug: _debug,
   fsWalker: _fsWalker,
   Helpers: _Helpers,
@@ -233,7 +233,7 @@ export const Functions = {
     await Imports.FolderFunctions.SyncFolderFirstImages(logger, knex)
   },
   IncrementalSync: async (knex: Knex, changeset: Changeset, dataDir = '/data'): Promise<void> => {
-    const logger = Imports.debug(`${Imports.logPrefix}:incremental`)
+    const logger = Imports.debug(Imports.logPrefix)
     logger(`Processing ${changeset.size} incremental changes`)
     const { dirDeletes, fileDeletes, dirCreates, fileCreates } = Functions.CategorizeChangeset(changeset)
     const affectedFolders = new Set<string>()
