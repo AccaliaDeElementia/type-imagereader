@@ -6,15 +6,13 @@ import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Actions } from '#public/scripts/app/actions.js'
 
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/actions function ReadGamepad()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   const dom: JSDOM = new JSDOM('', {})
   let GamepadResetSpy = sandbox.stub()
 
@@ -34,8 +32,7 @@ describe('public/app/actions function ReadGamepad()', () => {
   let gamepadsReadStub = sandbox.stub()
 
   beforeEach(() => {
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
     sandbox.stub(Actions, 'BuildActions')
     Actions.gamepads.Reset()
@@ -64,8 +61,7 @@ describe('public/app/actions function ReadGamepad()', () => {
       configurable: true,
       get: () => existingNavigator,
     })
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   const acceptTests: Array<[string, unknown]> = [
     ['a null of gamepads', undefined],

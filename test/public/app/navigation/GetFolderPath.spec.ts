@@ -2,22 +2,18 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
-import { Cast } from '#testutils/TypeGuards.js'
 describe('public/app/navigation function GetFolderPath()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM('', {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
   })
   afterEach(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   const testCases: Array<[string, string]> = [
     ['http://type-imagereader.example.com', '/'],

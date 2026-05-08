@@ -3,8 +3,8 @@
 import { CyclicUpdater, defaultUpdateFn } from '#public/scripts/slideshow/updater.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -47,26 +47,15 @@ describe('public/slideshow/updater class CyclicUpdater', () => {
     expect(test._maxFails).to.equal(10)
   })
   describe('this.trigger()', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments -- T cannot be inferred from unknown
-    const existingWindow = Cast<Window & typeof globalThis>(global.window)
-    const existingDocument = global.document
     const dom = new JSDOM('', {})
     let errorStub = sandbox.stub()
     const updateFn = sandbox.stub().resolves()
     const updater = new CyclicUpdater(updateFn, undefined)
     beforeAll(() => {
-      global.window = Cast<Window & typeof globalThis>(dom.window)
-      Object.defineProperty(global, 'document', {
-        configurable: true,
-        get: () => dom.window.document,
-      })
+      mountDom(dom)
     })
     afterAll(() => {
-      global.window = existingWindow
-      Object.defineProperty(global, 'document', {
-        configurable: true,
-        get: () => existingDocument,
-      })
+      unmountDom()
       Sinon.restore()
     })
     beforeEach(() => {

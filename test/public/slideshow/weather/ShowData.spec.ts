@@ -3,9 +3,9 @@
 import { Functions } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
-import { Cast } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 const markup = `
@@ -19,25 +19,15 @@ html
 `
 
 describe('public/slideshow/weather ShowData()', () => {
-  const baseWindow = global.window
-  const baseDocument = global.document
   let dom = new JSDOM('')
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => dom.window.document,
-    })
+    mountDom(dom)
   })
   afterEach(() => {
-    global.window = baseWindow
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => baseDocument,
-    })
+    unmountDom()
   })
 
   it('should accept null base element', () => {

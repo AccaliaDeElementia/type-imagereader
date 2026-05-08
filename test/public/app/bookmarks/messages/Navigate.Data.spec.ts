@@ -4,8 +4,8 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -33,20 +33,15 @@ html
 `
 
 describe('public/app/bookmarks Init Navigate:Data', () => {
-  let existingWindow: Window & typeof globalThis = global.window
-  let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
   let BuildBookmarksSpy = sandbox.stub()
 
   beforeEach(() => {
-    existingWindow = global.window
-    existingDocument = global.document
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
 
     resetPubSub()
 
@@ -60,8 +55,7 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   const testCases: Array<[string, unknown, boolean]> = [
     ['null', null, false],

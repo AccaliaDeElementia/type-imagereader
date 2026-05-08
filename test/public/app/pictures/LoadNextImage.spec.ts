@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { NavigateTo, Pictures } from '#public/scripts/app/pictures/index.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
@@ -18,8 +19,6 @@ html
 `
 
 describe('public/app/pictures function LoadNextImage()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   const fetchStub = sandbox.stub()
   let getPictureStub = sandbox.stub()
@@ -37,8 +36,7 @@ describe('public/app/pictures function LoadNextImage()', () => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     dom.window.fetch = fetchStub
     fetchStub.reset()
     fetchStub.resolves()
@@ -50,8 +48,7 @@ describe('public/app/pictures function LoadNextImage()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should call GetPicture once when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)

@@ -4,10 +4,10 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -24,16 +24,13 @@ html
       div.innerTarget
 `
 describe('public/app/navigation function Init()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
 
     resetPubSub()
     tabSelectedSpy.resolves()
@@ -50,8 +47,7 @@ describe('public/app/navigation function Init()', () => {
     tabSelectedSpy.reset()
   })
   afterAll(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
     Sinon.restore()
   })
   describe('Action:Execute:Slideshow Message Handler', () => {

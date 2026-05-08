@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
 
 import { resetPubSub } from '#testutils/PubSub.js'
 import { Bookmarks } from '#public/scripts/app/bookmarks.js'
@@ -27,18 +27,13 @@ html
 `
 
 describe('public/app/bookmarks function GetOrCreateFolderElement()', () => {
-  let existingWindow: Window & typeof globalThis = global.window
-  let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
   beforeEach(() => {
-    existingWindow = global.window
-    existingDocument = global.document
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
 
     resetPubSub()
 
@@ -47,8 +42,7 @@ describe('public/app/bookmarks function GetOrCreateFolderElement()', () => {
     Bookmarks.BookmarkFolders = []
   })
   afterEach(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should return an HTMLElement', () => {
     const result = Bookmarks.GetOrCreateFolderElement('', {

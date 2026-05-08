@@ -4,8 +4,8 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -19,8 +19,6 @@ html
 `
 
 describe('public/app/pictures function MakeTab()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   let makePicturesPageSpy = sandbox.stub()
   let makePaginatorSpy = sandbox.stub()
@@ -29,8 +27,7 @@ describe('public/app/pictures function MakeTab()', () => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     makePicturesPageSpy = sandbox.stub(Pictures, 'MakePicturesPage')
     makePicturesPageSpy.callsFake((pagenum: number, _: Picture[]) => {
       const retval = dom.window.document.createElement('div')
@@ -56,8 +53,7 @@ describe('public/app/pictures function MakeTab()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should call MakePicturesPage with page 1', () => {
     Pictures.MakeTab()

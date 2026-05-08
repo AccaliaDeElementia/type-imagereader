@@ -107,6 +107,10 @@ export default [
     rules: {
       '@typescript-eslint/strict-void-return': 'off', // Chai assertions and Sinon spies idiomatically return values in void contexts
       '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
+      // Mocha-style tests consume callback levels for describe/forEach/it before any
+      // user logic runs. The project default of 3 leaves zero room for an async test
+      // body inside a parameterized forEach. Bump to 5 for spec files only.
+      'max-nested-callbacks': ['error', 5],
       'no-restricted-syntax': [
         'error',
         {

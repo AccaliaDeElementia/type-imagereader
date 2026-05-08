@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -27,21 +27,16 @@ html
 `
 
 describe('public/app/bookmarks function Init()', () => {
-  let existingWindow: Window & typeof globalThis = global.window
-  let existingDocument: Document = global.document
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
   beforeEach(() => {
-    existingWindow = global.window
-    existingDocument = global.document
     document = global.document
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
     document = dom.window.document
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
 
     resetPubSub()
 
@@ -50,8 +45,7 @@ describe('public/app/bookmarks function Init()', () => {
     Bookmarks.bookmarksTab = null
   })
   afterEach(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should locate bookmarkCard template on init', () => {
     const content = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content

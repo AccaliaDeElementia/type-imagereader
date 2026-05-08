@@ -7,16 +7,16 @@ import { URL } from 'node:url'
 import { JSDOM } from 'jsdom'
 import { EventuallyRejects } from '#testutils/Errors.js'
 import { Cast } from '#testutils/TypeGuards.js'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/weather FetchWeather()', () => {
   let fetchStub = sandbox.stub()
 
-  const existingWindow = global.window
   const dom = new JSDOM('<html></html>')
   beforeEach(() => {
-    global.window = Cast<Window & typeof globalThis>(dom.window)
+    mountDom(dom)
     fetchStub = sandbox.stub()
     fetchStub.resolves({ json: async () => await Promise.resolve({}) })
     dom.window.fetch = fetchStub
@@ -24,7 +24,7 @@ describe('public/slideshow/weather FetchWeather()', () => {
 
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
+    unmountDom()
   })
 
   it('should return expected data on success', async () => {

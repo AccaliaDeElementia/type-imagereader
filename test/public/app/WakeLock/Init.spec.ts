@@ -3,9 +3,9 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
 import { WakeLock } from '#public/scripts/app/wakelock.js'
@@ -13,15 +13,12 @@ import { WakeLock } from '#public/scripts/app/wakelock.js'
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/wakelock function Init()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   let takeLockSpy = sandbox.stub()
   let releaseLockSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     takeLockSpy = sandbox.stub(WakeLock, 'TakeLock').resolves()
     releaseLockSpy = sandbox.stub(WakeLock, 'ReleaseLock').resolves()
     resetPubSub()
@@ -29,8 +26,7 @@ describe('public/app/wakelock function Init()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should subscribe to Picture:LoadNew', () => {
     WakeLock.Init()

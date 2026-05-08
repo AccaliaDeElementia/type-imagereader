@@ -4,10 +4,10 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { Net } from '#public/scripts/app/net.js'
 import { isListing } from '#contracts/listing.js'
@@ -27,8 +27,6 @@ html
       div.innerTarget
 `
 describe('public/app/navigation function LoadData()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('', {})
   const loadingShowSpy = sandbox.stub()
   const loadingHideSpy = sandbox.stub()
@@ -43,8 +41,7 @@ describe('public/app/navigation function LoadData()', () => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     titleElement = dom.window.document.querySelector('head title')
     assert(titleElement !== null)
     brandElement = dom.window.document.querySelector('a.navbar-brand')
@@ -82,8 +79,7 @@ describe('public/app/navigation function LoadData()', () => {
     navigateDataSpy.reset()
   })
   afterAll(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
     Sinon.restore()
   })
   it('should publish Loading:Show at start of processing', async () => {

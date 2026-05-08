@@ -2,6 +2,7 @@
 
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { expect } from 'chai'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
@@ -35,15 +36,12 @@ describe('public/app/pubsub function Publish()', () => {
 
 describe('public/app/pubsub function PublishAsync()', () => {
   let subscriber = sandbox.stub().resolves()
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html')
   let consoleWarn = sandbox.stub()
   let consoleError = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html')
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     consoleWarn = sandbox.stub(global.window.console, 'warn')
     consoleError = sandbox.stub(global.window.console, 'error')
 
@@ -56,8 +54,7 @@ describe('public/app/pubsub function PublishAsync()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should print warning once on Publish for unknown topic', async () => {
     await PubSub.PublishAsync('Quux', 'Digital')

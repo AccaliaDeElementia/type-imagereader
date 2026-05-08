@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
@@ -29,8 +30,6 @@ html
 `
 
 describe('public/app/pictures function LoadImage()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   const totalCount = 1500
   let current: Picture = {
@@ -52,8 +51,7 @@ describe('public/app/pictures function LoadImage()', () => {
   let bottomRightText: HTMLElement | null = null
   beforeEach(() => {
     dom = new JSDOM(render(markup))
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
     Pictures.pictures = Array.from({ length: totalCount }).map(
       (_: unknown, i: number): Picture => ({
@@ -97,8 +95,7 @@ describe('public/app/pictures function LoadImage()', () => {
     loadingErrorSpy.resetHistory()
     loadNewSpy.resetHistory()
     reloadSpy.resetHistory()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should be noop when current image is null', async () => {
     Pictures.current = null

@@ -1,9 +1,9 @@
 'use sanity'
 
 import { Functions } from '#public/scripts/slideshow/sockets.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { expect } from 'chai'
 
 const markup = `
@@ -15,8 +15,6 @@ html
 `
 
 describe('public/slideshow/sockets ShowBackingImageByType()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>')
   let topImage: HTMLImageElement | null = null
   let bottomImage: HTMLImageElement | null = null
@@ -26,18 +24,10 @@ describe('public/slideshow/sockets ShowBackingImageByType()', () => {
     topImage = dom.window.document.querySelector<HTMLImageElement>('img.topImage')
     bottomImage = dom.window.document.querySelector<HTMLImageElement>('img.bottomImage:not(.blur)')
     bottomBlurImage = dom.window.document.querySelector<HTMLImageElement>('img.bottomImage.blur')
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => dom.window.document,
-    })
+    mountDom(dom)
   })
   afterEach(() => {
-    global.window = existingWindow
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => existingDocument,
-    })
+    unmountDom()
   })
   const staticImages: string[] = [
     '/some/image.bmp',

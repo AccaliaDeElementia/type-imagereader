@@ -4,23 +4,20 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures function MakePaginatorItem()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   let selectPageSpy = sandbox.stub().resolves()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     selectPageSpy = sandbox.stub(Pictures, 'SelectPage')
     resetPubSub()
     const holder = dom.window.document.createElement('div')
@@ -30,8 +27,7 @@ describe('public/app/pictures function MakePaginatorItem()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('returns an List Item Element', () => {
     const result = Pictures.MakePaginatorItem('foobar', () => 0)

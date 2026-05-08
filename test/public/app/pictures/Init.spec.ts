@@ -2,6 +2,7 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
@@ -51,8 +52,6 @@ html
 `
 
 describe('public/app/pictures function Init()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM(render(markup), {})
   let resetMarkupSpy = sandbox.stub()
   let initActionsSpy = sandbox.stub()
@@ -63,8 +62,7 @@ describe('public/app/pictures function Init()', () => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
     resetMarkupSpy = sandbox.stub(Pictures, 'ResetMarkup')
     initActionsSpy = sandbox.stub(Pictures, 'InitActions')
@@ -74,8 +72,7 @@ describe('public/app/pictures function Init()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should clear pictures array', () => {
     Pictures.pictures = Cast<Picture[]>(null)

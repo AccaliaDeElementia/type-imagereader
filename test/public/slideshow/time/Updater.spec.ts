@@ -1,8 +1,8 @@
 'use sanity'
 
 import Updater, { Functions } from '#public/scripts/slideshow/time.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { expect } from 'chai'
 import Sinon from 'sinon'
@@ -22,8 +22,6 @@ html
 describe('public/slideshow/time Updater()', () => {
   let fakeFormatTime: Sinon.SinonStub | undefined = undefined
   let fakeFormatDate: Sinon.SinonStub | undefined = undefined
-  const baseWindow = global.window
-  const baseDocument = global.document
   let dom = new JSDOM(render(markup))
   const now = new Date(2000, 3, 1, 0, 0, 0, 0)
   beforeEach(() => {
@@ -33,19 +31,11 @@ describe('public/slideshow/time Updater()', () => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => dom.window.document,
-    })
+    mountDom(dom)
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = baseWindow
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => baseDocument,
-    })
+    unmountDom()
   })
   it('should expose a CyclicUpdater', () => {
     expect(Updater).to.be.an.instanceOf(CyclicUpdater)

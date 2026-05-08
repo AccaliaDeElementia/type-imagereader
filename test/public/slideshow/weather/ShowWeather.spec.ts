@@ -3,9 +3,9 @@
 import { Functions } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
-import { Cast } from '#testutils/TypeGuards.js'
 import type { WeatherResults } from '#contracts/weather.js'
 import Sinon from 'sinon'
 
@@ -22,8 +22,6 @@ html
 `
 
 describe('public/slideshow/weather ShowWeather()', () => {
-  const baseWindow = global.window
-  const baseDocument = global.document
   let dom = new JSDOM('')
   let weather: WeatherResults = {}
 
@@ -35,22 +33,14 @@ describe('public/slideshow/weather ShowWeather()', () => {
       url: 'http://127.0.0.1:2999',
     })
     weather = {}
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => dom.window.document,
-    })
+    mountDom(dom)
     showDataStub = sandbox.stub(Functions, 'ShowData')
     showIconStub = sandbox.stub(Functions, 'ShowIcon')
   })
 
   afterEach(() => {
     sandbox.restore()
-    global.window = baseWindow
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => baseDocument,
-    })
+    unmountDom()
   })
 
   it('should return input weather when null base provided', () => {

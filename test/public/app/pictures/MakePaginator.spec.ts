@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
@@ -21,8 +22,6 @@ html
 `
 
 describe('public/app/pictures function MakePaginator()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   let makePageItemSpy = sandbox.stub()
   let getCurrentPageSpy = sandbox.stub()
@@ -30,8 +29,7 @@ describe('public/app/pictures function MakePaginator()', () => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     makePageItemSpy = sandbox
       .stub(Pictures, 'MakePaginatorItem')
       .callsFake(() => dom.window.document.createElement('li'))
@@ -40,8 +38,7 @@ describe('public/app/pictures function MakePaginator()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should return null for negative page count', () => {
     const result = Pictures.MakePaginator(-7)

@@ -2,6 +2,7 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
@@ -50,8 +51,6 @@ html
 `
 
 describe('public/app/pictures function ResetMarkup()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM(render(markup), {})
   const loadingErrorSpy = sandbox.stub().resolves()
   const loadingHideSpy = sandbox.stub().resolves()
@@ -59,8 +58,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     loadingErrorSpy.resetHistory()
     resetPubSub()
     PubSub.subscribers = {
@@ -72,8 +70,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should set mainImage node', () => {
     Pictures.ResetMarkup()

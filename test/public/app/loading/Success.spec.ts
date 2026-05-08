@@ -3,10 +3,10 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Loading } from '#public/scripts/app/loading.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
 
@@ -18,15 +18,12 @@ html
     div#loadingScreen
 `
 describe('public/app/loading subscriber "Loading:Success"', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
@@ -34,8 +31,7 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should remove css transition style on navbar', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')

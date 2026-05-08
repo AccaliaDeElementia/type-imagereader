@@ -3,6 +3,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
@@ -16,8 +17,6 @@ interface TestVisualViewport {
 }
 
 describe('public/app/pictures function InitMouse()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html><body><div id="bigImage"><img class="hidden"/></div></body></html>', {})
   const ignoreClickSpy = sandbox.stub().resolves()
   const executePreviousSpy = sandbox.stub().resolves()
@@ -38,8 +37,7 @@ describe('public/app/pictures function InitMouse()', () => {
     dom = new JSDOM('<html><body><div id="bigImage"><img class="hidden"/></div></body></html>', {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     Pictures.mainImage = dom.window.document.querySelector('img')
     visualViewport = { scale: 1 }
     // @ts-expect-error Ignore that visualviewport is read-only
@@ -76,8 +74,7 @@ describe('public/app/pictures function InitMouse()', () => {
     executeNextSpy.resetHistory()
     executePreviousSpy.resetHistory()
     ignoreClickSpy.resetHistory()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should store initial scale from visual viewport', () => {
     visualViewport.scale = 972

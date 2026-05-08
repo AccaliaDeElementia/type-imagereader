@@ -3,10 +3,10 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { Tabs } from '#public/scripts/app/tabs.js'
 import assert from 'node:assert'
@@ -36,16 +36,13 @@ html
 `
 
 describe('public/app/tabs function Init()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   let selectTabSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'https://127.1.1.1:5050/',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     selectTabSpy = sandbox.stub(Tabs, 'SelectTab')
     resetPubSub()
     Tabs.tabs = []
@@ -53,8 +50,7 @@ describe('public/app/tabs function Init()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   const links = ['#tabActions', '#tabFolders', '#tabImages', '#tabBookmarks']
   it('should discover expected tab count', () => {

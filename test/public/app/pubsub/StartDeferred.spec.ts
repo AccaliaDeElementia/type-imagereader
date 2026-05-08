@@ -3,6 +3,7 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -13,15 +14,12 @@ import { HasValue } from '#utils/helpers.js'
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pubsub function StartDeferred()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   let setIntervalSpy = sandbox.stub()
   let executeIntervalSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     setIntervalSpy = sandbox.stub(global.window, 'setInterval')
     setIntervalSpy.returns(1)
     PubSub.cycleTime = 17
@@ -30,8 +28,7 @@ describe('public/app/pubsub function StartDeferred()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should set interval with Window.SetInterval()', () => {
     PubSub.StartDeferred()

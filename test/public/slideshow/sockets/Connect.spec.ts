@@ -4,6 +4,7 @@ import Sinon from 'sinon'
 import { Imports, Functions, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { expect } from 'chai'
 import assert from 'node:assert'
 
@@ -19,8 +20,6 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   let fakeHandleClick: Sinon.SinonStub | undefined = undefined
   let fakeHandleKeys: Sinon.SinonStub | undefined = undefined
   const fakeViewport = { scale: 1 }
-  const existingWindow = global.window
-  const existingDocument = global.document
   const dom = new JSDOM('<html></html>')
   beforeEach(() => {
     fakeViewport.scale = 1
@@ -31,11 +30,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     fakeParseRoom = sandbox.stub(Functions, 'ParseRoomName')
     fakeParseRoom.returns('')
     fakeIO = sandbox.stub(Imports, 'io').returns(fakeSocket)
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => dom.window.document,
-    })
+    mountDom(dom)
     fakeAddEventListener = sandbox.stub(dom.window.document.body, 'addEventListener')
     dom.reconfigure({
       url: `http://127.0.0.1:2999/slideshow?`,
@@ -45,11 +40,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => existingDocument,
-    })
+    unmountDom()
   })
   it('should clear launchId prior to connect succeeding', () => {
     WebSockets.launchId = 'BAD PRIOR ID'

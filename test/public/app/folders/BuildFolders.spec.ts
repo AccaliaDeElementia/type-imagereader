@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 import { Folders } from '#public/scripts/app/folders.js'
@@ -22,8 +23,6 @@ html
 `
 
 describe('public/app/folders function BuildFolders()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   let tabFolders: HTMLDivElement | null = null
   let hideTabStub = sandbox.stub()
@@ -31,11 +30,7 @@ describe('public/app/folders function BuildFolders()', () => {
   let buildAllCardsStub = sandbox.stub()
   let tabSelectStub = sandbox.stub()
   beforeEach(() => {
-    dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999',
-    })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
     tabFolders = dom.window.document.querySelector('#tabFolders')
     hideTabStub = sandbox.stub(Folders, 'HideTab')
     unhideTabStub = sandbox.stub(Folders, 'UnhideTab')
@@ -46,8 +41,7 @@ describe('public/app/folders function BuildFolders()', () => {
   afterEach(() => {
     sandbox.restore()
     resetPubSub()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should remove all existing folder cards on call', () => {
     for (let i = 0; i < 20; i += 1) {

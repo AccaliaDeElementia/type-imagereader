@@ -2,9 +2,9 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Confirm } from '#public/scripts/app/confirm.js'
-import { Cast } from '#testutils/TypeGuards.js'
 
 const markup = `
 html
@@ -19,13 +19,9 @@ html
 `
 
 describe('public/app/confirm function Init()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
-
   beforeEach(() => {
     const dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     Confirm.dialogElement = null
     Confirm.titleElement = null
     Confirm.messageElement = null
@@ -34,8 +30,7 @@ describe('public/app/confirm function Init()', () => {
   })
 
   afterEach(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
 
   it('should set dialogElement to #confirmDialog', () => {

@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 import type { Listing } from '#contracts/listing.js'
@@ -35,8 +36,6 @@ html
 `
 
 describe('public/app/bookmarks Init Bookmarks:Load', () => {
-  let existingWindow: Window & typeof globalThis = global.window
-  let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
   let BuildBookmarksSpy = sandbox.stub()
@@ -44,13 +43,10 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
   let loadingErrorSpy = sandbox.stub()
 
   beforeEach(() => {
-    existingWindow = global.window
-    existingDocument = global.document
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
 
     loadingErrorSpy = sandbox.stub().resolves()
     resetPubSub()
@@ -68,8 +64,7 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should use Net.GetJSON to load bookmarks', async () => {
     const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()

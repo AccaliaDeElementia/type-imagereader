@@ -4,8 +4,8 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
@@ -22,16 +22,13 @@ html
 `
 
 describe('public/app/pictures function SetPicturesGetFirst()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
 
   let element: HTMLElement | null = null
   const menuShow = sandbox.stub().resolves()
   beforeEach(() => {
     dom = new JSDOM(render(markup))
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
     PubSub.subscribers = {
       'MENU:SHOW': [menuShow],
@@ -44,8 +41,7 @@ describe('public/app/pictures function SetPicturesGetFirst()', () => {
   afterEach(() => {
     sandbox.restore()
     menuShow.resetHistory()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should abort gracefully for null mainImage', () => {
     Pictures.mainImage = null

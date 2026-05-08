@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 
@@ -34,8 +35,6 @@ html
 `
 
 describe('public/app/bookmarks Init Bookmarks:Add', () => {
-  let existingWindow: Window & typeof globalThis = global.window
-  let existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
   let postJSONSpy = sandbox.stub()
@@ -44,13 +43,10 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
   let loadingSuccessSpy = sandbox.stub()
 
   beforeEach(() => {
-    existingWindow = global.window
-    existingDocument = global.document
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
 
     bookmarksLoadSpy = sandbox.stub().resolves()
     loadingErrorSpy = sandbox.stub().resolves()
@@ -71,8 +67,7 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   const postDataCases: Array<[string, unknown, boolean]> = [
     ['null', null, false],

@@ -3,10 +3,10 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
 import { Tabs } from '#public/scripts/app/tabs.js'
@@ -35,8 +35,6 @@ html
 `
 
 describe('public/app/tabs function SelectTab()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   const actionsScroll = sandbox.stub()
   const foldersScroll = sandbox.stub()
@@ -45,8 +43,7 @@ describe('public/app/tabs function SelectTab()', () => {
   const tabSelectedSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {})
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     sandbox.stub(global.window.console, 'error')
     const actions = dom.window.document.getElementById('tabActions')
     assert(actions !== null)
@@ -79,8 +76,7 @@ describe('public/app/tabs function SelectTab()', () => {
     imagesScroll.reset()
     bookmarksScroll.reset()
     tabSelectedSpy.reset()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should gracefully handle zero tabs', () => {
     Tabs.tabNames = []

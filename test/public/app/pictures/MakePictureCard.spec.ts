@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Cast } from '#testutils/TypeGuards.js'
@@ -12,8 +13,6 @@ import { resetPubSub } from '#testutils/PubSub.js'
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures function MakePictureCard()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   const menuHideSpy = sandbox.stub().resolves()
   let changePictureSpy = sandbox.stub()
@@ -21,8 +20,7 @@ describe('public/app/pictures function MakePictureCard()', () => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     menuHideSpy.resetHistory()
     resetPubSub()
     PubSub.subscribers = {
@@ -36,8 +34,7 @@ describe('public/app/pictures function MakePictureCard()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should return an HTMLElement on failure', () => {
     Pictures.imageCard = null

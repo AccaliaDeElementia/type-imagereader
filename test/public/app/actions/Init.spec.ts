@@ -9,29 +9,26 @@ import { Actions } from '#public/scripts/app/actions.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import type { Listing } from '#contracts/listing.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/actions function Init()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   const dom: JSDOM = new JSDOM('', {})
   let BuildActionsSpy = sandbox.stub()
   let GamepadResetSpy = sandbox.stub()
 
   beforeEach(() => {
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
     BuildActionsSpy = sandbox.stub(Actions, 'BuildActions')
     GamepadResetSpy = sandbox.stub(Actions.gamepads, 'Reset')
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should build actions on init', () => {
     Actions.Init()

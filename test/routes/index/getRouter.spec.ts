@@ -34,7 +34,6 @@ describe('routes/index function getRouter()', () => {
     })
     it(`should register handler function for endpoint '${endpoint}`, async () => {
       await getRouter(applicationFake, serverFake, socketsFake)
-      // eslint-disable-next-line max-nested-callbacks -- allow search
       const fn = routerStub.get.getCalls().find((call) => call.args[0] === endpoint)?.args[1] as unknown
       assert.isFunction(fn)
     })

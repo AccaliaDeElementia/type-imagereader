@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 
 import { Folders } from '#public/scripts/app/folders.js'
 
@@ -15,21 +15,14 @@ html
 `
 
 describe('public/app/folders function HideTab()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   let tabFolders: HTMLDivElement | null = null
   beforeEach(() => {
-    dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999',
-    })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
     tabFolders = dom.window.document.querySelector('#tabLink')
   })
   afterEach(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should add hidden class to parent of selected element', () => {
     Folders.HideTab('a[href="#tabFolders"]')
@@ -47,21 +40,14 @@ describe('public/app/folders function HideTab()', () => {
   })
 })
 describe('public/app/folders function UnhideTab()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   let tabFolders: HTMLDivElement | null = null
   beforeEach(() => {
-    dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999',
-    })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
     tabFolders = dom.window.document.querySelector('#tabLink')
   })
   afterEach(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should remove hidden class from parent of selected element', () => {
     tabFolders?.classList.add('hidden')

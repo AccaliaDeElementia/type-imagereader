@@ -3,22 +3,19 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
-import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pubsub function StopDeferred()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>', {})
   let clearIntervalSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     clearIntervalSpy = sandbox.stub(global.window, 'clearInterval')
     PubSub.cycleTime = 17
     resetPubSub()
@@ -27,8 +24,7 @@ describe('public/app/pubsub function StopDeferred()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should clear interval with Window.clearInterval()', () => {
     PubSub.StopDeferred()

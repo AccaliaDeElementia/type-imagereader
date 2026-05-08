@@ -6,9 +6,9 @@ import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Actions } from '#public/scripts/app/actions.js'
 
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 const sandbox = Sinon.createSandbox()
@@ -27,22 +27,18 @@ html
 `
 
 describe('public/app/actions function createButtons()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should return div element', () => {
     const result = Actions.createButtons([])

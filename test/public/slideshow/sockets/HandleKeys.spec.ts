@@ -4,6 +4,7 @@ import Sinon from 'sinon'
 import { Functions, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import assert from 'node:assert'
 import { expect } from 'chai'
 
@@ -12,22 +13,12 @@ const sandbox = Sinon.createSandbox()
 describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeEmit = sandbox.stub()
   const fakeSocket = Cast<WebSocket>({ emit: fakeEmit })
-  const existingWindow = global.window
-  const existingDocument = global.document
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => dom.window.document,
-    })
+    mountDom(dom)
   })
   afterAll(() => {
-    global.window = existingWindow
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => existingDocument,
-    })
+    unmountDom()
   })
   beforeEach(() => {
     fakeEmit.reset()

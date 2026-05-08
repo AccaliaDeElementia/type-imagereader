@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import Sinon from 'sinon'
 import assert from 'node:assert'
@@ -17,24 +17,20 @@ const markup = `html
       div#slider4test
       `
 describe('public/app/pictures function SetShowUnreadOnly()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('<html></html>')
   let getShowUnreadOnlySpy = sandbox.stub()
   let setShowUnreadOnlySpy = sandbox.stub()
   let updateUnreadSelectorSliderSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup))
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     getShowUnreadOnlySpy = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
     setShowUnreadOnlySpy = sandbox.stub(Pictures, 'SetShowUnreadOnly')
     updateUnreadSelectorSliderSpy = sandbox.stub(Pictures, 'UpdateUnreadSelectorSlider')
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should update current status on init', () => {
     Pictures.InitUnreadSelectorSlider()

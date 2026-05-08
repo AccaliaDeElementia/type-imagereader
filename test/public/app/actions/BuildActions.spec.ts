@@ -5,9 +5,9 @@ import Sinon from 'sinon'
 
 import { Actions } from '#public/scripts/app/actions.js'
 
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 const sandbox = Sinon.createSandbox()
@@ -31,23 +31,19 @@ const rowCases = Actions.ActionGroups.flatMap(({ target, buttons }) =>
 )
 
 describe('public/app/actions function BuildActions()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
     sandbox.stub(Actions.gamepads, 'Reset')
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
 
   Actions.ActionGroups.forEach(({ target, buttons }) => {

@@ -2,9 +2,9 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Navigation } from '#public/scripts/app/navigation.js'
-import { Cast } from '#testutils/TypeGuards.js'
 
 const markup = `
 html
@@ -18,21 +18,17 @@ html
       div.innerTarget
 `
 describe('public/app/navigation function IsMenuActive()', () => {
-  const existingWindow = global.window
-  const existingDocument = global.document
   let dom = new JSDOM('', {})
   let menuNode: HTMLDivElement | null = null
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     menuNode = dom.window.document.querySelector('#mainMenu')
   })
   afterEach(() => {
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should return true for missing menu!', () => {
     menuNode?.parentElement?.removeChild(menuNode)

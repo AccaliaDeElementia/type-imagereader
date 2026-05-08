@@ -3,9 +3,9 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Loading } from '#public/scripts/app/loading.js'
-import { Cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -16,15 +16,12 @@ html
     div#loadingScreen
 `
 describe('public/app/loading function IsLoading()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    mountDom(dom)
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
@@ -32,8 +29,7 @@ describe('public/app/loading function IsLoading()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   const testCases: Array<[string, boolean]> = [
     ['inline', false],

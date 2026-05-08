@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
@@ -37,16 +37,10 @@ html
 `
 
 describe('public/app/folders function BuildCard()', () => {
-  const existingWindow: Window & typeof globalThis = global.window
-  const existingDocument: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   let folderCard: DocumentFragment | null = null
   beforeEach(() => {
-    dom = new JSDOM(render(markup), {
-      url: 'http://127.0.0.1:2999',
-    })
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    global.document = dom.window.document
+    dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
 
     resetPubSub()
     Folders.FolderCard = null
@@ -57,8 +51,7 @@ describe('public/app/folders function BuildCard()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    global.window = existingWindow
-    global.document = existingDocument
+    unmountDom()
   })
   it('should return null when template is missing', () => {
     Folders.FolderCard = null

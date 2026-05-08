@@ -2,8 +2,8 @@
 
 import { Functions, LocalWeatherUpdater } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
-import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import Sinon from 'sinon'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
@@ -28,28 +28,18 @@ describe('public/slideshow/weather LocalWeatherUpdater', () => {
   let fetchWeatherStub = sandbox.stub()
   let showWeatherStub = sandbox.stub()
 
-  const baseWindow = global.window
-  const baseDocument = global.document
   let dom = new JSDOM(render(markup))
 
   beforeEach(() => {
     fetchWeatherStub = sandbox.stub(Functions, 'FetchWeather').resolves({})
     showWeatherStub = sandbox.stub(Functions, 'ShowWeather').returns({})
     dom = new JSDOM(render(markup))
-    global.window = Cast<Window & typeof globalThis>(dom.window)
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => dom.window.document,
-    })
+    mountDom(dom)
   })
 
   afterEach(() => {
     sandbox.restore()
-    global.window = baseWindow
-    Object.defineProperty(global, 'document', {
-      configurable: true,
-      get: () => baseDocument,
-    })
+    unmountDom()
   })
 
   it('should be an CyclicUpdater', () => {
