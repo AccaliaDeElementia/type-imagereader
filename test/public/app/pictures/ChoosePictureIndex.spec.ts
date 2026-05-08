@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { NavigateTo, Viewer } from '#public/scripts/app/pictures/viewer.js'
+import { Internals, NavigateTo } from '#public/scripts/app/pictures/viewer.js'
 import { expect } from 'chai'
 
 describe('public/app/pictures function ChoosePictureIndex()', () => {
@@ -25,20 +25,20 @@ describe('public/app/pictures function ChoosePictureIndex()', () => {
   tests.forEach(([title, navi]) => {
     it(`${title}: should return invalid index for empty picture array`, () => {
       Pictures.pictures = []
-      const result = Viewer.ChoosePictureIndex(navi, 9, [])
+      const result = Internals.ChoosePictureIndex(navi, 9, [])
       expect(result).to.equal(-1)
     })
   })
   it('NavigateTo.First: should return index 0', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.First, 999, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.First, 999, [])
     expect(result).to.equal(0)
   })
   it('NavigateTo.PreviousUnread: should return invalid index with no unreads', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.PreviousUnread, 999, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.PreviousUnread, 999, [])
     expect(result).to.equal(-1)
   })
   it('NavigateTo.PreviousUnread: should return expected index with unreads', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.PreviousUnread, 999, [
+    const result = Internals.ChoosePictureIndex(NavigateTo.PreviousUnread, 999, [
       ...Pictures.pictures.slice(16, 32),
       {
         path: `/some/path/test.png`,
@@ -50,43 +50,43 @@ describe('public/app/pictures function ChoosePictureIndex()', () => {
     expect(result).to.equal(77)
   })
   it('NavigateTo.Previous: should return invalid index with negative current image', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Previous, -23, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Previous, -23, [])
     expect(result).to.equal(-1)
   })
   it('NavigateTo.Previous: should return invalid index with zero current image', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Previous, 0, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Previous, 0, [])
     expect(result).to.equal(-1)
   })
   it('NavigateTo.Previous: should return expected index with positive current image', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Previous, 23, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Previous, 23, [])
     expect(result).to.equal(22)
   })
   it('NavigateTo.Previous: should return expected index with out of bounds positive current image', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Previous, 1000, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Previous, 1000, [])
     expect(result).to.equal(999)
   })
   it('NavigateTo.Next: should return invalid index with max index current image', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Next, 63, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Next, 63, [])
     expect(result).to.equal(-1)
   })
   it('NavigateTo.Next: should return invalid index with out of range index current image', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Next, 65535, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Next, 65535, [])
     expect(result).to.equal(-1)
   })
   it('NavigateTo.Next: should return expected index with in range current image', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Next, 17, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Next, 17, [])
     expect(result).to.equal(18)
   })
   it('NavigateTo.Next: should return invalid index with negative index current image', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Next, -34, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Next, -34, [])
     expect(result).to.equal(-33)
   })
   it('NavigateTo.NextUnread: should return invalid index with no unreads', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.NextUnread, 999, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.NextUnread, 999, [])
     expect(result).to.equal(-1)
   })
   it('NavigateTo.NextUnread: should return expected index with unreads', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.NextUnread, 999, [
+    const result = Internals.ChoosePictureIndex(NavigateTo.NextUnread, 999, [
       {
         path: `/some/path/test.png`,
         name: `test.png`,
@@ -98,7 +98,7 @@ describe('public/app/pictures function ChoosePictureIndex()', () => {
     expect(result).to.equal(77)
   })
   it('NavigateTo.Last: should return max index', () => {
-    const result = Viewer.ChoosePictureIndex(NavigateTo.Last, 7, [])
+    const result = Internals.ChoosePictureIndex(NavigateTo.Last, 7, [])
     expect(result).to.equal(63)
   })
 })

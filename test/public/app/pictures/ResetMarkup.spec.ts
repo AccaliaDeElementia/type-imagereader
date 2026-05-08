@@ -7,7 +7,6 @@ import { render } from 'pug'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Imports } from '#public/scripts/app/pictures/state.js'
-import { Viewer } from '#public/scripts/app/pictures/viewer.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/PubSub.js'
 
@@ -37,7 +36,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
     Pictures.mainImage = null
     Pictures.imageCard = null
     gridResetSpy = sandbox.stub(Imports, 'GridResetMarkup')
-    viewerResetSpy = sandbox.stub(Viewer, 'ResetMarkup')
+    viewerResetSpy = sandbox.stub(Imports, 'ViewerResetMarkup')
   })
   afterEach(() => {
     sandbox.restore()

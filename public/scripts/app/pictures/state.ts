@@ -3,7 +3,7 @@
 import type { Picture } from '#contracts/listing.js'
 import { isListing, isPicture } from '#contracts/listing.js'
 import { ResetMarkup as _GridResetMarkup } from './grid.js'
-import { Viewer } from './viewer.js'
+import { ChangePicture as _ChangePicture, ResetMarkup as _ViewerResetMarkup } from './viewer.js'
 import { LoadData as _LoadData } from './data.js'
 import { InitActions as _InitActions, InitMouse as _InitMouse } from './inputs.js'
 import { InitUnreadSelectorSlider as _InitUnreadSelectorSlider } from './unreadFilter.js'
@@ -12,6 +12,8 @@ import { Subscribe } from '../pubsub.js'
 export const Imports = {
   LoadData: _LoadData,
   GridResetMarkup: _GridResetMarkup,
+  ViewerResetMarkup: _ViewerResetMarkup,
+  ChangePicture: _ChangePicture,
   InitActions: _InitActions,
   InitMouse: _InitMouse,
   InitUnreadSelectorSlider: _InitUnreadSelectorSlider,
@@ -60,7 +62,7 @@ function ResetMarkup(): void {
   Pictures.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
   Pictures.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
   Imports.GridResetMarkup()
-  Viewer.ResetMarkup()
+  Imports.ViewerResetMarkup()
 }
 
 function Init(): void {
@@ -70,7 +72,7 @@ function Init(): void {
     if (isListing(data)) await Imports.LoadData(data)
   })
   Subscribe('Pictures:Change', async (data) => {
-    if (isPicture(data)) await Viewer.ChangePicture(data)
+    if (isPicture(data)) await Imports.ChangePicture(data)
   })
   Imports.InitActions()
   Imports.InitMouse()

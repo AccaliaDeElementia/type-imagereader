@@ -8,7 +8,6 @@ import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Imports } from '#public/scripts/app/pictures/state.js'
-import { Viewer } from '#public/scripts/app/pictures/viewer.js'
 import type { Picture } from '#contracts/listing.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
@@ -71,7 +70,7 @@ describe('public/app/pictures function Init()', () => {
     initMouseSpy = sandbox.stub(Imports, 'InitMouse')
     initUnreadSliderSpy = sandbox.stub(Imports, 'InitUnreadSelectorSlider')
     loadDataSpy = sandbox.stub(Imports, 'LoadData')
-    changePictureSpy = sandbox.stub(Viewer, 'ChangePicture')
+    changePictureSpy = sandbox.stub(Imports, 'ChangePicture')
   })
   afterEach(() => {
     sandbox.restore()

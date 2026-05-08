@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Imports, Viewer } from '#public/scripts/app/pictures/viewer.js'
+import { Imports, Internals, LoadImage } from '#public/scripts/app/pictures/viewer.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
@@ -75,9 +75,9 @@ describe('public/app/pictures function LoadImage()', () => {
     current.index = 1250
     postJSONSpy = sandbox.stub(Net, 'PostJSON')
     postJSONSpy.resolves(50)
-    sandbox.stub(Viewer, 'GetPicture').returns(undefined)
+    sandbox.stub(Internals, 'GetPicture').returns(undefined)
     selectPageSpy = sandbox.stub(Imports, 'SelectPage')
-    loadNextImageSpy = sandbox.stub(Viewer, 'LoadNextImage').resolves()
+    loadNextImageSpy = sandbox.stub(Internals, 'LoadNextImage').resolves()
     PubSub.subscribers = {
       'LOADING:SHOW': [loadingShowSpy],
       'LOADING:ERROR': [loadingErrorSpy],
@@ -101,42 +101,42 @@ describe('public/app/pictures function LoadImage()', () => {
   it('should be noop when current image is null', async () => {
     Pictures.current = null
     Pictures.nextPending = true
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadingShowSpy.called).to.equal(false)
   })
   it('should be noop when current image path is empty', async () => {
     assert(Pictures.current !== null)
     Pictures.current.path = ''
     Pictures.nextPending = true
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadingShowSpy.called).to.equal(false)
   })
   it('should not call PostJSON when current image path is empty', async () => {
     assert(Pictures.current !== null)
     Pictures.current.path = ''
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(postJSONSpy.callCount).to.equal(0)
   })
   it('should not update image src when current image path is empty', async () => {
     assert(Pictures.current !== null)
     Pictures.current.path = ''
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.mainImage?.getAttribute('src')).to.equal(null)
   })
   it('should not publish LoadNew when current image path is empty', async () => {
     assert(Pictures.current !== null)
     Pictures.current.path = ''
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadNewSpy.callCount).to.equal(0)
   })
   it('should show loading when next is pending', async () => {
     Pictures.nextPending = true
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadingShowSpy.called).to.equal(true)
   })
   it('should not show loading when next is not pending', async () => {
     Pictures.nextPending = false
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadingShowSpy.called).to.equal(false)
   })
   it('should not await next loader when image is null', async () => {
@@ -145,7 +145,7 @@ describe('public/app/pictures function LoadImage()', () => {
     Pictures.nextLoader = Delay(10).then(() => {
       awaited = true
     })
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(awaited).to.equal(false)
   })
   it('should await next loader when image is valid', async () => {
@@ -153,32 +153,32 @@ describe('public/app/pictures function LoadImage()', () => {
     Pictures.nextLoader = Delay(10).then(() => {
       awaited = true
     })
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(awaited).to.equal(true)
   })
   it('should set seen on current picture', async () => {
     current.seen = false
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(current.seen).to.equal(true)
   })
   it('should set seen css class on current element', async () => {
     element?.classList.remove('seen')
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(element?.classList.contains('seen')).to.equal(true)
   })
   it('should call PostJSON once for navigate latest', async () => {
     Pictures.modCount = 50
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(postJSONSpy.callCount).to.equal(1)
   })
   it('should call PostJSON with expected url for navigate latest', async () => {
     Pictures.modCount = 50
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(postJSONSpy.calledWith('/api/navigate/latest')).to.equal(true)
   })
   it('should call PostJSON with expected body for navigate latest', async () => {
     Pictures.modCount = 50
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(postJSONSpy.firstCall.args[1]).to.deep.equal({
       path: '/some/path/1250.png',
       modCount: 50,
@@ -199,7 +199,7 @@ describe('public/app/pictures function LoadImage()', () => {
   modcountTests.forEach(([title, input, result]) => {
     it(`should ${result ? '' : 'not '}accept ${title} as modcount from PostJSON`, async () => {
       Pictures.modCount = 99
-      await Viewer.LoadImage()
+      await LoadImage()
       const fn = Cast<(_: unknown) => unknown>(postJSONSpy.firstCall.args[2])
       expect(fn(input)).to.equal(result)
     })
@@ -207,141 +207,141 @@ describe('public/app/pictures function LoadImage()', () => {
   it('should trigger reload when new modcount is undefined', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(undefined)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(reloadSpy.callCount).to.equal(1)
   })
   it('should not update image src when new modcount is undefined', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(undefined)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.mainImage?.src).to.equal('')
   })
   it('should trigger reload when new modcount is NaN', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(NaN)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(reloadSpy.callCount).to.equal(1)
   })
   it('should not update image src when new modcount is NaN', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(NaN)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.mainImage?.src).to.equal('')
   })
   it('should trigger reload when new modcount is negative', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(-1)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(reloadSpy.callCount).to.equal(1)
   })
   it('should not update image src when new modcount is negative', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(-1)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.mainImage?.src).to.equal('')
   })
   it('should not initiate reload when new modcount is zero', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(0)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(reloadSpy.callCount).to.equal(0)
   })
   it('should update modcount to zero on successful post', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(0)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.modCount).to.equal(0)
   })
   it('should not reload when modcount is valid', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(76)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(reloadSpy.callCount).to.equal(0)
   })
   it('should update modcount on successful post', async () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(76)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.modCount).to.equal(76)
   })
   it('should set src on image', async () => {
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.mainImage?.getAttribute('src')).to.equal('/images/scaled/0/0/some/path/1250.png-image.webp')
   })
   it('should set src height on image', async () => {
     assert(Pictures.mainImage !== null)
     Pictures.mainImage.height = 512
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.mainImage.getAttribute('src')).to.equal('/images/scaled/0/512/some/path/1250.png-image.webp')
   })
   it('should set src width on image', async () => {
     assert(Pictures.mainImage !== null)
     Pictures.mainImage.width = 1024
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(Pictures.mainImage.getAttribute('src')).to.equal('/images/scaled/1024/0/some/path/1250.png-image.webp')
   })
   it('should set statusbar name', async () => {
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(bottomCenterText?.innerHTML).to.equal('1250.png')
   })
   it('should set statusbar percent', async () => {
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(bottomRightText?.innerHTML).to.equal('(83.4%)')
   })
   it('should set statusbar position', async () => {
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(bottomLeftText?.innerHTML).to.equal('(1,251/1,500)')
   })
   it('should default to first image name on missing index', async () => {
     assert(Pictures.current !== null, 'Current Image must be set for valid test')
     Pictures.current.index = undefined
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(bottomCenterText?.innerHTML).to.equal('1250.png')
   })
   it('should default to first image percentname on missing index', async () => {
     assert(Pictures.current !== null, 'Current Image must be set for valid test')
     Pictures.current.index = undefined
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(bottomRightText?.innerHTML).to.equal('(0%)')
   })
   it('should default to first image position on missing index', async () => {
     assert(Pictures.current !== null, 'Current Image must be set for valid test')
     Pictures.current.index = undefined
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(bottomLeftText?.innerHTML).to.equal('(1/1,500)')
   })
   it('should select page of currnet image', async () => {
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(selectPageSpy.calledWith(40)).to.equal(true)
   })
   it('should select default page when current image omits page marker', async () => {
     assert(Pictures.current !== null, 'Current Image must be set for valid test')
     Pictures.current.page = undefined
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(selectPageSpy.calledWith(1)).to.equal(true)
   })
   it('should publish LoadNew message on successful load', async () => {
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadNewSpy.callCount).to.equal(1)
   })
   it('should not publish LoadingError on successful load', async () => {
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should publish LoadNew message even if LoadNextImage rejects', async () => {
     loadNextImageSpy.rejects('ERROR!')
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadNewSpy.callCount).to.equal(1)
   })
   it('should not publish LoadingError even if LoadNextImage rejects', async () => {
     loadNextImageSpy.rejects('ERROR!')
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should publish error when postJSON throws error', async () => {
     const expectedErr = new Error('IGGY WIGGY, LETS GET JIGGY')
     postJSONSpy.rejects(expectedErr)
-    await Viewer.LoadImage()
+    await LoadImage()
     expect(loadingErrorSpy.calledWith(expectedErr)).to.equal(true)
   })
 })

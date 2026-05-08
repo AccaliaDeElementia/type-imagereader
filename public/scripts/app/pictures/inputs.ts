@@ -4,7 +4,7 @@ import { HasValue, HasValues, ZERO_LENGTH } from '#utils/helpers.js'
 import { Navigation } from '../navigation.js'
 import { UNINITIALIZED_SCALE } from './state.js'
 import { Pictures } from './index.js'
-import { Viewer, NavigateTo } from './viewer.js'
+import { ChangePicture as _ChangePicture, GetPicture as _GetPicture, NavigateTo } from './viewer.js'
 import { LoadCurrentPageImages as _LoadCurrentPageImages } from './grid.js'
 import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
 import { Publish, Subscribe } from '../pubsub.js'
@@ -12,6 +12,8 @@ import { Publish, Subscribe } from '../pubsub.js'
 export const Imports = {
   GetShowUnreadOnly: _GetShowUnreadOnly,
   LoadCurrentPageImages: _LoadCurrentPageImages,
+  ChangePicture: _ChangePicture,
+  GetPicture: _GetPicture,
 }
 
 const LEFT_THIRD = 0.3333333333333333
@@ -38,7 +40,7 @@ export function InitActions(): void {
   Subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ShowMenu'))
 
   const changeTo = async (direction: NavigateTo): Promise<void> => {
-    await Viewer.ChangePicture(Viewer.GetPicture(direction))
+    await Imports.ChangePicture(Imports.GetPicture(direction))
   }
 
   Subscribe('Action:Execute:Previous', async () => {

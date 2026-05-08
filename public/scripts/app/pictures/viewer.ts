@@ -23,7 +23,7 @@ export enum NavigateTo {
   Last,
 }
 
-export function makeURI(width: number | undefined, height: number | undefined, img: Picture): string {
+function makeURI(width: number | undefined, height: number | undefined, img: Picture): string {
   return `/images/scaled/${width}/${height}${img.path}-image.webp`
 }
 
@@ -43,7 +43,7 @@ function setTextContent(selector: string, content: string): void {
   document.querySelector(selector)?.replaceChildren(document.createTextNode(content))
 }
 
-function ResetMarkup(): void {
+export function ResetMarkup(): void {
   for (const bar of ['top', 'bottom']) {
     for (const position of ['left', 'center', 'right']) {
       document.querySelector(`.statusBar.${bar} .${position}`)?.replaceChildren('')
@@ -61,7 +61,7 @@ function ResetMarkup(): void {
   })
 }
 
-async function ChangePicture(pic: Picture | undefined): Promise<void> {
+export async function ChangePicture(pic: Picture | undefined): Promise<void> {
   if (Loading.IsLoading()) {
     return
   }
@@ -70,11 +70,11 @@ async function ChangePicture(pic: Picture | undefined): Promise<void> {
     return
   }
   Pictures.current = pic
-  await Viewer.LoadImage().catch(() => null)
+  await Internals.LoadImage().catch(() => null)
   Publish('Menu:Hide')
 }
 
-async function LoadImage(): Promise<void> {
+export async function LoadImage(): Promise<void> {
   if (Pictures.current === null) return
   if (Pictures.current.path === '') return
   if (Pictures.nextPending) {
@@ -98,7 +98,7 @@ async function LoadImage(): Promise<void> {
     await Pictures.nextLoader
     Pictures.mainImage?.setAttribute(
       'src',
-      makeURI(Pictures.mainImage.width, Pictures.mainImage.height, Pictures.current),
+      Internals.makeURI(Pictures.mainImage.width, Pictures.mainImage.height, Pictures.current),
     )
     const { index = DEFAULT_INDEX } = Pictures.current
     const displayTotal = Pictures.pictures.length.toLocaleString()
@@ -108,7 +108,7 @@ async function LoadImage(): Promise<void> {
     setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
     setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
     Imports.SelectPage(Pictures.current.page ?? DEFAULT_PAGE)
-    void Viewer.LoadNextImage().catch(() => undefined)
+    void Internals.LoadNextImage().catch(() => undefined)
     Publish('Picture:LoadNew')
   } catch (err) {
     Publish('Loading:Error', err)
@@ -116,12 +116,12 @@ async function LoadImage(): Promise<void> {
 }
 
 async function LoadNextImage(): Promise<void> {
-  const next = Viewer.GetPicture(Imports.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
+  const next = Internals.GetPicture(Imports.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
   if (next === undefined) {
     Pictures.nextPending = false
     Pictures.nextLoader = Promise.resolve()
   } else {
-    const uri = makeURI(Pictures.mainImage?.width, Pictures.mainImage?.height, next)
+    const uri = Internals.makeURI(Pictures.mainImage?.width, Pictures.mainImage?.height, next)
     Pictures.nextPending = true
     const clearPending = (): void => {
       Pictures.nextPending = false
@@ -131,7 +131,7 @@ async function LoadNextImage(): Promise<void> {
   await Pictures.nextLoader
 }
 
-function GetPicture(navi: NavigateTo): Picture | undefined {
+export function GetPicture(navi: NavigateTo): Picture | undefined {
   const current = Pictures.current?.index
   if (current === undefined) {
     return undefined
@@ -140,7 +140,7 @@ function GetPicture(navi: NavigateTo): Picture | undefined {
     ...Pictures.pictures.filter((image) => !image.seen && image.index !== undefined && image.index > current),
     ...Pictures.pictures.filter((image) => !image.seen && image.index !== undefined && image.index < current),
   ]
-  const index = Viewer.ChoosePictureIndex(navi, current, unreads)
+  const index = Internals.ChoosePictureIndex(navi, current, unreads)
   return Pictures.pictures[index]
 }
 
@@ -162,11 +162,10 @@ function ChoosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[
   }
 }
 
-export const Viewer = {
-  ResetMarkup,
-  ChangePicture,
+export const Internals = {
   LoadImage,
   LoadNextImage,
   GetPicture,
   ChoosePictureIndex,
+  makeURI,
 }

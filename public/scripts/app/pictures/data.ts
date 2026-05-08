@@ -3,7 +3,7 @@
 import type { Listing, Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
 import { MakeTab as _MakeTab } from './grid.js'
-import { Viewer } from './viewer.js'
+import { LoadImage as _LoadImage } from './viewer.js'
 import { GetFirst } from '#utils/helpers.js'
 import { Publish } from '../pubsub.js'
 
@@ -11,7 +11,7 @@ const DEFAULT_MOD_COUNT = -1
 
 export const Imports = {
   MakeTab: _MakeTab,
-  LoadImage: Viewer.LoadImage,
+  LoadImage: _LoadImage,
 }
 
 function SetPictureIndices(): void {
