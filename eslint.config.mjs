@@ -86,7 +86,7 @@ export default [
       'require-atomic-updates': 'error',
       'require-unicode-regexp': 'error',
       '@typescript-eslint/prefer-destructuring': [
-        'warn',
+        'error',
         {
           array: true, // This makes sense and is good. avoids a lot of magic numbers too
           object: false, // This really hurts readability IMO. at the very least it bends my brain so dont enable this yet

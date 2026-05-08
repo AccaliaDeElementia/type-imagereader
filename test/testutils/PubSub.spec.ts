@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -49,5 +49,41 @@ describe('testutils/PubSub resetPubSub()', () => {
     const first = PubSub.intervals
     resetPubSub()
     expect(PubSub.intervals).to.not.equal(first)
+  })
+})
+
+describe('testutils/PubSub getSubscriber()', () => {
+  afterEach(() => {
+    sandbox.restore()
+    resetPubSub()
+  })
+  it('should return the registered subscriber for the topic', () => {
+    const stub = sandbox.stub().resolves()
+    PubSub.subscribers['TEST:TOPIC'] = [stub]
+    expect(getSubscriber('TEST:TOPIC')).to.equal(stub)
+  })
+  it('should canonicalize the topic name to upper-case before lookup', () => {
+    const stub = sandbox.stub().resolves()
+    PubSub.subscribers['TEST:TOPIC'] = [stub]
+    expect(getSubscriber('test:topic')).to.equal(stub)
+  })
+  it('should return the most-recently-registered subscriber when multiple exist', () => {
+    const earlier = sandbox.stub().resolves()
+    const latest = sandbox.stub().resolves()
+    PubSub.subscribers['TEST:TOPIC'] = [earlier, latest]
+    expect(getSubscriber('TEST:TOPIC')).to.equal(latest)
+  })
+  it('should leave the registry unchanged after retrieval', () => {
+    const stub = sandbox.stub().resolves()
+    PubSub.subscribers['TEST:TOPIC'] = [stub]
+    getSubscriber('TEST:TOPIC')
+    expect(PubSub.subscribers['TEST:TOPIC']).to.deep.equal([stub])
+  })
+  it('should throw when the topic has no registered subscribers', () => {
+    expect(() => getSubscriber('TEST:UNKNOWN')).to.throw(/TEST:UNKNOWN/v)
+  })
+  it('should throw when the topic is registered with an empty subscriber list', () => {
+    PubSub.subscribers['TEST:EMPTY'] = []
+    expect(() => getSubscriber('TEST:EMPTY')).to.throw(/TEST:EMPTY/v)
   })
 })
