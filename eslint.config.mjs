@@ -93,6 +93,19 @@ export default [
         },
       ],
       '@typescript-eslint/no-floating-promises': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**'],
+              importNames: ['Internals', 'Imports'],
+              message:
+                "`Internals` and `Imports` are stub seams scoped to their defining module. Production code should import the named function directly; if you need a stub seam in this file, add it to this file's own `Imports` object.",
+            },
+          ],
+        },
+      ],
     },
   },
   {
@@ -111,6 +124,9 @@ export default [
       // user logic runs. The project default of 3 leaves zero room for an async test
       // body inside a parameterized forEach. Bump to 5 for spec files only.
       'max-nested-callbacks': ['error', 5],
+      // Spec files legitimately import Internals (within-module stub seam) and Imports
+      // (cross-module stub seam) of the module under test.
+      'no-restricted-imports': 'off',
       'no-restricted-syntax': [
         'error',
         {
