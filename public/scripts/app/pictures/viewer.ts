@@ -3,11 +3,15 @@
 import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
 import { Grid } from './grid.js'
-import { UnreadFilter } from './unreadFilter.js'
+import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
 import { HasValues, IndexPercentToText, IndexToText, StringishHasValue } from '#utils/helpers.js'
 import { Loading } from '../loading.js'
 import { Net } from '../net.js'
 import { Publish } from '../pubsub.js'
+
+export const Imports = {
+  GetShowUnreadOnly: _GetShowUnreadOnly,
+}
 
 export enum NavigateTo {
   First,
@@ -111,7 +115,7 @@ async function LoadImage(): Promise<void> {
 }
 
 async function LoadNextImage(): Promise<void> {
-  const next = Viewer.GetPicture(UnreadFilter.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
+  const next = Viewer.GetPicture(Imports.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
   if (next === undefined) {
     Pictures.nextPending = false
     Pictures.nextLoader = Promise.resolve()

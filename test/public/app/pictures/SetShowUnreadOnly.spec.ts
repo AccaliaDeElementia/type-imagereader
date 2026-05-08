@@ -4,7 +4,7 @@ import { expect } from 'chai'
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
+import { Internals } from '#public/scripts/app/pictures/unreadFilter.js'
 
 describe('public/app/pictures function SetShowUnreadOnly()', () => {
   let dom = new JSDOM('<html></html>')
@@ -18,11 +18,11 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     unmountDom()
   })
   it('should store true when enabling function', () => {
-    UnreadFilter.SetShowUnreadOnly(true)
+    Internals.SetShowUnreadOnly(true)
     expect(dom.window.localStorage.getItem('ShowUnreadOnly')).to.equal('true')
   })
   it('should store true when disabling function', () => {
-    UnreadFilter.SetShowUnreadOnly(false)
+    Internals.SetShowUnreadOnly(false)
     expect(dom.window.localStorage.getItem('ShowUnreadOnly')).to.equal('false')
   })
 })

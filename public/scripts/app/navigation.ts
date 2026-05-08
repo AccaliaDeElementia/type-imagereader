@@ -1,11 +1,15 @@
 'use sanity'
 
-import { UnreadFilter } from './pictures/unreadFilter.js'
+import { GetShowUnreadOnly as _GetShowUnreadOnly } from './pictures/unreadFilter.js'
 import { Net, acceptAnyResponse } from './net.js'
 import { Publish, Subscribe } from './pubsub.js'
 import { isListing, type Listing } from '#contracts/listing.js'
 import { HasValue, HasValues, StringishHasValue } from '#utils/helpers.js'
 import { Confirm } from './confirm.js'
+
+export const Imports = {
+  GetShowUnreadOnly: _GetShowUnreadOnly,
+}
 
 const INITIAL_LOAD_TOKEN = 0
 const TOKEN_STEP = 1
@@ -92,11 +96,11 @@ export const Navigation = {
       Publish('Menu:Show')
     })
     Subscribe('Action:Execute:PreviousFolder', async () => {
-      const prev = UnreadFilter.GetShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
+      const prev = Imports.GetShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
       await Navigation.NavigateTo(prev?.path, 'PreviousFolder')
     })
     Subscribe('Action:Execute:NextFolder', async () => {
-      const next = UnreadFilter.GetShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
+      const next = Imports.GetShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
       await Navigation.NavigateTo(next?.path, 'NextFolder')
     })
     Subscribe('Action:Execute:ParentFolder', async () => {

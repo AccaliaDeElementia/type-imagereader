@@ -7,10 +7,9 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { Imports, Navigation } from '#public/scripts/app/navigation.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
@@ -71,7 +70,7 @@ describe('public/app/navigation function Init()', () => {
     }
     beforeEach(() => {
       navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
-      showUnreadOnlyStub = sandbox.stub(UnreadFilter, 'GetShowUnreadOnly').returns(false)
+      showUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
       Navigation.Init()
       previousFolder = {
         name: `Foo ${Math.random()}`,
@@ -155,7 +154,7 @@ describe('public/app/navigation function Init()', () => {
     }
     beforeEach(() => {
       navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
-      showUnreadOnlyStub = sandbox.stub(UnreadFilter, 'GetShowUnreadOnly').returns(false)
+      showUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
       Navigation.Init()
       nextFolder = {
         name: `Foo ${Math.random()}`,

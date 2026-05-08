@@ -6,11 +6,12 @@ import { Grid } from './grid.js'
 import { Viewer } from './viewer.js'
 import { LoadData as _LoadData } from './data.js'
 import { Inputs } from './inputs.js'
-import { UnreadFilter } from './unreadFilter.js'
+import { InitUnreadSelectorSlider as _InitUnreadSelectorSlider } from './unreadFilter.js'
 import { Subscribe } from '../pubsub.js'
 
 export const Imports = {
   LoadData: _LoadData,
+  InitUnreadSelectorSlider: _InitUnreadSelectorSlider,
 }
 
 const UNINITIALIZED_MOD_COUNT = -1
@@ -70,7 +71,7 @@ function Init(): void {
   })
   Inputs.InitActions()
   Inputs.InitMouse()
-  UnreadFilter.InitUnreadSelectorSlider()
+  Imports.InitUnreadSelectorSlider()
 }
 
 export const Pictures = {

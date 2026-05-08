@@ -5,10 +5,9 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Inputs } from '#public/scripts/app/pictures/inputs.js'
+import { Inputs, Imports } from '#public/scripts/app/pictures/inputs.js'
 import { Viewer, NavigateTo } from '#public/scripts/app/pictures/viewer.js'
 import { Grid } from '#public/scripts/app/pictures/grid.js'
-import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
@@ -35,7 +34,7 @@ describe('public/app/pictures function InitActions()', () => {
     Pictures.mainImage = null
     Pictures.imageCard = null
     isMenuActiveSpy = sandbox.stub(Navigation, 'IsMenuActive').returns(false)
-    getShowUnreadOnly = sandbox.stub(UnreadFilter, 'GetShowUnreadOnly').returns(false)
+    getShowUnreadOnly = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
     getPictureFake = { number: Math.random() }
     getPictureSpy = sandbox.stub(Viewer, 'GetPicture').returns(Cast<Picture>(getPictureFake))
     changePictureSpy = sandbox.stub(Viewer, 'ChangePicture')

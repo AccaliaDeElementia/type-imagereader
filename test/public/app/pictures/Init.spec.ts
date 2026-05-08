@@ -10,7 +10,6 @@ import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Imports } from '#public/scripts/app/pictures/state.js'
 import { Viewer } from '#public/scripts/app/pictures/viewer.js'
 import { Inputs } from '#public/scripts/app/pictures/inputs.js'
-import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 import type { Picture } from '#contracts/listing.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
@@ -71,7 +70,7 @@ describe('public/app/pictures function Init()', () => {
     resetMarkupSpy = sandbox.stub(Pictures, 'ResetMarkup')
     initActionsSpy = sandbox.stub(Inputs, 'InitActions')
     initMouseSpy = sandbox.stub(Inputs, 'InitMouse')
-    initUnreadSliderSpy = sandbox.stub(UnreadFilter, 'InitUnreadSelectorSlider')
+    initUnreadSliderSpy = sandbox.stub(Imports, 'InitUnreadSelectorSlider')
     loadDataSpy = sandbox.stub(Imports, 'LoadData')
     changePictureSpy = sandbox.stub(Viewer, 'ChangePicture')
   })

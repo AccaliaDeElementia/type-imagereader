@@ -6,8 +6,12 @@ import { UNINITIALIZED_SCALE } from './state.js'
 import { Pictures } from './index.js'
 import { Viewer, NavigateTo } from './viewer.js'
 import { Grid } from './grid.js'
-import { UnreadFilter } from './unreadFilter.js'
+import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
 import { Publish, Subscribe } from '../pubsub.js'
+
+export const Imports = {
+  GetShowUnreadOnly: _GetShowUnreadOnly,
+}
 
 const LEFT_THIRD = 0.3333333333333333
 const RIGHT_THIRD = 0.6666666666666666
@@ -37,12 +41,12 @@ function InitActions(): void {
   }
 
   Subscribe('Action:Execute:Previous', async () => {
-    const actualEvent = UnreadFilter.GetShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
+    const actualEvent = Imports.GetShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
     Publish(`Action:Execute:${actualEvent}`)
     await Promise.resolve()
   })
   Subscribe('Action:Execute:Next', async () => {
-    const actualEvent = UnreadFilter.GetShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
+    const actualEvent = Imports.GetShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
     Publish(`Action:Execute:${actualEvent}`)
     await Promise.resolve()
   })

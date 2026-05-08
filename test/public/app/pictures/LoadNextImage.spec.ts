@@ -6,8 +6,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { NavigateTo, Viewer } from '#public/scripts/app/pictures/viewer.js'
-import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
+import { Imports, NavigateTo, Viewer } from '#public/scripts/app/pictures/viewer.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
@@ -43,7 +42,7 @@ describe('public/app/pictures function LoadNextImage()', () => {
     fetchStub.reset()
     fetchStub.resolves()
     getPictureStub = sandbox.stub(Viewer, 'GetPicture').returns(next)
-    getShowUnreadOnlyStub = sandbox.stub(UnreadFilter, 'GetShowUnreadOnly').returns(false)
+    getShowUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
     mainImage.width = 1024
     mainImage.height = 768
     Pictures.mainImage = Cast<HTMLImageElement>(mainImage)
