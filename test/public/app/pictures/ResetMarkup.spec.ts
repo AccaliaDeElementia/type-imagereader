@@ -6,7 +6,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Grid } from '#public/scripts/app/pictures/grid.js'
+import { Imports } from '#public/scripts/app/pictures/state.js'
 import { Viewer } from '#public/scripts/app/pictures/viewer.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -36,7 +36,7 @@ describe('public/app/pictures function ResetMarkup()', () => {
     resetPubSub()
     Pictures.mainImage = null
     Pictures.imageCard = null
-    gridResetSpy = sandbox.stub(Grid, 'ResetMarkup')
+    gridResetSpy = sandbox.stub(Imports, 'GridResetMarkup')
     viewerResetSpy = sandbox.stub(Viewer, 'ResetMarkup')
   })
   afterEach(() => {

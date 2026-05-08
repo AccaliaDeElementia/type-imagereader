@@ -7,7 +7,6 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { InitActions, Imports } from '#public/scripts/app/pictures/inputs.js'
 import { Viewer, NavigateTo } from '#public/scripts/app/pictures/viewer.js'
-import { Grid } from '#public/scripts/app/pictures/grid.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
@@ -38,7 +37,7 @@ describe('public/app/pictures function InitActions()', () => {
     getPictureFake = { number: Math.random() }
     getPictureSpy = sandbox.stub(Viewer, 'GetPicture').returns(Cast<Picture>(getPictureFake))
     changePictureSpy = sandbox.stub(Viewer, 'ChangePicture')
-    loadCurrentPageSpy = sandbox.stub(Grid, 'LoadCurrentPageImages')
+    loadCurrentPageSpy = sandbox.stub(Imports, 'LoadCurrentPageImages')
     windowOpenSpy = sandbox.stub(global.window, 'open')
   })
   afterEach(() => {

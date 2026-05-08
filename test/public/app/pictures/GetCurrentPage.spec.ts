@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Grid } from '#public/scripts/app/pictures/grid.js'
+import { Internals } from '#public/scripts/app/pictures/grid.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -40,21 +40,21 @@ describe('public/app/pictures function GetCurrentPage()', () => {
   }
   it('should return -1 for no pages', () => {
     makePages(0)
-    expect(Grid.GetCurrentPage()).to.equal(-1)
+    expect(Internals.GetCurrentPage()).to.equal(-1)
   })
   it('should return -1 for no active pages', () => {
     makePages(20)
-    expect(Grid.GetCurrentPage()).to.equal(-1)
+    expect(Internals.GetCurrentPage()).to.equal(-1)
   })
   it('should return number for active page', () => {
     const pages = makePages(20)
     pages[10]?.classList.add('active')
-    expect(Grid.GetCurrentPage()).to.equal(10)
+    expect(Internals.GetCurrentPage()).to.equal(10)
   })
   it('should return number for first active page', () => {
     const pages = makePages(20)
     pages[10]?.classList.add('active')
     pages[15]?.classList.add('active')
-    expect(Grid.GetCurrentPage()).to.equal(10)
+    expect(Internals.GetCurrentPage()).to.equal(10)
   })
 })

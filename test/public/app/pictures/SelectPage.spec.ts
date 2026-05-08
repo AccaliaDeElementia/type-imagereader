@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Grid } from '#public/scripts/app/pictures/grid.js'
+import { SelectPage } from '#public/scripts/app/pictures/grid.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
@@ -61,88 +61,88 @@ describe('public/app/pictures function SelectPage()', () => {
     return result
   }
   it('should publish default page select once when no pages', () => {
-    Grid.SelectPage(0)
+    SelectPage(0)
     expect(selectPageSpy.callCount).to.equal(1)
   })
   it('should publish default page select with expected args when no pages', () => {
-    Grid.SelectPage(0)
+    SelectPage(0)
     expect(selectPageSpy.firstCall.args).to.deep.equal(['Default Page Selected', 'PICTURES:SELECTPAGE'])
   })
   it('should not publish loading error when publishing default page select', () => {
-    Grid.SelectPage(0)
+    SelectPage(0)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should not publish error when no pages', () => {
     // test various cases, none should error
-    Grid.SelectPage(0)
-    Grid.SelectPage(-1)
-    Grid.SelectPage(1e9)
+    SelectPage(0)
+    SelectPage(-1)
+    SelectPage(1e9)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should not call selectPage when trying to select zero page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(0)
+    SelectPage(0)
     expect(selectPageSpy.callCount).to.equal(0)
   })
   it('should publish error once when trying to select zero page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(0)
+    SelectPage(0)
     expect(loadingErrorSpy.callCount).to.equal(1)
   })
   it('should publish error with expected args when trying to select zero page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(0)
+    SelectPage(0)
     expect(loadingErrorSpy.firstCall.args).to.deep.equal(['Invalid Page Index Selected', 'LOADING:ERROR'])
   })
   it('should not call selectPage when trying to select negative page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(-1)
+    SelectPage(-1)
     expect(selectPageSpy.callCount).to.equal(0)
   })
   it('should publish error once when trying to select negative page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(-1)
+    SelectPage(-1)
     expect(loadingErrorSpy.callCount).to.equal(1)
   })
   it('should publish error with expected args when trying to select negative page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(-1)
+    SelectPage(-1)
     expect(loadingErrorSpy.firstCall.args).to.deep.equal(['Invalid Page Index Selected', 'LOADING:ERROR'])
   })
   it('should not call selectPage when trying to select out of range page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(11)
+    SelectPage(11)
     expect(selectPageSpy.callCount).to.equal(0)
   })
   it('should publish error once when trying to select out of range page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(11)
+    SelectPage(11)
     expect(loadingErrorSpy.callCount).to.equal(1)
   })
   it('should publish error with expected args when trying to select out of range page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(11)
+    SelectPage(11)
     expect(loadingErrorSpy.firstCall.args).to.deep.equal(['Invalid Page Index Selected', 'LOADING:ERROR'])
   })
   it('should call selectPage once when trying to select valid page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(5)
+    SelectPage(5)
     expect(selectPageSpy.callCount).to.equal(1)
   })
   it('should not publish error when trying to select valid page', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(5)
+    SelectPage(5)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should remove active class from current active page link when switching', () => {
@@ -150,7 +150,7 @@ describe('public/app/pictures function SelectPage()', () => {
     makePages(100)
     links[50]?.classList.add('active')
     expect(links[50]?.classList.contains('active')).to.equal(true)
-    Grid.SelectPage(25)
+    SelectPage(25)
     expect(links[50]?.classList.contains('active')).to.equal(false)
   })
   it('should add active class to next page link when switching', () => {
@@ -158,7 +158,7 @@ describe('public/app/pictures function SelectPage()', () => {
     makePages(100)
     links[50]?.classList.add('active')
     expect(links[25]?.classList.contains('active')).to.equal(false)
-    Grid.SelectPage(25)
+    SelectPage(25)
     expect(links[25]?.classList.contains('active')).to.equal(true)
   })
   it('should add hidden class to active page when switching', () => {
@@ -166,7 +166,7 @@ describe('public/app/pictures function SelectPage()', () => {
     const pages = makePages(100)
     pages[50]?.classList.remove('hidden')
     expect(pages[50]?.classList.contains('hidden')).to.equal(false)
-    Grid.SelectPage(25)
+    SelectPage(25)
     expect(pages[50]?.classList.contains('hidden')).to.equal(true)
   })
   it('should remove hidden class from next page when switching', () => {
@@ -174,31 +174,31 @@ describe('public/app/pictures function SelectPage()', () => {
     const pages = makePages(100)
     pages[24]?.classList.add('hidden')
     expect(pages[24]?.classList.contains('hidden')).to.equal(true)
-    Grid.SelectPage(25)
+    SelectPage(25)
     expect(pages[24]?.classList.contains('hidden')).to.equal(false)
   })
   it('should publish notification once on successful page select', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(5)
+    SelectPage(5)
     expect(selectPageSpy.callCount).to.equal(1)
   })
   it('should publish notification with expected args on successful page select', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(5)
+    SelectPage(5)
     expect(selectPageSpy.firstCall.args).to.deep.equal(['New Page 5 Selected', 'PICTURES:SELECTPAGE'])
   })
   it('should not publish error on successful page select', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(5)
+    SelectPage(5)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should not publish notification on error page select', () => {
     makePageLinks(10)
     makePages(10)
-    Grid.SelectPage(50)
+    SelectPage(50)
     expect(selectPageSpy.callCount).to.equal(0)
   })
 })

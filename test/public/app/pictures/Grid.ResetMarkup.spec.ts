@@ -5,8 +5,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import Sinon from 'sinon'
-import '#public/scripts/app/pictures/state.js'
-import { Grid } from '#public/scripts/app/pictures/grid.js'
+import { ResetMarkup } from '#public/scripts/app/pictures/grid.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/PubSub.js'
 
@@ -39,7 +38,7 @@ describe('public/app/pictures/grid function ResetMarkup()', () => {
       node.classList.add('pages')
       tab.appendChild(node)
     }
-    Grid.ResetMarkup()
+    ResetMarkup()
     expect(tab.children).to.have.lengthOf(0)
   })
   it('should remove existing .page nodes from #tabImages', () => {
@@ -50,7 +49,7 @@ describe('public/app/pictures/grid function ResetMarkup()', () => {
       node.classList.add('page')
       tab.appendChild(node)
     }
-    Grid.ResetMarkup()
+    ResetMarkup()
     expect(tab.children).to.have.lengthOf(0)
   })
   it('should preserve existing non .page nodes from #tabImages', () => {
@@ -61,7 +60,7 @@ describe('public/app/pictures/grid function ResetMarkup()', () => {
       node.classList.add('foo')
       tab.appendChild(node)
     }
-    Grid.ResetMarkup()
+    ResetMarkup()
     expect(tab.children).to.have.lengthOf(15)
   })
 })

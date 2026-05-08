@@ -17,7 +17,7 @@ const MINIMUM_INDEX = 0
 
 type PageSelector = () => number
 
-function ResetMarkup(): void {
+export function ResetMarkup(): void {
   for (const existing of document.querySelectorAll('#tabImages .pages, #tabImages .page')) {
     existing.parentElement?.removeChild(existing)
   }
@@ -41,7 +41,7 @@ function MakePicturesPage(pageNum: number, pictures: Picture[]): HTMLElement {
   const page = document.createElement('div')
   page.classList.add('page')
   for (const picture of pictures) {
-    const card = Grid.MakePictureCard(picture)
+    const card = Internals.MakePictureCard(picture)
     if (card === undefined) continue
     picture.element = card
     picture.page = pageNum
@@ -55,7 +55,7 @@ function MakePaginatorItem(label: string, selector: PageSelector): HTMLElement |
   const item = CloneNode(pageItem, isHTMLElement)
   item?.querySelector('span')?.replaceChildren(document.createTextNode(label))
   item?.addEventListener('click', (e: Event) => {
-    Grid.SelectPage(selector())
+    Internals.SelectPage(selector())
     e.preventDefault()
   })
   return item
@@ -66,30 +66,32 @@ function MakePaginator(pageCount: number): HTMLElement | null {
   const paginator = CloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'), isHTMLElement)
   if (paginator === undefined) return null
   const domItems = paginator.querySelector('.pagination')
-  const firstItem = Grid.MakePaginatorItem('«', () =>
-    Math.max(Grid.GetCurrentPage() - PAGE_NUMBER_INCREMENT, FIRST_PAGE_NUMBER),
+  const firstItem = Internals.MakePaginatorItem('«', () =>
+    Math.max(Internals.GetCurrentPage() - PAGE_NUMBER_INCREMENT, FIRST_PAGE_NUMBER),
   )
   if (firstItem !== undefined) domItems?.appendChild(firstItem)
   for (let i = FIRST_PAGE_NUMBER; i <= pageCount; i += PAGE_NUMBER_INCREMENT) {
-    const item = Grid.MakePaginatorItem(`${i}`, () => i)
+    const item = Internals.MakePaginatorItem(`${i}`, () => i)
     if (item !== undefined) domItems?.appendChild(item)
   }
-  const lastItem = Grid.MakePaginatorItem('»', () => Math.min(Grid.GetCurrentPage() + PAGE_NUMBER_INCREMENT, pageCount))
+  const lastItem = Internals.MakePaginatorItem('»', () =>
+    Math.min(Internals.GetCurrentPage() + PAGE_NUMBER_INCREMENT, pageCount),
+  )
   if (lastItem !== undefined) domItems?.appendChild(lastItem)
   return paginator
 }
 
-function MakeTab(): void {
+export function MakeTab(): void {
   const pageCount = Math.ceil(Pictures.pictures.length / Pictures.pageSize)
   const tab = document.querySelector<HTMLElement>('#tabImages')
   const pages: HTMLElement[] = Array.from({ length: pageCount }).map((_, i) => {
     const offsetPage = i + INDEX_TO_PAGE_OFFSET
-    return Grid.MakePicturesPage(
+    return Internals.MakePicturesPage(
       offsetPage,
       Pictures.pictures.slice(i * Pictures.pageSize, offsetPage * Pictures.pageSize),
     )
   })
-  const pagninator = Grid.MakePaginator(pageCount)
+  const pagninator = Internals.MakePaginator(pageCount)
   if (pagninator !== null) {
     tab?.appendChild(pagninator)
   }
@@ -103,7 +105,7 @@ function GetCurrentPage(): number {
   return Array.from(items).findIndex((elem) => elem.classList.contains('active'))
 }
 
-function SelectPage(index: number): void {
+export function SelectPage(index: number): void {
   const links = document.querySelectorAll('.pagination .page-item')
   if (!HasValues(links)) {
     Publish('Pictures:SelectPage', 'Default Page Selected')
@@ -130,7 +132,7 @@ function SelectPage(index: number): void {
   Publish('Pictures:SelectPage', `New Page ${index} Selected`)
 }
 
-function LoadCurrentPageImages(): void {
+export function LoadCurrentPageImages(): void {
   for (const card of document.querySelectorAll<HTMLElement>('#tabImages .page:not(.hidden) .card')) {
     const style = card.getAttribute('data-backgroundImage')
     if (style !== null) {
@@ -139,14 +141,11 @@ function LoadCurrentPageImages(): void {
   }
 }
 
-export const Grid = {
-  ResetMarkup,
+export const Internals = {
   MakePictureCard,
   MakePicturesPage,
   MakePaginatorItem,
   MakePaginator,
-  MakeTab,
   GetCurrentPage,
   SelectPage,
-  LoadCurrentPageImages,
 }

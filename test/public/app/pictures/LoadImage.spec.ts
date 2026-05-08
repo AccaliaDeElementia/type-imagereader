@@ -6,8 +6,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { Grid } from '#public/scripts/app/pictures/grid.js'
-import { Viewer } from '#public/scripts/app/pictures/viewer.js'
+import { Imports, Viewer } from '#public/scripts/app/pictures/viewer.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
@@ -77,7 +76,7 @@ describe('public/app/pictures function LoadImage()', () => {
     postJSONSpy = sandbox.stub(Net, 'PostJSON')
     postJSONSpy.resolves(50)
     sandbox.stub(Viewer, 'GetPicture').returns(undefined)
-    selectPageSpy = sandbox.stub(Grid, 'SelectPage')
+    selectPageSpy = sandbox.stub(Imports, 'SelectPage')
     loadNextImageSpy = sandbox.stub(Viewer, 'LoadNextImage').resolves()
     PubSub.subscribers = {
       'LOADING:SHOW': [loadingShowSpy],

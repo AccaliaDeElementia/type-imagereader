@@ -2,7 +2,7 @@
 
 import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
-import { Grid } from './grid.js'
+import { SelectPage as _SelectPage } from './grid.js'
 import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
 import { HasValues, IndexPercentToText, IndexToText, StringishHasValue } from '#utils/helpers.js'
 import { Loading } from '../loading.js'
@@ -11,6 +11,7 @@ import { Publish } from '../pubsub.js'
 
 export const Imports = {
   GetShowUnreadOnly: _GetShowUnreadOnly,
+  SelectPage: _SelectPage,
 }
 
 export enum NavigateTo {
@@ -106,7 +107,7 @@ async function LoadImage(): Promise<void> {
     setTextContent('.statusBar.bottom .center', Pictures.current.name)
     setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
     setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
-    Grid.SelectPage(Pictures.current.page ?? DEFAULT_PAGE)
+    Imports.SelectPage(Pictures.current.page ?? DEFAULT_PAGE)
     void Viewer.LoadNextImage().catch(() => undefined)
     Publish('Picture:LoadNew')
   } catch (err) {

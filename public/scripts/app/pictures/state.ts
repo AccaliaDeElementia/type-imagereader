@@ -2,7 +2,7 @@
 
 import type { Picture } from '#contracts/listing.js'
 import { isListing, isPicture } from '#contracts/listing.js'
-import { Grid } from './grid.js'
+import { ResetMarkup as _GridResetMarkup } from './grid.js'
 import { Viewer } from './viewer.js'
 import { LoadData as _LoadData } from './data.js'
 import { InitActions as _InitActions, InitMouse as _InitMouse } from './inputs.js'
@@ -11,6 +11,7 @@ import { Subscribe } from '../pubsub.js'
 
 export const Imports = {
   LoadData: _LoadData,
+  GridResetMarkup: _GridResetMarkup,
   InitActions: _InitActions,
   InitMouse: _InitMouse,
   InitUnreadSelectorSlider: _InitUnreadSelectorSlider,
@@ -58,7 +59,7 @@ export function defaultState(): StateFields {
 function ResetMarkup(): void {
   Pictures.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
   Pictures.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
-  Grid.ResetMarkup()
+  Imports.GridResetMarkup()
   Viewer.ResetMarkup()
 }
 

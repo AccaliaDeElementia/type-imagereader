@@ -5,12 +5,13 @@ import { Navigation } from '../navigation.js'
 import { UNINITIALIZED_SCALE } from './state.js'
 import { Pictures } from './index.js'
 import { Viewer, NavigateTo } from './viewer.js'
-import { Grid } from './grid.js'
+import { LoadCurrentPageImages as _LoadCurrentPageImages } from './grid.js'
 import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
 import { Publish, Subscribe } from '../pubsub.js'
 
 export const Imports = {
   GetShowUnreadOnly: _GetShowUnreadOnly,
+  LoadCurrentPageImages: _LoadCurrentPageImages,
 }
 
 const LEFT_THIRD = 0.3333333333333333
@@ -83,7 +84,7 @@ export function InitActions(): void {
   Subscribe('Action:Execute:Bookmark', addBookmark)
   Subscribe('Action:Gamepad:B', addBookmark)
   Subscribe('Pictures:SelectPage', async () => {
-    Grid.LoadCurrentPageImages()
+    Imports.LoadCurrentPageImages()
     await Promise.resolve()
   })
 }
