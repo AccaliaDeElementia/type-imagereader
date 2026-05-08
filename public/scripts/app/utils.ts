@@ -1,3 +1,5 @@
+'use sanity'
+
 import { HasValue } from '#utils/helpers.js'
 
 function isHTMLTemplateElement(obj: HTMLElement | DocumentFragment): obj is HTMLTemplateElement {
