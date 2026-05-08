@@ -2,13 +2,12 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import type { Listing } from '#contracts/listing.js'
 
 const sandbox = Sinon.createSandbox()
@@ -55,8 +54,7 @@ describe('public/app/navigation function Init()', () => {
   describe('Navigate:Load Handler', () => {
     it('should set current location when passed string', async () => {
       Navigation.Init()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       await handler('a string')
       expect(Navigation.current).to.deep.equal({
         path: 'a string',
@@ -71,23 +69,20 @@ describe('public/app/navigation function Init()', () => {
         parent: '/foo/bar',
       }
       Navigation.Init()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       await handler(data)
       expect(Navigation.current).to.equal(data)
     })
     it('should retain current location when passed invalid data', async () => {
       Navigation.Init()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       Navigation.current.path = '/foo/bar/bax/42'
       await handler(null)
       expect(Navigation.current.path).to.equal('/foo/bar/bax/42')
     })
     it('should not load data when passed invalid data', async () => {
       Navigation.Init()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       loadDataStub.resetHistory()
       await handler(null)
       expect(loadDataStub.callCount).to.equal(0)
@@ -96,32 +91,28 @@ describe('public/app/navigation function Init()', () => {
       Navigation.Init()
       loadDataStub.resetHistory()
       loadDataStub.rejects(new Event('FOO!'))
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       const catcher = (): never => expect.fail('Handler should not reject!')
       await handler('a string').catch(catcher)
     })
     it('should call LoadData() once with defaults', async () => {
       Navigation.Init()
       loadDataStub.resetHistory()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       await handler('a string')
       expect(loadDataStub.callCount).to.equal(1)
     })
     it('should call LoadData() with noHistory=false for string path', async () => {
       Navigation.Init()
       loadDataStub.resetHistory()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       await handler('a string')
       expect(loadDataStub.firstCall.args[0]).to.equal(false)
     })
     it('should call LoadData() with suppressMenu=false for string path', async () => {
       Navigation.Init()
       loadDataStub.resetHistory()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       await handler('a string')
       expect(loadDataStub.firstCall.args[1]).to.equal(false)
     })
@@ -134,8 +125,7 @@ describe('public/app/navigation function Init()', () => {
       }
       Navigation.Init()
       loadDataStub.resetHistory()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       await handler(data)
       expect(loadDataStub.firstCall.args[1]).to.equal(true)
     })
@@ -148,8 +138,7 @@ describe('public/app/navigation function Init()', () => {
       }
       Navigation.Init()
       loadDataStub.resetHistory()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       await handler(data)
       expect(loadDataStub.firstCall.args[1]).to.equal(false)
     })
@@ -161,8 +150,7 @@ describe('public/app/navigation function Init()', () => {
       }
       Navigation.Init()
       loadDataStub.resetHistory()
-      const handler = PubSub.subscribers['NAVIGATE:LOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:LOAD')
       await handler(data)
       expect(loadDataStub.firstCall.args[1]).to.equal(false)
     })
@@ -171,16 +159,14 @@ describe('public/app/navigation function Init()', () => {
     it('should call LoadData() once', async () => {
       Navigation.Init()
       loadDataStub.resetHistory()
-      const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:RELOAD')
       await handler('a string')
       expect(loadDataStub.callCount).to.equal(1)
     })
     it('should call LoadData() with no arguments', async () => {
       Navigation.Init()
       loadDataStub.resetHistory()
-      const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:RELOAD')
       await handler('a string')
       expect(loadDataStub.firstCall.args).to.deep.equal([])
     })
@@ -188,8 +174,7 @@ describe('public/app/navigation function Init()', () => {
       Navigation.Init()
       loadDataStub.resetHistory()
       loadDataStub.rejects(new Event('FOO!'))
-      const handler = PubSub.subscribers['NAVIGATE:RELOAD']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('NAVIGATE:RELOAD')
       const catcher = (): never => expect.fail('Handler should not reject!')
       await handler('a string').catch(catcher)
     })
@@ -267,8 +252,7 @@ describe('public/app/navigation function Init()', () => {
       it(`should${expected ? '' : ' not'} log data when passed ${name}`, async () => {
         Navigation.Init()
         loadDataStub.resetHistory()
-        const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-        assert(handler !== undefined, 'handler must have a value')
+        const handler = getSubscriber('NAVIGATE:DATA')
         await handler(data)
         expect(consoleLogSpy.called).to.equal(expected)
       })
@@ -279,16 +263,14 @@ describe('public/app/navigation function Init()', () => {
         it(`should log data with one argument when passed ${name}`, async () => {
           Navigation.Init()
           loadDataStub.resetHistory()
-          const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-          assert(handler !== undefined, 'handler must have a value')
+          const handler = getSubscriber('NAVIGATE:DATA')
           await handler(data)
           expect(consoleLogSpy.firstCall.args).to.have.lengthOf(1)
         })
         it(`should log data value when passed ${name}`, async () => {
           Navigation.Init()
           loadDataStub.resetHistory()
-          const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-          assert(handler !== undefined, 'handler must have a value')
+          const handler = getSubscriber('NAVIGATE:DATA')
           await handler(data)
           expect(consoleLogSpy.firstCall.args[0]).to.equal(data)
         })

@@ -8,7 +8,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { EventuallyFullfills } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
@@ -62,8 +62,7 @@ describe('public/app/navigation function Init()', () => {
     })
     it('should remove hidden class from main menu node', async () => {
       Navigation.Init()
-      const handler = PubSub.subscribers['MENU:SHOW']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('hidden')
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
       await handler(undefined)
@@ -71,8 +70,7 @@ describe('public/app/navigation function Init()', () => {
     })
     it('should remove hidden class while preserving other classes on main menu node', async () => {
       Navigation.Init()
-      const handler = PubSub.subscribers['MENU:SHOW']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('foo')
       menuNode?.classList.add('bar')
       menuNode?.classList.add('hidden')
@@ -82,8 +80,7 @@ describe('public/app/navigation function Init()', () => {
     })
     it('should tolerate already removed hidden class on main menu node', async () => {
       Navigation.Init()
-      const handler = PubSub.subscribers['MENU:SHOW']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('MENU:SHOW')
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
       await handler(undefined)
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
@@ -91,8 +88,7 @@ describe('public/app/navigation function Init()', () => {
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentNode?.removeChild(menuNode)
       Navigation.Init()
-      const handler = PubSub.subscribers['MENU:SHOW']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('hidden')
       await EventuallyFullfills(handler(undefined))
     })
@@ -108,16 +104,14 @@ describe('public/app/navigation function Init()', () => {
     })
     it('should add hidden class from main menu node', async () => {
       Navigation.Init()
-      const handler = PubSub.subscribers['MENU:HIDE']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('MENU:HIDE')
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
       await handler(undefined)
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
     })
     it('should preserve hidden class on hidden main menu node', async () => {
       Navigation.Init()
-      const handler = PubSub.subscribers['MENU:HIDE']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('MENU:HIDE')
       menuNode?.classList.add('hidden')
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
       await handler(undefined)
@@ -126,8 +120,7 @@ describe('public/app/navigation function Init()', () => {
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentElement?.removeChild(menuNode)
       Navigation.Init()
-      const handler = PubSub.subscribers['MENU:HIDE']?.pop()
-      assert(handler !== undefined, 'handler must have a value')
+      const handler = getSubscriber('MENU:HIDE')
       await EventuallyFullfills(handler(undefined))
     })
   })

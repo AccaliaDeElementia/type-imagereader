@@ -7,7 +7,7 @@ import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Actions } from '#public/scripts/app/actions.js'
 
 import { Cast } from '#testutils/TypeGuards.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import type { Listing } from '#contracts/listing.js'
@@ -156,8 +156,7 @@ describe('public/app/actions function Init()', () => {
   navigateDataTestCases.forEach(([title, listing, expected]) => {
     const doNavigate = async (): Promise<Sinon.SinonStub> => {
       Actions.Init()
-      const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-      assert(handler !== undefined, 'Navigate:Data handler must be defined')
+      const handler = getSubscriber('NAVIGATE:DATA')
       const spy = sandbox.stub().resolves()
       PubSub.subscribers['TAB:SELECT'] = [spy]
       await handler(listing)

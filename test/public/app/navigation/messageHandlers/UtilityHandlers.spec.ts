@@ -2,13 +2,12 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -58,8 +57,7 @@ describe('public/app/navigation function Init()', () => {
     beforeEach(() => {
       Navigation.Init()
       locationAssignSpy = sandbox.stub(Navigation, 'LocationAssign')
-      const h = PubSub.subscribers['ACTION:EXECUTE:SLIDESHOW']?.pop()
-      assert(h !== undefined)
+      const h = getSubscriber('ACTION:EXECUTE:SLIDESHOW')
       handler = h
     })
     afterEach(() => {
@@ -93,8 +91,7 @@ describe('public/app/navigation function Init()', () => {
       exitFullscreenStub.resolves()
       dom.window.document.body.requestFullscreen = requestFullscreenStub
       dom.window.document.exitFullscreen = exitFullscreenStub
-      const h = PubSub.subscribers['ACTION:EXECUTE:FULLSCREEN']?.pop()
-      assert(h !== undefined)
+      const h = getSubscriber('ACTION:EXECUTE:FULLSCREEN')
       handler = h
       errorSpy.resolves()
       PubSub.subscribers['LOADING:ERROR'] = [errorSpy]
@@ -201,8 +198,7 @@ describe('public/app/navigation function Init()', () => {
       it(`should map event ${from} to ${to}`, async () => {
         const spy = sandbox.stub().resolves()
         PubSub.subscribers[to.toUpperCase()] = [spy]
-        const handler = PubSub.subscribers[from.toUpperCase()]?.pop()
-        assert(handler !== undefined)
+        const handler = getSubscriber(from.toUpperCase())
         await handler(undefined)
         expect(spy.callCount).to.equal(1)
       })

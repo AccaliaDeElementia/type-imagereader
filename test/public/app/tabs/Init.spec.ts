@@ -7,7 +7,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { Tabs } from '#public/scripts/app/tabs.js'
 import assert from 'node:assert'
 import { HasValue } from '#utils/helpers.js'
@@ -70,24 +70,21 @@ describe('public/app/tabs function Init()', () => {
   it('should call SelectTab once for Tab:Select event', async () => {
     Tabs.Init()
     selectTabSpy.resetHistory()
-    const fn = PubSub.subscribers['TAB:SELECT']?.[0]
-    assert(fn !== undefined)
+    const fn = getSubscriber('TAB:SELECT')
     await fn('FOOBAR')
     expect(selectTabSpy.callCount).to.equal(1)
   })
   it('should select provided tab for Tab:Select event', async () => {
     Tabs.Init()
     selectTabSpy.resetHistory()
-    const fn = PubSub.subscribers['TAB:SELECT']?.[0]
-    assert(fn !== undefined)
+    const fn = getSubscriber('TAB:SELECT')
     await fn('FOOBAR')
     expect(selectTabSpy.firstCall.args).to.deep.equal(['FOOBAR'])
   })
   it('should ignore non string value for Tab:Select event', async () => {
     Tabs.Init()
     selectTabSpy.resetHistory()
-    const fn = PubSub.subscribers['TAB:SELECT']?.[0]
-    assert(fn !== undefined)
+    const fn = getSubscriber('TAB:SELECT')
     await fn(null)
     expect(selectTabSpy.callCount).to.equal(0)
   })

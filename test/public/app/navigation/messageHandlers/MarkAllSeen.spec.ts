@@ -9,7 +9,7 @@ import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
 import { Cast } from '#testutils/TypeGuards.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { Net } from '#public/scripts/app/net.js'
 import { Confirm } from '#public/scripts/app/confirm.js'
 import { EventuallyFullfills } from '#testutils/Errors.js'
@@ -57,8 +57,7 @@ describe('public/app/navigation function Init()', () => {
       loadDataStub.resetHistory()
       errorSpy = sandbox.stub().resolves()
       PubSub.subscribers['LOADING:ERROR'] = [errorSpy]
-      const h = PubSub.subscribers['ACTION:EXECUTE:MARKALLSEEN']?.pop()
-      assert(h !== undefined)
+      const h = getSubscriber('ACTION:EXECUTE:MARKALLSEEN')
       handler = h
     })
     afterEach(() => {

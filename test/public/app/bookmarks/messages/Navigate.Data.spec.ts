@@ -7,11 +7,8 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { Bookmarks } from '#public/scripts/app/bookmarks.js'
-
-import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
@@ -67,8 +64,7 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
   ]
   testCases.forEach(([title, data, expected]) => {
     it(`should${expected ? '' : ' not'} build bookmarks when Navigate:Load loads ${title}`, async () => {
-      const fn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-      assert(fn !== undefined)
+      const fn = getSubscriber('NAVIGATE:DATA')
       await fn(data)
       expect(BuildBookmarksSpy.called).to.equal(expected)
     })

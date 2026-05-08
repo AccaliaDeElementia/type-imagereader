@@ -9,7 +9,7 @@ import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
 import { Cast } from '#testutils/TypeGuards.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
 
@@ -85,8 +85,7 @@ describe('public/app/navigation function Init()', () => {
       }
       Navigation.current.prev = previousFolder
       Navigation.current.prevUnread = previousUnreadFolder
-      const h = PubSub.subscribers['ACTION:EXECUTE:PREVIOUSFOLDER']?.pop()
-      assert(h !== undefined)
+      const h = getSubscriber('ACTION:EXECUTE:PREVIOUSFOLDER')
       handler = h
     })
     afterEach(() => {
@@ -170,8 +169,7 @@ describe('public/app/navigation function Init()', () => {
       }
       Navigation.current.next = nextFolder
       Navigation.current.nextUnread = nextUnreadFolder
-      const h = PubSub.subscribers['ACTION:EXECUTE:NEXTFOLDER']?.pop()
-      assert(h !== undefined)
+      const h = getSubscriber('ACTION:EXECUTE:NEXTFOLDER')
       handler = h
     })
     afterEach(() => {
@@ -234,8 +232,7 @@ describe('public/app/navigation function Init()', () => {
       Navigation.Init()
       parentFolder = `/Foo ${Math.random()}`
       Navigation.current.parent = parentFolder
-      const h = PubSub.subscribers['ACTION:EXECUTE:PARENTFOLDER']?.pop()
-      assert(h !== undefined)
+      const h = getSubscriber('ACTION:EXECUTE:PARENTFOLDER')
       handler = h
     })
     afterEach(() => {
@@ -284,8 +281,7 @@ describe('public/app/navigation function Init()', () => {
           totalCount: i,
         }))
       Navigation.current.children = children
-      const h = PubSub.subscribers['ACTION:EXECUTE:FIRSTUNFINISHED']?.pop()
-      assert(h !== undefined)
+      const h = getSubscriber('ACTION:EXECUTE:FIRSTUNFINISHED')
       handler = h
     })
     afterEach(() => {

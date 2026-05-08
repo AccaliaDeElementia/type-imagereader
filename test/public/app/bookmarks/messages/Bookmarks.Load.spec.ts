@@ -11,7 +11,7 @@ import type { Listing } from '#contracts/listing.js'
 
 import { Net } from '#public/scripts/app/net.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { Bookmarks } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
@@ -67,14 +67,12 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     unmountDom()
   })
   it('should use Net.GetJSON to load bookmarks', async () => {
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(getJSONSpy.callCount).to.equal(1)
   })
   it('should request expected API endpoint to load bookmarks', async () => {
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(getJSONSpy.firstCall.args[0]).to.equal('/api/bookmarks')
   })
@@ -91,8 +89,7 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
   ]
   bookmarkTestCases.forEach(([title, obj, expected]) => {
     it(`should${expected ? '' : ' not'} accept ${title} data`, async () => {
-      const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-      assert(fn !== undefined)
+      const fn = getSubscriber('BOOKMARKS:LOAD')
       await fn(undefined)
       const acceptor = getJSONSpy.firstCall.args[1] as unknown
       assert(acceptor !== undefined)
@@ -103,62 +100,54 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
   it('should call BuildBookmarks once when GetJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(BuildBookmarksSpy.callCount).to.equal(1)
   })
   it('should pass empty name to BuildBookmarks when GetJSON resolves', async () => {
     getJSONSpy.resolves([])
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).name).to.equal('')
   })
   it('should pass empty path to BuildBookmarks when GetJSON resolves', async () => {
     getJSONSpy.resolves([])
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).path).to.equal('')
   })
   it('should pass resolved data as bookmarks to BuildBookmarks', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(data)
   })
   it('should not publish Loading:Error when GetJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
   it('should not build bookmarks when GetJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(BuildBookmarksSpy.callCount).to.equal(0)
   })
   it('should publish Loading:Error when GetJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(loadingErrorSpy.callCount).to.equal(1)
   })
   it('should publish received error to Loading:Error when GetJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
     expect(loadingErrorSpy.firstCall.args[0]).to.equal(data)
   })
@@ -168,8 +157,7 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
     const secondData = [{ name: 'second', path: '/second', bookmarks: [] }]
     getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     const a = fn(undefined)
     const b = fn(undefined)
     resolveSecond(secondData)
@@ -191,8 +179,7 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     const { promise: firstPromise, reject: rejectFirst } = Promise.withResolvers<unknown>()
     const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
     getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
-    const fn = PubSub.subscribers['BOOKMARKS:LOAD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:LOAD')
     const a = fn(undefined)
     const b = fn(undefined)
     resolveSecond([{ name: 'second', path: '/second', bookmarks: [] }])

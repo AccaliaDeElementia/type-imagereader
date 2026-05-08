@@ -10,7 +10,7 @@ import { Cast } from '#testutils/TypeGuards.js'
 
 import { Net } from '#public/scripts/app/net.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { Bookmarks } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
@@ -81,14 +81,12 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
   ]
   postDataCases.forEach(([title, data, expected]) => {
     it(`should${expected ? '' : ' not'} post ${title} data`, async () => {
-      const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-      assert(fn !== undefined)
+      const fn = getSubscriber('BOOKMARKS:ADD')
       await fn(data)
       expect(postJSONSpy.called).to.equal(expected)
     })
     it(`should accept ${title} data from network`, async () => {
-      const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-      assert(fn !== undefined)
+      const fn = getSubscriber('BOOKMARKS:ADD')
       await fn('FOO!')
       const acceptor = postJSONSpy.firstCall.args[2] as unknown
       assert(acceptor !== undefined)
@@ -97,100 +95,86 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
     })
   })
   it('should post to expected URL', async () => {
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('FOO!')
     expect(postJSONSpy.firstCall.args[0]).to.equal('/api/bookmarks/add')
   })
   it('should post expected data object', async () => {
     const path = `THIS IS MY PATH${Math.random()}`
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn(path)
     expect(postJSONSpy.firstCall.args[1]).to.deep.equal({ path })
   })
   it('should publish Bookmarks:Load on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(bookmarksLoadSpy.called).to.equal(true)
   })
   it('should publish Loading:Success on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(loadingSuccessSpy.called).to.equal(true)
   })
   it('should not publish Loading:Error on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(loadingErrorSpy.called).to.equal(false)
   })
   it('should publish Bookmarks:Load on empty response', async () => {
     postJSONSpy.resolves(null)
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(bookmarksLoadSpy.called).to.equal(true)
   })
   it('should publish Loading:Success on empty response', async () => {
     postJSONSpy.resolves(null)
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(loadingSuccessSpy.called).to.equal(true)
   })
   it('should not publish Loading:Error on empty response', async () => {
     postJSONSpy.resolves(null)
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(loadingErrorSpy.called).to.equal(false)
   })
   it('should not publish Bookmarks:Load on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(bookmarksLoadSpy.called).to.equal(false)
   })
   it('should not publish Loading:Success on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(loadingSuccessSpy.called).to.equal(false)
   })
   it('should publish Loading:Error on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(loadingErrorSpy.called).to.equal(true)
   })
   it('should publish Loading:Error with error on rejection', async () => {
     const err = new Error('FOO!')
     postJSONSpy.rejects(err)
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(loadingErrorSpy.firstCall.args[0]).to.equal(err)
   })
   it('should publish a generic Error on rejection with non-error', async () => {
     postJSONSpy.rejects({})
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(loadingErrorSpy.firstCall.args[0]).to.be.an.instanceOf(Error)
   })
   it('should set message on generic error on rejection with non-error', async () => {
     postJSONSpy.rejects({})
-    const fn = PubSub.subscribers['BOOKMARKS:ADD']?.pop()
-    assert(fn !== undefined)
+    const fn = getSubscriber('BOOKMARKS:ADD')
     await fn('foo!')
     expect(Cast<Error>(loadingErrorSpy.firstCall.args[0]).message).to.equal('Non Error rejection!')
   })

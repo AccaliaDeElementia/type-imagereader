@@ -9,8 +9,7 @@ import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import type { Picture } from '#contracts/listing.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import assert from 'node:assert'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -129,8 +128,7 @@ describe('public/app/pictures function Init()', () => {
   testCases.forEach(([name, expected, data]) => {
     it(`should ${expected ? 'load data' : 'ignore'} ${name} in Navigate:Load handler`, async () => {
       Pictures.Init()
-      const handler = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-      assert(handler !== undefined)
+      const handler = getSubscriber('NAVIGATE:DATA')
       await handler(data)
       expect(loadDataSpy.called).to.equal(expected)
     })

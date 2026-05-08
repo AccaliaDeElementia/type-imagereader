@@ -4,11 +4,10 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { resetPubSub } from '#testutils/PubSub.js'
+import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Folders } from '#public/scripts/app/folders.js'
-import assert from 'node:assert'
 import Sinon from 'sinon'
 import type { Listing } from '#contracts/listing.js'
 
@@ -56,8 +55,7 @@ describe('public/app/folders function Init()', () => {
   })
   it('should build folders on Navigate:Data with valid listing', async () => {
     Folders.Init()
-    const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-    assert(subscriberfn !== undefined)
+    const subscriberfn = getSubscriber('NAVIGATE:DATA')
     const data: Listing = {
       name: 'FOO',
       path: 'BAR',
@@ -69,8 +67,7 @@ describe('public/app/folders function Init()', () => {
   })
   it('should not build folders on Navigate:Data with invalid data', async () => {
     Folders.Init()
-    const subscriberfn = PubSub.subscribers['NAVIGATE:DATA']?.pop()
-    assert(subscriberfn !== undefined)
+    const subscriberfn = getSubscriber('NAVIGATE:DATA')
     const data = {
       invalid: 'OBJECT',
     }
