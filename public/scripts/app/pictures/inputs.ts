@@ -16,7 +16,7 @@ export const Imports = {
 const LEFT_THIRD = 0.3333333333333333
 const RIGHT_THIRD = 0.6666666666666666
 
-function InitActions(): void {
+export function InitActions(): void {
   const doIfNoMenu = (action: string) => async () => {
     if (!Navigation.IsMenuActive()) {
       Publish(`Action:Execute:${action}`)
@@ -88,7 +88,7 @@ function InitActions(): void {
   })
 }
 
-function InitMouse(): void {
+export function InitMouse(): void {
   Pictures.initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
   Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
     if (HasValue(window.visualViewport) && Pictures.initialScale < window.visualViewport.scale) {
@@ -112,9 +112,4 @@ function InitMouse(): void {
       Publish('Action:Execute:ShowMenu')
     }
   })
-}
-
-export const Inputs = {
-  InitActions,
-  InitMouse,
 }

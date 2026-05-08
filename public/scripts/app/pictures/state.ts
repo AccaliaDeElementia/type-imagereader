@@ -5,12 +5,14 @@ import { isListing, isPicture } from '#contracts/listing.js'
 import { Grid } from './grid.js'
 import { Viewer } from './viewer.js'
 import { LoadData as _LoadData } from './data.js'
-import { Inputs } from './inputs.js'
+import { InitActions as _InitActions, InitMouse as _InitMouse } from './inputs.js'
 import { InitUnreadSelectorSlider as _InitUnreadSelectorSlider } from './unreadFilter.js'
 import { Subscribe } from '../pubsub.js'
 
 export const Imports = {
   LoadData: _LoadData,
+  InitActions: _InitActions,
+  InitMouse: _InitMouse,
   InitUnreadSelectorSlider: _InitUnreadSelectorSlider,
 }
 
@@ -69,8 +71,8 @@ function Init(): void {
   Subscribe('Pictures:Change', async (data) => {
     if (isPicture(data)) await Viewer.ChangePicture(data)
   })
-  Inputs.InitActions()
-  Inputs.InitMouse()
+  Imports.InitActions()
+  Imports.InitMouse()
   Imports.InitUnreadSelectorSlider()
 }
 
