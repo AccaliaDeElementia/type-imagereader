@@ -7,16 +7,11 @@ import { setImmediate as yieldMacro } from 'node:timers/promises'
 
 import { CopyState, awaitCopyStreamCompletion, type CopyHelpers } from '#sync/syncItemsDialect.js'
 import { Cast } from '#testutils/TypeGuards.js'
+import { createCopyStreamFake, scheduleEmit } from '#testutils/CopyStream.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
-
-const scheduleEmit = (ee: EventEmitter, event: string, ...args: unknown[]): void => {
-  setImmediate(() => {
-    ee.emit(event, ...args)
-  })
-}
 
 const sandbox = Sinon.createSandbox()
 const noopLogger = Cast<Debugger>(() => undefined)
@@ -29,22 +24,7 @@ const PENDING = 5
 const LOGGING_INTERVAL = 100
 const DEFAULT_CHUNK_SIZE = 5000
 
-interface StreamHandles {
-  stream: CopyStreamQuery
-  ee: EventEmitter
-  writeSpy: Sinon.SinonStub
-  endSpy: Sinon.SinonStub
-  destroySpy: Sinon.SinonStub
-}
-
-const buildStreamHandles = (): StreamHandles => {
-  const ee = new EventEmitter()
-  const writeSpy = sandbox.stub().returns(true)
-  const endSpy = sandbox.stub()
-  const destroySpy = sandbox.stub()
-  Object.assign(ee, { write: writeSpy, end: endSpy, destroy: destroySpy, once: ee.once.bind(ee), on: ee.on.bind(ee) })
-  return { stream: Cast<CopyStreamQuery>(ee), ee, writeSpy, endSpy, destroySpy }
-}
+const buildStreamHandles = (): ReturnType<typeof createCopyStreamFake> => createCopyStreamFake(sandbox)
 
 describe('utils/syncItemsDialect class CopyState', () => {
   afterEach(() => {

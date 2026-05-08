@@ -1,12 +1,13 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { EventEmitter } from 'node:events'
+import type { EventEmitter } from 'node:events'
 import { Functions, Imports } from '#sync/findItems.js'
 import { Functions as Helpers } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
+import { createCopyStreamFake } from '#testutils/CopyStream.js'
 import { stubDebug } from '#testutils/Debug.js'
 import type { PoolClient } from 'pg'
 import type { CopyStreamQuery } from 'pg-copy-streams'
@@ -21,15 +22,7 @@ interface StreamFake extends EventEmitter {
   destroy: Sinon.SinonStub
 }
 
-const makeStream = (): StreamFake => {
-  const emitter = Cast<StreamFake>(new EventEmitter())
-  emitter.write = sandbox.stub().returns(true)
-  emitter.destroy = sandbox.stub()
-  emitter.end = sandbox.stub().callsFake(() => {
-    queueMicrotask(() => emitter.emit('finish'))
-  })
-  return emitter
-}
+const makeStream = (): StreamFake => Cast<StreamFake>(createCopyStreamFake(sandbox, { emitOnEnd: 'finish' }).ee)
 
 describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite fallback)', () => {
   let loggerStub = sandbox.stub()

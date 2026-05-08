@@ -2,10 +2,10 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { EventEmitter } from 'node:events'
 
 import { FindSyncItemsViaCopy, type CopyHelpers } from '#sync/syncItemsDialect.js'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { createCopyStreamFake } from '#testutils/CopyStream.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
@@ -23,27 +23,10 @@ const COPY_SQL = 'COPY syncitems (folder, path, "isFile", "sortKey", "pathHash")
 
 const sampleRow = { folder: '', path: '/x', sortKey: 'x', isFile: true, pathHash: 'h' }
 
-interface StreamHandles {
-  stream: CopyStreamQuery
-  ee: EventEmitter
-  writeSpy: Sinon.SinonStub
-  endSpy: Sinon.SinonStub
-  destroySpy: Sinon.SinonStub
-}
-
-const buildStreamHandles = (opts: { endError?: Error } = {}): StreamHandles => {
-  const ee = new EventEmitter()
-  const writeSpy = sandbox.stub().returns(true)
-  const endSpy = sandbox.stub().callsFake(() => {
-    setImmediate(() => {
-      if (opts.endError === undefined) ee.emit('finish')
-      else ee.emit('error', opts.endError)
-    })
+const buildStreamHandles = (opts: { endError?: Error } = {}): ReturnType<typeof createCopyStreamFake> =>
+  createCopyStreamFake(sandbox, {
+    emitOnEnd: opts.endError === undefined ? 'finish' : { error: opts.endError },
   })
-  const destroySpy = sandbox.stub()
-  Object.assign(ee, { write: writeSpy, end: endSpy, destroy: destroySpy })
-  return { stream: Cast<CopyStreamQuery>(ee), ee, writeSpy, endSpy, destroySpy }
-}
 
 const buildHelpers = (overrides: Partial<CopyHelpers> = {}): CopyHelpers => ({
   fsWalker: async (_root, cb) => {
