@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Pictures } from './pictures/index.js'
+import { UnreadFilter } from './pictures/unreadFilter.js'
 import { Net, acceptAnyResponse } from './net.js'
 import { Publish, Subscribe } from './pubsub.js'
 import { isListing, type Listing } from '#contracts/listing.js'
@@ -92,11 +92,11 @@ export const Navigation = {
       Publish('Menu:Show')
     })
     Subscribe('Action:Execute:PreviousFolder', async () => {
-      const prev = Pictures.GetShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
+      const prev = UnreadFilter.GetShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
       await Navigation.NavigateTo(prev?.path, 'PreviousFolder')
     })
     Subscribe('Action:Execute:NextFolder', async () => {
-      const next = Pictures.GetShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
+      const next = UnreadFilter.GetShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
       await Navigation.NavigateTo(next?.path, 'NextFolder')
     })
     Subscribe('Action:Execute:ParentFolder', async () => {

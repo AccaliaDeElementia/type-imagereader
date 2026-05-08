@@ -7,6 +7,10 @@ import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Viewer } from '#public/scripts/app/pictures/viewer.js'
+import { Data } from '#public/scripts/app/pictures/data.js'
+import { Inputs } from '#public/scripts/app/pictures/inputs.js'
+import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 import type { Picture } from '#contracts/listing.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
@@ -57,6 +61,7 @@ describe('public/app/pictures function Init()', () => {
   let initMouseSpy = sandbox.stub()
   let initUnreadSliderSpy = sandbox.stub()
   let loadDataSpy = sandbox.stub()
+  let changePictureSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -64,10 +69,11 @@ describe('public/app/pictures function Init()', () => {
     mountDom(dom)
     resetPubSub()
     resetMarkupSpy = sandbox.stub(Pictures, 'ResetMarkup')
-    initActionsSpy = sandbox.stub(Pictures, 'InitActions')
-    initMouseSpy = sandbox.stub(Pictures, 'InitMouse')
-    initUnreadSliderSpy = sandbox.stub(Pictures, 'InitUnreadSelectorSlider')
-    loadDataSpy = sandbox.stub(Pictures, 'LoadData')
+    initActionsSpy = sandbox.stub(Inputs, 'InitActions')
+    initMouseSpy = sandbox.stub(Inputs, 'InitMouse')
+    initUnreadSliderSpy = sandbox.stub(UnreadFilter, 'InitUnreadSelectorSlider')
+    loadDataSpy = sandbox.stub(Data, 'LoadData')
+    changePictureSpy = sandbox.stub(Viewer, 'ChangePicture')
   })
   afterEach(() => {
     sandbox.restore()
@@ -113,9 +119,9 @@ describe('public/app/pictures function Init()', () => {
     Pictures.Init()
     expect(initUnreadSliderSpy.called).to.equal(true)
   })
-  it('should subscribe to Navigate:Data', () => {
+  it('should register subscribers for Navigate:Data and Pictures:Change', () => {
     Pictures.Init()
-    expect(PubSub.subscribers).to.have.all.keys('NAVIGATE:DATA')
+    expect(PubSub.subscribers).to.have.all.keys('NAVIGATE:DATA', 'PICTURES:CHANGE')
   })
   const testCases: Array<[string, boolean, unknown]> = [
     ['listing', true, { path: '', parent: '', name: '' }],
@@ -131,6 +137,22 @@ describe('public/app/pictures function Init()', () => {
       const handler = getSubscriber('NAVIGATE:DATA')
       await handler(data)
       expect(loadDataSpy.called).to.equal(expected)
+    })
+  })
+  const pictureChangeCases: Array<[string, boolean, unknown]> = [
+    ['picture', true, { path: '/foo.png', name: 'foo.png', seen: false }],
+    ['invalid picture', false, { path: '/foo.png', name: 'foo.png' }],
+    ['null', false, null],
+    ['undefined', false, undefined],
+    ['empty object', false, {}],
+    ['boolean', false, false],
+  ]
+  pictureChangeCases.forEach(([name, expected, data]) => {
+    it(`should ${expected ? 'change picture' : 'ignore'} ${name} in Pictures:Change handler`, async () => {
+      Pictures.Init()
+      const handler = getSubscriber('PICTURES:CHANGE')
+      await handler(data)
+      expect(changePictureSpy.called).to.equal(expected)
     })
   })
 })

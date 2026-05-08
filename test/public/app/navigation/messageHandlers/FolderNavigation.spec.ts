@@ -10,7 +10,7 @@ import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Navigation } from '#public/scripts/app/navigation.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
@@ -71,7 +71,7 @@ describe('public/app/navigation function Init()', () => {
     }
     beforeEach(() => {
       navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
-      showUnreadOnlyStub = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
+      showUnreadOnlyStub = sandbox.stub(UnreadFilter, 'GetShowUnreadOnly').returns(false)
       Navigation.Init()
       previousFolder = {
         name: `Foo ${Math.random()}`,
@@ -155,7 +155,7 @@ describe('public/app/navigation function Init()', () => {
     }
     beforeEach(() => {
       navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
-      showUnreadOnlyStub = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
+      showUnreadOnlyStub = sandbox.stub(UnreadFilter, 'GetShowUnreadOnly').returns(false)
       Navigation.Init()
       nextFolder = {
         name: `Foo ${Math.random()}`,

@@ -6,6 +6,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Grid } from '#public/scripts/app/pictures/grid.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
@@ -36,7 +37,7 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
   })
   it('should gracefully handle no tabs existing', () => {
     expect(() => {
-      Pictures.LoadCurrentPageImages()
+      Grid.LoadCurrentPageImages()
     }).to.not.throw()
   })
   it('should not throw when only hidden tab exists', () => {
@@ -52,7 +53,7 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     page.appendChild(card)
     dom.window.document.body.appendChild(container)
     expect(() => {
-      Pictures.LoadCurrentPageImages()
+      Grid.LoadCurrentPageImages()
     }).to.not.throw()
   })
   it('should not modify backgroundImage when only hidden tab exists', () => {
@@ -67,7 +68,7 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     card.setAttribute('data-backgroundImage', 'url("/images/preview.webp")')
     page.appendChild(card)
     dom.window.document.body.appendChild(container)
-    Pictures.LoadCurrentPageImages()
+    Grid.LoadCurrentPageImages()
     expect(card.style.backgroundImage).to.equal('')
   })
   it('should not throw when card is missing data-backgroundImage attribute', () => {
@@ -81,7 +82,7 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     page.appendChild(card)
     dom.window.document.body.appendChild(container)
     expect(() => {
-      Pictures.LoadCurrentPageImages()
+      Grid.LoadCurrentPageImages()
     }).to.not.throw()
   })
   it('should not modify backgroundImage when card is missing data-backgroundImage attribute', () => {
@@ -94,7 +95,7 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     card.classList.add('card')
     page.appendChild(card)
     dom.window.document.body.appendChild(container)
-    Pictures.LoadCurrentPageImages()
+    Grid.LoadCurrentPageImages()
     expect(card.style.backgroundImage).to.equal('')
   })
   it('should set backgroundImage style for non hidden page', () => {
@@ -110,7 +111,7 @@ describe('public/app/pictures function LoadCurrentPageImages()', () => {
     page.appendChild(card)
 
     expect(card.style.backgroundImage).to.equal('')
-    Pictures.LoadCurrentPageImages()
+    Grid.LoadCurrentPageImages()
     expect(card.style.backgroundImage).to.equal('url("/images/preview.webp")')
   })
 })

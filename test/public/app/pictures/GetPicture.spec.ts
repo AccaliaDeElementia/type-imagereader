@@ -1,7 +1,8 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { NavigateTo, Pictures } from '#public/scripts/app/pictures/index.js'
+import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { NavigateTo, Viewer } from '#public/scripts/app/pictures/viewer.js'
 import { expect } from 'chai'
 import assert from 'node:assert'
 
@@ -22,7 +23,7 @@ describe('public/app/pictures function GetPicture()', () => {
       seen: true,
       index: 24,
     }
-    choosePictureIndexSpy = sandbox.stub(Pictures, 'ChoosePictureIndex').returns(24)
+    choosePictureIndexSpy = sandbox.stub(Viewer, 'ChoosePictureIndex').returns(24)
   })
   afterEach(() => {
     sandbox.restore()
@@ -39,7 +40,7 @@ describe('public/app/pictures function GetPicture()', () => {
   tests.forEach(([title, navi]) => {
     it(`${title}: should return undefined when current image null`, () => {
       Pictures.current = null
-      const result = Pictures.GetPicture(navi)
+      const result = Viewer.GetPicture(navi)
       expect(result).to.equal(undefined)
     })
     it(`${title}: should return undefined when current image index missing`, () => {
@@ -48,45 +49,45 @@ describe('public/app/pictures function GetPicture()', () => {
         path: 'bar',
         seen: true,
       }
-      const result = Pictures.GetPicture(navi)
+      const result = Viewer.GetPicture(navi)
       expect(result).to.equal(undefined)
     })
     it(`${title}: should call ChoosePictureIndex once`, () => {
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       expect(choosePictureIndexSpy.callCount).to.equal(1)
     })
     it(`${title}: should call ChoosePictureIndex with 3 arguments`, () => {
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       expect(choosePictureIndexSpy.firstCall.args).to.have.lengthOf(3)
     })
     it(`${title}: should pass navigation option to ChoosePictureIndex`, () => {
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       expect(choosePictureIndexSpy.firstCall.args[0]).to.equal(navi)
     })
     it(`${title}: should pass current index to ChoosePictureIndex`, () => {
       assert(Pictures.current !== null)
       Pictures.current.index = 77
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       expect(choosePictureIndexSpy.firstCall.args[1]).to.equal(77)
     })
     it(`${title}: should pass empty unread array to ChoosePictureIndex when all pics read`, () => {
       for (const pic of Pictures.pictures) {
         pic.seen = true
       }
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal([])
     })
     it(`${title}: should pass expected unread array to ChoosePictureIndex when current before all unread`, () => {
       assert(Pictures.current !== null)
       Pictures.current.index = 3
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       const pics = Pictures.pictures.slice(16, 32)
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal(pics)
     })
     it(`${title}: should pass expected unread array to ChoosePictureIndex when current after all unread`, () => {
       assert(Pictures.current !== null)
       Pictures.current.index = 45
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       const pics = Pictures.pictures.slice(16, 32)
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal(pics)
     })
@@ -96,14 +97,14 @@ describe('public/app/pictures function GetPicture()', () => {
         pic.seen = !pic.seen
       }
       Pictures.current.index = 24
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       const pics = [...Pictures.pictures.slice(32, 64), ...Pictures.pictures.slice(0, 16)]
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal(pics)
     })
     it(`${title}: should pass expected unread array to ChoosePictureIndex when current inside unread chunk`, () => {
       assert(Pictures.current !== null)
       Pictures.current.index = 24
-      Pictures.GetPicture(navi)
+      Viewer.GetPicture(navi)
       const pics = [...Pictures.pictures.slice(25, 32), ...Pictures.pictures.slice(16, 24)]
       expect(choosePictureIndexSpy.firstCall.args[2]).to.deep.equal(pics)
     })
@@ -111,17 +112,17 @@ describe('public/app/pictures function GetPicture()', () => {
       const [, , , , , pic] = Pictures.pictures
       assert(pic !== undefined)
       choosePictureIndexSpy.returns(5)
-      const result = Pictures.GetPicture(navi)
+      const result = Viewer.GetPicture(navi)
       expect(result).to.deep.equal(pic)
     })
     it(`${title}: should return undefined for negative index picture`, () => {
       choosePictureIndexSpy.returns(-9)
-      const result = Pictures.GetPicture(navi)
+      const result = Viewer.GetPicture(navi)
       expect(result).to.equal(undefined)
     })
     it(`${title}: should return undefiend for out of bounds index`, () => {
       choosePictureIndexSpy.returns(65535)
-      const result = Pictures.GetPicture(navi)
+      const result = Viewer.GetPicture(navi)
       expect(result).to.equal(undefined)
     })
   })

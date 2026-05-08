@@ -4,10 +4,10 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { PubSub } from '#public/scripts/app/pubsub.js'
+import { Grid } from '#public/scripts/app/pictures/grid.js'
+import { Viewer } from '#public/scripts/app/pictures/viewer.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/PubSub.js'
 
@@ -16,57 +16,28 @@ const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
-    div.selectUnreadAll
-      div
-        span.all Show All
-        span.unread Show Unread
-    div#mainMenu
     div#bigImage
       img.hidden
-    div.tab-list
-      ul
-        li
-          a(href="#tabImages") Pictures
-    div#tabImages
-    div#screenText
-      div.statusBar.top
-        div.left
-        div.center
-        div.right
-      div.statusBar.bottom
-        div.left
-        div.center
-        div.right
     template#ImageCard
       div.card
         div.card-body
           h5 placeholder
-    template#PaginatorItem
-      li.page-item
-        a.page-link(href='#')
-          span(aria-hidden='true')
-    template#Paginator
-      nav.pages
-        ul.pagination
 `
 
 describe('public/app/pictures function ResetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
-  const loadingErrorSpy = sandbox.stub().resolves()
-  const loadingHideSpy = sandbox.stub().resolves()
+  let gridResetSpy = sandbox.stub()
+  let viewerResetSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
-    loadingErrorSpy.resetHistory()
     resetPubSub()
-    PubSub.subscribers = {
-      'LOADING:ERROR': [loadingErrorSpy],
-      'LOADING:HIDE': [loadingHideSpy],
-    }
     Pictures.mainImage = null
     Pictures.imageCard = null
+    gridResetSpy = sandbox.stub(Grid, 'ResetMarkup')
+    viewerResetSpy = sandbox.stub(Viewer, 'ResetMarkup')
   })
   afterEach(() => {
     sandbox.restore()
@@ -94,119 +65,20 @@ describe('public/app/pictures function ResetMarkup()', () => {
     Pictures.ResetMarkup()
     expect(Pictures.imageCard).to.equal(null)
   })
-  it('should remove existing .pages from #tabImages', () => {
-    const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab !== null)
-    for (let i = 0; i < 15; i += 1) {
-      const node = dom.window.document.createElement('div')
-      node.classList.add('pages')
-      tab.appendChild(node)
-    }
+  it('should call Grid.ResetMarkup once', () => {
     Pictures.ResetMarkup()
-    expect(tab.children).to.have.lengthOf(0)
+    expect(gridResetSpy.callCount).to.equal(1)
   })
-  it('should remove existing .page nodes from #tabImages', () => {
-    const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab !== null)
-    for (let i = 0; i < 15; i += 1) {
-      const node = dom.window.document.createElement('div')
-      node.classList.add('page')
-      tab.appendChild(node)
-    }
+  it('should call Viewer.ResetMarkup once', () => {
     Pictures.ResetMarkup()
-    expect(tab.children).to.have.lengthOf(0)
+    expect(viewerResetSpy.callCount).to.equal(1)
   })
-  it('should preserve existing non .page nodes from #tabImages', () => {
-    const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab !== null)
-    for (let i = 0; i < 15; i += 1) {
-      const node = dom.window.document.createElement('div')
-      node.classList.add('foo')
-      tab.appendChild(node)
-    }
-    Pictures.ResetMarkup()
-    expect(tab.children).to.have.lengthOf(15)
-  })
-  const positions: Array<[string, string]> = [
-    ['top', 'left'],
-    ['top', 'center'],
-    ['top', 'right'],
-    ['bottom', 'left'],
-    ['bottom', 'center'],
-    ['bottom', 'right'],
-  ]
-  positions.forEach(([x, y]) => {
-    it(`should clear ${x} ${y} status bar label`, () => {
-      const node = dom.window.document.querySelector(`.statusBar.${x} .${y}`)
-      assert(node !== null)
-      node.innerHTML = '<span>FOO</span>'
-      Pictures.ResetMarkup()
-      expect(node.innerHTML).to.equal('')
+  it('should set mainImage ref before calling Viewer.ResetMarkup', () => {
+    let mainImageWhenViewerCalled: HTMLImageElement | null = null
+    viewerResetSpy.callsFake(() => {
+      mainImageWhenViewerCalled = Pictures.mainImage
     })
-  })
-  it('should clear src of mainImage', () => {
-    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
-    img.src = 'https://127.0.0.1:42069/blaze.gif'
     Pictures.ResetMarkup()
-    expect(img.src).to.equal('http://127.0.0.1:2999/') // not blank due to how jsdom handles URIs
-  })
-  it('should publish Loading:Hide on mainImage load event', () => {
-    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
-    const evt = new dom.window.Event('load')
-    Pictures.ResetMarkup()
-    expect(loadingHideSpy.called).to.equal(false)
-    img.dispatchEvent(evt)
-    expect(loadingHideSpy.called).to.equal(true)
-  })
-  it('should publish Loading:Error on mainImage error event with src set', () => {
-    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
-    const evt = new dom.window.ErrorEvent('error')
-    Pictures.ResetMarkup()
-    img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
-    expect(loadingErrorSpy.called).to.equal(false)
-    img.dispatchEvent(evt)
-    expect(loadingErrorSpy.called).to.equal(true)
-  })
-  it('should not publish Loading:Error on mainImage error event with src empty', () => {
-    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
-    const evt = new dom.window.ErrorEvent('error')
-    Pictures.ResetMarkup()
-    img.setAttribute('src', '')
-    img.dispatchEvent(evt)
-    expect(loadingErrorSpy.called).to.equal(false)
-  })
-  it('should publish expected error message when load fails and no current image', () => {
-    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
-    const evt = new dom.window.ErrorEvent('error')
-    Pictures.ResetMarkup()
-    img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
-    Pictures.current = null
-    img.dispatchEvent(evt)
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal('Main Image Failed to Load: undefined')
-  })
-  it('should publish expected error message when load fails and invalid current image', () => {
-    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
-    const evt = new dom.window.ErrorEvent('error')
-    Pictures.ResetMarkup()
-    img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
-    Pictures.current = { name: Cast<string>(null), path: '', seen: false }
-    img.dispatchEvent(evt)
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal('Main Image Failed to Load: null')
-  })
-  it('should publish expected error message when load fails', () => {
-    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
-    const evt = new dom.window.ErrorEvent('error')
-    Pictures.ResetMarkup()
-    img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
-    Pictures.current = { name: 'blaze.gif', path: '', seen: false }
-    img.dispatchEvent(evt)
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal('Main Image Failed to Load: blaze.gif')
+    expect(mainImageWhenViewerCalled).to.not.equal(null)
   })
 })

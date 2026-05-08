@@ -4,6 +4,9 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Grid } from '#public/scripts/app/pictures/grid.js'
+import { Viewer } from '#public/scripts/app/pictures/viewer.js'
+import { Data } from '#public/scripts/app/pictures/data.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -34,9 +37,9 @@ describe('public/app/pictures function LoadData()', () => {
     }))
     Pictures.current = null
     resetMarkupSpy = sandbox.stub(Pictures, 'ResetMarkup')
-    setPicturesSpy = sandbox.stub(Pictures, 'SetPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
-    makeTabSpy = sandbox.stub(Pictures, 'MakeTab')
-    loadImageSpy = sandbox.stub(Pictures, 'LoadImage').resolves()
+    setPicturesSpy = sandbox.stub(Data, 'SetPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
+    makeTabSpy = sandbox.stub(Grid, 'MakeTab')
+    loadImageSpy = sandbox.stub(Viewer, 'LoadImage').resolves()
   })
   afterEach(() => {
     sandbox.restore()
@@ -45,7 +48,7 @@ describe('public/app/pictures function LoadData()', () => {
     tabSelectSpy.resetHistory()
   })
   it('should reset markup on load', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -53,7 +56,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(resetMarkupSpy.callCount).to.equal(1)
   })
   it('should set pictures on load', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -62,7 +65,7 @@ describe('public/app/pictures function LoadData()', () => {
   })
   it('should abort loading when no first picture exists', async () => {
     setPicturesSpy.returns(null)
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -70,7 +73,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(makeTabSpy.callCount).to.equal(0)
   })
   it('should make tab when first picture exists', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -79,7 +82,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(makeTabSpy.callCount).to.equal(1)
   })
   it('should call tab select once when first picture exists', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -88,7 +91,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(tabSelectSpy.callCount).to.equal(1)
   })
   it('should select image tab when first picture exists', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -97,7 +100,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(tabSelectSpy.firstCall.args).to.deep.equal(['Images', 'TAB:SELECT'])
   })
   it('should select first image as current when cover is missing', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -106,7 +109,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(Pictures.current).to.equal(Pictures.pictures[0])
   })
   it('should select first image as current when cover is blank', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -116,7 +119,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(Pictures.current).to.equal(Pictures.pictures[0])
   })
   it('should select first image as current when cover is not matching picture list', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -126,7 +129,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(Pictures.current).to.equal(Pictures.pictures[0])
   })
   it('should select cover image as current when cover matches', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -139,7 +142,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = false
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -151,7 +154,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = false
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -163,7 +166,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const [pic, idx] of Pictures.pictures.map((pic, idx): [Picture, number] => [pic, idx])) {
       pic.seen = idx >= 16 && idx < 32
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -175,7 +178,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const [pic, idx] of Pictures.pictures.map((pic, idx): [Picture, number] => [pic, idx])) {
       pic.seen = idx >= 16 && idx < 32
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -190,7 +193,7 @@ describe('public/app/pictures function LoadData()', () => {
     const pic = Pictures.pictures.find((_, i) => i === 63)
     assert(pic !== undefined, 'Test image must exist')
     pic.seen = false
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -205,7 +208,7 @@ describe('public/app/pictures function LoadData()', () => {
     const pic = Pictures.pictures.find((_, i) => i === 63)
     assert(pic !== undefined, 'Test image must exist')
     pic.seen = false
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -217,7 +220,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = true
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -229,7 +232,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = true
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -241,7 +244,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = true
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -254,7 +257,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = true
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -267,7 +270,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = false
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -280,7 +283,7 @@ describe('public/app/pictures function LoadData()', () => {
     for (const pic of Pictures.pictures) {
       pic.seen = false
     }
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -290,7 +293,7 @@ describe('public/app/pictures function LoadData()', () => {
     expect(menuShowSpy.callCount).to.equal(0)
   })
   it('should load image when pictures exists', async () => {
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',
@@ -300,7 +303,7 @@ describe('public/app/pictures function LoadData()', () => {
   })
   it('should tolerate loadImage rejecting', async () => {
     loadImageSpy.rejects('ERROR!')
-    await Pictures.LoadData({
+    await Data.LoadData({
       name: '',
       parent: '',
       path: '',

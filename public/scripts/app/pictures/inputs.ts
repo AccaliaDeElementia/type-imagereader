@@ -1,11 +1,18 @@
 'use sanity'
 
-import { HasValues } from '#utils/helpers.js'
+import { HasValue, HasValues, ZERO_LENGTH } from '#utils/helpers.js'
 import { Navigation } from '../navigation.js'
-import { NavigateTo, Pictures } from './index.js'
+import { UNINITIALIZED_SCALE } from './state.js'
+import { Pictures } from './index.js'
+import { Viewer, NavigateTo } from './viewer.js'
+import { Grid } from './grid.js'
+import { UnreadFilter } from './unreadFilter.js'
 import { Publish, Subscribe } from '../pubsub.js'
 
-export function InitActions(): void {
+const LEFT_THIRD = 0.3333333333333333
+const RIGHT_THIRD = 0.6666666666666666
+
+function InitActions(): void {
   const doIfNoMenu = (action: string) => async () => {
     if (!Navigation.IsMenuActive()) {
       Publish(`Action:Execute:${action}`)
@@ -26,16 +33,16 @@ export function InitActions(): void {
   Subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ShowMenu'))
 
   const changeTo = async (direction: NavigateTo): Promise<void> => {
-    await Pictures.ChangePicture(Pictures.GetPicture(direction))
+    await Viewer.ChangePicture(Viewer.GetPicture(direction))
   }
 
   Subscribe('Action:Execute:Previous', async () => {
-    const actualEvent = Pictures.GetShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
+    const actualEvent = UnreadFilter.GetShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
     Publish(`Action:Execute:${actualEvent}`)
     await Promise.resolve()
   })
   Subscribe('Action:Execute:Next', async () => {
-    const actualEvent = Pictures.GetShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
+    const actualEvent = UnreadFilter.GetShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
     Publish(`Action:Execute:${actualEvent}`)
     await Promise.resolve()
   })
@@ -72,7 +79,38 @@ export function InitActions(): void {
   Subscribe('Action:Execute:Bookmark', addBookmark)
   Subscribe('Action:Gamepad:B', addBookmark)
   Subscribe('Pictures:SelectPage', async () => {
-    Pictures.LoadCurrentPageImages()
+    Grid.LoadCurrentPageImages()
     await Promise.resolve()
   })
+}
+
+function InitMouse(): void {
+  Pictures.initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
+  Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
+    if (HasValue(window.visualViewport) && Pictures.initialScale < window.visualViewport.scale) {
+      Publish('Ignored Mouse Click', evt)
+      return
+    }
+    const target = Pictures.mainImage?.parentElement?.getBoundingClientRect() ?? {
+      left: ZERO_LENGTH,
+      width: ZERO_LENGTH,
+    }
+    if (target.width === ZERO_LENGTH) {
+      Publish('Ignored Mouse Click', evt)
+      return
+    }
+    const x = evt.clientX - target.left
+    if (x < target.width * LEFT_THIRD) {
+      Publish('Action:Execute:Previous')
+    } else if (x > target.width * RIGHT_THIRD) {
+      Publish('Action:Execute:Next')
+    } else {
+      Publish('Action:Execute:ShowMenu')
+    }
+  })
+}
+
+export const Inputs = {
+  InitActions,
+  InitMouse,
 }

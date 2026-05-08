@@ -4,7 +4,7 @@ import { expect } from 'chai'
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 import { render } from 'pug'
 import Sinon from 'sinon'
 import assert from 'node:assert'
@@ -24,20 +24,20 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
-    getShowUnreadOnlySpy = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
-    setShowUnreadOnlySpy = sandbox.stub(Pictures, 'SetShowUnreadOnly')
-    updateUnreadSelectorSliderSpy = sandbox.stub(Pictures, 'UpdateUnreadSelectorSlider')
+    getShowUnreadOnlySpy = sandbox.stub(UnreadFilter, 'GetShowUnreadOnly').returns(false)
+    setShowUnreadOnlySpy = sandbox.stub(UnreadFilter, 'SetShowUnreadOnly')
+    updateUnreadSelectorSliderSpy = sandbox.stub(UnreadFilter, 'UpdateUnreadSelectorSlider')
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
   })
   it('should update current status on init', () => {
-    Pictures.InitUnreadSelectorSlider()
+    UnreadFilter.InitUnreadSelectorSlider()
     expect(updateUnreadSelectorSliderSpy.callCount).to.equal(1)
   })
   it('should update slider on click event from child element', () => {
-    Pictures.InitUnreadSelectorSlider()
+    UnreadFilter.InitUnreadSelectorSlider()
     updateUnreadSelectorSliderSpy.resetHistory()
     const element = dom.window.document.querySelector('#slider4test')
     assert(element !== null)
@@ -46,7 +46,7 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     expect(updateUnreadSelectorSliderSpy.callCount).to.equal(1)
   })
   it('should update slider on click event from slider element', () => {
-    Pictures.InitUnreadSelectorSlider()
+    UnreadFilter.InitUnreadSelectorSlider()
     updateUnreadSelectorSliderSpy.resetHistory()
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)
@@ -55,7 +55,7 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     expect(updateUnreadSelectorSliderSpy.callCount).to.equal(1)
   })
   it('should call SetShowUnreadOnly once when currently set', () => {
-    Pictures.InitUnreadSelectorSlider()
+    UnreadFilter.InitUnreadSelectorSlider()
     getShowUnreadOnlySpy.returns(true)
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)
@@ -63,7 +63,7 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     expect(setShowUnreadOnlySpy.callCount).to.deep.equal(1)
   })
   it('should call SetShowUnreadOnly with false when currently set', () => {
-    Pictures.InitUnreadSelectorSlider()
+    UnreadFilter.InitUnreadSelectorSlider()
     getShowUnreadOnlySpy.returns(true)
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)
@@ -71,7 +71,7 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     expect(setShowUnreadOnlySpy.firstCall.args).to.deep.equal([false])
   })
   it('should call SetShowUnreadOnly once when currently unset', () => {
-    Pictures.InitUnreadSelectorSlider()
+    UnreadFilter.InitUnreadSelectorSlider()
     getShowUnreadOnlySpy.returns(false)
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)
@@ -79,7 +79,7 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     expect(setShowUnreadOnlySpy.callCount).to.deep.equal(1)
   })
   it('should call SetShowUnreadOnly with true when currently unset', () => {
-    Pictures.InitUnreadSelectorSlider()
+    UnreadFilter.InitUnreadSelectorSlider()
     getShowUnreadOnlySpy.returns(false)
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)

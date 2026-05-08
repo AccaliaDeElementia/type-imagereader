@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Grid } from '#public/scripts/app/pictures/grid.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import type { Picture } from '#contracts/listing.js'
@@ -26,20 +26,18 @@ describe('public/app/pictures function MakePicturesPage()', () => {
     PubSub.subscribers = {
       'MENU:HIDE': [menuHideSpy],
     }
-    makePictureCardSpy = sandbox
-      .stub(Pictures, 'MakePictureCard')
-      .callsFake(() => dom.window.document.createElement('div'))
+    makePictureCardSpy = sandbox.stub(Grid, 'MakePictureCard').callsFake(() => dom.window.document.createElement('div'))
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
   })
   it('should return div element', () => {
-    const page = Pictures.MakePicturesPage(666, [])
+    const page = Grid.MakePicturesPage(666, [])
     expect(page).to.be.an.instanceOf(dom.window.HTMLDivElement)
   })
   it('should return page classed element', () => {
-    const page = Pictures.MakePicturesPage(666, [])
+    const page = Grid.MakePicturesPage(666, [])
     expect(page.classList.contains('page')).to.equal(true)
   })
   it('should set page number on input pictures', () => {
@@ -48,34 +46,34 @@ describe('public/app/pictures function MakePicturesPage()', () => {
       path: '',
       seen: false,
     }
-    Pictures.MakePicturesPage(69, [pic])
+    Grid.MakePicturesPage(69, [pic])
     expect(pic.page).to.equal(69)
   })
   it('should call MakePictureCard once per picture', () => {
-    Pictures.MakePicturesPage(69, [{ name: '', path: '', seen: false }])
+    Grid.MakePicturesPage(69, [{ name: '', path: '', seen: false }])
     expect(makePictureCardSpy.callCount).to.equal(1)
   })
   it('should call MakePictureCard with 1 argument', () => {
-    Pictures.MakePicturesPage(69, [{ name: '', path: '', seen: false }])
+    Grid.MakePicturesPage(69, [{ name: '', path: '', seen: false }])
     expect(makePictureCardSpy.firstCall.args).to.have.lengthOf(1)
   })
   it('should pass the picture to MakePictureCard', () => {
     const pic: Picture = { name: '', path: '', seen: false }
-    Pictures.MakePicturesPage(69, [pic])
+    Grid.MakePicturesPage(69, [pic])
     expect(makePictureCardSpy.firstCall.args[0]).to.equal(pic)
   })
   it('should save card element to picture on success', () => {
     const picture: Picture = { name: 'foo', path: '/foo/bar/baz.jpg', seen: false }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
-    Pictures.MakePicturesPage(69, [picture])
+    Grid.MakePicturesPage(69, [picture])
     expect(picture).to.have.any.keys('element')
   })
   it('should save the returned card as the picture element', () => {
     const picture: Picture = { name: 'foo', path: '/foo/bar/baz.jpg', seen: false }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
-    Pictures.MakePicturesPage(69, [picture])
+    Grid.MakePicturesPage(69, [picture])
     expect(picture.element).to.equal(card)
   })
   it('should not set page number when card creation fails', () => {
@@ -85,7 +83,7 @@ describe('public/app/pictures function MakePicturesPage()', () => {
       seen: false,
     }
     makePictureCardSpy.returns(undefined)
-    Pictures.MakePicturesPage(69, [pic])
+    Grid.MakePicturesPage(69, [pic])
     expect(pic.page).to.equal(undefined)
   })
   it('should add all cards to built page', () => {
@@ -96,7 +94,7 @@ describe('public/app/pictures function MakePicturesPage()', () => {
         seen: false,
       }),
     )
-    const page = Pictures.MakePicturesPage(1, pics)
+    const page = Grid.MakePicturesPage(1, pics)
     expect(page.children).to.have.lengthOf(50)
   })
   it('should add card to built page', () => {
@@ -107,7 +105,7 @@ describe('public/app/pictures function MakePicturesPage()', () => {
     }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
-    const page = Pictures.MakePicturesPage(69, [pic])
+    const page = Grid.MakePicturesPage(69, [pic])
     expect(page.firstChild).to.equal(card)
   })
 })

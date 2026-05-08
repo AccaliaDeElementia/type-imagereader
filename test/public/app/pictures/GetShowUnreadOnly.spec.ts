@@ -4,7 +4,7 @@ import { expect } from 'chai'
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 
 describe('public/app/pictures function GetShowUnreadOnly()', () => {
   let dom = new JSDOM('<html></html>')
@@ -19,18 +19,18 @@ describe('public/app/pictures function GetShowUnreadOnly()', () => {
   })
   it('should return false when stored value is not set', () => {
     dom.window.localStorage.removeItem('ShowUnreadOnly')
-    expect(Pictures.GetShowUnreadOnly()).to.equal(false)
+    expect(UnreadFilter.GetShowUnreadOnly()).to.equal(false)
   })
   it('should return false when stored value is invalid value', () => {
     dom.window.localStorage.setItem('ShowUnreadOnly', 'TRUE')
-    expect(Pictures.GetShowUnreadOnly()).to.equal(false)
+    expect(UnreadFilter.GetShowUnreadOnly()).to.equal(false)
   })
   it('should return false when stored value is set false', () => {
     dom.window.localStorage.setItem('ShowUnreadOnly', 'false')
-    expect(Pictures.GetShowUnreadOnly()).to.equal(false)
+    expect(UnreadFilter.GetShowUnreadOnly()).to.equal(false)
   })
   it('should return true when stored value is set true', () => {
     dom.window.localStorage.setItem('ShowUnreadOnly', 'true')
-    expect(Pictures.GetShowUnreadOnly()).to.equal(true)
+    expect(UnreadFilter.GetShowUnreadOnly()).to.equal(true)
   })
 })

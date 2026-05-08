@@ -1,0 +1,152 @@
+'use sanity'
+
+import type { Picture } from '#contracts/listing.js'
+import { Pictures } from './index.js'
+import { HasValues } from '#utils/helpers.js'
+import { Publish } from '../pubsub.js'
+import { CloneNode, isHTMLElement } from '../utils.js'
+
+const INDEX_TO_PAGE_OFFSET = 1
+const MINIMUM_PAGE_COUNT = 2
+const FIRST_PAGE_NUMBER = 1
+const PAGE_NUMBER_INCREMENT = 1
+
+const LAST_LINK_OFFSET = 1
+const PREV_BUTTON_OFFSET = 1
+const MINIMUM_INDEX = 0
+
+type PageSelector = () => number
+
+function ResetMarkup(): void {
+  for (const existing of document.querySelectorAll('#tabImages .pages, #tabImages .page')) {
+    existing.parentElement?.removeChild(existing)
+  }
+}
+
+function MakePictureCard(picture: Picture): HTMLElement | undefined {
+  const card = CloneNode(Pictures.imageCard, isHTMLElement)
+  card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
+  if (picture.seen) {
+    card?.classList.add('seen')
+  }
+  card?.querySelector('h5')?.replaceChildren(picture.name)
+  card?.addEventListener('click', () => {
+    Publish('Pictures:Change', picture)
+    Publish('Menu:Hide')
+  })
+  return card
+}
+
+function MakePicturesPage(pageNum: number, pictures: Picture[]): HTMLElement {
+  const page = document.createElement('div')
+  page.classList.add('page')
+  for (const picture of pictures) {
+    const card = Grid.MakePictureCard(picture)
+    if (card === undefined) continue
+    picture.element = card
+    picture.page = pageNum
+    page.appendChild(card)
+  }
+  return page
+}
+
+function MakePaginatorItem(label: string, selector: PageSelector): HTMLElement | undefined {
+  const pageItem = document.querySelector<HTMLTemplateElement>('#PaginatorItem')
+  const item = CloneNode(pageItem, isHTMLElement)
+  item?.querySelector('span')?.replaceChildren(document.createTextNode(label))
+  item?.addEventListener('click', (e: Event) => {
+    Grid.SelectPage(selector())
+    e.preventDefault()
+  })
+  return item
+}
+
+function MakePaginator(pageCount: number): HTMLElement | null {
+  if (pageCount < MINIMUM_PAGE_COUNT) return null
+  const paginator = CloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'), isHTMLElement)
+  if (paginator === undefined) return null
+  const domItems = paginator.querySelector('.pagination')
+  const firstItem = Grid.MakePaginatorItem('«', () =>
+    Math.max(Grid.GetCurrentPage() - PAGE_NUMBER_INCREMENT, FIRST_PAGE_NUMBER),
+  )
+  if (firstItem !== undefined) domItems?.appendChild(firstItem)
+  for (let i = FIRST_PAGE_NUMBER; i <= pageCount; i += PAGE_NUMBER_INCREMENT) {
+    const item = Grid.MakePaginatorItem(`${i}`, () => i)
+    if (item !== undefined) domItems?.appendChild(item)
+  }
+  const lastItem = Grid.MakePaginatorItem('»', () => Math.min(Grid.GetCurrentPage() + PAGE_NUMBER_INCREMENT, pageCount))
+  if (lastItem !== undefined) domItems?.appendChild(lastItem)
+  return paginator
+}
+
+function MakeTab(): void {
+  const pageCount = Math.ceil(Pictures.pictures.length / Pictures.pageSize)
+  const tab = document.querySelector<HTMLElement>('#tabImages')
+  const pages: HTMLElement[] = Array.from({ length: pageCount }).map((_, i) => {
+    const offsetPage = i + INDEX_TO_PAGE_OFFSET
+    return Grid.MakePicturesPage(
+      offsetPage,
+      Pictures.pictures.slice(i * Pictures.pageSize, offsetPage * Pictures.pageSize),
+    )
+  })
+  const pagninator = Grid.MakePaginator(pageCount)
+  if (pagninator !== null) {
+    tab?.appendChild(pagninator)
+  }
+  pages.forEach((page) => {
+    tab?.appendChild(page)
+  })
+}
+
+function GetCurrentPage(): number {
+  const items = document.querySelectorAll('.pagination .page-item')
+  return Array.from(items).findIndex((elem) => elem.classList.contains('active'))
+}
+
+function SelectPage(index: number): void {
+  const links = document.querySelectorAll('.pagination .page-item')
+  if (!HasValues(links)) {
+    Publish('Pictures:SelectPage', 'Default Page Selected')
+    return
+  } else if (index <= MINIMUM_INDEX || index >= links.length - LAST_LINK_OFFSET) {
+    Publish('Loading:Error', 'Invalid Page Index Selected')
+    return
+  }
+  links.forEach((element: Element, i: number) => {
+    if (i === index) {
+      element.classList.add('active')
+    } else {
+      element.classList.remove('active')
+    }
+  })
+  const content = document.querySelectorAll('#tabImages .page')
+  content.forEach((element: Element, i: number) => {
+    if (i === index - PREV_BUTTON_OFFSET) {
+      element.classList.remove('hidden')
+    } else {
+      element.classList.add('hidden')
+    }
+  })
+  Publish('Pictures:SelectPage', `New Page ${index} Selected`)
+}
+
+function LoadCurrentPageImages(): void {
+  for (const card of document.querySelectorAll<HTMLElement>('#tabImages .page:not(.hidden) .card')) {
+    const style = card.getAttribute('data-backgroundImage')
+    if (style !== null) {
+      card.style.backgroundImage = style
+    }
+  }
+}
+
+export const Grid = {
+  ResetMarkup,
+  MakePictureCard,
+  MakePicturesPage,
+  MakePaginatorItem,
+  MakePaginator,
+  MakeTab,
+  GetCurrentPage,
+  SelectPage,
+  LoadCurrentPageImages,
+}

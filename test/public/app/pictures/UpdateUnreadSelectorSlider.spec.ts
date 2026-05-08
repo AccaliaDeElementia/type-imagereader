@@ -4,7 +4,7 @@ import { expect } from 'chai'
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 import { render } from 'pug'
 import Sinon from 'sinon'
 import assert from 'node:assert'
@@ -22,7 +22,7 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
-    getShowUnreadOnlySpy = sandbox.stub(Pictures, 'GetShowUnreadOnly').returns(false)
+    getShowUnreadOnlySpy = sandbox.stub(UnreadFilter, 'GetShowUnreadOnly').returns(false)
   })
   afterEach(() => {
     sandbox.restore()
@@ -32,27 +32,27 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     const elem = dom.window.document.querySelector('body > div')
     elem?.parentElement?.removeChild(elem)
     expect(() => {
-      Pictures.UpdateUnreadSelectorSlider()
+      UnreadFilter.UpdateUnreadSelectorSlider()
     }).to.not.throw()
   })
   it('should remove unread class from slider when value is false', () => {
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     elem.classList.add('unread')
-    Pictures.UpdateUnreadSelectorSlider()
+    UnreadFilter.UpdateUnreadSelectorSlider()
     expect(elem.classList.contains('unread')).to.equal(false)
   })
   it('should add all class from slider when value is false', () => {
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
-    Pictures.UpdateUnreadSelectorSlider()
+    UnreadFilter.UpdateUnreadSelectorSlider()
     expect(elem.classList.contains('all')).to.equal(true)
   })
   it('should add unread class from slider when value is true', () => {
     getShowUnreadOnlySpy.returns(true)
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
-    Pictures.UpdateUnreadSelectorSlider()
+    UnreadFilter.UpdateUnreadSelectorSlider()
     expect(elem.classList.contains('unread')).to.equal(true)
   })
   it('should remove all class from slider when value is true', () => {
@@ -60,7 +60,7 @@ describe('public/app/pictures function SetShowUnreadOnly()', () => {
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     elem.classList.add('all')
-    Pictures.UpdateUnreadSelectorSlider()
+    UnreadFilter.UpdateUnreadSelectorSlider()
     expect(elem.classList.contains('all')).to.equal(false)
   })
 })
