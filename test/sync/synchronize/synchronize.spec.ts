@@ -76,42 +76,19 @@ describe('sync/synchronize function synchronize()', () => {
     await synchronize()
     expect(findSyncItemsStub.firstCall.args[0]).to.equal(knexFnStub)
   })
-  it('should log elapsed time for FindSyncItems step', async () => {
-    await synchronize()
-    const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('FindSyncItems '))
-    expect(call?.args[0]).to.match(stepLog)
-  })
-  it('should log elapsed time for SyncAllPictures step', async () => {
-    await synchronize()
-    const call = findStubCall(
-      loggerStub,
-      (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllPictures '),
-    )
-    expect(call?.args[0]).to.match(stepLog)
-  })
-  it('should log elapsed time for SyncAllFolders step', async () => {
-    await synchronize()
-    const call = findStubCall(
-      loggerStub,
-      (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllFolders '),
-    )
-    expect(call?.args[0]).to.match(stepLog)
-  })
-  it('should log elapsed time for UpdateFolderPictureCounts step', async () => {
-    await synchronize()
-    const call = findStubCall(
-      loggerStub,
-      (args) => typeof args[0] === 'string' && args[0].startsWith('UpdateFolderPictureCounts '),
-    )
-    expect(call?.args[0]).to.match(stepLog)
-  })
-  it('should log elapsed time for PruneEmptyFolders step', async () => {
-    await synchronize()
-    const call = findStubCall(
-      loggerStub,
-      (args) => typeof args[0] === 'string' && args[0].startsWith('PruneEmptyFolders '),
-    )
-    expect(call?.args[0]).to.match(stepLog)
+  const stepNames = [
+    'FindSyncItems',
+    'SyncAllPictures',
+    'SyncAllFolders',
+    'UpdateFolderPictureCounts',
+    'PruneEmptyFolders',
+  ]
+  stepNames.forEach((step) => {
+    it(`should log elapsed time for ${step} step`, async () => {
+      await synchronize()
+      const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith(`${step} `))
+      expect(call?.args[0]).to.match(stepLog)
+    })
   })
   it('should not call SyncAllPictures when zero images found', async () => {
     findSyncItemsStub.resolves(0)

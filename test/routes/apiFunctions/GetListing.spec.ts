@@ -9,6 +9,18 @@ import Sinon from 'sinon'
 const modCountInternals = Cast<ModCountInternals>(ModCount)
 const sandbox = Sinon.createSandbox()
 
+const folderFixture = {
+  name: 'bar<=>',
+  path: '/foo/bar/',
+  folder: '/foo/',
+  cover: '/foo/bar/image.png',
+  sortKey: 'bar>-<',
+}
+// Variant where the resolved folder's `path` differs from the GetListing arg —
+// used to verify a downstream call uses the GetListing arg rather than the
+// resolved folder's path.
+const folderFixtureDifferentPath = { ...folderFixture, path: '/fop/bat/' }
+
 describe('routes/apiFunctions function GetListing', () => {
   let getFolderStub = sandbox.stub()
   let getNextFolderStub = sandbox.stub()
@@ -33,354 +45,183 @@ describe('routes/apiFunctions function GetListing', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should call GetFolder() once', async () => {
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getFolderStub.callCount).to.equal(1)
-  })
-  it('should call GetFolder() with two arguments', async () => {
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getFolderStub.firstCall.args).to.have.lengthOf(2)
-  })
-  it('should call GetFolder() with knex', async () => {
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getFolderStub.firstCall.args[0]).to.equal(knexFake)
-  })
-  it('should call GetFolder() with path', async () => {
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
-  })
-  it('should return null when GetFolder() does not resolve to a folder', async () => {
-    getFolderStub.resolves(null)
-    const result = await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(result).to.equal(null)
-  })
-  it('should not call GetNextFolder when GetFolder returns null', async () => {
-    getFolderStub.resolves(null)
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getNextFolderStub.callCount).to.equal(0)
-  })
-  it('should not call GetPreviousFolder when GetFolder returns null', async () => {
-    getFolderStub.resolves(null)
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPreviousFolderStub.callCount).to.equal(0)
-  })
-  it('should not call GetChildFolders when GetFolder returns null', async () => {
-    getFolderStub.resolves(null)
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getChildFoldersStub.callCount).to.equal(0)
-  })
-  it('should not call GetPictures when GetFolder returns null', async () => {
-    getFolderStub.resolves(null)
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPicturesStub.callCount).to.equal(0)
-  })
-  it('should not call GetBookmarks when GetFolder returns null', async () => {
-    getFolderStub.resolves(null)
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getBookmarksStub.callCount).to.equal(0)
-  })
-  it('should call GetNextFolder when GetFolder returns a folder', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+
+  describe('GetFolder() interface', () => {
+    it('should call GetFolder() once', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getFolderStub.callCount).to.equal(1)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getNextFolderStub.callCount).to.equal(1)
-  })
-  it('should call GetPreviousFolder when GetFolder returns a folder', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should call GetFolder() with two arguments', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getFolderStub.firstCall.args).to.have.lengthOf(2)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPreviousFolderStub.callCount).to.equal(1)
-  })
-  it('should call GetChildFolders when GetFolder returns a folder', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should call GetFolder() with knex', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getFolderStub.firstCall.args[0]).to.equal(knexFake)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getChildFoldersStub.callCount).to.equal(1)
-  })
-  it('should call GetPictures when GetFolder returns a folder', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should call GetFolder() with path', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPicturesStub.callCount).to.equal(1)
   })
-  it('should call GetBookmarks when GetFolder returns a folder', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+
+  describe('when GetFolder() resolves to null', () => {
+    it('should return null', async () => {
+      const result = await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(result).to.equal(null)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getBookmarksStub.callCount).to.equal(1)
-  })
-  it('should call GetNextFolder() once', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/fop/bat/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should not call GetNextFolder', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getNextFolderStub.callCount).to.equal(0)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getNextFolderStub.callCount).to.equal(1)
-  })
-  it('should call GetNextFolder() with three arguments', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/fop/bat/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should not call GetPreviousFolder', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPreviousFolderStub.callCount).to.equal(0)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getNextFolderStub.firstCall.args).to.have.lengthOf(3)
-  })
-  it('should call GetNextFolder() with knex', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/fop/bat/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should not call GetChildFolders', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getChildFoldersStub.callCount).to.equal(0)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getNextFolderStub.firstCall.args[0]).to.equal(knexFake)
-  })
-  it('should call GetNextFolder() with path', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/fop/bat/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should not call GetPictures', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPicturesStub.callCount).to.equal(0)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getNextFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
-  })
-  it('should call GetNextFolder() with sortKey', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/fop/bat/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should not call GetBookmarks', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getBookmarksStub.callCount).to.equal(0)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getNextFolderStub.firstCall.args[2]).to.equal('bar>-<')
-  })
-  it('should call GetPreviousFolder() once', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should not log GetListing timing', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GetListing'))
+      expect(matched).to.equal(false)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPreviousFolderStub.callCount).to.equal(1)
   })
-  it('should call GetPreviousFolder() with three arguments', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+
+  describe('when GetFolder() resolves to a folder', () => {
+    beforeEach(() => {
+      getFolderStub.resolves(folderFixture)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPreviousFolderStub.firstCall.args).to.have.lengthOf(3)
-  })
-  it('should call GetPreviousFolder() with knex', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+
+    it('should call GetNextFolder', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getNextFolderStub.callCount).to.equal(1)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPreviousFolderStub.firstCall.args[0]).to.equal(knexFake)
-  })
-  it('should call GetPreviousFolder() with path', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should call GetPreviousFolder', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPreviousFolderStub.callCount).to.equal(1)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPreviousFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
-  })
-  it('should call GetPreviousFolder() with sortKey', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should call GetChildFolders', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getChildFoldersStub.callCount).to.equal(1)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPreviousFolderStub.firstCall.args[2]).to.equal('bar>-<')
-  })
-  it('should call GetChildFolders() once', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should call GetPictures', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPicturesStub.callCount).to.equal(1)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getChildFoldersStub.callCount).to.equal(1)
-  })
-  it('should call GetChildFolders() with two arguments', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should call GetBookmarks', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getBookmarksStub.callCount).to.equal(1)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getChildFoldersStub.firstCall.args).to.have.lengthOf(2)
-  })
-  it('should call GetChildFolders() with knex', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should log GetListing timing', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GetListing'))
+      expect(matched).to.equal(true)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getChildFoldersStub.firstCall.args[0]).to.equal(knexFake)
   })
-  it('should call GetChildFolders() with path', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+
+  describe('GetNextFolder() invocation', () => {
+    // Different path on the fixture verifies the call uses GetListing's arg,
+    // not the resolved folder's path.
+    beforeEach(() => {
+      getFolderStub.resolves(folderFixtureDifferentPath)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getChildFoldersStub.firstCall.args[1]).to.equal('/foo/bar/')
-  })
-  it('should call GetPictures() once', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should be called with three arguments', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getNextFolderStub.firstCall.args).to.have.lengthOf(3)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPicturesStub.callCount).to.equal(1)
-  })
-  it('should call GetPictures() with two arguments', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should be called with knex', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getNextFolderStub.firstCall.args[0]).to.equal(knexFake)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPicturesStub.firstCall.args).to.have.lengthOf(2)
-  })
-  it('should call GetPictures() with knex', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should be called with path', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getNextFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPicturesStub.firstCall.args[0]).to.equal(knexFake)
-  })
-  it('should call GetPictures() with path', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should be called with sortKey', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getNextFolderStub.firstCall.args[2]).to.equal('bar>-<')
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getPicturesStub.firstCall.args[1]).to.equal('/foo/bar/')
   })
-  it('should call GetBookmarks() once', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+
+  describe('GetPreviousFolder() invocation', () => {
+    beforeEach(() => {
+      getFolderStub.resolves(folderFixture)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getBookmarksStub.callCount).to.equal(1)
-  })
-  it('should call GetBookmarks() with one argument', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should be called with three arguments', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPreviousFolderStub.firstCall.args).to.have.lengthOf(3)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getBookmarksStub.firstCall.args).to.have.lengthOf(1)
-  })
-  it('should call GetBookmarks() with knex', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should be called with knex', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPreviousFolderStub.firstCall.args[0]).to.equal(knexFake)
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    expect(getBookmarksStub.firstCall.args[0]).to.equal(knexFake)
-  })
-  it('should log GetListing timing on success path', async () => {
-    getFolderStub.resolves({
-      name: 'bar<=>',
-      path: '/foo/bar/',
-      folder: '/foo/',
-      cover: '/foo/bar/image.png',
-      sortKey: 'bar>-<',
+    it('should be called with path', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPreviousFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
     })
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GetListing'))
-    expect(matched).to.equal(true)
+    it('should be called with sortKey', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPreviousFolderStub.firstCall.args[2]).to.equal('bar>-<')
+    })
   })
-  it('should not log GetListing timing when folder is not found', async () => {
-    getFolderStub.resolves(null)
-    await Functions.GetListing(knexFake, '/foo/bar/')
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GetListing'))
-    expect(matched).to.equal(false)
+
+  describe('GetChildFolders() invocation', () => {
+    beforeEach(() => {
+      getFolderStub.resolves(folderFixture)
+    })
+    it('should be called with two arguments', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getChildFoldersStub.firstCall.args).to.have.lengthOf(2)
+    })
+    it('should be called with knex', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getChildFoldersStub.firstCall.args[0]).to.equal(knexFake)
+    })
+    it('should be called with path', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getChildFoldersStub.firstCall.args[1]).to.equal('/foo/bar/')
+    })
+  })
+
+  describe('GetPictures() invocation', () => {
+    beforeEach(() => {
+      getFolderStub.resolves(folderFixture)
+    })
+    it('should be called with two arguments', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPicturesStub.firstCall.args).to.have.lengthOf(2)
+    })
+    it('should be called with knex', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPicturesStub.firstCall.args[0]).to.equal(knexFake)
+    })
+    it('should be called with path', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getPicturesStub.firstCall.args[1]).to.equal('/foo/bar/')
+    })
+  })
+
+  describe('GetBookmarks() invocation', () => {
+    beforeEach(() => {
+      getFolderStub.resolves(folderFixture)
+    })
+    it('should be called with one argument', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getBookmarksStub.firstCall.args).to.have.lengthOf(1)
+    })
+    it('should be called with knex', async () => {
+      await Functions.GetListing(knexFake, '/foo/bar/')
+      expect(getBookmarksStub.firstCall.args[0]).to.equal(knexFake)
+    })
   })
 })

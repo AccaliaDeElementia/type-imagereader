@@ -6,45 +6,20 @@ import type { Changeset } from '#sync/filewatcher.js'
 
 describe('utils/filewatcher Functions', () => {
   describe('isImagePath()', () => {
-    it('should return true for .jpg', () => {
-      expect(Functions.isImagePath('/foo/bar.jpg')).to.equal(true)
+    const imageExtensions = ['jpg', 'JPEG', 'png', 'webp', 'gif', 'svg', 'tif', 'tiff', 'bmp', 'jfif', 'jpe']
+    imageExtensions.forEach((ext) => {
+      it(`should return true for .${ext}`, () => {
+        expect(Functions.isImagePath(`/foo/bar.${ext}`)).to.equal(true)
+      })
     })
-    it('should return true for .JPEG', () => {
-      expect(Functions.isImagePath('/foo/bar.JPEG')).to.equal(true)
+
+    const nonImageExtensions = ['txt', 'mp4']
+    nonImageExtensions.forEach((ext) => {
+      it(`should return false for .${ext}`, () => {
+        expect(Functions.isImagePath(`/foo/bar.${ext}`)).to.equal(false)
+      })
     })
-    it('should return true for .png', () => {
-      expect(Functions.isImagePath('/foo/bar.png')).to.equal(true)
-    })
-    it('should return true for .webp', () => {
-      expect(Functions.isImagePath('/foo/bar.webp')).to.equal(true)
-    })
-    it('should return true for .gif', () => {
-      expect(Functions.isImagePath('/foo/bar.gif')).to.equal(true)
-    })
-    it('should return true for .svg', () => {
-      expect(Functions.isImagePath('/foo/bar.svg')).to.equal(true)
-    })
-    it('should return true for .tif', () => {
-      expect(Functions.isImagePath('/foo/bar.tif')).to.equal(true)
-    })
-    it('should return true for .tiff', () => {
-      expect(Functions.isImagePath('/foo/bar.tiff')).to.equal(true)
-    })
-    it('should return true for .bmp', () => {
-      expect(Functions.isImagePath('/foo/bar.bmp')).to.equal(true)
-    })
-    it('should return true for .jfif', () => {
-      expect(Functions.isImagePath('/foo/bar.jfif')).to.equal(true)
-    })
-    it('should return true for .jpe', () => {
-      expect(Functions.isImagePath('/foo/bar.jpe')).to.equal(true)
-    })
-    it('should return false for .txt', () => {
-      expect(Functions.isImagePath('/foo/bar.txt')).to.equal(false)
-    })
-    it('should return false for .mp4', () => {
-      expect(Functions.isImagePath('/foo/bar.mp4')).to.equal(false)
-    })
+
     it('should return false for no extension', () => {
       expect(Functions.isImagePath('/foo/bar')).to.equal(false)
     })
