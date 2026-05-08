@@ -5,10 +5,10 @@ import Sinon from 'sinon'
 
 import { FindSyncItemsViaInsert, type InsertFallbackHelpers } from '#sync/syncItemsDialect.js'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { noopLogger } from '#testutils/Debug.js'
 import type { Debugger } from 'debug'
 
 const sandbox = Sinon.createSandbox()
-const noopLogger = Cast<Debugger>(() => undefined)
 
 const FILE_COUNT = 7
 const DIR_COUNT = 3

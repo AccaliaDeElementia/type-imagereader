@@ -5,6 +5,11 @@ import type { Debugger } from 'debug'
 
 import { Cast } from './TypeGuards.js'
 
+// An inert Debugger that swallows every call. Use when a function under
+// test requires a logger argument but the test isn't asserting against
+// log output (e.g. integration tests, helpers under unit test).
+export const noopLogger: Debugger = Cast<Debugger>(() => undefined)
+
 // Use when the function under test takes a logger as a parameter.
 // The returned `fake` satisfies the Debugger type; the returned `stub`
 // records calls made through it for assertions.

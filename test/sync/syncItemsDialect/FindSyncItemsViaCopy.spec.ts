@@ -6,13 +6,13 @@ import Sinon from 'sinon'
 import { FindSyncItemsViaCopy, type CopyHelpers } from '#sync/syncItemsDialect.js'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { createCopyStreamFake } from '#testutils/CopyStream.js'
+import { noopLogger } from '#testutils/Debug.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
 
 const sandbox = Sinon.createSandbox()
-const noopLogger = Cast<Debugger>(() => undefined)
 
 const FILE_COUNT = 4
 const DIR_COUNT = 1

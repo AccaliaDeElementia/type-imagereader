@@ -4,8 +4,24 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Debugger } from 'debug'
 
-import { createLoggerFake, stubDebug } from '#testutils/Debug.js'
+import { createLoggerFake, noopLogger, stubDebug } from '#testutils/Debug.js'
 import { Cast } from '#testutils/TypeGuards.js'
+
+describe('testutils/Debug noopLogger', () => {
+  it('should be a function (satisfying the Debugger callable shape)', () => {
+    expect(noopLogger).to.be.a('function')
+  })
+  it('should not throw when invoked with a message', () => {
+    expect(() => {
+      noopLogger('msg')
+    }).to.not.throw()
+  })
+  it('should not throw when invoked with a format string and arguments', () => {
+    expect(() => {
+      noopLogger('hello %s', 'world', { x: 2 })
+    }).to.not.throw()
+  })
+})
 
 describe('testutils/Debug function createLoggerFake()', () => {
   it('should return an object with a stub property', () => {
