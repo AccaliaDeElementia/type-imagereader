@@ -4,10 +4,14 @@ import type { Picture } from '#contracts/listing.js'
 import { isListing, isPicture } from '#contracts/listing.js'
 import { Grid } from './grid.js'
 import { Viewer } from './viewer.js'
-import { Data } from './data.js'
+import { LoadData as _LoadData } from './data.js'
 import { Inputs } from './inputs.js'
 import { UnreadFilter } from './unreadFilter.js'
 import { Subscribe } from '../pubsub.js'
+
+export const Imports = {
+  LoadData: _LoadData,
+}
 
 const UNINITIALIZED_MOD_COUNT = -1
 export const UNINITIALIZED_SCALE = -1
@@ -59,7 +63,7 @@ function Init(): void {
   Object.assign(Pictures, defaultState())
   Pictures.ResetMarkup()
   Subscribe('Navigate:Data', async (data) => {
-    if (isListing(data)) await Data.LoadData(data)
+    if (isListing(data)) await Imports.LoadData(data)
   })
   Subscribe('Pictures:Change', async (data) => {
     if (isPicture(data)) await Viewer.ChangePicture(data)

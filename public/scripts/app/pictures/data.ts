@@ -9,6 +9,11 @@ import { Publish } from '../pubsub.js'
 
 const DEFAULT_MOD_COUNT = -1
 
+export const Imports = {
+  MakeTab: Grid.MakeTab,
+  LoadImage: Viewer.LoadImage,
+}
+
 function SetPictureIndices(): void {
   for (const [pic, i] of Pictures.pictures.map((pic, i): [Picture, number] => [pic, i])) {
     pic.index = i
@@ -28,13 +33,18 @@ function SetPicturesGetFirst(data: Listing): Picture | null {
   document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
   Pictures.pictures = data.pictures
   Pictures.modCount = data.modCount ?? DEFAULT_MOD_COUNT
-  Data.SetPictureIndices()
+  Internals.SetPictureIndices()
   return firstPic
 }
 
-async function LoadData(data: Listing): Promise<void> {
+export const Internals = {
+  SetPicturesGetFirst,
+  SetPictureIndices,
+}
+
+export async function LoadData(data: Listing): Promise<void> {
   Pictures.ResetMarkup()
-  const firstPic = Data.SetPicturesGetFirst(data)
+  const firstPic = Internals.SetPicturesGetFirst(data)
   if (firstPic === null) return
 
   const selected = Pictures.pictures.find((picture) => picture.path === data.cover)
@@ -43,18 +53,12 @@ async function LoadData(data: Listing): Promise<void> {
   } else {
     Pictures.current = selected
   }
-  Grid.MakeTab()
+  Imports.MakeTab()
   Publish('Tab:Select', 'Images')
   if (Pictures.pictures.every((img) => img.seen) && (data.noMenu === undefined || !data.noMenu)) {
     Publish('Menu:Show')
   } else {
     Publish('Menu:Hide')
   }
-  await Viewer.LoadImage().catch(() => null)
-}
-
-export const Data = {
-  LoadData,
-  SetPicturesGetFirst,
-  SetPictureIndices,
+  await Imports.LoadImage().catch(() => null)
 }

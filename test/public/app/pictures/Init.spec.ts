@@ -7,8 +7,8 @@ import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Imports } from '#public/scripts/app/pictures/state.js'
 import { Viewer } from '#public/scripts/app/pictures/viewer.js'
-import { Data } from '#public/scripts/app/pictures/data.js'
 import { Inputs } from '#public/scripts/app/pictures/inputs.js'
 import { UnreadFilter } from '#public/scripts/app/pictures/unreadFilter.js'
 import type { Picture } from '#contracts/listing.js'
@@ -72,7 +72,7 @@ describe('public/app/pictures function Init()', () => {
     initActionsSpy = sandbox.stub(Inputs, 'InitActions')
     initMouseSpy = sandbox.stub(Inputs, 'InitMouse')
     initUnreadSliderSpy = sandbox.stub(UnreadFilter, 'InitUnreadSelectorSlider')
-    loadDataSpy = sandbox.stub(Data, 'LoadData')
+    loadDataSpy = sandbox.stub(Imports, 'LoadData')
     changePictureSpy = sandbox.stub(Viewer, 'ChangePicture')
   })
   afterEach(() => {
