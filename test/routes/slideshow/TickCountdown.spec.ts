@@ -21,6 +21,21 @@ describe('routes/slideshow function TickCountdown()', () => {
   let ioFake = Cast<WebSocketServer>(ioStub)
   let getRoomStub = sandbox.stub()
   let loggerStub = sandbox.stub()
+  const buildRoom = (
+    countdown: number,
+    path = '/Room',
+    images: string[] = ['/an/image.png'],
+    uriSafeImage = '/an/image.png',
+  ): void => {
+    Config.rooms[path] = {
+      countdown,
+      path,
+      images,
+      index: 0,
+      uriSafeImage,
+      pages: { unread: 0, all: 0, pages: 0, page: 0 },
+    }
+  }
   beforeEach(() => {
     knexFake = StubToKnex({ knex: Math.random() })
     ioStub = {
@@ -130,280 +145,133 @@ describe('routes/slideshow function TickCountdown()', () => {
   ]
   tests.forEach(([title, countdown, clients, validationFn, images = []]) => {
     it(`should ${title}`, async () => {
-      Config.rooms['/Room'] = {
-        countdown,
-        path: '/Room',
-        images,
-        index: 0,
-        uriSafeImage: '/an/image.png',
-        pages: {
-          unread: 0,
-          all: 0,
-          pages: 0,
-          page: 0,
-        },
-      }
+      buildRoom(countdown, '/Room', images, '/an/image.png')
       ioStub.get.returns(clients)
       await Functions.TickCountdown(knexFake, ioFake)
       validationFn()
     })
   })
-  it('should emit updated uriSafeImage from GetRoomAndIncrementImage', async () => {
-    Config.rooms['/Room'] = {
-      countdown: -99,
-      path: '/Room',
-      images: ['/old/image.png'],
-      index: 0,
-      uriSafeImage: '/old/image.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    getRoomStub.callsFake((_knex: unknown, name: string) => {
-      const room = Config.rooms[name]
-      if (room !== undefined) {
-        room.uriSafeImage = '/new/image.png'
-        room.images = ['/new/image.png']
-      }
+
+  describe('when GetRoomAndIncrementImage mutates the room', () => {
+    beforeEach(() => {
+      buildRoom(-99, '/Room', ['/old/image.png'], '/old/image.png')
+      ioStub.get.returns(clients)
     })
-    ioStub.get.returns(clients)
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(ioStub.emit.firstCall.args[1]).to.equal('/new/image.png')
-  })
-  it('should not emit when GetRoomAndIncrementImage empties the image list', async () => {
-    Config.rooms['/Room'] = {
-      countdown: -99,
-      path: '/Room',
-      images: ['/old/image.png'],
-      index: 0,
-      uriSafeImage: '/old/image.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    getRoomStub.callsFake((_knex: unknown, name: string) => {
-      const room = Config.rooms[name]
-      if (room !== undefined) {
-        room.images = []
-        room.uriSafeImage = ''
-      }
+    it('should emit updated uriSafeImage', async () => {
+      getRoomStub.callsFake((_knex: unknown, name: string) => {
+        const room = Config.rooms[name]
+        if (room !== undefined) {
+          room.uriSafeImage = '/new/image.png'
+          room.images = ['/new/image.png']
+        }
+      })
+      await Functions.TickCountdown(knexFake, ioFake)
+      expect(ioStub.emit.firstCall.args[1]).to.equal('/new/image.png')
     })
-    ioStub.get.returns(clients)
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(ioStub.to.callCount).to.equal(0)
+    it('should not emit when GetRoomAndIncrementImage empties the image list', async () => {
+      getRoomStub.callsFake((_knex: unknown, name: string) => {
+        const room = Config.rooms[name]
+        if (room !== undefined) {
+          room.images = []
+          room.uriSafeImage = ''
+        }
+      })
+      await Functions.TickCountdown(knexFake, ioFake)
+      expect(ioStub.to.callCount).to.equal(0)
+    })
   })
-  it('should log once when an error is thrown', async () => {
-    getRoomStub.rejects(new Error('TICK FAILED'))
-    Config.rooms['/Room'] = {
-      countdown: -99,
-      path: '/Room',
-      images: ['/an/image.png'],
-      index: 0,
-      uriSafeImage: '/an/image.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    ioStub.get.returns(new Set(['/']))
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(loggerStub.callCount).to.equal(1)
+
+  describe('when GetRoomAndIncrementImage rejects with an error', () => {
+    const tickFailedError = new Error('TICK FAILED')
+    beforeEach(() => {
+      buildRoom(-99)
+      ioStub.get.returns(new Set(['/']))
+      getRoomStub.rejects(tickFailedError)
+    })
+    it('should log once', async () => {
+      await Functions.TickCountdown(knexFake, ioFake)
+      expect(loggerStub.callCount).to.equal(1)
+    })
+    it("should log with message 'TickCountdown error'", async () => {
+      await Functions.TickCountdown(knexFake, ioFake)
+      expect(loggerStub.firstCall.args[0]).to.equal('TickCountdown error')
+    })
+    it('should log the error object', async () => {
+      await Functions.TickCountdown(knexFake, ioFake)
+      expect(loggerStub.firstCall.args[1]).to.equal(tickFailedError)
+    })
   })
-  it("should log with message 'TickCountdown error' when an error is thrown", async () => {
-    getRoomStub.rejects(new Error('TICK FAILED'))
-    Config.rooms['/Room'] = {
-      countdown: -99,
-      path: '/Room',
-      images: ['/an/image.png'],
-      index: 0,
-      uriSafeImage: '/an/image.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    ioStub.get.returns(new Set(['/']))
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(loggerStub.firstCall.args[0]).to.equal('TickCountdown error')
-  })
-  it('should log the error object when an error is thrown', async () => {
-    const err = new Error('TICK FAILED')
-    getRoomStub.rejects(err)
-    Config.rooms['/Room'] = {
-      countdown: -99,
-      path: '/Room',
-      images: ['/an/image.png'],
-      index: 0,
-      uriSafeImage: '/an/image.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    ioStub.get.returns(new Set(['/']))
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(loggerStub.firstCall.args[1]).to.equal(err)
-  })
+
   it('should not log when no error occurs', async () => {
     await Functions.TickCountdown(knexFake, ioFake)
     expect(loggerStub.callCount).to.equal(0)
   })
-  it('should log once when one of two due rooms fails', async () => {
-    Config.rooms['/RoomA'] = {
-      countdown: -99,
-      path: '/RoomA',
-      images: ['/a.png'],
-      index: 0,
-      uriSafeImage: '/a.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    Config.rooms['/RoomB'] = {
-      countdown: -99,
-      path: '/RoomB',
-      images: ['/b.png'],
-      index: 0,
-      uriSafeImage: '/b.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    getRoomStub.onFirstCall().resolves()
-    getRoomStub.onSecondCall().rejects(new Error('ROOM B FAILED'))
-    ioStub.get.returns(clients)
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(loggerStub.callCount).to.equal(1)
-  })
-  it('should log the rejecting room error when one of two due rooms rejects', async () => {
-    const err = new Error('ROOM B FAILED')
-    Config.rooms['/RoomA'] = {
-      countdown: -99,
-      path: '/RoomA',
-      images: ['/a.png'],
-      index: 0,
-      uriSafeImage: '/a.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    Config.rooms['/RoomB'] = {
-      countdown: -99,
-      path: '/RoomB',
-      images: ['/b.png'],
-      index: 0,
-      uriSafeImage: '/b.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    getRoomStub.onFirstCall().resolves()
-    getRoomStub.onSecondCall().rejects(err)
-    ioStub.get.returns(clients)
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(loggerStub.firstCall.args[1]).to.equal(err)
-  })
-  it('should emit for the successful room when the other room fails', async () => {
-    Config.rooms['/RoomA'] = {
-      countdown: -99,
-      path: '/RoomA',
-      images: ['/a.png'],
-      index: 0,
-      uriSafeImage: '/a.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    Config.rooms['/RoomB'] = {
-      countdown: -99,
-      path: '/RoomB',
-      images: ['/b.png'],
-      index: 0,
-      uriSafeImage: '/b.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    getRoomStub.onFirstCall().resolves()
-    getRoomStub.onSecondCall().rejects(new Error('ROOM B FAILED'))
-    ioStub.get.returns(clients)
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(ioStub.emit.callCount).to.equal(1)
-  })
-  it('should log once when the first of two due rooms fails', async () => {
-    Config.rooms['/RoomA'] = {
-      countdown: -99,
-      path: '/RoomA',
-      images: ['/a.png'],
-      index: 0,
-      uriSafeImage: '/a.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    Config.rooms['/RoomB'] = {
-      countdown: -99,
-      path: '/RoomB',
-      images: ['/b.png'],
-      index: 0,
-      uriSafeImage: '/b.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    getRoomStub.onFirstCall().rejects(new Error('ROOM A FAILED'))
-    getRoomStub.onSecondCall().resolves()
-    ioStub.get.returns(clients)
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(loggerStub.callCount).to.equal(1)
-  })
-  it('should log the error when the first of two due rooms fails', async () => {
-    const err = new Error('ROOM A FAILED')
-    Config.rooms['/RoomA'] = {
-      countdown: -99,
-      path: '/RoomA',
-      images: ['/a.png'],
-      index: 0,
-      uriSafeImage: '/a.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    Config.rooms['/RoomB'] = {
-      countdown: -99,
-      path: '/RoomB',
-      images: ['/b.png'],
-      index: 0,
-      uriSafeImage: '/b.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    getRoomStub.onFirstCall().rejects(err)
-    getRoomStub.onSecondCall().resolves()
-    ioStub.get.returns(clients)
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(loggerStub.firstCall.args[1]).to.equal(err)
-  })
-  it('should emit for the successful room when the first room fails', async () => {
-    Config.rooms['/RoomA'] = {
-      countdown: -99,
-      path: '/RoomA',
-      images: ['/a.png'],
-      index: 0,
-      uriSafeImage: '/a.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    Config.rooms['/RoomB'] = {
-      countdown: -99,
-      path: '/RoomB',
-      images: ['/b.png'],
-      index: 0,
-      uriSafeImage: '/b.png',
-      pages: { unread: 0, all: 0, pages: 0, page: 0 },
-    }
-    getRoomStub.onFirstCall().rejects(new Error('ROOM A FAILED'))
-    getRoomStub.onSecondCall().resolves()
-    ioStub.get.returns(clients)
-    await Functions.TickCountdown(knexFake, ioFake)
-    expect(ioStub.emit.callCount).to.equal(1)
+
+  describe('with two due rooms where one fails', () => {
+    beforeEach(() => {
+      buildRoom(-99, '/RoomA', ['/a.png'], '/a.png')
+      buildRoom(-99, '/RoomB', ['/b.png'], '/b.png')
+      ioStub.get.returns(clients)
+    })
+
+    describe('when the second room fails', () => {
+      const roomBError = new Error('ROOM B FAILED')
+      beforeEach(() => {
+        getRoomStub.onFirstCall().resolves()
+        getRoomStub.onSecondCall().rejects(roomBError)
+      })
+      it('should log once', async () => {
+        await Functions.TickCountdown(knexFake, ioFake)
+        expect(loggerStub.callCount).to.equal(1)
+      })
+      it('should log the rejecting room error', async () => {
+        await Functions.TickCountdown(knexFake, ioFake)
+        expect(loggerStub.firstCall.args[1]).to.equal(roomBError)
+      })
+      it('should emit for the successful room', async () => {
+        await Functions.TickCountdown(knexFake, ioFake)
+        expect(ioStub.emit.callCount).to.equal(1)
+      })
+    })
+
+    describe('when the first room fails', () => {
+      const roomAError = new Error('ROOM A FAILED')
+      beforeEach(() => {
+        getRoomStub.onFirstCall().rejects(roomAError)
+        getRoomStub.onSecondCall().resolves()
+      })
+      it('should log once', async () => {
+        await Functions.TickCountdown(knexFake, ioFake)
+        expect(loggerStub.callCount).to.equal(1)
+      })
+      it('should log the error', async () => {
+        await Functions.TickCountdown(knexFake, ioFake)
+        expect(loggerStub.firstCall.args[1]).to.equal(roomAError)
+      })
+      it('should emit for the successful room', async () => {
+        await Functions.TickCountdown(knexFake, ioFake)
+        expect(ioStub.emit.callCount).to.equal(1)
+      })
+    })
   })
 
   describe('room pruning logging', () => {
-    const buildRoom = (countdown: number, path = '/PrunedRoom'): void => {
-      Config.rooms[path] = {
-        countdown,
-        path,
-        images: ['/a.png'],
-        index: 0,
-        uriSafeImage: '/a.png',
-        pages: { unread: 0, all: 0, pages: 0, page: 0 },
-      }
-    }
-
     it('should log room-pruned format when countdown ticks past prune threshold', async () => {
-      buildRoom(-3600) // ticks to -3601, past the -3600 threshold
+      buildRoom(-3600, '/PrunedRoom', ['/a.png'], '/a.png')
       await Functions.TickCountdown(knexFake, ioFake)
       const hasPruneLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
       expect(hasPruneLog).to.equal(true)
     })
 
     it('should log the pruned room name', async () => {
-      buildRoom(-3600, '/SpecificRoom')
+      buildRoom(-3600, '/SpecificRoom', ['/a.png'], '/a.png')
       await Functions.TickCountdown(knexFake, ioFake)
       const pruneCall = loggerStub.getCalls().find((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
       expect(pruneCall?.args[1]).to.equal('/SpecificRoom')
     })
 
     it('should not log room-pruned when room is still alive', async () => {
-      buildRoom(5)
+      buildRoom(5, '/PrunedRoom', ['/a.png'], '/a.png')
       await Functions.TickCountdown(knexFake, ioFake)
       const hasPruneLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
       expect(hasPruneLog).to.equal(false)
