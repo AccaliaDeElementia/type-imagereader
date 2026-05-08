@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import { Functions, Imports } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { StubToKnex } from '#testutils/TypeGuards.js'
+import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -15,8 +15,7 @@ interface InsertedRow {
 }
 
 describe('utils/syncfolders function IncrementalEnsureAncestors()', () => {
-  let loggerStub = sandbox.stub()
-  let loggerFake = Cast<Debugger>(loggerStub)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
 
   let existingFolderPaths: Array<{ path: string }> = []
   let insertedChunks: InsertedRow[][] = []
@@ -35,8 +34,7 @@ describe('utils/syncfolders function IncrementalEnsureAncestors()', () => {
   let knexFnFake = StubToKnex(knexFnStub)
 
   const setup = (): void => {
-    loggerStub = sandbox.stub()
-    loggerFake = Cast<Debugger>(loggerStub)
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
     insertedChunks = []
     whereInCalls = []
 

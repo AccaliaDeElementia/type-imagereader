@@ -4,13 +4,12 @@ import { expect } from 'chai'
 import { Functions, Imports } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function IncrementalScanFolder()', () => {
-  let loggerStub = sandbox.stub()
-  let loggerFake = Cast<Debugger>(loggerStub)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
   let fsWalkerStub = sandbox.stub()
   let incrementalAddPicturesBulkStub = sandbox.stub()
   let incrementalEnsureFoldersBulkStub = sandbox.stub()
@@ -18,8 +17,7 @@ describe('utils/syncfolders function IncrementalScanFolder()', () => {
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    loggerStub = sandbox.stub()
-    loggerFake = Cast<Debugger>(loggerStub)
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
     incrementalAddPicturesBulkStub = sandbox.stub(Functions, 'IncrementalAddPicturesBulk').resolves()
     incrementalEnsureFoldersBulkStub = sandbox.stub(Functions, 'IncrementalEnsureFoldersBulk').resolves()

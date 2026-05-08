@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { Functions, Imports } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -22,8 +22,7 @@ interface UpsertRow {
 }
 
 describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
-  let loggerStub = sandbox.stub()
-  let loggerFake = Cast<Debugger>(loggerStub)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
 
   let aggregateRowsForReturn: AggregateRow[] = []
   let whereRawCalls: Array<{ pattern: string; bindings: unknown[] }> = []
@@ -55,8 +54,7 @@ describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
   let knexFnFake = StubToKnex(knexFnStub)
 
   const setup = (): void => {
-    loggerStub = sandbox.stub()
-    loggerFake = Cast<Debugger>(loggerStub)
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
     whereRawCalls = []
     groupByCalls = []
     upsertChunks = []

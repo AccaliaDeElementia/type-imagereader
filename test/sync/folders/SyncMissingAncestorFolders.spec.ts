@@ -4,8 +4,8 @@ import { expect } from 'chai'
 import { Functions } from '#sync/folders.js'
 import { Functions as Helpers } from '#sync/helpers.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { StubToKnex } from '#testutils/TypeGuards.js'
+import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -16,8 +16,7 @@ interface InsertedRow {
 }
 
 describe('utils/syncfolders function SyncMissingAncestorFolders()', () => {
-  let loggerStub = sandbox.stub()
-  let loggerFake = Cast<Debugger>(loggerStub)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
 
   let distinctPictureFolders: Array<{ folder: string }> = []
   let existingFolderPaths: Array<{ path: string }> = []
@@ -41,8 +40,7 @@ describe('utils/syncfolders function SyncMissingAncestorFolders()', () => {
   let knexFnFake = StubToKnex(knexFnStub)
 
   const setup = (): void => {
-    loggerStub = sandbox.stub()
-    loggerFake = Cast<Debugger>(loggerStub)
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
     insertedChunks = []
     whereInCalls = []
 

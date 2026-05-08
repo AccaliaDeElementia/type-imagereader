@@ -3,14 +3,13 @@
 import { expect } from 'chai'
 import { Functions } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { StubToKnex } from '#testutils/TypeGuards.js'
+import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function IncrementalRemoveFolder()', () => {
-  let loggerStub = sandbox.stub()
-  let loggerFake = Cast<Debugger>(loggerStub)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
   let picturesStub = {
     where: sandbox.stub().returnsThis(),
     delete: sandbox.stub().resolves(0),
@@ -32,8 +31,7 @@ describe('utils/syncfolders function IncrementalRemoveFolder()', () => {
   let knexFnFake = StubToKnex(knexFnStub)
 
   beforeEach(() => {
-    loggerStub = sandbox.stub()
-    loggerFake = Cast<Debugger>(loggerStub)
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
     picturesStub = {
       where: sandbox.stub().returnsThis(),
       delete: sandbox.stub().resolves(5),

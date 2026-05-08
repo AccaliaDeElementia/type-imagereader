@@ -5,13 +5,12 @@ import { Functions } from '#sync/folders.js'
 import { Functions as Helpers } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function SyncFolderFirstImages()', () => {
-  let loggerStub = sandbox.stub()
-  let loggerFake = Cast<Debugger>(loggerStub)
+  let { fake: loggerFake } = createLoggerFake(sandbox)
   let innerQueryBuilder = {
     select: sandbox.stub().returnsThis(),
     min: sandbox.stub().returnsThis(),
@@ -38,8 +37,7 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
   let knexFnFake = StubToKnex(knexFnStub)
   let chunkStub = sandbox.stub()
   beforeEach(() => {
-    loggerStub = sandbox.stub()
-    loggerFake = Cast<Debugger>(loggerStub)
+    ;({ fake: loggerFake } = createLoggerFake(sandbox))
     innerQueryBuilder = {
       select: sandbox.stub().returnsThis(),
       min: sandbox.stub().returnsThis(),

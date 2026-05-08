@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createResponseFake } from '#testutils/Express.js'
 import { handleErrors } from '#utils/Express.js'
-import type { Debugger } from 'debug'
+import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -18,8 +18,7 @@ describe('utils/Express handleErrors', () => {
   }
   let requestFake = Cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let loggerStub = sandbox.stub()
-  let loggerFake = Cast<Debugger>(loggerStub)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
 
   beforeEach(() => {
     requestStub = {
@@ -28,8 +27,7 @@ describe('utils/Express handleErrors', () => {
     }
     requestFake = Cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
-    loggerStub = sandbox.stub()
-    loggerFake = Cast<Debugger>(loggerStub)
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
   })
   afterEach(() => {
     sandbox.restore()

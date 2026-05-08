@@ -4,13 +4,12 @@ import { expect } from 'chai'
 import { Functions } from '#sync/pictures.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
-import type { Debugger } from 'debug'
+import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('utils/syncfolders function SyncNewPictures()', () => {
-  let loggerStub = sandbox.stub()
-  let loggerFake = Cast<Debugger>(loggerStub)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
   let knexInnerInstanceStub = {
     select: sandbox.stub().returnsThis(),
     from: sandbox.stub().returnsThis(),
@@ -26,8 +25,7 @@ describe('utils/syncfolders function SyncNewPictures()', () => {
   }
   let knexFnFake = StubToKnex(knexInstanceStub)
   beforeEach(() => {
-    loggerStub = sandbox.stub()
-    loggerFake = Cast<Debugger>(loggerStub)
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
     knexInnerInstanceStub = {
       select: sandbox.stub().returnsThis(),
       from: sandbox.stub().returnsThis(),
