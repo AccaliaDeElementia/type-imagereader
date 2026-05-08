@@ -6,11 +6,9 @@ import synchronize, { Imports } from '#sync/synchronize.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
+import { findStubCall } from '#testutils/Sinon.js'
 
 const sandbox = Sinon.createSandbox()
-
-const findCall = (stub: Sinon.SinonStub, predicate: (args: unknown[]) => boolean): Sinon.SinonSpyCall | undefined =>
-  stub.getCalls().find((c) => predicate(c.args))
 
 const stepLog = /^[A-Za-z]+ completed in \d+\.\d+s$/v
 const stepFailureLog = /^[A-Za-z]+ failed after \d+\.\d+s$/v
@@ -80,22 +78,28 @@ describe('sync/synchronize function synchronize()', () => {
   })
   it('should log elapsed time for FindSyncItems step', async () => {
     await synchronize()
-    const call = findCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('FindSyncItems '))
+    const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('FindSyncItems '))
     expect(call?.args[0]).to.match(stepLog)
   })
   it('should log elapsed time for SyncAllPictures step', async () => {
     await synchronize()
-    const call = findCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllPictures '))
+    const call = findStubCall(
+      loggerStub,
+      (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllPictures '),
+    )
     expect(call?.args[0]).to.match(stepLog)
   })
   it('should log elapsed time for SyncAllFolders step', async () => {
     await synchronize()
-    const call = findCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllFolders '))
+    const call = findStubCall(
+      loggerStub,
+      (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllFolders '),
+    )
     expect(call?.args[0]).to.match(stepLog)
   })
   it('should log elapsed time for UpdateFolderPictureCounts step', async () => {
     await synchronize()
-    const call = findCall(
+    const call = findStubCall(
       loggerStub,
       (args) => typeof args[0] === 'string' && args[0].startsWith('UpdateFolderPictureCounts '),
     )
@@ -103,7 +107,10 @@ describe('sync/synchronize function synchronize()', () => {
   })
   it('should log elapsed time for PruneEmptyFolders step', async () => {
     await synchronize()
-    const call = findCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('PruneEmptyFolders '))
+    const call = findStubCall(
+      loggerStub,
+      (args) => typeof args[0] === 'string' && args[0].startsWith('PruneEmptyFolders '),
+    )
     expect(call?.args[0]).to.match(stepLog)
   })
   it('should not call SyncAllPictures when zero images found', async () => {
@@ -129,26 +136,26 @@ describe('sync/synchronize function synchronize()', () => {
   it('should log error with two arguments when aborting', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize().catch(() => null)
-    const call = findCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
+    const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
     expect(call?.args).to.have.lengthOf(2)
   })
   it('should log error label when aborting synchronizing with zero images found', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize().catch(() => null)
-    const call = findCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
+    const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
     expect(call?.args[0]).to.equal('Folder Synchronization Failed')
   })
   it('should log an Error instance when aborting synchronizing with zero images found', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize().catch(() => null)
-    const call = findCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
+    const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
     const error = Cast(call?.args[1], (e) => e instanceof Error)
     expect(error).to.be.an('Error')
   })
   it('should log error message when aborting synchronizing with zero images found', async () => {
     findSyncItemsStub.resolves(-1)
     await synchronize().catch(() => null)
-    const call = findCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
+    const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
     const error = Cast(call?.args[1], (e) => e instanceof Error)
     expect(error.message).to.equal('Found Zero images, refusing to process empty base folder')
   })
@@ -175,7 +182,7 @@ describe('sync/synchronize function synchronize()', () => {
   it('should log a per-step failure when a step rejects', async () => {
     syncAllPicturesStub.rejects(new Error('boom'))
     await synchronize().catch(() => null)
-    const call = findCall(
+    const call = findStubCall(
       loggerStub,
       (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllPictures failed'),
     )
@@ -184,7 +191,7 @@ describe('sync/synchronize function synchronize()', () => {
   it('should include elapsed time in per-step failure log', async () => {
     syncAllPicturesStub.rejects(new Error('boom'))
     await synchronize().catch(() => null)
-    const call = findCall(
+    const call = findStubCall(
       loggerStub,
       (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllPictures failed'),
     )
@@ -194,7 +201,7 @@ describe('sync/synchronize function synchronize()', () => {
     const err = new Error('boom')
     syncAllPicturesStub.rejects(err)
     await synchronize().catch(() => null)
-    const call = findCall(
+    const call = findStubCall(
       loggerStub,
       (args) => typeof args[0] === 'string' && args[0].startsWith('SyncAllPictures failed'),
     )
