@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/overlay.js'
+import { Internals } from '#public/scripts/slideshow/overlay.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 
@@ -9,36 +9,36 @@ describe('public/slideshow/overlay ShowHideKiosk()', () => {
 
   it('should accept missing .hide class when in kiosk mode', () => {
     const elem = dom.window.document.createElement('div')
-    Functions.ShowHideKiosk(elem, true)
+    Internals.ShowHideKiosk(elem, true)
     expect(elem.className).to.not.contain('hide')
   })
   it('should remove the .hide class when in kiosk mode', () => {
     const elem = dom.window.document.createElement('div')
     elem.classList.add('hide')
-    Functions.ShowHideKiosk(elem, true)
+    Internals.ShowHideKiosk(elem, true)
     expect(elem.className).to.not.contain('hide')
   })
   it('should preserve unrelated class when in kiosk mode', () => {
     const elem = dom.window.document.createElement('div')
     elem.classList.add('foo')
-    Functions.ShowHideKiosk(elem, true)
+    Internals.ShowHideKiosk(elem, true)
     expect(elem.className).to.contain('foo')
   })
   it('should preserve the .hide class when not in kiosk mode', () => {
     const elem = dom.window.document.createElement('div')
     elem.classList.add('hide')
-    Functions.ShowHideKiosk(elem, false)
+    Internals.ShowHideKiosk(elem, false)
     expect(elem.className).to.contain('hide')
   })
   it('should add missing .hide class when not in kiosk mode', () => {
     const elem = dom.window.document.createElement('div')
-    Functions.ShowHideKiosk(elem, false)
+    Internals.ShowHideKiosk(elem, false)
     expect(elem.className).to.contain('hide')
   })
   it('should preserve unrelated class when not in kiosk mode', () => {
     const elem = dom.window.document.createElement('div')
     elem.classList.add('foo')
-    Functions.ShowHideKiosk(elem, false)
+    Internals.ShowHideKiosk(elem, false)
     expect(elem.className).to.contain('foo')
   })
 })

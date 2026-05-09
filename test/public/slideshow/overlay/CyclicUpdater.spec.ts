@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import Updater, { Functions } from '#public/scripts/slideshow/overlay.js'
+import Updater, { Internals } from '#public/scripts/slideshow/overlay.js'
 import { expect } from 'chai'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
 import { JSDOM } from 'jsdom'
@@ -21,9 +21,9 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
   let fakeGetOpacity: Sinon.SinonStub | undefined = undefined
   let dom = new JSDOM()
   beforeEach(() => {
-    fakeShowHide = sandbox.stub(Functions, 'ShowHideKiosk')
-    fakeCalculateDarknessMs = sandbox.stub(Functions, 'CalculateDarknessMs').returns(0)
-    fakeGetOpacity = sandbox.stub(Functions, 'GetOpacity').returns(0)
+    fakeShowHide = sandbox.stub(Internals, 'ShowHideKiosk')
+    fakeCalculateDarknessMs = sandbox.stub(Internals, 'CalculateDarknessMs').returns(0)
+    fakeGetOpacity = sandbox.stub(Internals, 'GetOpacity').returns(0)
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })

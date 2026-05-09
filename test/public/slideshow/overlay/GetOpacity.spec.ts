@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/overlay.js'
+import { Internals } from '#public/scripts/slideshow/overlay.js'
 import { expect } from 'chai'
 
 describe('public/slideshow/overlay GetOpacity()', () => {
@@ -32,7 +32,7 @@ describe('public/slideshow/overlay GetOpacity()', () => {
   ]
   testCases.forEach(([input, output]) => {
     it(`should calculate opacity at ${input} as ${output}`, () => {
-      const value = Functions.GetOpacity(input)
+      const value = Internals.GetOpacity(input)
       expect(value).to.equal(output)
     })
   })

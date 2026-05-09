@@ -11,38 +11,45 @@ const MAX_OPACITY = 0.95 // in percent.
 const MIN_OPACITY = 0
 const MIN_OFFSET = 0
 const UPDATE_INTERVAL = 100
-export const Functions = {
-  GetOpacity: (offsetMs: number): number => {
-    if (offsetMs < MIN_OFFSET) return MIN_OPACITY
-    return Math.min(MAX_OPACITY * (offsetMs / FADE_IN_TIME), MAX_OPACITY)
-  },
-  ShowHideKiosk: (overlay: HTMLElement, isKioskMode: boolean): void => {
-    if (isKioskMode) {
-      overlay.classList.remove('hide')
-    } else {
-      overlay.classList.add('hide')
-    }
-  },
-  CalculateDarknessMs: (): number => {
-    const times = GetAlmanac()
-    const now = Date.now()
-    if (now < times.sunrise) {
-      return times.sunrise - now // pre-dawn: counts down as morning approaches
-    } else if (now > times.sunset) {
-      return now - times.sunset // post-dusk: counts up as night deepens
-    }
-    return MIN_OFFSET
-  },
+
+function GetOpacity(offsetMs: number): number {
+  if (offsetMs < MIN_OFFSET) return MIN_OPACITY
+  return Math.min(MAX_OPACITY * (offsetMs / FADE_IN_TIME), MAX_OPACITY)
+}
+
+function ShowHideKiosk(overlay: HTMLElement, isKioskMode: boolean): void {
+  if (isKioskMode) {
+    overlay.classList.remove('hide')
+  } else {
+    overlay.classList.add('hide')
+  }
+}
+
+function CalculateDarknessMs(): number {
+  const times = GetAlmanac()
+  const now = Date.now()
+  if (now < times.sunrise) {
+    return times.sunrise - now // pre-dawn: counts down as morning approaches
+  } else if (now > times.sunset) {
+    return now - times.sunset // post-dusk: counts up as night deepens
+  }
+  return MIN_OFFSET
 }
 
 const updateOverlay = async (): Promise<void> => {
   const kioskMode = new URLSearchParams(window.location.search).has('kiosk')
   const overlay = document.querySelector<HTMLElement>('.overlay')
   if (overlay === null) return
-  Functions.ShowHideKiosk(overlay, kioskMode)
-  const offset = Functions.CalculateDarknessMs()
-  overlay.style.setProperty('opacity', `${Functions.GetOpacity(offset)}`)
+  Internals.ShowHideKiosk(overlay, kioskMode)
+  const offset = Internals.CalculateDarknessMs()
+  overlay.style.setProperty('opacity', `${Internals.GetOpacity(offset)}`)
   await Promise.resolve()
+}
+
+export const Internals = {
+  GetOpacity,
+  ShowHideKiosk,
+  CalculateDarknessMs,
 }
 
 export default new CyclicUpdater(updateOverlay, UPDATE_INTERVAL)
