@@ -3,9 +3,9 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { TimeUpdater } from '#public/scripts/slideshow/time.js'
-import { OverlayUpdater } from '#public/scripts/slideshow/overlay.js'
-import { WeatherUpdater, LocalWeatherUpdater } from '#public/scripts/slideshow/weather.js'
+import { timeUpdater } from '#public/scripts/slideshow/time.js'
+import { overlayUpdater } from '#public/scripts/slideshow/overlay.js'
+import { weatherUpdater, localWeatherUpdater } from '#public/scripts/slideshow/weather.js'
 import { Imports, bootstrap } from '#public/scripts/slideshow/index.js'
 import assert from 'node:assert'
 
@@ -16,9 +16,9 @@ describe('public/slideshow/index', () => {
   let fakeCyclicStart: Sinon.SinonStub | undefined = undefined
   let fakeSocketConnect: Sinon.SinonStub | undefined = undefined
   beforeAll(() => {
-    fakeCyclicAdd = sandbox.stub(Imports, 'CyclicManagerAdd')
-    fakeCyclicStart = sandbox.stub(Imports, 'CyclicManagerStart')
-    fakeSocketConnect = sandbox.stub(Imports, 'SocketsConnect')
+    fakeCyclicAdd = sandbox.stub(Imports, 'cyclicManagerAdd')
+    fakeCyclicStart = sandbox.stub(Imports, 'cyclicManagerStart')
+    fakeSocketConnect = sandbox.stub(Imports, 'socketsConnect')
     bootstrap()
   })
   afterAll(() => {
@@ -33,17 +33,17 @@ describe('public/slideshow/index', () => {
   it('should add all Updaters to Cyclic Manager', () => {
     expect(fakeCyclicAdd?.firstCall.args).to.have.lengthOf(4)
   })
-  it('should add TimeUpdater to Cyclic Manager', () => {
-    expect(fakeCyclicAdd?.firstCall.args).to.contain(TimeUpdater)
+  it('should add timeUpdater to Cyclic Manager', () => {
+    expect(fakeCyclicAdd?.firstCall.args).to.contain(timeUpdater)
   })
-  it('should add OverlayUpdater to Cyclic Manager', () => {
-    expect(fakeCyclicAdd?.firstCall.args).to.contain(OverlayUpdater)
+  it('should add overlayUpdater to Cyclic Manager', () => {
+    expect(fakeCyclicAdd?.firstCall.args).to.contain(overlayUpdater)
   })
-  it('should add WeatherUpdater to Cyclic Manager', () => {
-    expect(fakeCyclicAdd?.firstCall.args).to.contain(WeatherUpdater)
+  it('should add weatherUpdater to Cyclic Manager', () => {
+    expect(fakeCyclicAdd?.firstCall.args).to.contain(weatherUpdater)
   })
-  it('should add LocalWeatherUpdater to Cyclic Manager', () => {
-    expect(fakeCyclicAdd?.firstCall.args).to.contain(LocalWeatherUpdater)
+  it('should add localWeatherUpdater to Cyclic Manager', () => {
+    expect(fakeCyclicAdd?.firstCall.args).to.contain(localWeatherUpdater)
   })
   it('should start CyclicManager after adding Cyclic Updaters', () => {
     assert(fakeCyclicAdd !== undefined)

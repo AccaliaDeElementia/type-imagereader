@@ -2,7 +2,7 @@
 
 import { Internals } from '#public/scripts/slideshow/time.js'
 import { expect } from 'chai'
-describe('public/slideshow/time FormatTime()', () => {
+describe('public/slideshow/time formatTime()', () => {
   const makeTime = (hours: number, minutes: number): Date => {
     const now = new Date()
     now.setHours(hours)
@@ -42,7 +42,7 @@ describe('public/slideshow/time FormatTime()', () => {
   ]
   testCases.forEach(([time, expected]) => {
     it(`should format ${expected} correctly`, () => {
-      expect(Internals.FormatTime(time)).to.equal(expected)
+      expect(Internals.formatTime(time)).to.equal(expected)
     })
   })
 })

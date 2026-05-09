@@ -67,7 +67,7 @@ async function triggerUpdaters(interval: number): Promise<void> {
   )
 }
 
-export function Add(...updaters: CyclicUpdater[]): void {
+export function add(...updaters: CyclicUpdater[]): void {
   CyclicManager.__updaters.push(...updaters)
 }
 
@@ -78,7 +78,7 @@ export function start(interval: number): void {
   }, interval)
 }
 
-export function Stop(): void {
+export function stop(): void {
   if (CyclicManager.__timer !== undefined) {
     clearInterval(CyclicManager.__timer)
     CyclicManager.__timer = undefined

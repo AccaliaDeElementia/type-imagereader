@@ -10,7 +10,7 @@ import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/sockets HandleKeys()', () => {
+describe('public/slideshow/sockets handleKeys()', () => {
   const fakeEmit = sandbox.stub()
   const fakeSocket = cast<WebSocket>({ emit: fakeEmit })
   let fakeAssign = sandbox.stub()
@@ -39,7 +39,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       clientX: global.window.innerWidth * (1 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    Internals.HandleClick(event, cast<WebSocket>(null), 1)
+    Internals.handleClick(event, cast<WebSocket>(null), 1)
     assert(true, 'should not throw when null socket provided')
   })
   it('should not break if socket is undefined', () => {
@@ -47,7 +47,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       clientX: global.window.innerWidth * (1 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    Internals.HandleClick(event, undefined, 1)
+    Internals.handleClick(event, undefined, 1)
     assert(true, 'should not throw when undefined socket provided')
   })
   const emitCases: Array<[string, number, number, string]> = [
@@ -93,7 +93,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * xPercent,
         clientY: global.window.innerHeight * yPercent,
       })
-      Internals.HandleClick(event, fakeSocket, 1)
+      Internals.handleClick(event, fakeSocket, 1)
     }
     it(`should emit once when click is at ${xPercent} with search "${search}"`, () => {
       doClick()
@@ -108,7 +108,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * xPercent,
         clientY: global.window.innerHeight * yPercent,
       })
-      Internals.HandleClick(event, fakeSocket, 1.001)
+      Internals.handleClick(event, fakeSocket, 1.001)
       expect(fakeEmit.callCount).to.equal(1)
     })
     it(`should ignore click at ${xPercent}:${yPercent} when zoomed out`, () => {
@@ -116,7 +116,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * xPercent,
         clientY: global.window.innerHeight * yPercent,
       })
-      Internals.HandleClick(event, fakeSocket, 0.999)
+      Internals.handleClick(event, fakeSocket, 0.999)
       expect(fakeEmit.callCount).to.equal(0)
     })
   })
@@ -126,7 +126,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * 0.5,
         clientY: global.window.innerHeight * 0.5,
       })
-      Internals.HandleClick(event, fakeSocket, 1)
+      Internals.handleClick(event, fakeSocket, 1)
     })
     it('should emit second parameter for goto-image event', () => {
       expect(fakeEmit.firstCall.args).to.have.lengthOf(2)
@@ -147,7 +147,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth,
         clientY: global.window.innerHeight / 2,
       })
-      Internals.HandleClick(event, fakeSocket, 1)
+      Internals.handleClick(event, fakeSocket, 1)
       expect(fakeEmit.callCount).to.equal(1)
     })
     it('should emit next-image for right click when visualViewport is null', () => {
@@ -155,7 +155,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth,
         clientY: global.window.innerHeight / 2,
       })
-      Internals.HandleClick(event, fakeSocket, 1)
+      Internals.handleClick(event, fakeSocket, 1)
       expect(fakeEmit.firstCall.args[0]).to.equal('next-image')
     })
   })
@@ -165,7 +165,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * 0.5,
         clientY: global.window.innerHeight * 0.5,
       })
-      Internals.HandleClick(event, fakeSocket, 1)
+      Internals.handleClick(event, fakeSocket, 1)
       const fn = cast<(x: string | null) => void>(fakeEmit.firstCall.args[1])
       fn(null)
     })
@@ -179,7 +179,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * 0.5,
         clientY: global.window.innerHeight * 0.5,
       })
-      Internals.HandleClick(event, fakeSocket, 1)
+      Internals.handleClick(event, fakeSocket, 1)
       const fn = cast<(x: string) => void>(fakeEmit.firstCall.args[1])
       fn('/foo/bar/baz')
     })

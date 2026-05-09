@@ -8,14 +8,14 @@ type HTMLElementish = HTMLElement | null | undefined
 type Stringish = string | null | undefined
 const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
 
-async function FetchWeather(uri: string | URL): Promise<WeatherResults> {
+async function fetchWeather(uri: string | URL): Promise<WeatherResults> {
   const response = await window.fetch(uri, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   const data: unknown = await response.json()
   if (!isWeatherResults(data)) throw new Error('Invalid WeatherResponse Retrieved')
   return data
 }
 
-function ShowData(container: HTMLElementish, element: HTMLElementish, text: Stringish): void {
+function showData(container: HTMLElementish, element: HTMLElementish, text: Stringish): void {
   if (!hasValue(container) || !hasValue(element)) return
   if (!stringishHasValue(text)) {
     container.style.setProperty('display', 'none')
@@ -25,7 +25,7 @@ function ShowData(container: HTMLElementish, element: HTMLElementish, text: Stri
   element.replaceChildren(text)
 }
 
-function ShowIcon(element: HTMLElementish, icon: Stringish): void {
+function showIcon(element: HTMLElementish, icon: Stringish): void {
   if (!hasValue(element)) return
   if (!stringishHasValue(icon)) {
     element.style.setProperty('display', 'none')
@@ -35,18 +35,18 @@ function ShowIcon(element: HTMLElementish, icon: Stringish): void {
   element.setAttribute('src', `https://openweathermap.org/img/w/${icon}.png`)
 }
 const DECIMAL_PLACES = 1
-function ShowWeather(base: HTMLElementish, weather: WeatherResults): WeatherResults {
+function showWeather(base: HTMLElementish, weather: WeatherResults): WeatherResults {
   if (!hasValue(base)) return weather
   const temp =
     typeof weather.temp === 'number' && Number.isFinite(weather.temp)
       ? `${weather.temp.toFixed(DECIMAL_PLACES)}°C`
       : null
-  Internals.ShowData(base, base.querySelector<HTMLElement>('.temp'), temp)
+  Internals.showData(base, base.querySelector<HTMLElement>('.temp'), temp)
   const desc = base.querySelector<HTMLElement>('.desc')
   const desctext = desc?.querySelector<HTMLElement>('.desctext')
-  Internals.ShowData(desc, desctext, weather.description)
+  Internals.showData(desc, desctext, weather.description)
   const icon = base.querySelector<HTMLElement>('.icon')
-  Internals.ShowIcon(icon, weather.icon)
+  Internals.showIcon(icon, weather.icon)
   return weather
 }
 
@@ -63,7 +63,7 @@ const almanac: SunTimes = {
   sunset: UNSET_SUNSET,
 }
 
-export function GetAlmanac(): SunTimes {
+export function getAlmanac(): SunTimes {
   return almanac
 }
 
@@ -73,7 +73,7 @@ const DEFAULT_SUNRISE_MINUTE = 15
 const DEFAULT_SUNSET_HOUR = 21
 const DEFAULT_SUNSET_MINUTE = 0
 
-function SetAlmanac(weather: WeatherResults): void {
+function setAlmanac(weather: WeatherResults): void {
   const today = new Date()
   today.setMilliseconds(ZERO_TIME)
   today.setSeconds(ZERO_TIME)
@@ -88,23 +88,23 @@ function SetAlmanac(weather: WeatherResults): void {
 }
 
 export const Internals = {
-  FetchWeather,
-  ShowData,
-  ShowIcon,
-  ShowWeather,
-  SetAlmanac,
+  fetchWeather,
+  showData,
+  showIcon,
+  showWeather,
+  setAlmanac,
 }
 
 const LOCAL_WEATHER_UPDATE_INTERVAL = 1_000
-export const LocalWeatherUpdater = new CyclicUpdater(async () => {
-  await Internals.FetchWeather('https://localhost:8443/').then((weather) =>
-    Internals.ShowWeather(document.querySelector<HTMLElement>('.localweather'), weather),
+export const localWeatherUpdater = new CyclicUpdater(async () => {
+  await Internals.fetchWeather('https://localhost:8443/').then((weather) =>
+    Internals.showWeather(document.querySelector<HTMLElement>('.localweather'), weather),
   )
 }, LOCAL_WEATHER_UPDATE_INTERVAL)
 
 const REMOTE_WEATHER_UPDATE_INTERVAL = 60_000
-export const WeatherUpdater = new CyclicUpdater(async () => {
-  await Internals.FetchWeather('/weather')
-    .then((weather) => Internals.ShowWeather(document.querySelector<HTMLElement>('.weather'), weather))
-    .then(Internals.SetAlmanac)
+export const weatherUpdater = new CyclicUpdater(async () => {
+  await Internals.fetchWeather('/weather')
+    .then((weather) => Internals.showWeather(document.querySelector<HTMLElement>('.weather'), weather))
+    .then(Internals.setAlmanac)
 }, REMOTE_WEATHER_UPDATE_INTERVAL)

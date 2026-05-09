@@ -2,13 +2,13 @@
 
 import Sinon from 'sinon'
 import { Internals } from '#public/scripts/slideshow/overlay.js'
-import { GetAlmanac } from '#public/scripts/slideshow/weather.js'
+import { getAlmanac } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/overlay CalculateDarknessMs()', () => {
-  const almanac = GetAlmanac()
+describe('public/slideshow/overlay calculateDarknessMs()', () => {
+  const almanac = getAlmanac()
   beforeEach(() => {
     almanac.sunrise = new Date('2025-03-18T05:45:00.000Z').getTime()
     almanac.sunset = new Date('2025-03-18T20:45:00.000Z').getTime()
@@ -35,7 +35,7 @@ describe('public/slideshow/overlay CalculateDarknessMs()', () => {
       sandbox.useFakeTimers({
         now: new Date(timeNow).getTime(),
       })
-      expect(Internals.CalculateDarknessMs()).to.equal(expected)
+      expect(Internals.calculateDarknessMs()).to.equal(expected)
     })
   })
 })

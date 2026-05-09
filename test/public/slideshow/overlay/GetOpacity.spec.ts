@@ -3,7 +3,7 @@
 import { Internals } from '#public/scripts/slideshow/overlay.js'
 import { expect } from 'chai'
 
-describe('public/slideshow/overlay GetOpacity()', () => {
+describe('public/slideshow/overlay getOpacity()', () => {
   const testCases: Array<[number, number]> = [
     [-60000, 0],
     [-1, 0],
@@ -32,7 +32,7 @@ describe('public/slideshow/overlay GetOpacity()', () => {
   ]
   testCases.forEach(([input, output]) => {
     it(`should calculate opacity at ${input} as ${output}`, () => {
-      const value = Internals.GetOpacity(input)
+      const value = Internals.getOpacity(input)
       expect(value).to.equal(output)
     })
   })

@@ -2,7 +2,7 @@
 
 import { Internals } from '#public/scripts/slideshow/time.js'
 import { expect } from 'chai'
-describe('public/slideshow/time FormatDate()', () => {
+describe('public/slideshow/time formatDate()', () => {
   const makeDate = (year: number, month: number, day: number): Date => {
     const now = new Date()
     now.setFullYear(year)
@@ -39,7 +39,7 @@ describe('public/slideshow/time FormatDate()', () => {
   ]
   testCases.forEach(([date, expected]) => {
     it(`should format ${expected} correctly`, () => {
-      expect(Internals.FormatDate(date)).to.equal(expected)
+      expect(Internals.formatDate(date)).to.equal(expected)
     })
   })
 })

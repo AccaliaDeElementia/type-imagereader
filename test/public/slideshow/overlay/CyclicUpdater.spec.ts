@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { OverlayUpdater as Updater, Internals } from '#public/scripts/slideshow/overlay.js'
+import { overlayUpdater as Updater, Internals } from '#public/scripts/slideshow/overlay.js'
 import { expect } from 'chai'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
 import { JSDOM } from 'jsdom'
@@ -21,9 +21,9 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
   let fakeGetOpacity: Sinon.SinonStub | undefined = undefined
   let dom = new JSDOM()
   beforeEach(() => {
-    fakeShowHide = sandbox.stub(Internals, 'ShowHideKiosk')
-    fakeCalculateDarknessMs = sandbox.stub(Internals, 'CalculateDarknessMs').returns(0)
-    fakeGetOpacity = sandbox.stub(Internals, 'GetOpacity').returns(0)
+    fakeShowHide = sandbox.stub(Internals, 'showHideKiosk')
+    fakeCalculateDarknessMs = sandbox.stub(Internals, 'calculateDarknessMs').returns(0)
+    fakeGetOpacity = sandbox.stub(Internals, 'getOpacity').returns(0)
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })
@@ -39,17 +39,17 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
   it('should update every 1/10th of a second', () => {
     expect(Updater.period).to.equal(100)
   })
-  it('should not call ShowHideKiosk when overlay missing', async () => {
+  it('should not call showHideKiosk when overlay missing', async () => {
     const overlay = dom.window.document.querySelector('.overlay')
     overlay?.remove()
     await Updater.updateFn()
     expect(fakeShowHide?.callCount).to.equal(0)
   })
-  it('should call ShowHideKiosk to show/hide kiosk overlay', async () => {
+  it('should call showHideKiosk to show/hide kiosk overlay', async () => {
     await Updater.updateFn()
     expect(fakeShowHide?.callCount).to.equal(1)
   })
-  it('should pass overlay to ShowHideKiosk call', async () => {
+  it('should pass overlay to showHideKiosk call', async () => {
     const overlay = dom.window.document.querySelector('.overlay')
     await Updater.updateFn()
     expect(fakeShowHide?.firstCall.args[0]).to.equal(overlay)
@@ -74,15 +74,15 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
       expect(fakeShowHide?.firstCall.args[1]).to.equal(expected)
     })
   })
-  it('should call CalculateDarknessMs to get timer offset', async () => {
+  it('should call calculateDarknessMs to get timer offset', async () => {
     await Updater.updateFn()
     expect(fakeCalculateDarknessMs?.callCount).to.equal(1)
   })
-  it('should call GetOpacity to turn offset into opacity valie', async () => {
+  it('should call getOpacity to turn offset into opacity valie', async () => {
     await Updater.updateFn()
     expect(fakeGetOpacity?.callCount).to.equal(1)
   })
-  it('should call GetOpacity with offset valueto turn offset into opacity valie', async () => {
+  it('should call getOpacity with offset valueto turn offset into opacity valie', async () => {
     const value = Math.random()
     fakeCalculateDarknessMs?.returns(value)
     await Updater.updateFn()

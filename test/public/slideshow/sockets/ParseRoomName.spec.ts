@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { expect } from 'chai'
 
-describe('public/slideshow/sockets ParseRoomName()', () => {
+describe('public/slideshow/sockets parseRoomName()', () => {
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
     mountDom(dom)
@@ -27,7 +27,7 @@ describe('public/slideshow/sockets ParseRoomName()', () => {
       dom.reconfigure({
         url: `https://localhost:2999${path}`,
       })
-      expect(Internals.ParseRoomName()).to.equal(result)
+      expect(Internals.parseRoomName()).to.equal(result)
     })
   })
 })

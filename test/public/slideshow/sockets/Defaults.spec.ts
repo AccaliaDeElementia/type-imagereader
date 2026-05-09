@@ -5,26 +5,26 @@ import { expect } from 'chai'
 import { definitelyThrows } from '#testutils/Errors.js'
 
 describe('public/slideshow/sockets uninitialized sentinels', () => {
-  it('should definitely throw for Internals.UninitializedLocationAssign()', () => {
+  it('should definitely throw for Internals.uninitializedLocationAssign()', () => {
     definitelyThrows(() => {
-      Internals.UninitializedLocationAssign('')
+      Internals.uninitializedLocationAssign('')
     })
   })
-  it('should throw expected error for Internals.UninitializedLocationAssign()', () => {
+  it('should throw expected error for Internals.uninitializedLocationAssign()', () => {
     const err = definitelyThrows(() => {
-      Internals.UninitializedLocationAssign('')
+      Internals.uninitializedLocationAssign('')
     })
-    expect(err.message).to.equal('locationAssign called before Connect()')
+    expect(err.message).to.equal('locationAssign called before connect()')
   })
-  it('should definitely throw for Internals.UninitializedLocationReload()', () => {
+  it('should definitely throw for Internals.uninitializedLocationReload()', () => {
     definitelyThrows(() => {
-      Internals.UninitializedLocationReload()
+      Internals.uninitializedLocationReload()
     })
   })
-  it('should throw expected error for Internals.UninitializedLocationReload()', () => {
+  it('should throw expected error for Internals.uninitializedLocationReload()', () => {
     const err = definitelyThrows(() => {
-      Internals.UninitializedLocationReload()
+      Internals.uninitializedLocationReload()
     })
-    expect(err.message).to.equal('LocationReload called before Connect()')
+    expect(err.message).to.equal('locationReload called before connect()')
   })
 })

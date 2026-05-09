@@ -13,7 +13,7 @@ const LEFT_THIRD = 0.3333333333333333
 const RIGHT_THIRD = 0.6666666666666666
 const DEFAULT_ZOOM = 1
 
-function HandleKeys(event: KeyboardEvent, socket: WebSocket | undefined): void {
+function handleKeys(event: KeyboardEvent, socket: WebSocket | undefined): void {
   if (!hasValue(socket)) return
   if (event.key.toUpperCase() === 'ARROWRIGHT') {
     socket.emit(SocketEvents.NextImage)
@@ -22,7 +22,7 @@ function HandleKeys(event: KeyboardEvent, socket: WebSocket | undefined): void {
   }
 }
 
-function HandleClick(event: MouseEvent, socket: WebSocket | undefined, initialScale: number): void {
+function handleClick(event: MouseEvent, socket: WebSocket | undefined, initialScale: number): void {
   if (!hasValue(socket)) return
   if (hasValue(window.visualViewport) && window.visualViewport.scale > initialScale) {
     return
@@ -43,7 +43,7 @@ function HandleClick(event: MouseEvent, socket: WebSocket | undefined, initialSc
   }
 }
 
-function ShowBackingImageByType(path: string): void {
+function showBackingImageByType(path: string): void {
   if (/[.]gif$/iv.test(path)) {
     for (const elem of document.querySelectorAll('img.bottomImage')) {
       elem.classList.add('hide')
@@ -60,7 +60,7 @@ function ShowBackingImageByType(path: string): void {
   }
 }
 
-function ParseRoomName(): string {
+function parseRoomName(): string {
   let uri = window.location.pathname.replace(/^\/[^\/]+/v, '')
   if (!stringishHasValue(uri)) {
     uri = '/'
@@ -68,64 +68,64 @@ function ParseRoomName(): string {
   return decodeURIComponent(uri)
 }
 
-function HandleGetLaunchId(launchId: unknown): void {
+function handleGetLaunchId(launchId: unknown): void {
   if (typeof launchId !== 'number' || !Number.isFinite(launchId)) return
   if (WebSockets.launchId === undefined) {
     WebSockets.launchId = launchId
   } else if (WebSockets.launchId !== launchId) {
-    WebSockets.LocationReload()
+    WebSockets.locationReload()
   }
 }
 
-function UninitializedLocationAssign(_: string | URL): void {
-  throw new Error('locationAssign called before Connect()')
+function uninitializedLocationAssign(_: string | URL): void {
+  throw new Error('locationAssign called before connect()')
 }
 
-function UninitializedLocationReload(): void {
-  throw new Error('LocationReload called before Connect()')
+function uninitializedLocationReload(): void {
+  throw new Error('locationReload called before connect()')
 }
 
 export const WebSockets = {
   socket: undefined as WebSocket | undefined,
   launchId: undefined as unknown,
-  locationAssign: UninitializedLocationAssign as (url: string | URL) => void,
-  LocationReload: UninitializedLocationReload as () => void,
+  locationAssign: uninitializedLocationAssign as (url: string | URL) => void,
+  locationReload: uninitializedLocationReload as () => void,
 }
 
-export function Connect(): void {
+export function connect(): void {
   WebSockets.launchId = undefined
   WebSockets.locationAssign = window.location.assign.bind(window.location)
-  WebSockets.LocationReload = window.location.reload.bind(window.location)
+  WebSockets.locationReload = window.location.reload.bind(window.location)
   WebSockets.socket = Imports.io(new URL(window.location.href).origin)
-  const room = Internals.ParseRoomName()
+  const room = Internals.parseRoomName()
   WebSockets.socket.on('connect', () => {
     WebSockets.socket?.emit(SocketEvents.JoinSlideshow, room)
-    WebSockets.socket?.emit(SocketEvents.GetLaunchId, Internals.HandleGetLaunchId)
+    WebSockets.socket?.emit(SocketEvents.GetLaunchId, Internals.handleGetLaunchId)
   })
-  WebSockets.socket.on(SocketEvents.ImageChanged, Internals.ShowBackingImageByType)
+  WebSockets.socket.on(SocketEvents.ImageChanged, Internals.showBackingImageByType)
   const initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
   document.body.addEventListener('click', (event) => {
-    Internals.HandleClick(event, WebSockets.socket, initialScale)
+    Internals.handleClick(event, WebSockets.socket, initialScale)
   })
   document.body.addEventListener('keyup', (event) => {
-    Internals.HandleKeys(event, WebSockets.socket)
+    Internals.handleKeys(event, WebSockets.socket)
   })
 }
 
-export function Disconnect(): void {
+export function disconnect(): void {
   WebSockets.socket?.disconnect()
   WebSockets.socket = undefined
   WebSockets.launchId = undefined
-  WebSockets.locationAssign = Internals.UninitializedLocationAssign
-  WebSockets.LocationReload = Internals.UninitializedLocationReload
+  WebSockets.locationAssign = Internals.uninitializedLocationAssign
+  WebSockets.locationReload = Internals.uninitializedLocationReload
 }
 
 export const Internals = {
-  HandleKeys,
-  HandleClick,
-  ShowBackingImageByType,
-  ParseRoomName,
-  HandleGetLaunchId,
-  UninitializedLocationAssign,
-  UninitializedLocationReload,
+  handleKeys,
+  handleClick,
+  showBackingImageByType,
+  parseRoomName,
+  handleGetLaunchId,
+  uninitializedLocationAssign,
+  uninitializedLocationReload,
 }

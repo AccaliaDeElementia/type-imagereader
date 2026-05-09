@@ -1,7 +1,7 @@
 'use sanity'
 
 import { CyclicUpdater } from './updater.js'
-import { GetAlmanac } from './weather.js'
+import { getAlmanac } from './weather.js'
 
 const FADE_IN_MINUTES = 15
 const SECONDS_PER_MINUTE = 60
@@ -12,12 +12,12 @@ const MIN_OPACITY = 0
 const MIN_OFFSET = 0
 const UPDATE_INTERVAL = 100
 
-function GetOpacity(offsetMs: number): number {
+function getOpacity(offsetMs: number): number {
   if (offsetMs < MIN_OFFSET) return MIN_OPACITY
   return Math.min(MAX_OPACITY * (offsetMs / FADE_IN_TIME), MAX_OPACITY)
 }
 
-function ShowHideKiosk(overlay: HTMLElement, isKioskMode: boolean): void {
+function showHideKiosk(overlay: HTMLElement, isKioskMode: boolean): void {
   if (isKioskMode) {
     overlay.classList.remove('hide')
   } else {
@@ -25,8 +25,8 @@ function ShowHideKiosk(overlay: HTMLElement, isKioskMode: boolean): void {
   }
 }
 
-function CalculateDarknessMs(): number {
-  const times = GetAlmanac()
+function calculateDarknessMs(): number {
+  const times = getAlmanac()
   const now = Date.now()
   if (now < times.sunrise) {
     return times.sunrise - now // pre-dawn: counts down as morning approaches
@@ -40,16 +40,16 @@ const updateOverlay = async (): Promise<void> => {
   const kioskMode = new URLSearchParams(window.location.search).has('kiosk')
   const overlay = document.querySelector<HTMLElement>('.overlay')
   if (overlay === null) return
-  Internals.ShowHideKiosk(overlay, kioskMode)
-  const offset = Internals.CalculateDarknessMs()
-  overlay.style.setProperty('opacity', `${Internals.GetOpacity(offset)}`)
+  Internals.showHideKiosk(overlay, kioskMode)
+  const offset = Internals.calculateDarknessMs()
+  overlay.style.setProperty('opacity', `${Internals.getOpacity(offset)}`)
   await Promise.resolve()
 }
 
 export const Internals = {
-  GetOpacity,
-  ShowHideKiosk,
-  CalculateDarknessMs,
+  getOpacity,
+  showHideKiosk,
+  calculateDarknessMs,
 }
 
-export const OverlayUpdater = new CyclicUpdater(updateOverlay, UPDATE_INTERVAL)
+export const overlayUpdater = new CyclicUpdater(updateOverlay, UPDATE_INTERVAL)

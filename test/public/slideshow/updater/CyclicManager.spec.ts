@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Add, CyclicManager, CyclicUpdater, Internals, start, Stop } from '#public/scripts/slideshow/updater.js'
+import { add, CyclicManager, CyclicUpdater, Internals, start, stop } from '#public/scripts/slideshow/updater.js'
 import { cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { expect } from 'chai'
@@ -65,48 +65,48 @@ describe('public/slideshow/updater CyclicManager', () => {
       expect(spy.callCount).to.equal(10)
     })
   })
-  describe('Add()', () => {
+  describe('add()', () => {
     const makeUpdater = (): CyclicUpdater => new CyclicUpdater()
     it('should increase list length to 1 when adding a single updater', () => {
-      Add(new CyclicUpdater())
+      add(new CyclicUpdater())
       expect(CyclicManager.__updaters).to.have.length(1)
     })
     it('should store the added updater at index 0', () => {
       const updater = new CyclicUpdater()
-      Add(updater)
+      add(updater)
       expect(CyclicManager.__updaters[0]).to.equal(updater)
     })
     it('should increase list length to 2 when appending a single updater', () => {
       CyclicManager.__updaters.push(new CyclicUpdater())
-      Add(new CyclicUpdater())
+      add(new CyclicUpdater())
       expect(CyclicManager.__updaters).to.have.length(2)
     })
     it('should store the appended updater at index 1', () => {
       CyclicManager.__updaters.push(new CyclicUpdater())
       const updater = new CyclicUpdater()
-      Add(updater)
+      add(updater)
       expect(CyclicManager.__updaters[1]).to.equal(updater)
     })
     it('should set list length to 5 when adding 5 spread updaters', () => {
-      Add(...Array.from({ length: 5 }).map(makeUpdater))
+      add(...Array.from({ length: 5 }).map(makeUpdater))
       expect(CyclicManager.__updaters).to.have.length(5)
     })
     it('should store each of 5 spread updaters at its respective index', () => {
       const updaters = Array.from({ length: 5 }).map(makeUpdater)
-      Add(...updaters)
+      add(...updaters)
       for (let i = 0; i < updaters.length; i += 1) {
         expect(CyclicManager.__updaters[i]).to.equal(updaters[i])
       }
     })
     it('should set list length to 10 when appending 5 spread updaters to existing 5', () => {
       CyclicManager.__updaters = Array.from({ length: 5 }).map(makeUpdater)
-      Add(...Array.from({ length: 5 }).map(makeUpdater))
+      add(...Array.from({ length: 5 }).map(makeUpdater))
       expect(CyclicManager.__updaters).to.have.length(10)
     })
     it('should store each of the 5 appended updaters at indices 5-9', () => {
       CyclicManager.__updaters = Array.from({ length: 5 }).map(makeUpdater)
       const updaters = Array.from({ length: 5 }).map(makeUpdater)
-      Add(...updaters)
+      add(...updaters)
       for (let i = 0; i < updaters.length; i += 1) {
         expect(CyclicManager.__updaters[i + 5]).to.equal(updaters[i])
       }
@@ -178,27 +178,27 @@ describe('public/slideshow/updater CyclicManager', () => {
       expect(fakeClearInterval?.callCount).to.equal(0)
     })
   })
-  describe('Stop()', () => {
+  describe('stop()', () => {
     it('should not clear interval without starting', () => {
       CyclicManager.__timer = undefined
-      Stop()
+      stop()
       expect(fakeClearInterval?.callCount).to.equal(0)
     })
     it('should clear interval when timer set', () => {
       CyclicManager.__timer = 1
-      Stop()
+      stop()
       expect(fakeClearInterval?.callCount).to.equal(1)
     })
     it('should clear saved timer when stopping', () => {
       const timer = Math.round(Math.random() * 1e9)
       CyclicManager.__timer = timer
-      Stop()
+      stop()
       expect(fakeClearInterval?.firstCall.args).to.deep.equal([timer])
     })
     it('should erase saved timer when stopping', () => {
       const timer = Math.round(Math.random() * 1e9)
       CyclicManager.__timer = timer
-      Stop()
+      stop()
       expect(CyclicManager.__timer).to.equal(undefined)
     })
   })

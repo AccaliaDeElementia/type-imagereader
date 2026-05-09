@@ -1,22 +1,22 @@
 'use sanity'
 
-import { Connect as _SocketsConnect } from './sockets.js'
+import { connect as _socketsConnect } from './sockets.js'
 
-import { TimeUpdater } from './time.js'
-import { OverlayUpdater } from './overlay.js'
-import { WeatherUpdater, LocalWeatherUpdater } from './weather.js'
-import { Add as _CyclicManagerAdd, start as _CyclicManagerStart } from './updater.js'
+import { timeUpdater } from './time.js'
+import { overlayUpdater } from './overlay.js'
+import { weatherUpdater, localWeatherUpdater } from './weather.js'
+import { add as _cyclicManagerAdd, start as _cyclicManagerStart } from './updater.js'
 
 const UPDATE_INTERVAL = 100 // ms
 
 export const Imports = {
-  CyclicManagerAdd: _CyclicManagerAdd,
-  CyclicManagerStart: _CyclicManagerStart,
-  SocketsConnect: _SocketsConnect,
+  cyclicManagerAdd: _cyclicManagerAdd,
+  cyclicManagerStart: _cyclicManagerStart,
+  socketsConnect: _socketsConnect,
 }
 
 export function bootstrap(): void {
-  Imports.CyclicManagerAdd(TimeUpdater, OverlayUpdater, WeatherUpdater, LocalWeatherUpdater)
-  Imports.CyclicManagerStart(UPDATE_INTERVAL)
-  Imports.SocketsConnect()
+  Imports.cyclicManagerAdd(timeUpdater, overlayUpdater, weatherUpdater, localWeatherUpdater)
+  Imports.cyclicManagerStart(UPDATE_INTERVAL)
+  Imports.socketsConnect()
 }

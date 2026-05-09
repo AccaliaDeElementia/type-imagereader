@@ -6,54 +6,54 @@ import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/sockets HandleGetLaunchId()', () => {
+describe('public/slideshow/sockets handleGetLaunchId()', () => {
   let fakeReload: Sinon.SinonStub | undefined = undefined
   beforeEach(() => {
-    fakeReload = sandbox.stub(WebSockets, 'LocationReload')
+    fakeReload = sandbox.stub(WebSockets, 'locationReload')
     WebSockets.launchId = undefined
   })
   afterEach(() => {
     sandbox.restore()
   })
   it('should save launchId on call', () => {
-    Internals.HandleGetLaunchId(8675309)
+    Internals.handleGetLaunchId(8675309)
     expect(WebSockets.launchId).to.equal(8675309)
   })
   it('should not reload on first call', () => {
-    Internals.HandleGetLaunchId(8675309)
+    Internals.handleGetLaunchId(8675309)
     expect(fakeReload?.callCount).to.equal(0)
   })
   it('should preserve launchId on recall', () => {
     WebSockets.launchId = 8675309
-    Internals.HandleGetLaunchId(8675309)
+    Internals.handleGetLaunchId(8675309)
     expect(WebSockets.launchId).to.equal(8675309)
   })
   it('should not reload on recall', () => {
     WebSockets.launchId = 8675309
-    Internals.HandleGetLaunchId(8675309)
+    Internals.handleGetLaunchId(8675309)
     expect(fakeReload?.callCount).to.equal(0)
   })
   it('should preserve launchId on relaunch', () => {
     WebSockets.launchId = 'Old Id'
-    Internals.HandleGetLaunchId(8675309)
+    Internals.handleGetLaunchId(8675309)
     expect(WebSockets.launchId).to.equal('Old Id')
   })
   it('should reload on relaunch', () => {
     WebSockets.launchId = 'Old Id'
-    Internals.HandleGetLaunchId(8675309)
+    Internals.handleGetLaunchId(8675309)
     expect(fakeReload?.callCount).to.equal(1)
   })
   it('should ignore a non-number launchId on first call', () => {
-    Internals.HandleGetLaunchId(null)
+    Internals.handleGetLaunchId(null)
     expect(WebSockets.launchId).to.equal(undefined)
   })
   it('should ignore a NaN launchId on first call', () => {
-    Internals.HandleGetLaunchId(Number.NaN)
+    Internals.handleGetLaunchId(Number.NaN)
     expect(WebSockets.launchId).to.equal(undefined)
   })
   it('should not reload when receiving an invalid launchId after a valid one was stored', () => {
     WebSockets.launchId = 8675309
-    Internals.HandleGetLaunchId(null)
+    Internals.handleGetLaunchId(null)
     expect(fakeReload?.callCount).to.equal(0)
   })
 })

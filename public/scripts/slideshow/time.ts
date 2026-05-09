@@ -21,24 +21,24 @@ const months = [
 const DIGITS_TO_KEEP = 2
 const TIME_UPDATE_INTERVAL = 100
 
-function FormatTime(now: Date): string {
+function formatTime(now: Date): string {
   return `${`00${now.getHours()}`.slice(-DIGITS_TO_KEEP)}:${`00${now.getMinutes()}`.slice(-DIGITS_TO_KEEP)}`
 }
 
-function FormatDate(now: Date): string {
+function formatDate(now: Date): string {
   return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`
 }
 
 const updateTime = async (): Promise<void> => {
   const now = new Date()
-  document.querySelector('.time')?.replaceChildren(Internals.FormatTime(now))
-  document.querySelector('.date')?.replaceChildren(Internals.FormatDate(now))
+  document.querySelector('.time')?.replaceChildren(Internals.formatTime(now))
+  document.querySelector('.date')?.replaceChildren(Internals.formatDate(now))
   await Promise.resolve()
 }
 
 export const Internals = {
-  FormatTime,
-  FormatDate,
+  formatTime,
+  formatDate,
 }
 
-export const TimeUpdater = new CyclicUpdater(updateTime, TIME_UPDATE_INTERVAL)
+export const timeUpdater = new CyclicUpdater(updateTime, TIME_UPDATE_INTERVAL)

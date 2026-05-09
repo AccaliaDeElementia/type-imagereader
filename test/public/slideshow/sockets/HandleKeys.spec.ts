@@ -10,7 +10,7 @@ import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/sockets HandleKeys()', () => {
+describe('public/slideshow/sockets handleKeys()', () => {
   const fakeEmit = sandbox.stub()
   const fakeSocket = cast<WebSocket>({ emit: fakeEmit })
   const dom = new JSDOM('<html></html>')
@@ -28,19 +28,19 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   it('should not break if socket is null', () => {
     const evt = new global.window.KeyboardEvent('keyup', { key: 'a' })
-    Internals.HandleKeys(evt, cast<WebSocket>(null))
+    Internals.handleKeys(evt, cast<WebSocket>(null))
     assert(true, 'should not throw when null socket provided')
   })
   it('should not break if socket is undefined', () => {
     const evt = new global.window.KeyboardEvent('keyup', { key: 'a' })
-    Internals.HandleKeys(evt, undefined)
+    Internals.handleKeys(evt, undefined)
     assert(true, 'should not throw when undefined socket provided')
   })
   const ignoredKeys = ['a', 'A', 'ARROW', 'Left', 'right', 'f1', 'F23, ENTER']
   ignoredKeys.forEach((key) => {
     it(`should not emit when key is '${key}'`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
-      Internals.HandleKeys(evt, fakeSocket)
+      Internals.handleKeys(evt, fakeSocket)
       expect(fakeEmit.callCount).to.equal(0)
     })
   })
@@ -57,12 +57,12 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   triggerKeys.forEach(([key, expected]) => {
     it(`should emit only once for key: ${key}`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
-      Internals.HandleKeys(evt, fakeSocket)
+      Internals.handleKeys(evt, fakeSocket)
       expect(fakeEmit.callCount).to.equal(1)
     })
     it(`should emit '${expected}' for key: ${key}`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
-      Internals.HandleKeys(evt, fakeSocket)
+      Internals.handleKeys(evt, fakeSocket)
       expect(fakeEmit.firstCall.args).to.deep.equal([expected])
     })
   })

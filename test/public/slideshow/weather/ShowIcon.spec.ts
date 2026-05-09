@@ -18,7 +18,7 @@ html
         img.icon
 `
 
-describe('public/slideshow/weather ShowIcon()', () => {
+describe('public/slideshow/weather showIcon()', () => {
   let dom = new JSDOM('')
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -36,7 +36,7 @@ describe('public/slideshow/weather ShowIcon()', () => {
   ]
   acceptBaseTests.forEach(([title, base]) => {
     it(`should accept ${title}`, () => {
-      Internals.ShowIcon(base, 'FOO')
+      Internals.showIcon(base, 'FOO')
       assert(true, 'We expect the call to return without failing on null input')
     })
   })
@@ -51,14 +51,14 @@ describe('public/slideshow/weather ShowIcon()', () => {
     it(`should ${title}`, () => {
       const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
       element?.style.setProperty('display', 'FOO')
-      Internals.ShowIcon(element, icon)
+      Internals.showIcon(element, icon)
       expect(element?.style.display).to.equal(expected)
     })
   })
 
   it('should set src attribute on valid icon', () => {
     const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
-    Internals.ShowIcon(element, '8472')
+    Internals.showIcon(element, '8472')
     expect(element?.src).to.equal('https://openweathermap.org/img/w/8472.png')
   })
 })
