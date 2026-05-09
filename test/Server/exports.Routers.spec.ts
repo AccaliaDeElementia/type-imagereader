@@ -9,7 +9,7 @@ import { getRouter as getRootRouter } from '#routes/index.js'
 import { getRouter as getSlideshowRouter } from '#routes/slideshow.js'
 import { getRouter as getWeatherRouter } from '#routes/weather.js'
 
-describe('Server RegisterRouters', () => {
+describe('Server registerRouters', () => {
   it('should store root router', () => {
     expect(Routers.Root).to.equal(getRootRouter)
   })

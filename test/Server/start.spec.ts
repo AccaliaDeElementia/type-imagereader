@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { cast } from '#testutils/TypeGuards.js'
-import { start, Internals, SetClacksOverhead } from '#Server.js'
+import { start, Internals, setClacksOverhead } from '#Server.js'
 import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
@@ -27,13 +27,13 @@ describe('Server start', () => {
     appFake = cast<Express>(appStub)
     serverFake = cast<HttpServer>({})
     socketsFake = cast<WebSocketServer>({})
-    createAppStub = sandbox.stub(Internals, 'CreateApp').returns([appFake, serverFake, socketsFake])
-    configureBaseAppStub = sandbox.stub(Internals, 'ConfigureBaseApp')
-    configureLoggingStub = sandbox.stub(Internals, 'ConfigureLogging')
-    configureErrorHandlerStub = sandbox.stub(Internals, 'ConfigureErrorHandler')
-    registerRoutersStub = sandbox.stub(Internals, 'RegisterRouters').resolves()
-    registerViewsStub = sandbox.stub(Internals, 'RegisterViewsAndMiddleware')
-    listenOnPortStub = sandbox.stub(Internals, 'ListenOnPort')
+    createAppStub = sandbox.stub(Internals, 'createApp').returns([appFake, serverFake, socketsFake])
+    configureBaseAppStub = sandbox.stub(Internals, 'configureBaseApp')
+    configureLoggingStub = sandbox.stub(Internals, 'configureLogging')
+    configureErrorHandlerStub = sandbox.stub(Internals, 'configureErrorHandler')
+    registerRoutersStub = sandbox.stub(Internals, 'registerRouters').resolves()
+    registerViewsStub = sandbox.stub(Internals, 'registerViewsAndMiddleware')
+    listenOnPortStub = sandbox.stub(Internals, 'listenOnPort')
   })
   afterEach(() => {
     sandbox.restore()
@@ -81,7 +81,7 @@ describe('Server start', () => {
   })
   it('should register the X-Clacks-Overhead middleware before registering routers', async () => {
     await start(65535)
-    const clacksRegistration = appStub.use.getCalls().find((c) => c.args[0] === SetClacksOverhead)
+    const clacksRegistration = appStub.use.getCalls().find((c) => c.args[0] === setClacksOverhead)
     expect(clacksRegistration?.calledBefore(registerRoutersStub.firstCall)).to.equal(true)
   })
   it('should register views before registering routers so view engine is set before any router can handle a request', async () => {
@@ -98,7 +98,7 @@ describe('Server start', () => {
   })
   it('should register the X-Clacks-Overhead middleware via app.use', async () => {
     await start(65535)
-    const clacksRegistration = appStub.use.getCalls().find((c) => c.args[0] === SetClacksOverhead)
+    const clacksRegistration = appStub.use.getCalls().find((c) => c.args[0] === setClacksOverhead)
     expect(clacksRegistration).to.not.equal(undefined)
   })
   it('should return app', async () => {

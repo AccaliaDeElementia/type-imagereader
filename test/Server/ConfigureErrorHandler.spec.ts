@@ -6,11 +6,11 @@ import Sinon from 'sinon'
 import { StatusCodes } from 'http-status-codes'
 import { cast } from '#testutils/TypeGuards.js'
 import { createResponseFake } from '#testutils/Express.js'
-import { ConfigureErrorHandler } from '#Server.js'
+import { configureErrorHandler } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server ConfigureErrorHandler', () => {
+describe('Server configureErrorHandler', () => {
   let appStub = { use: sandbox.stub() }
   let appFake = cast<Express>(appStub)
   let { stub: responseStub } = createResponseFake()
@@ -23,11 +23,11 @@ describe('Server ConfigureErrorHandler', () => {
     sandbox.restore()
   })
   it('should register exactly one handler', () => {
-    ConfigureErrorHandler(appFake)
+    configureErrorHandler(appFake)
     expect(appStub.use.callCount).to.equal(1)
   })
   it('should register a function as the error handler', () => {
-    ConfigureErrorHandler(appFake)
+    configureErrorHandler(appFake)
     const fn = appStub.use.firstCall.args[0] as unknown
     assert.isFunction(fn)
   })
@@ -42,7 +42,7 @@ describe('Server ConfigureErrorHandler', () => {
   ]
   errorHandlerTests.forEach(([title, validationFn]) => {
     it(`should ${title} when handling an error`, () => {
-      ConfigureErrorHandler(appFake)
+      configureErrorHandler(appFake)
       const fn = cast<(err: Error, _: unknown, res: Response, __: unknown) => void>(appStub.use.firstCall.args[0])
       const err = new Error('FOO!')
       fn(err, null, cast<Response>(responseStub), null)

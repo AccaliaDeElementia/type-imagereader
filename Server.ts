@@ -43,7 +43,7 @@ export const Routers = {
   Weather: getWeatherRouter,
 }
 
-export function CreateApp(): [Express, HttpServer, WebSocketServer] {
+export function createApp(): [Express, HttpServer, WebSocketServer] {
   const app = Imports.express()
   const server = Imports.createServer((req, res) => {
     app(req, res)
@@ -52,7 +52,7 @@ export function CreateApp(): [Express, HttpServer, WebSocketServer] {
   return [app, server, websockets]
 }
 
-export function ListenOnPort(server: HttpServer, port: number): void {
+export function listenOnPort(server: HttpServer, port: number): void {
   server.listen(port, (err?: Error) => {
     if (err !== undefined) {
       Imports.logger('Error encountered creating server')
@@ -61,7 +61,7 @@ export function ListenOnPort(server: HttpServer, port: number): void {
   })
 }
 
-export function ConfigureBaseApp(app: Express): void {
+export function configureBaseApp(app: Express): void {
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
   app.use(Imports.cookieParser())
@@ -74,7 +74,7 @@ export function ConfigureBaseApp(app: Express): void {
   }
 }
 
-export function ConfigureLogging(app: Express): void {
+export function configureLogging(app: Express): void {
   switch (process.env.NODE_ENV) {
     case 'production':
       app.use(
@@ -99,18 +99,18 @@ export function ConfigureLogging(app: Express): void {
   }
 }
 
-export function ConfigureErrorHandler(app: Express): void {
+export function configureErrorHandler(app: Express): void {
   app.use((err: Error, _: Request, res: Response, __: NextFunction) =>
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: err.message }),
   )
 }
 
-export function SetClacksOverhead(_: Request, res: Response, next: NextFunction): void {
+export function setClacksOverhead(_: Request, res: Response, next: NextFunction): void {
   res.set('X-Clacks-Overhead', 'GNU Terry Pratchett')
   next()
 }
 
-export async function RegisterRouters(app: Express, server: HttpServer, websockets: WebSocketServer): Promise<void> {
+export async function registerRouters(app: Express, server: HttpServer, websockets: WebSocketServer): Promise<void> {
   app.use('/', await Routers.Root(app, server, websockets))
   app.use('/api', await Routers.Api(app, server, websockets))
   app.use('/images', await Routers.Images(app, server, websockets))
@@ -118,7 +118,7 @@ export async function RegisterRouters(app: Express, server: HttpServer, websocke
   app.use('/weather', await Routers.Weather(app, server, websockets))
 }
 
-export function RegisterViewsAndMiddleware(app: Express): void {
+export function registerViewsAndMiddleware(app: Express): void {
   app.set('views', join(moduleDir, 'views'))
   app.set('view engine', 'pug')
 
@@ -126,27 +126,27 @@ export function RegisterViewsAndMiddleware(app: Express): void {
 }
 
 export async function start(port: number): Promise<{ app: Express; server: HttpServer }> {
-  const [app, server, websockets] = Internals.CreateApp()
+  const [app, server, websockets] = Internals.createApp()
 
-  Internals.ConfigureBaseApp(app)
-  Internals.ConfigureLogging(app) // helmet/morgan must run before routers so headers/logs apply to handled responses
-  app.use(Internals.SetClacksOverhead) // header on every response, not just 404s
-  Internals.RegisterViewsAndMiddleware(app)
-  await Internals.RegisterRouters(app, server, websockets)
-  Internals.ConfigureErrorHandler(app) // Express error-handling middleware must be registered last
+  Internals.configureBaseApp(app)
+  Internals.configureLogging(app) // helmet/morgan must run before routers so headers/logs apply to handled responses
+  app.use(Internals.setClacksOverhead) // header on every response, not just 404s
+  Internals.registerViewsAndMiddleware(app)
+  await Internals.registerRouters(app, server, websockets)
+  Internals.configureErrorHandler(app) // Express error-handling middleware must be registered last
 
-  Internals.ListenOnPort(server, port)
+  Internals.listenOnPort(server, port)
 
   return { app, server }
 }
 
 export const Internals = {
-  CreateApp,
-  ListenOnPort,
-  ConfigureBaseApp,
-  ConfigureLogging,
-  ConfigureErrorHandler,
-  SetClacksOverhead,
-  RegisterRouters,
-  RegisterViewsAndMiddleware,
+  createApp,
+  listenOnPort,
+  configureBaseApp,
+  configureLogging,
+  configureErrorHandler,
+  setClacksOverhead,
+  registerRouters,
+  registerViewsAndMiddleware,
 }

@@ -6,11 +6,11 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import Sinon from 'sinon'
 import { cast } from '#testutils/TypeGuards.js'
-import { CreateApp, Imports } from '#Server.js'
+import { createApp, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server CreateApp', () => {
+describe('Server createApp', () => {
   let serverFake = cast<Server>({})
   let socketsFake = cast<WebSocketServer>({})
   let socketsServerStub = sandbox.stub()
@@ -29,43 +29,43 @@ describe('Server CreateApp', () => {
     sandbox.restore()
   })
   it('should construct express app', () => {
-    CreateApp()
+    createApp()
     expect(expressStub.callCount).to.equal(1)
   })
   it('should construct express app with default config', () => {
-    CreateApp()
+    createApp()
     expect(expressStub.firstCall.args).to.have.lengthOf(0)
   })
   it('should create an http server wrapping the express app', () => {
-    CreateApp()
+    createApp()
     expect(createServerStub.callCount).to.equal(1)
   })
   it('should delegate incoming requests to the express app via the createServer listener', () => {
     const appCallStub = sandbox.stub()
     expressStub.returns(cast<Express>(appCallStub))
-    CreateApp()
+    createApp()
     const listener = cast<(req: unknown, res: unknown) => void>(createServerStub.firstCall.args[0])
     const reqFake = { req: true }
     const resFake = { res: true }
     listener(reqFake, resFake)
     expect(appCallStub.firstCall.args).to.deep.equal([reqFake, resFake])
   })
-  it('should not start listening from CreateApp', () => {
-    CreateApp()
-    // CreateApp must stay passive — listening is deferred to ListenOnPort at the end of start()
+  it('should not start listening from createApp', () => {
+    createApp()
+    // createApp must stay passive — listening is deferred to listenOnPort at the end of start()
     // so requests cannot reach handlers until every router is registered.
     expect(serverFake).to.not.have.property('listen')
   })
   it('should create websocket server', () => {
-    CreateApp()
+    createApp()
     expect(socketsServerStub.callCount).to.equal(1)
   })
   it('should create websocket server from the http server', () => {
-    CreateApp()
+    createApp()
     expect(socketsServerStub.firstCall.args[0]).to.equal(serverFake)
   })
   it('should return tuple of [express app, http server, websocket server]', () => {
-    const result = CreateApp()
+    const result = createApp()
     expect(result).to.deep.equal([appFake, serverFake, socketsFake])
   })
 })
