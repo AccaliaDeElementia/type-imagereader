@@ -10,13 +10,6 @@ import { StringishHasValue, StringIsNullOrEmpty } from './helpers.js'
 
 const moduleDir = dirname(fileURLToPath(import.meta.url))
 
-const initialize = async (): Promise<Knex> => {
-  const config = await Functions.getKnexConfig()
-  const knexInstance = Imports.knex(config)
-  await knexInstance.migrate.latest()
-  return knexInstance
-}
-
 export interface KnexOptions {
   client: string
   connection: {
@@ -36,7 +29,12 @@ export interface KnexOptions {
   }
 }
 
-function isConnectionValid(obj: object): boolean {
+export function isDictionary(obj: unknown): obj is Record<string, unknown> {
+  if (obj === null || typeof obj !== 'object' || obj instanceof Array) return false
+  return true
+}
+
+export function isConnectionValid(obj: object): boolean {
   if (!('connection' in obj) || !isDictionary(obj.connection)) return false
   const entries = Object.entries(obj.connection)
   for (const key of ['host', 'database', 'user', 'password', 'filename']) {
@@ -48,7 +46,7 @@ function isConnectionValid(obj: object): boolean {
   return true
 }
 
-function isPoolValid(obj: object): boolean {
+export function isPoolValid(obj: object): boolean {
   if (!('pool' in obj)) return true
   if (!isDictionary(obj.pool)) return false
   if (!('min' in obj.pool) || typeof obj.pool.min !== 'number') return false
@@ -57,76 +55,80 @@ function isPoolValid(obj: object): boolean {
   return true
 }
 
-function isMigrationsValid(obj: object): boolean {
+export function isMigrationsValid(obj: object): boolean {
   if (!('migrations' in obj) || !isDictionary(obj.migrations)) return false
   if (!('tableName' in obj.migrations) || typeof obj.migrations.tableName !== 'string') return false
   return true
 }
 
-function isDictionary(obj: unknown): obj is Record<string, unknown> {
-  if (obj === null || typeof obj !== 'object' || obj instanceof Array) return false
+export function isKnexOptions(obj: unknown): obj is KnexOptions {
+  if (!isDictionary(obj)) return false
+  if (!('client' in obj) || typeof obj.client !== 'string') return false
+  if (!Internals.isConnectionValid(obj)) return false
+  if ('useNullAsDefault' in obj && typeof obj.useNullAsDefault !== 'boolean') return false
+  if (!Internals.isPoolValid(obj)) return false
+  if (!Internals.isMigrationsValid(obj)) return false
   return true
 }
 
-export const TypeGuards = {
-  isDictionary,
+export function GetEnvironmentName(): string {
+  if (!StringishHasValue(process.env.DB_CLIENT)) {
+    return 'development'
+  }
+  return process.env.DB_CLIENT
+}
+
+export async function ReadConfigurationBlock(): Promise<KnexOptions> {
+  const content = await Imports.readFile(join(moduleDir, '../knexfile.json'), { encoding: 'utf-8' })
+  if (StringIsNullOrEmpty(content)) throw new Error('Invalid Configuration Detected!')
+  const data = JSON.parse(content) as unknown
+  if (!isDictionary(data)) throw new Error('Invalid Configuration Detected!')
+  const name = Internals.GetEnvironmentName()
+  if (!(name in data)) throw new Error('Invalid Configuration Detected!')
+  const config = data[name]
+  if (!isKnexOptions(config)) throw new Error('Invalid Configuration Detected!')
+  return config
+}
+
+export async function GetKnexConfig(): Promise<KnexOptions> {
+  const connection = await Internals.ReadConfigurationBlock()
+  const keys: Array<'host' | 'database' | 'user' | 'password' | 'filename'> = [
+    'host',
+    'database',
+    'user',
+    'password',
+    'filename',
+  ]
+  keys.forEach((key) => {
+    const value = process.env[`DB_${key.toUpperCase()}`]
+    if (value !== undefined) {
+      connection.connection[key] = value
+    }
+  })
+  return connection
+}
+
+export async function Initialize(): Promise<Knex> {
+  Persistance.Initializer ??= doInitialize()
+  return await Persistance.Initializer
+}
+
+async function doInitialize(): Promise<Knex> {
+  const config = await Internals.GetKnexConfig()
+  const knexInstance = Imports.knex(config)
+  await knexInstance.migrate.latest()
+  return knexInstance
+}
+
+export const Persistance = { Initializer: undefined as Promise<Knex> | undefined }
+
+export const Imports = { knex, readFile }
+
+export const Internals = {
+  GetEnvironmentName,
+  ReadConfigurationBlock,
+  GetKnexConfig,
   isConnectionValid,
   isPoolValid,
   isMigrationsValid,
-  isKnexOptions(obj: unknown): obj is KnexOptions {
-    if (!TypeGuards.isDictionary(obj)) return false
-    if (!('client' in obj) || typeof obj.client !== 'string') return false
-    if (!TypeGuards.isConnectionValid(obj)) return false
-    if ('useNullAsDefault' in obj && typeof obj.useNullAsDefault !== 'boolean') return false
-    if (!TypeGuards.isPoolValid(obj)) return false
-    if (!TypeGuards.isMigrationsValid(obj)) return false
-    return true
-  },
-}
-
-const CreateInitializer = (): Promise<Knex> | undefined => undefined
-export const Imports = { knex, Initializer: CreateInitializer(), readFile }
-
-export const Functions = {
-  getEnvironmentName: (): string => {
-    if (!StringishHasValue(process.env.DB_CLIENT)) {
-      return 'development'
-    }
-    return process.env.DB_CLIENT
-  },
-  readConfigurationBlock: async (): Promise<KnexOptions> => {
-    const content = await Imports.readFile(join(moduleDir, '../knexfile.json'), { encoding: 'utf-8' })
-    if (StringIsNullOrEmpty(content)) throw new Error('Invalid Configuration Detected!')
-    const data = JSON.parse(content) as unknown
-    if (!isDictionary(data)) throw new Error('Invalid Configuration Detected!')
-    const name = Functions.getEnvironmentName()
-    if (!(name in data)) throw new Error('Invalid Configuration Detected!')
-    const config = data[name]
-    if (!TypeGuards.isKnexOptions(config)) throw new Error('Invalid Configuration Detected!')
-    return config
-  },
-  getKnexConfig: async (): Promise<KnexOptions> => {
-    const connection = await Functions.readConfigurationBlock()
-    const keys: Array<'host' | 'database' | 'user' | 'password' | 'filename'> = [
-      'host',
-      'database',
-      'user',
-      'password',
-      'filename',
-    ]
-    keys.forEach((key) => {
-      const value = process.env[`DB_${key.toUpperCase()}`]
-      if (value !== undefined) {
-        connection.connection[key] = value
-      }
-    })
-    return connection
-  },
-}
-
-export default {
-  initialize: async (): Promise<Knex> => {
-    Imports.Initializer ??= initialize()
-    return await Imports.Initializer
-  },
 }

@@ -1,11 +1,11 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { TypeGuards } from '#utils/persistance.js'
+import { isConnectionValid } from '#utils/persistance.js'
 
 describe('utils/persistance function isConnectionValid()', () => {
   it('should reject missing connection element', () => {
-    expect(TypeGuards.isConnectionValid({})).to.equal(false)
+    expect(isConnectionValid({})).to.equal(false)
   })
   const tests: Array<[string, unknown, boolean]> = [
     [
@@ -66,7 +66,7 @@ describe('utils/persistance function isConnectionValid()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(TypeGuards.isConnectionValid({ connection: input })).to.equal(expected)
+      expect(isConnectionValid({ connection: input })).to.equal(expected)
     })
   })
 })

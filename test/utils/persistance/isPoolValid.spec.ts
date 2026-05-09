@@ -1,11 +1,11 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { TypeGuards } from '#utils/persistance.js'
+import { isPoolValid } from '#utils/persistance.js'
 
 describe('utils/persistance function isPoolValid()', () => {
   it('should accept missing pool element', () => {
-    expect(TypeGuards.isPoolValid({})).to.equal(true)
+    expect(isPoolValid({})).to.equal(true)
   })
   const tests: Array<[string, unknown, boolean]> = [
     ['valid pool', { min: 2, max: 6 }, true],
@@ -27,7 +27,7 @@ describe('utils/persistance function isPoolValid()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(TypeGuards.isPoolValid({ pool: input })).to.equal(expected)
+      expect(isPoolValid({ pool: input })).to.equal(expected)
     })
   })
 })

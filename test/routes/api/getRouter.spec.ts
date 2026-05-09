@@ -6,7 +6,6 @@ import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
-import persistance from '#utils/persistance.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
@@ -28,7 +27,7 @@ describe('routes/api function getRouter()', () => {
       get: sandbox.stub(),
       post: sandbox.stub(),
     }
-    sandbox.stub(persistance, 'initialize').resolves()
+    sandbox.stub(Imports, 'Initialize').resolves()
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
   })
   afterEach(() => {

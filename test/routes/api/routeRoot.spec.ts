@@ -6,7 +6,6 @@ import type { Application, RequestHandler as ExpressRequestHandler, Response as 
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
-import persistance from '#utils/persistance.js'
 import { StatusCodes } from 'http-status-codes'
 import { Cast } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
@@ -32,7 +31,7 @@ describe('routes/api route GET /', () => {
     requestFake = Cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     const getFn = sandbox.stub()
-    const InitializeStub = sandbox.stub(persistance, 'initialize').resolves()
+    const InitializeStub = sandbox.stub(Imports, 'Initialize').resolves()
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         get: getFn,

@@ -18,7 +18,7 @@ describe('/index.ts tests', (): void => {
   let ClockFake: Sinon.SinonFakeTimers | undefined = undefined
   let LoggerStub: Sinon.SinonStub | undefined = undefined
   let StartWatcherStub: Sinon.SinonStub | undefined = undefined
-  let PersistanceStub: { initialize: Sinon.SinonStub } | undefined = undefined
+  let InitializeStub: Sinon.SinonStub | undefined = undefined
   let IncrementalSyncStub: Sinon.SinonStub | undefined = undefined
 
   beforeEach(() => {
@@ -32,8 +32,7 @@ describe('/index.ts tests', (): void => {
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
     sandbox.stub(Imports, 'stat').resolves(Cast<Stats>({ isDirectory: () => true }))
-    PersistanceStub = { initialize: sandbox.stub().resolves({}) }
-    sandbox.stub(Imports, 'persistance').value(PersistanceStub)
+    InitializeStub = sandbox.stub(Imports, 'Initialize').resolves(Cast({}))
     IncrementalSyncStub = sandbox.stub().resolves()
     sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
   })
@@ -448,17 +447,17 @@ describe('/index.ts tests', (): void => {
     expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
-  it('should call persistance.initialize in flush callback', async () => {
+  it('should call Initialize in flush callback', async () => {
     await ImageReader.Run()
     const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
-    expect(PersistanceStub?.initialize.callCount).to.equal(1)
+    expect(InitializeStub?.callCount).to.equal(1)
   })
 
   it('should call IncrementalSync once in flush callback', async () => {
     const fakeKnex = { fake: true }
-    PersistanceStub?.initialize.resolves(fakeKnex)
+    InitializeStub?.resolves(Cast(fakeKnex))
     await ImageReader.Run()
     const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
@@ -468,7 +467,7 @@ describe('/index.ts tests', (): void => {
 
   it('should pass knex to IncrementalSync in flush callback', async () => {
     const fakeKnex = { fake: true }
-    PersistanceStub?.initialize.resolves(fakeKnex)
+    InitializeStub?.resolves(Cast(fakeKnex))
     await ImageReader.Run()
     const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
@@ -478,7 +477,7 @@ describe('/index.ts tests', (): void => {
 
   it('should pass changeset to IncrementalSync in flush callback', async () => {
     const fakeKnex = { fake: true }
-    PersistanceStub?.initialize.resolves(fakeKnex)
+    InitializeStub?.resolves(Cast(fakeKnex))
     await ImageReader.Run()
     const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])

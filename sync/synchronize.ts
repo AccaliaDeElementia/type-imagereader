@@ -2,7 +2,7 @@
 
 import _debug from 'debug'
 
-import _persistance from '../utils/persistance.js'
+import { Initialize as _Initialize } from '../utils/persistance.js'
 import { Functions as _FindItems } from './findItems.js'
 import { Functions as _Pictures } from './pictures.js'
 import { Functions as _Folders } from './folders.js'
@@ -16,7 +16,7 @@ const ELAPSED_DECIMALS = 2
 export const Imports = {
   logPrefix: 'type-imagereader:sync:synchronize',
   debug: _debug,
-  persistance: _persistance,
+  Initialize: _Initialize,
   FindItems: _FindItems,
   Pictures: _Pictures,
   Folders: _Folders,
@@ -30,7 +30,7 @@ const synchronize = async (): Promise<void> => {
   const logger = Imports.debug(Imports.logPrefix)
   const start = Date.now()
   logger('Folder Synchronization Begins')
-  const knex = await Imports.persistance.initialize()
+  const knex = await Imports.Initialize()
   const runStep = async <T>(label: string, step: () => Promise<T>): Promise<T> => {
     const stepStart = Date.now()
     try {

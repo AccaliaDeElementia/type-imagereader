@@ -15,7 +15,6 @@ describe('index.ts ONESHOT mode tests', (): void => {
   let ClockFake: Sinon.SinonFakeTimers | undefined = undefined
   let LoggerStub: Sinon.SinonStub | undefined = undefined
   let StartWatcherStub: Sinon.SinonStub | undefined = undefined
-  let PersistanceStub: { initialize: Sinon.SinonStub } | undefined = undefined
   let DestroyStub: Sinon.SinonStub | undefined = undefined
 
   beforeEach(() => {
@@ -31,8 +30,7 @@ describe('index.ts ONESHOT mode tests', (): void => {
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
     sandbox.stub(Imports, 'stat').resolves(Cast<Stats>({ isDirectory: () => true }))
     DestroyStub = sandbox.stub().resolves()
-    PersistanceStub = { initialize: sandbox.stub().resolves({ destroy: DestroyStub }) }
-    sandbox.stub(Imports, 'persistance').value(PersistanceStub)
+    sandbox.stub(Imports, 'Initialize').resolves(Cast({ destroy: DestroyStub }))
   })
 
   afterEach(() => {

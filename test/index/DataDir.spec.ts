@@ -20,7 +20,7 @@ describe('index.ts DATA_DIR handling', (): void => {
   let StartWatcherStub: Sinon.SinonStub | undefined = undefined
   let LoggerStub: Sinon.SinonStub | undefined = undefined
   let StatStub: Sinon.SinonStub | undefined = undefined
-  let PersistanceStub: { initialize: Sinon.SinonStub } | undefined = undefined
+  let InitializeStub: Sinon.SinonStub | undefined = undefined
   let IncrementalSyncStub: Sinon.SinonStub | undefined = undefined
 
   beforeEach(() => {
@@ -36,8 +36,7 @@ describe('index.ts DATA_DIR handling', (): void => {
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
     StatStub = sandbox.stub(Imports, 'stat').resolves(fakeDirStats())
-    PersistanceStub = { initialize: sandbox.stub().resolves({}) }
-    sandbox.stub(Imports, 'persistance').value(PersistanceStub)
+    InitializeStub = sandbox.stub(Imports, 'Initialize').resolves(Cast({}))
     IncrementalSyncStub = sandbox.stub().resolves()
     sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
   })
@@ -155,7 +154,7 @@ describe('index.ts DATA_DIR handling', (): void => {
 
   it('should pass the resolved DATA_DIR to IncrementalSync in the flush callback', async () => {
     const fakeKnex = { fake: true }
-    PersistanceStub?.initialize.resolves(fakeKnex)
+    InitializeStub?.resolves(Cast(fakeKnex))
     process.env.DATA_DIR = '/library/images'
     await ImageReader.Run()
     const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])

@@ -1,11 +1,11 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { TypeGuards } from '#utils/persistance.js'
+import { isMigrationsValid } from '#utils/persistance.js'
 
 describe('utils/persistance function isMigrationsValid()', () => {
   it('should reject missing migrations element', () => {
-    expect(TypeGuards.isMigrationsValid({})).to.equal(false)
+    expect(isMigrationsValid({})).to.equal(false)
   })
   const tests: Array<[string, unknown, boolean]> = [
     ['valid migrations', { tableName: 'migrations' }, true],
@@ -20,7 +20,7 @@ describe('utils/persistance function isMigrationsValid()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(TypeGuards.isMigrationsValid({ migrations: input })).to.equal(expected)
+      expect(isMigrationsValid({ migrations: input })).to.equal(expected)
     })
   })
 })

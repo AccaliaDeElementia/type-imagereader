@@ -12,14 +12,14 @@ import synchronize from './sync/synchronize.js'
 import { Functions as IncrementalSyncFunctions } from './sync/incrementalsync.js'
 import startWatcher from './sync/filewatcher.js'
 import type { Changeset, WatcherSubscription } from './sync/filewatcher.js'
-import persistance from './utils/persistance.js'
+import { Initialize as _Initialize } from './utils/persistance.js'
 import start from './Server.js'
 import { StringIsNullOrEmpty, getDataDir } from './utils/helpers.js'
 
 export const Imports = {
   logger: debug('type-imagereader:sync'),
   startWatcher,
-  persistance,
+  Initialize: _Initialize,
   IncrementalSyncFunctions,
   stat,
   getDataDir,
@@ -134,7 +134,7 @@ export const ImageReader = {
           await ImageReader.Synchronize()
         } finally {
           try {
-            const knex = await Imports.persistance.initialize()
+            const knex = await Imports.Initialize()
             await knex.destroy()
           } catch (err: unknown) {
             Imports.logger('failed to release knex pool in oneshot mode', err)
@@ -159,7 +159,7 @@ export const ImageReader = {
           const onFlush = async (changeset: Changeset): Promise<void> => {
             if (!ImageReader.SyncLock.Take()) throw new Error('sync locked')
             try {
-              const knex = await Imports.persistance.initialize()
+              const knex = await Imports.Initialize()
               await Imports.IncrementalSyncFunctions.IncrementalSync(knex, changeset, dataDir)
             } finally {
               ImageReader.SyncLock.Release()

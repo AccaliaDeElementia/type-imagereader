@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#utils/persistance.js'
+import { GetEnvironmentName } from '#utils/persistance.js'
 
-describe('utils/persistance function getEnvironmentName()', () => {
+describe('utils/persistance function GetEnvironmentName()', () => {
   let envValue: string | undefined = undefined
   beforeAll(() => {
     envValue = process.env.DB_CLIENT
@@ -17,14 +17,14 @@ describe('utils/persistance function getEnvironmentName()', () => {
   })
   it('should default to development when DB_CLIENT environment variable unset', () => {
     delete process.env.DB_CLIENT
-    expect(Functions.getEnvironmentName()).to.equal('development')
+    expect(GetEnvironmentName()).to.equal('development')
   })
   it('should default to development when DB_CLIENT environment variable empty', () => {
     process.env.DB_CLIENT = ''
-    expect(Functions.getEnvironmentName()).to.equal('development')
+    expect(GetEnvironmentName()).to.equal('development')
   })
   it('should retrieve env variable value when DB_CLIENT environment variable set', () => {
     process.env.DB_CLIENT = 'i am legendary foxxo'
-    expect(Functions.getEnvironmentName()).to.equal('i am legendary foxxo')
+    expect(GetEnvironmentName()).to.equal('i am legendary foxxo')
   })
 })

@@ -7,7 +7,6 @@ import type { Server } from 'node:http'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { assert, expect } from 'chai'
 import { Config, Functions, getRouter, Imports } from '#routes/slideshow.js'
-import persistance from '#utils/persistance.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -33,7 +32,7 @@ describe('routes/slideshow function getRouter', () => {
     routerStub = { get: sandbox.stub() }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
     knexFake = StubToKnex({})
-    sandbox.stub(persistance, 'initialize').resolves(knexFake)
+    sandbox.stub(Imports, 'Initialize').resolves(knexFake)
     rootRouteStub = sandbox.stub(Functions, 'RootRoute').resolves()
     handleSocketStub = sandbox.stub(Functions, 'HandleSocket')
     setIntervalStub = sandbox.stub(global, 'setInterval')

@@ -9,7 +9,7 @@ import debug from 'debug'
 
 import { isPathTraversal as _isPathTraversal, GetParentFolders as _GetParentFolders } from '#utils/Path.js'
 
-import persistance from '#utils/persistance.js'
+import { Initialize as _Initialize } from '#utils/persistance.js'
 import { UriSafePath, Functions as api } from './apiFunctions.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 
@@ -114,6 +114,7 @@ export const Imports = {
   GetParentFolders: _GetParentFolders,
   isPathTraversal: _isPathTraversal,
   Router,
+  Initialize: _Initialize,
 }
 export class HandleSocketState {
   roomName: string | null
@@ -357,7 +358,7 @@ export const Functions = {
 
 export async function getRouter(_: Application, __: Server, io: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
-  const knex = await persistance.initialize()
+  const knex = await Imports.Initialize()
 
   Config.launchId = Date.now()
 

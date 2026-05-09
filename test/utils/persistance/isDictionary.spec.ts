@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { TypeGuards } from '#utils/persistance.js'
+import { isDictionary } from '#utils/persistance.js'
 
 describe('utils/persistance function isDictionary()', () => {
   const tests: Array<[string, unknown, boolean]> = [
@@ -14,7 +14,7 @@ describe('utils/persistance function isDictionary()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(TypeGuards.isDictionary(input)).to.equal(expected)
+      expect(isDictionary(input)).to.equal(expected)
     })
   })
 })

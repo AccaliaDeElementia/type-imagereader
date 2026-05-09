@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'node:path'
 
-import persistance from '#utils/persistance.js'
+import { Initialize as _Initialize } from '#utils/persistance.js'
 
 import { ModCount, UriSafePath, Functions, INVALID_MOD_COUNT } from './apiFunctions.js'
 
@@ -16,7 +16,13 @@ import { ReqParamToString } from '#utils/helpers.js'
 import { handleErrors as _handleErrors } from '#utils/Express.js'
 import { isPathTraversal as _isPathTraversal } from '#utils/Path.js'
 
-export const Imports = { Router, debug, handleErrors: _handleErrors, isPathTraversal: _isPathTraversal }
+export const Imports = {
+  Router,
+  debug,
+  handleErrors: _handleErrors,
+  isPathTraversal: _isPathTraversal,
+  Initialize: _Initialize,
+}
 
 interface ReqWithBodyData {
   body: BodyData
@@ -42,7 +48,7 @@ export function ReadBody(req: unknown): BodyData {
 
 // Export the base-router
 export async function getRouter(_app: Application, _server: Server, _socket: WebSocketServer): Promise<Router> {
-  const knex = await persistance.initialize()
+  const knex = await Imports.Initialize()
   // Init router and path
   const router = Imports.Router()
 

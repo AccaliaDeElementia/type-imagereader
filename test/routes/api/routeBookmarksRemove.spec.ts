@@ -7,7 +7,6 @@ import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { Functions } from '#routes/apiFunctions.js'
 import { getRouter, Imports } from '#routes/api.js'
-import persistance from '#utils/persistance.js'
 import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
@@ -42,7 +41,7 @@ describe('routes/api route POST /bookmarks/remove', () => {
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     knexFake = { Knex: Math.random() }
     const postFn = sandbox.stub()
-    const InitializeStub = sandbox.stub(persistance, 'initialize').resolves(StubToKnex(knexFake))
+    const InitializeStub = sandbox.stub(Imports, 'Initialize').resolves(StubToKnex(knexFake))
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         post: postFn,

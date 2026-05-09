@@ -1,14 +1,14 @@
 'use sanity'
 
 import { expect } from 'chai'
-import persistance, { Functions, Imports, type KnexOptions } from '#utils/persistance.js'
+import { Initialize, Internals, Imports, Persistance, type KnexOptions } from '#utils/persistance.js'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors.js'
 import { StubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance function initialize()', () => {
+describe('utils/persistance function Initialize()', () => {
   let fakeEnvironment: KnexOptions = {
     client: 'fakeClient',
     connection: {
@@ -27,7 +27,7 @@ describe('utils/persistance function initialize()', () => {
   }
 
   beforeEach(() => {
-    Imports.Initializer = undefined
+    Persistance.Initializer = undefined
     fakeEnvironment = {
       client: 'fakeClient',
       connection: {
@@ -43,7 +43,7 @@ describe('utils/persistance function initialize()', () => {
       },
     }
     stubKnex = sandbox.stub(Imports, 'knex').returns(StubToKnex(stubKnexInstance))
-    stubEnvironment = sandbox.stub(Functions, 'getKnexConfig').resolves(fakeEnvironment)
+    stubEnvironment = sandbox.stub(Internals, 'GetKnexConfig').resolves(fakeEnvironment)
   })
 
   afterEach(() => {
@@ -51,59 +51,59 @@ describe('utils/persistance function initialize()', () => {
   })
   it('should return stored initializer when one is already created', async () => {
     const promise = Promise.resolve(StubToKnex(stubKnexInstance))
-    Imports.Initializer = promise
-    expect(await persistance.initialize()).to.equal(stubKnexInstance)
+    Persistance.Initializer = promise
+    expect(await Initialize()).to.equal(stubKnexInstance)
   })
   it('should not call knex when an initializer is already stored', async () => {
     const promise = Promise.resolve(StubToKnex(stubKnexInstance))
-    Imports.Initializer = promise
-    await persistance.initialize()
+    Persistance.Initializer = promise
+    await Initialize()
     expect(stubKnex.called).to.equal(false)
   })
   it('should set stored Initializer when empty', async () => {
-    persistance.initialize().catch(() => null)
-    expect(await Imports.Initializer).to.equal(stubKnexInstance)
+    Initialize().catch(() => null)
+    expect(await Persistance.Initializer).to.equal(stubKnexInstance)
   })
   it('should resolve to knex instance', async () => {
-    const knex = await persistance.initialize()
+    const knex = await Initialize()
     expect(knex).to.equal(stubKnexInstance)
   })
   it('should pass config to knex initializer', async () => {
-    await persistance.initialize()
+    await Initialize()
     expect(stubKnex.calledWith(fakeEnvironment)).to.equal(true)
   })
   it('should run knex migrations', async () => {
-    await persistance.initialize()
+    await Initialize()
     expect(stubKnexInstance.migrate.latest.called).to.equal(true)
   })
   it('should reject when reading config fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubEnvironment.rejects(err)
-    const result = await EventuallyRejects(persistance.initialize())
+    const result = await EventuallyRejects(Initialize())
     expect(result).to.equal(err)
   })
   it('should reject when reading config throws', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubEnvironment.throws(err)
-    const result = await EventuallyRejects(persistance.initialize())
+    const result = await EventuallyRejects(Initialize())
     expect(result).to.equal(err)
   })
   it('should reject when creating Knex  fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnex.throws(err)
-    const result = await EventuallyRejects(persistance.initialize())
+    const result = await EventuallyRejects(Initialize())
     expect(result).to.equal(err)
   })
   it('should reject when migrating to latest fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnexInstance.migrate.latest.rejects(err)
-    const result = await EventuallyRejects(persistance.initialize())
+    const result = await EventuallyRejects(Initialize())
     expect(result).to.equal(err)
   })
   it('should reject when migrating to latest throws', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnexInstance.migrate.latest.throws(err)
-    const result = await EventuallyRejects(persistance.initialize())
+    const result = await EventuallyRejects(Initialize())
     expect(result).to.equal(err)
   })
 })

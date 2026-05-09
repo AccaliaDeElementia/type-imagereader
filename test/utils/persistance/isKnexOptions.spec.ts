@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { TypeGuards } from '#utils/persistance.js'
+import { isKnexOptions, Internals } from '#utils/persistance.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
@@ -11,9 +11,9 @@ describe('utils/persistance function isKnexOptions()', () => {
   let isConnectionValid = sandbox.stub()
   let isPoolValid = sandbox.stub()
   beforeEach(() => {
-    isMigrationsValidStub = sandbox.stub(TypeGuards, 'isMigrationsValid').returns(true)
-    isConnectionValid = sandbox.stub(TypeGuards, 'isConnectionValid').returns(true)
-    isPoolValid = sandbox.stub(TypeGuards, 'isPoolValid').returns(true)
+    isMigrationsValidStub = sandbox.stub(Internals, 'isMigrationsValid').returns(true)
+    isConnectionValid = sandbox.stub(Internals, 'isConnectionValid').returns(true)
+    isPoolValid = sandbox.stub(Internals, 'isPoolValid').returns(true)
   })
   afterEach(() => {
     sandbox.restore()
@@ -39,19 +39,19 @@ describe('utils/persistance function isKnexOptions()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(TypeGuards.isKnexOptions(input)).to.equal(expected)
+      expect(isKnexOptions(input)).to.equal(expected)
     })
   })
   it('should reject when isMigrationsValidStub fails', () => {
     isMigrationsValidStub.returns(false)
-    expect(TypeGuards.isKnexOptions({ client: 'sqlite' })).to.equal(false)
+    expect(isKnexOptions({ client: 'sqlite' })).to.equal(false)
   })
   it('should reject when isConnectionValid fails', () => {
     isConnectionValid.returns(false)
-    expect(TypeGuards.isKnexOptions({ client: 'sqlite' })).to.equal(false)
+    expect(isKnexOptions({ client: 'sqlite' })).to.equal(false)
   })
   it('should reject when isPoolValid fails', () => {
     isPoolValid.returns(false)
-    expect(TypeGuards.isKnexOptions({ client: 'sqlite' })).to.equal(false)
+    expect(isKnexOptions({ client: 'sqlite' })).to.equal(false)
   })
 })

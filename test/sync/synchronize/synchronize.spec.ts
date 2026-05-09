@@ -1,7 +1,6 @@
 'use sanity'
 
 import { expect } from 'chai'
-import persistence from '#utils/persistance.js'
 import synchronize, { Imports } from '#sync/synchronize.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
@@ -29,7 +28,7 @@ describe('sync/synchronize function synchronize()', () => {
   beforeEach(() => {
     knexFnStub = sandbox.stub().returnsThis()
     ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
-    persistenceIntitializerStub = sandbox.stub(persistence, 'initialize').resolves(StubToKnex(knexFnStub))
+    persistenceIntitializerStub = sandbox.stub(Imports, 'Initialize').resolves(StubToKnex(knexFnStub))
     findSyncItemsStub = sandbox.stub(Imports.FindItems, 'FindSyncItems').resolves(1)
     syncAllPicturesStub = sandbox.stub(Imports.Pictures, 'SyncAllPictures').resolves()
     syncAllFoldersStub = sandbox.stub(Imports.Folders, 'SyncAllFolders').resolves()
