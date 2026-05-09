@@ -15,10 +15,11 @@ import {
   ExecChunksSynchronously as _ExecChunksSynchronously,
   ToSortKey as _ToSortKey,
 } from './helpers.js'
-import { Functions as _FolderFunctions } from './folders.js'
+import { SyncFolderFirstImages as _SyncFolderFirstImages } from './folders.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 import { EscapeLikeWildcards } from '../utils/helpers.js'
 
+const _FolderFunctions = { SyncFolderFirstImages: _SyncFolderFirstImages }
 const _Helpers = {
   AddFolderAndAncestors: _AddFolderAndAncestors,
   Chunk: _Chunk,
