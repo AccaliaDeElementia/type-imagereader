@@ -36,53 +36,53 @@ describe('index.ts ONESHOT mode tests', (): void => {
   afterEach(() => {
     sandbox.restore()
     delete process.env.SKIP_SERVE
-    ImageReader.Interval = undefined
-    ImageReader.WatcherSubscription = undefined
-    ImageReader.WatcherEnabled = false
-    ImageReader.SyncLock._locked = false
-    ImageReader.SyncInterval = 10_800_000
+    ImageReader.interval = undefined
+    ImageReader.watcherSubscription = undefined
+    ImageReader.watcherEnabled = false
+    ImageReader.syncLock._locked = false
+    ImageReader.syncInterval = 10_800_000
   })
 
   it('should call synchronize when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(SynchronizeStub?.called).to.equal(true)
   })
 
   it('should call synchronize when ONESHOT is true', async () => {
     process.env.ONESHOT = 'true'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(SynchronizeStub?.called).to.equal(true)
   })
 
   it('should not start watcher when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(StartWatcherStub?.called).to.equal(false)
   })
 
   it('should not start watcher when ONESHOT is true', async () => {
     process.env.ONESHOT = 'true'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(StartWatcherStub?.called).to.equal(false)
   })
 
-  it('should leave WatcherEnabled false when ONESHOT is 1', async () => {
+  it('should leave watcherEnabled false when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
-    await ImageReader.Run()
-    expect(ImageReader.WatcherEnabled).to.equal(false)
+    await ImageReader.run()
+    expect(ImageReader.watcherEnabled).to.equal(false)
   })
 
   it('should leave WatcherSubscription undefined when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
-    await ImageReader.Run()
-    expect(ImageReader.WatcherSubscription).to.equal(undefined)
+    await ImageReader.run()
+    expect(ImageReader.watcherSubscription).to.equal(undefined)
   })
 
   it('should not schedule recurring sync when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
     process.env.SYNC_INTERVAL = '100'
-    await ImageReader.Run()
+    await ImageReader.run()
     SynchronizeStub?.resetHistory()
     ClockFake?.tick(10_000)
     expect(SynchronizeStub?.called).to.equal(false)
@@ -90,34 +90,34 @@ describe('index.ts ONESHOT mode tests', (): void => {
 
   it('should leave Interval undefined when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
-    await ImageReader.Run()
-    expect(ImageReader.Interval).to.equal(undefined)
+    await ImageReader.run()
+    expect(ImageReader.interval).to.equal(undefined)
   })
 
   it('should call knex.destroy after sync when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(DestroyStub?.called).to.equal(true)
   })
 
   it('should call knex.destroy even when synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
-    await eventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.run())
     expect(DestroyStub?.called).to.equal(true)
   })
 
   it('should reject with sync error when synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
-    const err = await eventuallyRejects(ImageReader.Run())
+    const err = await eventuallyRejects(ImageReader.run())
     expect(err.message).to.equal('SYNC FAILED')
   })
 
   it('should log when knex.destroy rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     DestroyStub?.rejects(new Error('POOL TEARDOWN FAILED'))
-    await ImageReader.Run()
+    await ImageReader.run()
     const hasDestroyFailLog = (LoggerStub?.getCalls() ?? []).some(
       (c) => c.args[0] === 'failed to release knex pool in oneshot mode',
     )
@@ -127,14 +127,14 @@ describe('index.ts ONESHOT mode tests', (): void => {
   it('should not call synchronize when ONESHOT and SKIP_SYNC are both set', async () => {
     process.env.ONESHOT = '1'
     process.env.SKIP_SYNC = '1'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(SynchronizeStub?.called).to.equal(false)
   })
 
   it('should not call knex.destroy when ONESHOT and SKIP_SYNC are both set', async () => {
     process.env.ONESHOT = '1'
     process.env.SKIP_SYNC = '1'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(DestroyStub?.called).to.equal(false)
   })
 })

@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { ImageReader, RunSync, Internals, Imports } from '#app.js'
+import { ImageReader, runSync, Internals, Imports } from '#app.js'
 import { expect } from 'chai'
 import { eventuallyFulfills } from '#testutils/Errors.js'
 
@@ -12,15 +12,15 @@ const fireImmediately = (fn: () => Promise<void>): number => {
   return 0
 }
 
-describe('index.ts RunSync() tests', () => {
+describe('index.ts runSync() tests', () => {
   let actuallyRunSpy = sandbox.stub().resolves()
   let setIntervalFake = sandbox.stub()
   let loggerStub = sandbox.stub()
-  const defaultInterval = ImageReader.SyncInterval
+  const defaultInterval = ImageReader.syncInterval
   beforeEach(() => {
-    ImageReader.Interval = undefined
-    ImageReader.SyncInterval = defaultInterval
-    actuallyRunSpy = sandbox.stub(Internals, 'RunSyncWithLock').resolves()
+    ImageReader.interval = undefined
+    ImageReader.syncInterval = defaultInterval
+    actuallyRunSpy = sandbox.stub(Internals, 'runSyncWithLock').resolves()
     setIntervalFake = sandbox.stub(Imports, 'setInterval').returns(0)
     loggerStub = sandbox.stub(Imports, 'logger')
   })
@@ -28,40 +28,40 @@ describe('index.ts RunSync() tests', () => {
     sandbox.restore()
   })
   it('should set interval to execute sync on schedule', async () => {
-    await RunSync()
+    await runSync()
     expect(setIntervalFake.callCount).to.equal(1)
   })
   it('should take call ActuallyRun synchronously on initial call', async () => {
-    const promise = RunSync()
+    const promise = runSync()
     const beforeWaitCallcount = actuallyRunSpy.callCount
     await promise
     expect(beforeWaitCallcount).to.equal(1)
   })
   it('should resolve when ActuallyRun rejects', async () => {
     actuallyRunSpy.rejects('foo!')
-    await eventuallyFulfills(RunSync())
+    await eventuallyFulfills(runSync())
   })
   it('should log once when the initial sync rejects', async () => {
     actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))
-    await RunSync()
+    await runSync()
     expect(loggerStub.callCount).to.equal(1)
   })
   it("should log with message 'initial sync error' when the initial sync rejects", async () => {
     actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))
-    await RunSync()
+    await runSync()
     expect(loggerStub.firstCall.args[0]).to.equal('initial sync error')
   })
   it('should log the error object when the initial sync rejects', async () => {
     const err = new Error('INITIAL SYNC FAILED')
     actuallyRunSpy.rejects(err)
-    await RunSync()
+    await runSync()
     expect(loggerStub.firstCall.args[1]).to.equal(err)
   })
   it('should log once when interval callback rejects', async () => {
     actuallyRunSpy.resolves()
     setIntervalFake.callsFake(fireImmediately)
     actuallyRunSpy.onSecondCall().rejects(new Error('SYNC FAILED'))
-    await RunSync()
+    await runSync()
     await Promise.resolve()
     expect(loggerStub.callCount).to.equal(1)
   })
@@ -69,7 +69,7 @@ describe('index.ts RunSync() tests', () => {
     actuallyRunSpy.resolves()
     setIntervalFake.callsFake(fireImmediately)
     actuallyRunSpy.onSecondCall().rejects(new Error('SYNC FAILED'))
-    await RunSync()
+    await runSync()
     await Promise.resolve()
     expect(loggerStub.firstCall.args[0]).to.equal('sync interval error')
   })
@@ -78,13 +78,13 @@ describe('index.ts RunSync() tests', () => {
     actuallyRunSpy.resolves()
     setIntervalFake.callsFake(fireImmediately)
     actuallyRunSpy.onSecondCall().rejects(err)
-    await RunSync()
+    await runSync()
     await Promise.resolve()
     expect(loggerStub.firstCall.args[1]).to.equal(err)
   })
   it('should not log when interval callback resolves', async () => {
     setIntervalFake.callsFake(fireImmediately)
-    await RunSync()
+    await runSync()
     await Promise.resolve()
     expect(loggerStub.callCount).to.equal(0)
   })

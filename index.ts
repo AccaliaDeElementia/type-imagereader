@@ -59,16 +59,16 @@ export class LockResource {
   }
 }
 
-export async function RunSyncWithLock(): Promise<void> {
-  if (!ImageReader.SyncLock.take()) return
+export async function runSyncWithLock(): Promise<void> {
+  if (!ImageReader.syncLock.take()) return
   try {
     await ImageReader.synchronize()
   } finally {
-    ImageReader.SyncLock.release()
+    ImageReader.syncLock.release()
   }
 }
 
-export async function ValidateDataDir(dataDir: string): Promise<void> {
+export async function validateDataDir(dataDir: string): Promise<void> {
   const stats = await Imports.stat(dataDir).catch((err: unknown) => {
     throw new Error(`DATA_DIR ${dataDir} is not accessible`, { cause: err })
   })
@@ -77,15 +77,15 @@ export async function ValidateDataDir(dataDir: string): Promise<void> {
   }
 }
 
-export async function RunSync(): Promise<void> {
-  const promise = Internals.RunSyncWithLock()
-  ImageReader.Interval = Imports.setInterval(async () => {
+export async function runSync(): Promise<void> {
+  const promise = Internals.runSyncWithLock()
+  ImageReader.interval = Imports.setInterval(async () => {
     try {
-      await Internals.RunSyncWithLock()
+      await Internals.runSyncWithLock()
     } catch (err) {
       Imports.logger('sync interval error', err)
     }
-  }, ImageReader.SyncInterval)
+  }, ImageReader.syncInterval)
   await promise.catch((err: unknown) => {
     Imports.logger('initial sync error', err)
   })
@@ -105,17 +105,17 @@ const parseSyncInterval = (): number | undefined => {
 }
 
 export const ImageReader = {
-  StartServer: start,
+  startServer: start,
   synchronize: _synchronize,
-  Interval: undefined as number | NodeJS.Timeout | undefined,
-  WatcherSubscription: undefined as WatcherSubscription | undefined,
-  SyncLock: new LockResource(),
-  SyncInterval: THREE_HOURS,
-  WatcherEnabled: false,
-  Run: async (): Promise<void> => {
+  interval: undefined as number | NodeJS.Timeout | undefined,
+  watcherSubscription: undefined as WatcherSubscription | undefined,
+  syncLock: new LockResource(),
+  syncInterval: THREE_HOURS,
+  watcherEnabled: false,
+  run: async (): Promise<void> => {
     const dataDir = Imports.getDataDir()
     Imports.logger('using data directory: %s', dataDir)
-    await Internals.ValidateDataDir(dataDir)
+    await Internals.validateDataDir(dataDir)
     await runIfNotSuppressed('SKIP_SERVE', async () => {
       const port = Number(stringIsNullOrEmpty(process.env.PORT) ? DEFAULT_PORT : process.env.PORT)
       if (Number.isNaN(port)) {
@@ -127,7 +127,7 @@ export const ImageReader = {
       if (port < MINIMUM_PORT || port > MAXIMUM_PORT) {
         throw new Error(`Port ${port} is out of range. Valid ports must be between 0 and 65535.`)
       }
-      await ImageReader.StartServer(port)
+      await ImageReader.startServer(port)
     })
     await runIfNotSuppressed('SKIP_SYNC', async () => {
       if (isSuppressed('ONESHOT')) {
@@ -145,11 +145,11 @@ export const ImageReader = {
       }
       const watcherSuppressed = isSuppressed('DISABLE_WATCHER')
       const doSync = async (): Promise<void> => {
-        if (!ImageReader.SyncLock.take()) return
+        if (!ImageReader.syncLock.take()) return
         try {
           await ImageReader.synchronize()
         } finally {
-          ImageReader.SyncLock.release()
+          ImageReader.syncLock.release()
         }
       }
       doSync().catch((err: unknown) => {
@@ -158,27 +158,27 @@ export const ImageReader = {
       if (!watcherSuppressed) {
         try {
           const onFlush = async (changeset: Changeset): Promise<void> => {
-            if (!ImageReader.SyncLock.take()) throw new Error('sync locked')
+            if (!ImageReader.syncLock.take()) throw new Error('sync locked')
             try {
               const knex = await Imports.initialize()
               await Imports.IncrementalSyncFunctions.incrementalSync(knex, changeset, dataDir)
             } finally {
-              ImageReader.SyncLock.release()
+              ImageReader.syncLock.release()
             }
           }
-          ImageReader.WatcherSubscription = await Imports.startWatcher(dataDir, onFlush)
-          ImageReader.WatcherEnabled = true
+          ImageReader.watcherSubscription = await Imports.startWatcher(dataDir, onFlush)
+          ImageReader.watcherEnabled = true
         } catch (err: unknown) {
           Imports.logger('watcher start failed, falling back to polling only', err)
         }
       }
       const customInterval = parseSyncInterval()
-      ImageReader.SyncInterval = customInterval ?? (ImageReader.WatcherEnabled ? TWENTY_FOUR_HOURS : THREE_HOURS)
-      ImageReader.Interval = setInterval(() => {
+      ImageReader.syncInterval = customInterval ?? (ImageReader.watcherEnabled ? TWENTY_FOUR_HOURS : THREE_HOURS)
+      ImageReader.interval = setInterval(() => {
         doSync().catch((err: unknown) => {
           Imports.logger('sync interval error', err)
         })
-      }, ImageReader.SyncInterval)
+      }, ImageReader.syncInterval)
       await Promise.resolve()
     })
   },
@@ -195,10 +195,10 @@ const invokedAs = process.argv[ENTRY_ARGV_INDEX]
 /* istanbul ignore next -- entry-guard branch only fires when this file is the
    process entry, never under tests (which always invoke via the test runner) */
 if (invokedAs !== undefined && [entryFile, entryDir].includes(resolve(invokedAs))) {
-  ImageReader.Run().catch((err: unknown) => {
+  ImageReader.run().catch((err: unknown) => {
     Imports.logger('startup failed', err)
     process.exitCode = EXIT_FAILURE
   })
 }
 
-export const Internals = { RunSyncWithLock, ValidateDataDir }
+export const Internals = { runSyncWithLock, validateDataDir }

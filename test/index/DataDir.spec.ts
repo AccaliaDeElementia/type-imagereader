@@ -30,7 +30,7 @@ describe('index.ts DATA_DIR handling', (): void => {
     delete process.env.SKIP_SERVE
     delete process.env.DISABLE_WATCHER
     delete process.env.SYNC_INTERVAL
-    StartServerStub = sandbox.stub(ImageReader, 'StartServer').resolves()
+    StartServerStub = sandbox.stub(ImageReader, 'startServer').resolves()
     SynchronizeStub = sandbox.stub(ImageReader, 'synchronize').resolves()
     sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
@@ -44,31 +44,31 @@ describe('index.ts DATA_DIR handling', (): void => {
   afterEach(() => {
     sandbox.restore()
     delete process.env.DATA_DIR
-    ImageReader.Interval = undefined
-    ImageReader.WatcherSubscription = undefined
-    ImageReader.WatcherEnabled = false
-    ImageReader.SyncLock._locked = false
-    ImageReader.SyncInterval = 10_800_000
+    ImageReader.interval = undefined
+    ImageReader.watcherSubscription = undefined
+    ImageReader.watcherEnabled = false
+    ImageReader.syncLock._locked = false
+    ImageReader.syncInterval = 10_800_000
   })
 
   it('should call stat once to validate the data directory', async () => {
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(StatStub?.callCount).to.equal(1)
   })
 
   it('should pass the default /data path to stat when DATA_DIR is unset', async () => {
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(StatStub?.firstCall.args[0]).to.equal('/data')
   })
 
   it('should pass the DATA_DIR value to stat when set', async () => {
     process.env.DATA_DIR = '/library/images'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(StatStub?.firstCall.args[0]).to.equal('/library/images')
   })
 
   it('should log the selected data directory', async () => {
-    await ImageReader.Run()
+    await ImageReader.run()
     const calls = LoggerStub?.getCalls() ?? []
     const hasDataDirLog = calls.some((c) => `${c.args[0]}`.startsWith('using data directory'))
     expect(hasDataDirLog).to.equal(true)
@@ -76,7 +76,7 @@ describe('index.ts DATA_DIR handling', (): void => {
 
   it('should log the resolved data directory value', async () => {
     process.env.DATA_DIR = '/library/images'
-    await ImageReader.Run()
+    await ImageReader.run()
     const calls = LoggerStub?.getCalls() ?? []
     const dataDirLog = calls.find((c) => `${c.args[0]}`.startsWith('using data directory'))
     expect(dataDirLog?.args[1]).to.equal('/library/images')
@@ -84,7 +84,7 @@ describe('index.ts DATA_DIR handling', (): void => {
 
   it('should log the data directory before stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
-    await eventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.run())
     const calls = LoggerStub?.getCalls() ?? []
     const hasDataDirLog = calls.some((c) => `${c.args[0]}`.startsWith('using data directory'))
     expect(hasDataDirLog).to.equal(true)
@@ -92,63 +92,63 @@ describe('index.ts DATA_DIR handling', (): void => {
 
   it('should reject when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
-    const err = await eventuallyRejects(ImageReader.Run())
+    const err = await eventuallyRejects(ImageReader.run())
     expect(err.message).to.match(/DATA_DIR/v)
   })
 
   it('should include the data directory in the rejection message when stat rejects', async () => {
     process.env.DATA_DIR = '/missing/path'
     StatStub?.rejects(new Error('ENOENT'))
-    const err = await eventuallyRejects(ImageReader.Run())
+    const err = await eventuallyRejects(ImageReader.run())
     expect(err.message).to.contain('/missing/path')
   })
 
-  it('should not call StartServer when stat rejects', async () => {
+  it('should not call startServer when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
-    await eventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.run())
     expect(StartServerStub?.called).to.equal(false)
   })
 
   it('should not call synchronize when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
-    await eventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.run())
     expect(SynchronizeStub?.called).to.equal(false)
   })
 
   it('should not start watcher when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
-    await eventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.run())
     expect(StartWatcherStub?.called).to.equal(false)
   })
 
   it('should reject when stat returns a non-directory', async () => {
     StatStub?.resolves(fakeFileStats())
-    const err = await eventuallyRejects(ImageReader.Run())
+    const err = await eventuallyRejects(ImageReader.run())
     expect(err.message).to.match(/not a directory/v)
   })
 
   it('should include the data directory in the rejection when stat returns a non-directory', async () => {
     process.env.DATA_DIR = '/etc/passwd'
     StatStub?.resolves(fakeFileStats())
-    const err = await eventuallyRejects(ImageReader.Run())
+    const err = await eventuallyRejects(ImageReader.run())
     expect(err.message).to.contain('/etc/passwd')
   })
 
-  it('should not call StartServer when stat returns a non-directory', async () => {
+  it('should not call startServer when stat returns a non-directory', async () => {
     StatStub?.resolves(fakeFileStats())
-    await eventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.run())
     expect(StartServerStub?.called).to.equal(false)
   })
 
   it('should not call synchronize when stat returns a non-directory', async () => {
     StatStub?.resolves(fakeFileStats())
-    await eventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.run())
     expect(SynchronizeStub?.called).to.equal(false)
   })
 
   it('should pass the resolved DATA_DIR to startWatcher when set', async () => {
     process.env.DATA_DIR = '/library/images'
-    await ImageReader.Run()
+    await ImageReader.run()
     expect(StartWatcherStub?.firstCall.args[0]).to.equal('/library/images')
   })
 
@@ -156,7 +156,7 @@ describe('index.ts DATA_DIR handling', (): void => {
     const fakeKnex = { fake: true }
     InitializeStub?.resolves(cast(fakeKnex))
     process.env.DATA_DIR = '/library/images'
-    await ImageReader.Run()
+    await ImageReader.run()
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
