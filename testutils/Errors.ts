@@ -1,3 +1,5 @@
+'use sanity'
+
 import { expect, assert } from 'chai'
 import { Cast } from './TypeGuards.js'
 

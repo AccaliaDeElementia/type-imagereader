@@ -1,3 +1,5 @@
+'use sanity'
+
 import type { Knex } from 'knex'
 import { createHash } from 'node:crypto'
 

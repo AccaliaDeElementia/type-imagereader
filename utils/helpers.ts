@@ -1,3 +1,5 @@
+'use sanity'
+
 export enum STEP {
   FORWARD = 1,
   BACK = -1,

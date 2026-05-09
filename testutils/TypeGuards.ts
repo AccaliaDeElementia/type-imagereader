@@ -1,3 +1,5 @@
+'use sanity'
+
 import type { Knex } from 'knex'
 //eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Allow Knex Tests, Use the default Knex typing
 type KnexDefault = Knex<{}, unknown>

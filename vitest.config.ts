@@ -1,3 +1,5 @@
+'use sanity'
+
 import { defineConfig } from 'vitest/config'
 
 // Using the istanbul coverage provider rather than v8. The v8 provider had a
