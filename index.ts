@@ -9,12 +9,14 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import synchronize from './sync/synchronize.js'
-import { Functions as IncrementalSyncFunctions } from './sync/incrementalsync.js'
+import { IncrementalSync as _IncrementalSync } from './sync/incrementalsync.js'
 import startWatcher from './sync/filewatcher.js'
 import type { Changeset, WatcherSubscription } from './sync/filewatcher.js'
 import { Initialize as _Initialize } from './utils/persistance.js'
 import start from './Server.js'
 import { StringIsNullOrEmpty, getDataDir } from './utils/helpers.js'
+
+const IncrementalSyncFunctions = { IncrementalSync: _IncrementalSync }
 
 export const Imports = {
   logger: debug('type-imagereader:sync'),

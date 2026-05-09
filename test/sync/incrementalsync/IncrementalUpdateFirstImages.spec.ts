@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '#sync/incrementalsync.js'
+import { IncrementalUpdateFirstImages, Imports } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
 import { StubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
@@ -16,7 +16,7 @@ describe('utils/incrementalsync function IncrementalUpdateFirstImages()', () => 
 
   beforeEach(() => {
     ;({ fake: loggerFake } = createLoggerFake(sandbox))
-    syncFolderFirstImagesStub = sandbox.stub(Imports.FolderFunctions, 'SyncFolderFirstImages').resolves()
+    syncFolderFirstImagesStub = sandbox.stub(Imports, 'SyncFolderFirstImages').resolves()
     knexFnStub = sandbox.stub()
     knexFnFake = StubToKnex(knexFnStub)
   })
@@ -26,17 +26,17 @@ describe('utils/incrementalsync function IncrementalUpdateFirstImages()', () => 
   })
 
   it('should delegate to SyncFolderFirstImages', async () => {
-    await Functions.IncrementalUpdateFirstImages(loggerFake, knexFnFake)
+    await IncrementalUpdateFirstImages(loggerFake, knexFnFake)
     expect(syncFolderFirstImagesStub.callCount).to.equal(1)
   })
 
   it('should pass logger to SyncFolderFirstImages', async () => {
-    await Functions.IncrementalUpdateFirstImages(loggerFake, knexFnFake)
+    await IncrementalUpdateFirstImages(loggerFake, knexFnFake)
     expect(syncFolderFirstImagesStub.firstCall.args[0]).to.equal(loggerFake)
   })
 
   it('should pass knex to SyncFolderFirstImages', async () => {
-    await Functions.IncrementalUpdateFirstImages(loggerFake, knexFnFake)
+    await IncrementalUpdateFirstImages(loggerFake, knexFnFake)
     expect(syncFolderFirstImagesStub.firstCall.args[1]).to.equal(knexFnFake)
   })
 })

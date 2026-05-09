@@ -1,7 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports } from '#sync/incrementalsync.js'
+import { IncrementalEnsureFoldersBulk } from '#sync/incrementalsync.js'
+import { ToSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { StubToKnex } from '#testutils/TypeGuards.js'
 
@@ -50,52 +51,52 @@ describe('utils/incrementalsync function IncrementalEnsureFoldersBulk()', () => 
 
   describe('when given an empty list', () => {
     it('should not call folders.insert', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, [])
+      await IncrementalEnsureFoldersBulk(knexFnFake, [])
       expect(foldersInsertQuery.insert.callCount).to.equal(0)
     })
   })
 
   describe('when given only the root folder', () => {
     it('should not call folders.insert (root sentinel is implicit)', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/'])
       expect(foldersInsertQuery.insert.callCount).to.equal(0)
     })
   })
 
   describe('when given a single non-root folder', () => {
     it('should bulk-insert one folder row', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
       expect(folderChunks.flat()).to.have.lengthOf(1)
     })
     it('should set the folder row path to the supplied folder', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
       expect(folderChunks.flat()[0]?.path).to.equal('/comics/')
     })
     it('should set the folder row parent to / for a top-level folder', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
       expect(folderChunks.flat()[0]?.folder).to.equal('/')
     })
     it('should set the folder row parent to the immediate parent for a nested folder', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/series/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/series/'])
       expect(folderChunks.flat()[0]?.folder).to.equal('/comics/')
     })
     it('should derive sortKey from the folder basename', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(folderChunks.flat()[0]?.sortKey).to.equal(Imports.Helpers.ToSortKey('comics'))
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
+      expect(folderChunks.flat()[0]?.sortKey).to.equal(ToSortKey('comics'))
     })
     it('should call onConflict with path', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
       expect(foldersInsertQuery.onConflict.firstCall.args).to.deep.equal(['path'])
     })
     it('should call ignore (not merge)', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
       expect(foldersInsertQuery.ignore.callCount).to.be.above(0)
     })
   })
 
   describe('when given duplicate folders', () => {
     it('should de-duplicate and insert each folder once', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/a/', '/a/', '/b/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/a/', '/a/', '/b/'])
       const paths = folderChunks.flat().map((r) => r.path)
       expect(paths.filter((p) => p === '/a/')).to.have.lengthOf(1)
     })
@@ -103,7 +104,7 @@ describe('utils/incrementalsync function IncrementalEnsureFoldersBulk()', () => 
 
   describe('when given a mix of root and non-root folders', () => {
     it('should drop root and insert only the non-root folders', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/', '/a/', '/b/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/', '/a/', '/b/'])
       const paths = folderChunks.flat().map((r) => r.path)
       expect(paths).to.have.members(['/a/', '/b/'])
     })
@@ -111,7 +112,7 @@ describe('utils/incrementalsync function IncrementalEnsureFoldersBulk()', () => 
 
   describe('when given many folders', () => {
     it('should issue one bulk insert call for the chunk', async () => {
-      await Functions.IncrementalEnsureFoldersBulk(knexFnFake, ['/a/', '/b/', '/c/'])
+      await IncrementalEnsureFoldersBulk(knexFnFake, ['/a/', '/b/', '/c/'])
       expect(foldersInsertQuery.insert.callCount).to.equal(1)
     })
   })
