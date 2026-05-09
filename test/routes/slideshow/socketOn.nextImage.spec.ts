@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { expect } from 'chai'
-import { HandleSocketState, handleSocket, nextImage, Internals, Imports } from '#routes/slideshow.js'
+import { SlideshowSocketState, handleSocket, nextImage, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -14,7 +14,7 @@ describe('routes/slideshow socket next-image', () => {
   let serverFake = cast<WebSocketServer>(ioStub)
   let socketStub = { on: sandbox.stub() }
   let socketFake = cast<Socket>(socketStub)
-  let socketState = new HandleSocketState()
+  let socketState = new SlideshowSocketState()
   let roomData = { path: '', uriSafeImage: '' }
   let getRoomStub = sandbox.stub().resolves(roomData)
   beforeEach(() => {

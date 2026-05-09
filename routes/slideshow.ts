@@ -72,7 +72,8 @@ export const Imports = {
   setLatestPicture: _setLatestPicture,
 }
 
-export class HandleSocketState {
+/** Per-socket bookkeeping for slideshow connections (joined room name). */
+export class SlideshowSocketState {
   roomName: string | null
   constructor() {
     this.roomName = null
@@ -260,7 +261,7 @@ export function getLaunchId(callback: SocketCallback): void {
 
 export async function joinSlideshow(
   roomName: string | undefined | null,
-  state: HandleSocketState,
+  state: SlideshowSocketState,
   socket: Socket,
   knex: Knex,
 ): Promise<void> {
@@ -272,21 +273,21 @@ export async function joinSlideshow(
   socket.emit(SocketEvents.ImageChanged, room.uriSafeImage)
 }
 
-export async function prevImage(state: HandleSocketState, io: WebSocketServer, knex: Knex): Promise<void> {
+export async function prevImage(state: SlideshowSocketState, io: WebSocketServer, knex: Knex): Promise<void> {
   if (state.roomName === null) return
   Imports.logger('prevImage in %s', state.roomName)
   const room = await Internals.getRoomAndIncrementImage(knex, state.roomName, STEP.BACK)
   io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
 }
 
-export async function nextImage(state: HandleSocketState, io: WebSocketServer, knex: Knex): Promise<void> {
+export async function nextImage(state: SlideshowSocketState, io: WebSocketServer, knex: Knex): Promise<void> {
   if (state.roomName === null) return
   Imports.logger('nextImage in %s', state.roomName)
   const room = await Internals.getRoomAndIncrementImage(knex, state.roomName, STEP.FORWARD)
   io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
 }
 
-export async function gotoImage(callback: SocketCallback, state: HandleSocketState, knex: Knex): Promise<void> {
+export async function gotoImage(callback: SocketCallback, state: SlideshowSocketState, knex: Knex): Promise<void> {
   if (state.roomName === null) {
     callback(null)
     return
@@ -302,8 +303,8 @@ export async function gotoImage(callback: SocketCallback, state: HandleSocketSta
   callback(folder)
 }
 
-export function handleSocket(knex: Knex, io: WebSocketServer, socket: Socket): HandleSocketState {
-  const state = new HandleSocketState()
+export function handleSocket(knex: Knex, io: WebSocketServer, socket: Socket): SlideshowSocketState {
+  const state = new SlideshowSocketState()
   socket.on(SocketEvents.GetLaunchId, (callback: SocketCallback) => {
     Internals.getLaunchId(callback)
   })
