@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions, WeatherUpdater } from '#public/scripts/slideshow/weather.js'
+import { Internals, WeatherUpdater } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
@@ -32,9 +32,9 @@ describe('public/slideshow/weather WeatherUpdater', () => {
   let dom = new JSDOM(render(markup))
 
   beforeEach(() => {
-    fetchWeatherStub = sandbox.stub(Functions, 'FetchWeather').resolves({})
-    showWeatherStub = sandbox.stub(Functions, 'ShowWeather').returns({})
-    setAlmanacStub = sandbox.stub(Functions, 'SetAlmanac')
+    fetchWeatherStub = sandbox.stub(Internals, 'FetchWeather').resolves({})
+    showWeatherStub = sandbox.stub(Internals, 'ShowWeather').returns({})
+    setAlmanacStub = sandbox.stub(Internals, 'SetAlmanac')
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })

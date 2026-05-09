@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/weather.js'
+import { Internals } from '#public/scripts/slideshow/weather.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
@@ -36,7 +36,7 @@ describe('public/slideshow/weather ShowIcon()', () => {
   ]
   acceptBaseTests.forEach(([title, base]) => {
     it(`should accept ${title}`, () => {
-      Functions.ShowIcon(base, 'FOO')
+      Internals.ShowIcon(base, 'FOO')
       assert(true, 'We expect the call to return without failing on null input')
     })
   })
@@ -51,14 +51,14 @@ describe('public/slideshow/weather ShowIcon()', () => {
     it(`should ${title}`, () => {
       const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
       element?.style.setProperty('display', 'FOO')
-      Functions.ShowIcon(element, icon)
+      Internals.ShowIcon(element, icon)
       expect(element?.style.display).to.equal(expected)
     })
   })
 
   it('should set src attribute on valid icon', () => {
     const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
-    Functions.ShowIcon(element, '8472')
+    Internals.ShowIcon(element, '8472')
     expect(element?.src).to.equal('https://openweathermap.org/img/w/8472.png')
   })
 })

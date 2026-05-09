@@ -7,13 +7,6 @@ import { HasValue, StringishHasValue } from '#utils/helpers.js'
 type HTMLElementish = HTMLElement | null | undefined
 type stringish = string | null | undefined
 const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
-export const Functions = {
-  FetchWeather,
-  ShowData,
-  ShowIcon,
-  ShowWeather,
-  SetAlmanac,
-}
 
 async function FetchWeather(uri: string | URL): Promise<WeatherResults> {
   const response = await window.fetch(uri, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
@@ -48,12 +41,12 @@ function ShowWeather(base: HTMLElementish, weather: WeatherResults): WeatherResu
     typeof weather.temp === 'number' && Number.isFinite(weather.temp)
       ? `${weather.temp.toFixed(DECIMAL_PLACES)}°C`
       : null
-  Functions.ShowData(base, base.querySelector<HTMLElement>('.temp'), temp)
+  Internals.ShowData(base, base.querySelector<HTMLElement>('.temp'), temp)
   const desc = base.querySelector<HTMLElement>('.desc')
   const desctext = desc?.querySelector<HTMLElement>('.desctext')
-  Functions.ShowData(desc, desctext, weather.description)
+  Internals.ShowData(desc, desctext, weather.description)
   const icon = base.querySelector<HTMLElement>('.icon')
-  Functions.ShowIcon(icon, weather.icon)
+  Internals.ShowIcon(icon, weather.icon)
   return weather
 }
 
@@ -92,16 +85,24 @@ function SetAlmanac(weather: WeatherResults): void {
   almanac.sunset = Math.min(weather.sunset ?? UNSET_SUNSET, maxset)
 }
 
+export const Internals = {
+  FetchWeather,
+  ShowData,
+  ShowIcon,
+  ShowWeather,
+  SetAlmanac,
+}
+
 const LOCAL_WEATHER_UPDATE_INTERVAL = 1_000
 export const LocalWeatherUpdater = new CyclicUpdater(async () => {
-  await Functions.FetchWeather('https://localhost:8443/').then((weather) =>
-    Functions.ShowWeather(document.querySelector<HTMLElement>('.localweather'), weather),
+  await Internals.FetchWeather('https://localhost:8443/').then((weather) =>
+    Internals.ShowWeather(document.querySelector<HTMLElement>('.localweather'), weather),
   )
 }, LOCAL_WEATHER_UPDATE_INTERVAL)
 
 const REMOTE_WEATHER_UPDATE_INTERVAL = 60_000
 export const WeatherUpdater = new CyclicUpdater(async () => {
-  await Functions.FetchWeather('/weather')
-    .then((weather) => Functions.ShowWeather(document.querySelector<HTMLElement>('.weather'), weather))
-    .then(Functions.SetAlmanac)
+  await Internals.FetchWeather('/weather')
+    .then((weather) => Internals.ShowWeather(document.querySelector<HTMLElement>('.weather'), weather))
+    .then(Internals.SetAlmanac)
 }, REMOTE_WEATHER_UPDATE_INTERVAL)
