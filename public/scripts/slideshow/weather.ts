@@ -5,7 +5,7 @@ import { type WeatherResults, isWeatherResults } from '#contracts/weather.js'
 import { HasValue, StringishHasValue } from '#utils/helpers.js'
 
 type HTMLElementish = HTMLElement | null | undefined
-type stringish = string | null | undefined
+type Stringish = string | null | undefined
 const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
 
 async function FetchWeather(uri: string | URL): Promise<WeatherResults> {
@@ -15,7 +15,7 @@ async function FetchWeather(uri: string | URL): Promise<WeatherResults> {
   return data
 }
 
-function ShowData(container: HTMLElementish, element: HTMLElementish, text: stringish): void {
+function ShowData(container: HTMLElementish, element: HTMLElementish, text: Stringish): void {
   if (!HasValue(container) || !HasValue(element)) return
   if (!StringishHasValue(text)) {
     container.style.setProperty('display', 'none')
@@ -25,7 +25,7 @@ function ShowData(container: HTMLElementish, element: HTMLElementish, text: stri
   element.replaceChildren(text)
 }
 
-function ShowIcon(element: HTMLElementish, icon: stringish): void {
+function ShowIcon(element: HTMLElementish, icon: Stringish): void {
   if (!HasValue(element)) return
   if (!StringishHasValue(icon)) {
     element.style.setProperty('display', 'none')

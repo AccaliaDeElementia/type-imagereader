@@ -83,6 +83,25 @@ export default [
   },
   {
     rules: {
+      // Naming convention enforcement. The function/method/property camelCase rules
+      // are deliberately omitted here; the codebase is mid-rename (PR7a–7h of the
+      // naming-styles workstream) and enabling them now would break the build before
+      // those PRs land. See CLAUDE.md for the full convention. Once 7h commits, add:
+      //   { selector: 'function', format: ['camelCase'] },
+      //   { selector: 'method', format: ['camelCase'] },
+      //   { selector: 'classProperty', format: ['camelCase'] },
+      '@typescript-eslint/naming-convention': [
+        'error',
+        { selector: 'class', format: ['PascalCase'] },
+        { selector: 'interface', format: ['PascalCase'] },
+        { selector: 'typeAlias', format: ['PascalCase'] },
+        { selector: 'enum', format: ['PascalCase'] },
+        { selector: 'enumMember', format: ['PascalCase', 'UPPER_CASE'] },
+        { selector: 'typeParameter', format: ['PascalCase'] },
+        // Variables: camelCase locals, UPPER_CASE module constants, PascalCase
+        // namespace-style containers (Imports / Internals / Config / etc.)
+        { selector: 'variable', format: ['camelCase', 'UPPER_CASE', 'PascalCase'], leadingUnderscore: 'allow' },
+      ],
       'require-atomic-updates': 'error',
       'require-unicode-regexp': 'error',
       '@typescript-eslint/prefer-destructuring': [
@@ -93,6 +112,19 @@ export default [
         },
       ],
       '@typescript-eslint/no-floating-promises': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ImportNamespaceSpecifier',
+          message:
+            "Don't use `import * as X` namespace imports. Use named imports (`import { foo } from …`) so the dependency graph stays explicit and tree-shakable. See CLAUDE.md.",
+        },
+        {
+          selector: 'ExportAllDeclaration',
+          message:
+            "Don't use `export * from` re-exports. List the names explicitly so consumers see the public surface at the export site. See CLAUDE.md.",
+        },
+      ],
       'no-restricted-imports': [
         'error',
         {
@@ -133,6 +165,16 @@ export default [
           selector: "CallExpression[callee.object.name='Sinon'][callee.property.name='stub']",
           message:
             'Do not use Sinon.stub() — it registers into the default sandbox and leaks across the full test run. Use sandbox.stub() via a per-describe sandbox (const sandbox = Sinon.createSandbox(), plus sandbox.restore() in afterEach).',
+        },
+        {
+          selector: 'ImportNamespaceSpecifier',
+          message:
+            "Don't use `import * as X` namespace imports. Use named imports (`import { foo } from …`) so the dependency graph stays explicit and tree-shakable. See CLAUDE.md.",
+        },
+        {
+          selector: 'ExportAllDeclaration',
+          message:
+            "Don't use `export * from` re-exports. List the names explicitly so consumers see the public surface at the export site. See CLAUDE.md.",
         },
       ],
       'local/no-method-stub-outside-hook': 'error',

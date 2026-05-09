@@ -74,7 +74,7 @@ const DEFAULT_DAWN_MINUTES = 15
 const DEFAULT_DAWN_HOUR = 6
 const DEFAULT_DUSK_MINUTES = 0
 const DEFAULT_DUSK_HOUR = 21
-interface timeCode {
+interface TimeCode {
   hour: number
   minute: number
 }
@@ -82,7 +82,7 @@ const MIN_HOUR = 0
 const MAX_HOUR = 23
 const MIN_MINUTES = 0
 const MAX_MINUTES = 59
-function StringToTimeCode(input: string | undefined): timeCode | undefined {
+function StringToTimeCode(input: string | undefined): TimeCode | undefined {
   if (input === undefined) return undefined
   const [iHour, iMinute] = input.split(':')
   if (StringishHasValue(iHour)) {
