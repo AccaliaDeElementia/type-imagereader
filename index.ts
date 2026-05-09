@@ -8,7 +8,7 @@ import { stat } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import synchronize from './sync/synchronize.js'
+import { Synchronize as _Synchronize } from './sync/synchronize.js'
 import { IncrementalSync as _IncrementalSync } from './sync/incrementalsync.js'
 import { Start as startWatcher } from './sync/filewatcher.js'
 import type { Changeset, WatcherSubscription } from './sync/filewatcher.js'
@@ -107,7 +107,7 @@ const parseSyncInterval = (): number | undefined => {
 
 export const ImageReader = {
   StartServer: start,
-  Synchronize: synchronize,
+  Synchronize: _Synchronize,
   Interval: undefined as number | NodeJS.Timeout | undefined,
   WatcherSubscription: undefined as WatcherSubscription | undefined,
   SyncLock: new LockResource(),
