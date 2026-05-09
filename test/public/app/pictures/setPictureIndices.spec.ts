@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { Internals } from '#public/scripts/app/pictures/data.js'
 import type { Picture } from '#contracts/listing.js'
 

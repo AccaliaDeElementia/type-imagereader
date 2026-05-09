@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { Internals, NavigateTo } from '#public/scripts/app/pictures/viewer.js'
 import { expect } from 'chai'
 

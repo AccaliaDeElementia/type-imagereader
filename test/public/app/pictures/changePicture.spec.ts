@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { changePicture, Imports, Internals } from '#public/scripts/app/pictures/viewer.js'
 import { expect } from 'chai'
 import { PubSub } from '#public/scripts/app/pubsub.js'

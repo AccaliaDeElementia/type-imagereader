@@ -1,7 +1,7 @@
 'use sanity'
 
 import type { Listing, Picture } from '#contracts/listing.js'
-import { Pictures } from './index.js'
+import { Pictures } from './state.js'
 import { makeTab as _makeTab } from './grid.js'
 import { loadImage as _loadImage } from './viewer.js'
 import { getFirst } from '#utils/helpers.js'

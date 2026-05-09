@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { Imports, Internals, loadData } from '#public/scripts/app/pictures/data.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'

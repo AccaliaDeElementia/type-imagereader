@@ -2,8 +2,7 @@
 
 import { hasValue, hasValues, ZERO_LENGTH } from '#utils/helpers.js'
 import { isMenuActive as _isMenuActive } from '../navigation.js'
-import { UNINITIALIZED_SCALE } from './state.js'
-import { Pictures } from './index.js'
+import { UNINITIALIZED_SCALE, Pictures } from './state.js'
 import { changePicture as _changePicture, getPicture as _getPicture, NavigateTo } from './viewer.js'
 import { loadCurrentPageImages as _loadCurrentPageImages } from './grid.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'

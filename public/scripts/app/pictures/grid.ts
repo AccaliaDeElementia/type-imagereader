@@ -1,7 +1,7 @@
 'use sanity'
 
 import type { Picture } from '#contracts/listing.js'
-import { Pictures } from './index.js'
+import { Pictures } from './state.js'
 import { hasValues } from '#utils/helpers.js'
 import { publish } from '../pubsub.js'
 import { cloneNode, isHTMLElement } from '../utils.js'

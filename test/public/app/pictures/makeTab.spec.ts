@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { makeTab, Internals } from '#public/scripts/app/pictures/grid.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
