@@ -25,6 +25,7 @@ export const Imports = {
   IncrementalSyncFunctions,
   stat,
   getDataDir,
+  setInterval: setInterval as (fn: () => Promise<void>, interval: number) => number | NodeJS.Timeout,
 }
 
 const THREE_HOURS = 10_800_000
@@ -58,31 +59,29 @@ export class LockResource {
   }
 }
 
-export const Functions = {
-  setInterval: setInterval as (fn: () => Promise<void>, interval: number) => number | NodeJS.Timeout,
-  RunSyncWithLock: async (): Promise<void> => {
-    if (!ImageReader.SyncLock.Take()) return
-    try {
-      await ImageReader.Synchronize()
-    } finally {
-      ImageReader.SyncLock.Release()
-    }
-  },
-  ValidateDataDir: async (dataDir: string): Promise<void> => {
-    const stats = await Imports.stat(dataDir).catch((err: unknown) => {
-      throw new Error(`DATA_DIR ${dataDir} is not accessible`, { cause: err })
-    })
-    if (!stats.isDirectory()) {
-      throw new Error(`DATA_DIR ${dataDir} is not a directory`)
-    }
-  },
+export async function RunSyncWithLock(): Promise<void> {
+  if (!ImageReader.SyncLock.Take()) return
+  try {
+    await ImageReader.Synchronize()
+  } finally {
+    ImageReader.SyncLock.Release()
+  }
+}
+
+export async function ValidateDataDir(dataDir: string): Promise<void> {
+  const stats = await Imports.stat(dataDir).catch((err: unknown) => {
+    throw new Error(`DATA_DIR ${dataDir} is not accessible`, { cause: err })
+  })
+  if (!stats.isDirectory()) {
+    throw new Error(`DATA_DIR ${dataDir} is not a directory`)
+  }
 }
 
 export async function RunSync(): Promise<void> {
-  const promise = Functions.RunSyncWithLock()
-  ImageReader.Interval = Functions.setInterval(async () => {
+  const promise = Internals.RunSyncWithLock()
+  ImageReader.Interval = Imports.setInterval(async () => {
     try {
-      await Functions.RunSyncWithLock()
+      await Internals.RunSyncWithLock()
     } catch (err) {
       Imports.logger('sync interval error', err)
     }
@@ -116,7 +115,7 @@ export const ImageReader = {
   Run: async (): Promise<void> => {
     const dataDir = Imports.getDataDir()
     Imports.logger('using data directory: %s', dataDir)
-    await Functions.ValidateDataDir(dataDir)
+    await Internals.ValidateDataDir(dataDir)
     await runIfNotSuppressed('SKIP_SERVE', async () => {
       const port = Number(StringIsNullOrEmpty(process.env.PORT) ? DEFAULT_PORT : process.env.PORT)
       if (Number.isNaN(port)) {
@@ -201,3 +200,5 @@ if (invokedAs !== undefined && [entryFile, entryDir].includes(resolve(invokedAs)
     process.exitCode = EXIT_FAILURE
   })
 }
+
+export const Internals = { RunSyncWithLock, ValidateDataDir }

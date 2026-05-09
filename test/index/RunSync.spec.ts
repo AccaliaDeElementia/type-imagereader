@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { ImageReader, RunSync, Functions, Imports } from '#app.js'
+import { ImageReader, RunSync, Internals, Imports } from '#app.js'
 import { expect } from 'chai'
 import { EventuallyFullfills } from '#testutils/Errors.js'
 
@@ -20,8 +20,8 @@ describe('index.ts RunSync() tests', () => {
   beforeEach(() => {
     ImageReader.Interval = undefined
     ImageReader.SyncInterval = defaultInterval
-    actuallyRunSpy = sandbox.stub(Functions, 'RunSyncWithLock').resolves()
-    setIntervalFake = sandbox.stub(Functions, 'setInterval').returns(0)
+    actuallyRunSpy = sandbox.stub(Internals, 'RunSyncWithLock').resolves()
+    setIntervalFake = sandbox.stub(Imports, 'setInterval').returns(0)
     loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
