@@ -12,7 +12,7 @@ import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/weather function getRouter()', () => {
+describe('routes/weather getRouter()', () => {
   let setIntervalStub = sandbox.stub()
   let updateWeatherStub = sandbox.stub()
   let routerStub = {

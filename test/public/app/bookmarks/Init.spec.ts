@@ -26,7 +26,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks function Init()', () => {
+describe('public/app/bookmarks Init()', () => {
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 

@@ -11,7 +11,7 @@ type SubscriberCallback = (err: Error | null, events: Array<{ type: string; path
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/filewatcher Start()', () => {
+describe('sync/filewatcher Start()', () => {
   let loggerStub = sandbox.stub()
   let debugStub = sandbox.stub()
   let subscribeStub = sandbox.stub()

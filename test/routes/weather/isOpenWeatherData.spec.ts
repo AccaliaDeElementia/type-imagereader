@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { isOpenWeatherData } from '#routes/weather.js'
 
-describe('routes/weather function isOpenWeatherData', () => {
+describe('routes/weather isOpenWeatherData', () => {
   const minMain = { temp: 0, pressure: 0, humidity: 0 }
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],

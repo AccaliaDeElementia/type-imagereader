@@ -4,7 +4,7 @@ import { expect } from 'chai'
 
 import { Cast } from '#testutils/TypeGuards.js'
 
-describe('testutils/TypeGuards function Cast()', () => {
+describe('testutils Cast()', () => {
   it('should return the value when isT returns true', () => {
     const value = 42
     expect(Cast(value, (o): o is number => typeof o === 'number')).to.equal(42)

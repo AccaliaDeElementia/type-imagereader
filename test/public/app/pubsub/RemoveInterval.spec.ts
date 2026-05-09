@@ -7,7 +7,7 @@ import { PubSub, RemoveInterval } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
 import { Cast } from '#testutils/TypeGuards.js'
 
-describe('public/app/pubsub function RemoveInterval()', () => {
+describe('public/app/pubsub RemoveInterval()', () => {
   beforeEach(() => {
     PubSub.cycleTime = 10
     PubSub.intervals = {

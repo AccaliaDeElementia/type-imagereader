@@ -8,7 +8,7 @@ import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/syncfolders function SyncAllFolders()', () => {
+describe('sync/folders SyncAllFolders()', () => {
   let syncNewFoldersStub = sandbox.stub()
   let syncRemovedFoldersStub = sandbox.stub()
   let syncMissingAncestorFoldersStub = sandbox.stub()

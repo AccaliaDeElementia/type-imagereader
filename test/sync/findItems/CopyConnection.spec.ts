@@ -9,7 +9,7 @@ import type { PoolClient } from 'pg'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/syncfolders copy connection helpers', () => {
+describe('sync/findItems copy connection helpers', () => {
   afterEach(() => {
     sandbox.restore()
   })

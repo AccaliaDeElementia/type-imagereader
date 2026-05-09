@@ -8,7 +8,7 @@ import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/apiFunctions function GetDirectionFolder', () => {
+describe('routes/apiFunctions GetDirectionFolder', () => {
   let knexFirstCall = {
     select: sandbox.stub().returnsThis(),
     where: sandbox.stub().returnsThis(),

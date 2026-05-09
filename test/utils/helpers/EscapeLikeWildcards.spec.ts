@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { EscapeLikeWildcards } from '#utils/helpers.js'
 
-describe('utils/helpers function EscapeLikeWildcards()', () => {
+describe('utils/helpers EscapeLikeWildcards()', () => {
   const tests: Array<[string, string, string]> = [
     ['plain string', '/foo/bar/', '/foo/bar/'],
     ['percent sign', '/foo%/bar/', '/foo\\%/bar/'],

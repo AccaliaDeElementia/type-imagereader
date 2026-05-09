@@ -12,7 +12,7 @@ const sandbox = Sinon.createSandbox()
 const SOFT_LIMIT = 100_000
 const FIRM_LIMIT = 250_000
 
-describe('utils/syncfolders function EmitSqliteSizeWarning()', () => {
+describe('sync/sqliteWarning EmitSqliteSizeWarning()', () => {
   let loggerStub = sandbox.stub()
   let isPostgresStub = sandbox.stub()
   let knexFnFake = StubToKnex(sandbox.stub())

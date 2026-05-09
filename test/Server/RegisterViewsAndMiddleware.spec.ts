@@ -11,7 +11,7 @@ const sandbox = Sinon.createSandbox()
 
 type MiddlewareFn = (req: unknown, res: unknown, next: Sinon.SinonStub) => void
 
-describe('Server function RegisterRouters', () => {
+describe('Server RegisterRouters', () => {
   let staticStub = sandbox.stub()
   let appStub = { use: sandbox.stub(), set: sandbox.stub() }
   let appFake = Cast<Express>(appStub)

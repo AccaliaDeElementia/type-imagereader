@@ -17,7 +17,7 @@ html
     div#tabImages
 `
 
-describe('public/app/pictures/grid function ResetMarkup()', () => {
+describe('public/app/pictures ResetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {

@@ -10,7 +10,7 @@ import { Routers, RegisterRouters } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server function RegisterRouters', () => {
+describe('Server RegisterRouters', () => {
   let getRootRouter = sandbox.stub()
   let getApiRouter = sandbox.stub()
   let getImagesRouter = sandbox.stub()

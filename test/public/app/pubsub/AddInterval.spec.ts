@@ -6,7 +6,7 @@ import { expect } from 'chai'
 import { PubSub, AddInterval } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
-describe('public/app/pubsub function AddInterval()', () => {
+describe('public/app/pubsub AddInterval()', () => {
   beforeEach(() => {
     PubSub.cycleTime = 10
     resetPubSub()

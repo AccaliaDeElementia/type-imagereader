@@ -12,7 +12,7 @@ import { Init, Internals, WakeLock } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/wakelock function Init()', () => {
+describe('public/app/WakeLock Init()', () => {
   let dom = new JSDOM('<html></html>', {})
   let takeLockSpy = sandbox.stub()
   let releaseLockSpy = sandbox.stub()

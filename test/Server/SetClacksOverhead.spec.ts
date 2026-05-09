@@ -8,7 +8,7 @@ import { SetClacksOverhead } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server function SetClacksOverhead', () => {
+describe('Server SetClacksOverhead', () => {
   let resStub = { set: sandbox.stub() }
   let resFake = Cast<Response>(resStub)
   let nextStub = sandbox.stub()

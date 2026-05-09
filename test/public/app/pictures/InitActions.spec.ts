@@ -14,7 +14,7 @@ import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures function InitActions()', () => {
+describe('public/app/pictures InitActions()', () => {
   let dom = new JSDOM('<html></html>', {})
   let isMenuActiveSpy = sandbox.stub()
   let getShowUnreadOnly = sandbox.stub()

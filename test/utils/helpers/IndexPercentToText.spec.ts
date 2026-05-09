@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { IndexPercentToText } from '#utils/helpers.js'
 
-describe('utils/helpers function IndexPercentToText()', () => {
+describe('utils/helpers IndexPercentToText()', () => {
   const tests: Array<[string, number, number, string]> = [
     ['index 0 of 1', 0, 1, '100'],
     ['index 0 of 10', 0, 10, '10'],

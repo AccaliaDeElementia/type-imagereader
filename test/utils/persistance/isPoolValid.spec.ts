@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { isPoolValid } from '#utils/persistance.js'
 
-describe('utils/persistance function isPoolValid()', () => {
+describe('utils/persistance isPoolValid()', () => {
   it('should accept missing pool element', () => {
     expect(isPoolValid({})).to.equal(true)
   })

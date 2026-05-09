@@ -9,7 +9,7 @@ import { ConfigureBaseApp, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server function ConfigureBaseApp', () => {
+describe('Server ConfigureBaseApp', () => {
   let jsonifyStub = sandbox.stub().returns({})
   let urlEncoderStub = sandbox.stub().returns({})
   let cookieParserStub = sandbox.stub().returns({})

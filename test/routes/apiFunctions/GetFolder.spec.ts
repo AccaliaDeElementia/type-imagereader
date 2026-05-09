@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { GetFolder } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 
-describe('routes/apiFunctions function GetFolder', () => {
+describe('routes/apiFunctions GetFolder', () => {
   let {
     instance: knexInstance,
     stub: knexStub,

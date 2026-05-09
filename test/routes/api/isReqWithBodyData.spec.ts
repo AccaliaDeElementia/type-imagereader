@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { isReqWithBodyData } from '#routes/api.js'
 
-describe('routes/api function isReqWithBodyData()', () => {
+describe('routes/api isReqWithBodyData()', () => {
   const tests: Array<[string, unknown, boolean]> = [
     ['it should reject null object', null, false],
     ['it should reject undefined object', undefined, false],

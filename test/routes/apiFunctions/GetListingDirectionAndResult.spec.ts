@@ -11,7 +11,7 @@ const modCountInternals = Cast<ModCountInternals>(ModCount)
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/apiFunctions function GetListing direction and result', () => {
+describe('routes/apiFunctions GetListing direction and result', () => {
   let getFolderStub = sandbox.stub()
   let getDirectionFolderStub = sandbox.stub()
   let getNextFolderStub = sandbox.stub()

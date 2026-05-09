@@ -10,7 +10,7 @@ import { Config, Internals, getRouter, Imports } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function getRouter', () => {
+describe('routes/slideshow getRouter', () => {
   let routerStub = { get: sandbox.stub() }
   let knexFake = StubToKnex({})
   sandbox.stub().resolves(knexFake)

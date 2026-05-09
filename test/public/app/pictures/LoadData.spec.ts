@@ -12,7 +12,7 @@ import type { Picture } from '#contracts/listing.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures function LoadData()', () => {
+describe('public/app/pictures LoadData()', () => {
   let resetMarkupSpy = sandbox.stub()
   let setPicturesSpy = sandbox.stub()
   let makeTabSpy = sandbox.stub()

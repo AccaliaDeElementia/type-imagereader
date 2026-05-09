@@ -30,7 +30,7 @@ const rowCases = Actions.ActionGroups.flatMap(({ target, buttons }) =>
   buttons.map((row, rowIndex) => ({ target, rowIndex, buttonCount: row.length })),
 )
 
-describe('public/app/actions function BuildActions()', () => {
+describe('public/app/actions BuildActions()', () => {
   let dom: JSDOM = new JSDOM('', {})
 
   beforeEach(() => {

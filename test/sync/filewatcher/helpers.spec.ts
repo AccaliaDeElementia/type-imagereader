@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { isImagePath, isHiddenPath, toRelativePath, isDirPath, processEvents } from '#sync/filewatcher.js'
 import type { Changeset } from '#sync/filewatcher.js'
 
-describe('utils/filewatcher Functions', () => {
+describe('sync/filewatcher helpers', () => {
   describe('isImagePath()', () => {
     const imageExtensions = ['jpg', 'JPEG', 'png', 'webp', 'gif', 'svg', 'tif', 'tiff', 'bmp', 'jfif', 'jpe']
     imageExtensions.forEach((ext) => {

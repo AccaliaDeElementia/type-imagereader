@@ -15,7 +15,7 @@ html
     nav#navbar
     div#loadingScreen
 `
-describe('public/app/loading function IsLoading()', () => {
+describe('public/app/loading IsLoading()', () => {
   let dom: JSDOM = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {

@@ -9,7 +9,7 @@ import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function RootRoute', () => {
+describe('routes/slideshow RootRoute', () => {
   let reqStub = {
     params: { path: undefined as string | undefined },
   }

@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { ExtractInsertCount } from '#sync/helpers.js'
 
-describe('utils/syncfolders function ExtractInsertCount()', () => {
+describe('sync/helpers ExtractInsertCount()', () => {
   it('should return rowCount for postgresql style result', () => {
     expect(ExtractInsertCount({ rowCount: 256 })).to.equal(256)
   })

@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { isDictionary } from '#utils/persistance.js'
 
-describe('utils/persistance function isDictionary()', () => {
+describe('utils/persistance isDictionary()', () => {
   const tests: Array<[string, unknown, boolean]> = [
     ['valid dictionary', { min: 2, max: 6 }, true],
     ['null dictionary', null, false],

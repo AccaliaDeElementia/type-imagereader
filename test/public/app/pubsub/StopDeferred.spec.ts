@@ -10,7 +10,7 @@ import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pubsub function StopDeferred()', () => {
+describe('public/app/pubsub StopDeferred()', () => {
   let dom = new JSDOM('<html></html>', {})
   let clearIntervalSpy = sandbox.stub()
   beforeEach(() => {

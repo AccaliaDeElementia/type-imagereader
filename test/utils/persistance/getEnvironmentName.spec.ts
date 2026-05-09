@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { GetEnvironmentName } from '#utils/persistance.js'
 
-describe('utils/persistance function GetEnvironmentName()', () => {
+describe('utils/persistance GetEnvironmentName()', () => {
   let envValue: string | undefined = undefined
   beforeAll(() => {
     envValue = process.env.DB_CLIENT

@@ -5,7 +5,7 @@ import { decodeResult } from '#public/scripts/app/net.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
 
-describe('public/app/net function decodeResult()', () => {
+describe('public/app/net decodeResult()', () => {
   let response = Cast<Response>(null)
   let contentLengthFake = '2'
   let dataFake: unknown = {}

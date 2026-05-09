@@ -7,7 +7,7 @@ import { Cast } from '#testutils/TypeGuards.js'
 
 const fakeKnex = (clientName: string): Knex => Cast<Knex>({ client: { config: { client: clientName } } })
 
-describe('utils/syncItemsDialect function getDbChunkSize()', () => {
+describe('sync/syncItemsDialect getDbChunkSize()', () => {
   it('should return 5000 when client is postgresql', () => {
     expect(getDbChunkSize(fakeKnex('postgresql'))).to.equal(5000)
   })

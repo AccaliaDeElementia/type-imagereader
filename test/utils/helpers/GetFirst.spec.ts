@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { GetFirst } from '#utils/helpers.js'
 import { Cast } from '#testutils/TypeGuards.js'
 
-describe('utils/helpers function GetFirst()', () => {
+describe('utils/helpers GetFirst()', () => {
   const tests: Array<[string, unknown, unknown]> = [
     ['null', null, undefined],
     ['undefined', undefined, undefined],

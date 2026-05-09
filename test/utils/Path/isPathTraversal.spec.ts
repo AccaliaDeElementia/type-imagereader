@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { isPathTraversal } from '#utils/Path.js'
 
-describe('utils/Path function isPathTraversal', () => {
+describe('utils/Path isPathTraversal', () => {
   it('should return false for a clean absolute path', () => {
     expect(isPathTraversal('/foo/bar/baz')).to.equal(false)
   })

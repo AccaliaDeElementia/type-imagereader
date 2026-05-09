@@ -50,7 +50,7 @@ const buildHelpers = (overrides: Partial<CopyHelpers> = {}): CopyHelpers => ({
   ...overrides,
 })
 
-describe('utils/syncItemsDialect function FindSyncItemsViaCopy()', () => {
+describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
   afterEach(() => {
     sandbox.restore()
   })

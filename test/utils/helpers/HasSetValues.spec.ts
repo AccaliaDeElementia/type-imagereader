@@ -7,7 +7,7 @@ import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/helpers function HasSetValues()', () => {
+describe('utils/helpers HasSetValues()', () => {
   afterEach(() => {
     sandbox.restore()
   })

@@ -36,7 +36,7 @@ html
           div.slider(style="width: 0")
 `
 
-describe('public/app/folders function Init()', () => {
+describe('public/app/folders Init()', () => {
   let buildFoldersSpy: Sinon.SinonStub = sandbox.stub()
   beforeEach(() => {
     mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))

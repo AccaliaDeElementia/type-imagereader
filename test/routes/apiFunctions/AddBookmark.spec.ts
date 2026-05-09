@@ -11,7 +11,7 @@ const terminalMethods = [] as const
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/apiFunctions function AddBookmark', () => {
+describe('routes/apiFunctions AddBookmark', () => {
   let knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
   let knexStub = sandbox.stub()
   let knexFake = StubToKnex(knexStub)

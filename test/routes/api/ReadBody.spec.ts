@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { ReadBody } from '#routes/api.js'
 import { DefinitelyThrows } from '#testutils/Errors.js'
 
-describe('routes/api function ReadBody()', () => {
+describe('routes/api ReadBody()', () => {
   it('should return body when successful parse', () => {
     const obj = {
       body: {

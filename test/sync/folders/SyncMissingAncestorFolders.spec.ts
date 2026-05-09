@@ -15,7 +15,7 @@ interface InsertedRow {
   sortKey: string
 }
 
-describe('utils/syncfolders function SyncMissingAncestorFolders()', () => {
+describe('sync/folders SyncMissingAncestorFolders()', () => {
   let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
 
   let distinctPictureFolders: Array<{ folder: string }> = []

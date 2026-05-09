@@ -15,7 +15,7 @@ import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/weather function UpdateWeather', () => {
+describe('routes/weather UpdateWeather', () => {
   let weatherData: OpenWeatherData = {
     main: { temp: 291.15, pressure: 1024.4, humidity: 52.9 },
     weather: [{ main: 'weatherMain', icon: 'weatherIcon' }],

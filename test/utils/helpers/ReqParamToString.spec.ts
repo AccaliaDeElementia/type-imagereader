@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { ReqParamToString } from '#utils/helpers.js'
 
-describe('utils/helpers function ReqParamToString()', () => {
+describe('utils/helpers ReqParamToString()', () => {
   describe('null and undefined input', () => {
     it('should return default value for null', () => {
       expect(ReqParamToString(null)).to.equal('')

@@ -10,7 +10,7 @@ import { ConfigureErrorHandler } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server function ConfigureErrorHandler', () => {
+describe('Server ConfigureErrorHandler', () => {
   let appStub = { use: sandbox.stub() }
   let appFake = Cast<Express>(appStub)
   let { stub: responseStub } = createResponseFake()

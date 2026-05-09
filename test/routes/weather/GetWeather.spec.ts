@@ -8,7 +8,7 @@ import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/weather function GetWeather', () => {
+describe('routes/weather GetWeather', () => {
   let weatherData = {
     weather: [],
     sys: {

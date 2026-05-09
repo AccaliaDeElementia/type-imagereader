@@ -25,7 +25,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation function Init()', () => {
+describe('public/app/navigation/messageHandlers Init()', () => {
   let loadDataStub = sandbox.stub()
   beforeEach(() => {
     const dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })

@@ -8,7 +8,7 @@ import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/syncfolders function SyncRemovedBookmarks()', () => {
+describe('sync/pictures SyncRemovedBookmarks()', () => {
   let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
   let knexInnerInstanceStub = {
     select: sandbox.stub().returnsThis(),

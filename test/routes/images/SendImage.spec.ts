@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { SendImage, ImageData } from '#routes/images.js'
 import { createResponseFake } from '#testutils/Express.js'
-describe('routes/images function SendImage()', () => {
+describe('routes/images SendImage()', () => {
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   beforeEach(() => {
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())

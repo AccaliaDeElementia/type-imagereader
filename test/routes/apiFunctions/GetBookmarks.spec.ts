@@ -8,7 +8,7 @@ import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/apiFunctions function GetBookmarks', () => {
+describe('routes/apiFunctions GetBookmarks', () => {
   let {
     instance: knexInstance,
     stub: knexStub,

@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { getDataDir } from '#utils/helpers.js'
 
-describe('utils/helpers function getDataDir()', () => {
+describe('utils/helpers getDataDir()', () => {
   let originalEnv: string | undefined = undefined
   beforeEach(() => {
     originalEnv = process.env.DATA_DIR

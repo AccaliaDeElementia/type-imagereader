@@ -10,7 +10,7 @@ import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/index function getRouter()', () => {
+describe('routes/index getRouter()', () => {
   const applicationFake = Cast<Application>({})
   const serverFake = Cast<Server>({})
   const socketsFake = Cast<WebSocketServer>({})

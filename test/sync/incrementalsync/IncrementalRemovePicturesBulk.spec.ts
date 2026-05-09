@@ -7,7 +7,7 @@ import { StubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/incrementalsync function IncrementalRemovePicturesBulk()', () => {
+describe('sync/incrementalsync IncrementalRemovePicturesBulk()', () => {
   let pictureWhereInCalls: unknown[][] = []
   let bookmarkWhereInCalls: unknown[][] = []
   let pictureDeleteCount = 0

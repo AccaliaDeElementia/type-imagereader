@@ -23,7 +23,7 @@ html
           h5 placeholder
 `
 
-describe('public/app/pictures function ResetMarkup()', () => {
+describe('public/app/pictures ResetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
   let gridResetSpy = sandbox.stub()
   let viewerResetSpy = sandbox.stub()

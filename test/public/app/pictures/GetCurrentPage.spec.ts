@@ -10,7 +10,7 @@ import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures function GetCurrentPage()', () => {
+describe('public/app/pictures GetCurrentPage()', () => {
   let dom = new JSDOM('<html></html>', {})
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {

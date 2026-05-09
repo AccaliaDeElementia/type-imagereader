@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { RemoveBookmark } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 
-describe('routes/apiFunctions function RemoveBookmark', () => {
+describe('routes/apiFunctions RemoveBookmark', () => {
   let {
     instance: knexInstance,
     stub: knexStub,

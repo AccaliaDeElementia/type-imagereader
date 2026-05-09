@@ -28,7 +28,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks function buildBookmarkNodes()', () => {
+describe('public/app/bookmarks buildBookmarkNodes()', () => {
   let dom: JSDOM = new JSDOM('', {})
   let getFolderSpy = sandbox.stub()
   let buildBookmarkSpy = sandbox.stub()

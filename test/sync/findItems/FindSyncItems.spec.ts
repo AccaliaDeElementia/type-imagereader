@@ -33,7 +33,7 @@ const scheduleEmit = (target: EventEmitter, event: string, arg?: unknown): void 
   else scheduleEmitOn(target, event, arg)
 }
 
-describe('utils/syncfolders function FindSyncItems()', () => {
+describe('sync/findItems FindSyncItems()', () => {
   let loggerStub = sandbox.stub()
   let debugStub = sandbox.stub()
   let fsWalkerStub = sandbox.stub()

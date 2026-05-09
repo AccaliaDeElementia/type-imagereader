@@ -8,7 +8,7 @@ import { assert } from 'node:console'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/updater class CyclicManager', () => {
+describe('public/slideshow/updater CyclicManager', () => {
   let fakeSetInterval: Sinon.SinonStub | undefined = undefined
   let fakeClearInterval: Sinon.SinonStub | undefined = undefined
   beforeEach(() => {

@@ -8,7 +8,7 @@ import { ListenOnPort, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server function ListenOnPort', () => {
+describe('Server ListenOnPort', () => {
   let listenStub = sandbox.stub()
   let serverFake = Cast<Server>({ listen: listenStub })
   let loggerFake = sandbox.stub()

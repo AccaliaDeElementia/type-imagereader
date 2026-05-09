@@ -30,7 +30,7 @@ html
         div.right
 `
 
-describe('public/app/pictures/viewer function ResetMarkup()', () => {
+describe('public/app/pictures ResetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
   const loadingErrorSpy = sandbox.stub().resolves()
   const loadingHideSpy = sandbox.stub().resolves()

@@ -9,7 +9,7 @@ import type { Changeset } from '#sync/filewatcher.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/incrementalsync function IncrementalSync()', () => {
+describe('sync/incrementalsync IncrementalSync()', () => {
   let loggerStub = sandbox.stub()
   let incrementalAddBulkStub = sandbox.stub()
   let incrementalRemoveBulkStub = sandbox.stub()

@@ -11,7 +11,7 @@ const baseRow = {
   pathHash: 'abc123',
 }
 
-describe('utils/syncfolders function FormatSyncItemCsv()', () => {
+describe('sync/helpers FormatSyncItemCsv()', () => {
   it('should terminate the row with a newline', () => {
     expect(FormatSyncItemCsv(baseRow).endsWith('\n')).to.equal(true)
   })

@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { GetAllFolderInfos } from '#sync/folderCounts.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 
-describe('utils/syncfolders function GetAllFolderInfos()', () => {
+describe('sync/folderCounts GetAllFolderInfos()', () => {
   let {
     instance: knexInstanceStub,
     stub: knexFnStub,

@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/weather function getLatestSunrise()', () => {
+describe('routes/weather getLatestSunrise()', () => {
   let tz: string | undefined = undefined
 
   beforeEach(() => {

@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { GetParentFolders } from '#utils/Path.js'
 
-describe('utils/Path function GetParentFolders', () => {
+describe('utils/Path GetParentFolders', () => {
   it('should resolve to expected paths for root image', () => {
     expect(GetParentFolders('/image.png')).to.deep.equal(['/'])
   })

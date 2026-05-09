@@ -21,7 +21,7 @@ html
         ul.pagination
 `
 
-describe('public/app/pictures function MakePaginator()', () => {
+describe('public/app/pictures MakePaginator()', () => {
   let dom = new JSDOM('<html></html>', {})
   let makePageItemSpy = sandbox.stub()
   let getCurrentPageSpy = sandbox.stub()

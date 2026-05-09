@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom'
 
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 
-describe('testutils/Dom function mountDom()', () => {
+describe('testutils mountDom()', () => {
   afterEach(() => {
     unmountDom()
   })
@@ -30,7 +30,7 @@ describe('testutils/Dom function mountDom()', () => {
   })
 })
 
-describe('testutils/Dom function unmountDom()', () => {
+describe('testutils unmountDom()', () => {
   it('should restore global.window after a mount cycle', () => {
     const before = global.window
     mountDom(new JSDOM('<html></html>'))

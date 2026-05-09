@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { BuildSyncItemRows } from '#sync/helpers.js'
 
-describe('utils/syncfolders function BuildSyncItemRows()', () => {
+describe('sync/helpers BuildSyncItemRows()', () => {
   it('should count files in input', () => {
     const items = [
       { path: '/foo', isFile: false },

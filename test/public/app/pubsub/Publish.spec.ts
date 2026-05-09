@@ -12,7 +12,7 @@ import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pubsub function Publish()', () => {
+describe('public/app/pubsub Publish()', () => {
   let publishAsyncSpy = sandbox.stub().resolves()
   beforeEach(() => {
     publishAsyncSpy = sandbox.stub(Internals, 'PublishAsync').resolves()
@@ -34,7 +34,7 @@ describe('public/app/pubsub function Publish()', () => {
   })
 })
 
-describe('public/app/pubsub function PublishAsync()', () => {
+describe('public/app/pubsub PublishAsync()', () => {
   let subscriber = sandbox.stub().resolves()
   let dom = new JSDOM('<html></html')
   let consoleWarn = sandbox.stub()

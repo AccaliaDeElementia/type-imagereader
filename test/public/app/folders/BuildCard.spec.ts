@@ -36,7 +36,7 @@ html
           div.slider(style="width: 0")
 `
 
-describe('public/app/folders function BuildCard()', () => {
+describe('public/app/folders BuildCard()', () => {
   let dom: JSDOM = new JSDOM('', {})
   let folderCard: DocumentFragment | null = null
   beforeEach(() => {

@@ -7,7 +7,7 @@ import { MarkImageRead, Imports } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function MarkImageRead()', () => {
+describe('routes/slideshow MarkImageRead()', () => {
   let conditionalUpdate = {
     update: sandbox.stub().returnsThis(),
     where: sandbox.stub().resolves(0),

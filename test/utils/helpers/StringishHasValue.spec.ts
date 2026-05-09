@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { StringishHasValue } from '#utils/helpers.js'
 
-describe('utils/helpers function StringishHasValue()', () => {
+describe('utils/helpers StringishHasValue()', () => {
   const tests: Array<[string, string | null | undefined, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],

@@ -34,7 +34,7 @@ html
       div#tabBookmarks
 `
 
-describe('public/app/tabs function SelectTab()', () => {
+describe('public/app/tabs SelectTab()', () => {
   let dom = new JSDOM('<html></html>', {})
   const actionsScroll = sandbox.stub()
   const foldersScroll = sandbox.stub()

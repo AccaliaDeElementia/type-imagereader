@@ -31,7 +31,7 @@ const makeKnexInstance = (): KnexStub => {
   inst.where.callsFake(() => inst)
   return inst
 }
-describe('routes/apiFunctions function SetLatestPicture', () => {
+describe('routes/apiFunctions SetLatestPicture', () => {
   let knexStub = sandbox.stub()
   let knexFake = StubToKnex(knexStub)
   let getParentFoldersStub = sandbox.stub()

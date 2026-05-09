@@ -29,7 +29,7 @@ html
         div.right
 `
 
-describe('public/app/pictures function LoadImage()', () => {
+describe('public/app/pictures LoadImage()', () => {
   let dom = new JSDOM('<html></html>', {})
   const totalCount = 1500
   let current: Picture = {

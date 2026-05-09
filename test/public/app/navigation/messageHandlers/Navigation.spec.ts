@@ -23,7 +23,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation function Init()', () => {
+describe('public/app/navigation/messageHandlers Init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
   let loadDataStub = sandbox.stub()

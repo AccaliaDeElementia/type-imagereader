@@ -7,7 +7,7 @@ import { GetImageCount, Imports } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function GetImageCount()', () => {
+describe('routes/slideshow GetImageCount()', () => {
   describe('with default unreadOnly', () => {
     let {
       instance: knexInstanceStub,

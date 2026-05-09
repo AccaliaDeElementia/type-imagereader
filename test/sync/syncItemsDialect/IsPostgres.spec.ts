@@ -7,7 +7,7 @@ import { Cast } from '#testutils/TypeGuards.js'
 
 const fakeKnex = (clientName: string): Knex => Cast<Knex>({ client: { config: { client: clientName } } })
 
-describe('utils/syncItemsDialect function IsPostgres()', () => {
+describe('sync/syncItemsDialect IsPostgres()', () => {
   it('should return true when client is postgresql', () => {
     expect(IsPostgres(fakeKnex('postgresql'))).to.equal(true)
   })

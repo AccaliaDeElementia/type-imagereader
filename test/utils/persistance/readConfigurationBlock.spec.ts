@@ -7,7 +7,7 @@ import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance function ReadConfigurationBlock()', () => {
+describe('utils/persistance ReadConfigurationBlock()', () => {
   let configContent = {
     testtest: {
       client: 'foo' as string | null,

@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { isMigrationsValid } from '#utils/persistance.js'
 
-describe('utils/persistance function isMigrationsValid()', () => {
+describe('utils/persistance isMigrationsValid()', () => {
   it('should reject missing migrations element', () => {
     expect(isMigrationsValid({})).to.equal(false)
   })

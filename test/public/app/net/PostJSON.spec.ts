@@ -13,7 +13,7 @@ interface TestRequest {
   headers: Record<string, string>
 }
 
-describe('public/app/net function PostJSON()', () => {
+describe('public/app/net PostJSON()', () => {
   let response = Cast<Response>(null)
   let contentLengthFake = '2'
   let dataFake: Record<string, number> = {}

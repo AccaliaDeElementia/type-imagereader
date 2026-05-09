@@ -9,7 +9,7 @@ import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
+describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
   let getFolderInfosWithPicturesStub = sandbox.stub()
   let getAllFolderInfosStub = sandbox.stub()
   let calculateFolderInfosStub = sandbox.stub()

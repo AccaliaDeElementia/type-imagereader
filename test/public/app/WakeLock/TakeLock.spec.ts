@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { TakeLock, WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
-describe('public/app/wakelock function TakeLock()', () => {
+describe('public/app/WakeLock TakeLock()', () => {
   const existingNavigator = global.navigator
 
   let clock: sinon.SinonFakeTimers | undefined = undefined

@@ -15,7 +15,7 @@ interface InsertedRow {
   sortKey: string
 }
 
-describe('utils/syncfolders function IncrementalEnsureAncestors()', () => {
+describe('sync/incrementalsync IncrementalEnsureAncestors()', () => {
   let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
 
   let existingFolderPaths: Array<{ path: string }> = []

@@ -7,7 +7,7 @@ import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pubsub function Subscribe()', () => {
+describe('public/app/pubsub Subscribe()', () => {
   let subscriber = sandbox.stub().resolves()
   beforeEach(() => {
     resetPubSub()

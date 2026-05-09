@@ -34,7 +34,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks function BuildBookmark()', () => {
+describe('public/app/bookmarks BuildBookmark()', () => {
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   let bookmarksRemoveSpy = sandbox.stub()

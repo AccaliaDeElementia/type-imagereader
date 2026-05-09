@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { HasValues } from '#utils/helpers.js'
 import { Cast } from '#testutils/TypeGuards.js'
 
-describe('utils/helpers function HasValues()', () => {
+describe('utils/helpers HasValues()', () => {
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],

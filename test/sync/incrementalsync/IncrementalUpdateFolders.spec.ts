@@ -22,7 +22,7 @@ interface UpsertRow {
   sortKey: string
 }
 
-describe('utils/syncfolders function IncrementalUpdateFolders()', () => {
+describe('sync/incrementalsync IncrementalUpdateFolders()', () => {
   let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
 
   let aggregateRowsForReturn: AggregateRow[] = []

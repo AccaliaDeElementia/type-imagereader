@@ -9,7 +9,7 @@ import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/images function ReadImage()', () => {
+describe('routes/images ReadImage()', () => {
   let fromErrorStub = sandbox.stub()
   let fromImageStub = sandbox.stub()
   let readFileStub = sandbox.stub()

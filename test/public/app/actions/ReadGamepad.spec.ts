@@ -12,7 +12,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/actions function ReadGamepad()', () => {
+describe('public/app/actions ReadGamepad()', () => {
   const dom: JSDOM = new JSDOM('', {})
   let GamepadResetSpy = sandbox.stub()
 

@@ -5,7 +5,7 @@ import { ReadAndRescaleImage, Internals } from '#routes/images.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
-describe('routes/images function ReadAndRescaleImage()', () => {
+describe('routes/images ReadAndRescaleImage()', () => {
   let readImageStub = sandbox.stub()
   let rescaleImageStub = sandbox.stub()
   beforeEach(() => {

@@ -13,7 +13,7 @@ import { HasValue } from '#utils/helpers.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pubsub function StartDeferred()', () => {
+describe('public/app/pubsub StartDeferred()', () => {
   let dom = new JSDOM('<html></html>', {})
   let setIntervalSpy = sandbox.stub()
   let executeIntervalSpy = sandbox.stub()

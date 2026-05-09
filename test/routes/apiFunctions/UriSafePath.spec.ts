@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { UriSafePath } from '#routes/apiFunctions.js'
 
-describe('routes/apiFunctions UriSafePath functions', () => {
+describe('routes/apiFunctions UriSafePath', () => {
   const decodeTests: Array<[string, string, string]> = [
     ['empty string', '', ''],
     ['raw string', '/foo/bar', '/foo/bar'],

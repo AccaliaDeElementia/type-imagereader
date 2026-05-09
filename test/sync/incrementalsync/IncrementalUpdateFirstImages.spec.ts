@@ -8,7 +8,7 @@ import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/incrementalsync function IncrementalUpdateFirstImages()', () => {
+describe('sync/incrementalsync IncrementalUpdateFirstImages()', () => {
   let { fake: loggerFake } = createLoggerFake(sandbox)
   let syncFolderFirstImagesStub = sandbox.stub()
   let knexFnStub = sandbox.stub()

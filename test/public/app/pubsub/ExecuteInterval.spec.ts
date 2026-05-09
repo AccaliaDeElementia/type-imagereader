@@ -6,7 +6,7 @@ import { expect } from 'chai'
 import { PubSub, Internals } from '#public/scripts/app/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
-describe('public/app/pubsub function ExecuteInterval()', () => {
+describe('public/app/pubsub ExecuteInterval()', () => {
   const testInterval = {
     method: sandbox.stub(),
     delayCycles: 10,

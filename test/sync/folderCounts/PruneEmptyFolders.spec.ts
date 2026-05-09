@@ -8,7 +8,7 @@ import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/syncfolders function PruneEmptyFolders()', () => {
+describe('sync/folderCounts PruneEmptyFolders()', () => {
   let loggerStub = sandbox.stub()
   let debugStub = sandbox.stub()
   let {

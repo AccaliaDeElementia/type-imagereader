@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { CalculateFolderInfos } from '#sync/folderCounts.js'
 
-describe('utils/syncfolders function CalculateFolderInfos()', () => {
+describe('sync/folderCounts CalculateFolderInfos()', () => {
   it('should handle empty input map gracefully', () => {
     expect(CalculateFolderInfos({}, [])).to.deep.equal([])
   })

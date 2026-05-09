@@ -8,7 +8,7 @@ import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/updater class CyclicUpdater', () => {
+describe('public/slideshow/updater CyclicUpdater', () => {
   it('should set default update function when fn undefined', () => {
     const test = new CyclicUpdater(undefined, undefined)
     expect(test.updateFn).to.equal(Internals.defaultUpdateFn)

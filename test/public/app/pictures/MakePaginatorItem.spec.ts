@@ -10,7 +10,7 @@ import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures function MakePaginatorItem()', () => {
+describe('public/app/pictures MakePaginatorItem()', () => {
   let dom = new JSDOM('<html></html>', {})
   let selectPageSpy = sandbox.stub().resolves()
   beforeEach(() => {

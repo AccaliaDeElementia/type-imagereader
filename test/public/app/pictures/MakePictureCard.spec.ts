@@ -13,7 +13,7 @@ import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures function MakePictureCard()', () => {
+describe('public/app/pictures MakePictureCard()', () => {
   let dom = new JSDOM('<html></html>', {})
   const menuHideSpy = sandbox.stub().resolves()
   const changePictureSpy = sandbox.stub().resolves()

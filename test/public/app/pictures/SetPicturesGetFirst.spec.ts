@@ -22,7 +22,7 @@ html
       a(href="#tabImages") Pictures
 `
 
-describe('public/app/pictures function SetPicturesGetFirst()', () => {
+describe('public/app/pictures SetPicturesGetFirst()', () => {
   let dom = new JSDOM('<html></html>', {})
 
   let element: HTMLElement | null = null

@@ -15,7 +15,7 @@ import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/actions function Init()', () => {
+describe('public/app/actions Init()', () => {
   const dom: JSDOM = new JSDOM('', {})
   let BuildActionsSpy = sandbox.stub()
   let GamepadResetSpy = sandbox.stub()

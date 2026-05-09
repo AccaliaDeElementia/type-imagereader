@@ -10,7 +10,7 @@ import {
   EventuallyRejects,
 } from '#testutils/Errors.js'
 
-describe('testutils/Errors function EventuallyRejects()', () => {
+describe('testutils EventuallyRejects()', () => {
   it('should return the Error when promise rejects with an Error', async () => {
     const err = new Error('test error')
     const result = await EventuallyRejects(Promise.reject<unknown>(err))
@@ -47,7 +47,7 @@ describe('testutils/Errors function EventuallyRejects()', () => {
   })
 })
 
-describe('testutils/Errors function DoesNotThrow()', () => {
+describe('testutils DoesNotThrow()', () => {
   it('should call the function without throwing', () => {
     let called = false
     DoesNotThrow(() => {
@@ -57,13 +57,13 @@ describe('testutils/Errors function DoesNotThrow()', () => {
   })
 })
 
-describe('testutils/Errors function EventuallyFullfills()', () => {
+describe('testutils EventuallyFullfills()', () => {
   it('should resolve when the promise fulfills', async () => {
     await EventuallyFullfills(Promise.resolve())
   })
 })
 
-describe('testutils/Errors function DefinitelyThrows()', () => {
+describe('testutils DefinitelyThrows()', () => {
   it('should return the Error when the function throws an Error', () => {
     const err = new Error('test')
     const result = DefinitelyThrows(() => {
@@ -110,7 +110,7 @@ describe('testutils/Errors function DefinitelyThrows()', () => {
   })
 })
 
-describe('testutils/Errors function AlwaysFails()', () => {
+describe('testutils AlwaysFails()', () => {
   it('should produce a callable that throws an assertion error when invoked', () => {
     expect(AlwaysFails<() => void>('failure message')).to.throw()
   })

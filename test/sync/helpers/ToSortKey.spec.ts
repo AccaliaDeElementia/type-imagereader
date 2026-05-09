@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { ToSortKey, Helpers } from '#sync/helpers.js'
 
-describe('utils/syncfolders function ToSortKey()', () => {
+describe('sync/helpers ToSortKey()', () => {
   beforeEach(() => {
     Helpers.padLength = 20
   })

@@ -8,7 +8,7 @@ import { Cast } from '#testutils/TypeGuards.js'
 import { EventuallyFullfills } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
-describe('public/app/navigation function NavigateTo()', () => {
+describe('public/app/navigation NavigateTo()', () => {
   const errorSpy = sandbox.stub()
   let loadDataSpy = sandbox.stub()
   beforeEach(() => {

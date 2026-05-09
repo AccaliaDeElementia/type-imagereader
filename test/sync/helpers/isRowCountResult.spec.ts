@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { isRowCountResult } from '#sync/helpers.js'
 
-describe('utils/syncfolders function isRowCountResult()', () => {
+describe('sync/helpers isRowCountResult()', () => {
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],

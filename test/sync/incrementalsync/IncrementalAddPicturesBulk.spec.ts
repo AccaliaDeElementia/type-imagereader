@@ -19,7 +19,7 @@ interface FolderRow {
   sortKey: string
 }
 
-describe('utils/incrementalsync function IncrementalAddPicturesBulk()', () => {
+describe('sync/incrementalsync IncrementalAddPicturesBulk()', () => {
   let pictureChunks: PictureRow[][] = []
   let folderChunks: FolderRow[][] = []
 

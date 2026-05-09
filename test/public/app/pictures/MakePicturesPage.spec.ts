@@ -12,7 +12,7 @@ import type { Picture } from '#contracts/listing.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures function MakePicturesPage()', () => {
+describe('public/app/pictures MakePicturesPage()', () => {
   let dom = new JSDOM('<html></html>', {})
   const menuHideSpy = sandbox.stub().resolves()
   let makePictureCardSpy = sandbox.stub()

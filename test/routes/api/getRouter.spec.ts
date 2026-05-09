@@ -11,7 +11,7 @@ import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/api function getRouter()', () => {
+describe('routes/api getRouter()', () => {
   let applicationFake = Cast<Application>({ App: Math.random() })
   let serverFake = Cast<Server>({ Server: Math.random() })
   let socketServerFake = Cast<WebSocketServer>({ Sockets: Math.random() })

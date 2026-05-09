@@ -17,7 +17,7 @@ interface TestVisualViewport {
   scale: number
 }
 
-describe('public/app/pictures function InitMouse()', () => {
+describe('public/app/pictures InitMouse()', () => {
   let dom = new JSDOM('<html><body><div id="bigImage"><img class="hidden"/></div></body></html>', {})
   const ignoreClickSpy = sandbox.stub().resolves()
   const executePreviousSpy = sandbox.stub().resolves()

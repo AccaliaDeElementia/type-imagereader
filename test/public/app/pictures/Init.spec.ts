@@ -51,7 +51,7 @@ html
         ul.pagination
 `
 
-describe('public/app/pictures function Init()', () => {
+describe('public/app/pictures Init()', () => {
   let dom = new JSDOM(render(markup), {})
   let resetMarkupSpy = sandbox.stub()
   let initActionsSpy = sandbox.stub()

@@ -4,7 +4,7 @@ import { createKnexChainFake } from '#testutils/Knex.js'
 import { expect } from 'chai'
 import { GetImages } from '#routes/slideshow.js'
 
-describe('routes/slideshow function GetImages()', () => {
+describe('routes/slideshow GetImages()', () => {
   let {
     instance: knexInstanceStub,
     stub: knexStub,

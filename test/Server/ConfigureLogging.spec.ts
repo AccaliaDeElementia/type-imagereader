@@ -8,7 +8,7 @@ import { ConfigureLogging, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server function ConfigureLogging', () => {
+describe('Server ConfigureLogging', () => {
   let helmetStub = sandbox.stub()
   let morganStub = sandbox.stub()
   let appStub = { use: sandbox.stub() }

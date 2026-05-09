@@ -7,7 +7,7 @@ import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function GetCounts()', () => {
+describe('routes/slideshow GetCounts()', () => {
   let knexFake = StubToKnex({})
   let getImageCountStub = sandbox.stub().resolves()
   let randomStub = sandbox.stub()

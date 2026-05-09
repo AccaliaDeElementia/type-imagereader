@@ -10,7 +10,7 @@ import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/fswalker function FsWalker()', () => {
+describe('sync/fswalker FsWalker()', () => {
   let readdirSpy = sandbox.stub()
   const originalConcurrency = Fswalker.concurrency
   beforeEach(() => {

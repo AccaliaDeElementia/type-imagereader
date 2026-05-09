@@ -17,7 +17,7 @@ interface TestGamepad {
   buttons: TestGamepadButton[]
 }
 
-describe('public/app/actions class GamepadButtons', () => {
+describe('public/app/actions GamepadButtons', () => {
   let testGamePad: TestGamepad = {
     axes: [],
     buttons: [],

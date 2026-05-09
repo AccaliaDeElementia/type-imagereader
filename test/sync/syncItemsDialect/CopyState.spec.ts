@@ -26,7 +26,7 @@ const DEFAULT_CHUNK_SIZE = 5000
 
 const buildStreamHandles = (): ReturnType<typeof createCopyStreamFake> => createCopyStreamFake(sandbox)
 
-describe('utils/syncItemsDialect class CopyState', () => {
+describe('sync/syncItemsDialect CopyState', () => {
   afterEach(() => {
     sandbox.restore()
   })
@@ -280,7 +280,7 @@ describe('utils/syncItemsDialect class CopyState', () => {
   })
 })
 
-describe('utils/syncItemsDialect function awaitCopyStreamCompletion()', () => {
+describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
   afterEach(() => {
     sandbox.restore()
   })

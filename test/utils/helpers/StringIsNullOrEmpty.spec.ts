@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { StringIsNullOrEmpty } from '#utils/helpers.js'
 
-describe('utils/helpers function StringIsNullOrEmpty()', () => {
+describe('utils/helpers StringIsNullOrEmpty()', () => {
   const tests: Array<[string, string | null | undefined, boolean]> = [
     ['null', null, true],
     ['undefined', undefined, true],

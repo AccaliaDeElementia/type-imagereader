@@ -8,7 +8,7 @@ import { PubSub } from '#public/scripts/app/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures function ChangePicture()', () => {
+describe('public/app/pictures ChangePicture()', () => {
   const menuHideSpy = sandbox.stub().resolves()
   const loadingErrorSpy = sandbox.stub().resolves()
   let isLoadingSpy = sandbox.stub()

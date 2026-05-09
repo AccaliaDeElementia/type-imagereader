@@ -8,7 +8,7 @@ import { Config, GetRoomAndIncrementImage, Internals, Imports } from '#routes/sl
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function GetRoomAndIncrementImage() room initialisation', () => {
+describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() room initialisation', () => {
   let stockImages = Array(Config.memorySize)
     .fill(undefined)
     .map((_, i) => `/image${i}.png`)

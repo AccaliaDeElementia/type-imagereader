@@ -7,7 +7,7 @@ import { Config, GetRoomAndIncrementImage, Internals } from '#routes/slideshow.j
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function GetRoomAndIncrementImage() unread to all-images mode transition', () => {
+describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() unread to all-images mode transition', () => {
   let knexFake = StubToKnex({ knex: Math.random() })
   let getImagesStub = sandbox.stub()
   let getCountsStub = sandbox.stub()

@@ -31,7 +31,7 @@ const buildHelpers = (overrides: Partial<InsertFallbackHelpers> = {}): InsertFal
   ...overrides,
 })
 
-describe('utils/syncItemsDialect function FindSyncItemsViaInsert()', () => {
+describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
   afterEach(() => {
     sandbox.restore()
   })

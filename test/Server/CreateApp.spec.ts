@@ -10,7 +10,7 @@ import { CreateApp, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server function CreateApp', () => {
+describe('Server CreateApp', () => {
   let serverFake = Cast<Server>({})
   let socketsFake = Cast<WebSocketServer>({})
   let socketsServerStub = sandbox.stub()

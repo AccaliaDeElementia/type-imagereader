@@ -17,7 +17,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation function IsMenuActive()', () => {
+describe('public/app/navigation IsMenuActive()', () => {
   let dom = new JSDOM('', {})
   let menuNode: HTMLDivElement | null = null
   beforeEach(() => {

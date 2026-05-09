@@ -26,7 +26,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks function GetOrCreateFolderElement()', () => {
+describe('public/app/bookmarks GetOrCreateFolderElement()', () => {
   let dom: JSDOM = new JSDOM('', {})
 
   beforeEach(() => {

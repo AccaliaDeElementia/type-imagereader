@@ -23,7 +23,7 @@ interface StreamFake extends EventEmitter {
 
 const makeStream = (): StreamFake => Cast<StreamFake>(createCopyStreamFake(sandbox, { emitOnEnd: 'finish' }).ee)
 
-describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite fallback)', () => {
+describe('sync/findItems FindSyncItems() when client is not postgres (sqlite fallback)', () => {
   let loggerStub = sandbox.stub()
   let fsWalkerStub = sandbox.stub()
   let buildSyncItemRowsStub = sandbox.stub()

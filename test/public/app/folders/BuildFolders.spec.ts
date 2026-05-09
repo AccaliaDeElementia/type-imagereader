@@ -22,7 +22,7 @@ html
       div#tabFolders
 `
 
-describe('public/app/folders function BuildFolders()', () => {
+describe('public/app/folders BuildFolders()', () => {
   let dom: JSDOM = new JSDOM('', {})
   let tabFolders: HTMLDivElement | null = null
   let hideTabStub = sandbox.stub()

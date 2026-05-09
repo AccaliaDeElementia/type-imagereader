@@ -7,7 +7,7 @@ import { Delay } from '#testutils/Utils.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('testutils/Utils function Delay()', () => {
+describe('testutils Delay()', () => {
   let clock: sinon.SinonFakeTimers | undefined = undefined
 
   beforeEach(() => {

@@ -7,7 +7,7 @@ import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance function GetKnexConfig()', () => {
+describe('utils/persistance GetKnexConfig()', () => {
   let configBlock = {
     client: '',
     connection: {

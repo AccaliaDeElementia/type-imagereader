@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { HasValue } from '#utils/helpers.js'
 
-describe('utils/helpers function HasValue()', () => {
+describe('utils/helpers HasValue()', () => {
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],

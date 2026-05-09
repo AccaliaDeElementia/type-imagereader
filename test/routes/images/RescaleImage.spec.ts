@@ -8,7 +8,7 @@ import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
-describe('routes/images function RescaleImage()', () => {
+describe('routes/images RescaleImage()', () => {
   let sharpInstanceStub = {
     rotate: sandbox.stub().returnsThis(),
     resize: sandbox.stub().returnsThis(),

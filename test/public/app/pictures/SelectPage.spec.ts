@@ -11,7 +11,7 @@ import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures function SelectPage()', () => {
+describe('public/app/pictures SelectPage()', () => {
   let dom = new JSDOM('<html></html>', {})
   const selectPageSpy = sandbox.stub().resolves()
   const loadingErrorSpy = sandbox.stub().resolves()

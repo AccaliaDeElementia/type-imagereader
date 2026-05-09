@@ -18,7 +18,7 @@ html
           button.confirm Confirm
 `
 
-describe('public/app/confirm function Init()', () => {
+describe('public/app/confirm Init()', () => {
   beforeEach(() => {
     const dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })
     mountDom(dom)

@@ -8,7 +8,7 @@ import { StubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance function Initialize()', () => {
+describe('utils/persistance Initialize()', () => {
   let fakeEnvironment: KnexOptions = {
     client: 'fakeClient',
     connection: {

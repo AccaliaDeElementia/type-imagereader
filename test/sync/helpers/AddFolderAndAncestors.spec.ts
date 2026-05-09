@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { AddFolderAndAncestors } from '#sync/helpers.js'
 
-describe('utils/syncfolders function AddFolderAndAncestors()', () => {
+describe('sync/helpers AddFolderAndAncestors()', () => {
   it('should include the input folder itself', () => {
     const affected = new Set<string>()
     AddFolderAndAncestors(affected, '/a/b/c/')

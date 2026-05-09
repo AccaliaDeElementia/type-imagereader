@@ -18,7 +18,7 @@ const PENDING = 5
 const LOGGING_INTERVAL = 100
 const SQLITE_DB_CHUNK_SIZE = 200
 
-describe('utils/syncItemsDialect class InsertState', () => {
+describe('sync/syncItemsDialect InsertState', () => {
   afterEach(() => {
     sandbox.restore()
   })

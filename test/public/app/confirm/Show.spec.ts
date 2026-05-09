@@ -18,7 +18,7 @@ html
           button.confirm Confirm
 `
 
-describe('public/app/confirm function Show()', () => {
+describe('public/app/confirm Show()', () => {
   let confirmButton: HTMLElement | null = null
   let cancelButton: HTMLElement | null = null
 

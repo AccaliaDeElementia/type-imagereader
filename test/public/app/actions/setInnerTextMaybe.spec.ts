@@ -7,7 +7,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { DoesNotThrow } from '#testutils/Errors.js'
 
-describe('public/app/actions function setInnerTextMaybe', () => {
+describe('public/app/actions setInnerTextMaybe', () => {
   const dom: JSDOM = new JSDOM('<html><body><div><span class="foo"></span></div></div></html>', {})
 
   let divNode = Cast<HTMLDivElement>(null)

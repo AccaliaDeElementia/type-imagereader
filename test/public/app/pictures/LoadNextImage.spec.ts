@@ -19,7 +19,7 @@ html
     div#tabImages
 `
 
-describe('public/app/pictures function LoadNextImage()', () => {
+describe('public/app/pictures LoadNextImage()', () => {
   let dom = new JSDOM('<html></html>', {})
   const fetchStub = sandbox.stub()
   let getPictureStub = sandbox.stub()

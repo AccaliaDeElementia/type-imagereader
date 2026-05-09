@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Internals, Navigation } from '#public/scripts/app/navigation.js'
-describe('public/app/navigation function IsSuppressMenu()', () => {
+describe('public/app/navigation IsSuppressMenu()', () => {
   let dom = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {

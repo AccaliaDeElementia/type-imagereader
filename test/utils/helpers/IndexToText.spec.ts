@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { IndexToText } from '#utils/helpers.js'
 
-describe('utils/helpers function IndexToText()', () => {
+describe('utils/helpers IndexToText()', () => {
   const tests: Array<[string, number, string]> = [
     ['index 0', 0, (1).toLocaleString()],
     ['index 1', 1, (2).toLocaleString()],

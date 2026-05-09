@@ -8,7 +8,7 @@ import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/syncfolders function SyncFolderFirstImages()', () => {
+describe('sync/folders SyncFolderFirstImages()', () => {
   let { fake: loggerFake } = createLoggerFake(sandbox)
   let innerQueryBuilder = {
     select: sandbox.stub().returnsThis(),

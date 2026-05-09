@@ -10,7 +10,7 @@ const sandbox = Sinon.createSandbox()
 
 const chainMethods = ['select', 'increment', 'update', 'where'] as const
 const terminalMethods = ['whereIn', 'orWhere', 'andWhere'] as const
-describe('routes/apiFunctions function MarkFolderSeen', () => {
+describe('routes/apiFunctions MarkFolderSeen', () => {
   let knexStub = sandbox.stub()
   let knexFake = StubToKnex(knexStub)
   let knexRawStub = sandbox.stub()

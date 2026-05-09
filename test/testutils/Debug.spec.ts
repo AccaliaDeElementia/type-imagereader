@@ -23,7 +23,7 @@ describe('testutils/Debug noopLogger', () => {
   })
 })
 
-describe('testutils/Debug function createLoggerFake()', () => {
+describe('testutils createLoggerFake()', () => {
   it('should return an object with a stub property', () => {
     const sandbox = Sinon.createSandbox()
     expect(createLoggerFake(sandbox).stub).to.be.a('function')
@@ -53,7 +53,7 @@ describe('testutils/Debug function createLoggerFake()', () => {
   })
 })
 
-describe('testutils/Debug function stubDebug()', () => {
+describe('testutils stubDebug()', () => {
   it('should replace the debug property with a stub', () => {
     const sandbox = Sinon.createSandbox()
     const target = { debug: Cast<(n: string) => Debugger>(() => undefined) }

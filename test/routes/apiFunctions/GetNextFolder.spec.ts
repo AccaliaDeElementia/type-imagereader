@@ -9,7 +9,7 @@ import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/apiFunctions function GetNextFolder', () => {
+describe('routes/apiFunctions GetNextFolder', () => {
   let { fake: knexFake } = createKnexChainFake([] as const, [] as const)
   let getDirectionFolderStub = sandbox.stub()
   beforeEach(() => {

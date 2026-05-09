@@ -8,7 +8,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function TickCountdown()', () => {
+describe('routes/slideshow TickCountdown()', () => {
   let knexFake = StubToKnex({ knex: Math.random() })
   let ioStub = {
     of: sandbox.stub().returnsThis(),

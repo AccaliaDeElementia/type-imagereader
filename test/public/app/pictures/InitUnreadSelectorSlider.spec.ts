@@ -16,7 +16,7 @@ const markup = `html
     div.selectUnreadAll
       div#slider4test
       `
-describe('public/app/pictures function SetShowUnreadOnly()', () => {
+describe('public/app/pictures SetShowUnreadOnly()', () => {
   let dom = new JSDOM('<html></html>')
   let getShowUnreadOnlySpy = sandbox.stub()
   let setShowUnreadOnlySpy = sandbox.stub()

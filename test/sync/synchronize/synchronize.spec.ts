@@ -14,7 +14,7 @@ const stepFailureLog = /^[A-Za-z]+ failed after \d+\.\d+s$/v
 const completeLog = /^Folder Synchronization Complete after \d+\.\d+s$/v
 const failedSummaryLog = /^Folder Synchronization Failed after \d+\.\d+s$/v
 
-describe('sync/synchronize function Synchronize()', () => {
+describe('sync/synchronize Synchronize()', () => {
   let loggerStub = sandbox.stub()
   let debugStub = sandbox.stub()
   let findSyncItemsStub = sandbox.stub()

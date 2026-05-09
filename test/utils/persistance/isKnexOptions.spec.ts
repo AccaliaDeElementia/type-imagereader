@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance function isKnexOptions()', () => {
+describe('utils/persistance isKnexOptions()', () => {
   let isMigrationsValidStub = sandbox.stub()
   let isConnectionValid = sandbox.stub()
   let isPoolValid = sandbox.stub()

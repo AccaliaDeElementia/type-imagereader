@@ -4,7 +4,7 @@ import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Internals, NavigateTo } from '#public/scripts/app/pictures/viewer.js'
 import { expect } from 'chai'
 
-describe('public/app/pictures function ChoosePictureIndex()', () => {
+describe('public/app/pictures ChoosePictureIndex()', () => {
   beforeEach(() => {
     Pictures.pictures = Array.from({ length: 64 }).map((_, i) => ({
       path: `/some/path/${i}.png`,

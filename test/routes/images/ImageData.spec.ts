@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { ImageData } from '#routes/images.js'
 
-describe('routes/images class ImageData', () => {
+describe('routes/images ImageData', () => {
   describe('fromImage()', () => {
     it('should return instance of ImageData', () => {
       const result = ImageData.fromImage(Buffer.from('foo'), 'blep', 'foo.blep')

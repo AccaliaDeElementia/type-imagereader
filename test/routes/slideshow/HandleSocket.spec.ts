@@ -9,7 +9,7 @@ import { setImmediate as yieldMacro } from 'node:timers/promises'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow function HandleSocket()', () => {
+describe('routes/slideshow HandleSocket()', () => {
   let knexFake = StubToKnex({})
   let serverFake = Cast<WebSocketServer>({})
   let socketStub = { on: sandbox.stub() }

@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/images class ImageData', () => {
+describe('routes/images ImageData', () => {
   const defaultCacheSize = ImageCache.cacheSize
   let createSpy = sandbox.stub()
   let imageCache = new ImageCache(createSpy)

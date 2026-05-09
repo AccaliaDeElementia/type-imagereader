@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { Chunk, Helpers } from '#sync/helpers.js'
 
-describe('utils/syncfolders function Chunk()', () => {
+describe('sync/helpers Chunk()', () => {
   beforeEach(() => {
     Helpers.padLength = 20
   })

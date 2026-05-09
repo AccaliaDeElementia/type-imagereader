@@ -26,7 +26,7 @@ html
           h5 placeholder
 `
 
-describe('public/app/actions function createButtons()', () => {
+describe('public/app/actions createButtons()', () => {
   let dom: JSDOM = new JSDOM('', {})
 
   beforeEach(() => {

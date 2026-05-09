@@ -7,7 +7,7 @@ import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/syncfolders function GetFolderInfosWithPictures()', () => {
+describe('sync/folderCounts GetFolderInfosWithPictures()', () => {
   let knexStub = {
     select: sandbox.stub().returnsThis(),
     count: sandbox.stub().returnsThis(),

@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { isConnectionValid } from '#utils/persistance.js'
 
-describe('utils/persistance function isConnectionValid()', () => {
+describe('utils/persistance isConnectionValid()', () => {
   it('should reject missing connection element', () => {
     expect(isConnectionValid({})).to.equal(false)
   })

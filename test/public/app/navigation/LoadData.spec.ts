@@ -25,7 +25,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation function LoadData()', () => {
+describe('public/app/navigation LoadData()', () => {
   let dom = new JSDOM('', {})
   const loadingShowSpy = sandbox.stub()
   const loadingHideSpy = sandbox.stub()

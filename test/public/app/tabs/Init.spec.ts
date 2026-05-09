@@ -35,7 +35,7 @@ html
       div#tabBookmarks
 `
 
-describe('public/app/tabs function Init()', () => {
+describe('public/app/tabs Init()', () => {
   let dom = new JSDOM('<html></html>', {})
   let selectTabSpy = sandbox.stub()
   beforeEach(() => {

@@ -14,7 +14,7 @@ interface FolderRow {
   sortKey: string
 }
 
-describe('utils/incrementalsync function IncrementalEnsureFoldersBulk()', () => {
+describe('sync/incrementalsync IncrementalEnsureFoldersBulk()', () => {
   let folderChunks: FolderRow[][] = []
   let foldersInsertQuery = {
     insert: sandbox.stub().returnsThis(),

@@ -19,7 +19,7 @@ html
     div#tabImages
 `
 
-describe('public/app/pictures function MakeTab()', () => {
+describe('public/app/pictures MakeTab()', () => {
   let dom = new JSDOM('<html></html>', {})
   let makePicturesPageSpy = sandbox.stub()
   let makePaginatorSpy = sandbox.stub()

@@ -9,7 +9,7 @@ import { createCopyStreamFake, scheduleEmit } from '#testutils/CopyStream.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('testutils/CopyStream function createCopyStreamFake()', () => {
+describe('testutils createCopyStreamFake()', () => {
   afterEach(() => {
     sandbox.restore()
   })
@@ -74,7 +74,7 @@ describe('testutils/CopyStream function createCopyStreamFake()', () => {
   })
 })
 
-describe('testutils/CopyStream function scheduleEmit()', () => {
+describe('testutils scheduleEmit()', () => {
   it('should emit the event on the next microtask', async () => {
     const ee = new EventEmitter()
     const drainSpy = sandbox.stub()

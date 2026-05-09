@@ -10,7 +10,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
 
-describe('Server function start', () => {
+describe('Server start', () => {
   let appStub = { use: sandbox.stub() }
   let appFake = Cast<Express>(appStub)
   let serverFake = Cast<HttpServer>({})

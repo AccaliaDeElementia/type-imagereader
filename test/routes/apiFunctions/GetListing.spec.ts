@@ -21,7 +21,7 @@ const folderFixture = {
 // resolved folder's path.
 const folderFixtureDifferentPath = { ...folderFixture, path: '/fop/bat/' }
 
-describe('routes/apiFunctions function GetListing', () => {
+describe('routes/apiFunctions GetListing', () => {
   let getFolderStub = sandbox.stub()
   let getNextFolderStub = sandbox.stub()
   let getPreviousFolderStub = sandbox.stub()

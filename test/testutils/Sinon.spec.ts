@@ -7,7 +7,7 @@ import { findStubCall } from '#testutils/Sinon.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('testutils/Sinon function findStubCall()', () => {
+describe('testutils findStubCall()', () => {
   afterEach(() => {
     sandbox.restore()
   })

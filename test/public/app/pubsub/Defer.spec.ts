@@ -6,7 +6,7 @@ import { expect } from 'chai'
 import { PubSub, Defer } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
-describe('public/app/pubsub function Defer()', () => {
+describe('public/app/pubsub Defer()', () => {
   beforeEach(() => {
     resetPubSub()
     PubSub.cycleTime = 10
