@@ -7,7 +7,7 @@ import type { Request, RequestHandler, Response, Application, Router } from 'exp
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
-import { CacheStorage, Functions, getRouter, ImageData, Imports } from '#routes/images.js'
+import { CacheStorage, Internals, getRouter, ImageData, Imports } from '#routes/images.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createResponseFake } from '#testutils/Express.js'
@@ -51,8 +51,8 @@ describe('routes/images route /full/*', () => {
       .filter((call) => call.args[0] === '/full/*path')
       .map((call) => call.args[1] as unknown)
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
-    readImageStub = sandbox.stub(Functions, 'ReadImage').resolves()
-    sendImageStub = sandbox.stub(Functions, 'SendImage').resolves()
+    readImageStub = sandbox.stub(Internals, 'ReadImage').resolves()
+    sendImageStub = sandbox.stub(Internals, 'SendImage').resolves()
     requestStub = {
       params: { path: undefined },
       body: '',

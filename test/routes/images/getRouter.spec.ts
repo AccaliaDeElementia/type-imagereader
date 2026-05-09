@@ -7,7 +7,7 @@ import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
-import { CacheStorage, Functions, getRouter, Imports } from '#routes/images.js'
+import { CacheStorage, ReadAndRescaleImage, getRouter, Imports } from '#routes/images.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 
@@ -60,7 +60,7 @@ describe('routes/images export getRouter()', () => {
   })
   it('should use ReadAndRescaleImage() to fill kiosk mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.kioskCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
+    expect(CacheStorage.kioskCache.cacheFunction).to.equal(ReadAndRescaleImage)
   })
   it('should create new scaled mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
@@ -68,7 +68,7 @@ describe('routes/images export getRouter()', () => {
   })
   it('should use ReadAndRescaleImage() to fill scaled mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.scaledCache.cacheFunction).to.equal(Functions.ReadAndRescaleImage)
+    expect(CacheStorage.scaledCache.cacheFunction).to.equal(ReadAndRescaleImage)
   })
   it('should create separate kiosk and scaled mode image caches', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)

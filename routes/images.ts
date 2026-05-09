@@ -129,50 +129,56 @@ export class ImageCache {
   }
 }
 
-export const Functions = {
-  ReadImage: async (path: string): Promise<ImageData> => {
-    if (Imports.isPathTraversal(path)) {
-      Imports.logger('path traversal blocked: %s', path)
-      return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
-    }
-    const ext = extname(path).replace(/^\./v, '')
-    if (!allowedExtensions.test(ext)) {
-      Imports.logger('not an image: ext=%s for %s', ext, path)
-      return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
-    }
-    try {
-      const data = await Imports.readFile(join(Imports.getDataDir(), path))
-      return ImageData.fromImage(data, ext, path)
-    } catch (err) {
-      Imports.logger('image not found: %s (%s)', path, err instanceof Error ? err.message : String(err))
-      return ImageData.fromError('E_NOT_FOUND', StatusCodes.NOT_FOUND, 'Requested Path Not Found!', path)
-    }
-  },
-  RescaleImage: async (image: ImageData, width: number, height: number, animated = true): Promise<void> => {
-    await image.Rescale(width, height, animated)
-  },
-  ReadAndRescaleImage: async (path: string, width: number, height: number, animated = true): Promise<ImageData> => {
-    const image = await Functions.ReadImage(path)
-    await Functions.RescaleImage(image, width, height, animated)
-    return image
-  },
-  SendImage: (image: ImageData, res: Response): void => {
-    if (image.code !== null) {
-      res.status(image.statusCode).json({
-        error: {
-          code: image.code,
-          message: image.message,
-          path: image.path,
-        },
-      })
-      return
-    }
-    res
-      .set('Content-Type', `image/${image.extension}`)
-      .set('Cache-Control', `public, max-age=${ONE_MONTH_MS}`)
-      .set('Expires', new Date(Date.now() + ONE_MONTH_MS).toUTCString())
-      .send(image.data)
-  },
+export async function ReadImage(path: string): Promise<ImageData> {
+  if (Imports.isPathTraversal(path)) {
+    Imports.logger('path traversal blocked: %s', path)
+    return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
+  }
+  const ext = extname(path).replace(/^\./v, '')
+  if (!allowedExtensions.test(ext)) {
+    Imports.logger('not an image: ext=%s for %s', ext, path)
+    return ImageData.fromError('E_NOT_IMAGE', StatusCodes.BAD_REQUEST, 'Requested Path is Not An Image!', path)
+  }
+  try {
+    const data = await Imports.readFile(join(Imports.getDataDir(), path))
+    return ImageData.fromImage(data, ext, path)
+  } catch (err) {
+    Imports.logger('image not found: %s (%s)', path, err instanceof Error ? err.message : String(err))
+    return ImageData.fromError('E_NOT_FOUND', StatusCodes.NOT_FOUND, 'Requested Path Not Found!', path)
+  }
+}
+
+export async function RescaleImage(image: ImageData, width: number, height: number, animated = true): Promise<void> {
+  await image.Rescale(width, height, animated)
+}
+
+export async function ReadAndRescaleImage(
+  path: string,
+  width: number,
+  height: number,
+  animated = true,
+): Promise<ImageData> {
+  const image = await Internals.ReadImage(path)
+  await Internals.RescaleImage(image, width, height, animated)
+  return image
+}
+
+export function SendImage(image: ImageData, res: Response): void {
+  if (image.code !== null) {
+    res.status(image.statusCode).json({
+      error: {
+        code: image.code,
+        message: image.message,
+        path: image.path,
+      },
+    })
+    return
+  }
+  res
+    .set('Content-Type', `image/${image.extension}`)
+    .set('Cache-Control', `public, max-age=${ONE_MONTH_MS}`)
+    .set('Expires', new Date(Date.now() + ONE_MONTH_MS).toUTCString())
+    .send(image.data)
 }
 
 const uninitializedCacheError: CacheCreator = async (path) => {
@@ -191,8 +197,8 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   // Init router and path
   const router = Imports.Router()
 
-  CacheStorage.kioskCache = new ImageCache(Functions.ReadAndRescaleImage)
-  CacheStorage.scaledCache = new ImageCache(Functions.ReadAndRescaleImage)
+  CacheStorage.kioskCache = new ImageCache(ReadAndRescaleImage)
+  CacheStorage.scaledCache = new ImageCache(ReadAndRescaleImage)
 
   const sendError = (res: Response, code: string, statusCode: StatusCodes, message: string): void => {
     res.status(statusCode).json({
@@ -211,8 +217,8 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     handleErrors(async (req, res) => {
       const filename = `/${ReqParamToString(req.params.path)}`
       Imports.logger('GET /images/full %s', filename)
-      const image = await Functions.ReadImage(filename)
-      Functions.SendImage(image, res)
+      const image = await Internals.ReadImage(filename)
+      Internals.SendImage(image, res)
     }),
   )
 
@@ -245,7 +251,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
       }
       Imports.logger('GET /images/scaled %dx%d %s', width, height, filename)
       const image = await CacheStorage.scaledCache.fetch(filename, width, height)
-      Functions.SendImage(image, res)
+      Internals.SendImage(image, res)
     }),
   )
 
@@ -254,9 +260,9 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     handleErrors(async (req, res) => {
       const filename = `/${ReqParamToString(req.params.path)}`
       Imports.logger('GET /images/preview %s', filename)
-      const image = await Functions.ReadImage(filename)
-      await Functions.RescaleImage(image, PREVIEW_WIDTH, PREVIEW_HEIGHT, false)
-      Functions.SendImage(image, res)
+      const image = await Internals.ReadImage(filename)
+      await Internals.RescaleImage(image, PREVIEW_WIDTH, PREVIEW_HEIGHT, false)
+      Internals.SendImage(image, res)
     }),
   )
 
@@ -266,10 +272,12 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
       const filename = `/${ReqParamToString(req.params.path)}`
       Imports.logger('GET /images/kiosk %s', filename)
       const image = await CacheStorage.kioskCache.fetch(filename, KIOSK_WIDTH, KIOSK_HEIGHT)
-      Functions.SendImage(image, res)
+      Internals.SendImage(image, res)
     }),
   )
 
   await Promise.resolve() // async required by getRouter signature
   return router
 }
+
+export const Internals = { ReadImage, RescaleImage, SendImage }

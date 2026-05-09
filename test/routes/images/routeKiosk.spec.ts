@@ -7,7 +7,7 @@ import type { Request, RequestHandler, Response, Application, Router } from 'exp
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
-import { CacheStorage, Functions, getRouter, ImageData, Imports } from '#routes/images.js'
+import { CacheStorage, Internals, getRouter, ImageData, Imports } from '#routes/images.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createResponseFake } from '#testutils/Express.js'
@@ -52,7 +52,7 @@ describe('routes/images route /kiosk/*-image.webp', () => {
       .map((call) => call.args[1] as unknown)
     router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
     fetchImageStub = sandbox.stub(CacheStorage.kioskCache, 'fetch').resolves()
-    sendImageStub = sandbox.stub(Functions, 'SendImage').resolves()
+    sendImageStub = sandbox.stub(Internals, 'SendImage').resolves()
     requestStub = {
       params: { path: undefined },
       body: '',
