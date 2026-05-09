@@ -5,14 +5,14 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { expect } from 'chai'
 
-import { PubSub, Publish, Internals } from '#public/scripts/app/pubsub.js'
+import { PubSub, publish, Internals } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { cast } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pubsub Publish()', () => {
+describe('public/app/pubsub publish()', () => {
   let publishAsyncSpy = sandbox.stub().resolves()
   beforeEach(() => {
     publishAsyncSpy = sandbox.stub(Internals, 'PublishAsync').resolves()
@@ -23,13 +23,13 @@ describe('public/app/pubsub Publish()', () => {
   it('should call PublishAsync once when publishing', () => {
     const topic = `TOPIC${Math.random()}`
     const data = `DATA${Math.random()}`
-    Publish(topic, data)
+    publish(topic, data)
     expect(publishAsyncSpy.callCount).to.equal(1)
   })
   it('should pass parameters to voided PublishAsync', () => {
     const topic = `TOPIC${Math.random()}`
     const data = `DATA${Math.random()}`
-    Publish(topic, data)
+    publish(topic, data)
     expect(publishAsyncSpy.firstCall.args).to.deep.equal([topic, data])
   })
 })
@@ -56,11 +56,11 @@ describe('public/app/pubsub PublishAsync()', () => {
     sandbox.restore()
     unmountDom()
   })
-  it('should print warning once on Publish for unknown topic', async () => {
+  it('should print warning once on publish for unknown topic', async () => {
     await Internals.PublishAsync('Quux', 'Digital')
     expect(consoleWarn.callCount).to.equal(1)
   })
-  it('should print warning with expected args on Publish for unknown topic', async () => {
+  it('should print warning with expected args on publish for unknown topic', async () => {
     await Internals.PublishAsync('Quux', 'Digital')
     expect(consoleWarn.firstCall.args).to.deep.equal(['PUBSUB: topic Quux published without subscribers', 'Digital'])
   })

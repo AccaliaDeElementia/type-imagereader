@@ -44,7 +44,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
 
     resetPubSub()
 
-    Bookmarks.BookmarkFolders = []
+    Bookmarks.bookmarkFolders = []
   })
   afterEach(() => {
     sandbox.restore()

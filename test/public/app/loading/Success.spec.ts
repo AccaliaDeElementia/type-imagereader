@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Init, Loading } from '#public/scripts/app/loading.js'
+import { init, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
 
@@ -27,7 +27,7 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    Init()
+    init()
   })
   afterEach(() => {
     sandbox.restore()

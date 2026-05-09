@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { InitMouse } from '#public/scripts/app/pictures/inputs.js'
+import { initMouse } from '#public/scripts/app/pictures/inputs.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
 import { cast } from '#testutils/TypeGuards.js'
@@ -17,7 +17,7 @@ interface TestVisualViewport {
   scale: number
 }
 
-describe('public/app/pictures InitMouse()', () => {
+describe('public/app/pictures initMouse()', () => {
   let dom = new JSDOM('<html><body><div id="bigImage"><img class="hidden"/></div></body></html>', {})
   const ignoreClickSpy = sandbox.stub().resolves()
   const executePreviousSpy = sandbox.stub().resolves()
@@ -79,18 +79,18 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should store initial scale from visual viewport', () => {
     visualViewport.scale = 972
-    InitMouse()
+    initMouse()
     expect(Pictures.initialScale).to.equal(972)
   })
   it('should store default initial scale when visual viewport is nullish', () => {
     // @ts-expect-error Ignore that visualviewport is read-only
     dom.window.visualViewport = null
-    InitMouse()
+    initMouse()
     expect(Pictures.initialScale).to.equal(-1)
   })
   it('should navigate to previous from left area click', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     const evt = new dom.window.MouseEvent('click', {
       clientX: boundingRect.width / 4,
       clientY: boundingRect.height / 2,
@@ -100,7 +100,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should process click when current scale is zoomed out from initial', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     visualViewport.scale = 1
     const evt = new dom.window.MouseEvent('click', {
       clientX: boundingRect.width / 4,
@@ -111,7 +111,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should not navigate when current scale is zoomed in from initial', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     visualViewport.scale = 2.0001
     const evt = new dom.window.MouseEvent('click', {
       clientX: boundingRect.width / 4,
@@ -122,7 +122,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should ignore click when current scale is zoomed in from initial', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     visualViewport.scale = 2.0001
     const evt = new dom.window.MouseEvent('click', {
       clientX: boundingRect.width / 4,
@@ -133,7 +133,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should not navigate when mainImage bounding rect invalid', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     const tgt = Pictures.mainImage?.parentElement
     Pictures.mainImage = null
     const evt = new dom.window.MouseEvent('click', {
@@ -145,7 +145,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should ignore click when mainImage bounding rect invalid', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     const tgt = Pictures.mainImage?.parentElement
     Pictures.mainImage = null
     const evt = new dom.window.MouseEvent('click', {
@@ -157,7 +157,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should not navigate when click target width is zero', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     boundingRect.width = 0
     const evt = new dom.window.MouseEvent('click', {
       clientX: boundingRect.width / 4,
@@ -168,7 +168,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should ignore click when click target width is zero', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     boundingRect.width = 0
     const evt = new dom.window.MouseEvent('click', {
       clientX: boundingRect.width / 4,
@@ -179,7 +179,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should show menu from middle area click', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     const evt = new dom.window.MouseEvent('click', {
       clientX: boundingRect.width / 2,
       clientY: boundingRect.height / 2,
@@ -189,7 +189,7 @@ describe('public/app/pictures InitMouse()', () => {
   })
   it('should navigate to next from right area click', () => {
     visualViewport.scale = 2
-    InitMouse()
+    initMouse()
     const evt = new dom.window.MouseEvent('click', {
       clientX: (3 * boundingRect.width) / 4,
       clientY: boundingRect.height / 2,

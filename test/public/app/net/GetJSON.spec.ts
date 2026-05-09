@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { GetJSON } from '#public/scripts/app/net.js'
+import { getJSON } from '#public/scripts/app/net.js'
 import { cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 
@@ -13,7 +13,7 @@ interface TestRequest {
   headers: Record<string, string>
 }
 
-describe('public/app/net GetJSON()', () => {
+describe('public/app/net getJSON()', () => {
   let response = cast<Response>(null)
   let contentLengthFake = '2'
   let dataFake: Record<string, number> = {}
@@ -38,16 +38,16 @@ describe('public/app/net GetJSON()', () => {
   })
   it('should call fetch with provided path', async () => {
     const path = `/Some/Test/Path/${Math.random()}`
-    await GetJSON(path, isUnknown)
+    await getJSON(path, isUnknown)
     expect(fetchStub.calledWith(path)).to.equal(true)
   })
   it('should use GET method', async () => {
-    await GetJSON('/foo', isUnknown)
+    await getJSON('/foo', isUnknown)
     const req = cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.method).to.equal('GET')
   })
   it('should set only expected headers', async () => {
-    await GetJSON('', isUnknown)
+    await getJSON('', isUnknown)
     const req = cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.headers).to.have.all.keys(['Content-Type', 'Accept-Encoding', 'Accept'])
   })
@@ -58,19 +58,19 @@ describe('public/app/net GetJSON()', () => {
   ]
   headerTests.forEach(([title, header, expected]) => {
     it(`should set ${title} header`, async () => {
-      await GetJSON('/foo', isUnknown)
+      await getJSON('/foo', isUnknown)
       const req = cast<TestRequest>(fetchStub.firstCall.args[1])
       expect(req.headers[header]).to.equal(expected)
     })
   })
   it('should not set body in request', async () => {
-    await GetJSON('', isUnknown)
+    await getJSON('', isUnknown)
     const req = cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.body).to.equal(undefined)
   })
   it('should resolve to expected object', async () => {
     dataFake.foo = Math.random()
-    const result = await GetJSON('', isUnknown)
+    const result = await getJSON('', isUnknown)
     expect(result).to.equal(dataFake)
   })
 })

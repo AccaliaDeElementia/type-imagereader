@@ -5,7 +5,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 
-import { Internals, PubSub, StartDeferred } from '#public/scripts/app/pubsub.js'
+import { Internals, PubSub, startDeferred } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
 import { cast } from '#testutils/TypeGuards.js'
@@ -13,7 +13,7 @@ import { hasValue } from '#utils/helpers.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pubsub StartDeferred()', () => {
+describe('public/app/pubsub startDeferred()', () => {
   let dom = new JSDOM('<html></html>', {})
   let setIntervalSpy = sandbox.stub()
   let executeIntervalSpy = sandbox.stub()
@@ -31,27 +31,27 @@ describe('public/app/pubsub StartDeferred()', () => {
     unmountDom()
   })
   it('should set interval with Window.SetInterval()', () => {
-    StartDeferred()
+    startDeferred()
     expect(setIntervalSpy.callCount).to.equal(1)
   })
   it('should call executeInterval with interval fn', () => {
-    StartDeferred()
+    startDeferred()
     const fn = setIntervalSpy.firstCall.args[0] as unknown
     assert(hasValue(fn))
     cast<() => void>(fn)()
     expect(executeIntervalSpy.callCount).to.equal(1)
   })
   it('should call setInterval with 2 arguments', () => {
-    StartDeferred()
+    startDeferred()
     expect(setIntervalSpy.firstCall.args).to.have.lengthOf(2)
   })
   it('should set interval with configured interval period', () => {
-    StartDeferred()
+    startDeferred()
     expect(setIntervalSpy.firstCall.args[1]).to.equal(17)
   })
   it('should save timer id for later deactivation', () => {
     setIntervalSpy.returns(6413287)
-    StartDeferred()
+    startDeferred()
     expect(PubSub.timer).to.equal(6413287)
   })
 })

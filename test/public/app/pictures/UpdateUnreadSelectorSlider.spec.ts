@@ -22,7 +22,7 @@ describe('public/app/pictures SetShowUnreadOnly()', () => {
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
-    getShowUnreadOnlySpy = sandbox.stub(Internals, 'GetShowUnreadOnly').returns(false)
+    getShowUnreadOnlySpy = sandbox.stub(Internals, 'getShowUnreadOnly').returns(false)
   })
   afterEach(() => {
     sandbox.restore()

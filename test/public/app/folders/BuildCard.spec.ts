@@ -25,7 +25,7 @@ html
       div#tabLink
         a(href="#tabFolders") Folders
       div#tabFolders
-    template#FolderCard
+    template#folderCard
       div.card
         div.card-top
           i.material-icons folder
@@ -43,18 +43,18 @@ describe('public/app/folders BuildCard()', () => {
     dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
 
     resetPubSub()
-    Folders.FolderCard = null
-    const template = document.querySelector<HTMLTemplateElement>('#FolderCard')
+    Folders.folderCard = null
+    const template = document.querySelector<HTMLTemplateElement>('#folderCard')
     assert(template !== null)
     folderCard = template.content
-    Folders.FolderCard = folderCard
+    Folders.folderCard = folderCard
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
   })
   it('should return null when template is missing', () => {
-    Folders.FolderCard = null
+    Folders.folderCard = null
     const result = Internals.BuildCard({
       name: 'foo',
       path: '/path/foo',

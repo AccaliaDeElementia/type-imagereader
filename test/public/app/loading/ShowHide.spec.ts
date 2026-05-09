@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Publish } from '#public/scripts/app/pubsub.js'
-import { Init, Loading } from '#public/scripts/app/loading.js'
+import { publish } from '#public/scripts/app/pubsub.js'
+import { init, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -16,7 +16,7 @@ html
     nav#navbar
     div#loadingScreen
 `
-describe('public/app/loading subscriber "Loading:Show" and "Loading:Hide"', () => {
+describe('public/app/loading subscriber "Loading:show" and "Loading:Hide"', () => {
   let dom: JSDOM = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -26,34 +26,34 @@ describe('public/app/loading subscriber "Loading:Show" and "Loading:Hide"', () =
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    Init()
+    init()
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
   })
-  it('should show the loading overlay for "Loading:Show"', () => {
+  it('should show the loading overlay for "Loading:show"', () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'none')
-    Publish('Loading:Show')
+    publish('Loading:show')
     expect(overlay?.style.getPropertyValue('display')).to.equal('block')
   })
   it('should hide the loading overlay for "Loading:Hide"', () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'block')
-    Publish('Loading:Hide')
+    publish('Loading:Hide')
     expect(overlay?.style.getPropertyValue('display')).to.equal('none')
   })
-  it('should tolerate missing overlay for "Loading:Show"', () => {
+  it('should tolerate missing overlay for "Loading:show"', () => {
     Loading.overlay = null
     expect(() => {
-      Publish('Loading:Show')
+      publish('Loading:show')
     }).to.not.throw()
   })
   it('should tolerate missing overlay for "Loading:Hide"', () => {
     Loading.overlay = null
     expect(() => {
-      Publish('Loading:Hide')
+      publish('Loading:Hide')
     }).to.not.throw()
   })
 })

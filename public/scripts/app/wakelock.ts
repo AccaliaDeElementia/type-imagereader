@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Subscribe, AddInterval } from './pubsub.js'
+import { subscribe, addInterval } from './pubsub.js'
 
 export interface WakeLockSentinel {
   released: boolean
@@ -19,22 +19,22 @@ export const WakeLock = {
   initialized: false,
 }
 
-export function Init(): void {
+export function init(): void {
   if (WakeLock.initialized) return
   WakeLock.initialized = true
-  Subscribe('Picture:LoadNew', async () => {
-    await Internals.TakeLock().catch(() => null)
+  subscribe('Picture:LoadNew', async () => {
+    await Internals.takeLock().catch(() => null)
   })
-  AddInterval(
+  addInterval(
     'WakeLock:Release',
     () => {
-      Internals.ReleaseLock().catch(() => null)
+      Internals.releaseLock().catch(() => null)
     },
     LOCK_RELEASE_CHECK_INTERVAL,
   )
 }
 
-export async function TakeLock(): Promise<void> {
+export async function takeLock(): Promise<void> {
   try {
     if (WakeLock.sentinel === null || WakeLock.sentinel.released) {
       // Coalesce concurrent callers onto a single request so we don't orphan a lock
@@ -57,7 +57,7 @@ export async function TakeLock(): Promise<void> {
   }
 }
 
-export async function ReleaseLock(): Promise<void> {
+export async function releaseLock(): Promise<void> {
   if (WakeLock.timeout > Date.now()) return
   WakeLock.timeout = RELEASED_TIMEOUT
   const sentinel = WakeLock.sentinel
@@ -67,11 +67,11 @@ export async function ReleaseLock(): Promise<void> {
       await sentinel.release()
     }
   } catch {}
-  // Only clear if a concurrent TakeLock hasn't already installed a fresh sentinel
+  // Only clear if a concurrent takeLock hasn't already installed a fresh sentinel
   if (WakeLock.sentinel === sentinel) WakeLock.sentinel = null
 }
 
 export const Internals = {
-  TakeLock,
-  ReleaseLock,
+  takeLock,
+  releaseLock,
 }

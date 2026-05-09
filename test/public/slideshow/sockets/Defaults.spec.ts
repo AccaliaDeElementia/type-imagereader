@@ -14,7 +14,7 @@ describe('public/slideshow/sockets uninitialized sentinels', () => {
     const err = definitelyThrows(() => {
       Internals.UninitializedLocationAssign('')
     })
-    expect(err.message).to.equal('LocationAssign called before Connect()')
+    expect(err.message).to.equal('locationAssign called before Connect()')
   })
   it('should definitely throw for Internals.UninitializedLocationReload()', () => {
     definitelyThrows(() => {

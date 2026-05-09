@@ -1,13 +1,13 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
+import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pubsub Subscribe()', () => {
+describe('public/app/pubsub subscribe()', () => {
   let subscriber = sandbox.stub().resolves()
   beforeEach(() => {
     resetPubSub()
@@ -21,11 +21,11 @@ describe('public/app/pubsub Subscribe()', () => {
   const topics = ['foobar:baz', 'Foobar:Baz', 'fOoBaR:bAz', 'FoOBaR:BaZ', 'FOOBAR:BAZ', 'foobar:BAZ', 'FOOBAR:baz']
   topics.forEach((topic) => {
     it(`should normalise ${topic} to FOOBAR:BAZ key`, () => {
-      Subscribe(topic, subscriber)
+      subscribe(topic, subscriber)
       expect(PubSub.subscribers).to.have.any.keys('FOOBAR:BAZ')
     })
     it(`should store subscriber under FOOBAR:BAZ when topic is ${topic}`, () => {
-      Subscribe(topic, subscriber)
+      subscribe(topic, subscriber)
       expect(PubSub.subscribers['FOOBAR:BAZ']).to.deep.equal([subscriber])
     })
   })
@@ -34,7 +34,7 @@ describe('public/app/pubsub Subscribe()', () => {
     for (let i = 0; i < 10; i += 1) {
       PubSub.subscribers['FOOBAR:BAZ'].push(sandbox.stub().resolves())
     }
-    Subscribe('Foobar:Baz', subscriber)
+    subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ']).to.have.lengthOf(11)
   })
   it('should append subscriber as last element in subscriber list', () => {
@@ -42,7 +42,7 @@ describe('public/app/pubsub Subscribe()', () => {
     for (let i = 0; i < 10; i += 1) {
       PubSub.subscribers['FOOBAR:BAZ'].push(sandbox.stub().resolves())
     }
-    Subscribe('Foobar:Baz', subscriber)
+    subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ'][10]).to.equal(subscriber)
   })
 })

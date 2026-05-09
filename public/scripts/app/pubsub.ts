@@ -28,7 +28,7 @@ export const PubSub = {
   cycleTime: PUBLISH_CYCLE_TIME,
 }
 
-export function Subscribe(topic: string, subscriber: SubscriberFunction): void {
+export function subscribe(topic: string, subscriber: SubscriberFunction): void {
   const target = topic.toUpperCase()
   const subs = PubSub.subscribers[target]
   if (subs === undefined) {
@@ -38,7 +38,7 @@ export function Subscribe(topic: string, subscriber: SubscriberFunction): void {
   }
 }
 
-export function Publish(topic: string, data?: unknown): void {
+export function publish(topic: string, data?: unknown): void {
   void Internals.PublishAsync(topic, data)
 }
 
@@ -76,14 +76,14 @@ async function PublishAsync(topic: string, data?: unknown): Promise<void> {
   }
 }
 
-export function Defer(method: VoidMethod, delayMs: number): void {
+export function defer(method: VoidMethod, delayMs: number): void {
   PubSub.deferred.push({
     method,
     delayCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), MINIMUM_CYCLE_COUNT),
   })
 }
 
-export function AddInterval(name: string, method: VoidMethod, delayMs: number): void {
+export function addInterval(name: string, method: VoidMethod, delayMs: number): void {
   PubSub.intervals[name] = {
     method,
     intervalCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), MINIMUM_CYCLE_COUNT),
@@ -91,7 +91,7 @@ export function AddInterval(name: string, method: VoidMethod, delayMs: number): 
   }
 }
 
-export function RemoveInterval(name: string): void {
+export function removeInterval(name: string): void {
   const ivals: Record<string, DeferredMethod & IntervalMethod> = {}
   for (const [k, v] of Object.entries(PubSub.intervals)) {
     if (k === name) continue
@@ -127,13 +127,13 @@ function ExecuteInterval(): void {
   PubSub.deferred = newDeferred
 }
 
-export function StartDeferred(): void {
+export function startDeferred(): void {
   PubSub.timer = window.setInterval((): void => {
     Internals.ExecuteInterval()
   }, PubSub.cycleTime)
 }
 
-export function StopDeferred(): void {
+export function stopDeferred(): void {
   if (PubSub.timer !== undefined) {
     window.clearInterval(PubSub.timer)
     PubSub.timer = undefined

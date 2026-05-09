@@ -1,7 +1,7 @@
 'use sanity'
 
-import { Subscribe, Publish, AddInterval, RemoveInterval } from './pubsub.js'
-import { CloneNode, isHTMLElement } from './utils.js'
+import { subscribe, publish, addInterval, removeInterval } from './pubsub.js'
+import { cloneNode, isHTMLElement } from './utils.js'
 
 import { isListing } from '#contracts/listing.js'
 import { hasValue, hasValues } from '#utils/helpers.js'
@@ -267,12 +267,12 @@ function createButtons(buttons: ButtonDefinition[]): HTMLElement {
   result.classList.add('actions')
   for (const { name, image } of buttons) {
     const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
-    const button = CloneNode(template, isHTMLElement)
+    const button = cloneNode(template, isHTMLElement)
     if (button === undefined) continue
     Internals.setInnerTextMaybe(button, 'i', image)
     Internals.setInnerTextMaybe(button, 'h5', name)
     button.addEventListener('click', (event) => {
-      Publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
+      publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
       event.preventDefault()
     })
     result.appendChild(button)
@@ -304,17 +304,17 @@ function ReadGamepad(): void {
   if (!Actions.gamepads.pressingNow && hasValues(Actions.gamepads.pressedButtons)) {
     const buttons = Actions.gamepads.pressedButtons.join('')
     Actions.gamepads.Reset()
-    Publish(`Action:Gamepad:${buttons}`)
+    publish(`Action:Gamepad:${buttons}`)
   }
 }
 
-export function Init(): void {
+export function init(): void {
   Internals.BuildActions()
   Actions.gamepads.Reset()
 
-  Subscribe('Navigate:Data', async (data) => {
+  subscribe('Navigate:Data', async (data) => {
     if (isListing(data) && !hasValues(data.pictures) && !hasValues(data.children)) {
-      Publish('Tab:Select', 'Actions')
+      publish('Tab:Select', 'Actions')
     }
     await Promise.resolve()
   })
@@ -325,10 +325,10 @@ export function Init(): void {
       (event.altKey ? '<ALT>' : '') +
       (event.shiftKey ? '<SHIFT>' : '') +
       event.key.toUpperCase()
-    Publish(`Action:Keypress:${key}`, key)
+    publish(`Action:Keypress:${key}`, key)
   })
   window.addEventListener('gamepadconnected', () => {
-    AddInterval(
+    addInterval(
       'ReadGamepad',
       () => {
         Internals.ReadGamepad()
@@ -339,7 +339,7 @@ export function Init(): void {
   window.addEventListener('gamepaddisconnected', () => {
     const remaining = navigator.getGamepads().filter((p) => p !== null)
     if (remaining.length === ZERO_REMAINING_PADS) {
-      RemoveInterval('ReadGamepad')
+      removeInterval('ReadGamepad')
     }
   })
 }

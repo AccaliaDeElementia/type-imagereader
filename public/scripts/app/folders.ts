@@ -1,8 +1,8 @@
 'use sanity'
 
-import { Publish, Subscribe } from './pubsub.js'
+import { publish, subscribe } from './pubsub.js'
 
-import { isHTMLElement, CloneNode } from './utils.js'
+import { isHTMLElement, cloneNode } from './utils.js'
 import { type FolderWithCounts, isListing, type Listing } from '#contracts/listing.js'
 import { hasValue, hasValues, stringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
 
@@ -10,7 +10,7 @@ const PERCENT_MULT = 100
 const FIXED_DECIMAL_PLACES = 2
 
 export const Folders = {
-  FolderCard: null as DocumentFragment | null,
+  folderCard: null as DocumentFragment | null,
 }
 
 function HideTab(selector: string): void {
@@ -22,7 +22,7 @@ function UnhideTab(selector: string): void {
 }
 
 function BuildCard(folder: FolderWithCounts): HTMLElement | null {
-  const card = CloneNode(Folders.FolderCard, isHTMLElement)
+  const card = cloneNode(Folders.folderCard, isHTMLElement)
   if (card === undefined) {
     return null
   }
@@ -46,7 +46,7 @@ function BuildCard(folder: FolderWithCounts): HTMLElement | null {
   const slider = card.querySelector<HTMLDivElement>('div.slider')
   if (slider !== null) slider.style.width = `${percentSeen.toFixed(FIXED_DECIMAL_PLACES)}%`
   card.addEventListener('click', () => {
-    Publish('Navigate:Load', folder.path)
+    publish('Navigate:Load', folder.path)
   })
   return card
 }
@@ -73,7 +73,7 @@ function BuildFolders(data: Listing): void {
   if (hasChildren) {
     Internals.UnhideTab('a[href="#tabFolders"]')
     if (!hasPictures) {
-      Publish('Tab:Select', 'Folders')
+      publish('Tab:Select', 'Folders')
     }
   } else {
     Internals.HideTab('a[href="#tabFolders"]')
@@ -81,9 +81,9 @@ function BuildFolders(data: Listing): void {
   Internals.BuildAllCards(data)
 }
 
-export function Init(): void {
-  Folders.FolderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
-  Subscribe('Navigate:Data', async (data) => {
+export function init(): void {
+  Folders.folderCard = document.querySelector<HTMLTemplateElement>('#folderCard')?.content ?? null
+  subscribe('Navigate:Data', async (data) => {
     if (isListing(data)) Internals.BuildFolders(data)
     await Promise.resolve()
   })

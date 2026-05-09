@@ -1,7 +1,7 @@
 'use sanity'
 
 import { hasValue } from '#utils/helpers.js'
-import { Subscribe, Publish, Defer } from './pubsub.js'
+import { subscribe, publish, defer } from './pubsub.js'
 
 const ANIMATION_RESET_DELAY = 100
 const DISPLAY_VISIBLE = 'block'
@@ -12,42 +12,42 @@ export const Loading = {
   navbar: null as HTMLElement | null,
 }
 
-export function Init(): void {
+export function init(): void {
   Loading.overlay = document.querySelector<HTMLElement>('#loadingScreen')
   Loading.navbar = document.querySelector<HTMLElement>('#navbar')
 
-  Subscribe('Loading:Error', async (message) => {
+  subscribe('Loading:Error', async (message) => {
     if (hasValue(message) && message !== '') {
       window.console.error(message)
     }
     Loading.navbar?.style.removeProperty('transition')
     Loading.navbar?.style.setProperty('background-color', '#FF0000')
     await Promise.resolve()
-    Defer(() => {
+    defer(() => {
       Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
       Loading.navbar?.style.removeProperty('background-color')
     }, ANIMATION_RESET_DELAY)
-    Publish('Loading:Hide')
+    publish('Loading:Hide')
   })
-  Subscribe('Loading:Success', async () => {
+  subscribe('Loading:Success', async () => {
     Loading.navbar?.style.removeProperty('transition')
     Loading.navbar?.style.setProperty('background-color', '#00AA00')
     await Promise.resolve()
-    Defer(() => {
+    defer(() => {
       Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
       Loading.navbar?.style.removeProperty('background-color')
     }, ANIMATION_RESET_DELAY)
   })
-  Subscribe('Loading:Hide', async () => {
+  subscribe('Loading:Hide', async () => {
     Loading.overlay?.style.setProperty('display', DISPLAY_HIDDEN)
     await Promise.resolve()
   })
-  Subscribe('Loading:Show', async () => {
+  subscribe('Loading:show', async () => {
     Loading.overlay?.style.setProperty('display', DISPLAY_VISIBLE)
     await Promise.resolve()
   })
 }
 
-export function IsLoading(): boolean {
+export function isLoading(): boolean {
   return Loading.overlay?.style.getPropertyValue('display') === DISPLAY_VISIBLE
 }

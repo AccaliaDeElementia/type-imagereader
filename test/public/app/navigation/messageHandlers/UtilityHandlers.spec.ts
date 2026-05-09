@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
-import { Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
+import { init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -22,7 +22,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation/messageHandlers Init()', () => {
+describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
   beforeEach(() => {
@@ -33,8 +33,8 @@ describe('public/app/navigation/messageHandlers Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    Subscribe('Tab:Selected', tabSelectedSpy)
-    sandbox.stub(Internals, 'LoadData').resolves()
+    subscribe('Tab:Selected', tabSelectedSpy)
+    sandbox.stub(Internals, 'loadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -55,8 +55,8 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      Init()
-      locationAssignSpy = sandbox.stub(Navigation, 'LocationAssign')
+      init()
+      locationAssignSpy = sandbox.stub(Navigation, 'locationAssign')
       const h = getSubscriber('ACTION:EXECUTE:SLIDESHOW')
       handler = h
     })
@@ -86,7 +86,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      Init()
+      init()
       requestFullscreenStub.resolves()
       exitFullscreenStub.resolves()
       dom.window.document.body.requestFullscreen = requestFullscreenStub
@@ -180,10 +180,10 @@ describe('public/app/navigation/messageHandlers Init()', () => {
   })
   describe('Message Forwarding Message Handlers', () => {
     beforeEach(() => {
-      Init()
+      init()
     })
     const mappers: Array<[string, string]> = [
-      ['Action:Execute:ShowMenu', 'Menu:Show'],
+      ['Action:Execute:ShowMenu', 'Menu:show'],
       ['Action:Execute:HideMenu', 'Menu:Hide'],
       ['Action:Keypress:<Ctrl>ArrowUp', 'Action:Execute:ParentFolder'],
       ['Action:Keypress:<Ctrl>ArrowDown', 'Action:Execute:FirstUnfinished'],

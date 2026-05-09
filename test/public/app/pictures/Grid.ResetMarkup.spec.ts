@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import Sinon from 'sinon'
-import { ResetMarkup } from '#public/scripts/app/pictures/grid.js'
+import { resetMarkup } from '#public/scripts/app/pictures/grid.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/PubSub.js'
 
@@ -17,7 +17,7 @@ html
     div#tabImages
 `
 
-describe('public/app/pictures ResetMarkup()', () => {
+describe('public/app/pictures resetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -38,7 +38,7 @@ describe('public/app/pictures ResetMarkup()', () => {
       node.classList.add('pages')
       tab.appendChild(node)
     }
-    ResetMarkup()
+    resetMarkup()
     expect(tab.children).to.have.lengthOf(0)
   })
   it('should remove existing .page nodes from #tabImages', () => {
@@ -49,7 +49,7 @@ describe('public/app/pictures ResetMarkup()', () => {
       node.classList.add('page')
       tab.appendChild(node)
     }
-    ResetMarkup()
+    resetMarkup()
     expect(tab.children).to.have.lengthOf(0)
   })
   it('should preserve existing non .page nodes from #tabImages', () => {
@@ -60,7 +60,7 @@ describe('public/app/pictures ResetMarkup()', () => {
       node.classList.add('foo')
       tab.appendChild(node)
     }
-    ResetMarkup()
+    resetMarkup()
     expect(tab.children).to.have.lengthOf(15)
   })
 })

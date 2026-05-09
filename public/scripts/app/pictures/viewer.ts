@@ -2,18 +2,18 @@
 
 import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
-import { SelectPage as _SelectPage } from './grid.js'
-import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
+import { selectPage as _selectPage } from './grid.js'
+import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { hasValues, indexPercentToText, indexToText, stringishHasValue } from '#utils/helpers.js'
-import { IsLoading as _IsLoading } from '../loading.js'
-import { PostJSON as _PostJSON } from '../net.js'
-import { Publish } from '../pubsub.js'
+import { isLoading as _isLoading } from '../loading.js'
+import { postJSON as _postJSON } from '../net.js'
+import { publish } from '../pubsub.js'
 
 export const Imports = {
-  GetShowUnreadOnly: _GetShowUnreadOnly,
-  SelectPage: _SelectPage,
-  IsLoading: _IsLoading,
-  PostJSON: _PostJSON,
+  getShowUnreadOnly: _getShowUnreadOnly,
+  selectPage: _selectPage,
+  isLoading: _isLoading,
+  postJSON: _postJSON,
 }
 
 export enum NavigateTo {
@@ -45,7 +45,7 @@ function setTextContent(selector: string, content: string): void {
   document.querySelector(selector)?.replaceChildren(document.createTextNode(content))
 }
 
-export function ResetMarkup(): void {
+export function resetMarkup(): void {
   for (const bar of ['top', 'bottom']) {
     for (const position of ['left', 'center', 'right']) {
       document.querySelector(`.statusBar.${bar} .${position}`)?.replaceChildren('')
@@ -53,46 +53,46 @@ export function ResetMarkup(): void {
   }
   Pictures.mainImage?.setAttribute('src', '')
   Pictures.mainImage?.addEventListener('load', () => {
-    Publish('Loading:Hide')
+    publish('Loading:Hide')
   })
   Pictures.mainImage?.addEventListener('error', () => {
     const src = Pictures.mainImage?.getAttribute('src')
     if (stringishHasValue(src)) {
-      Publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
+      publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
     }
   })
 }
 
-export async function ChangePicture(pic: Picture | undefined): Promise<void> {
-  if (Imports.IsLoading()) {
+export async function changePicture(pic: Picture | undefined): Promise<void> {
+  if (Imports.isLoading()) {
     return
   }
   if (pic === undefined) {
-    Publish('Loading:Error', 'Change Picture called with No Picture to change to')
+    publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
   Pictures.current = pic
-  await Internals.LoadImage().catch(() => null)
-  Publish('Menu:Hide')
+  await Internals.loadImage().catch(() => null)
+  publish('Menu:Hide')
 }
 
-export async function LoadImage(): Promise<void> {
+export async function loadImage(): Promise<void> {
   if (Pictures.current === null) return
   if (Pictures.current.path === '') return
   if (Pictures.nextPending) {
-    Publish('Loading:Show')
+    publish('Loading:show')
   }
   try {
     Pictures.current.seen = true
     Pictures.current.element?.classList.add('seen')
     const modCount = Pictures.modCount
-    const newModCount = await Imports.PostJSON<number | undefined>(
+    const newModCount = await Imports.postJSON<number | undefined>(
       '/api/navigate/latest',
       { path: Pictures.current.path, modCount },
       (o): o is number | undefined => (typeof o === 'number' && Number.isFinite(o)) || o === undefined,
     )
     if (!isUsableModCount(newModCount)) {
-      Publish('Navigate:Reload')
+      publish('Navigate:Reload')
       return
     }
     // eslint-disable-next-line require-atomic-updates -- modCount is intentionally updated with the server response
@@ -109,16 +109,16 @@ export async function LoadImage(): Promise<void> {
     setTextContent('.statusBar.bottom .center', Pictures.current.name)
     setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
     setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
-    Imports.SelectPage(Pictures.current.page ?? DEFAULT_PAGE)
+    Imports.selectPage(Pictures.current.page ?? DEFAULT_PAGE)
     void Internals.LoadNextImage().catch(() => undefined)
-    Publish('Picture:LoadNew')
+    publish('Picture:LoadNew')
   } catch (err) {
-    Publish('Loading:Error', err)
+    publish('Loading:Error', err)
   }
 }
 
 async function LoadNextImage(): Promise<void> {
-  const next = Internals.GetPicture(Imports.GetShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
+  const next = Internals.getPicture(Imports.getShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
   if (next === undefined) {
     Pictures.nextPending = false
     Pictures.nextLoader = Promise.resolve()
@@ -133,7 +133,7 @@ async function LoadNextImage(): Promise<void> {
   await Pictures.nextLoader
 }
 
-export function GetPicture(navi: NavigateTo): Picture | undefined {
+export function getPicture(navi: NavigateTo): Picture | undefined {
   const current = Pictures.current?.index
   if (current === undefined) {
     return undefined
@@ -165,9 +165,9 @@ function ChoosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[
 }
 
 export const Internals = {
-  LoadImage,
+  loadImage,
   LoadNextImage,
-  GetPicture,
+  getPicture,
   ChoosePictureIndex,
   makeURI,
 }

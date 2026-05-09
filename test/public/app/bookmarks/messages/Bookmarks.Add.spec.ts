@@ -10,7 +10,7 @@ import { cast } from '#testutils/TypeGuards.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks, Imports, Init } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, Imports, init } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
 
@@ -33,7 +33,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks Init Bookmarks:Add', () => {
+describe('public/app/bookmarks init Bookmarks:Add', () => {
   let dom: JSDOM = new JSDOM('', {})
 
   let postJSONSpy = sandbox.stub()
@@ -61,8 +61,8 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    postJSONSpy = sandbox.stub(Imports, 'PostJSON').resolves()
-    Init()
+    postJSONSpy = sandbox.stub(Imports, 'postJSON').resolves()
+    init()
   })
   afterEach(() => {
     sandbox.restore()

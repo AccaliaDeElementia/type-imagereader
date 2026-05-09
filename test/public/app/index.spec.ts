@@ -34,34 +34,34 @@ describe('public/app initialzation', () => {
   afterAll(() => {
     sandbox.restore()
   })
-  it('should call Loading.Init()', () => {
+  it('should call Loading.init()', () => {
     expect(loadingInitSpy.called).to.equal(true)
   })
-  it('should call Confirm.Init()', () => {
+  it('should call Confirm.init()', () => {
     expect(confirmInitSpy.called).to.equal(true)
   })
-  it('should call Actions.Init()', () => {
+  it('should call Actions.init()', () => {
     expect(actionsInitSpy.called).to.equal(true)
   })
-  it('should call Tabs.Init()', () => {
+  it('should call Tabs.init()', () => {
     expect(tabsInitSpy.called).to.equal(true)
   })
-  it('should call Folders.Init()', () => {
+  it('should call Folders.init()', () => {
     expect(foldersInitSpy.called).to.equal(true)
   })
-  it('should call Pictures.Init()', () => {
+  it('should call Pictures.init()', () => {
     expect(picturesInitSpy.called).to.equal(true)
   })
-  it('should call Bookmarks.Init()', () => {
+  it('should call Bookmarks.init()', () => {
     expect(bookmarksInitSpy.called).to.equal(true)
   })
-  it('should call Navigation.Init()', () => {
+  it('should call Navigation.init()', () => {
     expect(navigationInitSpy.called).to.equal(true)
   })
-  it('should call PubSub.StartDeferred()', () => {
+  it('should call PubSub.startDeferred()', () => {
     expect(pubsubDeferredSpy.called).to.equal(true)
   })
-  it('should call WakeLock.Init()', () => {
+  it('should call WakeLock.init()', () => {
     expect(wakeLockInitSpy.called).to.equal(true)
   })
 })

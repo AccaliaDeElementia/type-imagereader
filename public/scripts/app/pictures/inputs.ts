@@ -1,78 +1,78 @@
 'use sanity'
 
 import { hasValue, hasValues, ZERO_LENGTH } from '#utils/helpers.js'
-import { IsMenuActive as _IsMenuActive } from '../navigation.js'
+import { isMenuActive as _isMenuActive } from '../navigation.js'
 import { UNINITIALIZED_SCALE } from './state.js'
 import { Pictures } from './index.js'
-import { ChangePicture as _ChangePicture, GetPicture as _GetPicture, NavigateTo } from './viewer.js'
-import { LoadCurrentPageImages as _LoadCurrentPageImages } from './grid.js'
-import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
-import { Publish, Subscribe } from '../pubsub.js'
+import { changePicture as _changePicture, getPicture as _getPicture, NavigateTo } from './viewer.js'
+import { loadCurrentPageImages as _loadCurrentPageImages } from './grid.js'
+import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
+import { publish, subscribe } from '../pubsub.js'
 
 export const Imports = {
-  GetShowUnreadOnly: _GetShowUnreadOnly,
-  LoadCurrentPageImages: _LoadCurrentPageImages,
-  ChangePicture: _ChangePicture,
-  GetPicture: _GetPicture,
-  IsMenuActive: _IsMenuActive,
+  getShowUnreadOnly: _getShowUnreadOnly,
+  loadCurrentPageImages: _loadCurrentPageImages,
+  changePicture: _changePicture,
+  getPicture: _getPicture,
+  isMenuActive: _isMenuActive,
 }
 
 const LEFT_THIRD = 0.3333333333333333
 const RIGHT_THIRD = 0.6666666666666666
 
-export function InitActions(): void {
+export function initActions(): void {
   const doIfNoMenu = (action: string) => async () => {
-    if (!Imports.IsMenuActive()) {
-      Publish(`Action:Execute:${action}`)
+    if (!Imports.isMenuActive()) {
+      publish(`Action:Execute:${action}`)
     } else if (hasValues(Pictures.pictures)) {
-      Publish('Action:Execute:HideMenu')
+      publish('Action:Execute:HideMenu')
     }
     await Promise.resolve()
   }
-  Subscribe('Action:Keypress:ArrowUp', doIfNoMenu('ShowMenu'))
-  Subscribe('Action:Keypress:ArrowRight', doIfNoMenu('Next'))
-  Subscribe('Action:Keypress:ArrowLeft', doIfNoMenu('Previous'))
-  Subscribe('Action:Gamepad:Right', doIfNoMenu('Next'))
-  Subscribe('Action:Gamepad:LRight', doIfNoMenu('NextUnseen'))
-  Subscribe('Action:Gamepad:RRight', doIfNoMenu('NextImage'))
-  Subscribe('Action:Gamepad:Left', doIfNoMenu('Previous'))
-  Subscribe('Action:Gamepad:LLeft', doIfNoMenu('PreviousUnseen'))
-  Subscribe('Action:Gamepad:RLeft', doIfNoMenu('PreviousImage'))
-  Subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ShowMenu'))
+  subscribe('Action:Keypress:ArrowUp', doIfNoMenu('ShowMenu'))
+  subscribe('Action:Keypress:ArrowRight', doIfNoMenu('Next'))
+  subscribe('Action:Keypress:ArrowLeft', doIfNoMenu('Previous'))
+  subscribe('Action:Gamepad:Right', doIfNoMenu('Next'))
+  subscribe('Action:Gamepad:LRight', doIfNoMenu('NextUnseen'))
+  subscribe('Action:Gamepad:RRight', doIfNoMenu('NextImage'))
+  subscribe('Action:Gamepad:Left', doIfNoMenu('Previous'))
+  subscribe('Action:Gamepad:LLeft', doIfNoMenu('PreviousUnseen'))
+  subscribe('Action:Gamepad:RLeft', doIfNoMenu('PreviousImage'))
+  subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ShowMenu'))
 
   const changeTo = async (direction: NavigateTo): Promise<void> => {
-    await Imports.ChangePicture(Imports.GetPicture(direction))
+    await Imports.changePicture(Imports.getPicture(direction))
   }
 
-  Subscribe('Action:Execute:Previous', async () => {
-    const actualEvent = Imports.GetShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
-    Publish(`Action:Execute:${actualEvent}`)
+  subscribe('Action:Execute:Previous', async () => {
+    const actualEvent = Imports.getShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
+    publish(`Action:Execute:${actualEvent}`)
     await Promise.resolve()
   })
-  Subscribe('Action:Execute:Next', async () => {
-    const actualEvent = Imports.GetShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
-    Publish(`Action:Execute:${actualEvent}`)
+  subscribe('Action:Execute:Next', async () => {
+    const actualEvent = Imports.getShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
+    publish(`Action:Execute:${actualEvent}`)
     await Promise.resolve()
   })
-  Subscribe('Action:Execute:First', async () => {
+  subscribe('Action:Execute:First', async () => {
     await changeTo(NavigateTo.First)
   })
-  Subscribe('Action:Execute:PreviousImage', async () => {
+  subscribe('Action:Execute:PreviousImage', async () => {
     await changeTo(NavigateTo.Previous)
   })
-  Subscribe('Action:Execute:PreviousUnseen', async () => {
+  subscribe('Action:Execute:PreviousUnseen', async () => {
     await changeTo(NavigateTo.PreviousUnread)
   })
-  Subscribe('Action:Execute:NextImage', async () => {
+  subscribe('Action:Execute:NextImage', async () => {
     await changeTo(NavigateTo.Next)
   })
-  Subscribe('Action:Execute:NextUnseen', async () => {
+  subscribe('Action:Execute:NextUnseen', async () => {
     await changeTo(NavigateTo.NextUnread)
   })
-  Subscribe('Action:Execute:Last', async () => {
+  subscribe('Action:Execute:Last', async () => {
     await changeTo(NavigateTo.Last)
   })
-  Subscribe('Action:Execute:ViewFullSize', async () => {
+  subscribe('Action:Execute:ViewFullSize', async () => {
     if (Pictures.current !== null) {
       window.open(`/images/full${Pictures.current.path}`)
     }
@@ -80,23 +80,23 @@ export function InitActions(): void {
   })
   const addBookmark = async (): Promise<void> => {
     if (Pictures.current !== null) {
-      Publish('Bookmarks:Add', Pictures.current.path)
+      publish('Bookmarks:Add', Pictures.current.path)
     }
     await Promise.resolve()
   }
-  Subscribe('Action:Execute:Bookmark', addBookmark)
-  Subscribe('Action:Gamepad:B', addBookmark)
-  Subscribe('Pictures:SelectPage', async () => {
-    Imports.LoadCurrentPageImages()
+  subscribe('Action:Execute:Bookmark', addBookmark)
+  subscribe('Action:Gamepad:B', addBookmark)
+  subscribe('Pictures:selectPage', async () => {
+    Imports.loadCurrentPageImages()
     await Promise.resolve()
   })
 }
 
-export function InitMouse(): void {
+export function initMouse(): void {
   Pictures.initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
   Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
     if (hasValue(window.visualViewport) && Pictures.initialScale < window.visualViewport.scale) {
-      Publish('Ignored Mouse Click', evt)
+      publish('Ignored Mouse Click', evt)
       return
     }
     const target = Pictures.mainImage?.parentElement?.getBoundingClientRect() ?? {
@@ -104,16 +104,16 @@ export function InitMouse(): void {
       width: ZERO_LENGTH,
     }
     if (target.width === ZERO_LENGTH) {
-      Publish('Ignored Mouse Click', evt)
+      publish('Ignored Mouse Click', evt)
       return
     }
     const x = evt.clientX - target.left
     if (x < target.width * LEFT_THIRD) {
-      Publish('Action:Execute:Previous')
+      publish('Action:Execute:Previous')
     } else if (x > target.width * RIGHT_THIRD) {
-      Publish('Action:Execute:Next')
+      publish('Action:Execute:Next')
     } else {
-      Publish('Action:Execute:ShowMenu')
+      publish('Action:Execute:ShowMenu')
     }
   })
 }

@@ -19,8 +19,8 @@ html
   body
     div.selectUnreadAll
       div
-        span.all Show All
-        span.unread Show Unread
+        span.all show All
+        span.unread show Unread
     div#mainMenu
     div#bigImage
       img.hidden
@@ -51,7 +51,7 @@ html
         ul.pagination
 `
 
-describe('public/app/pictures Init()', () => {
+describe('public/app/pictures init()', () => {
   let dom = new JSDOM(render(markup), {})
   let resetMarkupSpy = sandbox.stub()
   let initActionsSpy = sandbox.stub()
@@ -65,12 +65,12 @@ describe('public/app/pictures Init()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    resetMarkupSpy = sandbox.stub(Pictures, 'ResetMarkup')
-    initActionsSpy = sandbox.stub(Imports, 'InitActions')
-    initMouseSpy = sandbox.stub(Imports, 'InitMouse')
-    initUnreadSliderSpy = sandbox.stub(Imports, 'InitUnreadSelectorSlider')
-    loadDataSpy = sandbox.stub(Imports, 'LoadData')
-    changePictureSpy = sandbox.stub(Imports, 'ChangePicture')
+    resetMarkupSpy = sandbox.stub(Pictures, 'resetMarkup')
+    initActionsSpy = sandbox.stub(Imports, 'initActions')
+    initMouseSpy = sandbox.stub(Imports, 'initMouse')
+    initUnreadSliderSpy = sandbox.stub(Imports, 'initUnreadSelectorSlider')
+    loadDataSpy = sandbox.stub(Imports, 'loadData')
+    changePictureSpy = sandbox.stub(Imports, 'changePicture')
   })
   afterEach(() => {
     sandbox.restore()
@@ -78,46 +78,46 @@ describe('public/app/pictures Init()', () => {
   })
   it('should clear pictures array', () => {
     Pictures.pictures = cast<Picture[]>(null)
-    Pictures.Init()
+    Pictures.init()
     expect(Pictures.pictures).to.deep.equal([])
   })
   it('should clear current picture', () => {
     Pictures.current = cast<Picture>(false)
-    Pictures.Init()
+    Pictures.init()
     expect(Pictures.current).to.equal(null)
   })
   it('should reset nextLoader promise', () => {
     Pictures.nextLoader = cast<Promise<void>>(null)
-    Pictures.Init()
+    Pictures.init()
     expect(Pictures.nextLoader).to.be.an.instanceOf(Promise)
   })
   it('should reset nextPending status', () => {
     Pictures.nextPending = false
-    Pictures.Init()
+    Pictures.init()
     expect(Pictures.nextPending).to.equal(true)
   })
   it('should reset markup on init', () => {
     expect(resetMarkupSpy.called).to.equal(false)
-    Pictures.Init()
+    Pictures.init()
     expect(resetMarkupSpy.called).to.equal(true)
   })
   it('should init actions on main init', () => {
     expect(initActionsSpy.called).to.equal(false)
-    Pictures.Init()
+    Pictures.init()
     expect(initActionsSpy.called).to.equal(true)
   })
   it('should init mouse on main init', () => {
     expect(initMouseSpy.called).to.equal(false)
-    Pictures.Init()
+    Pictures.init()
     expect(initMouseSpy.called).to.equal(true)
   })
   it('should init unread slider on main init', () => {
     expect(initUnreadSliderSpy.called).to.equal(false)
-    Pictures.Init()
+    Pictures.init()
     expect(initUnreadSliderSpy.called).to.equal(true)
   })
   it('should register subscribers for Navigate:Data and Pictures:Change', () => {
-    Pictures.Init()
+    Pictures.init()
     expect(PubSub.subscribers).to.have.all.keys('NAVIGATE:DATA', 'PICTURES:CHANGE')
   })
   const testCases: Array<[string, boolean, unknown]> = [
@@ -130,7 +130,7 @@ describe('public/app/pictures Init()', () => {
   ]
   testCases.forEach(([name, expected, data]) => {
     it(`should ${expected ? 'load data' : 'ignore'} ${name} in Navigate:Load handler`, async () => {
-      Pictures.Init()
+      Pictures.init()
       const handler = getSubscriber('NAVIGATE:DATA')
       await handler(data)
       expect(loadDataSpy.called).to.equal(expected)
@@ -146,7 +146,7 @@ describe('public/app/pictures Init()', () => {
   ]
   pictureChangeCases.forEach(([name, expected, data]) => {
     it(`should ${expected ? 'change picture' : 'ignore'} ${name} in Pictures:Change handler`, async () => {
-      Pictures.Init()
+      Pictures.init()
       const handler = getSubscriber('PICTURES:CHANGE')
       await handler(data)
       expect(changePictureSpy.called).to.equal(expected)

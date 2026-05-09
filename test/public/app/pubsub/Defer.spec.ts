@@ -3,27 +3,27 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 
-import { PubSub, Defer } from '#public/scripts/app/pubsub.js'
+import { PubSub, defer } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
-describe('public/app/pubsub Defer()', () => {
+describe('public/app/pubsub defer()', () => {
   beforeEach(() => {
     resetPubSub()
     PubSub.cycleTime = 10
   })
   it('should add exactly one item to deferred list', () => {
     const spy = Sinon.spy()
-    Defer(spy, 0)
+    defer(spy, 0)
     expect(PubSub.deferred).to.have.lengthOf(1)
   })
   it('should store provided method in deferred list', () => {
     const spy = Sinon.spy()
-    Defer(spy, 0)
+    defer(spy, 0)
     expect(PubSub.deferred.pop()?.method).to.equal(spy)
   })
   it('deferred method does not immediately fire', () => {
     const spy = Sinon.spy()
-    Defer(spy, 0)
+    defer(spy, 0)
     expect(spy.callCount).to.equal(0)
   })
   it('should grow deferred list to 11 items when appending', () => {
@@ -33,7 +33,7 @@ describe('public/app/pubsub Defer()', () => {
         delayCycles: 1,
       })),
     )
-    Defer(Sinon.spy(), 0)
+    defer(Sinon.spy(), 0)
     expect(PubSub.deferred).to.have.lengthOf(11)
   })
   it('should append method as last deferred item', () => {
@@ -44,7 +44,7 @@ describe('public/app/pubsub Defer()', () => {
       })),
     )
     const spy = Sinon.spy()
-    Defer(spy, 0)
+    defer(spy, 0)
     expect(PubSub.deferred.pop()?.method).to.equal(spy)
   })
   const delayMaps: Array<[number, number]> = [
@@ -64,7 +64,7 @@ describe('public/app/pubsub Defer()', () => {
   ]
   for (const [delay, mapped] of delayMaps) {
     it(`should convert a delay of ${delay}ms to ${mapped} delay cycles`, () => {
-      Defer(Sinon.spy(), delay)
+      defer(Sinon.spy(), delay)
       expect(PubSub.deferred.pop()?.delayCycles).to.equal(mapped)
     })
   }

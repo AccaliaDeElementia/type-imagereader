@@ -17,7 +17,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeViewport = { scale: 1 }
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
-    fakeAssign = sandbox.stub(WebSockets, 'LocationAssign')
+    fakeAssign = sandbox.stub(WebSockets, 'locationAssign')
     mountDom(dom)
     global.window.visualViewport = cast<VisualViewport>(fakeViewport)
   })

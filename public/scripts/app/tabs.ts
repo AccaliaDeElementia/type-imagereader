@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Subscribe, Publish } from './pubsub.js'
+import { subscribe, publish } from './pubsub.js'
 
 const DEFAULT_TAB = 0
 const SCROLL_TOP = 0
@@ -10,7 +10,7 @@ export const Tabs = {
   tabNames: [] as string[],
 }
 
-export function Init(): void {
+export function init(): void {
   Tabs.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
   Tabs.tabNames = Tabs.tabs.map((tab) => tab.getAttribute('href')).filter((name) => name !== null)
 
@@ -21,7 +21,7 @@ export function Init(): void {
     })
   }
 
-  Subscribe('Tab:Select', async (name) => {
+  subscribe('Tab:Select', async (name) => {
     if (typeof name === 'string') Internals.SelectTab(name)
     await Promise.resolve()
   })
@@ -41,7 +41,7 @@ function SelectTab(href?: string): void {
     tab.parentElement?.classList.remove('active')
     target = setTabActive(tab, lowerHref) ?? target
   }
-  Publish('Tab:Selected', target)
+  publish('Tab:Selected', target)
 }
 
 function setTabActive(tab: HTMLElement, activeHref: string | undefined): string | null {

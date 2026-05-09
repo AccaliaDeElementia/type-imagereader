@@ -8,7 +8,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks, Init, Internals } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, init, Internals } from '#public/scripts/app/bookmarks.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -29,7 +29,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks Init Navigate:Data', () => {
+describe('public/app/bookmarks init Navigate:Data', () => {
   let dom: JSDOM = new JSDOM('', {})
 
   let BuildBookmarksSpy = sandbox.stub()
@@ -48,7 +48,7 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
 
     BuildBookmarksSpy = sandbox.stub(Internals, 'buildBookmarks')
 
-    Init()
+    init()
   })
   afterEach(() => {
     sandbox.restore()

@@ -7,7 +7,7 @@ import { render } from 'pug'
 import { cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { ResetMarkup } from '#public/scripts/app/pictures/viewer.js'
+import { resetMarkup } from '#public/scripts/app/pictures/viewer.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -30,7 +30,7 @@ html
         div.right
 `
 
-describe('public/app/pictures ResetMarkup()', () => {
+describe('public/app/pictures resetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
   const loadingErrorSpy = sandbox.stub().resolves()
   const loadingHideSpy = sandbox.stub().resolves()
@@ -66,7 +66,7 @@ describe('public/app/pictures ResetMarkup()', () => {
       const node = dom.window.document.querySelector(`.statusBar.${x} .${y}`)
       assert(node !== null)
       node.innerHTML = '<span>FOO</span>'
-      ResetMarkup()
+      resetMarkup()
       expect(node.innerHTML).to.equal('')
     })
   })
@@ -74,14 +74,14 @@ describe('public/app/pictures ResetMarkup()', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
     img.src = 'https://127.0.0.1:42069/blaze.gif'
-    ResetMarkup()
+    resetMarkup()
     expect(img.src).to.equal('http://127.0.0.1:2999/') // not blank due to how jsdom handles URIs
   })
   it('should publish Loading:Hide on mainImage load event', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
     const evt = new dom.window.Event('load')
-    ResetMarkup()
+    resetMarkup()
     expect(loadingHideSpy.called).to.equal(false)
     img.dispatchEvent(evt)
     expect(loadingHideSpy.called).to.equal(true)
@@ -90,7 +90,7 @@ describe('public/app/pictures ResetMarkup()', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
-    ResetMarkup()
+    resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     expect(loadingErrorSpy.called).to.equal(false)
     img.dispatchEvent(evt)
@@ -100,7 +100,7 @@ describe('public/app/pictures ResetMarkup()', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
-    ResetMarkup()
+    resetMarkup()
     img.setAttribute('src', '')
     img.dispatchEvent(evt)
     expect(loadingErrorSpy.called).to.equal(false)
@@ -109,7 +109,7 @@ describe('public/app/pictures ResetMarkup()', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
-    ResetMarkup()
+    resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = null
     img.dispatchEvent(evt)
@@ -119,7 +119,7 @@ describe('public/app/pictures ResetMarkup()', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
-    ResetMarkup()
+    resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = { name: cast<string>(null), path: '', seen: false }
     img.dispatchEvent(evt)
@@ -129,7 +129,7 @@ describe('public/app/pictures ResetMarkup()', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
     const evt = new dom.window.ErrorEvent('error')
-    ResetMarkup()
+    resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = { name: 'blaze.gif', path: '', seen: false }
     img.dispatchEvent(evt)

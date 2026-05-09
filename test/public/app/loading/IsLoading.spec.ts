@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Init, IsLoading, Loading } from '#public/scripts/app/loading.js'
+import { init, isLoading, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -15,7 +15,7 @@ html
     nav#navbar
     div#loadingScreen
 `
-describe('public/app/loading IsLoading()', () => {
+describe('public/app/loading isLoading()', () => {
   let dom: JSDOM = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -25,7 +25,7 @@ describe('public/app/loading IsLoading()', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    Init()
+    init()
   })
   afterEach(() => {
     sandbox.restore()
@@ -57,10 +57,10 @@ describe('public/app/loading IsLoading()', () => {
     ['inherit', false],
   ]
   testCases.forEach(([style, expected]) => {
-    it(`should ${expected ? '' : 'not '}consider ${style} as IsLoading`, () => {
+    it(`should ${expected ? '' : 'not '}consider ${style} as isLoading`, () => {
       const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
       overlay?.style.setProperty('display', style)
-      expect(IsLoading()).to.equal(expected)
+      expect(isLoading()).to.equal(expected)
     })
   })
 })

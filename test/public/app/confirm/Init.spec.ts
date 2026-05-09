@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Confirm, Init, Show } from '#public/scripts/app/confirm.js'
+import { Confirm, init, show } from '#public/scripts/app/confirm.js'
 
 const markup = `
 html
@@ -18,7 +18,7 @@ html
           button.confirm Confirm
 `
 
-describe('public/app/confirm Init()', () => {
+describe('public/app/confirm init()', () => {
   beforeEach(() => {
     const dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })
     mountDom(dom)
@@ -26,7 +26,7 @@ describe('public/app/confirm Init()', () => {
     Confirm.titleElement = null
     Confirm.messageElement = null
     Confirm.resolve = undefined
-    Init()
+    init()
   })
 
   afterEach(() => {
@@ -46,13 +46,13 @@ describe('public/app/confirm Init()', () => {
   })
 
   it('should resolve true when confirm button is clicked', async () => {
-    const result = Show('test', 'Test Title')
+    const result = show('test', 'Test Title')
     document.querySelector<HTMLElement>('#confirmDialog .confirm')?.click()
     expect(await result).to.equal(true)
   })
 
   it('should resolve false when cancel button is clicked', async () => {
-    const result = Show('test', 'Test Title')
+    const result = show('test', 'Test Title')
     document.querySelector<HTMLElement>('#confirmDialog .cancel')?.click()
     expect(await result).to.equal(false)
   })

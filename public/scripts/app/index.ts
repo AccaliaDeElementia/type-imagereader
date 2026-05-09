@@ -1,27 +1,27 @@
 'use sanity'
 
-import { Init as _LoadingInit } from './loading.js'
-import { Init as _ConfirmInit } from './confirm.js'
-import { Init as _ActionsInit } from './actions.js'
-import { Init as _TabsInit } from './tabs.js'
-import { Init as _FoldersInit } from './folders.js'
+import { init as _loadingInit } from './loading.js'
+import { init as _confirmInit } from './confirm.js'
+import { init as _actionsInit } from './actions.js'
+import { init as _tabsInit } from './tabs.js'
+import { init as _foldersInit } from './folders.js'
 import { Pictures } from './pictures/index.js'
-import { Init as _BookmarksInit } from './bookmarks.js'
-import { Init as _NavigationInit } from './navigation.js'
-import { Init as _WakeLockInit } from './wakelock.js'
-import { StartDeferred as _PubSubStartDeferred } from './pubsub.js'
+import { init as _bookmarksInit } from './bookmarks.js'
+import { init as _navigationInit } from './navigation.js'
+import { init as _wakeLockInit } from './wakelock.js'
+import { startDeferred as _pubSubStartDeferred } from './pubsub.js'
 
 export const Imports = {
-  LoadingInit: _LoadingInit,
-  ConfirmInit: _ConfirmInit,
-  TabsInit: _TabsInit,
-  WakeLockInit: _WakeLockInit,
-  FoldersInit: _FoldersInit,
-  BookmarksInit: _BookmarksInit,
-  ActionsInit: _ActionsInit,
-  NavigationInit: _NavigationInit,
-  PicturesInit: Pictures.Init,
-  PubSubStartDeferred: _PubSubStartDeferred,
+  LoadingInit: _loadingInit,
+  ConfirmInit: _confirmInit,
+  TabsInit: _tabsInit,
+  WakeLockInit: _wakeLockInit,
+  FoldersInit: _foldersInit,
+  BookmarksInit: _bookmarksInit,
+  ActionsInit: _actionsInit,
+  NavigationInit: _navigationInit,
+  PicturesInit: Pictures.init,
+  PubSubStartDeferred: _pubSubStartDeferred,
 }
 
 export function bootstrap(): void {

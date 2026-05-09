@@ -48,7 +48,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
 
     resetPubSub()
 
-    Bookmarks.BookmarkFolders = []
+    Bookmarks.bookmarkFolders = []
     Bookmarks.bookmarkCard = dom.window.document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     Bookmarks.bookmarkFolder = dom.window.document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     Bookmarks.bookmarksTab = dom.window.document.querySelector<HTMLElement>('#tabBookmarks')
@@ -347,7 +347,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
   })
   const buildBookmarksWithFolders = (dom: JSDOM): void => {
     getFolderSpy.callsFake(() => {
-      Bookmarks.BookmarkFolders = [
+      Bookmarks.bookmarkFolders = [
         { path: 'Z', element: dom.window.document.createElement('details') },
         { path: 'M', element: dom.window.document.createElement('details') },
         { path: 'A', element: dom.window.document.createElement('details') },
@@ -361,31 +361,31 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       bookmarks: [{ path: '/', name: '', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     })
   }
-  it('should preserve all 4 BookmarkFolders after sort', () => {
+  it('should preserve all 4 bookmarkFolders after sort', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders).to.have.length(4)
+    expect(Bookmarks.bookmarkFolders).to.have.length(4)
   })
-  it('should sort BookmarkFolders: index 0 should be A', () => {
+  it('should sort bookmarkFolders: index 0 should be A', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders[0]?.path).to.equal('A')
+    expect(Bookmarks.bookmarkFolders[0]?.path).to.equal('A')
   })
-  it('should sort BookmarkFolders: index 1 should be M', () => {
+  it('should sort bookmarkFolders: index 1 should be M', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders[1]?.path).to.equal('M')
+    expect(Bookmarks.bookmarkFolders[1]?.path).to.equal('M')
   })
-  it('should sort BookmarkFolders: index 2 should be M', () => {
+  it('should sort bookmarkFolders: index 2 should be M', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders[2]?.path).to.equal('M')
+    expect(Bookmarks.bookmarkFolders[2]?.path).to.equal('M')
   })
-  it('should sort BookmarkFolders: index 3 should be Z', () => {
+  it('should sort bookmarkFolders: index 3 should be Z', () => {
     buildBookmarksWithFolders(dom)
-    expect(Bookmarks.BookmarkFolders[3]?.path).to.equal('Z')
+    expect(Bookmarks.bookmarkFolders[3]?.path).to.equal('Z')
   })
   it('should call appendChild once for each BookmarkFolder', () => {
     getFolderSpy.callsFake(() => {
-      Bookmarks.BookmarkFolders = []
+      Bookmarks.bookmarkFolders = []
       for (let i = 1; i <= 100; i += 1) {
-        Bookmarks.BookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
+        Bookmarks.bookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
       }
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
@@ -400,9 +400,9 @@ describe('public/app/bookmarks buildBookmarks()', () => {
   })
   it('should append each BookmarkFolder element to the tab', () => {
     getFolderSpy.callsFake(() => {
-      Bookmarks.BookmarkFolders = []
+      Bookmarks.bookmarkFolders = []
       for (let i = 1; i <= 100; i += 1) {
-        Bookmarks.BookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
+        Bookmarks.bookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
       }
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
@@ -413,7 +413,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       path: '/',
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     })
-    for (const folder of Bookmarks.BookmarkFolders) {
+    for (const folder of Bookmarks.bookmarkFolders) {
       expect(appendChildSpy.calledWith(Sinon.match.same(folder.element))).to.equal(true)
     }
   })

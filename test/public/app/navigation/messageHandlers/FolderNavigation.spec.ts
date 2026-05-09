@@ -6,8 +6,8 @@ import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Subscribe } from '#public/scripts/app/pubsub.js'
-import { Imports, Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { subscribe } from '#public/scripts/app/pubsub.js'
+import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/TypeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { eventuallyRejects } from '#testutils/Errors.js'
@@ -25,7 +25,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation/messageHandlers Init()', () => {
+describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
   beforeEach(() => {
@@ -36,8 +36,8 @@ describe('public/app/navigation/messageHandlers Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    Subscribe('Tab:Selected', tabSelectedSpy)
-    sandbox.stub(Internals, 'LoadData').resolves()
+    subscribe('Tab:Selected', tabSelectedSpy)
+    sandbox.stub(Internals, 'loadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -70,8 +70,8 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     }
     beforeEach(() => {
       navigateToStub = sandbox.stub(Internals, 'NavigateTo')
-      showUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
-      Init()
+      showUnreadOnlyStub = sandbox.stub(Imports, 'getShowUnreadOnly').returns(false)
+      init()
       previousFolder = {
         name: `Foo ${Math.random()}`,
         path: `/Foo ${Math.random()}`,
@@ -154,8 +154,8 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     }
     beforeEach(() => {
       navigateToStub = sandbox.stub(Internals, 'NavigateTo')
-      showUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
-      Init()
+      showUnreadOnlyStub = sandbox.stub(Imports, 'getShowUnreadOnly').returns(false)
+      init()
       nextFolder = {
         name: `Foo ${Math.random()}`,
         path: `/Foo ${Math.random()}`,
@@ -228,7 +228,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     }
     beforeEach(() => {
       navigateToStub = sandbox.stub(Internals, 'NavigateTo')
-      Init()
+      init()
       parentFolder = `/Foo ${Math.random()}`
       Navigation.current.parent = parentFolder
       const h = getSubscriber('ACTION:EXECUTE:PARENTFOLDER')
@@ -269,7 +269,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     let children = [{ name: '', path: '', cover: '', seenCount: 0, totalCount: 0 }]
     beforeEach(() => {
       navigateToStub = sandbox.stub(Internals, 'NavigateTo')
-      Init()
+      init()
       children = Array(20)
         .fill(undefined)
         .map((_, i) => ({

@@ -2,16 +2,16 @@
 
 import type { Listing, Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
-import { MakeTab as _MakeTab } from './grid.js'
-import { LoadImage as _LoadImage } from './viewer.js'
+import { makeTab as _makeTab } from './grid.js'
+import { loadImage as _loadImage } from './viewer.js'
 import { getFirst } from '#utils/helpers.js'
-import { Publish } from '../pubsub.js'
+import { publish } from '../pubsub.js'
 
 const DEFAULT_MOD_COUNT = -1
 
 export const Imports = {
-  MakeTab: _MakeTab,
-  LoadImage: _LoadImage,
+  makeTab: _makeTab,
+  loadImage: _loadImage,
 }
 
 function SetPictureIndices(): void {
@@ -25,7 +25,7 @@ function SetPicturesGetFirst(data: Listing): Picture | null {
   const firstPic = getFirst(data.pictures)
   if (data.pictures === undefined || firstPic === undefined) {
     Pictures.mainImage.classList.add('hidden')
-    Publish('Menu:Show')
+    publish('Menu:show')
     document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.add('hidden')
     return null
   }
@@ -42,8 +42,8 @@ export const Internals = {
   SetPictureIndices,
 }
 
-export async function LoadData(data: Listing): Promise<void> {
-  Pictures.ResetMarkup()
+export async function loadData(data: Listing): Promise<void> {
+  Pictures.resetMarkup()
   const firstPic = Internals.SetPicturesGetFirst(data)
   if (firstPic === null) return
 
@@ -53,12 +53,12 @@ export async function LoadData(data: Listing): Promise<void> {
   } else {
     Pictures.current = selected
   }
-  Imports.MakeTab()
-  Publish('Tab:Select', 'Images')
+  Imports.makeTab()
+  publish('Tab:Select', 'Images')
   if (Pictures.pictures.every((img) => img.seen) && (data.noMenu === undefined || !data.noMenu)) {
-    Publish('Menu:Show')
+    publish('Menu:show')
   } else {
-    Publish('Menu:Hide')
+    publish('Menu:Hide')
   }
-  await Imports.LoadImage().catch(() => null)
+  await Imports.loadImage().catch(() => null)
 }

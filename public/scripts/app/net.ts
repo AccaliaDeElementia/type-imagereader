@@ -26,7 +26,7 @@ export function acceptAnyResponse(_: unknown): _ is unknown {
   return true
 }
 
-export async function GetJSON<T>(path: string, isT: (obj: unknown) => obj is T): Promise<T> {
+export async function getJSON<T>(path: string, isT: (obj: unknown) => obj is T): Promise<T> {
   return await fetch(path, {
     headers: {
       'Accept-Encoding': 'gzip, deflate, br',
@@ -37,7 +37,7 @@ export async function GetJSON<T>(path: string, isT: (obj: unknown) => obj is T):
   }).then(async (response) => await decodeResult<T>(response, isT))
 }
 
-export async function PostJSON<T>(path: string, data: unknown, isT: (obj: unknown) => obj is T): Promise<T> {
+export async function postJSON<T>(path: string, data: unknown, isT: (obj: unknown) => obj is T): Promise<T> {
   return await fetch(path, {
     headers: {
       'Accept-Encoding': 'gzip, deflate, br',

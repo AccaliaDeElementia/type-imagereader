@@ -7,7 +7,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Folders, Init, Internals } from '#public/scripts/app/folders.js'
+import { Folders, init, Internals } from '#public/scripts/app/folders.js'
 import Sinon from 'sinon'
 import type { Listing } from '#contracts/listing.js'
 
@@ -25,7 +25,7 @@ html
       div#tabLink
         a(href="#tabFolders") Folders
       div#tabFolders
-    template#FolderCard
+    template#folderCard
       div.card
         div.card-top
           i.material-icons folder
@@ -36,13 +36,13 @@ html
           div.slider(style="width: 0")
 `
 
-describe('public/app/folders Init()', () => {
+describe('public/app/folders init()', () => {
   let buildFoldersSpy: Sinon.SinonStub = sandbox.stub()
   beforeEach(() => {
     mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
 
     resetPubSub()
-    Folders.FolderCard = null
+    Folders.folderCard = null
     buildFoldersSpy = sandbox.stub(Internals, 'BuildFolders')
   })
   afterEach(() => {
@@ -50,11 +50,11 @@ describe('public/app/folders Init()', () => {
     unmountDom()
   })
   it('should subscribe to Navigate:Data', () => {
-    Init()
+    init()
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
   })
   it('should build folders on Navigate:Data with valid listing', async () => {
-    Init()
+    init()
     const subscriberfn = getSubscriber('NAVIGATE:DATA')
     const data: Listing = {
       name: 'FOO',
@@ -66,7 +66,7 @@ describe('public/app/folders Init()', () => {
     expect(buildFoldersSpy.calledWith(data)).to.equal(true)
   })
   it('should not build folders on Navigate:Data with invalid data', async () => {
-    Init()
+    init()
     const subscriberfn = getSubscriber('NAVIGATE:DATA')
     const data = {
       invalid: 'OBJECT',
@@ -75,12 +75,12 @@ describe('public/app/folders Init()', () => {
     expect(buildFoldersSpy.called).to.equal(false)
   })
   it('should locate and save the folder card for use when building markup', () => {
-    Init()
-    expect(Folders.FolderCard).to.not.equal(null)
+    init()
+    expect(Folders.folderCard).to.not.equal(null)
   })
   it('should set null for missing folder card for use when building markup', () => {
-    document.querySelector('#FolderCard')?.remove()
-    Init()
-    expect(Folders.FolderCard).to.equal(null)
+    document.querySelector('#folderCard')?.remove()
+    init()
+    expect(Folders.folderCard).to.equal(null)
   })
 })

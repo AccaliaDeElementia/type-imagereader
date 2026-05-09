@@ -38,16 +38,16 @@ describe('public/slideshow/sockets Disconnect()', () => {
     Disconnect()
     expect(WebSockets.launchId).to.equal(undefined)
   })
-  it('should clear LocationAssign with socket', () => {
-    WebSockets.LocationAssign = sandbox.stub()
+  it('should clear locationAssign with socket', () => {
+    WebSockets.locationAssign = sandbox.stub()
     Disconnect()
-    expect(WebSockets.LocationAssign).to.equal(Internals.UninitializedLocationAssign)
+    expect(WebSockets.locationAssign).to.equal(Internals.UninitializedLocationAssign)
   })
-  it('should clear LocationAssign without socket', () => {
+  it('should clear locationAssign without socket', () => {
     WebSockets.socket = undefined
-    WebSockets.LocationAssign = sandbox.stub()
+    WebSockets.locationAssign = sandbox.stub()
     Disconnect()
-    expect(WebSockets.LocationAssign).to.equal(Internals.UninitializedLocationAssign)
+    expect(WebSockets.locationAssign).to.equal(Internals.UninitializedLocationAssign)
   })
   it('should clear LocationReload with socket', () => {
     WebSockets.LocationReload = sandbox.stub()

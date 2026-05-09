@@ -65,7 +65,7 @@ export function readBody(req: unknown): BodyData {
 // Export the base-router
 export async function getRouter(_app: Application, _server: Server, _socket: WebSocketServer): Promise<Router> {
   const knex = await Imports.initialize()
-  // Init router and path
+  // init router and path
   const router = Imports.Router()
 
   const logger = Imports.debug('type-imagereader:api')

@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { Subscribe } from '#public/scripts/app/pubsub.js'
+import { subscribe } from '#public/scripts/app/pubsub.js'
 import { Actions, Internals } from '#public/scripts/app/actions.js'
 
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -52,7 +52,7 @@ describe('public/app/actions ReadGamepad()', () => {
     getTestGamepads.returns([testGamePad])
     gamepadsReadStub = sandbox.stub(Actions.gamepads, 'Read').returns(false)
     actionGamepadListener = sandbox.stub().resolves()
-    Subscribe('Action:Gamepad', actionGamepadListener)
+    subscribe('Action:Gamepad', actionGamepadListener)
   })
   afterEach(() => {
     sandbox.restore()

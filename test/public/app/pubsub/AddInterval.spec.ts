@@ -3,22 +3,22 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 
-import { PubSub, AddInterval } from '#public/scripts/app/pubsub.js'
+import { PubSub, addInterval } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
-describe('public/app/pubsub AddInterval()', () => {
+describe('public/app/pubsub addInterval()', () => {
   beforeEach(() => {
     PubSub.cycleTime = 10
     resetPubSub()
   })
   it('should add to intervals map', () => {
     const spy = Sinon.spy()
-    AddInterval('FOOBAR', spy, 0)
+    addInterval('FOOBAR', spy, 0)
     expect(PubSub.intervals).to.have.any.keys('FOOBAR')
   })
   it('should store method to intervals map', () => {
     const spy = Sinon.spy()
-    AddInterval('FOOBAR', spy, 0)
+    addInterval('FOOBAR', spy, 0)
     expect(PubSub.intervals.FOOBAR?.method).to.equal(spy)
   })
   it('should replace interval method when adding already existing name', () => {
@@ -28,12 +28,12 @@ describe('public/app/pubsub AddInterval()', () => {
       delayCycles: 0,
     }
     PubSub.intervals.FOOBAR = ival
-    AddInterval('FOOBAR', Sinon.spy(), 0)
+    addInterval('FOOBAR', Sinon.spy(), 0)
     expect(PubSub.intervals.FOOBAR).to.not.equal(ival)
   })
   it('should add method with a zero delay cycles valuu', () => {
     const spy = Sinon.spy()
-    AddInterval('FOOBAR', spy, 65535)
+    addInterval('FOOBAR', spy, 65535)
     expect(PubSub.intervals.FOOBAR?.delayCycles).to.equal(0)
   })
   const delayMaps: Array<[number, number]> = [
@@ -53,7 +53,7 @@ describe('public/app/pubsub AddInterval()', () => {
   ]
   for (const [delay, mapped] of delayMaps) {
     it(`should convert an interval of ${delay}ms to ${mapped} interval cycles`, () => {
-      AddInterval('FOOBAR', Sinon.spy(), delay)
+      addInterval('FOOBAR', Sinon.spy(), delay)
       expect(PubSub.intervals.FOOBAR?.intervalCycles).to.equal(mapped)
     })
   }

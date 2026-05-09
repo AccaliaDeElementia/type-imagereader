@@ -23,7 +23,7 @@ html
           h5 placeholder
 `
 
-describe('public/app/pictures ResetMarkup()', () => {
+describe('public/app/pictures resetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
   let gridResetSpy = sandbox.stub()
   let viewerResetSpy = sandbox.stub()
@@ -35,49 +35,49 @@ describe('public/app/pictures ResetMarkup()', () => {
     resetPubSub()
     Pictures.mainImage = null
     Pictures.imageCard = null
-    gridResetSpy = sandbox.stub(Imports, 'GridResetMarkup')
-    viewerResetSpy = sandbox.stub(Imports, 'ViewerResetMarkup')
+    gridResetSpy = sandbox.stub(Imports, 'gridResetMarkup')
+    viewerResetSpy = sandbox.stub(Imports, 'viewerResetMarkup')
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
   })
   it('should set mainImage node', () => {
-    Pictures.ResetMarkup()
+    Pictures.resetMarkup()
     expect(Pictures.mainImage).to.not.equal(null)
   })
   it('should set imageCard node', () => {
-    Pictures.ResetMarkup()
+    Pictures.resetMarkup()
     expect(Pictures.imageCard).to.not.equal(null)
   })
   it('should tolerate missing mainImage node', () => {
     const node = dom.window.document.querySelector('#bigImage')
     assert(node !== null)
     node.parentElement?.removeChild(node)
-    Pictures.ResetMarkup()
+    Pictures.resetMarkup()
     expect(Pictures.mainImage).to.equal(null)
   })
   it('should tolerate missing imageCard node', () => {
     const node = dom.window.document.querySelector('#ImageCard')
     assert(node !== null)
     node.parentElement?.removeChild(node)
-    Pictures.ResetMarkup()
+    Pictures.resetMarkup()
     expect(Pictures.imageCard).to.equal(null)
   })
-  it('should call Grid.ResetMarkup once', () => {
-    Pictures.ResetMarkup()
+  it('should call Grid.resetMarkup once', () => {
+    Pictures.resetMarkup()
     expect(gridResetSpy.callCount).to.equal(1)
   })
-  it('should call Viewer.ResetMarkup once', () => {
-    Pictures.ResetMarkup()
+  it('should call Viewer.resetMarkup once', () => {
+    Pictures.resetMarkup()
     expect(viewerResetSpy.callCount).to.equal(1)
   })
-  it('should set mainImage ref before calling Viewer.ResetMarkup', () => {
+  it('should set mainImage ref before calling Viewer.resetMarkup', () => {
     let mainImageWhenViewerCalled: HTMLImageElement | null = null
     viewerResetSpy.callsFake(() => {
       mainImageWhenViewerCalled = Pictures.mainImage
     })
-    Pictures.ResetMarkup()
+    Pictures.resetMarkup()
     expect(mainImageWhenViewerCalled).to.not.equal(null)
   })
 })

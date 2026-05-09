@@ -5,12 +5,12 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 
-import { Internals, PubSub, StopDeferred } from '#public/scripts/app/pubsub.js'
+import { Internals, PubSub, stopDeferred } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pubsub StopDeferred()', () => {
+describe('public/app/pubsub stopDeferred()', () => {
   let dom = new JSDOM('<html></html>', {})
   let clearIntervalSpy = sandbox.stub()
   beforeEach(() => {
@@ -27,22 +27,22 @@ describe('public/app/pubsub StopDeferred()', () => {
     unmountDom()
   })
   it('should clear interval with Window.clearInterval()', () => {
-    StopDeferred()
+    stopDeferred()
     expect(clearIntervalSpy.callCount).to.equal(1)
   })
   it('should pass saved timer id to clearInterval()', () => {
     PubSub.timer = 6413287
-    StopDeferred()
+    stopDeferred()
     expect(clearIntervalSpy.firstCall.args).to.deep.equal([6413287])
   })
   it('should clear saved timer id', () => {
     PubSub.timer = 6413287
-    StopDeferred()
+    stopDeferred()
     expect(PubSub.timer).to.equal(undefined)
   })
   it('should not clear interval if timer is not set', () => {
     PubSub.timer = undefined
-    StopDeferred()
+    stopDeferred()
     expect(clearIntervalSpy.callCount).to.equal(0)
   })
 })

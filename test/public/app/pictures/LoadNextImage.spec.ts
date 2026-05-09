@@ -41,8 +41,8 @@ describe('public/app/pictures LoadNextImage()', () => {
     dom.window.fetch = fetchStub
     fetchStub.reset()
     fetchStub.resolves()
-    getPictureStub = sandbox.stub(Internals, 'GetPicture').returns(next)
-    getShowUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
+    getPictureStub = sandbox.stub(Internals, 'getPicture').returns(next)
+    getShowUnreadOnlyStub = sandbox.stub(Imports, 'getShowUnreadOnly').returns(false)
     mainImage.width = 1024
     mainImage.height = 768
     Pictures.mainImage = cast<HTMLImageElement>(mainImage)
@@ -51,32 +51,32 @@ describe('public/app/pictures LoadNextImage()', () => {
     sandbox.restore()
     unmountDom()
   })
-  it('should call GetPicture once when ShowUnreadOnly is unset', async () => {
+  it('should call getPicture once when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)
     await Internals.LoadNextImage()
     expect(getPictureStub.callCount).to.equal(1)
   })
-  it('should call GetPicture with one argument when ShowUnreadOnly is unset', async () => {
+  it('should call getPicture with one argument when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)
     await Internals.LoadNextImage()
     expect(getPictureStub.firstCall.args).to.have.lengthOf(1)
   })
-  it('should call GetPicture with Next navigation when ShowUnreadOnly is unset', async () => {
+  it('should call getPicture with Next navigation when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)
     await Internals.LoadNextImage()
     expect(getPictureStub.firstCall.args[0]).to.equal(NavigateTo.Next)
   })
-  it('should call GetPicture once when ShowUnreadOnly is set', async () => {
+  it('should call getPicture once when ShowUnreadOnly is set', async () => {
     getShowUnreadOnlyStub.returns(true)
     await Internals.LoadNextImage()
     expect(getPictureStub.callCount).to.equal(1)
   })
-  it('should call GetPicture with one argument when ShowUnreadOnly is set', async () => {
+  it('should call getPicture with one argument when ShowUnreadOnly is set', async () => {
     getShowUnreadOnlyStub.returns(true)
     await Internals.LoadNextImage()
     expect(getPictureStub.firstCall.args).to.have.lengthOf(1)
   })
-  it('should call GetPicture with NextUnread navigation when ShowUnreadOnly is set', async () => {
+  it('should call getPicture with NextUnread navigation when ShowUnreadOnly is set', async () => {
     getShowUnreadOnlyStub.returns(true)
     await Internals.LoadNextImage()
     expect(getPictureStub.firstCall.args[0]).to.equal(NavigateTo.NextUnread)

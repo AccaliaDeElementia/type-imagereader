@@ -18,7 +18,7 @@ describe('public/app/pictures MakePaginatorItem()', () => {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
-    selectPageSpy = sandbox.stub(Internals, 'SelectPage')
+    selectPageSpy = sandbox.stub(Internals, 'selectPage')
     resetPubSub()
     const holder = dom.window.document.createElement('div')
     holder.innerHTML =
@@ -45,13 +45,13 @@ describe('public/app/pictures MakePaginatorItem()', () => {
     result?.dispatchEvent(evt)
     expect(spy.callCount).to.equal(1)
   })
-  it('should add click handler that calls SelectPage', () => {
+  it('should add click handler that calls selectPage', () => {
     const result = Internals.MakePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
     expect(selectPageSpy.callCount).to.equal(1)
   })
-  it('should add click handler that passes selector result to SelectPage', () => {
+  it('should add click handler that passes selector result to selectPage', () => {
     const result = Internals.MakePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)

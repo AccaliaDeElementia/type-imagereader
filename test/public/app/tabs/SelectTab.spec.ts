@@ -9,7 +9,7 @@ import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
-import { Init, Internals, Tabs } from '#public/scripts/app/tabs.js'
+import { init, Internals, Tabs } from '#public/scripts/app/tabs.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -64,7 +64,7 @@ describe('public/app/tabs SelectTab()', () => {
     Tabs.tabNames = []
     const spy = sandbox.stub(Internals, 'SelectTab')
     try {
-      Init()
+      init()
     } finally {
       spy.restore()
     }

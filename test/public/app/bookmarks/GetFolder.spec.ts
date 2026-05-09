@@ -39,7 +39,7 @@ describe('public/app/bookmarks GetOrCreateFolderElement()', () => {
 
     Bookmarks.bookmarkFolder = dom.window.document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     Bookmarks.bookmarksTab = dom.window.document.querySelector<HTMLElement>('#tabBookmarks')
-    Bookmarks.BookmarkFolders = []
+    Bookmarks.bookmarkFolders = []
   })
   afterEach(() => {
     unmountDom()
@@ -53,25 +53,25 @@ describe('public/app/bookmarks GetOrCreateFolderElement()', () => {
     expect(result).to.be.an.instanceOf(dom.window.HTMLElement)
   })
   it('should add exactly one folder to the list on creation', () => {
-    expect(Bookmarks.BookmarkFolders).to.have.length(0)
+    expect(Bookmarks.bookmarkFolders).to.have.length(0)
     Internals.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
-    expect(Bookmarks.BookmarkFolders).to.have.length(1)
+    expect(Bookmarks.bookmarkFolders).to.have.length(1)
   })
   it('should store the folder path on creation', () => {
     Internals.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/', bookmarks: [] })
-    const folder = Bookmarks.BookmarkFolders.pop()
+    const folder = Bookmarks.bookmarkFolders.pop()
     assert(folder !== undefined, 'Folder should exist')
     expect(folder.path).to.equal('/foo/')
   })
   it('should store the folder element on creation', () => {
     const result = Internals.GetOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
-    const folder = Bookmarks.BookmarkFolders.pop()
+    const folder = Bookmarks.bookmarkFolders.pop()
     assert(folder !== undefined, 'Folder should exist')
     expect(result).to.equal(folder.element)
   })
   it('should return existing folder element for matching path', () => {
     const element = dom.window.document.createElement('div')
-    Bookmarks.BookmarkFolders.push({
+    Bookmarks.bookmarkFolders.push({
       path: '/foo/bar/baz/',
       element,
     })
@@ -151,7 +151,7 @@ describe('public/app/bookmarks GetOrCreateFolderElement()', () => {
       path: '/bar/baz.png',
       bookmarks: [],
     })
-    const [folder] = Bookmarks.BookmarkFolders
+    const [folder] = Bookmarks.bookmarkFolders
     assert(folder !== undefined, 'must have folder to be valid test')
     const title = result?.querySelector<HTMLElement>('.title')
     assert(title !== null && title !== undefined, 'must get a result to issue event to')
@@ -167,14 +167,14 @@ describe('public/app/bookmarks GetOrCreateFolderElement()', () => {
         bookmarks: [],
       })
     }
-    const folder = Bookmarks.BookmarkFolders.find((_, i) => i === 25)
+    const folder = Bookmarks.bookmarkFolders.find((_, i) => i === 25)
     assert(folder !== undefined, 'must have folder to be valid test')
     const title = folder.element.querySelector<HTMLElement>('.title')
     assert(title !== null, 'must get a result to issue event to')
     const evt = new dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
-    for (let i = 0; i < Bookmarks.BookmarkFolders.length; i += 1) {
-      expect(Bookmarks.BookmarkFolders[i]?.element.classList.contains('closed')).to.equal(i !== 25)
+    for (let i = 0; i < Bookmarks.bookmarkFolders.length; i += 1) {
+      expect(Bookmarks.bookmarkFolders[i]?.element.classList.contains('closed')).to.equal(i !== 25)
     }
   })
 })

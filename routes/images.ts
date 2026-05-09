@@ -194,7 +194,7 @@ export const CacheStorage = {
 
 // Export the base-router
 export async function getRouter(_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
-  // Init router and path
+  // init router and path
   const router = Imports.Router()
 
   CacheStorage.kioskCache = new ImageCache(readAndRescaleImage)

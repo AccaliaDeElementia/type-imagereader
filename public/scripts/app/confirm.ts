@@ -7,7 +7,7 @@ export const Confirm = {
   resolve: undefined as ((value: boolean) => void) | undefined,
 }
 
-export async function Show(message: string, title: string): Promise<boolean> {
+export async function show(message: string, title: string): Promise<boolean> {
   if (Confirm.titleElement !== null) {
     Confirm.titleElement.innerText = title
   }
@@ -21,7 +21,7 @@ export async function Show(message: string, title: string): Promise<boolean> {
   })
 }
 
-export function Init(): void {
+export function init(): void {
   Confirm.dialogElement = document.querySelector<HTMLElement>('#confirmDialog')
   Confirm.titleElement = document.querySelector<HTMLElement>('#confirmDialog .title')
   Confirm.messageElement = document.querySelector<HTMLElement>('#confirmDialog .message')

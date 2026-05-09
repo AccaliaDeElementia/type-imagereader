@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub, Subscribe, Publish } from '#public/scripts/app/pubsub.js'
-import { Init, Loading } from '#public/scripts/app/loading.js'
+import { PubSub, subscribe, publish } from '#public/scripts/app/pubsub.js'
+import { init, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
 
@@ -29,7 +29,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    Init()
+    init()
   })
   afterEach(() => {
     sandbox.restore()
@@ -37,24 +37,24 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
   })
   it('should log message to web console', () => {
     const message = `error message! ${Math.random()}`
-    Publish('Loading:Error', message)
+    publish('Loading:Error', message)
     expect(consoleError.calledOnceWithExactly(message)).to.equal(true)
   })
   it('should not log null message to web console', () => {
-    Publish('Loading:Error', null)
+    publish('Loading:Error', null)
     expect(consoleError.called).to.equal(false)
   })
   it('should not log undefined message to web console', () => {
-    Publish('Loading:Error', undefined)
+    publish('Loading:Error', undefined)
     expect(consoleError.called).to.equal(false)
   })
   it('should not log empty string message to web console', () => {
-    Publish('Loading:Error', '')
+    publish('Loading:Error', '')
     expect(consoleError.called).to.equal(false)
   })
   it('should hide loading overlay', async () => {
     let hidden = false
-    Subscribe('Loading:Hide', async () => {
+    subscribe('Loading:Hide', async () => {
       hidden = true
       await Promise.resolve()
     })

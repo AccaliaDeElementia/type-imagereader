@@ -38,7 +38,7 @@ function HandleClick(event: MouseEvent, socket: WebSocket | undefined, initialSc
   } else {
     socket.emit(SocketEvents.GotoImage, (folder: string | null) => {
       if (folder === null) return
-      WebSockets.LocationAssign(`/show${folder}?noMenu`)
+      WebSockets.locationAssign(`/show${folder}?noMenu`)
     })
   }
 }
@@ -78,7 +78,7 @@ function HandleGetLaunchId(launchId: unknown): void {
 }
 
 function UninitializedLocationAssign(_: string | URL): void {
-  throw new Error('LocationAssign called before Connect()')
+  throw new Error('locationAssign called before Connect()')
 }
 
 function UninitializedLocationReload(): void {
@@ -88,13 +88,13 @@ function UninitializedLocationReload(): void {
 export const WebSockets = {
   socket: undefined as WebSocket | undefined,
   launchId: undefined as unknown,
-  LocationAssign: UninitializedLocationAssign as (url: string | URL) => void,
+  locationAssign: UninitializedLocationAssign as (url: string | URL) => void,
   LocationReload: UninitializedLocationReload as () => void,
 }
 
 export function Connect(): void {
   WebSockets.launchId = undefined
-  WebSockets.LocationAssign = window.location.assign.bind(window.location)
+  WebSockets.locationAssign = window.location.assign.bind(window.location)
   WebSockets.LocationReload = window.location.reload.bind(window.location)
   WebSockets.socket = Imports.io(new URL(window.location.href).origin)
   const room = Internals.ParseRoomName()
@@ -116,7 +116,7 @@ export function Disconnect(): void {
   WebSockets.socket?.disconnect()
   WebSockets.socket = undefined
   WebSockets.launchId = undefined
-  WebSockets.LocationAssign = Internals.UninitializedLocationAssign
+  WebSockets.locationAssign = Internals.UninitializedLocationAssign
   WebSockets.LocationReload = Internals.UninitializedLocationReload
 }
 

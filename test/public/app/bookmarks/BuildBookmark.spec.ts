@@ -60,7 +60,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
-    postJSONSpy = sandbox.stub(Imports, 'PostJSON').resolves()
+    postJSONSpy = sandbox.stub(Imports, 'postJSON').resolves()
   })
   afterEach(() => {
     sandbox.restore()
@@ -217,7 +217,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
       expect(result).to.equal(true)
     })
   })
-  it('should publish Navigate:Load when PostJSON resolves', async () => {
+  it('should publish Navigate:Load when postJSON resolves', async () => {
     await ClickBookmarkAndWait({
       name: '',
       path: '/path/to/foo/folder/foo',
@@ -225,7 +225,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     })
     expect(navigateLoadSpy.callCount).to.equal(1)
   })
-  it('should publish Navigate:Load with expected payload when PostJSON resolves', async () => {
+  it('should publish Navigate:Load with expected payload when postJSON resolves', async () => {
     await ClickBookmarkAndWait({
       name: '',
       path: '/path/to/foo/folder/foo',
@@ -247,7 +247,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     })
     expect(isListing(navigateLoadSpy.firstCall.args[0])).to.equal(true)
   })
-  it('should not publish Navigate:Load when PostJSON rejects', async () => {
+  it('should not publish Navigate:Load when postJSON rejects', async () => {
     postJSONSpy.rejects('FOO')
     await ClickBookmarkAndWait({
       name: '',

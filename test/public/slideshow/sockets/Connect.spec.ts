@@ -56,12 +56,12 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   it('should store location.assign as a function for later use', () => {
     Connect()
-    expect(WebSockets.LocationAssign).to.be.an('function')
+    expect(WebSockets.locationAssign).to.be.an('function')
   })
   it('should store location.assign bound for later use', () => {
     Connect()
     //TODO: find a better way to assert this... this seems fragile
-    expect(WebSockets.LocationAssign.name).to.equal('bound assign')
+    expect(WebSockets.locationAssign.name).to.equal('bound assign')
   })
   it('should store location.reload as a function for later use', () => {
     Connect()

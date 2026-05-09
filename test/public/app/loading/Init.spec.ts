@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Init, Loading } from '#public/scripts/app/loading.js'
+import { init, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -16,7 +16,7 @@ html
     nav#navbar
     div#loadingScreen
 `
-describe('public/app/loading Init()', () => {
+describe('public/app/loading init()', () => {
   let dom: JSDOM = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -26,7 +26,7 @@ describe('public/app/loading Init()', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    Init()
+    init()
   })
   afterEach(() => {
     sandbox.restore()
@@ -41,7 +41,7 @@ describe('public/app/loading Init()', () => {
   it('should subscribe to Loading:Hide', () => {
     expect(PubSub.subscribers['LOADING:HIDE']).to.have.length(1)
   })
-  it('should subscribe to Loading:Show', () => {
+  it('should subscribe to Loading:show', () => {
     expect(PubSub.subscribers['LOADING:SHOW']).to.have.length(1)
   })
   it('should select overlay for disabling input', () => {

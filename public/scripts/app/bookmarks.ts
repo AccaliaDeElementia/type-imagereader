@@ -1,8 +1,8 @@
 'use sanity'
 
-import { Publish, Subscribe } from './pubsub.js'
-import { GetJSON as _GetJSON, PostJSON as _PostJSON, acceptAnyResponse } from './net.js'
-import { CloneNode, isHTMLElement } from './utils.js'
+import { publish, subscribe } from './pubsub.js'
+import { getJSON as _getJSON, postJSON as _postJSON, acceptAnyResponse } from './net.js'
+import { cloneNode, isHTMLElement } from './utils.js'
 import {
   type Bookmark,
   type BookmarkFolder,
@@ -13,8 +13,8 @@ import {
 } from '#contracts/listing.js'
 
 export const Imports = {
-  GetJSON: _GetJSON,
-  PostJSON: _PostJSON,
+  getJSON: _getJSON,
+  postJSON: _postJSON,
 }
 
 interface WebBookmarkFolder {
@@ -33,14 +33,14 @@ export const Bookmarks = {
   bookmarkCard: undefined as DocumentFragment | undefined,
   bookmarkFolder: undefined as DocumentFragment | undefined,
   bookmarksTab: null as HTMLElement | null,
-  BookmarkFolders: [] as WebBookmarkFolder[],
+  bookmarkFolders: [] as WebBookmarkFolder[],
   loadToken: INITIAL_LOAD_TOKEN,
 }
 
 function GetOrCreateFolderElement(openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null {
-  let folder = Bookmarks.BookmarkFolders.find((e) => e.path === bookmarkFolder.path)
+  let folder = Bookmarks.bookmarkFolders.find((e) => e.path === bookmarkFolder.path)
   if (folder === undefined) {
-    const element = CloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
+    const element = cloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
     if (element === undefined) {
       return null
     }
@@ -52,7 +52,7 @@ function GetOrCreateFolderElement(openPath: string, bookmarkFolder: BookmarkFold
     const title = element.querySelector<HTMLElement>('.title')
     if (title !== null) title.innerText = decodeURI(bookmarkFolder.name)
     title?.addEventListener('click', () => {
-      for (const otherFolder of Bookmarks.BookmarkFolders) {
+      for (const otherFolder of Bookmarks.bookmarkFolders) {
         otherFolder.element.classList.add('closed')
       }
       element.classList.remove('closed')
@@ -60,13 +60,13 @@ function GetOrCreateFolderElement(openPath: string, bookmarkFolder: BookmarkFold
     if (bookmarkFolder.path === openPath) {
       element.classList.remove('closed')
     }
-    Bookmarks.BookmarkFolders.push(folder)
+    Bookmarks.bookmarkFolders.push(folder)
   }
   return folder.element
 }
 
 function BuildBookmark(bookmark: Bookmark): HTMLElement | null {
-  const card = CloneNode(Bookmarks.bookmarkCard, isHTMLElement)
+  const card = cloneNode(Bookmarks.bookmarkCard, isHTMLElement)
   if (card === undefined) {
     return null
   }
@@ -77,11 +77,11 @@ function BuildBookmark(bookmark: Bookmark): HTMLElement | null {
   card.style.backgroundImage = `url("/images/preview${bookmark.path}-image.webp")`
   const button = card.querySelector('button')
   button?.addEventListener('click', (event) => {
-    Publish('Bookmarks:Remove', bookmark.path)
+    publish('Bookmarks:Remove', bookmark.path)
     event.stopPropagation()
   })
   card.addEventListener('click', (event) => {
-    Imports.PostJSON(
+    Imports.postJSON(
       '/api/navigate/latest',
       {
         path: bookmark.path,
@@ -90,7 +90,7 @@ function BuildBookmark(bookmark: Bookmark): HTMLElement | null {
       acceptAnyResponse,
     ).then(
       () => {
-        Publish('Navigate:Load', {
+        publish('Navigate:Load', {
           path: bookmark.folder,
           name: '',
           parent: '',
@@ -137,56 +137,56 @@ function buildBookmarks(data: Listing): void {
     existing.remove()
   }
 
-  Bookmarks.BookmarkFolders = []
+  Bookmarks.bookmarkFolders = []
   Internals.buildBookmarkNodes(data, openPath)
-  Bookmarks.BookmarkFolders.sort((a, b) => (a.path < b.path ? SORT_BEFORE : a.path > b.path ? SORT_AFTER : SORT_EQUAL))
-  for (const folder of Bookmarks.BookmarkFolders) {
+  Bookmarks.bookmarkFolders.sort((a, b) => (a.path < b.path ? SORT_BEFORE : a.path > b.path ? SORT_AFTER : SORT_EQUAL))
+  for (const folder of Bookmarks.bookmarkFolders) {
     Bookmarks.bookmarksTab.appendChild(folder.element)
   }
 }
 
-export function Init(): void {
+export function init(): void {
   Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
   Bookmarks.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
   Bookmarks.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
 
-  Subscribe('Navigate:Data', async (data) => {
+  subscribe('Navigate:Data', async (data) => {
     if (isListing(data)) Internals.buildBookmarks(data)
     await Promise.resolve()
   })
 
-  Subscribe('Bookmarks:Load', async () => {
+  subscribe('Bookmarks:Load', async () => {
     Bookmarks.loadToken += TOKEN_STEP
     const token = Bookmarks.loadToken
-    await Imports.GetJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder)).then(
+    await Imports.getJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder)).then(
       (bookmarks) => {
         if (token !== Bookmarks.loadToken) return
         Internals.buildBookmarks({ name: '', parent: '', path: '', bookmarks })
       },
       (err: unknown) => {
         if (token !== Bookmarks.loadToken) return
-        Publish('Loading:Error', err)
+        publish('Loading:Error', err)
       },
     )
   })
 
   const bookmarkAction = async (apiPath: string, path: unknown): Promise<void> => {
     if (typeof path !== 'string') return
-    await Imports.PostJSON(apiPath, { path }, acceptAnyResponse).then(
+    await Imports.postJSON(apiPath, { path }, acceptAnyResponse).then(
       () => {
-        Publish('Bookmarks:Load')
-        Publish('Loading:Success')
+        publish('Bookmarks:Load')
+        publish('Loading:Success')
       },
       (err: unknown) => {
-        Publish('Loading:Error', err instanceof Error ? err : new Error('Non Error rejection!'))
+        publish('Loading:Error', err instanceof Error ? err : new Error('Non Error rejection!'))
       },
     )
   }
 
-  Subscribe('Bookmarks:Add', async (path) => {
+  subscribe('Bookmarks:Add', async (path) => {
     await bookmarkAction('/api/bookmarks/add', path)
   })
-  Subscribe('Bookmarks:Remove', async (path) => {
+  subscribe('Bookmarks:Remove', async (path) => {
     await bookmarkAction('/api/bookmarks/remove', path)
   })
 }

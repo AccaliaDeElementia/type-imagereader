@@ -6,8 +6,8 @@ import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
-import { Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
+import { init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { eventuallyFulfills } from '#testutils/Errors.js'
 
@@ -24,7 +24,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation/messageHandlers Init()', () => {
+describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
   beforeEach(() => {
@@ -35,8 +35,8 @@ describe('public/app/navigation/messageHandlers Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    Subscribe('Tab:Selected', tabSelectedSpy)
-    sandbox.stub(Internals, 'LoadData').resolves()
+    subscribe('Tab:Selected', tabSelectedSpy)
+    sandbox.stub(Internals, 'loadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -51,7 +51,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     unmountDom()
     Sinon.restore()
   })
-  describe('Menu:Show Message Handler', () => {
+  describe('Menu:show Message Handler', () => {
     let menuNode: HTMLDivElement | null = null
     beforeEach(() => {
       menuNode = dom.window.document.querySelector('#mainMenu')
@@ -61,7 +61,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       menuNode = null
     })
     it('should remove hidden class from main menu node', async () => {
-      Init()
+      init()
       const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('hidden')
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
@@ -69,7 +69,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
     })
     it('should remove hidden class while preserving other classes on main menu node', async () => {
-      Init()
+      init()
       const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('foo')
       menuNode?.classList.add('bar')
@@ -79,7 +79,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
     })
     it('should tolerate already removed hidden class on main menu node', async () => {
-      Init()
+      init()
       const handler = getSubscriber('MENU:SHOW')
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
       await handler(undefined)
@@ -87,7 +87,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     })
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentNode?.removeChild(menuNode)
-      Init()
+      init()
       const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('hidden')
       await eventuallyFulfills(handler(undefined))
@@ -103,14 +103,14 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       menuNode = null
     })
     it('should add hidden class from main menu node', async () => {
-      Init()
+      init()
       const handler = getSubscriber('MENU:HIDE')
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
       await handler(undefined)
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
     })
     it('should preserve hidden class on hidden main menu node', async () => {
-      Init()
+      init()
       const handler = getSubscriber('MENU:HIDE')
       menuNode?.classList.add('hidden')
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
@@ -119,14 +119,14 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     })
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentElement?.removeChild(menuNode)
-      Init()
+      init()
       const handler = getSubscriber('MENU:HIDE')
       await eventuallyFulfills(handler(undefined))
     })
   })
   describe('#mainMenu Click Handler', () => {
     it('should ignore click event targeting child of #mainMenu', () => {
-      Init()
+      init()
       Navigation.current.pictures = [
         {
           name: 'foo',
@@ -144,7 +144,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       expect(spy.callCount).to.equal(0)
     })
     it('should ignore click event node outside of #mainMenu', () => {
-      Init()
+      init()
       Navigation.current.pictures = [
         {
           name: 'foo',
@@ -161,7 +161,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       expect(spy.callCount).to.equal(0)
     })
     it('should ignore click event will missing pictures list', () => {
-      Init()
+      init()
       Navigation.current.pictures = undefined
       const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
@@ -172,7 +172,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       expect(spy.callCount).to.equal(0)
     })
     it('should ignore click event will empty pictures list', () => {
-      Init()
+      init()
       Navigation.current.pictures = []
       const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
@@ -183,7 +183,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       expect(spy.callCount).to.equal(0)
     })
     it('should publish hide menu event for click event with pictures', () => {
-      Init()
+      init()
       Navigation.current.pictures = [
         {
           name: 'FOO',
@@ -201,8 +201,8 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     })
   })
   describe('.menuButton click handler', () => {
-    it('should publish Menu:Show', () => {
-      Init()
+    it('should publish Menu:show', () => {
+      init()
       const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:SHOW'] = [spy]
       const target = dom.window.document.querySelector('.menuButton')

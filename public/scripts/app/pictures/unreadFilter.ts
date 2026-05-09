@@ -1,6 +1,6 @@
 'use sanity'
 
-export function GetShowUnreadOnly(): boolean {
+export function getShowUnreadOnly(): boolean {
   return window.localStorage.ShowUnreadOnly === 'true'
 }
 
@@ -10,7 +10,7 @@ function SetShowUnreadOnly(value: boolean): void {
 
 function UpdateUnreadSelectorSlider(): void {
   const element = document.querySelector('.selectUnreadAll > div')
-  if (Internals.GetShowUnreadOnly()) {
+  if (Internals.getShowUnreadOnly()) {
     element?.classList.add('unread')
     element?.classList.remove('all')
   } else {
@@ -19,18 +19,18 @@ function UpdateUnreadSelectorSlider(): void {
   }
 }
 
-export function InitUnreadSelectorSlider(): void {
+export function initUnreadSelectorSlider(): void {
   Internals.UpdateUnreadSelectorSlider()
 
   document.querySelector('.selectUnreadAll')?.addEventListener('click', (evt) => {
-    Internals.SetShowUnreadOnly(!Internals.GetShowUnreadOnly())
+    Internals.SetShowUnreadOnly(!Internals.getShowUnreadOnly())
     Internals.UpdateUnreadSelectorSlider()
     evt.preventDefault()
   })
 }
 
 export const Internals = {
-  GetShowUnreadOnly,
+  getShowUnreadOnly,
   SetShowUnreadOnly,
   UpdateUnreadSelectorSlider,
 }

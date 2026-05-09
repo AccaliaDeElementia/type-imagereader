@@ -3,8 +3,8 @@
 import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
 import { hasValues } from '#utils/helpers.js'
-import { Publish } from '../pubsub.js'
-import { CloneNode, isHTMLElement } from '../utils.js'
+import { publish } from '../pubsub.js'
+import { cloneNode, isHTMLElement } from '../utils.js'
 
 const INDEX_TO_PAGE_OFFSET = 1
 const MINIMUM_PAGE_COUNT = 2
@@ -17,22 +17,22 @@ const MINIMUM_INDEX = 0
 
 type PageSelector = () => number
 
-export function ResetMarkup(): void {
+export function resetMarkup(): void {
   for (const existing of document.querySelectorAll('#tabImages .pages, #tabImages .page')) {
     existing.parentElement?.removeChild(existing)
   }
 }
 
 function MakePictureCard(picture: Picture): HTMLElement | undefined {
-  const card = CloneNode(Pictures.imageCard, isHTMLElement)
+  const card = cloneNode(Pictures.imageCard, isHTMLElement)
   card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
   if (picture.seen) {
     card?.classList.add('seen')
   }
   card?.querySelector('h5')?.replaceChildren(picture.name)
   card?.addEventListener('click', () => {
-    Publish('Pictures:Change', picture)
-    Publish('Menu:Hide')
+    publish('Pictures:Change', picture)
+    publish('Menu:Hide')
   })
   return card
 }
@@ -52,10 +52,10 @@ function MakePicturesPage(pageNum: number, pictures: Picture[]): HTMLElement {
 
 function MakePaginatorItem(label: string, selector: PageSelector): HTMLElement | undefined {
   const pageItem = document.querySelector<HTMLTemplateElement>('#PaginatorItem')
-  const item = CloneNode(pageItem, isHTMLElement)
+  const item = cloneNode(pageItem, isHTMLElement)
   item?.querySelector('span')?.replaceChildren(document.createTextNode(label))
   item?.addEventListener('click', (e: Event) => {
-    Internals.SelectPage(selector())
+    Internals.selectPage(selector())
     e.preventDefault()
   })
   return item
@@ -63,7 +63,7 @@ function MakePaginatorItem(label: string, selector: PageSelector): HTMLElement |
 
 function MakePaginator(pageCount: number): HTMLElement | null {
   if (pageCount < MINIMUM_PAGE_COUNT) return null
-  const paginator = CloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'), isHTMLElement)
+  const paginator = cloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'), isHTMLElement)
   if (paginator === undefined) return null
   const domItems = paginator.querySelector('.pagination')
   const firstItem = Internals.MakePaginatorItem('«', () =>
@@ -81,7 +81,7 @@ function MakePaginator(pageCount: number): HTMLElement | null {
   return paginator
 }
 
-export function MakeTab(): void {
+export function makeTab(): void {
   const pageCount = Math.ceil(Pictures.pictures.length / Pictures.pageSize)
   const tab = document.querySelector<HTMLElement>('#tabImages')
   const pages: HTMLElement[] = Array.from({ length: pageCount }).map((_, i) => {
@@ -105,13 +105,13 @@ function GetCurrentPage(): number {
   return Array.from(items).findIndex((elem) => elem.classList.contains('active'))
 }
 
-export function SelectPage(index: number): void {
+export function selectPage(index: number): void {
   const links = document.querySelectorAll('.pagination .page-item')
   if (!hasValues(links)) {
-    Publish('Pictures:SelectPage', 'Default Page Selected')
+    publish('Pictures:selectPage', 'Default Page Selected')
     return
   } else if (index <= MINIMUM_INDEX || index >= links.length - LAST_LINK_OFFSET) {
-    Publish('Loading:Error', 'Invalid Page Index Selected')
+    publish('Loading:Error', 'Invalid Page Index Selected')
     return
   }
   links.forEach((element: Element, i: number) => {
@@ -129,10 +129,10 @@ export function SelectPage(index: number): void {
       element.classList.add('hidden')
     }
   })
-  Publish('Pictures:SelectPage', `New Page ${index} Selected`)
+  publish('Pictures:selectPage', `New Page ${index} Selected`)
 }
 
-export function LoadCurrentPageImages(): void {
+export function loadCurrentPageImages(): void {
   for (const card of document.querySelectorAll<HTMLElement>('#tabImages .page:not(.hidden) .card')) {
     const style = card.getAttribute('data-backgroundImage')
     if (style !== null) {
@@ -147,5 +147,5 @@ export const Internals = {
   MakePaginatorItem,
   MakePaginator,
   GetCurrentPage,
-  SelectPage,
+  selectPage,
 }

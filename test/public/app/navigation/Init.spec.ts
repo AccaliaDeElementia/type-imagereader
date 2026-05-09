@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
-import { Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
+import { init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -22,7 +22,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation Init()', () => {
+describe('public/app/navigation init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
   let loadDataStub = sandbox.stub()
@@ -34,8 +34,8 @@ describe('public/app/navigation Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    Subscribe('Tab:Selected', tabSelectedSpy)
-    loadDataStub = sandbox.stub(Internals, 'LoadData').resolves()
+    subscribe('Tab:Selected', tabSelectedSpy)
+    loadDataStub = sandbox.stub(Internals, 'loadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -50,24 +50,24 @@ describe('public/app/navigation Init()', () => {
     unmountDom()
     Sinon.restore()
   })
-  it('should set path of current data on Init', () => {
+  it('should set path of current data on init', () => {
     dom.reconfigure({
       url: 'http://type-imagereader.example.com/show/foo/bar/baz',
     })
-    Init()
+    init()
     expect(Navigation.current.path).to.equal('/foo/bar/baz')
   })
-  it('should execute LoadData once with defaults', () => {
-    Init()
+  it('should execute loadData once with defaults', () => {
+    init()
     expect(loadDataStub.callCount).to.equal(1)
   })
-  it('should execute LoadData with no arguments', () => {
-    Init()
+  it('should execute loadData with no arguments', () => {
+    init()
     expect(loadDataStub.firstCall.args).to.deep.equal([])
   })
-  it('should tolerate LoadData rejecting', async () => {
+  it('should tolerate loadData rejecting', async () => {
     loadDataStub.rejects('FOO!')
-    Init()
+    init()
     await Promise.resolve()
     expect(loadDataStub.callCount).to.equal(1)
   })
@@ -75,7 +75,7 @@ describe('public/app/navigation Init()', () => {
     'Navigate:Data',
     'Navigate:Load',
     'Navigate:Reload',
-    'Menu:Show',
+    'Menu:show',
     'Menu:Hide',
     'Tab:Selected',
     'Action:Execute:PreviousFolder',
@@ -97,10 +97,10 @@ describe('public/app/navigation Init()', () => {
     'Action:Gamepad:Y',
     'Action:Gamepad:A',
   ]
-  describe('subscriber list after Init', () => {
+  describe('subscriber list after init', () => {
     const subs = subscribers.map((s) => s.toUpperCase())
     beforeEach(() => {
-      Init()
+      init()
     })
     it('should contain all expected subscribers', () => {
       expect(PubSub.subscribers).to.have.all.keys(subs)
@@ -111,7 +111,7 @@ describe('public/app/navigation Init()', () => {
   })
   subscribers.forEach((subscriber) => {
     const doInit = (): void => {
-      Init()
+      init()
     }
     it(`should subscribe to ${subscriber}`, () => {
       doInit()

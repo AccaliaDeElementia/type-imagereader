@@ -16,7 +16,7 @@ describe('public/app/navigation NavigateTo()', () => {
     PubSub.subscribers = {
       'LOADING:ERROR': [errorSpy],
     }
-    loadDataSpy = sandbox.stub(Internals, 'LoadData').resolves()
+    loadDataSpy = sandbox.stub(Internals, 'loadData').resolves()
   })
   afterEach(() => {
     sandbox.restore()
@@ -60,7 +60,7 @@ describe('public/app/navigation NavigateTo()', () => {
     await Internals.NavigateTo('/foo', 'FOO')
     expect(loadDataSpy.firstCall.args).to.have.lengthOf(0)
   })
-  it('should swallow error when LoadData rejects', async () => {
+  it('should swallow error when loadData rejects', async () => {
     loadDataSpy.rejects('FOO')
     await eventuallyFulfills(Internals.NavigateTo('/foo', 'FOO'))
   })

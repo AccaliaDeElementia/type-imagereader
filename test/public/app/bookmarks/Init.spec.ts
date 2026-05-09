@@ -7,7 +7,7 @@ import { render } from 'pug'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks, Init } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, init } from '#public/scripts/app/bookmarks.js'
 
 const markup = `
 html
@@ -26,7 +26,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks Init()', () => {
+describe('public/app/bookmarks init()', () => {
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
 
@@ -49,33 +49,33 @@ describe('public/app/bookmarks Init()', () => {
   })
   it('should locate bookmarkCard template on init', () => {
     const content = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
-    Init()
+    init()
     expect(Bookmarks.bookmarkCard).to.equal(content)
   })
   it('should locate bookmarkFolder template on init', () => {
     const content = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
-    Init()
+    init()
     expect(Bookmarks.bookmarkFolder).to.equal(content)
   })
   it('should locate bookmarksTab template on init', () => {
     const content = document.querySelector<HTMLElement>('#tabBookmarks')
-    Init()
+    init()
     expect(Bookmarks.bookmarksTab).to.equal(content)
   })
   it('should subscribe to Navigate:Data', () => {
-    Init()
+    init()
     expect(PubSub.subscribers).to.have.any.keys('NAVIGATE:DATA')
   })
   it('should subscribe to Bookmarks:Load', () => {
-    Init()
+    init()
     expect(PubSub.subscribers).to.have.any.keys('BOOKMARKS:LOAD')
   })
   it('should subscribe to Bookmarks:Add', () => {
-    Init()
+    init()
     expect(PubSub.subscribers).to.have.any.keys('BOOKMARKS:ADD')
   })
   it('should subscribe to Bookmarks:Remove', () => {
-    Init()
+    init()
     expect(PubSub.subscribers).to.have.any.keys('BOOKMARKS:REMOVE')
   })
 })
