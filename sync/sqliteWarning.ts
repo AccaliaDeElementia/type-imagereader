@@ -18,24 +18,23 @@ export const Imports = {
   IsPostgres: _IsPostgres,
 }
 
-export const Functions = {
-  // Once-per-process flag so the warning fires on startup but not on every
-  // recurring scheduled re-sync. Tests reset this between runs.
-  SqliteSizeWarningEmitted: false,
-  EmitSqliteSizeWarning: (logger: Debugger, knex: Knex, pictureCount: number): void => {
-    if (Imports.IsPostgres(knex)) return
-    if (pictureCount <= SQLITE_PICTURES_SOFT_LIMIT) return
-    if (Functions.SqliteSizeWarningEmitted) return
-    Functions.SqliteSizeWarningEmitted = true
-    const count = pictureCount.toLocaleString()
-    const soft = SQLITE_PICTURES_SOFT_LIMIT.toLocaleString()
-    const firm = SQLITE_PICTURES_FIRM_LIMIT.toLocaleString()
-    const message =
-      pictureCount > SQLITE_PICTURES_FIRM_LIMIT
-        ? `WARNING: SQLite picture count (${count}) exceeds the firm recommended limit (${firm}). Initial sync and 24h re-syncs will be slow; PostgreSQL is strongly recommended at this size. See README for details.`
-        : `WARNING: SQLite picture count (${count}) exceeds the soft recommended limit (${soft}). Performance may degrade as the library grows; PostgreSQL is recommended above ${firm} pictures. See README for details.`
-    logger(WARNING_BANNER)
-    logger(message)
-    logger(WARNING_BANNER)
-  },
+// Once-per-process flag so the warning fires on startup but not on every
+// recurring scheduled re-sync. Tests reset this between runs.
+export const SqliteWarning = { SqliteSizeWarningEmitted: false }
+
+export function EmitSqliteSizeWarning(logger: Debugger, knex: Knex, pictureCount: number): void {
+  if (Imports.IsPostgres(knex)) return
+  if (pictureCount <= SQLITE_PICTURES_SOFT_LIMIT) return
+  if (SqliteWarning.SqliteSizeWarningEmitted) return
+  SqliteWarning.SqliteSizeWarningEmitted = true
+  const count = pictureCount.toLocaleString()
+  const soft = SQLITE_PICTURES_SOFT_LIMIT.toLocaleString()
+  const firm = SQLITE_PICTURES_FIRM_LIMIT.toLocaleString()
+  const message =
+    pictureCount > SQLITE_PICTURES_FIRM_LIMIT
+      ? `WARNING: SQLite picture count (${count}) exceeds the firm recommended limit (${firm}). Initial sync and 24h re-syncs will be slow; PostgreSQL is strongly recommended at this size. See README for details.`
+      : `WARNING: SQLite picture count (${count}) exceeds the soft recommended limit (${soft}). Performance may degrade as the library grows; PostgreSQL is recommended above ${firm} pictures. See README for details.`
+  logger(WARNING_BANNER)
+  logger(message)
+  logger(WARNING_BANNER)
 }

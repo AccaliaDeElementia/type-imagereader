@@ -7,7 +7,9 @@ import { Functions as _FindItems } from './findItems.js'
 import { Functions as _Pictures } from './pictures.js'
 import { Functions as _Folders } from './folders.js'
 import { Functions as _FolderCounts } from './folderCounts.js'
-import { Functions as _SqliteWarning } from './sqliteWarning.js'
+import { EmitSqliteSizeWarning as _EmitSqliteSizeWarning } from './sqliteWarning.js'
+
+const _SqliteWarning = { EmitSqliteSizeWarning: _EmitSqliteSizeWarning }
 
 const ZERO = 0
 const MS_PER_SECOND = 1000
