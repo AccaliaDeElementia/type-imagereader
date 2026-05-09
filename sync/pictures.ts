@@ -11,41 +11,44 @@ export const Imports = {
   debug: _debug,
 }
 
-export const Functions = {
-  SyncNewPictures: async (logger: Debugger, knex: Knex): Promise<void> => {
-    const insertedpics = await knex
-      .from(knex.raw('?? (??, ??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey', 'pathHash']))
-      .insert(function (this: Knex) {
-        return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey', 'syncitems.pathHash'])
-          .from('syncitems')
-          .leftJoin('pictures', 'pictures.path', 'syncitems.path')
-          .andWhere({
-            'syncitems.isFile': true,
-            'pictures.path': null,
-          })
-      })
-    logger(`Added ${ExtractInsertCount(insertedpics)} new pictures`)
-  },
-  SyncRemovedPictures: async (logger: Debugger, knex: Knex): Promise<void> => {
-    const deletedpics = await knex('pictures')
-      .whereNotExists(function () {
-        this.select('*').from('syncitems').whereRaw('syncitems.path = pictures.path')
-      })
-      .delete()
-    logger(`Removed ${deletedpics} missing pictures`)
-  },
-  SyncRemovedBookmarks: async (logger: Debugger, knex: Knex): Promise<void> => {
-    const removedBookmarks = await knex('bookmarks')
-      .whereNotExists(function () {
-        this.select('*').from('pictures').whereRaw('pictures.path = bookmarks.path')
-      })
-      .delete()
-    logger(`Removed ${removedBookmarks} missing bookmarks`)
-  },
-  SyncAllPictures: async (knex: Knex): Promise<void> => {
-    const logger = Imports.debug(Imports.logPrefix)
-    await Functions.SyncNewPictures(logger, knex)
-    await Functions.SyncRemovedPictures(logger, knex)
-    await Functions.SyncRemovedBookmarks(logger, knex)
-  },
+export async function SyncNewPictures(logger: Debugger, knex: Knex): Promise<void> {
+  const insertedpics = await knex
+    .from(knex.raw('?? (??, ??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey', 'pathHash']))
+    .insert(function (this: Knex) {
+      return this.select(['syncitems.folder', 'syncitems.path', 'syncitems.sortKey', 'syncitems.pathHash'])
+        .from('syncitems')
+        .leftJoin('pictures', 'pictures.path', 'syncitems.path')
+        .andWhere({
+          'syncitems.isFile': true,
+          'pictures.path': null,
+        })
+    })
+  logger(`Added ${ExtractInsertCount(insertedpics)} new pictures`)
 }
+
+export async function SyncRemovedPictures(logger: Debugger, knex: Knex): Promise<void> {
+  const deletedpics = await knex('pictures')
+    .whereNotExists(function () {
+      this.select('*').from('syncitems').whereRaw('syncitems.path = pictures.path')
+    })
+    .delete()
+  logger(`Removed ${deletedpics} missing pictures`)
+}
+
+export async function SyncRemovedBookmarks(logger: Debugger, knex: Knex): Promise<void> {
+  const removedBookmarks = await knex('bookmarks')
+    .whereNotExists(function () {
+      this.select('*').from('pictures').whereRaw('pictures.path = bookmarks.path')
+    })
+    .delete()
+  logger(`Removed ${removedBookmarks} missing bookmarks`)
+}
+
+export async function SyncAllPictures(knex: Knex): Promise<void> {
+  const logger = Imports.debug(Imports.logPrefix)
+  await Internals.SyncNewPictures(logger, knex)
+  await Internals.SyncRemovedPictures(logger, knex)
+  await Internals.SyncRemovedBookmarks(logger, knex)
+}
+
+export const Internals = { SyncNewPictures, SyncRemovedPictures, SyncRemovedBookmarks }

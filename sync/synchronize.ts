@@ -4,11 +4,12 @@ import _debug from 'debug'
 
 import { Initialize as _Initialize } from '../utils/persistance.js'
 import { Functions as _FindItems } from './findItems.js'
-import { Functions as _Pictures } from './pictures.js'
+import { SyncAllPictures as _SyncAllPictures } from './pictures.js'
 import { Functions as _Folders } from './folders.js'
 import { Functions as _FolderCounts } from './folderCounts.js'
 import { EmitSqliteSizeWarning as _EmitSqliteSizeWarning } from './sqliteWarning.js'
 
+const _Pictures = { SyncAllPictures: _SyncAllPictures }
 const _SqliteWarning = { EmitSqliteSizeWarning: _EmitSqliteSizeWarning }
 
 const ZERO = 0
