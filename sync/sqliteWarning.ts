@@ -3,7 +3,7 @@
 import type { Debugger } from 'debug'
 import type { Knex } from 'knex'
 
-import { IsPostgres as _IsPostgres } from './syncItemsDialect.js'
+import { isPostgres as _isPostgres } from './syncItemsDialect.js'
 
 // SQLite degrades steadily as the library grows: chunked-INSERT bulk loads, the
 // whole-DB write lock, and disk page cache pressure all scale unfavourably.
@@ -15,18 +15,18 @@ const SQLITE_PICTURES_FIRM_LIMIT = 250_000
 const WARNING_BANNER = '================================================================'
 
 export const Imports = {
-  IsPostgres: _IsPostgres,
+  isPostgres: _isPostgres,
 }
 
 // Once-per-process flag so the warning fires on startup but not on every
 // recurring scheduled re-sync. Tests reset this between runs.
-export const SqliteWarning = { SqliteSizeWarningEmitted: false }
+export const SqliteWarning = { sqliteSizeWarningEmitted: false }
 
-export function EmitSqliteSizeWarning(logger: Debugger, knex: Knex, pictureCount: number): void {
-  if (Imports.IsPostgres(knex)) return
+export function emitSqliteSizeWarning(logger: Debugger, knex: Knex, pictureCount: number): void {
+  if (Imports.isPostgres(knex)) return
   if (pictureCount <= SQLITE_PICTURES_SOFT_LIMIT) return
-  if (SqliteWarning.SqliteSizeWarningEmitted) return
-  SqliteWarning.SqliteSizeWarningEmitted = true
+  if (SqliteWarning.sqliteSizeWarningEmitted) return
+  SqliteWarning.sqliteSizeWarningEmitted = true
   const count = pictureCount.toLocaleString()
   const soft = SQLITE_PICTURES_SOFT_LIMIT.toLocaleString()
   const firm = SQLITE_PICTURES_FIRM_LIMIT.toLocaleString()

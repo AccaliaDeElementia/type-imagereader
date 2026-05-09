@@ -5,8 +5,8 @@ import knex from 'knex'
 import type { Knex } from 'knex'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BuildSyncItemRows, Chunk, ExecChunksSynchronously } from '#sync/helpers.js'
-import { IsPostgres, FindSyncItemsViaInsert } from '#sync/syncItemsDialect.js'
+import { buildSyncItemRows, chunk, execChunksSynchronously } from '#sync/helpers.js'
+import { isPostgres, findSyncItemsViaInsert } from '#sync/syncItemsDialect.js'
 import { noopLogger } from '#testutils/Debug.js'
 
 const moduleDir = dirname(fileURLToPath(import.meta.url))
@@ -78,7 +78,7 @@ describe(
 
     it('should detect the dialect as non-postgres', () => {
       assertDb(db)
-      expect(IsPostgres(db)).to.equal(false)
+      expect(isPostgres(db)).to.equal(false)
     })
 
     it('should insert a row through the chunked-INSERT fallback path', async () => {
@@ -93,11 +93,11 @@ describe(
           0,
         )
       }
-      const counts = await FindSyncItemsViaInsert(db, noopLogger, {
+      const counts = await findSyncItemsViaInsert(db, noopLogger, {
         fsWalker: fakeWalker,
-        buildSyncItemRows: BuildSyncItemRows,
-        chunk: Chunk,
-        execChunksSynchronously: ExecChunksSynchronously,
+        buildSyncItemRows,
+        chunk,
+        execChunksSynchronously,
         getDataDir: () => '/data',
       })
       expect(counts.files).to.equal(2)
@@ -108,11 +108,11 @@ describe(
       const fakeWalker = async (_root: string, callback: WalkerCallback): Promise<void> => {
         await callback([{ path: '/comics/page1.jpg', isFile: true }], 0)
       }
-      await FindSyncItemsViaInsert(db, noopLogger, {
+      await findSyncItemsViaInsert(db, noopLogger, {
         fsWalker: fakeWalker,
-        buildSyncItemRows: BuildSyncItemRows,
-        chunk: Chunk,
-        execChunksSynchronously: ExecChunksSynchronously,
+        buildSyncItemRows,
+        chunk,
+        execChunksSynchronously,
         getDataDir: () => '/data',
       })
       const rows = await db('syncitems').select<Array<{ path: string }>>('path')
@@ -180,11 +180,11 @@ describe(
         }))
         await callback(items, 0)
       }
-      const counts = await FindSyncItemsViaInsert(db, noopLogger, {
+      const counts = await findSyncItemsViaInsert(db, noopLogger, {
         fsWalker: fakeWalker,
-        buildSyncItemRows: BuildSyncItemRows,
-        chunk: Chunk,
-        execChunksSynchronously: ExecChunksSynchronously,
+        buildSyncItemRows,
+        chunk,
+        execChunksSynchronously,
         getDataDir: () => '/data',
       })
       expect(counts.files).to.equal(ROW_COUNT)

@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Add, CyclicManager, CyclicUpdater, Internals, Start, Stop } from '#public/scripts/slideshow/updater.js'
+import { Add, CyclicManager, CyclicUpdater, Internals, start, Stop } from '#public/scripts/slideshow/updater.js'
 import { cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { expect } from 'chai'
@@ -112,7 +112,7 @@ describe('public/slideshow/updater CyclicManager', () => {
       }
     })
   })
-  describe('Start()', () => {
+  describe('start()', () => {
     let fakeTrigger: Sinon.SinonStub | undefined = undefined
     beforeEach(() => {
       fakeTrigger = sandbox.stub(Internals, 'triggerUpdaters').resolves()
@@ -122,22 +122,22 @@ describe('public/slideshow/updater CyclicManager', () => {
     })
     it('should set interval on call', () => {
       expect(fakeSetInterval?.callCount).to.equal(0)
-      Start(1000)
+      start(1000)
       expect(fakeSetInterval?.callCount).to.equal(1)
     })
     it('should set interval with provided interval', () => {
       const ival = Math.round(Math.random() * 1e9)
-      Start(ival)
+      start(ival)
       expect(fakeSetInterval?.firstCall.args[1]).to.equal(ival)
     })
     it('should save interval value from setInterval', () => {
       const timer = Math.round(Math.random() * 1e9)
       fakeSetInterval?.returns(timer)
-      Start(1000)
+      start(1000)
       expect(CyclicManager.__timer).to.equal(timer)
     })
     it('should trigger updaters when interval fires', () => {
-      Start(1000)
+      start(1000)
       const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
       expect(fakeTrigger?.callCount).to.equal(0)
       fn()
@@ -145,7 +145,7 @@ describe('public/slideshow/updater CyclicManager', () => {
     })
     it('should trigger updaters with provided interval', () => {
       const ival = Math.round(Math.random() * 1e9)
-      Start(ival)
+      start(ival)
       const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
       fn()
       expect(fakeTrigger?.firstCall.args).to.deep.equal([ival])
@@ -156,7 +156,7 @@ describe('public/slideshow/updater CyclicManager', () => {
         a = Promise.resolve()
         return await Promise.reject(new Error('this should get swallowed!'))
       })
-      Start(1000)
+      start(1000)
       const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
       fn()
       await a
@@ -164,17 +164,17 @@ describe('public/slideshow/updater CyclicManager', () => {
     })
     it('should not call setInterval when a timer is already running', () => {
       CyclicManager.__timer = 42
-      Start(1000)
+      start(1000)
       expect(fakeSetInterval?.callCount).to.equal(0)
     })
-    it('should preserve the existing timer when Start is called again', () => {
+    it('should preserve the existing timer when start is called again', () => {
       CyclicManager.__timer = 42
-      Start(1000)
+      start(1000)
       expect(CyclicManager.__timer).to.equal(42)
     })
-    it('should not call clearInterval when Start is called again', () => {
+    it('should not call clearInterval when start is called again', () => {
       CyclicManager.__timer = 42
-      Start(1000)
+      start(1000)
       expect(fakeClearInterval?.callCount).to.equal(0)
     })
   })

@@ -148,7 +148,7 @@ interface DbBookmark {
 }
 
 function getCoverPath(folder: { current: string | null; firstPicture: string | null }): string | null {
-  // SyncMissingCoverImages writes '' as a "no valid cover" sentinel, so treat empty-string the same as null
+  // syncMissingCoverImages writes '' as a "no valid cover" sentinel, so treat empty-string the same as null
   return stringishHasValue(folder.current) ? folder.current : folder.firstPicture
 }
 

@@ -31,14 +31,14 @@ describe('index.ts DATA_DIR handling', (): void => {
     delete process.env.DISABLE_WATCHER
     delete process.env.SYNC_INTERVAL
     StartServerStub = sandbox.stub(ImageReader, 'StartServer').resolves()
-    SynchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
+    SynchronizeStub = sandbox.stub(ImageReader, 'synchronize').resolves()
     sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
     StatStub = sandbox.stub(Imports, 'stat').resolves(fakeDirStats())
     InitializeStub = sandbox.stub(Imports, 'initialize').resolves(cast({}))
     IncrementalSyncStub = sandbox.stub().resolves()
-    sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
+    sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ incrementalSync: IncrementalSyncStub })
   })
 
   afterEach(() => {
@@ -109,7 +109,7 @@ describe('index.ts DATA_DIR handling', (): void => {
     expect(StartServerStub?.called).to.equal(false)
   })
 
-  it('should not call Synchronize when stat rejects', async () => {
+  it('should not call synchronize when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
     await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
@@ -140,7 +140,7 @@ describe('index.ts DATA_DIR handling', (): void => {
     expect(StartServerStub?.called).to.equal(false)
   })
 
-  it('should not call Synchronize when stat returns a non-directory', async () => {
+  it('should not call synchronize when stat returns a non-directory', async () => {
     StatStub?.resolves(fakeFileStats())
     await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
@@ -152,7 +152,7 @@ describe('index.ts DATA_DIR handling', (): void => {
     expect(StartWatcherStub?.firstCall.args[0]).to.equal('/library/images')
   })
 
-  it('should pass the resolved DATA_DIR to IncrementalSync in the flush callback', async () => {
+  it('should pass the resolved DATA_DIR to incrementalSync in the flush callback', async () => {
     const fakeKnex = { fake: true }
     InitializeStub?.resolves(cast(fakeKnex))
     process.env.DATA_DIR = '/library/images'

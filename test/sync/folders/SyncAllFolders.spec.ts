@@ -1,14 +1,14 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { SyncAllFolders, Internals, Imports, LOG_PREFIX } from '#sync/folders.js'
+import { syncAllFolders, Internals, Imports, LOG_PREFIX } from '#sync/folders.js'
 import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('sync/folders SyncAllFolders()', () => {
+describe('sync/folders syncAllFolders()', () => {
   let syncNewFoldersStub = sandbox.stub()
   let syncRemovedFoldersStub = sandbox.stub()
   let syncMissingAncestorFoldersStub = sandbox.stub()
@@ -19,70 +19,70 @@ describe('sync/folders SyncAllFolders()', () => {
   let knexFake = stubToKnex({ id: Math.random() })
   beforeEach(() => {
     ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
-    syncNewFoldersStub = sandbox.stub(Internals, 'SyncNewFolders').resolves()
-    syncRemovedFoldersStub = sandbox.stub(Internals, 'SyncRemovedFolders').resolves()
-    syncMissingAncestorFoldersStub = sandbox.stub(Internals, 'SyncMissingAncestorFolders').resolves()
-    syncMissingCoverImagesStub = sandbox.stub(Internals, 'SyncMissingCoverImages').resolves()
-    syncFolderFirstImagesStub = sandbox.stub(Internals, 'SyncFolderFirstImages').resolves()
+    syncNewFoldersStub = sandbox.stub(Internals, 'syncNewFolders').resolves()
+    syncRemovedFoldersStub = sandbox.stub(Internals, 'syncRemovedFolders').resolves()
+    syncMissingAncestorFoldersStub = sandbox.stub(Internals, 'syncMissingAncestorFolders').resolves()
+    syncMissingCoverImagesStub = sandbox.stub(Internals, 'syncMissingCoverImages').resolves()
+    syncFolderFirstImagesStub = sandbox.stub(Internals, 'syncFolderFirstImages').resolves()
     knexFake = stubToKnex({ id: Math.random() })
   })
   afterEach(() => {
     sandbox.restore()
   })
   it('should call debug once when constructing logger', async () => {
-    await SyncAllFolders(knexFake)
+    await syncAllFolders(knexFake)
     expect(debugStub.callCount).to.equal(1)
   })
   it('should construct logger with the module prefix', async () => {
-    await SyncAllFolders(knexFake)
+    await syncAllFolders(knexFake)
     expect(debugStub.firstCall.args[0]).to.equal(LOG_PREFIX)
   })
-  it('should call SyncNewFolders once', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncNewFolders once', async () => {
+    await syncAllFolders(knexFake)
     expect(syncNewFoldersStub.callCount).to.equal(1)
   })
-  it('should call SyncNewFolders with expected args', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncNewFolders with expected args', async () => {
+    await syncAllFolders(knexFake)
     expect(syncNewFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncRemovedFolders once', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncRemovedFolders once', async () => {
+    await syncAllFolders(knexFake)
     expect(syncRemovedFoldersStub.callCount).to.equal(1)
   })
-  it('should call SyncRemovedFolders with expected args', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncRemovedFolders with expected args', async () => {
+    await syncAllFolders(knexFake)
     expect(syncRemovedFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncMissingAncestorFolders once', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncMissingAncestorFolders once', async () => {
+    await syncAllFolders(knexFake)
     expect(syncMissingAncestorFoldersStub.callCount).to.equal(1)
   })
-  it('should call SyncMissingAncestorFolders with expected args', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncMissingAncestorFolders with expected args', async () => {
+    await syncAllFolders(knexFake)
     expect(syncMissingAncestorFoldersStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncMissingAncestorFolders after SyncRemovedFolders', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncMissingAncestorFolders after syncRemovedFolders', async () => {
+    await syncAllFolders(knexFake)
     expect(syncMissingAncestorFoldersStub.calledAfter(syncRemovedFoldersStub)).to.equal(true)
   })
-  it('should call SyncMissingAncestorFolders before SyncFolderFirstImages', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncMissingAncestorFolders before syncFolderFirstImages', async () => {
+    await syncAllFolders(knexFake)
     expect(syncMissingAncestorFoldersStub.calledBefore(syncFolderFirstImagesStub)).to.equal(true)
   })
-  it('should call SyncMissingCoverImages once', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncMissingCoverImages once', async () => {
+    await syncAllFolders(knexFake)
     expect(syncMissingCoverImagesStub.callCount).to.equal(1)
   })
-  it('should call SyncMissingCoverImages with expected args', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncMissingCoverImages with expected args', async () => {
+    await syncAllFolders(knexFake)
     expect(syncMissingCoverImagesStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
-  it('should call SyncFolderFirstImages once', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncFolderFirstImages once', async () => {
+    await syncAllFolders(knexFake)
     expect(syncFolderFirstImagesStub.callCount).to.equal(1)
   })
-  it('should call SyncFolderFirstImages with expected args', async () => {
-    await SyncAllFolders(knexFake)
+  it('should call syncFolderFirstImages with expected args', async () => {
+    await syncAllFolders(knexFake)
     expect(syncFolderFirstImagesStub.firstCall.args).to.deep.equal([loggerStub, knexFake])
   })
 })

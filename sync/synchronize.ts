@@ -3,14 +3,14 @@
 import _debug from 'debug'
 
 import { initialize as _initialize } from '../utils/persistance.js'
-import { FindSyncItems as _FindSyncItems } from './findItems.js'
-import { SyncAllPictures as _SyncAllPictures } from './pictures.js'
-import { SyncAllFolders as _SyncAllFolders } from './folders.js'
+import { findSyncItems as _findSyncItems } from './findItems.js'
+import { syncAllPictures as _syncAllPictures } from './pictures.js'
+import { syncAllFolders as _syncAllFolders } from './folders.js'
 import {
-  PruneEmptyFolders as _PruneEmptyFolders,
-  UpdateFolderPictureCounts as _UpdateFolderPictureCounts,
+  pruneEmptyFolders as _pruneEmptyFolders,
+  updateFolderPictureCounts as _updateFolderPictureCounts,
 } from './folderCounts.js'
-import { EmitSqliteSizeWarning as _EmitSqliteSizeWarning } from './sqliteWarning.js'
+import { emitSqliteSizeWarning as _emitSqliteSizeWarning } from './sqliteWarning.js'
 
 const ZERO = 0
 const MS_PER_SECOND = 1000
@@ -21,17 +21,17 @@ export const LOG_PREFIX = 'type-imagereader:sync:synchronize'
 export const Imports = {
   debug: _debug,
   initialize: _initialize,
-  FindSyncItems: _FindSyncItems,
-  SyncAllPictures: _SyncAllPictures,
-  SyncAllFolders: _SyncAllFolders,
-  UpdateFolderPictureCounts: _UpdateFolderPictureCounts,
-  PruneEmptyFolders: _PruneEmptyFolders,
-  EmitSqliteSizeWarning: _EmitSqliteSizeWarning,
+  findSyncItems: _findSyncItems,
+  syncAllPictures: _syncAllPictures,
+  syncAllFolders: _syncAllFolders,
+  updateFolderPictureCounts: _updateFolderPictureCounts,
+  pruneEmptyFolders: _pruneEmptyFolders,
+  emitSqliteSizeWarning: _emitSqliteSizeWarning,
 }
 
 const elapsedSeconds = (since: number): string => ((Date.now() - since) / MS_PER_SECOND).toFixed(ELAPSED_DECIMALS)
 
-export async function Synchronize(): Promise<void> {
+export async function synchronize(): Promise<void> {
   const logger = Imports.debug(LOG_PREFIX)
   const start = Date.now()
   logger('Folder Synchronization Begins')
@@ -48,23 +48,23 @@ export async function Synchronize(): Promise<void> {
     }
   }
   try {
-    const foundPics = await runStep('FindSyncItems', async () => await Imports.FindSyncItems(knex))
+    const foundPics = await runStep('findSyncItems', async () => await Imports.findSyncItems(knex))
     if (foundPics <= ZERO) {
       throw new Error('Found Zero images, refusing to process empty base folder')
     }
-    await runStep('SyncAllPictures', async () => {
-      await Imports.SyncAllPictures(knex)
+    await runStep('syncAllPictures', async () => {
+      await Imports.syncAllPictures(knex)
     })
-    await runStep('SyncAllFolders', async () => {
-      await Imports.SyncAllFolders(knex)
+    await runStep('syncAllFolders', async () => {
+      await Imports.syncAllFolders(knex)
     })
-    await runStep('UpdateFolderPictureCounts', async () => {
-      await Imports.UpdateFolderPictureCounts(knex)
+    await runStep('updateFolderPictureCounts', async () => {
+      await Imports.updateFolderPictureCounts(knex)
     })
-    await runStep('PruneEmptyFolders', async () => {
-      await Imports.PruneEmptyFolders(knex)
+    await runStep('pruneEmptyFolders', async () => {
+      await Imports.pruneEmptyFolders(knex)
     })
-    Imports.EmitSqliteSizeWarning(logger, knex, foundPics)
+    Imports.emitSqliteSizeWarning(logger, knex, foundPics)
   } catch (e) {
     logger('Folder Synchronization Failed', e)
     logger(`Folder Synchronization Failed after ${elapsedSeconds(start)}s`)

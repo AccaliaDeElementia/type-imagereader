@@ -71,7 +71,7 @@ export function Add(...updaters: CyclicUpdater[]): void {
   CyclicManager.__updaters.push(...updaters)
 }
 
-export function Start(interval: number): void {
+export function start(interval: number): void {
   if (CyclicManager.__timer !== undefined) return
   CyclicManager.__timer = setInterval(() => {
     Internals.triggerUpdaters(interval).catch(() => null)

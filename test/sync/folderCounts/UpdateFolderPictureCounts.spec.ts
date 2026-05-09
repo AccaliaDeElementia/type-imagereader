@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { UpdateFolderPictureCounts, Internals, Imports, LOG_PREFIX } from '#sync/folderCounts.js'
+import { updateFolderPictureCounts, Internals, Imports, LOG_PREFIX } from '#sync/folderCounts.js'
 import Sinon from 'sinon'
 import { cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
@@ -9,7 +9,7 @@ import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
+describe('sync/folderCounts updateFolderPictureCounts()', () => {
   let getFolderInfosWithPicturesStub = sandbox.stub()
   let getAllFolderInfosStub = sandbox.stub()
   let calculateFolderInfosStub = sandbox.stub()
@@ -28,77 +28,77 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       fake: knexFnFake,
     } = createKnexChainFake(['insert', 'onConflict'] as const, ['merge'] as const, undefined))
     ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
-    getFolderInfosWithPicturesStub = sandbox.stub(Internals, 'GetFolderInfosWithPictures').resolves([])
-    getAllFolderInfosStub = sandbox.stub(Internals, 'GetAllFolderInfos').resolves({})
-    calculateFolderInfosStub = sandbox.stub(Internals, 'CalculateFolderInfos').returns([])
-    chunkStub = sandbox.stub(Imports, 'Chunk').returns([])
+    getFolderInfosWithPicturesStub = sandbox.stub(Internals, 'getFolderInfosWithPictures').resolves([])
+    getAllFolderInfosStub = sandbox.stub(Internals, 'getAllFolderInfos').resolves({})
+    calculateFolderInfosStub = sandbox.stub(Internals, 'calculateFolderInfos').returns([])
+    chunkStub = sandbox.stub(Imports, 'chunk').returns([])
   })
   afterEach(() => {
     sandbox.restore()
   })
   it('should call debug once when constructing logger', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(debugStub.callCount).to.equal(1)
   })
   it('should construct prefixed logger', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
       .and.satisfy((msg: string) => msg.startsWith(`${LOG_PREFIX}:`), 'Logger should be prefixed')
       .and.satisfy((msg: string) => msg.endsWith(':updateSeen'), 'Logger should be suffixed with `updateSeen`')
   })
-  it('should call GetFolderInfosWithPictures once', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+  it('should call getFolderInfosWithPictures once', async () => {
+    await updateFolderPictureCounts(knexFnFake)
     expect(getFolderInfosWithPicturesStub.callCount).to.equal(1)
   })
-  it('should call GetFolderInfosWithPictures with one argument', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+  it('should call getFolderInfosWithPictures with one argument', async () => {
+    await updateFolderPictureCounts(knexFnFake)
     expect(getFolderInfosWithPicturesStub.firstCall.args).to.have.lengthOf(1)
   })
   it('should use knex to get folders with pictures counts', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(getFolderInfosWithPicturesStub.firstCall.args[0]).to.equal(knexFnFake)
   })
-  it('should call GetAllFolderInfos once', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+  it('should call getAllFolderInfos once', async () => {
+    await updateFolderPictureCounts(knexFnFake)
     expect(getAllFolderInfosStub.callCount).to.equal(1)
   })
-  it('should call GetAllFolderInfos with one argument', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+  it('should call getAllFolderInfos with one argument', async () => {
+    await updateFolderPictureCounts(knexFnFake)
     expect(getAllFolderInfosStub.firstCall.args).to.have.lengthOf(1)
   })
   it('should use knex to all folders in the db', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(getAllFolderInfosStub.firstCall.args[0]).to.equal(knexFnFake)
   })
-  it('should call CalculateFolderInfos once', async () => {
+  it('should call calculateFolderInfos once', async () => {
     const pictureFolders = [{ path: 'Test Path', totalCount: 0, seenCount: 0 }]
     getFolderInfosWithPicturesStub.resolves(pictureFolders)
     const allFolders = {
       'Test Path': { path: 'Test Path', totalCount: 0, seenCount: 0 },
     }
     getAllFolderInfosStub.resolves(allFolders)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(calculateFolderInfosStub.callCount).to.equal(1)
   })
-  it('should call CalculateFolderInfos with two arguments', async () => {
+  it('should call calculateFolderInfos with two arguments', async () => {
     const pictureFolders = [{ path: 'Test Path', totalCount: 0, seenCount: 0 }]
     getFolderInfosWithPicturesStub.resolves(pictureFolders)
     const allFolders = {
       'Test Path': { path: 'Test Path', totalCount: 0, seenCount: 0 },
     }
     getAllFolderInfosStub.resolves(allFolders)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(calculateFolderInfosStub.firstCall.args).to.have.lengthOf(2)
   })
-  it('should call CalculateFolderInfos with all folders as first argument', async () => {
+  it('should call calculateFolderInfos with all folders as first argument', async () => {
     const pictureFolders = [{ path: 'Test Path', totalCount: 0, seenCount: 0 }]
     getFolderInfosWithPicturesStub.resolves(pictureFolders)
     const allFolders = {
       'Test Path': { path: 'Test Path', totalCount: 0, seenCount: 0 },
     }
     getAllFolderInfosStub.resolves(allFolders)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(calculateFolderInfosStub.firstCall.args[0]).to.equal(allFolders)
   })
   it('should calculate folder infos using results from both', async () => {
@@ -108,21 +108,21 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       'Test Path': { path: 'Test Path', totalCount: 0, seenCount: 0 },
     }
     getAllFolderInfosStub.resolves(allFolders)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(calculateFolderInfosStub.firstCall.args[1]).to.equal(pictureFolders)
   })
-  it('should call Chunk once', async () => {
+  it('should call chunk once', async () => {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]
     getAllFolderInfosStub.resolves({ 'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 } })
     calculateFolderInfosStub.returns(results)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(chunkStub.callCount).to.equal(1)
   })
-  it('should call Chunk with the dialect-aware chunk size', async () => {
+  it('should call chunk with the dialect-aware chunk size', async () => {
     const results = [{ path: 'SOME PATH', totalCount: 0, seenCount: 0 }]
     getAllFolderInfosStub.resolves({ 'SOME PATH': { path: 'SOME PATH', totalCount: 0, seenCount: 0 } })
     calculateFolderInfosStub.returns(results)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(chunkStub.firstCall.args[1]).to.be.a('number')
   })
   it('should chunk the filtered results of calculation', async () => {
@@ -131,7 +131,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       'SOME PATH': { path: 'SOME PATH', folder: '/', sortKey: 'some', totalCount: 0, seenCount: 0 },
     })
     calculateFolderInfosStub.returns(results)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(chunkStub.firstCall.args[0]).to.deep.equal([
       { path: 'SOME PATH', folder: '/', sortKey: 'some', totalCount: 0, seenCount: 0 },
     ])
@@ -144,14 +144,14 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       { path: '/existing/', totalCount: 1, seenCount: 0 },
       { path: '/orphan/', totalCount: 1, seenCount: 0 },
     ])
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     const chunked = cast<Array<{ path: string }>>(chunkStub.firstCall.args[0])
     expect(chunked.map((r) => r.path)).to.deep.equal(['/existing/'])
   })
   it('should drop every calculated folder when none exist in the folders table', async () => {
     getAllFolderInfosStub.resolves({})
     calculateFolderInfosStub.returns([{ path: '/orphan/', totalCount: 1, seenCount: 0 }])
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(chunkStub.firstCall.args[0]).to.deep.equal([])
   })
   it('should enrich the upsert payload with folder column from the existing row', async () => {
@@ -159,7 +159,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       '/existing/': { path: '/existing/', folder: '/', sortKey: 'existing', totalCount: 0, seenCount: 0 },
     })
     calculateFolderInfosStub.returns([{ path: '/existing/', totalCount: 1, seenCount: 0 }])
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     const chunked = cast<Array<{ folder: string }>>(chunkStub.firstCall.args[0])
     expect(chunked[0]?.folder).to.equal('/')
   })
@@ -168,50 +168,50 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       '/existing/': { path: '/existing/', folder: '/', sortKey: 'existing', totalCount: 0, seenCount: 0 },
     })
     calculateFolderInfosStub.returns([{ path: '/existing/', totalCount: 1, seenCount: 0 }])
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     const chunked = cast<Array<{ sortKey: string }>>(chunkStub.firstCall.args[0])
     expect(chunked[0]?.sortKey).to.equal('existing')
   })
   it('should call knex with folders table when inserting', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexFnStub.firstCall.args).to.deep.equal(['folders'])
   })
   it('should call insert once when inserting results', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.insert.callCount).to.equal(1)
   })
   it('should insert results with correct record', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.insert.firstCall.args[0]).to.equal(records[0])
   })
   it('should call onConflict once when inserting results', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.onConflict.callCount).to.equal(1)
   })
   it('should insert results with conflict on path', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.onConflict.firstCall.args[0]).to.equal('path')
   })
   it('should call merge once when inserting results', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.merge.callCount).to.equal(1)
   })
   it('should merge only totalCount and seenCount on conflict', async () => {
     const records = [[{ path: 'SOME PATH', totalCount: 42, seenCount: 69 }]]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.merge.firstCall.args[0]).to.deep.equal(['totalCount', 'seenCount'])
   })
   it('should insert results for each chunk', async () => {
@@ -221,7 +221,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       [{ path: 'LAST PATH', totalCount: 255, seenCount: 128 }],
     ]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.insert.callCount).to.equal(3)
   })
   it('should insert first chunk for each loop iteration', async () => {
@@ -231,7 +231,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       [{ path: 'LAST PATH', totalCount: 255, seenCount: 128 }],
     ]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.insert.firstCall.args[0]).to.equal(records[0])
   })
   it('should insert second chunk for each loop iteration', async () => {
@@ -241,7 +241,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       [{ path: 'LAST PATH', totalCount: 255, seenCount: 128 }],
     ]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.insert.secondCall.args[0]).to.equal(records[1])
   })
   it('should insert third chunk for each loop iteration', async () => {
@@ -251,7 +251,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       [{ path: 'LAST PATH', totalCount: 255, seenCount: 128 }],
     ]
     chunkStub.returns(records)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(knexStub.insert.thirdCall.args[0]).to.equal(records[2])
   })
   it('should log status five times', async () => {
@@ -272,11 +272,11 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       { path: 'LAST PATH', totalCount: 2, seenCount: 2 },
     ]
     calculateFolderInfosStub.returns(results)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(loggerStub.callCount).to.equal(5)
   })
   it('should log start status', async () => {
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(loggerStub.getCall(0).args).to.deep.equal(['Updating Seen Counts'])
   })
   it('should log picture folder count', async () => {
@@ -285,7 +285,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       { path: 'Path under test', totalCount: 0, seenCount: 0 },
     ]
     getFolderInfosWithPicturesStub.resolves(pictureFolders)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(loggerStub.getCall(1).args).to.deep.equal(['Found 2 Folders to Update'])
   })
   it('should log db folder count', async () => {
@@ -293,7 +293,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       'Test Path': { path: 'Test Path', totalCount: 0, seenCount: 0 },
     }
     getAllFolderInfosStub.resolves(allFolders)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(loggerStub.getCall(2).args).to.deep.equal(['Found 1 Folders in the DB'])
   })
   it('should log calculated folder count', async () => {
@@ -309,7 +309,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       { path: 'LAST PATH', totalCount: 2, seenCount: 2 },
     ]
     calculateFolderInfosStub.returns(results)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(loggerStub.getCall(3).args).to.deep.equal(['Calculated 3 Folders Seen Counts'])
   })
   it('should log updated folder count', async () => {
@@ -325,7 +325,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       { path: 'LAST PATH', totalCount: 2, seenCount: 2 },
     ]
     calculateFolderInfosStub.returns(results)
-    await UpdateFolderPictureCounts(knexFnFake)
+    await updateFolderPictureCounts(knexFnFake)
     expect(loggerStub.getCall(4).args).to.deep.equal(['Updated 3 Folders Seen Counts'])
   })
 })

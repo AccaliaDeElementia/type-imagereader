@@ -1,14 +1,14 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { SyncMissingCoverImages } from '#sync/folders.js'
+import { syncMissingCoverImages } from '#sync/folders.js'
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('sync/folders SyncMissingCoverImages()', () => {
+describe('sync/folders syncMissingCoverImages()', () => {
   let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
   let knexInnerInstanceStub = {
     select: sandbox.stub().returnsThis(),
@@ -45,87 +45,87 @@ describe('sync/folders SyncMissingCoverImages()', () => {
     sandbox.restore()
   })
   it("should call knex with 'folders' table", async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(knexFnStub.firstCall.args).to.deep.equal(['folders'])
   })
   it('should call knex once', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(knexFnStub.callCount).to.equal(1)
   })
   it('should call update once', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(knexInstanceStub.update.callCount).to.equal(1)
   })
   it('should call update clearing current image', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(knexInstanceStub.update.firstCall.args).to.deep.equal([{ current: '' }])
   })
   it('should call whereNotExists once in outer query', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(knexInstanceStub.whereNotExists.callCount).to.equal(1)
   })
   it('should call select once in inner query', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.callCount).to.equal(1)
   })
   it("should call select with '*' in inner query", async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
   })
   it('should call from once in inner query', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.from.callCount).to.equal(1)
   })
   it("should call from with 'pictures' in inner query", async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.from.firstCall.args).to.deep.equal(['pictures'])
   })
   it('should call whereRaw once in inner query', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.whereRaw.callCount).to.equal(1)
   })
   it('should call whereRaw with correct condition in inner query', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.whereRaw.firstCall.args).to.deep.equal(['pictures.path = folders.current'])
   })
   it('should call outer whereRaw once', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(knexInstanceStub.whereRaw.callCount).to.equal(1)
   })
   it('should call outer whereRaw to filter folders with a cover image set', async () => {
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(knexInstanceStub.whereRaw.firstCall.args).to.deep.equal(["folders.current <> ''"])
   })
   it('should log once when cover images are removed', async () => {
     knexInstanceStub.update.resolves(99)
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(loggerStub.callCount).to.equal(1)
   })
   it('should log removed count when cover images are removed', async () => {
     knexInstanceStub.update.resolves(99)
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(loggerStub.firstCall.args).to.deep.equal(['Removed 99 missing cover images'])
   })
   it('should log once when no cover images are removed', async () => {
     knexInstanceStub.update.resolves(0)
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(loggerStub.callCount).to.equal(1)
   })
   it('should log zero count when no cover images are removed', async () => {
     knexInstanceStub.update.resolves(0)
-    await SyncMissingCoverImages(loggerFake, knexFnFake)
+    await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(loggerStub.firstCall.args).to.deep.equal(['Removed 0 missing cover images'])
   })
 })

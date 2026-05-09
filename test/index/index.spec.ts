@@ -27,14 +27,14 @@ describe('/index.ts tests', (): void => {
     delete process.env.DISABLE_WATCHER
     delete process.env.SYNC_INTERVAL
     StartServerStub = sandbox.stub(ImageReader, 'StartServer').resolves()
-    SynchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
+    SynchronizeStub = sandbox.stub(ImageReader, 'synchronize').resolves()
     ClockFake = sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
     sandbox.stub(Imports, 'stat').resolves(cast<Stats>({ isDirectory: () => true }))
     InitializeStub = sandbox.stub(Imports, 'initialize').resolves(cast({}))
     IncrementalSyncStub = sandbox.stub().resolves()
-    sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
+    sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ incrementalSync: IncrementalSyncStub })
   })
 
   afterEach(() => {
@@ -100,7 +100,7 @@ describe('/index.ts tests', (): void => {
     expect(StartServerStub?.called).to.equal(false)
   })
 
-  it('should not call Synchronize when PORT fails to parse', async () => {
+  it('should not call synchronize when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
     await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
@@ -118,7 +118,7 @@ describe('/index.ts tests', (): void => {
     expect(StartServerStub?.called).to.equal(false)
   })
 
-  it('should not call Synchronize when PORT is too small', async () => {
+  it('should not call synchronize when PORT is too small', async () => {
     process.env.PORT = '-1'
     await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
@@ -136,7 +136,7 @@ describe('/index.ts tests', (): void => {
     expect(StartServerStub?.called).to.equal(false)
   })
 
-  it('should not call Synchronize when PORT is too big', async () => {
+  it('should not call synchronize when PORT is too big', async () => {
     process.env.PORT = '131072'
     await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
@@ -154,7 +154,7 @@ describe('/index.ts tests', (): void => {
     expect(StartServerStub?.called).to.equal(false)
   })
 
-  it('should not call Synchronize when PORT is not integer', async () => {
+  it('should not call synchronize when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
     await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
@@ -455,7 +455,7 @@ describe('/index.ts tests', (): void => {
     expect(InitializeStub?.callCount).to.equal(1)
   })
 
-  it('should call IncrementalSync once in flush callback', async () => {
+  it('should call incrementalSync once in flush callback', async () => {
     const fakeKnex = { fake: true }
     InitializeStub?.resolves(cast(fakeKnex))
     await ImageReader.Run()
@@ -465,7 +465,7 @@ describe('/index.ts tests', (): void => {
     expect(IncrementalSyncStub?.callCount).to.equal(1)
   })
 
-  it('should pass knex to IncrementalSync in flush callback', async () => {
+  it('should pass knex to incrementalSync in flush callback', async () => {
     const fakeKnex = { fake: true }
     InitializeStub?.resolves(cast(fakeKnex))
     await ImageReader.Run()
@@ -475,7 +475,7 @@ describe('/index.ts tests', (): void => {
     expect(IncrementalSyncStub?.firstCall.args[0]).to.equal(fakeKnex)
   })
 
-  it('should pass changeset to IncrementalSync in flush callback', async () => {
+  it('should pass changeset to incrementalSync in flush callback', async () => {
     const fakeKnex = { fake: true }
     InitializeStub?.resolves(cast(fakeKnex))
     await ImageReader.Run()
@@ -493,7 +493,7 @@ describe('/index.ts tests', (): void => {
     expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
-  it('should release SyncLock when IncrementalSync rejects', async () => {
+  it('should release SyncLock when incrementalSync rejects', async () => {
     IncrementalSyncStub?.rejects(new Error('incremental failed'))
     await ImageReader.Run()
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
@@ -516,7 +516,7 @@ describe('/index.ts tests', (): void => {
     expect(err.message).to.equal('sync locked')
   })
 
-  it('should not call IncrementalSync when SyncLock is held', async () => {
+  it('should not call incrementalSync when SyncLock is held', async () => {
     await ImageReader.Run()
     // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
     ImageReader.SyncLock._locked = true

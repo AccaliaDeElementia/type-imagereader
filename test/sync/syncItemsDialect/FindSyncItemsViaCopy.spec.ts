@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { FindSyncItemsViaCopy, type CopyHelpers } from '#sync/syncItemsDialect.js'
+import { findSyncItemsViaCopy, type CopyHelpers } from '#sync/syncItemsDialect.js'
 import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { createCopyStreamFake } from '#testutils/CopyStream.js'
 import { noopLogger } from '#testutils/Debug.js'
@@ -50,42 +50,42 @@ const buildHelpers = (overrides: Partial<CopyHelpers> = {}): CopyHelpers => ({
   ...overrides,
 })
 
-describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
+describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
   afterEach(() => {
     sandbox.restore()
   })
 
   it('should return aggregated counts from buildSyncItemRows', async () => {
     const knex = stubToKnex(sandbox.stub())
-    const result = await FindSyncItemsViaCopy(knex, noopLogger, buildHelpers())
+    const result = await findSyncItemsViaCopy(knex, noopLogger, buildHelpers())
     expect(result).to.deep.equal({ files: FILE_COUNT, dirs: DIR_COUNT })
   })
 
   it('should release the copy connection after streaming completes', async () => {
     const releaseSpy = sandbox.stub().resolves()
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(knex, noopLogger, buildHelpers({ releaseCopyConnection: releaseSpy }))
+    await findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ releaseCopyConnection: releaseSpy }))
     expect(releaseSpy.callCount).to.equal(1)
   })
 
   it('should pass knex to acquireCopyConnection', async () => {
     const acquireSpy = sandbox.stub().resolves(cast<PoolClient>({ query: (s: CopyStreamQuery) => s }))
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(knex, noopLogger, buildHelpers({ acquireCopyConnection: acquireSpy }))
+    await findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ acquireCopyConnection: acquireSpy }))
     expect(acquireSpy.firstCall.args[0]).to.equal(knex)
   })
 
   it('should issue the COPY SQL when starting the stream', async () => {
     const copyFromSpy = sandbox.stub().returns(buildStreamHandles().stream)
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: copyFromSpy }))
+    await findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: copyFromSpy }))
     expect(copyFromSpy.firstCall.args[0]).to.equal(COPY_SQL)
   })
 
   it('should pass getDataDir() result as fsWalker root', async () => {
     const fsWalkerSpy = sandbox.stub().resolves()
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(
+    await findSyncItemsViaCopy(
       knex,
       noopLogger,
       buildHelpers({ fsWalker: fsWalkerSpy, getDataDir: () => '/custom/data' }),
@@ -97,7 +97,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
     const items = [{ path: '/a.jpg', isFile: true }]
     const buildRowsSpy = sandbox.stub().returns({ files: 0, dirs: 0, rows: [] })
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(
+    await findSyncItemsViaCopy(
       knex,
       noopLogger,
       buildHelpers({
@@ -113,7 +113,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
   it('should write formatted CSV rows through stream.write', async () => {
     const handles = buildStreamHandles()
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(
+    await findSyncItemsViaCopy(
       knex,
       noopLogger,
       buildHelpers({ copyFrom: () => handles.stream, formatSyncItemCsv: () => 'unique-row-marker\n' }),
@@ -131,14 +131,14 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
       return false
     })
     const knex = stubToKnex(sandbox.stub())
-    const result = await FindSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream }))
+    const result = await findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream }))
     expect(result).to.deep.equal({ files: FILE_COUNT, dirs: DIR_COUNT })
   })
 
   it('should call stream.end exactly once after walking completes', async () => {
     const handles = buildStreamHandles()
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream }))
+    await findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream }))
     expect(handles.endSpy.callCount).to.equal(1)
   })
 
@@ -147,7 +147,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
     const handles = buildStreamHandles({ endError: streamErr })
     const knex = stubToKnex(sandbox.stub())
     const err = await eventuallyRejects(
-      FindSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream })),
+      findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream })),
     )
     expect(err).to.equal(streamErr)
   })
@@ -156,7 +156,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
     const streamErr = new Error('stream blew up')
     const handles = buildStreamHandles({ endError: streamErr })
     const knex = stubToKnex(sandbox.stub())
-    await eventuallyRejects(FindSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream })))
+    await eventuallyRejects(findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream })))
     expect(handles.destroySpy.firstCall.args[0]).to.equal(streamErr)
   })
 
@@ -165,7 +165,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
     const releaseSpy = sandbox.stub().resolves()
     const knex = stubToKnex(sandbox.stub())
     await eventuallyRejects(
-      FindSyncItemsViaCopy(
+      findSyncItemsViaCopy(
         knex,
         noopLogger,
         buildHelpers({ copyFrom: () => handles.stream, releaseCopyConnection: releaseSpy }),
@@ -178,7 +178,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
     const client = cast<PoolClient>({ query: (s: CopyStreamQuery) => s })
     const releaseSpy = sandbox.stub().resolves()
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(
+    await findSyncItemsViaCopy(
       knex,
       noopLogger,
       buildHelpers({
@@ -194,7 +194,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
 
   it('should accumulate files and dirs across multiple fsWalker iterations', async () => {
     const knex = stubToKnex(sandbox.stub())
-    const result = await FindSyncItemsViaCopy(
+    const result = await findSyncItemsViaCopy(
       knex,
       noopLogger,
       buildHelpers({
@@ -211,7 +211,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
     const PENDING = 5
     const loggerSpy = sandbox.stub()
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(
+    await findSyncItemsViaCopy(
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
@@ -226,7 +226,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
   it('should not log on the second iteration', async () => {
     const loggerSpy = sandbox.stub()
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(
+    await findSyncItemsViaCopy(
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
@@ -244,7 +244,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
     const EXPECTED_LOG_COUNT = 2
     const loggerSpy = sandbox.stub()
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(
+    await findSyncItemsViaCopy(
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
@@ -267,7 +267,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaCopy()', () => {
     const handles = buildStreamHandles()
     const rows = Array.from({ length: DEFAULT_CHUNK_SIZE }, () => sampleRow)
     const knex = stubToKnex(sandbox.stub())
-    await FindSyncItemsViaCopy(
+    await findSyncItemsViaCopy(
       knex,
       noopLogger,
       buildHelpers({

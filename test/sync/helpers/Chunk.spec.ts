@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Chunk, Helpers } from '#sync/helpers.js'
+import { chunk, Helpers } from '#sync/helpers.js'
 
-describe('sync/helpers Chunk()', () => {
+describe('sync/helpers chunk()', () => {
   beforeEach(() => {
     Helpers.padLength = 20
   })
@@ -22,10 +22,10 @@ describe('sync/helpers Chunk()', () => {
   ]
   tests.forEach(([title, value, spread, expected]) => {
     it(title, () => {
-      expect(Chunk(value, spread)).to.deep.equal(expected)
+      expect(chunk(value, spread)).to.deep.equal(expected)
     })
   })
   it('should default to DEFAULT_CHUNK_SIZE (5000) when no size argument is provided', () => {
-    expect(Chunk([1, 2, 3])).to.deep.equal([[1, 2, 3]])
+    expect(chunk([1, 2, 3])).to.deep.equal([[1, 2, 3]])
   })
 })

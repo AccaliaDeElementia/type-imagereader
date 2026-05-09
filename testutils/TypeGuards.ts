@@ -10,7 +10,7 @@ export function cast<T>(obj: unknown, isT: (o: unknown) => o is T = (_: unknown)
 }
 
 export function stubToKnex(stub: unknown): KnexDefault {
-  // Mirror knex's runtime shape so dialect probes (e.g. IsPostgres) can read
+  // Mirror knex's runtime shape so dialect probes (e.g. isPostgres) can read
   // knex.client.config.client without throwing. Default to postgresql since
   // that's the project's primary target; tests that need a different dialect
   // can override per-test by stubbing the relevant Imports.* helper.

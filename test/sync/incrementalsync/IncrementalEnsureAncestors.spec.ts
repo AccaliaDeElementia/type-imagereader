@@ -1,8 +1,8 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { IncrementalEnsureAncestors } from '#sync/incrementalsync.js'
-import { ToSortKey } from '#sync/helpers.js'
+import { incrementalEnsureAncestors } from '#sync/incrementalsync.js'
+import { toSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
@@ -15,7 +15,7 @@ interface InsertedRow {
   sortKey: string
 }
 
-describe('sync/incrementalsync IncrementalEnsureAncestors()', () => {
+describe('sync/incrementalsync incrementalEnsureAncestors()', () => {
   let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
 
   let existingFolderPaths: Array<{ path: string }> = []
@@ -78,22 +78,22 @@ describe('sync/incrementalsync IncrementalEnsureAncestors()', () => {
 
   describe('when affected folders is empty', () => {
     it('should not attempt any folder inserts', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set())
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set())
       expect(foldersInsertQuery.insert.callCount).to.equal(0)
     })
     it('should log zero ensured', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set())
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set())
       expect(loggerStub.firstCall.args[0]).to.equal('Ensured 0 ancestor folders')
     })
   })
 
   describe('when only root is affected', () => {
     it('should not attempt any folder inserts', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/']))
       expect(foldersInsertQuery.insert.callCount).to.equal(0)
     })
     it('should log zero ensured', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/']))
       expect(loggerStub.firstCall.args[0]).to.equal('Ensured 0 ancestor folders')
     })
   })
@@ -104,45 +104,45 @@ describe('sync/incrementalsync IncrementalEnsureAncestors()', () => {
       setup()
     })
     it('should insert a row for each missing strict ancestor', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       const paths = insertedChunks.flat().map((r) => r.path)
       expect(paths).to.have.members(['/a/', '/a/b/'])
     })
     it('should not re-create the affected folder itself', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       const paths = insertedChunks.flat().map((r) => r.path)
       expect(paths).to.not.include('/a/b/c/')
     })
     it('should not insert a row for the implicit root', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       const paths = insertedChunks.flat().map((r) => r.path)
       expect(paths).to.not.include('/')
     })
     it('should set the correct parent folder on each inserted row', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       const rowsByPath = Object.fromEntries(insertedChunks.flat().map((r) => [r.path, r]))
       expect(rowsByPath['/a/b/']?.folder).to.equal('/a/')
     })
     it('should set the parent to root for a top-level ancestor', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       const rowsByPath = Object.fromEntries(insertedChunks.flat().map((r) => [r.path, r]))
       expect(rowsByPath['/a/']?.folder).to.equal('/')
     })
     it('should derive sortKey from the folder basename', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       const rowsByPath = Object.fromEntries(insertedChunks.flat().map((r) => [r.path, r]))
-      expect(rowsByPath['/a/b/']?.sortKey).to.equal(ToSortKey('b'))
+      expect(rowsByPath['/a/b/']?.sortKey).to.equal(toSortKey('b'))
     })
     it('should log the number of ancestors ensured', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       expect(loggerStub.firstCall.args[0]).to.equal('Ensured 2 ancestor folders')
     })
     it('should use onConflict on path when inserting', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       expect(foldersInsertQuery.onConflict.firstCall.args).to.deep.equal(['path'])
     })
     it('should use ignore (not merge) when inserting', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       expect(foldersInsertQuery.ignore.callCount).to.be.above(0)
     })
   })
@@ -153,11 +153,11 @@ describe('sync/incrementalsync IncrementalEnsureAncestors()', () => {
       setup()
     })
     it('should not call insert', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       expect(foldersInsertQuery.insert.callCount).to.equal(0)
     })
     it('should log zero ancestors ensured', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       expect(loggerStub.firstCall.args[0]).to.equal('Ensured 0 ancestor folders')
     })
   })
@@ -168,7 +168,7 @@ describe('sync/incrementalsync IncrementalEnsureAncestors()', () => {
       setup()
     })
     it('should de-duplicate the shared ancestors', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/', '/a/b/d/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/', '/a/b/d/']))
       const paths = insertedChunks.flat().map((r) => r.path)
       expect(paths).to.have.members(['/a/', '/a/b/'])
     })
@@ -180,7 +180,7 @@ describe('sync/incrementalsync IncrementalEnsureAncestors()', () => {
       setup()
     })
     it('should not insert any rows (strict ancestor is root, which is implicit)', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/']))
       expect(insertedChunks.flat()).to.have.lengthOf(0)
     })
   })
@@ -191,11 +191,11 @@ describe('sync/incrementalsync IncrementalEnsureAncestors()', () => {
       setup()
     })
     it('should look up existing folder paths with whereIn', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       expect(whereInCalls.flat()).to.include('/a/')
     })
     it('should look up all strict ancestors in the whereIn', async () => {
-      await IncrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
+      await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
       expect(whereInCalls.flat()).to.include('/a/b/')
     })
   })

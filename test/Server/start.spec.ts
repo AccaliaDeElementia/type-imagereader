@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import { cast } from '#testutils/TypeGuards.js'
-import { Start as start, Internals, SetClacksOverhead } from '#Server.js'
+import { start, Internals, SetClacksOverhead } from '#Server.js'
 import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'

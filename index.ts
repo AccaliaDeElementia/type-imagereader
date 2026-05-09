@@ -8,15 +8,15 @@ import { stat } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { Synchronize as _Synchronize } from './sync/synchronize.js'
-import { IncrementalSync as _IncrementalSync } from './sync/incrementalsync.js'
-import { Start as startWatcher } from './sync/filewatcher.js'
+import { synchronize as _synchronize } from './sync/synchronize.js'
+import { incrementalSync as _incrementalSync } from './sync/incrementalsync.js'
+import { start as startWatcher } from './sync/filewatcher.js'
 import type { Changeset, WatcherSubscription } from './sync/filewatcher.js'
 import { initialize as _initialize } from './utils/persistance.js'
-import { Start as start } from './Server.js'
+import { start } from './Server.js'
 import { stringIsNullOrEmpty, getDataDir } from './utils/helpers.js'
 
-const IncrementalSyncFunctions = { IncrementalSync: _IncrementalSync }
+const IncrementalSyncFunctions = { incrementalSync: _incrementalSync }
 
 export const Imports = {
   logger: debug('type-imagereader:sync'),
@@ -62,7 +62,7 @@ export class LockResource {
 export async function RunSyncWithLock(): Promise<void> {
   if (!ImageReader.SyncLock.take()) return
   try {
-    await ImageReader.Synchronize()
+    await ImageReader.synchronize()
   } finally {
     ImageReader.SyncLock.release()
   }
@@ -106,7 +106,7 @@ const parseSyncInterval = (): number | undefined => {
 
 export const ImageReader = {
   StartServer: start,
-  Synchronize: _Synchronize,
+  synchronize: _synchronize,
   Interval: undefined as number | NodeJS.Timeout | undefined,
   WatcherSubscription: undefined as WatcherSubscription | undefined,
   SyncLock: new LockResource(),
@@ -132,7 +132,7 @@ export const ImageReader = {
     await runIfNotSuppressed('SKIP_SYNC', async () => {
       if (isSuppressed('ONESHOT')) {
         try {
-          await ImageReader.Synchronize()
+          await ImageReader.synchronize()
         } finally {
           try {
             const knex = await Imports.initialize()
@@ -147,7 +147,7 @@ export const ImageReader = {
       const doSync = async (): Promise<void> => {
         if (!ImageReader.SyncLock.take()) return
         try {
-          await ImageReader.Synchronize()
+          await ImageReader.synchronize()
         } finally {
           ImageReader.SyncLock.release()
         }
@@ -161,7 +161,7 @@ export const ImageReader = {
             if (!ImageReader.SyncLock.take()) throw new Error('sync locked')
             try {
               const knex = await Imports.initialize()
-              await Imports.IncrementalSyncFunctions.IncrementalSync(knex, changeset, dataDir)
+              await Imports.IncrementalSyncFunctions.incrementalSync(knex, changeset, dataDir)
             } finally {
               ImageReader.SyncLock.release()
             }

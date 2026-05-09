@@ -44,14 +44,14 @@ export interface CopyHelpers extends SharedHelpers {
   releaseCopyConnection: (knex: Knex, client: PoolClient) => Promise<void>
 }
 
-export function IsPostgres(knex: Knex): boolean {
+export function isPostgres(knex: Knex): boolean {
   //eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- knex.client.config is typed `any`
   const client: unknown = knex.client.config.client
   return client === 'pg' || client === 'postgresql'
 }
 
 export function getDbChunkSize(knex: Knex): number {
-  return IsPostgres(knex) ? PG_DB_CHUNK_SIZE : SQLITE_DB_CHUNK_SIZE
+  return isPostgres(knex) ? PG_DB_CHUNK_SIZE : SQLITE_DB_CHUNK_SIZE
 }
 
 // Resolves on the stream's 'finish' event, rejects on 'error'.
@@ -192,7 +192,7 @@ export class CopyState {
   }
 }
 
-export async function FindSyncItemsViaInsert(
+export async function findSyncItemsViaInsert(
   knex: Knex,
   logger: Debugger,
   helpers: InsertFallbackHelpers,
@@ -204,7 +204,7 @@ export async function FindSyncItemsViaInsert(
   return state.toCounts()
 }
 
-export async function FindSyncItemsViaCopy(
+export async function findSyncItemsViaCopy(
   knex: Knex,
   logger: Debugger,
   helpers: CopyHelpers,

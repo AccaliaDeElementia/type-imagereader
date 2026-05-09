@@ -5,7 +5,7 @@ import { Connect as _SocketsConnect } from './sockets.js'
 import { TimeUpdater } from './time.js'
 import { OverlayUpdater } from './overlay.js'
 import { WeatherUpdater, LocalWeatherUpdater } from './weather.js'
-import { Add as _CyclicManagerAdd, Start as _CyclicManagerStart } from './updater.js'
+import { Add as _CyclicManagerAdd, start as _CyclicManagerStart } from './updater.js'
 
 const UPDATE_INTERVAL = 100 // ms
 

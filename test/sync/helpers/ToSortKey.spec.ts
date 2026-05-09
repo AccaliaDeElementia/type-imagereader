@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { ToSortKey, Helpers } from '#sync/helpers.js'
+import { toSortKey, Helpers } from '#sync/helpers.js'
 
-describe('sync/helpers ToSortKey()', () => {
+describe('sync/helpers toSortKey()', () => {
   beforeEach(() => {
     Helpers.padLength = 20
   })
@@ -20,7 +20,7 @@ describe('sync/helpers ToSortKey()', () => {
   tests.forEach(([title, value, padding, expected]) => {
     it(title, () => {
       Helpers.padLength = padding
-      expect(ToSortKey(value)).to.equal(expected)
+      expect(toSortKey(value)).to.equal(expected)
     })
   })
 })

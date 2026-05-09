@@ -31,7 +31,7 @@ async function processDir(root: string, current: string, queue: string[], eachIt
   )
 }
 
-export async function FsWalker(root: string, eachItem: EachItemFn): Promise<void> {
+export async function fsWalker(root: string, eachItem: EachItemFn): Promise<void> {
   const queue = ['/']
   const concurrency = Fswalker.concurrency
   let active = ZERO

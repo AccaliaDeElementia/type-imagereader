@@ -4,7 +4,7 @@ import posix from 'node:path'
 import _debug from 'debug'
 import type { Knex } from 'knex'
 
-import { Chunk as _Chunk, ExecChunksSynchronously } from './helpers.js'
+import { chunk as _chunk, execChunksSynchronously } from './helpers.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 
 const ZERO = 0
@@ -23,10 +23,10 @@ export const LOG_PREFIX = 'type-imagereader:sync:folderCounts'
 export const Imports = {
   debug: _debug,
   getDbChunkSize: _getDbChunkSize,
-  Chunk: _Chunk,
+  chunk: _chunk,
 }
 
-export async function GetAllFolderInfos(knex: Knex): Promise<Record<string, FolderInfo>> {
+export async function getAllFolderInfos(knex: Knex): Promise<Record<string, FolderInfo>> {
   interface Row {
     path: string
     folder: string
@@ -40,7 +40,7 @@ export async function GetAllFolderInfos(knex: Knex): Promise<Record<string, Fold
   return folders
 }
 
-export async function GetFolderInfosWithPictures(knex: Knex): Promise<FolderInfo[]> {
+export async function getFolderInfosWithPictures(knex: Knex): Promise<FolderInfo[]> {
   const folderInfos: FolderInfo[] = await knex('pictures')
     .select('folder as path')
     .count('* as totalCount')
@@ -55,7 +55,7 @@ export async function GetFolderInfosWithPictures(knex: Knex): Promise<FolderInfo
   return folderInfos
 }
 
-export function CalculateFolderInfos(allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] {
+export function calculateFolderInfos(allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] {
   const allData: Record<string, FolderInfo> = Object.fromEntries(
     Object.entries(allFolders).map(([key, val]) => [key, { ...val }]),
   )
@@ -81,30 +81,30 @@ export function CalculateFolderInfos(allFolders: Record<string, FolderInfo>, fol
   return Object.values(allData)
 }
 
-export async function UpdateFolderPictureCounts(knex: Knex): Promise<void> {
+export async function updateFolderPictureCounts(knex: Knex): Promise<void> {
   const logger = Imports.debug(`${LOG_PREFIX}:updateSeen`)
   logger('Updating Seen Counts')
-  const folderInfos = await Internals.GetFolderInfosWithPictures(knex)
+  const folderInfos = await Internals.getFolderInfosWithPictures(knex)
   logger(`Found ${folderInfos.length} Folders to Update`)
-  const allFolders = await Internals.GetAllFolderInfos(knex)
+  const allFolders = await Internals.getAllFolderInfos(knex)
   logger(`Found ${Object.keys(allFolders).length} Folders in the DB`)
-  const resultFolders = Internals.CalculateFolderInfos(allFolders, folderInfos).flatMap((info) => {
+  const resultFolders = Internals.calculateFolderInfos(allFolders, folderInfos).flatMap((info) => {
     const base = allFolders[info.path]
     if (base === undefined) return []
     const { folder = '', sortKey = '' } = base
     return [{ path: info.path, folder, sortKey, totalCount: info.totalCount, seenCount: info.seenCount }]
   })
   logger(`Calculated ${resultFolders.length} Folders Seen Counts`)
-  await ExecChunksSynchronously(Imports.Chunk(resultFolders, Imports.getDbChunkSize(knex)), async (chunk) => {
+  await execChunksSynchronously(Imports.chunk(resultFolders, Imports.getDbChunkSize(knex)), async (chunk) => {
     await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
   })
   logger(`Updated ${resultFolders.length} Folders Seen Counts`)
 }
 
-export async function PruneEmptyFolders(knex: Knex): Promise<void> {
+export async function pruneEmptyFolders(knex: Knex): Promise<void> {
   const logger = Imports.debug(`${LOG_PREFIX}:pruneEmpty`)
   const deletedfolders = await knex('folders').where('totalCount', '=', ZERO).andWhere('path', '<>', posix.sep).delete()
   logger(`Removed ${deletedfolders} empty folders`)
 }
 
-export const Internals = { GetAllFolderInfos, GetFolderInfosWithPictures, CalculateFolderInfos }
+export const Internals = { getAllFolderInfos, getFolderInfosWithPictures, calculateFolderInfos }

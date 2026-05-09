@@ -125,7 +125,7 @@ export function RegisterViewsAndMiddleware(app: Express): void {
   app.use(express.static(join(moduleDir, 'dist')))
 }
 
-export async function Start(port: number): Promise<{ app: Express; server: HttpServer }> {
+export async function start(port: number): Promise<{ app: Express; server: HttpServer }> {
   const [app, server, websockets] = Internals.CreateApp()
 
   Internals.ConfigureBaseApp(app)

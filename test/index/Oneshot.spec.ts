@@ -24,7 +24,7 @@ describe('index.ts ONESHOT mode tests', (): void => {
     delete process.env.SYNC_INTERVAL
     delete process.env.ONESHOT
     process.env.SKIP_SERVE = '1'
-    SynchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
+    SynchronizeStub = sandbox.stub(ImageReader, 'synchronize').resolves()
     ClockFake = sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
@@ -43,13 +43,13 @@ describe('index.ts ONESHOT mode tests', (): void => {
     ImageReader.SyncInterval = 10_800_000
   })
 
-  it('should call Synchronize when ONESHOT is 1', async () => {
+  it('should call synchronize when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
     await ImageReader.Run()
     expect(SynchronizeStub?.called).to.equal(true)
   })
 
-  it('should call Synchronize when ONESHOT is true', async () => {
+  it('should call synchronize when ONESHOT is true', async () => {
     process.env.ONESHOT = 'true'
     await ImageReader.Run()
     expect(SynchronizeStub?.called).to.equal(true)
@@ -100,14 +100,14 @@ describe('index.ts ONESHOT mode tests', (): void => {
     expect(DestroyStub?.called).to.equal(true)
   })
 
-  it('should call knex.destroy even when Synchronize rejects in ONESHOT mode', async () => {
+  it('should call knex.destroy even when synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
     await eventuallyRejects(ImageReader.Run())
     expect(DestroyStub?.called).to.equal(true)
   })
 
-  it('should reject with sync error when Synchronize rejects in ONESHOT mode', async () => {
+  it('should reject with sync error when synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
     const err = await eventuallyRejects(ImageReader.Run())
@@ -124,7 +124,7 @@ describe('index.ts ONESHOT mode tests', (): void => {
     expect(hasDestroyFailLog).to.equal(true)
   })
 
-  it('should not call Synchronize when ONESHOT and SKIP_SYNC are both set', async () => {
+  it('should not call synchronize when ONESHOT and SKIP_SYNC are both set', async () => {
     process.env.ONESHOT = '1'
     process.env.SKIP_SYNC = '1'
     await ImageReader.Run()

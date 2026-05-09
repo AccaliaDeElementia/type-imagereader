@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 
 // Using the istanbul coverage provider rather than v8. The v8 provider had a
 // merge-aggregation issue across vitest workers: outer async-arrow exports
-// (FindSyncItemsViaInsert / FindSyncItemsViaCopy) and several class methods
+// (findSyncItemsViaInsert / findSyncItemsViaCopy) and several class methods
 // reported FNDA:0 in the aggregated lcov even though their inner async-arrow
 // callbacks reported 50+ calls — an impossible state that pointed to the
 // merger losing per-worker coverage data for those functions. Istanbul

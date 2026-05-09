@@ -67,7 +67,7 @@ export function processEvents(dataDir: string, events: WatcherEvent[], changeset
   }
 }
 
-export async function Start(dataDir: string, onFlush: FlushCallback): Promise<WatcherSubscription> {
+export async function start(dataDir: string, onFlush: FlushCallback): Promise<WatcherSubscription> {
   const logger = Imports.debug(LOG_PREFIX)
   const changeset: Changeset = new Map()
   let debounceTimer: ReturnType<typeof setTimeout> | null = null

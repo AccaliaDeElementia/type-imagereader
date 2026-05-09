@@ -40,7 +40,7 @@ export function isRowCountResult(obj: unknown): obj is RowCountResult {
   return 'rowCount' in obj && typeof obj.rowCount === 'number'
 }
 
-export function ExtractInsertCount(result: unknown): number {
+export function extractInsertCount(result: unknown): number {
   if (isRowCountResult(result)) {
     return result.rowCount
   }
@@ -50,14 +50,14 @@ export function ExtractInsertCount(result: unknown): number {
   return ZERO
 }
 
-export function ToSortKey(key: string): string {
+export function toSortKey(key: string): string {
   const zeroes = '0'.repeat(Helpers.padLength)
   return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/gv, (num) =>
     num.length >= Helpers.padLength ? num : `${zeroes}${num}`.slice(-Helpers.padLength),
   )
 }
 
-export function Chunk<T>(arr: T[], size = DEFAULT_CHUNK_SIZE): T[][] {
+export function chunk<T>(arr: T[], size = DEFAULT_CHUNK_SIZE): T[][] {
   const res = []
   for (let i = 0; i < arr.length; i += size) {
     res.push(arr.slice(i, i + size))
@@ -65,14 +65,14 @@ export function Chunk<T>(arr: T[], size = DEFAULT_CHUNK_SIZE): T[][] {
   return res
 }
 
-export async function ExecChunksSynchronously<T>(chunks: T[][], execFn: (chunk: T[]) => Promise<void>): Promise<void> {
+export async function execChunksSynchronously<T>(chunks: T[][], execFn: (chunk: T[]) => Promise<void>): Promise<void> {
   for (const chunk of chunks) {
     //eslint-disable-next-line no-await-in-loop -- Deliberately doing this synchronously
     await execFn(chunk)
   }
 }
 
-export function BuildSyncItemRows(items: DirEntryItem[]): SyncItemRows {
+export function buildSyncItemRows(items: DirEntryItem[]): SyncItemRows {
   let files = ZERO
   let dirs = ZERO
   const rows = items.map((item) => {
@@ -90,19 +90,19 @@ export function BuildSyncItemRows(items: DirEntryItem[]): SyncItemRows {
       folder,
       path,
       isFile: item.isFile,
-      sortKey: ToSortKey(posix.basename(item.path)),
+      sortKey: toSortKey(posix.basename(item.path)),
       pathHash: createHash('sha512').update(path).digest('base64'),
     }
   })
   return { files, dirs, rows }
 }
 
-export function FormatSyncItemCsv(row: SyncItem): string {
+export function formatSyncItemCsv(row: SyncItem): string {
   const q = (value: string): string => `"${value.replaceAll('"', '""')}"`
   return `${q(row.folder)},${q(row.path)},${row.isFile ? 't' : 'f'},${q(row.sortKey)},${q(row.pathHash)}\n`
 }
 
-export function AddFolderAndAncestors(affected: Set<string>, folderPath: string): void {
+export function addFolderAndAncestors(affected: Set<string>, folderPath: string): void {
   let current = folderPath
   while (true) {
     affected.add(current)

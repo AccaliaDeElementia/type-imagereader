@@ -4,7 +4,7 @@ import _debug from 'debug'
 import type { Debugger } from 'debug'
 import type { Knex } from 'knex'
 
-import { ExtractInsertCount } from './helpers.js'
+import { extractInsertCount } from './helpers.js'
 
 export const LOG_PREFIX = 'type-imagereader:sync:pictures'
 
@@ -12,7 +12,7 @@ export const Imports = {
   debug: _debug,
 }
 
-export async function SyncNewPictures(logger: Debugger, knex: Knex): Promise<void> {
+export async function syncNewPictures(logger: Debugger, knex: Knex): Promise<void> {
   const insertedpics = await knex
     .from(knex.raw('?? (??, ??, ??, ??)', ['pictures', 'folder', 'path', 'sortKey', 'pathHash']))
     .insert(function (this: Knex) {
@@ -24,10 +24,10 @@ export async function SyncNewPictures(logger: Debugger, knex: Knex): Promise<voi
           'pictures.path': null,
         })
     })
-  logger(`Added ${ExtractInsertCount(insertedpics)} new pictures`)
+  logger(`Added ${extractInsertCount(insertedpics)} new pictures`)
 }
 
-export async function SyncRemovedPictures(logger: Debugger, knex: Knex): Promise<void> {
+export async function syncRemovedPictures(logger: Debugger, knex: Knex): Promise<void> {
   const deletedpics = await knex('pictures')
     .whereNotExists(function () {
       this.select('*').from('syncitems').whereRaw('syncitems.path = pictures.path')
@@ -36,7 +36,7 @@ export async function SyncRemovedPictures(logger: Debugger, knex: Knex): Promise
   logger(`Removed ${deletedpics} missing pictures`)
 }
 
-export async function SyncRemovedBookmarks(logger: Debugger, knex: Knex): Promise<void> {
+export async function syncRemovedBookmarks(logger: Debugger, knex: Knex): Promise<void> {
   const removedBookmarks = await knex('bookmarks')
     .whereNotExists(function () {
       this.select('*').from('pictures').whereRaw('pictures.path = bookmarks.path')
@@ -45,11 +45,11 @@ export async function SyncRemovedBookmarks(logger: Debugger, knex: Knex): Promis
   logger(`Removed ${removedBookmarks} missing bookmarks`)
 }
 
-export async function SyncAllPictures(knex: Knex): Promise<void> {
+export async function syncAllPictures(knex: Knex): Promise<void> {
   const logger = Imports.debug(LOG_PREFIX)
-  await Internals.SyncNewPictures(logger, knex)
-  await Internals.SyncRemovedPictures(logger, knex)
-  await Internals.SyncRemovedBookmarks(logger, knex)
+  await Internals.syncNewPictures(logger, knex)
+  await Internals.syncRemovedPictures(logger, knex)
+  await Internals.syncRemovedBookmarks(logger, knex)
 }
 
-export const Internals = { SyncNewPictures, SyncRemovedPictures, SyncRemovedBookmarks }
+export const Internals = { syncNewPictures, syncRemovedPictures, syncRemovedBookmarks }

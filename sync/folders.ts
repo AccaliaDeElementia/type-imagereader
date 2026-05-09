@@ -6,11 +6,11 @@ import type { Debugger } from 'debug'
 import type { Knex } from 'knex'
 
 import {
-  AddFolderAndAncestors,
-  Chunk as _Chunk,
-  ExecChunksSynchronously,
-  ExtractInsertCount,
-  ToSortKey,
+  addFolderAndAncestors,
+  chunk as _chunk,
+  execChunksSynchronously,
+  extractInsertCount,
+  toSortKey,
 } from './helpers.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 
@@ -22,10 +22,10 @@ export const LOG_PREFIX = 'type-imagereader:sync:folders'
 export const Imports = {
   debug: _debug,
   getDbChunkSize: _getDbChunkSize,
-  Chunk: _Chunk,
+  chunk: _chunk,
 }
 
-export async function SyncNewFolders(logger: Debugger, knex: Knex): Promise<void> {
+export async function syncNewFolders(logger: Debugger, knex: Knex): Promise<void> {
   const folders = await knex
     .from(knex.raw('?? (??, ??, ??)', ['folders', 'folder', 'path', 'sortKey']))
     .insert(function (this: Knex) {
@@ -37,10 +37,10 @@ export async function SyncNewFolders(logger: Debugger, knex: Knex): Promise<void
           'folders.path': null,
         })
     })
-  logger(`Added ${ExtractInsertCount(folders)} new folders`)
+  logger(`Added ${extractInsertCount(folders)} new folders`)
 }
 
-export async function SyncRemovedFolders(logger: Debugger, knex: Knex): Promise<void> {
+export async function syncRemovedFolders(logger: Debugger, knex: Knex): Promise<void> {
   const deletedfolders = await knex('folders')
     .whereNotExists(function () {
       this.select('*').from('syncitems').whereRaw('syncitems.path = folders.path')
@@ -49,11 +49,11 @@ export async function SyncRemovedFolders(logger: Debugger, knex: Knex): Promise<
   logger(`Removed ${deletedfolders} missing folders`)
 }
 
-export async function SyncMissingAncestorFolders(logger: Debugger, knex: Knex): Promise<void> {
+export async function syncMissingAncestorFolders(logger: Debugger, knex: Knex): Promise<void> {
   const leafRows = await knex('pictures').distinct<Array<{ folder: string }>>('folder').whereNotNull('folder')
   const candidates = new Set<string>()
   for (const { folder } of leafRows) {
-    AddFolderAndAncestors(candidates, folder)
+    addFolderAndAncestors(candidates, folder)
   }
   candidates.delete(posix.sep)
   if (candidates.size === ZERO) {
@@ -62,7 +62,7 @@ export async function SyncMissingAncestorFolders(logger: Debugger, knex: Knex): 
   }
   const candidateList = [...candidates]
   const existing = new Set<string>()
-  await ExecChunksSynchronously(Imports.Chunk(candidateList, Imports.getDbChunkSize(knex)), async (chunk) => {
+  await execChunksSynchronously(Imports.chunk(candidateList, Imports.getDbChunkSize(knex)), async (chunk) => {
     const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
     for (const row of rows) existing.add(row.path)
   })
@@ -75,16 +75,16 @@ export async function SyncMissingAncestorFolders(logger: Debugger, knex: Knex): 
     const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
     const parentDir = posix.dirname(withoutSlash)
     const folder = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
-    const sortKey = ToSortKey(posix.basename(withoutSlash))
+    const sortKey = toSortKey(posix.basename(withoutSlash))
     return { folder, path, sortKey }
   })
-  await ExecChunksSynchronously(Imports.Chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
+  await execChunksSynchronously(Imports.chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
     await knex('folders').insert(chunk).onConflict('path').ignore()
   })
   logger(`Added ${missing.length} missing ancestor folders`)
 }
 
-export async function SyncMissingCoverImages(logger: Debugger, knex: Knex): Promise<void> {
+export async function syncMissingCoverImages(logger: Debugger, knex: Knex): Promise<void> {
   const removedCoverImages = await knex('folders')
     .whereNotExists(function () {
       this.select('*').from('pictures').whereRaw('pictures.path = folders.current')
@@ -94,7 +94,7 @@ export async function SyncMissingCoverImages(logger: Debugger, knex: Knex): Prom
   logger(`Removed ${removedCoverImages} missing cover images`)
 }
 
-export async function SyncFolderFirstImages(logger: Debugger, knex: Knex): Promise<void> {
+export async function syncFolderFirstImages(logger: Debugger, knex: Knex): Promise<void> {
   const toUpdate = await knex
     .queryBuilder()
     .with('firsts', (qb) =>
@@ -110,25 +110,25 @@ export async function SyncFolderFirstImages(logger: Debugger, knex: Knex): Promi
     .innerJoin('folders', 'folders.path', 'pictures.folder')
     .groupBy('pictures.folder', 'folders.folder', 'folders.sortKey')
     .orderBy([{ column: 'pictures.folder' }])
-  await ExecChunksSynchronously(Imports.Chunk(toUpdate, Imports.getDbChunkSize(knex)), async (chunk) => {
+  await execChunksSynchronously(Imports.chunk(toUpdate, Imports.getDbChunkSize(knex)), async (chunk) => {
     await knex('folders').insert(chunk).onConflict('path').merge(['firstPicture'])
   })
   logger(`Updated ${toUpdate.length} folder first-item images`)
 }
 
-export async function SyncAllFolders(knex: Knex): Promise<void> {
+export async function syncAllFolders(knex: Knex): Promise<void> {
   const logger = Imports.debug(LOG_PREFIX)
-  await Internals.SyncNewFolders(logger, knex)
-  await Internals.SyncRemovedFolders(logger, knex)
-  await Internals.SyncMissingAncestorFolders(logger, knex)
-  await Internals.SyncMissingCoverImages(logger, knex)
-  await Internals.SyncFolderFirstImages(logger, knex)
+  await Internals.syncNewFolders(logger, knex)
+  await Internals.syncRemovedFolders(logger, knex)
+  await Internals.syncMissingAncestorFolders(logger, knex)
+  await Internals.syncMissingCoverImages(logger, knex)
+  await Internals.syncFolderFirstImages(logger, knex)
 }
 
 export const Internals = {
-  SyncNewFolders,
-  SyncRemovedFolders,
-  SyncMissingAncestorFolders,
-  SyncMissingCoverImages,
-  SyncFolderFirstImages,
+  syncNewFolders,
+  syncRemovedFolders,
+  syncMissingAncestorFolders,
+  syncMissingCoverImages,
+  syncFolderFirstImages,
 }

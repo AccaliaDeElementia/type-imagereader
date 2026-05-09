@@ -1,14 +1,14 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { SyncRemovedBookmarks } from '#sync/pictures.js'
+import { syncRemovedBookmarks } from '#sync/pictures.js'
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('sync/pictures SyncRemovedBookmarks()', () => {
+describe('sync/pictures syncRemovedBookmarks()', () => {
   let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
   let knexInnerInstanceStub = {
     select: sandbox.stub().returnsThis(),
@@ -43,79 +43,79 @@ describe('sync/pictures SyncRemovedBookmarks()', () => {
     sandbox.restore()
   })
   it("should call knex with 'bookmarks' table", async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     expect(knexFnStub.calledWith('bookmarks')).to.equal(true)
   })
   it('should call knex once', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     expect(knexFnStub.callCount).to.equal(1)
   })
   it('should call knex before whereNotExists', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     expect(knexFnStub.calledImmediatelyBefore(knexInstanceStub.whereNotExists)).to.equal(true)
   })
   it('should call delete once', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     expect(knexInstanceStub.delete.callCount).to.equal(1)
   })
   it('should call delete with no arguments', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     expect(knexInstanceStub.delete.firstCall.args).to.deep.equal([])
   })
   it('should log once when records are removed', async () => {
     knexInstanceStub.delete.returns(42)
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     expect(loggerStub.callCount).to.equal(1)
   })
   it('should log removed count when records are removed', async () => {
     knexInstanceStub.delete.returns(42)
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     expect(loggerStub.firstCall.args[0]).to.equal('Removed 42 missing bookmarks')
   })
   it('should call select once in inner query', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.callCount).to.equal(1)
   })
   it("should call select with '*' in inner query", async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
   })
   it('should call select before from in inner query', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.calledImmediatelyBefore(knexInnerInstanceStub.from)).to.equal(true)
   })
   it('should call from once in inner query', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.from.callCount).to.equal(1)
   })
   it("should call from with 'pictures' in inner query", async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.from.firstCall.args).to.deep.equal(['pictures'])
   })
   it('should call from before whereRaw in inner query', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.from.calledImmediatelyBefore(knexInnerInstanceStub.whereRaw)).to.equal(true)
   })
   it('should call whereRaw once in inner query', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.whereRaw.callCount).to.equal(1)
   })
   it('should call whereRaw with correct condition in inner query', async () => {
-    await SyncRemovedBookmarks(loggerFake, knexFnFake)
+    await syncRemovedBookmarks(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.whereRaw.firstCall.args).to.deep.equal(['pictures.path = bookmarks.path'])

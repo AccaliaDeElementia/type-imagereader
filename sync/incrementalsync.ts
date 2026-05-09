@@ -8,9 +8,9 @@ import type { Changeset } from './filewatcher.js'
 import _debug from 'debug'
 import type { Debugger } from 'debug'
 
-import { FsWalker as _FsWalker } from './fswalker.js'
-import { AddFolderAndAncestors, Chunk, ExecChunksSynchronously, ToSortKey } from './helpers.js'
-import { SyncFolderFirstImages as _SyncFolderFirstImages } from './folders.js'
+import { fsWalker as _fsWalker } from './fswalker.js'
+import { addFolderAndAncestors, chunk, execChunksSynchronously, toSortKey } from './helpers.js'
+import { syncFolderFirstImages as _syncFolderFirstImages } from './folders.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 import { escapeLikeWildcards } from '../utils/helpers.js'
 
@@ -22,12 +22,12 @@ export const LOG_PREFIX = 'type-imagereader:sync:incrementalsync'
 
 export const Imports = {
   debug: _debug,
-  fsWalker: _FsWalker,
-  SyncFolderFirstImages: _SyncFolderFirstImages,
+  fsWalker: _fsWalker,
+  syncFolderFirstImages: _syncFolderFirstImages,
   getDbChunkSize: _getDbChunkSize,
 }
 
-export async function IncrementalAddPicturesBulk(knex: Knex, paths: string[]): Promise<void> {
+export async function incrementalAddPicturesBulk(knex: Knex, paths: string[]): Promise<void> {
   if (paths.length === ZERO) return
   const pictureRows = paths.map((path) => {
     const parent = posix.dirname(path)
@@ -35,18 +35,18 @@ export async function IncrementalAddPicturesBulk(knex: Knex, paths: string[]): P
     return {
       folder,
       path,
-      sortKey: ToSortKey(posix.basename(path)),
+      sortKey: toSortKey(posix.basename(path)),
       pathHash: createHash('sha512').update(path).digest('base64'),
     }
   })
-  await ExecChunksSynchronously(Chunk(pictureRows, Imports.getDbChunkSize(knex)), async (chunk) => {
+  await execChunksSynchronously(chunk(pictureRows, Imports.getDbChunkSize(knex)), async (chunk) => {
     await knex('pictures').insert(chunk).onConflict('path').ignore()
   })
   const parentFolders = pictureRows.map((row) => row.folder)
-  await Internals.IncrementalEnsureFoldersBulk(knex, parentFolders)
+  await Internals.incrementalEnsureFoldersBulk(knex, parentFolders)
 }
 
-export async function IncrementalEnsureFoldersBulk(knex: Knex, folderPaths: string[]): Promise<void> {
+export async function incrementalEnsureFoldersBulk(knex: Knex, folderPaths: string[]): Promise<void> {
   if (folderPaths.length === ZERO) return
   const unique = new Set(folderPaths)
   unique.delete(posix.sep)
@@ -58,23 +58,23 @@ export async function IncrementalEnsureFoldersBulk(knex: Knex, folderPaths: stri
     return {
       folder: parent,
       path: folderPath,
-      sortKey: ToSortKey(posix.basename(withoutSlash)),
+      sortKey: toSortKey(posix.basename(withoutSlash)),
     }
   })
-  await ExecChunksSynchronously(Chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
+  await execChunksSynchronously(chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
     await knex('folders').insert(chunk).onConflict('path').ignore()
   })
 }
 
-export async function IncrementalRemovePicturesBulk(knex: Knex, paths: string[]): Promise<void> {
+export async function incrementalRemovePicturesBulk(knex: Knex, paths: string[]): Promise<void> {
   if (paths.length === ZERO) return
-  await ExecChunksSynchronously(Chunk(paths, Imports.getDbChunkSize(knex)), async (chunk) => {
+  await execChunksSynchronously(chunk(paths, Imports.getDbChunkSize(knex)), async (chunk) => {
     await knex('pictures').whereIn('path', chunk).delete()
     await knex('bookmarks').whereIn('path', chunk).delete()
   })
 }
 
-export async function IncrementalRemoveFolder(logger: Debugger, knex: Knex, dirPath: string): Promise<void> {
+export async function incrementalRemoveFolder(logger: Debugger, knex: Knex, dirPath: string): Promise<void> {
   const escapedPrefix = `${escapeLikeWildcards(dirPath)}%`
   const deletedPics = await knex('pictures').where('folder', 'like', escapedPrefix).delete()
   await knex('bookmarks')
@@ -86,7 +86,7 @@ export async function IncrementalRemoveFolder(logger: Debugger, knex: Knex, dirP
   logger(`Incremental remove folder: ${dirPath} (${deletedPics} pictures, ${deletedFolders} folders)`)
 }
 
-export async function IncrementalScanFolder(
+export async function incrementalScanFolder(
   logger: Debugger,
   knex: Knex,
   dirPath: string,
@@ -105,12 +105,12 @@ export async function IncrementalScanFolder(
       }
     }
   })
-  await Internals.IncrementalEnsureFoldersBulk(knex, folderPaths)
-  await Internals.IncrementalAddPicturesBulk(knex, picturePaths)
+  await Internals.incrementalEnsureFoldersBulk(knex, folderPaths)
+  await Internals.incrementalAddPicturesBulk(knex, picturePaths)
   logger(`Incremental scan folder: ${dirPath} (${picturePaths.length} pictures added)`)
 }
 
-export async function IncrementalEnsureAncestors(
+export async function incrementalEnsureAncestors(
   logger: Debugger,
   knex: Knex,
   affectedFolders: Set<string>,
@@ -121,7 +121,7 @@ export async function IncrementalEnsureAncestors(
     const withoutSlash = folder.slice(ZERO, TRAILING_SLASH_OFFSET)
     const parentDir = posix.dirname(withoutSlash)
     const parentPath = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
-    AddFolderAndAncestors(ancestors, parentPath)
+    addFolderAndAncestors(ancestors, parentPath)
   }
   ancestors.delete(posix.sep)
   if (ancestors.size === ZERO) {
@@ -130,7 +130,7 @@ export async function IncrementalEnsureAncestors(
   }
   const ancestorList = [...ancestors]
   const existing = new Set<string>()
-  await ExecChunksSynchronously(Chunk(ancestorList, Imports.getDbChunkSize(knex)), async (chunk: string[]) => {
+  await execChunksSynchronously(chunk(ancestorList, Imports.getDbChunkSize(knex)), async (chunk: string[]) => {
     const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
     for (const row of rows) existing.add(row.path)
   })
@@ -143,11 +143,11 @@ export async function IncrementalEnsureAncestors(
     const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
     const parentDir = posix.dirname(withoutSlash)
     const folder = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
-    const sortKey = ToSortKey(posix.basename(withoutSlash))
+    const sortKey = toSortKey(posix.basename(withoutSlash))
     return { folder, path, sortKey }
   })
-  await ExecChunksSynchronously(
-    Chunk(rows, Imports.getDbChunkSize(knex)),
+  await execChunksSynchronously(
+    chunk(rows, Imports.getDbChunkSize(knex)),
     async (chunk: Array<{ folder: string; path: string; sortKey: string }>) => {
       await knex('folders').insert(chunk).onConflict('path').ignore()
     },
@@ -155,7 +155,7 @@ export async function IncrementalEnsureAncestors(
   logger(`Ensured ${rows.length} ancestor folders`)
 }
 
-export async function IncrementalUpdateFolders(
+export async function incrementalUpdateFolders(
   logger: Debugger,
   knex: Knex,
   affectedFolders: Set<string>,
@@ -163,7 +163,7 @@ export async function IncrementalUpdateFolders(
   const folderList = [...affectedFolders]
   if (folderList.length > ZERO) {
     const perFolderCounts: Array<{ folder: string; totalCount: number; seenCount: number }> = []
-    await ExecChunksSynchronously(Chunk(folderList, Imports.getDbChunkSize(knex)), async (chunk: string[]) => {
+    await execChunksSynchronously(chunk(folderList, Imports.getDbChunkSize(knex)), async (chunk: string[]) => {
       const orLike = chunk.map(() => 'folder LIKE ?').join(' OR ')
       const bindings = chunk.map((af) => `${af}%`)
       const rows = (await knex('pictures')
@@ -196,10 +196,10 @@ export async function IncrementalUpdateFolders(
       const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
       const parentDir = posix.dirname(withoutSlash)
       const parent = path === posix.sep ? '' : parentDir === posix.sep ? posix.sep : `${parentDir}${posix.sep}`
-      const sortKey = path === posix.sep ? '' : ToSortKey(posix.basename(withoutSlash))
+      const sortKey = path === posix.sep ? '' : toSortKey(posix.basename(withoutSlash))
       return { path, totalCount, seenCount, folder: parent, sortKey }
     })
-    await ExecChunksSynchronously(Chunk(updateRows, Imports.getDbChunkSize(knex)), async (chunk) => {
+    await execChunksSynchronously(chunk(updateRows, Imports.getDbChunkSize(knex)), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
     })
   }
@@ -207,7 +207,7 @@ export async function IncrementalUpdateFolders(
   logger(`Incremental folder update: ${affectedFolders.size} folders checked, ${deletedfolders} empty folders pruned`)
 }
 
-export function CategorizeChangeset(changeset: Changeset): {
+export function categorizeChangeset(changeset: Changeset): {
   dirDeletes: string[]
   fileDeletes: string[]
   dirCreates: string[]
@@ -226,55 +226,55 @@ export function CategorizeChangeset(changeset: Changeset): {
   return { dirDeletes, fileDeletes, dirCreates, fileCreates }
 }
 
-export async function IncrementalUpdateFirstImages(logger: Debugger, knex: Knex): Promise<void> {
-  await Imports.SyncFolderFirstImages(logger, knex)
+export async function incrementalUpdateFirstImages(logger: Debugger, knex: Knex): Promise<void> {
+  await Imports.syncFolderFirstImages(logger, knex)
 }
 
-export async function IncrementalSync(knex: Knex, changeset: Changeset, dataDir = '/data'): Promise<void> {
+export async function incrementalSync(knex: Knex, changeset: Changeset, dataDir = '/data'): Promise<void> {
   const logger = Imports.debug(LOG_PREFIX)
   logger(`Processing ${changeset.size} incremental changes`)
-  const { dirDeletes, fileDeletes, dirCreates, fileCreates } = Internals.CategorizeChangeset(changeset)
+  const { dirDeletes, fileDeletes, dirCreates, fileCreates } = Internals.categorizeChangeset(changeset)
   const affectedFolders = new Set<string>()
   for (const dirPath of dirDeletes) {
-    AddFolderAndAncestors(affectedFolders, dirPath)
+    addFolderAndAncestors(affectedFolders, dirPath)
     //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
-    await Internals.IncrementalRemoveFolder(logger, knex, dirPath)
+    await Internals.incrementalRemoveFolder(logger, knex, dirPath)
   }
   for (const path of fileDeletes) {
     const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
-    AddFolderAndAncestors(affectedFolders, folder)
+    addFolderAndAncestors(affectedFolders, folder)
   }
   if (fileDeletes.length > ZERO) {
-    await Internals.IncrementalRemovePicturesBulk(knex, fileDeletes)
+    await Internals.incrementalRemovePicturesBulk(knex, fileDeletes)
     logger(`Incremental remove: ${fileDeletes.length} pictures`)
   }
   for (const dirPath of dirCreates) {
-    AddFolderAndAncestors(affectedFolders, dirPath)
+    addFolderAndAncestors(affectedFolders, dirPath)
     //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
-    await Internals.IncrementalScanFolder(logger, knex, dirPath, dataDir)
+    await Internals.incrementalScanFolder(logger, knex, dirPath, dataDir)
   }
   for (const path of fileCreates) {
     const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
-    AddFolderAndAncestors(affectedFolders, folder)
+    addFolderAndAncestors(affectedFolders, folder)
   }
   if (fileCreates.length > ZERO) {
-    await Internals.IncrementalAddPicturesBulk(knex, fileCreates)
+    await Internals.incrementalAddPicturesBulk(knex, fileCreates)
     logger(`Incremental add: ${fileCreates.length} pictures`)
   }
-  await Internals.IncrementalEnsureAncestors(logger, knex, affectedFolders)
-  await Internals.IncrementalUpdateFolders(logger, knex, affectedFolders)
-  await Internals.IncrementalUpdateFirstImages(logger, knex)
+  await Internals.incrementalEnsureAncestors(logger, knex, affectedFolders)
+  await Internals.incrementalUpdateFolders(logger, knex, affectedFolders)
+  await Internals.incrementalUpdateFirstImages(logger, knex)
   logger(`Incremental sync complete`)
 }
 
 export const Internals = {
-  IncrementalAddPicturesBulk,
-  IncrementalEnsureFoldersBulk,
-  IncrementalRemovePicturesBulk,
-  IncrementalRemoveFolder,
-  IncrementalScanFolder,
-  IncrementalEnsureAncestors,
-  IncrementalUpdateFolders,
-  CategorizeChangeset,
-  IncrementalUpdateFirstImages,
+  incrementalAddPicturesBulk,
+  incrementalEnsureFoldersBulk,
+  incrementalRemovePicturesBulk,
+  incrementalRemoveFolder,
+  incrementalScanFolder,
+  incrementalEnsureAncestors,
+  incrementalUpdateFolders,
+  categorizeChangeset,
+  incrementalUpdateFirstImages,
 }
