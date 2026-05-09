@@ -1,6 +1,6 @@
 'use sanity'
 
-import { CyclicUpdater, defaultUpdateFn } from '#public/scripts/slideshow/updater.js'
+import { CyclicUpdater, Internals } from '#public/scripts/slideshow/updater.js'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
@@ -11,7 +11,7 @@ const sandbox = Sinon.createSandbox()
 describe('public/slideshow/updater class CyclicUpdater', () => {
   it('should set default update function when fn undefined', () => {
     const test = new CyclicUpdater(undefined, undefined)
-    expect(test.updateFn).to.equal(defaultUpdateFn)
+    expect(test.updateFn).to.equal(Internals.defaultUpdateFn)
   })
   it('should set proviced update function', () => {
     const fn = sandbox.stub().resolves()

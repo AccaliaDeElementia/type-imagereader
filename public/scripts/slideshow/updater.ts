@@ -1,7 +1,8 @@
 'use sanity'
 
 type UpdateFn = () => Promise<void>
-export async function defaultUpdateFn(): Promise<void> {
+
+async function defaultUpdateFn(): Promise<void> {
   const err = new Error('CyclicUpdater fired before an updateFn was provided to the constructor')
   // The post-suspension resume after a rejecting `await` doesn't execute, so
   // tooling reports the line as partially uncovered. Ignored — the rejection
@@ -9,6 +10,7 @@ export async function defaultUpdateFn(): Promise<void> {
   /* istanbul ignore next */
   await Promise.reject(err)
 }
+
 const INCREMENT = 1
 const COUNTDOWN_EXPIRES_AT = 0
 const DEFAULT_COUNTDOWN_VALUE = -1
@@ -18,6 +20,7 @@ const RESET_FAIL_COUNT = 0
 const MAX_FAIL_COUNT = 10
 const UPDATER_BACKOFF_MULTIPLE = 2
 const UPDATE_IN_PROGRESS = Infinity // Infinity - elapsed = Infinity: prevents re-entrancy via the existing countdown check
+
 export class CyclicUpdater {
   _countdown = DEFAULT_COUNTDOWN_VALUE
   _failCount = RESET_FAIL_COUNT
@@ -52,28 +55,37 @@ export class CyclicUpdater {
 export const CyclicManager = {
   __updaters: [] as CyclicUpdater[],
   __timer: undefined as NodeJS.Timeout | number | undefined,
-  __triggerUpdaters: async (interval: number): Promise<void> => {
-    await Promise.all(
-      CyclicManager.__updaters.map(async (updater) => {
-        try {
-          await updater.trigger(interval)
-        } catch (_) {}
-      }),
-    )
-  },
-  Add: (...updaters: CyclicUpdater[]): void => {
-    CyclicManager.__updaters.push(...updaters)
-  },
-  Start: (interval: number): void => {
-    if (CyclicManager.__timer !== undefined) return
-    CyclicManager.__timer = setInterval(() => {
-      CyclicManager.__triggerUpdaters(interval).catch(() => null)
-    }, interval)
-  },
-  Stop: (): void => {
-    if (CyclicManager.__timer !== undefined) {
-      clearInterval(CyclicManager.__timer)
-      CyclicManager.__timer = undefined
-    }
-  },
+}
+
+async function triggerUpdaters(interval: number): Promise<void> {
+  await Promise.all(
+    CyclicManager.__updaters.map(async (updater) => {
+      try {
+        await updater.trigger(interval)
+      } catch (_) {}
+    }),
+  )
+}
+
+export function Add(...updaters: CyclicUpdater[]): void {
+  CyclicManager.__updaters.push(...updaters)
+}
+
+export function Start(interval: number): void {
+  if (CyclicManager.__timer !== undefined) return
+  CyclicManager.__timer = setInterval(() => {
+    Internals.triggerUpdaters(interval).catch(() => null)
+  }, interval)
+}
+
+export function Stop(): void {
+  if (CyclicManager.__timer !== undefined) {
+    clearInterval(CyclicManager.__timer)
+    CyclicManager.__timer = undefined
+  }
+}
+
+export const Internals = {
+  triggerUpdaters,
+  defaultUpdateFn,
 }
