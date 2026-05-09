@@ -1,11 +1,11 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#sync/helpers.js'
+import { Chunk, Helpers } from '#sync/helpers.js'
 
 describe('utils/syncfolders function Chunk()', () => {
   beforeEach(() => {
-    Functions.padLength = 20
+    Helpers.padLength = 20
   })
   const tests: Array<[string, unknown[], number, unknown[][]]> = [
     ['it should not split chunk of smaller entries', [0, 1, 2, 3, 4, 5], 10, [[0, 1, 2, 3, 4, 5]]],
@@ -22,10 +22,10 @@ describe('utils/syncfolders function Chunk()', () => {
   ]
   tests.forEach(([title, value, spread, expected]) => {
     it(title, () => {
-      expect(Functions.Chunk(value, spread)).to.deep.equal(expected)
+      expect(Chunk(value, spread)).to.deep.equal(expected)
     })
   })
   it('should default to DEFAULT_CHUNK_SIZE (5000) when no size argument is provided', () => {
-    expect(Functions.Chunk([1, 2, 3])).to.deep.equal([[1, 2, 3]])
+    expect(Chunk([1, 2, 3])).to.deep.equal([[1, 2, 3]])
   })
 })

@@ -9,10 +9,22 @@ import _debug from 'debug'
 import type { Debugger } from 'debug'
 
 import _fsWalker from './fswalker.js'
-import { Functions as _Helpers } from './helpers.js'
+import {
+  AddFolderAndAncestors as _AddFolderAndAncestors,
+  Chunk as _Chunk,
+  ExecChunksSynchronously as _ExecChunksSynchronously,
+  ToSortKey as _ToSortKey,
+} from './helpers.js'
 import { Functions as _FolderFunctions } from './folders.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 import { EscapeLikeWildcards } from '../utils/helpers.js'
+
+const _Helpers = {
+  AddFolderAndAncestors: _AddFolderAndAncestors,
+  Chunk: _Chunk,
+  ExecChunksSynchronously: _ExecChunksSynchronously,
+  ToSortKey: _ToSortKey,
+}
 
 const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1

@@ -33,76 +33,81 @@ interface RowCountResult {
   rowCount: number
 }
 
+export const Helpers = { padLength: NUMBER_PAD_LENGTH }
+
 export function isRowCountResult(obj: unknown): obj is RowCountResult {
   if (obj === null || typeof obj !== 'object') return false
   return 'rowCount' in obj && typeof obj.rowCount === 'number'
 }
 
-export const Functions = {
-  ExtractInsertCount: (result: unknown): number => {
-    if (isRowCountResult(result)) {
-      return result.rowCount
+export function ExtractInsertCount(result: unknown): number {
+  if (isRowCountResult(result)) {
+    return result.rowCount
+  }
+  if (result instanceof Array && result.length > ZERO && typeof result[ZERO] === 'number') {
+    return result[ZERO]
+  }
+  return ZERO
+}
+
+export function ToSortKey(key: string): string {
+  const zeroes = '0'.repeat(Helpers.padLength)
+  return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/gv, (num) =>
+    num.length >= Helpers.padLength ? num : `${zeroes}${num}`.slice(-Helpers.padLength),
+  )
+}
+
+export function Chunk<T>(arr: T[], size = DEFAULT_CHUNK_SIZE): T[][] {
+  const res = []
+  for (let i = 0; i < arr.length; i += size) {
+    res.push(arr.slice(i, i + size))
+  }
+  return res
+}
+
+export async function ExecChunksSynchronously<T>(chunks: T[][], execFn: (chunk: T[]) => Promise<void>): Promise<void> {
+  for (const chunk of chunks) {
+    //eslint-disable-next-line no-await-in-loop -- Deliberately doing this synchronously
+    await execFn(chunk)
+  }
+}
+
+export function BuildSyncItemRows(items: DirEntryItem[]): SyncItemRows {
+  let files = ZERO
+  let dirs = ZERO
+  const rows = items.map((item) => {
+    if (item.isFile) {
+      files += ONE
+    } else {
+      dirs += ONE
     }
-    if (result instanceof Array && result.length > ZERO && typeof result[ZERO] === 'number') {
-      return result[ZERO]
+    let folder = posix.dirname(item.path)
+    if (folder !== posix.sep) {
+      folder += posix.sep
     }
-    return ZERO
-  },
-  padLength: NUMBER_PAD_LENGTH,
-  ToSortKey: (key: string): string => {
-    const zeroes = '0'.repeat(Functions.padLength)
-    return `${wordsToNumbers(key.toLowerCase())}`.replace(/\d+/gv, (num) =>
-      num.length >= Functions.padLength ? num : `${zeroes}${num}`.slice(-Functions.padLength),
-    )
-  },
-  Chunk: <T>(arr: T[], size = DEFAULT_CHUNK_SIZE): T[][] => {
-    const res = []
-    for (let i = 0; i < arr.length; i += size) {
-      res.push(arr.slice(i, i + size))
+    const path = item.path + (item.isFile ? '' : posix.sep)
+    return {
+      folder,
+      path,
+      isFile: item.isFile,
+      sortKey: ToSortKey(posix.basename(item.path)),
+      pathHash: createHash('sha512').update(path).digest('base64'),
     }
-    return res
-  },
-  ExecChunksSynchronously: async <T>(chunks: T[][], execFn: (chunk: T[]) => Promise<void>) => {
-    for (const chunk of chunks) {
-      //eslint-disable-next-line no-await-in-loop -- Deliberately doing this synchronously
-      await execFn(chunk)
-    }
-  },
-  BuildSyncItemRows: (items: DirEntryItem[]): SyncItemRows => {
-    let files = ZERO
-    let dirs = ZERO
-    const rows = items.map((item) => {
-      if (item.isFile) {
-        files += ONE
-      } else {
-        dirs += ONE
-      }
-      let folder = posix.dirname(item.path)
-      if (folder !== posix.sep) {
-        folder += posix.sep
-      }
-      const path = item.path + (item.isFile ? '' : posix.sep)
-      return {
-        folder,
-        path,
-        isFile: item.isFile,
-        sortKey: Functions.ToSortKey(posix.basename(item.path)),
-        pathHash: createHash('sha512').update(path).digest('base64'),
-      }
-    })
-    return { files, dirs, rows }
-  },
-  FormatSyncItemCsv: (row: SyncItem): string => {
-    const q = (value: string): string => `"${value.replaceAll('"', '""')}"`
-    return `${q(row.folder)},${q(row.path)},${row.isFile ? 't' : 'f'},${q(row.sortKey)},${q(row.pathHash)}\n`
-  },
-  AddFolderAndAncestors: (affected: Set<string>, folderPath: string): void => {
-    let current = folderPath
-    while (true) {
-      affected.add(current)
-      if (current === posix.sep) return
-      const parent = posix.dirname(current.slice(ZERO, TRAILING_SLASH_OFFSET))
-      current = parent === posix.sep ? posix.sep : parent + posix.sep
-    }
-  },
+  })
+  return { files, dirs, rows }
+}
+
+export function FormatSyncItemCsv(row: SyncItem): string {
+  const q = (value: string): string => `"${value.replaceAll('"', '""')}"`
+  return `${q(row.folder)},${q(row.path)},${row.isFile ? 't' : 'f'},${q(row.sortKey)},${q(row.pathHash)}\n`
+}
+
+export function AddFolderAndAncestors(affected: Set<string>, folderPath: string): void {
+  let current = folderPath
+  while (true) {
+    affected.add(current)
+    if (current === posix.sep) return
+    const parent = posix.dirname(current.slice(ZERO, TRAILING_SLASH_OFFSET))
+    current = parent === posix.sep ? posix.sep : parent + posix.sep
+  }
 }

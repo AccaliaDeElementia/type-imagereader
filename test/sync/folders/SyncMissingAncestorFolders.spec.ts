@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { Functions } from '#sync/folders.js'
-import { Functions as Helpers } from '#sync/helpers.js'
+import { ToSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { StubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
@@ -145,7 +145,7 @@ describe('utils/syncfolders function SyncMissingAncestorFolders()', () => {
     it('should derive sortKey from the folder basename', async () => {
       await Functions.SyncMissingAncestorFolders(loggerFake, knexFnFake)
       const rowsByPath = Object.fromEntries(insertedChunks.flat().map((r) => [r.path, r]))
-      expect(rowsByPath['/a/b/c/']?.sortKey).to.equal(Helpers.ToSortKey('c'))
+      expect(rowsByPath['/a/b/c/']?.sortKey).to.equal(ToSortKey('c'))
     })
     it('should log the number of ancestors added', async () => {
       await Functions.SyncMissingAncestorFolders(loggerFake, knexFnFake)

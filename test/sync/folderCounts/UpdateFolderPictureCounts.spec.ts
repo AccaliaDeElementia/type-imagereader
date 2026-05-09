@@ -2,7 +2,6 @@
 
 import { expect } from 'chai'
 import { Functions, Imports } from '#sync/folderCounts.js'
-import { Functions as Helpers } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
@@ -32,7 +31,7 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     getFolderInfosWithPicturesStub = sandbox.stub(Functions, 'GetFolderInfosWithPictures').resolves([])
     getAllFolderInfosStub = sandbox.stub(Functions, 'GetAllFolderInfos').resolves({})
     calculateFolderInfosStub = sandbox.stub(Functions, 'CalculateFolderInfos').returns([])
-    chunkStub = sandbox.stub(Helpers, 'Chunk').returns([])
+    chunkStub = sandbox.stub(Imports, 'Chunk').returns([])
   })
   afterEach(() => {
     sandbox.restore()

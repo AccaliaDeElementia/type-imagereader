@@ -5,7 +5,13 @@ import _debug from 'debug'
 import type { Debugger } from 'debug'
 import type { Knex } from 'knex'
 
-import { Functions as _Helpers } from './helpers.js'
+import {
+  AddFolderAndAncestors,
+  Chunk as _Chunk,
+  ExecChunksSynchronously,
+  ExtractInsertCount,
+  ToSortKey,
+} from './helpers.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 
 const ZERO = 0
@@ -15,6 +21,7 @@ export const Imports = {
   logPrefix: 'type-imagereader:sync:folders',
   debug: _debug,
   getDbChunkSize: _getDbChunkSize,
+  Chunk: _Chunk,
 }
 
 export const Functions = {
@@ -30,7 +37,7 @@ export const Functions = {
             'folders.path': null,
           })
       })
-    logger(`Added ${_Helpers.ExtractInsertCount(folders)} new folders`)
+    logger(`Added ${ExtractInsertCount(folders)} new folders`)
   },
   SyncRemovedFolders: async (logger: Debugger, knex: Knex): Promise<void> => {
     const deletedfolders = await knex('folders')
@@ -44,7 +51,7 @@ export const Functions = {
     const leafRows = await knex('pictures').distinct<Array<{ folder: string }>>('folder').whereNotNull('folder')
     const candidates = new Set<string>()
     for (const { folder } of leafRows) {
-      _Helpers.AddFolderAndAncestors(candidates, folder)
+      AddFolderAndAncestors(candidates, folder)
     }
     candidates.delete(posix.sep)
     if (candidates.size === ZERO) {
@@ -53,13 +60,10 @@ export const Functions = {
     }
     const candidateList = [...candidates]
     const existing = new Set<string>()
-    await _Helpers.ExecChunksSynchronously(
-      _Helpers.Chunk(candidateList, Imports.getDbChunkSize(knex)),
-      async (chunk) => {
-        const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
-        for (const row of rows) existing.add(row.path)
-      },
-    )
+    await ExecChunksSynchronously(Imports.Chunk(candidateList, Imports.getDbChunkSize(knex)), async (chunk) => {
+      const rows = await knex('folders').select<Array<{ path: string }>>('path').whereIn('path', chunk)
+      for (const row of rows) existing.add(row.path)
+    })
     const missing = candidateList.filter((p) => !existing.has(p))
     if (missing.length === ZERO) {
       logger('Added 0 missing ancestor folders')
@@ -69,10 +73,10 @@ export const Functions = {
       const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
       const parentDir = posix.dirname(withoutSlash)
       const folder = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
-      const sortKey = _Helpers.ToSortKey(posix.basename(withoutSlash))
+      const sortKey = ToSortKey(posix.basename(withoutSlash))
       return { folder, path, sortKey }
     })
-    await _Helpers.ExecChunksSynchronously(_Helpers.Chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
+    await ExecChunksSynchronously(Imports.Chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').ignore()
     })
     logger(`Added ${missing.length} missing ancestor folders`)
@@ -102,7 +106,7 @@ export const Functions = {
       .innerJoin('folders', 'folders.path', 'pictures.folder')
       .groupBy('pictures.folder', 'folders.folder', 'folders.sortKey')
       .orderBy([{ column: 'pictures.folder' }])
-    await _Helpers.ExecChunksSynchronously(_Helpers.Chunk(toUpdate, Imports.getDbChunkSize(knex)), async (chunk) => {
+    await ExecChunksSynchronously(Imports.Chunk(toUpdate, Imports.getDbChunkSize(knex)), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').merge(['firstPicture'])
     })
     logger(`Updated ${toUpdate.length} folder first-item images`)

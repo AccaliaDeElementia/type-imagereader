@@ -4,7 +4,7 @@ import posix from 'node:path'
 import _debug from 'debug'
 import type { Knex } from 'knex'
 
-import { Functions as _Helpers } from './helpers.js'
+import { Chunk as _Chunk, ExecChunksSynchronously } from './helpers.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 
 const ZERO = 0
@@ -22,6 +22,7 @@ export const Imports = {
   logPrefix: 'type-imagereader:sync:folderCounts',
   debug: _debug,
   getDbChunkSize: _getDbChunkSize,
+  Chunk: _Chunk,
 }
 
 export const Functions = {
@@ -91,12 +92,9 @@ export const Functions = {
       return [{ path: info.path, folder, sortKey, totalCount: info.totalCount, seenCount: info.seenCount }]
     })
     logger(`Calculated ${resultFolders.length} Folders Seen Counts`)
-    await _Helpers.ExecChunksSynchronously(
-      _Helpers.Chunk(resultFolders, Imports.getDbChunkSize(knex)),
-      async (chunk) => {
-        await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
-      },
-    )
+    await ExecChunksSynchronously(Imports.Chunk(resultFolders, Imports.getDbChunkSize(knex)), async (chunk) => {
+      await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
+    })
     logger(`Updated ${resultFolders.length} Folders Seen Counts`)
   },
   PruneEmptyFolders: async (knex: Knex): Promise<void> => {

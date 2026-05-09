@@ -3,7 +3,6 @@
 import { expect } from 'chai'
 import type { EventEmitter } from 'node:events'
 import { Functions, Imports } from '#sync/findItems.js'
-import { Functions as Helpers } from '#sync/helpers.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
@@ -50,8 +49,8 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
     pgClientStub = { query: sandbox.stub().returns(streamFake) }
     ;({ loggerStub } = stubDebug(sandbox, Imports))
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
-    buildSyncItemRowsStub = sandbox.stub(Helpers, 'BuildSyncItemRows').returns({ files: 0, dirs: 0, rows: [] })
-    formatSyncItemCsvStub = sandbox.stub(Helpers, 'FormatSyncItemCsv').returns('csv-row\n')
+    buildSyncItemRowsStub = sandbox.stub(Imports, 'BuildSyncItemRows').returns({ files: 0, dirs: 0, rows: [] })
+    formatSyncItemCsvStub = sandbox.stub(Imports, 'FormatSyncItemCsv').returns('csv-row\n')
     copyFromStub = sandbox.stub(Imports, 'copyFrom').returns(Cast<CopyStreamQuery>(sandbox.stub()))
     acquireStub = sandbox.stub(Imports, 'acquireCopyConnection').resolves(Cast<PoolClient>(pgClientStub))
     releaseStub = sandbox.stub(Imports, 'releaseCopyConnection').resolves()

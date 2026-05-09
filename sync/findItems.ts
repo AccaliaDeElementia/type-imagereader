@@ -8,7 +8,12 @@ import { from as _copyFrom } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
 
 import _fsWalker from './fswalker.js'
-import { Functions as _Helpers } from './helpers.js'
+import {
+  BuildSyncItemRows as _BuildSyncItemRows,
+  Chunk,
+  ExecChunksSynchronously,
+  FormatSyncItemCsv as _FormatSyncItemCsv,
+} from './helpers.js'
 import {
   IsPostgres as _IsPostgres,
   FindSyncItemsViaCopy as _FindSyncItemsViaCopy,
@@ -32,6 +37,8 @@ export const Imports = {
     //eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.releaseConnection is typed `any`; we hand back the same PoolClient we acquired
     await knex.client.releaseConnection(client)
   },
+  BuildSyncItemRows: _BuildSyncItemRows,
+  FormatSyncItemCsv: _FormatSyncItemCsv,
 }
 
 export const Functions = {
@@ -47,21 +54,21 @@ export const Functions = {
     })
     const shared = {
       fsWalker: Imports.fsWalker,
-      buildSyncItemRows: _Helpers.BuildSyncItemRows,
+      buildSyncItemRows: Imports.BuildSyncItemRows,
       getDataDir: Imports.getDataDir,
     }
     const counts = Imports.IsPostgres(knex)
       ? await Imports.FindSyncItemsViaCopy(knex, logger, {
           ...shared,
-          formatSyncItemCsv: _Helpers.FormatSyncItemCsv,
+          formatSyncItemCsv: Imports.FormatSyncItemCsv,
           copyFrom: Imports.copyFrom,
           acquireCopyConnection: Imports.acquireCopyConnection,
           releaseCopyConnection: Imports.releaseCopyConnection,
         })
       : await Imports.FindSyncItemsViaInsert(knex, logger, {
           ...shared,
-          chunk: _Helpers.Chunk,
-          execChunksSynchronously: _Helpers.ExecChunksSynchronously,
+          chunk: Chunk,
+          execChunksSynchronously: ExecChunksSynchronously,
         })
     logger(`Found all ${counts.dirs} dirs and ${counts.files} files`)
     return counts.files

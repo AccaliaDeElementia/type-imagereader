@@ -5,7 +5,7 @@ import knex from 'knex'
 import type { Knex } from 'knex'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Functions as SyncFunctions } from '#sync/helpers.js'
+import { BuildSyncItemRows, Chunk, ExecChunksSynchronously } from '#sync/helpers.js'
 import { IsPostgres, FindSyncItemsViaInsert } from '#sync/syncItemsDialect.js'
 import { noopLogger } from '#testutils/Debug.js'
 
@@ -95,9 +95,9 @@ describe(
       }
       const counts = await FindSyncItemsViaInsert(db, noopLogger, {
         fsWalker: fakeWalker,
-        buildSyncItemRows: SyncFunctions.BuildSyncItemRows,
-        chunk: SyncFunctions.Chunk,
-        execChunksSynchronously: SyncFunctions.ExecChunksSynchronously,
+        buildSyncItemRows: BuildSyncItemRows,
+        chunk: Chunk,
+        execChunksSynchronously: ExecChunksSynchronously,
         getDataDir: () => '/data',
       })
       expect(counts.files).to.equal(2)
@@ -110,9 +110,9 @@ describe(
       }
       await FindSyncItemsViaInsert(db, noopLogger, {
         fsWalker: fakeWalker,
-        buildSyncItemRows: SyncFunctions.BuildSyncItemRows,
-        chunk: SyncFunctions.Chunk,
-        execChunksSynchronously: SyncFunctions.ExecChunksSynchronously,
+        buildSyncItemRows: BuildSyncItemRows,
+        chunk: Chunk,
+        execChunksSynchronously: ExecChunksSynchronously,
         getDataDir: () => '/data',
       })
       const rows = await db('syncitems').select<Array<{ path: string }>>('path')
@@ -182,9 +182,9 @@ describe(
       }
       const counts = await FindSyncItemsViaInsert(db, noopLogger, {
         fsWalker: fakeWalker,
-        buildSyncItemRows: SyncFunctions.BuildSyncItemRows,
-        chunk: SyncFunctions.Chunk,
-        execChunksSynchronously: SyncFunctions.ExecChunksSynchronously,
+        buildSyncItemRows: BuildSyncItemRows,
+        chunk: Chunk,
+        execChunksSynchronously: ExecChunksSynchronously,
         getDataDir: () => '/data',
       })
       expect(counts.files).to.equal(ROW_COUNT)

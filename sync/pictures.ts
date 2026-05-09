@@ -4,7 +4,7 @@ import _debug from 'debug'
 import type { Debugger } from 'debug'
 import type { Knex } from 'knex'
 
-import { Functions as _Helpers } from './helpers.js'
+import { ExtractInsertCount } from './helpers.js'
 
 export const Imports = {
   logPrefix: 'type-imagereader:sync:pictures',
@@ -24,7 +24,7 @@ export const Functions = {
             'pictures.path': null,
           })
       })
-    logger(`Added ${_Helpers.ExtractInsertCount(insertedpics)} new pictures`)
+    logger(`Added ${ExtractInsertCount(insertedpics)} new pictures`)
   },
   SyncRemovedPictures: async (logger: Debugger, knex: Knex): Promise<void> => {
     const deletedpics = await knex('pictures')

@@ -1,11 +1,11 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#sync/helpers.js'
+import { ToSortKey, Helpers } from '#sync/helpers.js'
 
 describe('utils/syncfolders function ToSortKey()', () => {
   beforeEach(() => {
-    Functions.padLength = 20
+    Helpers.padLength = 20
   })
   const tests: Array<[string, string, number, string]> = [
     ['should return key unchanged with no replacers', 'some key', 20, 'some key'],
@@ -19,8 +19,8 @@ describe('utils/syncfolders function ToSortKey()', () => {
   ]
   tests.forEach(([title, value, padding, expected]) => {
     it(title, () => {
-      Functions.padLength = padding
-      expect(Functions.ToSortKey(value)).to.equal(expected)
+      Helpers.padLength = padding
+      expect(ToSortKey(value)).to.equal(expected)
     })
   })
 })

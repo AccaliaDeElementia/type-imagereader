@@ -1,8 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#sync/folders.js'
-import { Functions as Helpers } from '#sync/helpers.js'
+import { Functions, Imports } from '#sync/folders.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
@@ -64,7 +63,7 @@ describe('utils/syncfolders function SyncFolderFirstImages()', () => {
     knexFnFake = StubToKnex(knexFnStub)
     chunkStub = sandbox.stub()
     knexFnFake.queryBuilder = queryBuilderStub
-    chunkStub = sandbox.stub(Helpers, 'Chunk').returns([])
+    chunkStub = sandbox.stub(Imports, 'Chunk').returns([])
   })
   afterEach(() => {
     sandbox.restore()
