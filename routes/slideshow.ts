@@ -77,7 +77,7 @@ export class HandleSocketState {
   constructor() {
     this.roomName = null
   }
-  SetName(name: string): void {
+  setName(name: string): void {
     this.roomName = name
   }
 }
@@ -266,7 +266,7 @@ export async function joinSlideshow(
 ): Promise<void> {
   if (!StringishHasValue(roomName)) return
   Imports.logger('joinSlideshow %s (socket=%s)', roomName, socket.id)
-  state.SetName(roomName)
+  state.setName(roomName)
   await socket.join(roomName)
   const room = await Internals.GetRoomAndIncrementImage(knex, roomName)
   socket.emit(SocketEvents.ImageChanged, room.uriSafeImage)

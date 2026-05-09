@@ -48,23 +48,23 @@ export class LockResource {
   constructor() {
     this._locked = false
   }
-  Take(): boolean {
+  take(): boolean {
     if (this._locked) return false
     this._locked = true
     return true
   }
-  Release(): void {
+  release(): void {
     if (!this._locked) return
     this._locked = false
   }
 }
 
 export async function RunSyncWithLock(): Promise<void> {
-  if (!ImageReader.SyncLock.Take()) return
+  if (!ImageReader.SyncLock.take()) return
   try {
     await ImageReader.Synchronize()
   } finally {
-    ImageReader.SyncLock.Release()
+    ImageReader.SyncLock.release()
   }
 }
 
@@ -145,11 +145,11 @@ export const ImageReader = {
       }
       const watcherSuppressed = isSuppressed('DISABLE_WATCHER')
       const doSync = async (): Promise<void> => {
-        if (!ImageReader.SyncLock.Take()) return
+        if (!ImageReader.SyncLock.take()) return
         try {
           await ImageReader.Synchronize()
         } finally {
-          ImageReader.SyncLock.Release()
+          ImageReader.SyncLock.release()
         }
       }
       doSync().catch((err: unknown) => {
@@ -158,12 +158,12 @@ export const ImageReader = {
       if (!watcherSuppressed) {
         try {
           const onFlush = async (changeset: Changeset): Promise<void> => {
-            if (!ImageReader.SyncLock.Take()) throw new Error('sync locked')
+            if (!ImageReader.SyncLock.take()) throw new Error('sync locked')
             try {
               const knex = await Imports.Initialize()
               await Imports.IncrementalSyncFunctions.IncrementalSync(knex, changeset, dataDir)
             } finally {
-              ImageReader.SyncLock.Release()
+              ImageReader.SyncLock.release()
             }
           }
           ImageReader.WatcherSubscription = await Imports.startWatcher(dataDir, onFlush)

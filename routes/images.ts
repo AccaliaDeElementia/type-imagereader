@@ -52,7 +52,7 @@ export class ImageData {
     return result
   }
 
-  async Rescale(width: number, height: number, animated: boolean): Promise<void> {
+  async rescale(width: number, height: number, animated: boolean): Promise<void> {
     if (this.code !== null) {
       return // Image already has an error
     }
@@ -149,7 +149,7 @@ export async function ReadImage(path: string): Promise<ImageData> {
 }
 
 export async function RescaleImage(image: ImageData, width: number, height: number, animated = true): Promise<void> {
-  await image.Rescale(width, height, animated)
+  await image.rescale(width, height, animated)
 }
 
 export async function ReadAndRescaleImage(

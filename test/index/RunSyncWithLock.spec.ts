@@ -13,8 +13,8 @@ describe('index.ts RunSyncWithLock()', () => {
   let releaseStub = sandbox.stub()
   beforeEach(() => {
     synchronizeStub = sandbox.stub(ImageReader, 'Synchronize').resolves()
-    takeStub = sandbox.stub(ImageReader.SyncLock, 'Take').returns(true)
-    releaseStub = sandbox.stub(ImageReader.SyncLock, 'Release')
+    takeStub = sandbox.stub(ImageReader.SyncLock, 'take').returns(true)
+    releaseStub = sandbox.stub(ImageReader.SyncLock, 'release')
   })
   afterEach(() => {
     sandbox.restore()
