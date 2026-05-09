@@ -29,7 +29,7 @@
       "#utils/*": ["./utils/*"],
       "#sync/*": ["./sync/*"],
       "#contracts/*": ["./contracts/*"],
-      "#Server.js": ["./Server.js"],
+      "#server.js": ["./server.js"],
       "#app.js": ["./index.js"]
     },
     "typeRoots": ["node_modules/@types", "@types"],

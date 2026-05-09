@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import { decodeResult } from '#public/scripts/app/net.js'
-import { cast } from '#testutils/TypeGuards.js'
-import { eventuallyRejects } from '#testutils/Errors.js'
+import { cast } from '#testutils/typeGuards.js'
+import { eventuallyRejects } from '#testutils/errors.js'
 
 describe('public/app/net decodeResult()', () => {
   let response = cast<Response>(null)

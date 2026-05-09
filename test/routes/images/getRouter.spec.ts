@@ -9,7 +9,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 
 import { CacheStorage, readAndRescaleImage, getRouter, Imports } from '#routes/images.js'
 import Sinon from 'sinon'
-import { cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/typeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 

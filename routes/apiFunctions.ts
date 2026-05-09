@@ -6,7 +6,7 @@ import type { Knex } from 'knex'
 import _debug from 'debug'
 import type { Debugger } from 'debug'
 import { escapeLikeWildcards, stringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
-import { getParentFolders as _getParentFolders } from '#utils/Path.js'
+import { getParentFolders as _getParentFolders } from '#utils/path.js'
 
 export const Imports: { getParentFolders: typeof _getParentFolders; logger: Debugger } = {
   getParentFolders: _getParentFolders,

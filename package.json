@@ -45,7 +45,7 @@
     "#utils/*.js": "./utils/*.ts",
     "#sync/*.js": "./sync/*.ts",
     "#contracts/*.js": "./contracts/*.ts",
-    "#Server.js": "./Server.ts",
+    "#server.js": "./server.ts",
     "#app.js": "./index.ts"
   },
   "dependencies": {

@@ -23,8 +23,8 @@ import {
 
 import debug from 'debug'
 import { reqParamToString } from '#utils/helpers.js'
-import { handleErrors as _handleErrors } from '#utils/Express.js'
-import { isPathTraversal as _isPathTraversal } from '#utils/Path.js'
+import { handleErrors as _handleErrors } from '#utils/express.js'
+import { isPathTraversal as _isPathTraversal } from '#utils/path.js'
 
 export const Imports = {
   Router,

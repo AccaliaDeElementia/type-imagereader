@@ -6,7 +6,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { getRouter, Imports } from '#routes/index.js'
 import Sinon from 'sinon'
-import { cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/typeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 

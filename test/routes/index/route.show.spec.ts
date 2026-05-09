@@ -7,8 +7,8 @@ import type { Server } from 'node:http'
 import { getRouter, Imports } from '#routes/index.js'
 import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
-import { cast } from '#testutils/TypeGuards.js'
-import { createResponseFake } from '#testutils/Express.js'
+import { cast } from '#testutils/typeGuards.js'
+import { createResponseFake } from '#testutils/express.js'
 
 const sandbox = Sinon.createSandbox()
 

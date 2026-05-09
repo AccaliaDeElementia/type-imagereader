@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
 import { reqParamToString } from '#utils/helpers.js'
-import { isPathTraversal as _isPathTraversal } from '#utils/Path.js'
+import { isPathTraversal as _isPathTraversal } from '#utils/path.js'
 
 export const Imports = { Router, isPathTraversal: _isPathTraversal, logger: debug('type-imagereader:root') }
 

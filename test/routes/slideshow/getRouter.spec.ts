@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import type { Request, Response, Application, Router } from 'express'
 import type { Socket, Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { cast, stubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { assert, expect } from 'chai'
 import { Config, Internals, getRouter, Imports } from '#routes/slideshow.js'
 

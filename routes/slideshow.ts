@@ -7,7 +7,7 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
-import { isPathTraversal as _isPathTraversal, getParentFolders as _getParentFolders } from '#utils/Path.js'
+import { isPathTraversal as _isPathTraversal, getParentFolders as _getParentFolders } from '#utils/path.js'
 
 import { initialize as _initialize } from '#utils/persistance.js'
 import { UriSafePath, setLatestPicture as _setLatestPicture } from './apiFunctions.js'

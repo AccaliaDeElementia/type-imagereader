@@ -3,8 +3,8 @@
 import assert from 'node:assert'
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { eventuallyRejects } from '#testutils/Errors.js'
-import { cast } from '#testutils/TypeGuards.js'
+import { eventuallyRejects } from '#testutils/errors.js'
+import { cast } from '#testutils/typeGuards.js'
 import type { Stats } from 'node:fs'
 import type { Changeset, FlushCallback } from '#sync/filewatcher.js'
 

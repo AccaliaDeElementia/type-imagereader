@@ -3,9 +3,9 @@
 import { assert, expect } from 'chai'
 import { Internals } from '#public/scripts/app/actions.js'
 import { JSDOM } from 'jsdom'
-import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { cast } from '#testutils/TypeGuards.js'
-import { doesNotThrow } from '#testutils/Errors.js'
+import { mountDom, unmountDom } from '#testutils/dom.js'
+import { cast } from '#testutils/typeGuards.js'
+import { doesNotThrow } from '#testutils/errors.js'
 
 describe('public/app/actions setInnerTextMaybe', () => {
   const dom: JSDOM = new JSDOM('<html><body><div><span class="foo"></span></div></div></html>', {})

@@ -6,7 +6,7 @@ import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
-import { cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/typeGuards.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

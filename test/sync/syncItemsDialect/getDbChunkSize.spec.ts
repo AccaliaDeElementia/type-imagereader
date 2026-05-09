@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import type { Knex } from 'knex'
 import { getDbChunkSize } from '#sync/syncItemsDialect.js'
-import { cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/typeGuards.js'
 
 const fakeKnex = (clientName: string): Knex => cast<Knex>({ client: { config: { client: clientName } } })
 

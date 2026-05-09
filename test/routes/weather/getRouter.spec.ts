@@ -7,8 +7,8 @@ import Sinon from 'sinon'
 import type { Application, Router, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { cast } from '#testutils/TypeGuards.js'
-import { createResponseFake } from '#testutils/Express.js'
+import { cast } from '#testutils/typeGuards.js'
+import { createResponseFake } from '#testutils/express.js'
 
 const sandbox = Sinon.createSandbox()
 

@@ -2,10 +2,10 @@
 
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
-import { mountDom, unmountDom } from '#testutils/Dom.js'
+import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
-import { resetPubSub } from '#testutils/PubSub.js'
+import { resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Internals } from '#public/scripts/app/bookmarks.js'
 import Sinon from 'sinon'
 import assert from 'node:assert'

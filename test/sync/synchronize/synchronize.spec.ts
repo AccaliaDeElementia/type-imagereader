@@ -3,9 +3,9 @@
 import { expect } from 'chai'
 import { synchronize, Imports, LOG_PREFIX } from '#sync/synchronize.js'
 import Sinon from 'sinon'
-import { cast, stubToKnex } from '#testutils/TypeGuards.js'
-import { stubDebug } from '#testutils/Debug.js'
-import { findStubCall } from '#testutils/Sinon.js'
+import { cast, stubToKnex } from '#testutils/typeGuards.js'
+import { stubDebug } from '#testutils/debug.js'
+import { findStubCall } from '#testutils/sinon.js'
 
 const sandbox = Sinon.createSandbox()
 

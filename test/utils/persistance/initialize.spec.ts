@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import { initialize, Internals, Imports, Persistance, type KnexOptions } from '#utils/persistance.js'
 import Sinon from 'sinon'
-import { eventuallyRejects } from '#testutils/Errors.js'
-import { stubToKnex } from '#testutils/TypeGuards.js'
+import { eventuallyRejects } from '#testutils/errors.js'
+import { stubToKnex } from '#testutils/typeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 

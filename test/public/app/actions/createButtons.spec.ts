@@ -6,9 +6,9 @@ import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Internals } from '#public/scripts/app/actions.js'
 
-import { resetPubSub } from '#testutils/PubSub.js'
+import { resetPubSub } from '#testutils/pubsub.js'
 import { JSDOM } from 'jsdom'
-import { mountDom, unmountDom } from '#testutils/Dom.js'
+import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
 const sandbox = Sinon.createSandbox()

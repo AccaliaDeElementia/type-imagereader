@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildSyncItemRows, chunk, execChunksSynchronously } from '#sync/helpers.js'
 import { isPostgres, findSyncItemsViaInsert } from '#sync/syncItemsDialect.js'
-import { noopLogger } from '#testutils/Debug.js'
+import { noopLogger } from '#testutils/debug.js'
 
 const moduleDir = dirname(fileURLToPath(import.meta.url))
 const MIGRATIONS_DIR = join(moduleDir, '..', '..', 'migrations')

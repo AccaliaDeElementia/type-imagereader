@@ -1,0 +1,117 @@
+'use sanity'
+
+import { expect } from 'chai'
+import Sinon from 'sinon'
+
+import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/dom.js'
+import { Pictures } from '#public/scripts/app/pictures/index.js'
+import { loadCurrentPageImages } from '#public/scripts/app/pictures/grid.js'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { resetPubSub } from '#testutils/pubsub.js'
+
+const sandbox = Sinon.createSandbox()
+
+describe('public/app/pictures loadCurrentPageImages()', () => {
+  let dom = new JSDOM('<html></html>', {})
+  const selectPageSpy = sandbox.stub().resolves()
+  const loadingErrorSpy = sandbox.stub().resolves()
+  beforeEach(() => {
+    dom = new JSDOM('<html></html>', {
+      url: 'http://127.0.0.1:2999',
+    })
+    mountDom(dom)
+    selectPageSpy.resetHistory()
+    loadingErrorSpy.resetHistory()
+    resetPubSub()
+    PubSub.subscribers = {
+      'PICTURES:SELECTPAGE': [selectPageSpy],
+      'LOADING:ERROR': [loadingErrorSpy],
+    }
+    Pictures.mainImage = null
+    Pictures.imageCard = null
+  })
+  afterEach(() => {
+    sandbox.restore()
+    unmountDom()
+  })
+  it('should gracefully handle no tabs existing', () => {
+    expect(() => {
+      loadCurrentPageImages()
+    }).to.not.throw()
+  })
+  it('should not throw when only hidden tab exists', () => {
+    const container = dom.window.document.createElement('div')
+    container.id = 'tabImages'
+    const page = dom.window.document.createElement('div')
+    page.classList.add('page')
+    page.classList.add('hidden')
+    container.appendChild(page)
+    const card = dom.window.document.createElement('div')
+    card.classList.add('card')
+    card.setAttribute('data-backgroundImage', 'url("/images/preview.webp")')
+    page.appendChild(card)
+    dom.window.document.body.appendChild(container)
+    expect(() => {
+      loadCurrentPageImages()
+    }).to.not.throw()
+  })
+  it('should not modify backgroundImage when only hidden tab exists', () => {
+    const container = dom.window.document.createElement('div')
+    container.id = 'tabImages'
+    const page = dom.window.document.createElement('div')
+    page.classList.add('page')
+    page.classList.add('hidden')
+    container.appendChild(page)
+    const card = dom.window.document.createElement('div')
+    card.classList.add('card')
+    card.setAttribute('data-backgroundImage', 'url("/images/preview.webp")')
+    page.appendChild(card)
+    dom.window.document.body.appendChild(container)
+    loadCurrentPageImages()
+    expect(card.style.backgroundImage).to.equal('')
+  })
+  it('should not throw when card is missing data-backgroundImage attribute', () => {
+    const container = dom.window.document.createElement('div')
+    container.id = 'tabImages'
+    const page = dom.window.document.createElement('div')
+    page.classList.add('page')
+    container.appendChild(page)
+    const card = dom.window.document.createElement('div')
+    card.classList.add('card')
+    page.appendChild(card)
+    dom.window.document.body.appendChild(container)
+    expect(() => {
+      loadCurrentPageImages()
+    }).to.not.throw()
+  })
+  it('should not modify backgroundImage when card is missing data-backgroundImage attribute', () => {
+    const container = dom.window.document.createElement('div')
+    container.id = 'tabImages'
+    const page = dom.window.document.createElement('div')
+    page.classList.add('page')
+    container.appendChild(page)
+    const card = dom.window.document.createElement('div')
+    card.classList.add('card')
+    page.appendChild(card)
+    dom.window.document.body.appendChild(container)
+    loadCurrentPageImages()
+    expect(card.style.backgroundImage).to.equal('')
+  })
+  it('should set backgroundImage style for non hidden page', () => {
+    const container = dom.window.document.createElement('div')
+    container.id = 'tabImages'
+    dom.window.document.body.appendChild(container)
+    const page = dom.window.document.createElement('div')
+    page.classList.add('page')
+    container.appendChild(page)
+    const card = dom.window.document.createElement('div')
+    card.classList.add('card')
+    card.setAttribute('data-backgroundImage', 'url("/images/preview.webp")')
+    page.appendChild(card)
+
+    expect(card.style.backgroundImage).to.equal('')
+    loadCurrentPageImages()
+    expect(card.style.backgroundImage).to.equal('url("/images/preview.webp")')
+  })
+})

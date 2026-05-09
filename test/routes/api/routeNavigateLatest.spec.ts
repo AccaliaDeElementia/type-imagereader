@@ -8,9 +8,9 @@ import type { Server as WebSocketServer } from 'socket.io'
 import { ModCount } from '#routes/apiFunctions.js'
 import { getRouter, Imports } from '#routes/api.js'
 import { StatusCodes } from 'http-status-codes'
-import { cast, stubToKnex } from '#testutils/TypeGuards.js'
-import { stubDebug } from '#testutils/Debug.js'
-import { createResponseFake } from '#testutils/Express.js'
+import { cast, stubToKnex } from '#testutils/typeGuards.js'
+import { stubDebug } from '#testutils/debug.js'
+import { createResponseFake } from '#testutils/express.js'
 
 const sandbox = Sinon.createSandbox()
 

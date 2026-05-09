@@ -1,0 +1,101 @@
+'use sanity'
+
+import { expect } from 'chai'
+import Sinon from 'sinon'
+import { JSDOM } from 'jsdom'
+import { mountDom, unmountDom } from '#testutils/dom.js'
+import { render } from 'pug'
+import { PubSub } from '#public/scripts/app/pubsub.js'
+import { init, Loading } from '#public/scripts/app/loading.js'
+import { resetPubSub } from '#testutils/pubsub.js'
+import assert from 'node:assert'
+
+const sandbox = Sinon.createSandbox()
+const markup = `
+html
+  body
+    nav#navbar
+    div#loadingScreen
+`
+describe('public/app/loading subscriber "Loading:Success"', () => {
+  let dom: JSDOM = new JSDOM('', {})
+  beforeEach(() => {
+    dom = new JSDOM(render(markup), {
+      url: 'http://127.0.0.1:2999',
+    })
+    mountDom(dom)
+    resetPubSub()
+    Loading.overlay = null
+    Loading.navbar = null
+    init()
+  })
+  afterEach(() => {
+    sandbox.restore()
+    unmountDom()
+  })
+  it('should remove css transition style on navbar', async () => {
+    const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
+    navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
+    expect(navbar?.style.getPropertyValue('transition')).to.equal('')
+  })
+  it('should set soothing green background navbar', async () => {
+    const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
+    navbar?.style.removeProperty('background-color')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
+    expect(navbar?.style.getPropertyValue('background-color')).to.equal('rgb(0, 170, 0)')
+  })
+  it('should set a deferred function', async () => {
+    expect(PubSub.deferred).to.have.length(0)
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
+    expect(PubSub.deferred).to.have.length(1)
+  })
+  it('should defer transition definition', async () => {
+    const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
+    navbar?.style.removeProperty('transition')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
+    PubSub.deferred.forEach((fn) => {
+      fn.method()
+    })
+    expect(navbar?.style.getPropertyValue('transition')).to.equal('background-color 2s ease-in-out')
+  })
+  it('should defer background-color change', async () => {
+    const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
+    navbar?.style.setProperty('background-color', '#FFFFFF')
+    const subs = PubSub.subscribers['LOADING:SUCCESS']
+    assert(subs !== undefined)
+    await Promise.all(
+      subs.map(async (sub) => {
+        await sub(undefined, 'LOADING:SUCCESS')
+      }),
+    )
+    PubSub.deferred.forEach((fn) => {
+      fn.method()
+    })
+    expect(navbar?.style.getPropertyValue('background-color')).to.equal('')
+  })
+})

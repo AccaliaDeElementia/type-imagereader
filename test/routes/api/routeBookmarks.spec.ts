@@ -6,9 +6,9 @@ import type { Application, RequestHandler as ExpressRequestHandler, Response as 
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
-import { cast, stubToKnex } from '#testutils/TypeGuards.js'
-import { stubDebug } from '#testutils/Debug.js'
-import { createResponseFake } from '#testutils/Express.js'
+import { cast, stubToKnex } from '#testutils/typeGuards.js'
+import { stubDebug } from '#testutils/debug.js'
+import { createResponseFake } from '#testutils/express.js'
 
 const sandbox = Sinon.createSandbox()
 
