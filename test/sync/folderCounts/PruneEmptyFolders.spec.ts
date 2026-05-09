@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { PruneEmptyFolders, Imports } from '#sync/folderCounts.js'
+import { PruneEmptyFolders, Imports, LOG_PREFIX } from '#sync/folderCounts.js'
 import Sinon from 'sinon'
 import { createKnexChainFake } from '#testutils/Knex.js'
 import { stubDebug } from '#testutils/Debug.js'
@@ -35,7 +35,7 @@ describe('utils/syncfolders function PruneEmptyFolders()', () => {
     await PruneEmptyFolders(knexFnFake)
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
+      .and.satisfy((msg: string) => msg.startsWith(`${LOG_PREFIX}:`), 'Logger should be prefixed')
       .and.satisfy((msg: string) => msg.endsWith(':pruneEmpty'), 'Logger should be suffixed with `pruneEmpty`')
   })
   it('should call knex once when deleting empty folders', async () => {

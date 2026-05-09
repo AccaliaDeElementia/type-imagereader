@@ -16,8 +16,9 @@ const ZERO = 0
 const MS_PER_SECOND = 1000
 const ELAPSED_DECIMALS = 2
 
+export const LOG_PREFIX = 'type-imagereader:sync:synchronize'
+
 export const Imports = {
-  logPrefix: 'type-imagereader:sync:synchronize',
   debug: _debug,
   Initialize: _Initialize,
   FindSyncItems: _FindSyncItems,
@@ -31,7 +32,7 @@ export const Imports = {
 const elapsedSeconds = (since: number): string => ((Date.now() - since) / MS_PER_SECOND).toFixed(ELAPSED_DECIMALS)
 
 export async function Synchronize(): Promise<void> {
-  const logger = Imports.debug(Imports.logPrefix)
+  const logger = Imports.debug(LOG_PREFIX)
   const start = Date.now()
   logger('Folder Synchronization Begins')
   const knex = await Imports.Initialize()

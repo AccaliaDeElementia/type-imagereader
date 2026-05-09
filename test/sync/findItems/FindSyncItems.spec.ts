@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import type { EventEmitter } from 'node:events'
-import { FindSyncItems, Imports } from '#sync/findItems.js'
+import { FindSyncItems, Imports, LOG_PREFIX } from '#sync/findItems.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
@@ -75,7 +75,7 @@ describe('utils/syncfolders function FindSyncItems()', () => {
   })
   it('should create logger with the module prefix', async () => {
     await FindSyncItems(knexFnFake)
-    expect(debugStub.firstCall.args[0]).to.equal(Imports.logPrefix)
+    expect(debugStub.firstCall.args[0]).to.equal(LOG_PREFIX)
   })
   it('should truncate syncitems once to clear prior contents', async () => {
     await FindSyncItems(knexFnFake)

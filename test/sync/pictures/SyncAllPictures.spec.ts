@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { SyncAllPictures, Internals, Imports } from '#sync/pictures.js'
+import { SyncAllPictures, Internals, Imports, LOG_PREFIX } from '#sync/pictures.js'
 import Sinon from 'sinon'
 import { StubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
@@ -31,7 +31,7 @@ describe('utils/syncfolders function SyncAllPictures()', () => {
   })
   it('should construct logger with the module prefix', async () => {
     await SyncAllPictures(knexFake)
-    expect(debugStub.firstCall.args[0]).to.equal(Imports.logPrefix)
+    expect(debugStub.firstCall.args[0]).to.equal(LOG_PREFIX)
   })
   it('should call SyncNewPictures once', async () => {
     await SyncAllPictures(knexFake)

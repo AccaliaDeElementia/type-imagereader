@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Synchronize, Imports } from '#sync/synchronize.js'
+import { Synchronize, Imports, LOG_PREFIX } from '#sync/synchronize.js'
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
@@ -45,7 +45,7 @@ describe('sync/synchronize function Synchronize()', () => {
   })
   it('should create logger at start of process', async () => {
     await Synchronize()
-    expect(debugStub.firstCall.args[0]).to.equal(Imports.logPrefix)
+    expect(debugStub.firstCall.args[0]).to.equal(LOG_PREFIX)
   })
   it('should log more than once when processing', async () => {
     await Synchronize()

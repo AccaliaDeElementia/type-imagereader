@@ -17,8 +17,9 @@ import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1
 
+export const LOG_PREFIX = 'type-imagereader:sync:folders'
+
 export const Imports = {
-  logPrefix: 'type-imagereader:sync:folders',
   debug: _debug,
   getDbChunkSize: _getDbChunkSize,
   Chunk: _Chunk,
@@ -116,7 +117,7 @@ export async function SyncFolderFirstImages(logger: Debugger, knex: Knex): Promi
 }
 
 export async function SyncAllFolders(knex: Knex): Promise<void> {
-  const logger = Imports.debug(Imports.logPrefix)
+  const logger = Imports.debug(LOG_PREFIX)
   await Internals.SyncNewFolders(logger, knex)
   await Internals.SyncRemovedFolders(logger, knex)
   await Internals.SyncMissingAncestorFolders(logger, knex)

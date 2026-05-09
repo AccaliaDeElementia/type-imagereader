@@ -6,8 +6,9 @@ import type { Knex } from 'knex'
 
 import { ExtractInsertCount } from './helpers.js'
 
+export const LOG_PREFIX = 'type-imagereader:sync:pictures'
+
 export const Imports = {
-  logPrefix: 'type-imagereader:sync:pictures',
   debug: _debug,
 }
 
@@ -45,7 +46,7 @@ export async function SyncRemovedBookmarks(logger: Debugger, knex: Knex): Promis
 }
 
 export async function SyncAllPictures(knex: Knex): Promise<void> {
-  const logger = Imports.debug(Imports.logPrefix)
+  const logger = Imports.debug(LOG_PREFIX)
   await Internals.SyncNewPictures(logger, knex)
   await Internals.SyncRemovedPictures(logger, knex)
   await Internals.SyncRemovedBookmarks(logger, knex)

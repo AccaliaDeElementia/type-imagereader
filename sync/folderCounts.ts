@@ -18,8 +18,9 @@ export interface FolderInfo {
   sortKey?: string
 }
 
+export const LOG_PREFIX = 'type-imagereader:sync:folderCounts'
+
 export const Imports = {
-  logPrefix: 'type-imagereader:sync:folderCounts',
   debug: _debug,
   getDbChunkSize: _getDbChunkSize,
   Chunk: _Chunk,
@@ -81,7 +82,7 @@ export function CalculateFolderInfos(allFolders: Record<string, FolderInfo>, fol
 }
 
 export async function UpdateFolderPictureCounts(knex: Knex): Promise<void> {
-  const logger = Imports.debug(`${Imports.logPrefix}:updateSeen`)
+  const logger = Imports.debug(`${LOG_PREFIX}:updateSeen`)
   logger('Updating Seen Counts')
   const folderInfos = await Internals.GetFolderInfosWithPictures(knex)
   logger(`Found ${folderInfos.length} Folders to Update`)
@@ -101,7 +102,7 @@ export async function UpdateFolderPictureCounts(knex: Knex): Promise<void> {
 }
 
 export async function PruneEmptyFolders(knex: Knex): Promise<void> {
-  const logger = Imports.debug(`${Imports.logPrefix}:pruneEmpty`)
+  const logger = Imports.debug(`${LOG_PREFIX}:pruneEmpty`)
   const deletedfolders = await knex('folders').where('totalCount', '=', ZERO).andWhere('path', '<>', posix.sep).delete()
   logger(`Removed ${deletedfolders} empty folders`)
 }

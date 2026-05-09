@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { UpdateFolderPictureCounts, Internals, Imports } from '#sync/folderCounts.js'
+import { UpdateFolderPictureCounts, Internals, Imports, LOG_PREFIX } from '#sync/folderCounts.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
@@ -44,7 +44,7 @@ describe('utils/syncfolders function UpdateFolderPictureCounts()', () => {
     await UpdateFolderPictureCounts(knexFnFake)
     expect(debugStub.firstCall.args[0])
       .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(`${Imports.logPrefix}:`), 'Logger should be prefixed')
+      .and.satisfy((msg: string) => msg.startsWith(`${LOG_PREFIX}:`), 'Logger should be prefixed')
       .and.satisfy((msg: string) => msg.endsWith(':updateSeen'), 'Logger should be suffixed with `updateSeen`')
   })
   it('should call GetFolderInfosWithPictures once', async () => {

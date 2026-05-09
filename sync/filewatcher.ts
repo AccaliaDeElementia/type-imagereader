@@ -22,8 +22,9 @@ export interface WatcherEvent {
   path: string
 }
 
+export const LOG_PREFIX = 'type-imagereader:sync:filewatcher'
+
 export const Imports = {
-  logPrefix: 'type-imagereader:sync:filewatcher',
   debug: _debug,
   subscribe: _subscribe,
   setTimeout: globalThis.setTimeout as (fn: () => void, ms: number) => ReturnType<typeof setTimeout>,
@@ -67,7 +68,7 @@ export function processEvents(dataDir: string, events: WatcherEvent[], changeset
 }
 
 export async function Start(dataDir: string, onFlush: FlushCallback): Promise<WatcherSubscription> {
-  const logger = Imports.debug(Imports.logPrefix)
+  const logger = Imports.debug(LOG_PREFIX)
   const changeset: Changeset = new Map()
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   let flushInProgress = false
