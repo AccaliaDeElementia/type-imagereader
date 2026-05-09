@@ -13,7 +13,7 @@ import { IncrementalSync as _IncrementalSync } from './sync/incrementalsync.js'
 import { Start as startWatcher } from './sync/filewatcher.js'
 import type { Changeset, WatcherSubscription } from './sync/filewatcher.js'
 import { Initialize as _Initialize } from './utils/persistance.js'
-import start from './Server.js'
+import { Start as start } from './Server.js'
 import { StringIsNullOrEmpty, getDataDir } from './utils/helpers.js'
 
 const IncrementalSyncFunctions = { IncrementalSync: _IncrementalSync }
