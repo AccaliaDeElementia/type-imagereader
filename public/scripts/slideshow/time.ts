@@ -41,4 +41,4 @@ export const Internals = {
   FormatDate,
 }
 
-export default new CyclicUpdater(updateTime, TIME_UPDATE_INTERVAL)
+export const TimeUpdater = new CyclicUpdater(updateTime, TIME_UPDATE_INTERVAL)

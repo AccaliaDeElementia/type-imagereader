@@ -52,4 +52,4 @@ export const Internals = {
   CalculateDarknessMs,
 }
 
-export default new CyclicUpdater(updateOverlay, UPDATE_INTERVAL)
+export const OverlayUpdater = new CyclicUpdater(updateOverlay, UPDATE_INTERVAL)

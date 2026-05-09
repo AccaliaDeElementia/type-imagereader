@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import TimeUpdater from '#public/scripts/slideshow/time.js'
-import OverlayUpdater from '#public/scripts/slideshow/overlay.js'
+import { TimeUpdater } from '#public/scripts/slideshow/time.js'
+import { OverlayUpdater } from '#public/scripts/slideshow/overlay.js'
 import { WeatherUpdater, LocalWeatherUpdater } from '#public/scripts/slideshow/weather.js'
 import { Imports, bootstrap } from '#public/scripts/slideshow/index.js'
 import assert from 'node:assert'

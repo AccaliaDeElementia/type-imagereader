@@ -1,6 +1,6 @@
 'use sanity'
 
-import Updater, { Internals } from '#public/scripts/slideshow/time.js'
+import { TimeUpdater as Updater, Internals } from '#public/scripts/slideshow/time.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'

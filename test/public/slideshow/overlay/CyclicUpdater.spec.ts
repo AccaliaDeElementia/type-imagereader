@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import Updater, { Internals } from '#public/scripts/slideshow/overlay.js'
+import { OverlayUpdater as Updater, Internals } from '#public/scripts/slideshow/overlay.js'
 import { expect } from 'chai'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
 import { JSDOM } from 'jsdom'
