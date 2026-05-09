@@ -1,12 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import {
-  UninitializedLocationAssign,
-  UninitializedLocationReload,
-  WebSockets,
-  type WebSocket,
-} from '#public/scripts/slideshow/sockets.js'
+import { Disconnect, Internals, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import assert from 'node:assert'
@@ -25,44 +20,44 @@ describe('public/slideshow/sockets Disconnect()', () => {
   })
   it('should allow disconnect without socket', () => {
     WebSockets.socket = undefined
-    WebSockets.disconnect()
+    Disconnect()
     assert(true, 'Should not explode because important object is missing')
   })
   it('should disconnect with socket', () => {
-    WebSockets.disconnect()
+    Disconnect()
     expect(fakeDisconnect.callCount).to.equal(1)
   })
   it('should clear launchId with socket', () => {
     WebSockets.launchId = 42
-    WebSockets.disconnect()
+    Disconnect()
     expect(WebSockets.launchId).to.equal(undefined)
   })
   it('should clear launchId without socket', () => {
     WebSockets.socket = undefined
     WebSockets.launchId = 42
-    WebSockets.disconnect()
+    Disconnect()
     expect(WebSockets.launchId).to.equal(undefined)
   })
   it('should clear LocationAssign with socket', () => {
     WebSockets.LocationAssign = sandbox.stub()
-    WebSockets.disconnect()
-    expect(WebSockets.LocationAssign).to.equal(UninitializedLocationAssign)
+    Disconnect()
+    expect(WebSockets.LocationAssign).to.equal(Internals.UninitializedLocationAssign)
   })
   it('should clear LocationAssign without socket', () => {
     WebSockets.socket = undefined
     WebSockets.LocationAssign = sandbox.stub()
-    WebSockets.disconnect()
-    expect(WebSockets.LocationAssign).to.equal(UninitializedLocationAssign)
+    Disconnect()
+    expect(WebSockets.LocationAssign).to.equal(Internals.UninitializedLocationAssign)
   })
   it('should clear LocationReload with socket', () => {
     WebSockets.LocationReload = sandbox.stub()
-    WebSockets.disconnect()
-    expect(WebSockets.LocationReload).to.equal(UninitializedLocationReload)
+    Disconnect()
+    expect(WebSockets.LocationReload).to.equal(Internals.UninitializedLocationReload)
   })
   it('should clear LocationReload without socket', () => {
     WebSockets.socket = undefined
     WebSockets.LocationReload = sandbox.stub()
-    WebSockets.disconnect()
-    expect(WebSockets.LocationReload).to.equal(UninitializedLocationReload)
+    Disconnect()
+    expect(WebSockets.LocationReload).to.equal(Internals.UninitializedLocationReload)
   })
 })

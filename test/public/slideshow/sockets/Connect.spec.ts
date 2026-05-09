@@ -1,7 +1,14 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Imports, Functions, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
+import {
+  Connect,
+  Disconnect,
+  Imports,
+  Internals,
+  WebSockets,
+  type WebSocket,
+} from '#public/scripts/slideshow/sockets.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
@@ -25,9 +32,9 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     fakeViewport.scale = 1
     fakeEmit.reset()
     fakeOn.reset()
-    fakeHandleClick = sandbox.stub(Functions, 'HandleClick')
-    fakeHandleKeys = sandbox.stub(Functions, 'HandleKeys')
-    fakeParseRoom = sandbox.stub(Functions, 'ParseRoomName')
+    fakeHandleClick = sandbox.stub(Internals, 'HandleClick')
+    fakeHandleKeys = sandbox.stub(Internals, 'HandleKeys')
+    fakeParseRoom = sandbox.stub(Internals, 'ParseRoomName')
     fakeParseRoom.returns('')
     fakeIO = sandbox.stub(Imports, 'io').returns(fakeSocket)
     mountDom(dom)
@@ -35,7 +42,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
     dom.reconfigure({
       url: `http://127.0.0.1:2999/slideshow?`,
     })
-    WebSockets.disconnect()
+    Disconnect()
     global.window.visualViewport = Cast<VisualViewport>(fakeViewport)
   })
   afterEach(() => {
@@ -44,29 +51,29 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   it('should clear launchId prior to connect succeeding', () => {
     WebSockets.launchId = 'BAD PRIOR ID'
-    WebSockets.connect()
+    Connect()
     expect(WebSockets.launchId).to.equal(undefined)
   })
   it('should store location.assign as a function for later use', () => {
-    WebSockets.connect()
+    Connect()
     expect(WebSockets.LocationAssign).to.be.an('function')
   })
   it('should store location.assign bound for later use', () => {
-    WebSockets.connect()
+    Connect()
     //TODO: find a better way to assert this... this seems fragile
     expect(WebSockets.LocationAssign.name).to.equal('bound assign')
   })
   it('should store location.reload as a function for later use', () => {
-    WebSockets.connect()
+    Connect()
     expect(WebSockets.LocationReload).to.be.an('function')
   })
   it('should store location.reload bound for later use', () => {
-    WebSockets.connect()
+    Connect()
     //TODO: find a better way to assert this... this seems fragile
     expect(WebSockets.LocationReload.name).to.equal('bound reload')
   })
   it('should construct socket.io client', () => {
-    WebSockets.connect()
+    Connect()
     expect(fakeIO?.callCount).to.equal(1)
   })
   const uris: Array<[string, string]> = [
@@ -78,122 +85,122 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   uris.forEach(([url, result]) => {
     it(`should construct socket.io clinet for: ${url}`, () => {
       dom.reconfigure({ url })
-      WebSockets.connect()
+      Connect()
       expect(fakeIO?.firstCall.args).to.deep.equal([result])
     })
   })
   it('should save socket for later use', () => {
-    WebSockets.connect()
+    Connect()
     expect(WebSockets.socket).to.equal(fakeSocket)
   })
   it('should listen for connect message', () => {
-    WebSockets.connect()
+    Connect()
     expect(fakeOn.calledWith('connect')).to.equal(true)
   })
   it('should provide function as callback for  connect message', () => {
-    WebSockets.connect()
+    Connect()
     const fn = Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])
     expect(fn).to.be.an.instanceOf(Function)
   })
   it('should emit join-slideshow when connected', () => {
-    WebSockets.connect()
+    Connect()
     Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
     expect(fakeEmit.calledWith('join-slideshow')).to.equal(true)
   })
   it('should join slideshow room as expected', () => {
     fakeParseRoom?.returns('Fake Room Is Fake')
-    WebSockets.connect()
+    Connect()
     Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
     const call = fakeEmit.getCalls().find((c) => c.args[0] === 'join-slideshow')
     expect(call?.args[1]).to.equal('Fake Room Is Fake')
   })
   it('should emit get-launchId when connected', () => {
-    WebSockets.connect()
+    Connect()
     Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
     expect(fakeEmit.calledWith('get-launchId')).to.equal(true)
   })
-  it('should handle callback from get-launchId with Functions.HandleGetLaunchId', () => {
-    WebSockets.connect()
+  it('should handle callback from get-launchId with Internals.HandleGetLaunchId', () => {
+    Connect()
     Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
     const call = fakeEmit.getCalls().find((c) => c.args[0] === 'get-launchId')
-    expect(call?.args[1]).to.equal(Functions.HandleGetLaunchId)
+    expect(call?.args[1]).to.equal(Internals.HandleGetLaunchId)
   })
   it('should listen for image-changed message', () => {
-    WebSockets.connect()
+    Connect()
     expect(fakeOn.calledWith('image-changed')).to.equal(true)
   })
-  it('should handle image-changed message with Functions.ShowBackingImageByType()', () => {
-    WebSockets.connect()
+  it('should handle image-changed message with Internals.ShowBackingImageByType()', () => {
+    Connect()
     const call = fakeOn.getCalls().find((c) => c.args[0] === 'image-changed')
     assert(call !== undefined)
-    expect(call.args[1]).to.equal(Functions.ShowBackingImageByType)
+    expect(call.args[1]).to.equal(Internals.ShowBackingImageByType)
   })
   it('should add a document level onclick event handler', () => {
-    WebSockets.connect()
+    Connect()
     expect(fakeAddEventListener?.calledWith('click')).to.equal(true)
   })
   it('should provide event listener for click event', () => {
-    WebSockets.connect()
+    Connect()
     const fn = Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])
     expect(fn).to.be.an.instanceOf(Function)
   })
-  it('should call Functions.HandleClick when processing click event', () => {
-    WebSockets.connect()
+  it('should call Internals.HandleClick when processing click event', () => {
+    Connect()
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.callCount).to.equal(1)
   })
   it('should pass event to handler when processing click event', () => {
-    WebSockets.connect()
+    Connect()
     const evt = { a: Math.random() }
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(evt)
     expect(fakeHandleClick?.firstCall.args[0]).to.equal(evt)
   })
   it('should pass socket to handler when processing click event', () => {
-    WebSockets.connect()
+    Connect()
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.firstCall.args[1]).to.equal(fakeSocket)
   })
   it('should pass inisial scale factor to handler when processing click event', () => {
     fakeViewport.scale = 1.2373
-    WebSockets.connect()
+    Connect()
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.firstCall.args[2]).to.equal(1.2373)
   })
   it('should pass original sale factor even if changed when processing click event', () => {
     fakeViewport.scale = 0.63
-    WebSockets.connect()
+    Connect()
     fakeViewport.scale = 99.72
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.firstCall.args[2]).to.equal(0.63)
   })
   it('should pass default scale factor when no fiewport defined for processing click event', () => {
     global.window.visualViewport = null
-    WebSockets.connect()
+    Connect()
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.firstCall.args[2]).to.equal(1)
   })
   it('should add a document level onkeyup event handler', () => {
-    WebSockets.connect()
+    Connect()
     expect(fakeAddEventListener?.calledWith('keyup')).to.equal(true)
   })
   it('should provide event listener for keyup event', () => {
-    WebSockets.connect()
+    Connect()
     const fn = Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])
     expect(fn).to.be.an.instanceOf(Function)
   })
-  it('should call Functions.HandleKeys when processing keyup event', () => {
-    WebSockets.connect()
+  it('should call Internals.HandleKeys when processing keyup event', () => {
+    Connect()
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(undefined)
     expect(fakeHandleKeys?.callCount).to.equal(1)
   })
   it('should pass event to handler when processing keyup event', () => {
-    WebSockets.connect()
+    Connect()
     const evt = { a: Math.random() }
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(evt)
     expect(fakeHandleKeys?.firstCall.args[0]).to.equal(evt)
   })
   it('should pass socket to handler when processing keyup event', () => {
-    WebSockets.connect()
+    Connect()
     Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(undefined)
     expect(fakeHandleKeys?.firstCall.args[1]).to.equal(fakeSocket)
   })

@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Functions, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
+import { Internals, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
@@ -39,7 +39,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       clientX: global.window.innerWidth * (1 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    Functions.HandleClick(event, Cast<WebSocket>(null), 1)
+    Internals.HandleClick(event, Cast<WebSocket>(null), 1)
     assert(true, 'should not throw when null socket provided')
   })
   it('should not break if socket is undefined', () => {
@@ -47,7 +47,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       clientX: global.window.innerWidth * (1 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    Functions.HandleClick(event, undefined, 1)
+    Internals.HandleClick(event, undefined, 1)
     assert(true, 'should not throw when undefined socket provided')
   })
   const emitCases: Array<[string, number, number, string]> = [
@@ -93,7 +93,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * xPercent,
         clientY: global.window.innerHeight * yPercent,
       })
-      Functions.HandleClick(event, fakeSocket, 1)
+      Internals.HandleClick(event, fakeSocket, 1)
     }
     it(`should emit once when click is at ${xPercent} with search "${search}"`, () => {
       doClick()
@@ -108,7 +108,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * xPercent,
         clientY: global.window.innerHeight * yPercent,
       })
-      Functions.HandleClick(event, fakeSocket, 1.001)
+      Internals.HandleClick(event, fakeSocket, 1.001)
       expect(fakeEmit.callCount).to.equal(1)
     })
     it(`should ignore click at ${xPercent}:${yPercent} when zoomed out`, () => {
@@ -116,7 +116,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * xPercent,
         clientY: global.window.innerHeight * yPercent,
       })
-      Functions.HandleClick(event, fakeSocket, 0.999)
+      Internals.HandleClick(event, fakeSocket, 0.999)
       expect(fakeEmit.callCount).to.equal(0)
     })
   })
@@ -126,7 +126,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * 0.5,
         clientY: global.window.innerHeight * 0.5,
       })
-      Functions.HandleClick(event, fakeSocket, 1)
+      Internals.HandleClick(event, fakeSocket, 1)
     })
     it('should emit second parameter for goto-image event', () => {
       expect(fakeEmit.firstCall.args).to.have.lengthOf(2)
@@ -147,7 +147,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth,
         clientY: global.window.innerHeight / 2,
       })
-      Functions.HandleClick(event, fakeSocket, 1)
+      Internals.HandleClick(event, fakeSocket, 1)
       expect(fakeEmit.callCount).to.equal(1)
     })
     it('should emit next-image for right click when visualViewport is null', () => {
@@ -155,7 +155,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth,
         clientY: global.window.innerHeight / 2,
       })
-      Functions.HandleClick(event, fakeSocket, 1)
+      Internals.HandleClick(event, fakeSocket, 1)
       expect(fakeEmit.firstCall.args[0]).to.equal('next-image')
     })
   })
@@ -165,7 +165,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * 0.5,
         clientY: global.window.innerHeight * 0.5,
       })
-      Functions.HandleClick(event, fakeSocket, 1)
+      Internals.HandleClick(event, fakeSocket, 1)
       const fn = Cast<(x: string | null) => void>(fakeEmit.firstCall.args[1])
       fn(null)
     })
@@ -179,7 +179,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientX: global.window.innerWidth * 0.5,
         clientY: global.window.innerHeight * 0.5,
       })
-      Functions.HandleClick(event, fakeSocket, 1)
+      Internals.HandleClick(event, fakeSocket, 1)
       const fn = Cast<(x: string) => void>(fakeEmit.firstCall.args[1])
       fn('/foo/bar/baz')
     })

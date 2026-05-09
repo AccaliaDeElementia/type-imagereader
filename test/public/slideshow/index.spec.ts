@@ -3,8 +3,6 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { WebSockets } from '#public/scripts/slideshow/sockets.js'
-
 import TimeUpdater from '#public/scripts/slideshow/time.js'
 import OverlayUpdater from '#public/scripts/slideshow/overlay.js'
 import { WeatherUpdater, LocalWeatherUpdater } from '#public/scripts/slideshow/weather.js'
@@ -20,7 +18,7 @@ describe('public/slideshow/index', () => {
   beforeAll(() => {
     fakeCyclicAdd = sandbox.stub(Imports, 'CyclicManagerAdd')
     fakeCyclicStart = sandbox.stub(Imports, 'CyclicManagerStart')
-    fakeSocketConnect = sandbox.stub(WebSockets, 'connect')
+    fakeSocketConnect = sandbox.stub(Imports, 'SocketsConnect')
     bootstrap()
   })
   afterAll(() => {

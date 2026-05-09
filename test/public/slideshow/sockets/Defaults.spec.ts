@@ -1,29 +1,29 @@
 'use sanity'
 
-import { UninitializedLocationAssign, UninitializedLocationReload } from '#public/scripts/slideshow/sockets.js'
+import { Internals } from '#public/scripts/slideshow/sockets.js'
 import { expect } from 'chai'
 import { DefinitelyThrows } from '#testutils/Errors.js'
 
 describe('public/slideshow/sockets uninitialized sentinels', () => {
-  it('should definitely throw for UninitializedLocationAssign()', () => {
+  it('should definitely throw for Internals.UninitializedLocationAssign()', () => {
     DefinitelyThrows(() => {
-      UninitializedLocationAssign('')
+      Internals.UninitializedLocationAssign('')
     })
   })
-  it('should throw expected error for UninitializedLocationAssign()', () => {
+  it('should throw expected error for Internals.UninitializedLocationAssign()', () => {
     const err = DefinitelyThrows(() => {
-      UninitializedLocationAssign('')
+      Internals.UninitializedLocationAssign('')
     })
     expect(err.message).to.equal('LocationAssign called before Connect()')
   })
-  it('should definitely throw for UninitializedLocationReload()', () => {
+  it('should definitely throw for Internals.UninitializedLocationReload()', () => {
     DefinitelyThrows(() => {
-      UninitializedLocationReload()
+      Internals.UninitializedLocationReload()
     })
   })
-  it('should throw expected error for UninitializedLocationReload()', () => {
+  it('should throw expected error for Internals.UninitializedLocationReload()', () => {
     const err = DefinitelyThrows(() => {
-      UninitializedLocationReload()
+      Internals.UninitializedLocationReload()
     })
     expect(err.message).to.equal('LocationReload called before Connect()')
   })

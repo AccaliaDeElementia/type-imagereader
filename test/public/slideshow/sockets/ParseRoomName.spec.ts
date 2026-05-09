@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/sockets.js'
+import { Internals } from '#public/scripts/slideshow/sockets.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { expect } from 'chai'
@@ -27,7 +27,7 @@ describe('public/slideshow/sockets ParseRoomName()', () => {
       dom.reconfigure({
         url: `https://localhost:2999${path}`,
       })
-      expect(Functions.ParseRoomName()).to.equal(result)
+      expect(Internals.ParseRoomName()).to.equal(result)
     })
   })
 })
