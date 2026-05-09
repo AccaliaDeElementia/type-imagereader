@@ -52,9 +52,9 @@ describe('routes/images route /preview/*-image.webp', () => {
       .filter((call) => call.args[0] === '/preview/*path-image.webp')
       .map((call) => call.args[1] as unknown)
     router = cast<(req: Request, res: Response) => Promise<void>>(fn)
-    readImageStub = sandbox.stub(Internals, 'ReadImage').resolves()
-    rescaleImageStub = sandbox.stub(Internals, 'RescaleImage').resolves()
-    sendImageStub = sandbox.stub(Internals, 'SendImage').resolves()
+    readImageStub = sandbox.stub(Internals, 'readImage').resolves()
+    rescaleImageStub = sandbox.stub(Internals, 'rescaleImage').resolves()
+    sendImageStub = sandbox.stub(Internals, 'sendImage').resolves()
     requestStub = {
       params: { path: undefined },
       body: '',
@@ -83,9 +83,9 @@ describe('routes/images route /preview/*-image.webp', () => {
     ['rescale image to preview width', () => expect(rescaleImageStub.firstCall.args[1]).to.equal(240)],
     ['rescale image to preview height', () => expect(rescaleImageStub.firstCall.args[2]).to.equal(320)],
     ['rescale image without animation', () => expect(rescaleImageStub.firstCall.args[3]).to.equal(false)],
-    ['send image with SendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
-    ['send image data with SendImage()', (img) => expect(sendImageStub.firstCall.args[0]).to.equal(img)],
-    ['send to response with SendImage()', () => expect(sendImageStub.firstCall.args[1]).to.equal(responseFake)],
+    ['send image with sendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
+    ['send image data with sendImage()', (img) => expect(sendImageStub.firstCall.args[0]).to.equal(img)],
+    ['send to response with sendImage()', () => expect(sendImageStub.firstCall.args[1]).to.equal(responseFake)],
   ]
   successTests.forEach(([title, validationFn]) => {
     it(`should ${title} for success by string`, async () => {

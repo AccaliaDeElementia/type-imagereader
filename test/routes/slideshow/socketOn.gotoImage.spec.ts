@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { HandleSocketState, HandleSocket, gotoImage, Internals, Imports } from '#routes/slideshow.js'
+import { HandleSocketState, handleSocket, gotoImage, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -26,10 +26,10 @@ describe('routes/slideshow socket goto-image', () => {
     serverFake = cast<WebSocketServer>(ioStub)
     socketStub = { on: sandbox.stub() }
     socketFake = cast<Socket>(socketStub)
-    socketState = HandleSocket(knexFake, serverFake, socketFake)
+    socketState = handleSocket(knexFake, serverFake, socketFake)
     folder = { path: '/foo/bar' }
     roomData = { images: [folder], index: -1 }
-    getRoomStub = sandbox.stub(Internals, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Internals, 'getRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
     picturePath = `Picture-${Math.random()}.png`
     setLatestStub = sandbox.stub(Imports, 'setLatest').resolves(picturePath)

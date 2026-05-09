@@ -68,7 +68,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
       .map((call) => call.args[1] as unknown)
     router = cast<(req: Request, res: Response) => Promise<void>>(fn)
     fetchImageStub = sandbox.stub(CacheStorage.scaledCache, 'fetch').resolves()
-    sendImageStub = sandbox.stub(Internals, 'SendImage').resolves()
+    sendImageStub = sandbox.stub(Internals, 'sendImage').resolves()
     requestStub = {
       params: { path: undefined },
       body: '',
@@ -99,9 +99,9 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     ['fetch image from cache', () => expect(fetchImageStub.firstCall.args[0]).to.equal('/full/image/test.png')],
     ['fetch image from cache', () => expect(fetchImageStub.firstCall.args[1]).to.equal(123)],
     ['fetch image from cache', () => expect(fetchImageStub.firstCall.args[2]).to.equal(456)],
-    ['send image with SendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
-    ['send image data with SendImage()', (data) => expect(sendImageStub.firstCall.args[0]).to.equal(data)],
-    ['send to response with SendImage()', () => expect(sendImageStub.firstCall.args[1]).to.equal(responseFake)],
+    ['send image with sendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
+    ['send image data with sendImage()', (data) => expect(sendImageStub.firstCall.args[0]).to.equal(data)],
+    ['send to response with sendImage()', () => expect(sendImageStub.firstCall.args[1]).to.equal(responseFake)],
   ]
   successTests.forEach(([title, validationFn]) => {
     it(`should ${title} on success`, async () => {

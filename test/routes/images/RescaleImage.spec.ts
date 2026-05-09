@@ -2,13 +2,13 @@
 
 import { expect } from 'chai'
 import type { Debugger } from 'debug'
-import { Imports, RescaleImage, ImageData } from '#routes/images.js'
+import { Imports, rescaleImage, ImageData } from '#routes/images.js'
 import Sharp from 'sharp'
 import Sinon from 'sinon'
 import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
-describe('routes/images RescaleImage()', () => {
+describe('routes/images rescaleImage()', () => {
   let sharpInstanceStub = {
     rotate: sandbox.stub().returnsThis(),
     resize: sandbox.stub().returnsThis(),
@@ -34,7 +34,7 @@ describe('routes/images RescaleImage()', () => {
   it('should abort when error already detected', async () => {
     const img = new ImageData()
     img.code = 'FOO'
-    await RescaleImage(img, 1280, 720)
+    await rescaleImage(img, 1280, 720)
     expect(sharpStub.callCount).to.equal(0)
   })
   interface SharpResizeArgs {
@@ -94,7 +94,7 @@ describe('routes/images RescaleImage()', () => {
       const data = Buffer.from(`{ image: ${Math.random()} }`)
       const img = new ImageData()
       img.data = data
-      await RescaleImage(img, 1280, 720, animated)
+      await rescaleImage(img, 1280, 720, animated)
       validation(data, img)
     })
   })
@@ -102,7 +102,7 @@ describe('routes/images RescaleImage()', () => {
     const img = new ImageData()
     const data = Buffer.from(`{ image: ${Math.random()} }`)
     sharpInstanceStub.toBuffer.resolves(data)
-    await RescaleImage(img, 1280, 720)
+    await rescaleImage(img, 1280, 720)
     expect(img.data).to.equal(data)
   })
   const failureModes: Array<[string, () => void]> = [
@@ -117,26 +117,26 @@ describe('routes/images RescaleImage()', () => {
         induceFailure()
       })
       it('should not set error code', async () => {
-        await RescaleImage(img, 1280, 720)
+        await rescaleImage(img, 1280, 720)
         expect(img.code).to.equal(null)
       })
       it('should not set error status code', async () => {
-        await RescaleImage(img, 1280, 720)
+        await rescaleImage(img, 1280, 720)
         expect(img.statusCode).to.equal(0)
       })
       it('should not set error message', async () => {
-        await RescaleImage(img, 1280, 720)
+        await rescaleImage(img, 1280, 720)
         expect(img.message).to.equal(null)
       })
       it('should not update extension', async () => {
         img.extension = 'jpg'
-        await RescaleImage(img, 1280, 720)
+        await rescaleImage(img, 1280, 720)
         expect(img.extension).to.equal('jpg')
       })
       it('should not update data', async () => {
         const originalData = Buffer.from('original')
         img.data = originalData
-        await RescaleImage(img, 1280, 720)
+        await rescaleImage(img, 1280, 720)
         expect(img.data).to.equal(originalData)
       })
     })
@@ -147,7 +147,7 @@ describe('routes/images RescaleImage()', () => {
       const img = new ImageData()
       img.path = '/foo/bar.jpg'
       sharpStub.throws(new Error('OOPS'))
-      await RescaleImage(img, 1280, 720)
+      await rescaleImage(img, 1280, 720)
       expect(loggerStub.firstCall.args[0]).to.equal('rescale failed for %s: %s')
     })
 
@@ -155,7 +155,7 @@ describe('routes/images RescaleImage()', () => {
       const img = new ImageData()
       img.path = '/foo/bar.jpg'
       sharpStub.throws(new Error('OOPS'))
-      await RescaleImage(img, 1280, 720)
+      await rescaleImage(img, 1280, 720)
       expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar.jpg')
     })
 
@@ -163,7 +163,7 @@ describe('routes/images RescaleImage()', () => {
       const img = new ImageData()
       img.path = '/foo/bar.jpg'
       sharpStub.throws(new Error('OOPS'))
-      await RescaleImage(img, 1280, 720)
+      await rescaleImage(img, 1280, 720)
       expect(loggerStub.firstCall.args[2]).to.equal('OOPS')
     })
 
@@ -174,7 +174,7 @@ describe('routes/images RescaleImage()', () => {
         await Promise.resolve()
         throw cast<Error>({ toString: () => 'rejection-token' })
       })
-      await RescaleImage(img, 1280, 720)
+      await rescaleImage(img, 1280, 720)
       expect(loggerStub.firstCall.args[2]).to.equal('rejection-token')
     })
 
@@ -182,7 +182,7 @@ describe('routes/images RescaleImage()', () => {
       const img = new ImageData()
       img.path = '/foo/bar.jpg'
       img.data = Buffer.from('data')
-      await RescaleImage(img, 1280, 720)
+      await rescaleImage(img, 1280, 720)
       expect(loggerStub.callCount).to.equal(0)
     })
 
@@ -190,7 +190,7 @@ describe('routes/images RescaleImage()', () => {
       const img = new ImageData()
       img.code = 'E_PRIOR'
       sharpStub.throws(new Error('OOPS'))
-      await RescaleImage(img, 1280, 720)
+      await rescaleImage(img, 1280, 720)
       expect(loggerStub.callCount).to.equal(0)
     })
   })

@@ -134,7 +134,7 @@ export function isOpenWeatherData(data: unknown): data is OpenWeatherData {
   return isSysValid(data)
 }
 
-export async function GetWeather(): Promise<OpenWeatherData> {
+export async function getWeather(): Promise<OpenWeatherData> {
   const appId = process.env.OPENWEATHER_APPID
   if (!stringishHasValue(appId)) throw new WeatherConfigError('no OpenWeather AppId Defined!')
   const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
@@ -147,11 +147,11 @@ export async function GetWeather(): Promise<OpenWeatherData> {
   return data
 }
 
-export async function UpdateWeather(): Promise<WeatherResults> {
+export async function updateWeather(): Promise<WeatherResults> {
   const latestSunrise = Imports.getLatestSunrise()
   const earliestSunset = Imports.getEarliestSunset()
   try {
-    const data = await Internals.GetWeather()
+    const data = await Internals.getWeather()
     if (data.main !== undefined) {
       Weather.temp = data.main.temp + KELVIN_TO_CELCIUS_OFFSET
       Weather.pressure = data.main.pressure
@@ -164,9 +164,9 @@ export async function UpdateWeather(): Promise<WeatherResults> {
     Weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, earliestSunset)
   } catch (err) {
     if (err instanceof WeatherConfigError) {
-      Imports.logger('UpdateWeather skipped: %s', err.message)
+      Imports.logger('updateWeather skipped: %s', err.message)
     } else {
-      Imports.logger('UpdateWeather error', err)
+      Imports.logger('updateWeather error', err)
     }
     Weather.temp = undefined
     Weather.pressure = undefined
@@ -196,9 +196,9 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
   const missingVar = findMissingWeatherConfigVar()
   if (missingVar === undefined) {
     setInterval(() => {
-      void Internals.UpdateWeather()
+      void Internals.updateWeather()
     }, UPDATE_INTERVAL)
-    void Internals.UpdateWeather()
+    void Internals.updateWeather()
   } else {
     Imports.logger('weather updates disabled: %s is not configured', missingVar)
   }
@@ -207,4 +207,4 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
   return router
 }
 
-export const Internals = { GetWeather, UpdateWeather }
+export const Internals = { getWeather, updateWeather }

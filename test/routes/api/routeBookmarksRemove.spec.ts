@@ -47,7 +47,7 @@ describe('routes/api route POST /bookmarks/remove', () => {
         get: sandbox.stub(),
       }),
     )
-    removeBookmarkStub = sandbox.stub(Imports, 'RemoveBookmark').resolves()
+    removeBookmarkStub = sandbox.stub(Imports, 'removeBookmark').resolves()
     ;({ loggerStub } = stubDebug(sandbox, Imports))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
@@ -70,17 +70,17 @@ describe('routes/api route POST /bookmarks/remove', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.end.firstCall.args).to.have.lengthOf(0)
   })
-  it('should call RemoveBookmark with knex instance', async () => {
+  it('should call removeBookmark with knex instance', async () => {
     requestStub.body.path = 'foo/a%20bar/baz.gif'
     await routeHandler(requestFake, responseFake)
     expect(removeBookmarkStub.firstCall.args[0]).to.equal(knexFake)
   })
-  it('should call RemoveBookmark with decoded path', async () => {
+  it('should call removeBookmark with decoded path', async () => {
     requestStub.body.path = 'foo/a%20bar/baz.gif'
     await routeHandler(requestFake, responseFake)
     expect(removeBookmarkStub.firstCall.args[1]).to.equal('/foo/a bar/baz.gif')
   })
-  it('should not call RemoveBookmark when isPathTraversal returns true', async () => {
+  it('should not call removeBookmark when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(removeBookmarkStub.callCount).to.equal(0)

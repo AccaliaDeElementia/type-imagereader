@@ -52,7 +52,7 @@ describe('routes/api route POST /navigate/latest', () => {
         get: sandbox.stub(),
       }),
     )
-    setLatestPictureStub = sandbox.stub(Imports, 'SetLatestPicture').resolves()
+    setLatestPictureStub = sandbox.stub(Imports, 'setLatestPicture').resolves()
     validateAndIncrementStub = sandbox.stub(ModCount, 'ValidateAndIncrement').returns(1)
     getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
     ;({ loggerStub } = stubDebug(sandbox, Imports))
@@ -99,7 +99,7 @@ describe('routes/api route POST /navigate/latest', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.send.firstCall.args).to.deep.equal(['-1'])
   })
-  it('should call SetLatestPicture when validate is bypassed', async () => {
+  it('should call setLatestPicture when validate is bypassed', async () => {
     validateAndIncrementStub.returns(null)
     requestStub.body.modCount = -1
     requestStub.body.path = 'foo/bar/a%20image.png'
@@ -116,7 +116,7 @@ describe('routes/api route POST /navigate/latest', () => {
     await routeHandler(requestFake, responseFake)
     expect(getModcountStub.callCount).to.equal(0)
   })
-  it('should call SetLatestPicture when validate passes', async () => {
+  it('should call setLatestPicture when validate passes', async () => {
     validateAndIncrementStub.returns(5050)
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
@@ -134,13 +134,13 @@ describe('routes/api route POST /navigate/latest', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.send.firstCall.args).to.deep.equal(['-1'])
   })
-  it('should not call SetLatestPicture when validate fails', async () => {
+  it('should not call setLatestPicture when validate fails', async () => {
     validateAndIncrementStub.returns(null)
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.callCount).to.equal(0)
   })
-  it('should not call SetLatestPicture when isPathTraversal returns true', async () => {
+  it('should not call setLatestPicture when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.callCount).to.equal(0)

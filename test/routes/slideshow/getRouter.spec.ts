@@ -33,10 +33,10 @@ describe('routes/slideshow getRouter', () => {
     sandbox.stub(Imports, 'Router').returns(cast<Router>(routerStub))
     knexFake = stubToKnex({})
     sandbox.stub(Imports, 'initialize').resolves(knexFake)
-    rootRouteStub = sandbox.stub(Internals, 'RootRoute').resolves()
-    handleSocketStub = sandbox.stub(Internals, 'HandleSocket')
+    rootRouteStub = sandbox.stub(Internals, 'rootRoute').resolves()
+    handleSocketStub = sandbox.stub(Internals, 'handleSocket')
     setIntervalStub = sandbox.stub(global, 'setInterval')
-    tickCountdownStub = sandbox.stub(Internals, 'TickCountdown').resolves()
+    tickCountdownStub = sandbox.stub(Internals, 'tickCountdown').resolves()
     applicationFake = cast<Application>({})
     serverFake = cast<Server>({})
     ioStub = {
@@ -72,13 +72,13 @@ describe('routes/slideshow getRouter', () => {
     ['respond with obj', '/launchId', () => expect(getArgs(responseStub.json)[0]).to.be.an.instanceOf(Object)],
     ['respond with keys', '/launchId', () => expect(getArgs(responseStub.json)[0]).to.have.all.keys('launchId')],
     ['send launchId', '/launchId', () => expect(getArgs(responseStub.json)[0]).to.deep.equal({ launchId: 3141592 })],
-    ['call RootRoute', '/', () => expect(rootRouteStub.callCount).to.equal(1)],
-    ['call RootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
-    ['call RootRoute with request', '/', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
-    ['call RootRoute with response', '/', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
-    ['call RootRoute with knex', '/*path', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
-    ['call RootRoute with request', '/*path', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
-    ['call RootRoute with response', '/*path', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
+    ['call rootRoute', '/', () => expect(rootRouteStub.callCount).to.equal(1)],
+    ['call rootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
+    ['call rootRoute with request', '/', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
+    ['call rootRoute with response', '/', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
+    ['call rootRoute with knex', '/*path', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
+    ['call rootRoute with request', '/*path', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
+    ['call rootRoute with response', '/*path', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
   ]
   routeTests.forEach(([title, path, validationFn]) => {
     it(`should ${title} for ${path}`, async () => {
@@ -131,19 +131,19 @@ describe('routes/slideshow getRouter', () => {
     const callback = setIntervalStub.firstCall.args[0] as unknown
     assert.isFunction(callback)
   })
-  it('should process TickCountdown in set interval function', async () => {
+  it('should process tickCountdown in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const callback = cast<() => Promise<void>>(setIntervalStub.firstCall.args[0])
     await callback()
     expect(tickCountdownStub.callCount).to.equal(1)
   })
-  it('should process TickCountdown with knex in set interval function', async () => {
+  it('should process tickCountdown with knex in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const callback = cast<() => Promise<void>>(setIntervalStub.firstCall.args[0])
     await callback()
     expect(tickCountdownStub.firstCall.args[0]).to.equal(knexFake)
   })
-  it('should process TickCountdown with websocket server in set interval function', async () => {
+  it('should process tickCountdown with websocket server in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const callback = cast<() => void>(setIntervalStub.firstCall.args[0])
     callback()

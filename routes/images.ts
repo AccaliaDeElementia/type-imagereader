@@ -129,7 +129,7 @@ export class ImageCache {
   }
 }
 
-export async function ReadImage(path: string): Promise<ImageData> {
+export async function readImage(path: string): Promise<ImageData> {
   if (Imports.isPathTraversal(path)) {
     Imports.logger('path traversal blocked: %s', path)
     return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
@@ -148,22 +148,22 @@ export async function ReadImage(path: string): Promise<ImageData> {
   }
 }
 
-export async function RescaleImage(image: ImageData, width: number, height: number, animated = true): Promise<void> {
+export async function rescaleImage(image: ImageData, width: number, height: number, animated = true): Promise<void> {
   await image.rescale(width, height, animated)
 }
 
-export async function ReadAndRescaleImage(
+export async function readAndRescaleImage(
   path: string,
   width: number,
   height: number,
   animated = true,
 ): Promise<ImageData> {
-  const image = await Internals.ReadImage(path)
-  await Internals.RescaleImage(image, width, height, animated)
+  const image = await Internals.readImage(path)
+  await Internals.rescaleImage(image, width, height, animated)
   return image
 }
 
-export function SendImage(image: ImageData, res: Response): void {
+export function sendImage(image: ImageData, res: Response): void {
   if (image.code !== null) {
     res.status(image.statusCode).json({
       error: {
@@ -197,8 +197,8 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   // Init router and path
   const router = Imports.Router()
 
-  CacheStorage.kioskCache = new ImageCache(ReadAndRescaleImage)
-  CacheStorage.scaledCache = new ImageCache(ReadAndRescaleImage)
+  CacheStorage.kioskCache = new ImageCache(readAndRescaleImage)
+  CacheStorage.scaledCache = new ImageCache(readAndRescaleImage)
 
   const sendError = (res: Response, code: string, statusCode: StatusCodes, message: string): void => {
     res.status(statusCode).json({
@@ -217,8 +217,8 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     handleErrors(async (req, res) => {
       const filename = `/${reqParamToString(req.params.path)}`
       Imports.logger('GET /images/full %s', filename)
-      const image = await Internals.ReadImage(filename)
-      Internals.SendImage(image, res)
+      const image = await Internals.readImage(filename)
+      Internals.sendImage(image, res)
     }),
   )
 
@@ -251,7 +251,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
       }
       Imports.logger('GET /images/scaled %dx%d %s', width, height, filename)
       const image = await CacheStorage.scaledCache.fetch(filename, width, height)
-      Internals.SendImage(image, res)
+      Internals.sendImage(image, res)
     }),
   )
 
@@ -260,9 +260,9 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     handleErrors(async (req, res) => {
       const filename = `/${reqParamToString(req.params.path)}`
       Imports.logger('GET /images/preview %s', filename)
-      const image = await Internals.ReadImage(filename)
-      await Internals.RescaleImage(image, PREVIEW_WIDTH, PREVIEW_HEIGHT, false)
-      Internals.SendImage(image, res)
+      const image = await Internals.readImage(filename)
+      await Internals.rescaleImage(image, PREVIEW_WIDTH, PREVIEW_HEIGHT, false)
+      Internals.sendImage(image, res)
     }),
   )
 
@@ -272,7 +272,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
       const filename = `/${reqParamToString(req.params.path)}`
       Imports.logger('GET /images/kiosk %s', filename)
       const image = await CacheStorage.kioskCache.fetch(filename, KIOSK_WIDTH, KIOSK_HEIGHT)
-      Internals.SendImage(image, res)
+      Internals.sendImage(image, res)
     }),
   )
 
@@ -280,4 +280,4 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   return router
 }
 
-export const Internals = { ReadImage, RescaleImage, SendImage }
+export const Internals = { readImage, rescaleImage, sendImage }

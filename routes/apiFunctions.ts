@@ -159,7 +159,7 @@ export interface SiblingFolderSearch {
   type: 'all' | 'unread'
 }
 
-export async function GetChildFolders(knex: Knex, path: string): Promise<FolderWithCounts[]> {
+export async function getChildFolders(knex: Knex, path: string): Promise<FolderWithCounts[]> {
   const data = await knex('folders')
     .select<DbChildFolder[]>('path', 'current', 'totalCount', 'seenCount', 'firstPicture')
     .where('folder', '=', path)
@@ -173,7 +173,7 @@ export async function GetChildFolders(knex: Knex, path: string): Promise<FolderW
   }))
 }
 
-export async function GetFolder(knex: Knex, path: string): Promise<FolderWithParent | null> {
+export async function getFolder(knex: Knex, path: string): Promise<FolderWithParent | null> {
   const folder = (
     await knex('folders')
       .select<DbFolder[]>('path', 'folder', 'sortKey', 'current', 'firstPicture')
@@ -192,7 +192,7 @@ export async function GetFolder(knex: Knex, path: string): Promise<FolderWithPar
   }
 }
 
-export async function GetDirectionFolder(
+export async function getDirectionFolder(
   knex: Knex,
   { path, sortKey, direction, type }: SiblingFolderSearch,
 ): Promise<Folder | null> {
@@ -224,15 +224,15 @@ export async function GetDirectionFolder(
   }
 }
 
-export async function GetPreviousFolder(knex: Knex, path: string, sortKey: string): Promise<Folder | null> {
-  return await Internals.GetDirectionFolder(knex, { path, sortKey, direction: 'desc', type: 'all' })
+export async function getPreviousFolder(knex: Knex, path: string, sortKey: string): Promise<Folder | null> {
+  return await Internals.getDirectionFolder(knex, { path, sortKey, direction: 'desc', type: 'all' })
 }
 
-export async function GetNextFolder(knex: Knex, path: string, sortKey: string): Promise<Folder | null> {
-  return await Internals.GetDirectionFolder(knex, { path, sortKey, direction: 'asc', type: 'all' })
+export async function getNextFolder(knex: Knex, path: string, sortKey: string): Promise<Folder | null> {
+  return await Internals.getDirectionFolder(knex, { path, sortKey, direction: 'asc', type: 'all' })
 }
 
-export async function GetPictures(knex: Knex, path: string): Promise<Picture[]> {
+export async function getPictures(knex: Knex, path: string): Promise<Picture[]> {
   const pics = await knex('pictures')
     .select<DbPicture[]>('path', 'seen')
     .where('folder', '=', path)
@@ -245,7 +245,7 @@ export async function GetPictures(knex: Knex, path: string): Promise<Picture[]> 
   }))
 }
 
-export async function GetBookmarks(knex: Knex): Promise<BookmarkFolder[]> {
+export async function getBookmarks(knex: Knex): Promise<BookmarkFolder[]> {
   const bookmarks = await knex('bookmarks')
     .select<DbBookmark[]>('pictures.path', 'pictures.folder')
     .join('pictures', 'pictures.path', 'bookmarks.path')
@@ -273,34 +273,34 @@ export async function GetBookmarks(knex: Knex): Promise<BookmarkFolder[]> {
     { results: [], pendingFolder: null },
   )
   const finalResults = pendingFolder === null ? results : [...results, pendingFolder]
-  Imports.logger('GetBookmarks: %d bookmarks in %d folders', bookmarks.length, finalResults.length)
+  Imports.logger('getBookmarks: %d bookmarks in %d folders', bookmarks.length, finalResults.length)
   return finalResults
 }
 
-export async function GetListing(knex: Knex, path: string): Promise<Listing | null> {
+export async function getListing(knex: Knex, path: string): Promise<Listing | null> {
   const start = Date.now()
-  const folder = await Internals.GetFolder(knex, path)
+  const folder = await Internals.getFolder(knex, path)
   if (folder === null) {
     return null
   }
-  const next = await Internals.GetNextFolder(knex, path, folder.sortKey)
-  const nextUnread = await Internals.GetDirectionFolder(knex, {
+  const next = await Internals.getNextFolder(knex, path, folder.sortKey)
+  const nextUnread = await Internals.getDirectionFolder(knex, {
     path,
     sortKey: folder.sortKey,
     direction: 'asc',
     type: 'unread',
   })
-  const prev = await Internals.GetPreviousFolder(knex, path, folder.sortKey)
-  const prevUnread = await Internals.GetDirectionFolder(knex, {
+  const prev = await Internals.getPreviousFolder(knex, path, folder.sortKey)
+  const prevUnread = await Internals.getDirectionFolder(knex, {
     path,
     sortKey: folder.sortKey,
     direction: 'desc',
     type: 'unread',
   })
-  const children = await Internals.GetChildFolders(knex, path)
-  const pictures = await Internals.GetPictures(knex, path)
-  const bookmarks = await Internals.GetBookmarks(knex)
-  Imports.logger('GetListing %s took %dms', path, Date.now() - start)
+  const children = await Internals.getChildFolders(knex, path)
+  const pictures = await Internals.getPictures(knex, path)
+  const bookmarks = await Internals.getBookmarks(knex)
+  Imports.logger('getListing %s took %dms', path, Date.now() - start)
   return {
     name: folder.name,
     path: folder.path,
@@ -317,13 +317,13 @@ export async function GetListing(knex: Knex, path: string): Promise<Listing | nu
   }
 }
 
-export async function SetLatestPicture(knex: Knex, path: string): Promise<string | null> {
+export async function setLatestPicture(knex: Knex, path: string): Promise<string | null> {
   const folder = normalize(dirname(path) + sep)
   const picture = (
     await knex('pictures').select<DbPicture[]>('path').where({ path }).limit(LIMIT_SINGLE_RECORD)
   ).shift()
   if (picture === undefined) {
-    Imports.logger('SetLatestPicture: picture not found: %s', path)
+    Imports.logger('setLatestPicture: picture not found: %s', path)
     return null
   }
   // Atomic conditional flip: the seen=false guard means only one concurrent UPDATE matches a row;
@@ -337,14 +337,14 @@ export async function SetLatestPicture(knex: Knex, path: string): Promise<string
   return UriSafePath.encode(folder)
 }
 
-export async function MarkFolderSeen(knex: Knex, path: string, markAsSeen: boolean): Promise<void> {
+export async function markFolderSeen(knex: Knex, path: string, markAsSeen: boolean): Promise<void> {
   const currentSeenState = !markAsSeen // only rows not already in target state need updating
   const updates = await knex('pictures')
     .update({ seen: markAsSeen })
     .where({ seen: currentSeenState })
     .andWhere('folder', 'like', `${escapeLikeWildcards(path)}%`)
   if (updates <= ZERO_COUNT) {
-    Imports.logger('MarkFolderSeen: no rows updated for %s (markAsSeen=%s)', path, markAsSeen)
+    Imports.logger('markFolderSeen: no rows updated for %s (markAsSeen=%s)', path, markAsSeen)
   }
   if (updates > ZERO_COUNT) {
     const increment = markAsSeen ? updates : -updates
@@ -357,20 +357,20 @@ export async function MarkFolderSeen(knex: Knex, path: string, markAsSeen: boole
   }
 }
 
-export async function AddBookmark(knex: Knex, path: string): Promise<void> {
+export async function addBookmark(knex: Knex, path: string): Promise<void> {
   await knex('bookmarks').insert({ path }).onConflict('path').ignore()
 }
 
-export async function RemoveBookmark(knex: Knex, path: string): Promise<void> {
+export async function removeBookmark(knex: Knex, path: string): Promise<void> {
   await knex('bookmarks').where({ path }).delete()
 }
 
 export const Internals = {
-  GetChildFolders,
-  GetFolder,
-  GetDirectionFolder,
-  GetPreviousFolder,
-  GetNextFolder,
-  GetPictures,
-  GetBookmarks,
+  getChildFolders,
+  getFolder,
+  getDirectionFolder,
+  getPreviousFolder,
+  getNextFolder,
+  getPictures,
+  getBookmarks,
 }

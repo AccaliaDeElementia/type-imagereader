@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { Config, GetRoomAndIncrementImage, Internals, type SlideshowRoom } from '#routes/slideshow.js'
+import { Config, getRoomAndIncrementImage, Internals, type SlideshowRoom } from '#routes/slideshow.js'
 import { STEP } from '#utils/helpers.js'
 
 const sandbox = Sinon.createSandbox()
@@ -15,7 +15,7 @@ const pagedImages = (count: number, offset = 0): string[] =>
 
 const isNumberMutator = (o: unknown): o is (_: number) => number => typeof o === 'function'
 
-describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() index navigation', () => {
+describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage() index navigation', () => {
   let stockImages = pagedImages(Config.memorySize)
   let knexFake = stubToKnex({ knex: Math.random() })
   let getImagesStub = sandbox.stub()
@@ -29,9 +29,9 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     Config.rooms = {}
     Config.countdownDuration = 60
     Config.memorySize = 100
-    getImagesStub = sandbox.stub(Internals, 'GetImages').resolves(stockImages)
-    markImageReadStub = sandbox.stub(Internals, 'MarkImageRead').resolves()
-    getCountsStub = sandbox.stub(Internals, 'GetCounts').resolves(pages)
+    getImagesStub = sandbox.stub(Internals, 'getImages').resolves(stockImages)
+    markImageReadStub = sandbox.stub(Internals, 'markImageRead').resolves()
+    getCountsStub = sandbox.stub(Internals, 'getCounts').resolves(pages)
   })
   afterEach(() => {
     sandbox.restore()
@@ -45,16 +45,16 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
       second = pagedImages(100)
       getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves(second)
       pages.page = 10
-      room = await GetRoomAndIncrementImage(knexFake, '/path/')
+      room = await getRoomAndIncrementImage(knexFake, '/path/')
       getCountsStub.resetHistory()
-      await GetRoomAndIncrementImage(knexFake, '/path/', -1)
+      await getRoomAndIncrementImage(knexFake, '/path/', -1)
     })
-    it('should call GetCounts once', () => expect(getCountsStub.callCount).to.equal(1))
-    it('should call GetCounts with 4 arguments', () => expect(getCountsStub.firstCall.args).to.have.lengthOf(4))
-    it('should pass knex to GetCounts', () => expect(getCountsStub.firstCall.args[0]).to.equal(knexFake))
-    it('should pass path to GetCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
-    it('should pass current page to GetCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(10))
-    it('should pass decrement mutator to GetCounts', () =>
+    it('should call getCounts once', () => expect(getCountsStub.callCount).to.equal(1))
+    it('should call getCounts with 4 arguments', () => expect(getCountsStub.firstCall.args).to.have.lengthOf(4))
+    it('should pass knex to getCounts', () => expect(getCountsStub.firstCall.args[0]).to.equal(knexFake))
+    it('should pass path to getCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
+    it('should pass current page to getCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(10))
+    it('should pass decrement mutator to getCounts', () =>
       expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(3))
     it('should reload images from the new page', () => expect(getImagesStub.callCount).to.equal(2))
     it('should set index to last image of new page', () => expect(room.index).to.equal(99))
@@ -75,17 +75,17 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
       })
       Config.rooms['/path/'] = room
       getImagesStub.onFirstCall().resolves(second)
-      await GetRoomAndIncrementImage(knexFake, '/path/')
-      await GetRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
+      await getRoomAndIncrementImage(knexFake, '/path/')
+      await getRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
       getCountsStub.resetHistory()
-      await GetRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
+      await getRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
     })
-    it('should call GetCounts once', () => expect(getCountsStub.callCount).to.equal(1))
-    it('should call GetCounts with 4 arguments', () => expect(getCountsStub.firstCall.args).to.have.lengthOf(4))
-    it('should pass knex to GetCounts', () => expect(getCountsStub.firstCall.args[0]).to.equal(knexFake))
-    it('should pass path to GetCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
-    it('should pass current page to GetCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(11))
-    it('should pass decrement mutator to GetCounts', () =>
+    it('should call getCounts once', () => expect(getCountsStub.callCount).to.equal(1))
+    it('should call getCounts with 4 arguments', () => expect(getCountsStub.firstCall.args).to.have.lengthOf(4))
+    it('should pass knex to getCounts', () => expect(getCountsStub.firstCall.args[0]).to.equal(knexFake))
+    it('should pass path to getCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
+    it('should pass current page to getCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(11))
+    it('should pass decrement mutator to getCounts', () =>
       expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(3))
     it('should reload images from the new page', () => expect(getImagesStub.callCount).to.equal(1))
     it('should set index to last image of new page', () => expect(room.index).to.equal(29))
@@ -98,8 +98,8 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     beforeEach(async () => {
       second = pagedImages(100)
       getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves(second)
-      room = await GetRoomAndIncrementImage(knexFake, '/path/')
-      await GetRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
+      room = await getRoomAndIncrementImage(knexFake, '/path/')
+      await getRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
     })
     it('should set index to last image of new page', () => expect(room.index).to.equal(99))
     it('should reload images from new page', () => expect(getImagesStub.callCount).to.equal(2))
@@ -112,18 +112,18 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     beforeEach(async () => {
       second = pagedImages(100)
       getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves(second)
-      room = await GetRoomAndIncrementImage(knexFake, '/path/')
+      room = await getRoomAndIncrementImage(knexFake, '/path/')
       room.index = room.images.length + STEP.BACK
       room.pages.page = 13
       getCountsStub.resetHistory()
-      await GetRoomAndIncrementImage(knexFake, '/path/', STEP.FORWARD)
+      await getRoomAndIncrementImage(knexFake, '/path/', STEP.FORWARD)
     })
-    it('should call GetCounts once', () => expect(getCountsStub.callCount).to.equal(1))
-    it('should call GetCounts with 4 arguments', () => expect(getCountsStub.firstCall.args).to.have.lengthOf(4))
-    it('should pass knex to GetCounts', () => expect(getCountsStub.firstCall.args[0]).to.equal(knexFake))
-    it('should pass path to GetCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
-    it('should pass current page to GetCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(13))
-    it('should pass increment mutator to GetCounts', () =>
+    it('should call getCounts once', () => expect(getCountsStub.callCount).to.equal(1))
+    it('should call getCounts with 4 arguments', () => expect(getCountsStub.firstCall.args).to.have.lengthOf(4))
+    it('should pass knex to getCounts', () => expect(getCountsStub.firstCall.args[0]).to.equal(knexFake))
+    it('should pass path to getCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
+    it('should pass current page to getCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(13))
+    it('should pass increment mutator to getCounts', () =>
       expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(5))
     it('should reload images from the new page', () => expect(getImagesStub.callCount).to.equal(2))
     it('should reset index to start of new page', () => expect(room.index).to.equal(0))
@@ -142,10 +142,10 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
         pages: { unread: 0, all: 0, pages: 0, page: 0 },
       })
       Config.rooms['/path/'] = room
-      await GetRoomAndIncrementImage(knexFake, '/path/', 1)
+      await getRoomAndIncrementImage(knexFake, '/path/', 1)
     })
     it('should not call advancePage when images is already empty', () => expect(getImagesStub.callCount).to.equal(0))
-    it('should not call GetCounts when images is already empty', () => expect(getCountsStub.callCount).to.equal(0))
+    it('should not call getCounts when images is already empty', () => expect(getCountsStub.callCount).to.equal(0))
     it('should keep index at 0', () => expect(room.index).to.equal(0))
     it('should keep images as empty array', () => expect(room.images).to.have.lengthOf(0))
     it('should set uriSafeImage to empty string', () => expect(room.uriSafeImage).to.equal(''))
@@ -162,10 +162,10 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
         pages: { unread: 0, all: 0, pages: 0, page: 0 },
       })
       Config.rooms['/path/'] = room
-      await GetRoomAndIncrementImage(knexFake, '/path/', -1)
+      await getRoomAndIncrementImage(knexFake, '/path/', -1)
     })
     it('should not call advancePage when images is already empty', () => expect(getImagesStub.callCount).to.equal(0))
-    it('should not call GetCounts when images is already empty', () => expect(getCountsStub.callCount).to.equal(0))
+    it('should not call getCounts when images is already empty', () => expect(getCountsStub.callCount).to.equal(0))
     it('should keep index at 0', () => expect(room.index).to.equal(0))
     it('should keep images as empty array', () => expect(room.images).to.have.lengthOf(0))
     it('should set uriSafeImage to empty string', () => expect(room.uriSafeImage).to.equal(''))
@@ -174,44 +174,44 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     let room = cast<SlideshowRoom>({})
     beforeEach(async () => {
       getImagesStub.resolves(pagedImages(1))
-      room = await GetRoomAndIncrementImage(knexFake, '/path/')
+      room = await getRoomAndIncrementImage(knexFake, '/path/')
       getImagesStub.resolves([])
       getImagesStub.resetHistory()
       getCountsStub.resetHistory()
       markImageReadStub.resetHistory()
-      await GetRoomAndIncrementImage(knexFake, '/path/', 1)
+      await getRoomAndIncrementImage(knexFake, '/path/', 1)
     })
     it('should set index to 0', () => expect(room.index).to.equal(0))
     it('should set uriSafeImage to empty string', () => expect(room.uriSafeImage).to.equal(''))
-    it('should not call MarkImageRead for empty page', () => expect(markImageReadStub.callCount).to.equal(0))
+    it('should not call markImageRead for empty page', () => expect(markImageReadStub.callCount).to.equal(0))
   })
   describe('when decrementing to a page with no images', () => {
     let room = cast<SlideshowRoom>({})
     beforeEach(async () => {
       getImagesStub.resolves(pagedImages(200, 200))
-      room = await GetRoomAndIncrementImage(knexFake, '/path/')
+      room = await getRoomAndIncrementImage(knexFake, '/path/')
       getImagesStub.resolves([])
       getImagesStub.resetHistory()
       getCountsStub.resetHistory()
       markImageReadStub.resetHistory()
-      await GetRoomAndIncrementImage(knexFake, '/path/', -1)
+      await getRoomAndIncrementImage(knexFake, '/path/', -1)
     })
     it('should set index to 0', () => expect(room.index).to.equal(0))
     it('should set uriSafeImage to empty string', () => expect(room.uriSafeImage).to.equal(''))
-    it('should not call MarkImageRead for empty page', () => expect(markImageReadStub.callCount).to.equal(0))
+    it('should not call markImageRead for empty page', () => expect(markImageReadStub.callCount).to.equal(0))
   })
   describe('when ticking a room after decrement landed on an empty page', () => {
     let room = cast<SlideshowRoom>({})
     beforeEach(async () => {
       getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves([])
-      room = await GetRoomAndIncrementImage(knexFake, '/path/')
-      await GetRoomAndIncrementImage(knexFake, '/path/', -1)
+      room = await getRoomAndIncrementImage(knexFake, '/path/')
+      await getRoomAndIncrementImage(knexFake, '/path/', -1)
       getImagesStub.resetHistory()
       getCountsStub.resetHistory()
-      await GetRoomAndIncrementImage(knexFake, '/path/', 1)
+      await getRoomAndIncrementImage(knexFake, '/path/', 1)
     })
     it('should not call advancePage again on subsequent tick', () => expect(getImagesStub.callCount).to.equal(0))
-    it('should not call GetCounts again on subsequent tick', () => expect(getCountsStub.callCount).to.equal(0))
+    it('should not call getCounts again on subsequent tick', () => expect(getCountsStub.callCount).to.equal(0))
     it('should keep index at 0', () => expect(room.index).to.equal(0))
   })
   describe('countdown reset behaviour', () => {
@@ -229,19 +229,19 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
       Config.countdownDuration = 100
     })
     it('should not reset countdown when no increment specified', async () => {
-      await GetRoomAndIncrementImage(knexFake, '/path/')
+      await getRoomAndIncrementImage(knexFake, '/path/')
       expect(room.countdown).to.equal(50)
     })
     it('should not reset countdown when zero increment specified', async () => {
-      await GetRoomAndIncrementImage(knexFake, '/path/', 0)
+      await getRoomAndIncrementImage(knexFake, '/path/', 0)
       expect(room.countdown).to.equal(50)
     })
     it('should reset countdown when negative increment specified', async () => {
-      await GetRoomAndIncrementImage(knexFake, '/path/', -1)
+      await getRoomAndIncrementImage(knexFake, '/path/', -1)
       expect(room.countdown).to.equal(100)
     })
     it('should reset countdown when positive increment specified', async () => {
-      await GetRoomAndIncrementImage(knexFake, '/path/', 1)
+      await getRoomAndIncrementImage(knexFake, '/path/', 1)
       expect(room.countdown).to.equal(100)
     })
   })

@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { HandleSocketState, HandleSocket, joinSlideshow, Internals, Imports } from '#routes/slideshow.js'
+import { HandleSocketState, handleSocket, joinSlideshow, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -23,12 +23,12 @@ describe('routes/slideshow socket join-slideshow()', () => {
     serverFake = cast<WebSocketServer>({})
     socketStub = { on: sandbox.stub(), join: sandbox.stub().resolves(), emit: sandbox.stub() }
     socketFake = cast<Socket>(socketStub)
-    socketState = HandleSocket(knexFake, serverFake, socketFake)
+    socketState = handleSocket(knexFake, serverFake, socketFake)
     socketState.roomName = 'NO_ROOM' // assign sentical value to test against later
     roomData = {
       uriSafeImage: '/foo/quux.png',
     }
-    getRoomStub = sandbox.stub(Internals, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Internals, 'getRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
   })
   afterEach(() => {

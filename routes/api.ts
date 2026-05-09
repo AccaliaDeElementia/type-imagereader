@@ -10,14 +10,14 @@ import { normalize } from 'node:path'
 import { initialize as _initialize } from '#utils/persistance.js'
 
 import {
-  AddBookmark as _AddBookmark,
-  GetBookmarks as _GetBookmarks,
-  GetListing as _GetListing,
+  addBookmark as _addBookmark,
+  getBookmarks as _getBookmarks,
+  getListing as _getListing,
   INVALID_MOD_COUNT,
-  MarkFolderSeen as _MarkFolderSeen,
+  markFolderSeen as _markFolderSeen,
   ModCount,
-  RemoveBookmark as _RemoveBookmark,
-  SetLatestPicture as _SetLatestPicture,
+  removeBookmark as _removeBookmark,
+  setLatestPicture as _setLatestPicture,
   UriSafePath,
 } from './apiFunctions.js'
 
@@ -32,12 +32,12 @@ export const Imports = {
   handleErrors: _handleErrors,
   isPathTraversal: _isPathTraversal,
   initialize: _initialize,
-  GetListing: _GetListing,
-  SetLatestPicture: _SetLatestPicture,
-  MarkFolderSeen: _MarkFolderSeen,
-  GetBookmarks: _GetBookmarks,
-  AddBookmark: _AddBookmark,
-  RemoveBookmark: _RemoveBookmark,
+  getListing: _getListing,
+  setLatestPicture: _setLatestPicture,
+  markFolderSeen: _markFolderSeen,
+  getBookmarks: _getBookmarks,
+  addBookmark: _addBookmark,
+  removeBookmark: _removeBookmark,
 }
 
 interface ReqWithBodyData {
@@ -57,7 +57,7 @@ export function isReqWithBodyData(obj: unknown): obj is ReqWithBodyData {
   return true
 }
 
-export function ReadBody(req: unknown): BodyData {
+export function readBody(req: unknown): BodyData {
   if (!isReqWithBodyData(req)) throw new Error('Invalid JSON Object provided as input')
   return req.body
 }
@@ -110,7 +110,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     if (path === null) {
       return
     }
-    const folder = await Imports.GetListing(knex, normalize(`${path}/`))
+    const folder = await Imports.getListing(knex, normalize(`${path}/`))
     if (folder === null) {
       logger('listing not found: %s', path)
       res.status(StatusCodes.NOT_FOUND).json({
@@ -131,7 +131,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   router.post(
     '/navigate/latest',
     handleErrors(async (req, res) => {
-      const body = ReadBody(req)
+      const body = readBody(req)
       const incomingModCount = body.modCount ?? Number.NaN
       let response = INVALID_MOD_COUNT
       const path = parsePath(UriSafePath.decode(body.path), res)
@@ -140,7 +140,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       }
       logger('POST /navigate/latest %s', path)
       if (incomingModCount === INVALID_MOD_COUNT) {
-        await Imports.SetLatestPicture(knex, path)
+        await Imports.setLatestPicture(knex, path)
       } else {
         const newCount = ModCount.ValidateAndIncrement(incomingModCount)
         if (newCount === null) {
@@ -149,7 +149,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
           return
         }
         response = newCount
-        await Imports.SetLatestPicture(knex, path)
+        await Imports.setLatestPicture(knex, path)
       }
       res.status(StatusCodes.OK).send(`${response}`)
     }),
@@ -158,11 +158,11 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   router.post(
     '/mark/read',
     handleErrors(async (req, res) => {
-      const body = ReadBody(req)
+      const body = readBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
         logger('POST /mark/read %s', path)
-        await Imports.MarkFolderSeen(knex, normalize(`${path}/`), true)
+        await Imports.markFolderSeen(knex, normalize(`${path}/`), true)
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -171,11 +171,11 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   router.post(
     '/mark/unread',
     handleErrors(async (req, res) => {
-      const body = ReadBody(req)
+      const body = readBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
         logger('POST /mark/unread %s', path)
-        await Imports.MarkFolderSeen(knex, normalize(`${path}/`), false)
+        await Imports.markFolderSeen(knex, normalize(`${path}/`), false)
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -183,7 +183,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
 
   const getBookmarks = handleErrors(async (_, res) => {
     logger('GET /bookmarks')
-    res.json(await Imports.GetBookmarks(knex))
+    res.json(await Imports.getBookmarks(knex))
   })
 
   router.get('/bookmarks/*path', getBookmarks)
@@ -193,11 +193,11 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   router.post(
     '/bookmarks/add',
     handleErrors(async (req, res) => {
-      const body = ReadBody(req)
+      const body = readBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
         logger('POST /bookmarks/add %s', path)
-        await Imports.AddBookmark(knex, path)
+        await Imports.addBookmark(knex, path)
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -206,11 +206,11 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   router.post(
     '/bookmarks/remove',
     handleErrors(async (req, res) => {
-      const body = ReadBody(req)
+      const body = readBody(req)
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
         logger('POST /bookmarks/remove %s', path)
-        await Imports.RemoveBookmark(knex, path)
+        await Imports.removeBookmark(knex, path)
         res.status(StatusCodes.OK).end()
       }
     }),

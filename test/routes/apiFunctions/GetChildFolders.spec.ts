@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { GetChildFolders } from '#routes/apiFunctions.js'
+import { getChildFolders } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 
-describe('routes/apiFunctions GetChildFolders', () => {
+describe('routes/apiFunctions getChildFolders', () => {
   let {
     instance: knexInstance,
     stub: knexStub,
@@ -18,17 +18,17 @@ describe('routes/apiFunctions GetChildFolders', () => {
     } = createKnexChainFake(['select', 'where'] as const, ['orderBy'] as const))
   })
   it('should call knex once when selecting data from folders', async () => {
-    await GetChildFolders(knexFake, '/foo/bar/')
+    await getChildFolders(knexFake, '/foo/bar/')
     expect(knexStub.callCount).to.equal(1)
   })
   it('should select data from folders', async () => {
-    await GetChildFolders(knexFake, '/foo/bar/')
+    await getChildFolders(knexFake, '/foo/bar/')
     expect(knexStub.firstCall.args).to.deep.equal(['folders'])
   })
   const columns = ['path', 'current', 'firstPicture', 'totalCount', 'seenCount'] as const
   columns.forEach((col) => {
     it(`should include ${col} column in select`, async () => {
-      await GetChildFolders(knexFake, '/foo/bar/')
+      await getChildFolders(knexFake, '/foo/bar/')
       expect(knexInstance.select.firstCall.args).to.include(col)
     })
   })
@@ -41,7 +41,7 @@ describe('routes/apiFunctions GetChildFolders', () => {
   namePathTests.forEach(([title, path, prop, expected]) => {
     it(`should select ${title} from folders`, async () => {
       knexInstance.orderBy.resolves([{ path }])
-      const result = await GetChildFolders(knexFake, '/foo/bar/')
+      const result = await getChildFolders(knexFake, '/foo/bar/')
       expect(result[0]?.[prop]).to.equal(expected)
     })
   })
@@ -61,34 +61,34 @@ describe('routes/apiFunctions GetChildFolders', () => {
   coverTests.forEach(([title, current, firstPicture, expected]) => {
     it(`should select ${title} from folders`, async () => {
       knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', current, firstPicture }])
-      const result = await GetChildFolders(knexFake, '/foo/bar/')
+      const result = await getChildFolders(knexFake, '/foo/bar/')
       expect(result[0]?.cover).to.equal(expected)
     })
   })
   it('should select totalCount from folders', async () => {
     knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', totalCount: 42 }])
-    const result = await GetChildFolders(knexFake, '/foo/bar/')
+    const result = await getChildFolders(knexFake, '/foo/bar/')
     expect(result[0]?.totalCount).to.equal(42)
   })
   it('should select seenCount from folders', async () => {
     knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', seenCount: 69 }])
-    const result = await GetChildFolders(knexFake, '/foo/bar/')
+    const result = await getChildFolders(knexFake, '/foo/bar/')
     expect(result[0]?.seenCount).to.equal(69)
   })
   it('should call where once when filtering query by folder', async () => {
-    await GetChildFolders(knexFake, '/foo/bar/')
+    await getChildFolders(knexFake, '/foo/bar/')
     expect(knexInstance.where.callCount).to.equal(1)
   })
   it('should filter query by folder', async () => {
-    await GetChildFolders(knexFake, '/foo/bar/')
+    await getChildFolders(knexFake, '/foo/bar/')
     expect(knexInstance.where.firstCall.args).to.deep.equal(['folder', '=', '/foo/bar/'])
   })
   it('should call orderBy once', async () => {
-    await GetChildFolders(knexFake, '/foo/bar/')
+    await getChildFolders(knexFake, '/foo/bar/')
     expect(knexInstance.orderBy.callCount).to.equal(1)
   })
   it('should order by sortKey', async () => {
-    await GetChildFolders(knexFake, '/foo/bar/')
+    await getChildFolders(knexFake, '/foo/bar/')
     expect(knexInstance.orderBy.firstCall.args[0]).to.equal('sortKey')
   })
 })

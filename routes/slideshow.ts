@@ -10,7 +10,7 @@ import debug from 'debug'
 import { isPathTraversal as _isPathTraversal, getParentFolders as _getParentFolders } from '#utils/Path.js'
 
 import { initialize as _initialize } from '#utils/persistance.js'
-import { UriSafePath, SetLatestPicture as _SetLatestPicture } from './apiFunctions.js'
+import { UriSafePath, setLatestPicture as _setLatestPicture } from './apiFunctions.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 
 import type { Knex } from 'knex'
@@ -64,12 +64,12 @@ export const Config = {
 
 export const Imports = {
   logger,
-  setLatest: async (knex: Knex, path: string): Promise<string | null> => await Imports.SetLatestPicture(knex, path),
+  setLatest: async (knex: Knex, path: string): Promise<string | null> => await Imports.setLatestPicture(knex, path),
   getParentFolders: _getParentFolders,
   isPathTraversal: _isPathTraversal,
   Router,
   initialize: _initialize,
-  SetLatestPicture: _SetLatestPicture,
+  setLatestPicture: _setLatestPicture,
 }
 
 export class HandleSocketState {
@@ -82,7 +82,7 @@ export class HandleSocketState {
   }
 }
 
-export async function GetImageCount(knex: Knex, path: string, filter: 'all' | 'unread' = 'all'): Promise<number> {
+export async function getImageCount(knex: Knex, path: string, filter: 'all' | 'unread' = 'all'): Promise<number> {
   let query = knex('pictures')
     .count({ count: 'path' })
     .where('path', 'like', `${escapeLikeWildcards(path)}%`)
@@ -95,20 +95,20 @@ export async function GetImageCount(knex: Knex, path: string, filter: 'all' | 'u
       return Number.parseInt(`${count}`, 10)
     }
   } catch (err) {
-    Imports.logger('GetImageCount query error', err)
+    Imports.logger('getImageCount query error', err)
   }
   return ZERO_COUNT
 }
 
-export async function GetCounts(
+export async function getCounts(
   knex: Knex,
   path: string,
   currentPage?: number,
   mutator = (page: number): number => page,
 ): Promise<SlideshowPages> {
   const [unreadcount, allcount] = await Promise.all([
-    Internals.GetImageCount(knex, path, 'unread'),
-    Internals.GetImageCount(knex, path),
+    Internals.getImageCount(knex, path, 'unread'),
+    Internals.getImageCount(knex, path),
   ])
   let pages = Math.ceil(allcount / Config.memorySize)
   if (pages === ZERO_COUNT) {
@@ -137,7 +137,7 @@ export async function GetCounts(
   }
 }
 
-export async function GetImages(knex: Knex, path: string, page: number, count: number): Promise<string[]> {
+export async function getImages(knex: Knex, path: string, page: number, count: number): Promise<string[]> {
   return (
     await knex('pictures')
       .select('path')
@@ -149,7 +149,7 @@ export async function GetImages(knex: Knex, path: string, page: number, count: n
   ).map((img: ImageWithPath) => img.path)
 }
 
-export async function MarkImageRead(knex: Knex, image: string): Promise<void> {
+export async function markImageRead(knex: Knex, image: string): Promise<void> {
   // Atomic conditional flip: the seen=false guard means only one concurrent UPDATE matches a row;
   // the others see a zero rowcount and skip the seenCount increment. PostgreSQL serializes via row
   // locks; SQLite via its whole-database write lock — same end-state either way.
@@ -158,7 +158,7 @@ export async function MarkImageRead(knex: Knex, image: string): Promise<void> {
   await knex('folders').increment('seenCount', STEP.FORWARD).whereIn('path', Imports.getParentFolders(image))
 }
 
-export async function GetRoomAndIncrementImage(
+export async function getRoomAndIncrementImage(
   knex: Knex,
   name: string,
   increment: STEP = STEP.NONE,
@@ -169,22 +169,22 @@ export async function GetRoomAndIncrementImage(
     direction: STEP,
   ): Promise<{ pages: SlideshowPages; images: string[] }> => {
     const hadUnread = currentUnread > ZERO_COUNT
-    let pages = await Internals.GetCounts(knex, name, currentPage, (x) => x + direction)
+    let pages = await Internals.getCounts(knex, name, currentPage, (x) => x + direction)
     if (hadUnread && pages.unread === ZERO_COUNT) {
-      pages = await Internals.GetCounts(knex, name)
+      pages = await Internals.getCounts(knex, name)
     }
-    const images = await Internals.GetImages(knex, name, pages.page, Config.memorySize)
+    const images = await Internals.getImages(knex, name, pages.page, Config.memorySize)
     return { pages, images }
   }
   let room = Config.rooms[name]
   if (room === undefined) {
-    const pages = await Internals.GetCounts(knex, name)
+    const pages = await Internals.getCounts(knex, name)
     Imports.logger('slideshow room created: %s (pages=%d unread=%d)', name, pages.pages, pages.unread)
     const newRoom: SlideshowRoom = {
       countdown: Config.countdownDuration,
       path: name,
       pages,
-      images: await Internals.GetImages(knex, name, pages.page, Config.memorySize),
+      images: await Internals.getImages(knex, name, pages.page, Config.memorySize),
       index: ZERO_COUNT,
       uriSafeImage: undefined,
     }
@@ -211,7 +211,7 @@ export async function GetRoomAndIncrementImage(
   }
   const image = room.images[room.index]
   if (image !== undefined) {
-    await Internals.MarkImageRead(knex, image)
+    await Internals.markImageRead(knex, image)
   }
   room.uriSafeImage = UriSafePath.encode(room.images[room.index] ?? '')
   if (increment !== STEP.NONE) {
@@ -220,7 +220,7 @@ export async function GetRoomAndIncrementImage(
   return room
 }
 
-export async function TickCountdown(knex: Knex, io: WebSocketServer): Promise<void> {
+export async function tickCountdown(knex: Knex, io: WebSocketServer): Promise<void> {
   try {
     const roomsToUpdate: SlideshowRoom[] = []
     const newRooms: Record<string, SlideshowRoom> = {}
@@ -243,14 +243,14 @@ export async function TickCountdown(knex: Knex, io: WebSocketServer): Promise<vo
     Config.rooms = newRooms
     await Promise.all(
       roomsToUpdate.map(async (room) => {
-        await Internals.GetRoomAndIncrementImage(knex, room.path, STEP.FORWARD)
+        await Internals.getRoomAndIncrementImage(knex, room.path, STEP.FORWARD)
         if (hasValues(room.images)) {
           io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
         }
       }),
     )
   } catch (err) {
-    Imports.logger('TickCountdown error', err)
+    Imports.logger('tickCountdown error', err)
   }
 }
 
@@ -268,21 +268,21 @@ export async function joinSlideshow(
   Imports.logger('joinSlideshow %s (socket=%s)', roomName, socket.id)
   state.setName(roomName)
   await socket.join(roomName)
-  const room = await Internals.GetRoomAndIncrementImage(knex, roomName)
+  const room = await Internals.getRoomAndIncrementImage(knex, roomName)
   socket.emit(SocketEvents.ImageChanged, room.uriSafeImage)
 }
 
 export async function prevImage(state: HandleSocketState, io: WebSocketServer, knex: Knex): Promise<void> {
   if (state.roomName === null) return
   Imports.logger('prevImage in %s', state.roomName)
-  const room = await Internals.GetRoomAndIncrementImage(knex, state.roomName, STEP.BACK)
+  const room = await Internals.getRoomAndIncrementImage(knex, state.roomName, STEP.BACK)
   io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
 }
 
 export async function nextImage(state: HandleSocketState, io: WebSocketServer, knex: Knex): Promise<void> {
   if (state.roomName === null) return
   Imports.logger('nextImage in %s', state.roomName)
-  const room = await Internals.GetRoomAndIncrementImage(knex, state.roomName, STEP.FORWARD)
+  const room = await Internals.getRoomAndIncrementImage(knex, state.roomName, STEP.FORWARD)
   io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
 }
 
@@ -292,7 +292,7 @@ export async function gotoImage(callback: SocketCallback, state: HandleSocketSta
     return
   }
   Imports.logger('gotoImage in %s', state.roomName)
-  const room = await Internals.GetRoomAndIncrementImage(knex, state.roomName)
+  const room = await Internals.getRoomAndIncrementImage(knex, state.roomName)
   const picture = room.images[room.index]
   if (picture === undefined) {
     callback(null)
@@ -302,7 +302,7 @@ export async function gotoImage(callback: SocketCallback, state: HandleSocketSta
   callback(folder)
 }
 
-export function HandleSocket(knex: Knex, io: WebSocketServer, socket: Socket): HandleSocketState {
+export function handleSocket(knex: Knex, io: WebSocketServer, socket: Socket): HandleSocketState {
   const state = new HandleSocketState()
   socket.on(SocketEvents.GetLaunchId, (callback: SocketCallback) => {
     Internals.getLaunchId(callback)
@@ -331,7 +331,7 @@ export function HandleSocket(knex: Knex, io: WebSocketServer, socket: Socket): H
   return state
 }
 
-export async function RootRoute(knex: Knex, req: Request, res: Response): Promise<void> {
+export async function rootRoute(knex: Knex, req: Request, res: Response): Promise<void> {
   const folder = `/${reqParamToString(req.params.path)}`
   Imports.logger('GET /slideshow %s', folder)
   if (Imports.isPathTraversal(folder)) {
@@ -343,7 +343,7 @@ export async function RootRoute(knex: Knex, req: Request, res: Response): Promis
     })
     return
   }
-  await Internals.GetRoomAndIncrementImage(knex, folder).then(
+  await Internals.getRoomAndIncrementImage(knex, folder).then(
     (room) => {
       if (!hasValues(room.images)) {
         Imports.logger('slideshow folder empty: %s', folder)
@@ -380,33 +380,33 @@ export async function getRouter(_: Application, __: Server, io: WebSocketServer)
   router.get('/launchId', (_, res) => res.json({ launchId: Config.launchId }))
 
   const handler = (req: Request, res: Response): void => {
-    void Internals.RootRoute(knex, req, res)
+    void Internals.rootRoute(knex, req, res)
   }
   router.get('/', handler)
   router.get('/*path', handler)
 
   io.on('connection', (socket) => {
-    Internals.HandleSocket(knex, io, socket)
+    Internals.handleSocket(knex, io, socket)
   })
   setInterval(() => {
-    void Internals.TickCountdown(knex, io)
+    void Internals.tickCountdown(knex, io)
   }, TICK_COUNTDOWN_INTERVAL)
 
   return router
 }
 
 export const Internals = {
-  GetImageCount,
-  GetCounts,
-  GetImages,
-  MarkImageRead,
-  GetRoomAndIncrementImage,
-  TickCountdown,
+  getImageCount,
+  getCounts,
+  getImages,
+  markImageRead,
+  getRoomAndIncrementImage,
+  tickCountdown,
   getLaunchId,
   joinSlideshow,
   prevImage,
   nextImage,
   gotoImage,
-  HandleSocket,
-  RootRoute,
+  handleSocket,
+  rootRoute,
 }

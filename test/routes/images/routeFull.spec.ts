@@ -51,8 +51,8 @@ describe('routes/images route /full/*', () => {
       .filter((call) => call.args[0] === '/full/*path')
       .map((call) => call.args[1] as unknown)
     router = cast<(req: Request, res: Response) => Promise<void>>(fn)
-    readImageStub = sandbox.stub(Internals, 'ReadImage').resolves()
-    sendImageStub = sandbox.stub(Internals, 'SendImage').resolves()
+    readImageStub = sandbox.stub(Internals, 'readImage').resolves()
+    sendImageStub = sandbox.stub(Internals, 'sendImage').resolves()
     requestStub = {
       params: { path: undefined },
       body: '',
@@ -75,9 +75,9 @@ describe('routes/images route /full/*', () => {
     ['log invocation once', () => expect(loggerStub.callCount).to.equal(1)],
     ['log invocation with GET-format', () => expect(loggerStub.firstCall.args[0]).to.equal('GET /images/full %s')],
     ['log invocation with filename', (path) => expect(loggerStub.firstCall.args[1]).to.equal(`/${path}`)],
-    ['read image using ReadImage()', () => expect(readImageStub.callCount).to.equal(1)],
+    ['read image using readImage()', () => expect(readImageStub.callCount).to.equal(1)],
     ['read image with filename', (path) => expect(readImageStub.firstCall.args).to.deep.equal([`/${path}`])],
-    ['send retrieved image with SendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
+    ['send retrieved image with sendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
     ['send retrieved imageData', (_, data) => expect(sendImageStub.firstCall.args).to.deep.equal([data, responseFake])],
   ]
   const successTestRunner = (

@@ -27,7 +27,7 @@ describe('routes/weather getRouter()', () => {
     process.env.OPENWEATHER_APPID = 'test-appid'
     process.env.OPENWEATHER_LOCATION = 'test-location'
     setIntervalStub = sandbox.stub(global, 'setInterval')
-    updateWeatherStub = sandbox.stub(Internals, 'UpdateWeather').resolves()
+    updateWeatherStub = sandbox.stub(Internals, 'updateWeather').resolves()
     routerStub = {
       get: sandbox.stub(),
     }
@@ -62,7 +62,7 @@ describe('routes/weather getRouter()', () => {
     await getRouter(applicationFake, serverFake, socketFake)
     assert.isFunction(setIntervalStub.firstCall.args[0])
   })
-  it('should call UpdateWeather when callback fires', async () => {
+  it('should call updateWeather when callback fires', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
     const fn = cast<() => void>(setIntervalStub.firstCall.args[0])
     updateWeatherStub.resetHistory()
@@ -73,7 +73,7 @@ describe('routes/weather getRouter()', () => {
     await getRouter(applicationFake, serverFake, socketFake)
     expect(setIntervalStub.firstCall.args[1]).to.equal(600000)
   })
-  it('should call UpdateWeather when creating router', async () => {
+  it('should call updateWeather when creating router', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
     expect(updateWeatherStub.callCount).to.equal(1)
   })
@@ -104,7 +104,7 @@ describe('routes/weather getRouter()', () => {
       expect(setIntervalStub.callCount).to.equal(0)
     })
 
-    it('should not call UpdateWeather when OPENWEATHER_APPID is missing', async () => {
+    it('should not call updateWeather when OPENWEATHER_APPID is missing', async () => {
       delete process.env.OPENWEATHER_APPID
       await getRouter(applicationFake, serverFake, socketFake)
       expect(updateWeatherStub.callCount).to.equal(0)
@@ -142,7 +142,7 @@ describe('routes/weather getRouter()', () => {
       expect(setIntervalStub.callCount).to.equal(0)
     })
 
-    it('should not call UpdateWeather when OPENWEATHER_LOCATION is missing', async () => {
+    it('should not call updateWeather when OPENWEATHER_LOCATION is missing', async () => {
       delete process.env.OPENWEATHER_LOCATION
       await getRouter(applicationFake, serverFake, socketFake)
       expect(updateWeatherStub.callCount).to.equal(0)

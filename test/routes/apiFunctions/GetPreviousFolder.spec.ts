@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { GetPreviousFolder, Internals, type SiblingFolderSearch } from '#routes/apiFunctions.js'
+import { getPreviousFolder, Internals, type SiblingFolderSearch } from '#routes/apiFunctions.js'
 import Sinon from 'sinon'
 import { cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
@@ -9,23 +9,23 @@ import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/apiFunctions GetPreviousFolder', () => {
+describe('routes/apiFunctions getPreviousFolder', () => {
   let { fake: knexFake } = createKnexChainFake([] as const, [] as const)
   let getDirectionFolderStub = sandbox.stub()
 
   beforeEach(() => {
     ;({ fake: knexFake } = createKnexChainFake([] as const, [] as const))
-    getDirectionFolderStub = sandbox.stub(Internals, 'GetDirectionFolder').resolves()
+    getDirectionFolderStub = sandbox.stub(Internals, 'getDirectionFolder').resolves()
   })
   afterEach(() => {
     sandbox.restore()
   })
-  it('should call GetDirectionFolder to do actual query', async () => {
-    await GetPreviousFolder(knexFake, '/foo', 'foo')
+  it('should call getDirectionFolder to do actual query', async () => {
+    await getPreviousFolder(knexFake, '/foo', 'foo')
     expect(getDirectionFolderStub.callCount).to.equal(1)
   })
   it('should call pass knex parameter to do actual query', async () => {
-    await GetPreviousFolder(knexFake, '/foo', 'foo')
+    await getPreviousFolder(knexFake, '/foo', 'foo')
     expect(getDirectionFolderStub.firstCall.args[0]).to.equal(knexFake)
   })
   const paramTests: Array<[string, string, keyof SiblingFolderSearch, string]> = [
@@ -36,7 +36,7 @@ describe('routes/apiFunctions GetPreviousFolder', () => {
   ]
   paramTests.forEach(([title, sortKey, prop, expected]) => {
     it(`should call pass ${title} to do actual query`, async () => {
-      await GetPreviousFolder(knexFake, '/foo', sortKey)
+      await getPreviousFolder(knexFake, '/foo', sortKey)
       const param = cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
       assert(param !== undefined)
       expect(param[prop]).to.equal(expected)
@@ -45,7 +45,7 @@ describe('routes/apiFunctions GetPreviousFolder', () => {
   it('should resolve as result of actual query', async () => {
     const data = { data: Math.random() }
     getDirectionFolderStub.resolves(data)
-    const result = await GetPreviousFolder(knexFake, '/foo', 'foo')
+    const result = await getPreviousFolder(knexFake, '/foo', 'foo')
     expect(result).to.equal(data)
   })
 })

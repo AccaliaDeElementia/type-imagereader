@@ -52,7 +52,7 @@ describe('routes/images route /kiosk/*-image.webp', () => {
       .map((call) => call.args[1] as unknown)
     router = cast<(req: Request, res: Response) => Promise<void>>(fn)
     fetchImageStub = sandbox.stub(CacheStorage.kioskCache, 'fetch').resolves()
-    sendImageStub = sandbox.stub(Internals, 'SendImage').resolves()
+    sendImageStub = sandbox.stub(Internals, 'sendImage').resolves()
     requestStub = {
       params: { path: undefined },
       body: '',
@@ -78,9 +78,9 @@ describe('routes/images route /kiosk/*-image.webp', () => {
     ['fetch image filename from cache', () => expect(fetchImageStub.firstCall.args[0]).to.equal('/kiosk/image.png')],
     ['rescale image to preview width', () => expect(fetchImageStub.firstCall.args[1]).to.equal(1280)],
     ['rescale image to preview height', () => expect(fetchImageStub.firstCall.args[2]).to.equal(800)],
-    ['send image with SendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
-    ['send image data with SendImage()', (img) => expect(sendImageStub.firstCall.args[0]).to.equal(img)],
-    ['send to response with SendImage()', () => expect(sendImageStub.firstCall.args[1]).to.equal(responseFake)],
+    ['send image with sendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
+    ['send image data with sendImage()', (img) => expect(sendImageStub.firstCall.args[0]).to.equal(img)],
+    ['send to response with sendImage()', () => expect(sendImageStub.firstCall.args[1]).to.equal(responseFake)],
   ]
   successTests.forEach(([title, validationFn]) => {
     it(`should ${title} for success by string`, async () => {

@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { GetFolder } from '#routes/apiFunctions.js'
+import { getFolder } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 
-describe('routes/apiFunctions GetFolder', () => {
+describe('routes/apiFunctions getFolder', () => {
   let {
     instance: knexInstance,
     stub: knexStub,
@@ -18,42 +18,42 @@ describe('routes/apiFunctions GetFolder', () => {
     } = createKnexChainFake(['select', 'where'] as const, ['limit'] as const))
   })
   it('should select from folders table once', async () => {
-    await GetFolder(knexFake, '/foo/bar')
+    await getFolder(knexFake, '/foo/bar')
     expect(knexStub.callCount).to.equal(1)
   })
   it('should select from folders table with expected args', async () => {
-    await GetFolder(knexFake, '/foo/bar')
+    await getFolder(knexFake, '/foo/bar')
     expect(knexStub.firstCall.args).to.deep.equal(['folders'])
   })
   it('should select expected columns once', async () => {
-    await GetFolder(knexFake, '/foo/bar')
+    await getFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.callCount).to.equal(1)
   })
   it('should select exactly five columns', async () => {
-    await GetFolder(knexFake, '/foo/bar')
+    await getFolder(knexFake, '/foo/bar')
     expect(knexInstance.select.firstCall.args).to.have.lengthOf(5)
   })
   const columns = ['path', 'folder', 'sortKey', 'current', 'firstPicture'] as const
   columns.forEach((col) => {
     it(`should select ${col} column`, async () => {
-      await GetFolder(knexFake, '/foo/bar')
+      await getFolder(knexFake, '/foo/bar')
       expect(knexInstance.select.firstCall.args).to.include(col)
     })
   })
   it('should limit to only one result once', async () => {
-    await GetFolder(knexFake, '/foo/bar')
+    await getFolder(knexFake, '/foo/bar')
     expect(knexInstance.limit.callCount).to.equal(1)
   })
   it('should limit to only one result with one argument', async () => {
-    await GetFolder(knexFake, '/foo/bar')
+    await getFolder(knexFake, '/foo/bar')
     expect(knexInstance.limit.firstCall.args).to.have.lengthOf(1)
   })
   it('should limit to only one result', async () => {
-    await GetFolder(knexFake, '/foo/bar')
+    await getFolder(knexFake, '/foo/bar')
     expect(knexInstance.limit.firstCall.args[0]).to.equal(1)
   })
   it('should return null when db returns no results', async () => {
-    const result = await GetFolder(knexFake, '/foo/bar')
+    const result = await getFolder(knexFake, '/foo/bar')
     expect(result).to.equal(null)
   })
   it('should return result from db', async () => {
@@ -66,7 +66,7 @@ describe('routes/apiFunctions GetFolder', () => {
         firstPicture: '/foo/bar/otherImage.png',
       },
     ])
-    const result = await GetFolder(knexFake, '/foo/bar')
+    const result = await getFolder(knexFake, '/foo/bar')
     expect(result).to.be.an('object')
   })
   const namePathTests: Array<[string, string, 'name' | 'path', string]> = [
@@ -86,7 +86,7 @@ describe('routes/apiFunctions GetFolder', () => {
           firstPicture: '/foo/bar/otherImage.png',
         },
       ])
-      const result = await GetFolder(knexFake, '/foo/bar')
+      const result = await getFolder(knexFake, '/foo/bar')
       expect(result?.[prop]).to.equal(expected)
     })
   })
@@ -106,7 +106,7 @@ describe('routes/apiFunctions GetFolder', () => {
           firstPicture: '/foo/bar/otherImage.png',
         },
       ])
-      const result = await GetFolder(knexFake, '/foo/bar')
+      const result = await getFolder(knexFake, '/foo/bar')
       expect(result?.folder).to.equal(expected)
     })
   })
@@ -141,7 +141,7 @@ describe('routes/apiFunctions GetFolder', () => {
   coverTests.forEach(([title, current, firstPicture, expected]) => {
     it(`should set ${title}`, async () => {
       knexInstance.limit.resolves([{ path: '/foo/bar/', folder: '/foo/', sortKey: 'bar', current, firstPicture }])
-      const result = await GetFolder(knexFake, '/foo/bar')
+      const result = await getFolder(knexFake, '/foo/bar')
       expect(result?.cover).to.equal(expected)
     })
   })

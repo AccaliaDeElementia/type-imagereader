@@ -41,7 +41,7 @@ describe('routes/api route GET /bookmarks', () => {
         post: sandbox.stub(),
       }),
     )
-    getBookmarkStub = sandbox.stub(Imports, 'GetBookmarks').resolves()
+    getBookmarkStub = sandbox.stub(Imports, 'getBookmarks').resolves()
     ;({ loggerStub } = stubDebug(sandbox, Imports))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
@@ -60,7 +60,7 @@ describe('routes/api route GET /bookmarks', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.firstCall.args[0]).to.equal(bookmarks)
   })
-  it('should pass knex to GetBookmarks', async () => {
+  it('should pass knex to getBookmarks', async () => {
     await routeHandler(requestFake, responseFake)
     expect(getBookmarkStub.firstCall.args[0]).to.equal(knexFake)
   })

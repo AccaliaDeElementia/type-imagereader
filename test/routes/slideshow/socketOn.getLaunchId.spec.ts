@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { Config, getLaunchId, HandleSocket } from '#routes/slideshow.js'
+import { Config, getLaunchId, handleSocket } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -18,7 +18,7 @@ describe('routes/slideshow socket get-launchId()', () => {
     serverFake = cast<WebSocketServer>({})
     socketStub = { on: sandbox.stub() }
     socketFake = cast<Socket>(socketStub)
-    HandleSocket(knexFake, serverFake, socketFake)
+    handleSocket(knexFake, serverFake, socketFake)
   })
   afterEach(() => {
     sandbox.restore()

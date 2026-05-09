@@ -1,14 +1,14 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { GetBookmarks, Imports } from '#routes/apiFunctions.js'
+import { getBookmarks, Imports } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 import assert from 'node:assert'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/apiFunctions GetBookmarks', () => {
+describe('routes/apiFunctions getBookmarks', () => {
   let {
     instance: knexInstance,
     stub: knexStub,
@@ -27,59 +27,59 @@ describe('routes/apiFunctions GetBookmarks', () => {
     sandbox.restore()
   })
   it('should select results from bookmarks once', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexStub.callCount).to.equal(1)
   })
   it('should select results from bookmarks table', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexStub.firstCall.args).to.deep.equal(['bookmarks'])
   })
   it('should select expected fields from bookmarks once', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.select.callCount).to.equal(1)
   })
   it('should select expected number of fields from bookmarks', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.select.firstCall.args).to.have.lengthOf(2)
   })
   it('should select pictures.path from bookmarks', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.select.firstCall.args).to.include('pictures.path')
   })
   it('should select pictures.folder from bookmarks', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.select.firstCall.args).to.include('pictures.folder')
   })
   it('should join pictures to bookmarks at least once', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.join.callCount).to.be.greaterThanOrEqual(1)
   })
   it('should join pictures to bookmarks with expected args', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     const call = knexInstance.join.getCalls().find((call) => call.args[0] === 'pictures')
     assert(call !== undefined)
     expect(call.args).to.deep.equal(['pictures', 'pictures.path', 'bookmarks.path'])
   })
   it('should join folders to bookmarks at least once', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.join.callCount).to.be.greaterThanOrEqual(1)
   })
   it('should join folders to bookmarks with expected args', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     const call = knexInstance.join.getCalls().find((call) => call.args[0] === 'folders')
     assert(call !== undefined)
     expect(call.args).to.deep.equal(['folders', 'folders.path', 'pictures.folder'])
   })
   it('should order strictly by folder then picture once', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.orderBy.callCount).to.equal(1)
   })
   it('should order strictly by folder then picture with one arg', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.orderBy.firstCall.args).to.have.lengthOf(1)
   })
   it('should order strictly by folder then picture including sortkey and paths', async () => {
-    await GetBookmarks(knexFake)
+    await getBookmarks(knexFake)
     expect(knexInstance.orderBy.firstCall.args[0]).to.deep.equal([
       'folders.path',
       'folders.sortKey',
@@ -89,7 +89,7 @@ describe('routes/apiFunctions GetBookmarks', () => {
   })
   it('should include the only bookmark folder in results', async () => {
     knexInstance.orderBy.resolves([{ path: '/foo/bar/quux.png', folder: '/foo/bar/' }])
-    const bookmarks = await GetBookmarks(knexFake)
+    const bookmarks = await getBookmarks(knexFake)
     expect(bookmarks).to.have.lengthOf(1)
     expect(bookmarks[0]).to.deep.equal({
       name: '/foo/bar/',
@@ -99,7 +99,7 @@ describe('routes/apiFunctions GetBookmarks', () => {
   })
   it('should resolve to empty with no bookmarks', async () => {
     knexInstance.orderBy.resolves([])
-    const bookmarks = await GetBookmarks(knexFake)
+    const bookmarks = await getBookmarks(knexFake)
     expect(bookmarks).to.deep.equal([])
   })
   it('should resolve to results with bookmarks', async () => {
@@ -137,13 +137,13 @@ describe('routes/apiFunctions GetBookmarks', () => {
         ],
       },
     ]
-    const bookmarks = await GetBookmarks(knexFake)
+    const bookmarks = await getBookmarks(knexFake)
     expect(bookmarks).to.deep.equal(expected)
   })
   it('should log a bookmark and folder count summary', async () => {
     knexInstance.orderBy.resolves([{ path: '/foo/bar/quux.png', folder: '/foo/bar/' }])
-    await GetBookmarks(knexFake)
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GetBookmarks'))
+    await getBookmarks(knexFake)
+    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('getBookmarks'))
     expect(matched).to.equal(true)
   })
 })

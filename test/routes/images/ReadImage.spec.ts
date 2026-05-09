@@ -2,14 +2,14 @@
 
 import { expect } from 'chai'
 import type { Debugger } from 'debug'
-import { Imports, ReadImage, ImageData } from '#routes/images.js'
+import { Imports, readImage, ImageData } from '#routes/images.js'
 import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
 import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/images ReadImage()', () => {
+describe('routes/images readImage()', () => {
   let fromErrorStub = sandbox.stub()
   let fromImageStub = sandbox.stub()
   let readFileStub = sandbox.stub()
@@ -80,61 +80,61 @@ describe('routes/images ReadImage()', () => {
       configureReadFile(readFileStub, readFileResult)
       const img = { img: Math.random() }
       fromErrorStub.returns(img)
-      const result = await ReadImage(path)
+      const result = await readImage(path)
       expect(result).to.equal(img)
     })
     it(`should call ImageData.fromError once for ${title}`, async () => {
       configureReadFile(readFileStub, readFileResult)
-      await ReadImage(path)
+      await readImage(path)
       expect(fromErrorStub.callCount).to.equal(1)
     })
     it(`should call ImageData.fromError with 4 arguments for ${title}`, async () => {
       configureReadFile(readFileStub, readFileResult)
-      await ReadImage(path)
+      await readImage(path)
       expect(fromErrorStub.firstCall.args).to.have.lengthOf(4)
     })
     it(`should reject ${title} with with expected error code`, async () => {
       configureReadFile(readFileStub, readFileResult)
-      await ReadImage(path)
+      await readImage(path)
       expect(fromErrorStub.firstCall.args[0]).to.equal(errorCode)
     })
     it(`should reject ${title} with with expected statuscode`, async () => {
       configureReadFile(readFileStub, readFileResult)
-      await ReadImage(path)
+      await readImage(path)
       expect(fromErrorStub.firstCall.args[1]).to.equal(statusCode)
     })
     it(`should reject ${title} with with expected error message`, async () => {
       configureReadFile(readFileStub, readFileResult)
-      await ReadImage(path)
+      await readImage(path)
       expect(fromErrorStub.firstCall.args[2]).to.equal(message)
     })
     it(`should reject ${title} with with expected path`, async () => {
       configureReadFile(readFileStub, readFileResult)
-      await ReadImage(path)
+      await readImage(path)
       expect(fromErrorStub.firstCall.args[3]).to.equal(path)
     })
   })
   it('should call isPathTraversal with the path', async () => {
-    await ReadImage('/foo/bar/image.png')
+    await readImage('/foo/bar/image.png')
     expect(isPathTraversalStub.firstCall.args).to.deep.equal(['/foo/bar/image.png'])
   })
   it('should return E_NO_TRAVERSE error when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     const img = { img: Math.random() }
     fromErrorStub.returns(img)
-    await ReadImage('/foo/bar/image.png')
+    await readImage('/foo/bar/image.png')
     expect(fromErrorStub.firstCall.args[0]).to.equal('E_NO_TRAVERSE')
   })
   it('should return FORBIDDEN status when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     fromErrorStub.returns({})
-    await ReadImage('/foo/bar/image.png')
+    await readImage('/foo/bar/image.png')
     expect(fromErrorStub.firstCall.args[1]).to.equal(StatusCodes.FORBIDDEN)
   })
   it('should not read file when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     fromErrorStub.returns({})
-    await ReadImage('/foo/bar/image.png')
+    await readImage('/foo/bar/image.png')
     expect(readFileStub.callCount).to.equal(0)
   })
   const validImagetests: Array<[string, (i: ImageData, d: ImageData, buff: Buffer) => void]> = [
@@ -187,7 +187,7 @@ describe('routes/images ReadImage()', () => {
       const data = Buffer.from('SOME DATA HERE')
       fromImageStub.returns(img)
       readFileStub.resolves(data)
-      const result = await ReadImage('/foo/bar/image.gif')
+      const result = await readImage('/foo/bar/image.gif')
       validatefn(img, result, data)
     })
   })
@@ -196,14 +196,14 @@ describe('routes/images ReadImage()', () => {
     it(`should allow .${ext}`, async () => {
       const img = { img: Math.random() }
       fromImageStub.returns(img)
-      const result = await ReadImage(`/foo/bar/image.${ext}`)
+      const result = await readImage(`/foo/bar/image.${ext}`)
       expect(result).to.equal(img)
     })
   })
   it('should allow dotfile with valid image extension', async () => {
     const img = { img: Math.random() }
     fromImageStub.returns(img)
-    const result = await ReadImage('/foo/.hidden.jpg')
+    const result = await readImage('/foo/.hidden.jpg')
     expect(result).to.equal(img)
   })
 
@@ -212,7 +212,7 @@ describe('routes/images ReadImage()', () => {
     try {
       readFileStub.resolves(Buffer.from('SOME DATA HERE'))
       fromImageStub.returns(cast<ImageData>({}))
-      await ReadImage('/foo/bar/image.gif')
+      await readImage('/foo/bar/image.gif')
       expect(readFileStub.firstCall.args[0]).to.equal('/library/images/foo/bar/image.gif')
     } finally {
       delete process.env.DATA_DIR
@@ -223,53 +223,53 @@ describe('routes/images ReadImage()', () => {
     it('should log path-traversal-blocked format when isPathTraversal returns true', async () => {
       isPathTraversalStub.returns(true)
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.png')
+      await readImage('/foo/bar/image.png')
       expect(loggerStub.firstCall.args[0]).to.equal('path traversal blocked: %s')
     })
 
     it('should log the blocked path when isPathTraversal returns true', async () => {
       isPathTraversalStub.returns(true)
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.png')
+      await readImage('/foo/bar/image.png')
       expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar/image.png')
     })
 
     it('should log not-an-image format when extension is not allowed', async () => {
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.exe')
+      await readImage('/foo/bar/image.exe')
       expect(loggerStub.firstCall.args[0]).to.equal('not an image: ext=%s for %s')
     })
 
     it('should log the disallowed extension when extension is not allowed', async () => {
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.exe')
+      await readImage('/foo/bar/image.exe')
       expect(loggerStub.firstCall.args[1]).to.equal('exe')
     })
 
     it('should log the path when extension is not allowed', async () => {
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.exe')
+      await readImage('/foo/bar/image.exe')
       expect(loggerStub.firstCall.args[2]).to.equal('/foo/bar/image.exe')
     })
 
     it('should log image-not-found format when readFile rejects', async () => {
       readFileStub.rejects(new Error('disk failure'))
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.png')
+      await readImage('/foo/bar/image.png')
       expect(loggerStub.firstCall.args[0]).to.equal('image not found: %s (%s)')
     })
 
     it('should log the missing path when readFile rejects', async () => {
       readFileStub.rejects(new Error('disk failure'))
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.png')
+      await readImage('/foo/bar/image.png')
       expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar/image.png')
     })
 
     it('should log the underlying error message when readFile rejects with Error', async () => {
       readFileStub.rejects(new Error('disk failure'))
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.png')
+      await readImage('/foo/bar/image.png')
       expect(loggerStub.firstCall.args[2]).to.equal('disk failure')
     })
 
@@ -279,7 +279,7 @@ describe('routes/images ReadImage()', () => {
         throw cast<Error>({ toString: () => 'rejection-token' })
       })
       fromErrorStub.returns({})
-      await ReadImage('/foo/bar/image.png')
+      await readImage('/foo/bar/image.png')
       expect(loggerStub.firstCall.args[2]).to.equal('rejection-token')
     })
 
@@ -287,7 +287,7 @@ describe('routes/images ReadImage()', () => {
       const img = { img: Math.random() }
       fromImageStub.returns(img)
       readFileStub.resolves(Buffer.from('data'))
-      await ReadImage('/foo/bar/image.png')
+      await readImage('/foo/bar/image.png')
       expect(loggerStub.callCount).to.equal(0)
     })
   })

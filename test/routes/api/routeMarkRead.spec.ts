@@ -47,7 +47,7 @@ describe('routes/api route POST /mark/read', () => {
         get: sandbox.stub(),
       }),
     )
-    markFolderSeenStub = sandbox.stub(Imports, 'MarkFolderSeen').resolves()
+    markFolderSeenStub = sandbox.stub(Imports, 'markFolderSeen').resolves()
     ;({ loggerStub } = stubDebug(sandbox, Imports))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
@@ -70,22 +70,22 @@ describe('routes/api route POST /mark/read', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.end.firstCall.args).to.have.lengthOf(0)
   })
-  it('should call MarkFolderSeen with knex instance', async () => {
+  it('should call markFolderSeen with knex instance', async () => {
     requestStub.body.path = 'foo/a%20bar/baz'
     await routeHandler(requestFake, responseFake)
     expect(markFolderSeenStub.firstCall.args[0]).to.equal(knexFake)
   })
-  it('should call MarkFolderSeen with decoded path', async () => {
+  it('should call markFolderSeen with decoded path', async () => {
     requestStub.body.path = 'foo/a%20bar/baz'
     await routeHandler(requestFake, responseFake)
     expect(markFolderSeenStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
   })
-  it('should call MarkFolderSeen with markAsSeen true', async () => {
+  it('should call markFolderSeen with markAsSeen true', async () => {
     requestStub.body.path = 'foo/a%20bar/baz'
     await routeHandler(requestFake, responseFake)
     expect(markFolderSeenStub.firstCall.args[2]).to.equal(true)
   })
-  it('should not call MarkFolderSeen when isPathTraversal returns true', async () => {
+  it('should not call markFolderSeen when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(markFolderSeenStub.callCount).to.equal(0)

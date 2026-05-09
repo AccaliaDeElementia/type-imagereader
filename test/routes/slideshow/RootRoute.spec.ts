@@ -4,12 +4,12 @@ import Sinon from 'sinon'
 import type { Request } from 'express'
 import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { RootRoute, Internals, Imports } from '#routes/slideshow.js'
+import { rootRoute, Internals, Imports } from '#routes/slideshow.js'
 import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/slideshow RootRoute', () => {
+describe('routes/slideshow rootRoute', () => {
   let reqStub = {
     params: { path: undefined as string | undefined },
   }
@@ -32,7 +32,7 @@ describe('routes/slideshow RootRoute', () => {
     noImages = []
     fullImages = ['1', '2', '3', '4', '5', '6', '7', '8']
     roomData = { images: noImages, uriSafeImage: '/foo/bar/baz.png' }
-    getRoomStub = sandbox.stub(Internals, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Internals, 'getRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     getRoomError = new Error('Error Fetching Room!')
@@ -58,22 +58,22 @@ describe('routes/slideshow RootRoute', () => {
   const getArgs = (stub: Sinon.SinonStub): unknown[] => stub.firstCall.args as unknown[]
   it('should return FORBIDDEN when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
-    await RootRoute(knexFake, requestFake, responseFake)
+    await rootRoute(knexFake, requestFake, responseFake)
     expect(getArgs(resStub.status)[0]).to.equal(403)
   })
   it('should render error template when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
-    await RootRoute(knexFake, requestFake, responseFake)
+    await rootRoute(knexFake, requestFake, responseFake)
     expect(getArgs(resStub.render)[0]).to.equal('error')
   })
   it('should render E_NO_TRAVERSE error data when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
-    await RootRoute(knexFake, requestFake, responseFake)
+    await rootRoute(knexFake, requestFake, responseFake)
     expect(getArgs(resStub.render)[1]).to.deep.equal(eTraverse)
   })
   it('should not get room when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
-    await RootRoute(knexFake, requestFake, responseFake)
+    await rootRoute(knexFake, requestFake, responseFake)
     expect(getRoomStub.callCount).to.equal(0)
   })
   const tests: Array<[string, string | undefined, string[] | null, (data: unknown) => void]> = [
@@ -109,7 +109,7 @@ describe('routes/slideshow RootRoute', () => {
         folder: `/${path}`,
         image: roomData.uriSafeImage,
       }
-      await RootRoute(knexFake, requestFake, responseFake)
+      await rootRoute(knexFake, requestFake, responseFake)
       validationFn(successData)
     })
   })
@@ -120,26 +120,26 @@ describe('routes/slideshow RootRoute', () => {
       loggerStub = sandbox.stub(Imports, 'logger')
     })
 
-    it('should log GET-format on RootRoute invocation', async () => {
+    it('should log GET-format on rootRoute invocation', async () => {
       reqStub.params.path = 'foo'
       roomData.images = fullImages
       getRoomStub.resolves(roomData)
-      await RootRoute(knexFake, requestFake, responseFake)
+      await rootRoute(knexFake, requestFake, responseFake)
       expect(loggerStub.firstCall.args[0]).to.equal('GET /slideshow %s')
     })
 
-    it('should log the folder path on RootRoute invocation', async () => {
+    it('should log the folder path on rootRoute invocation', async () => {
       reqStub.params.path = 'foo'
       roomData.images = fullImages
       getRoomStub.resolves(roomData)
-      await RootRoute(knexFake, requestFake, responseFake)
+      await rootRoute(knexFake, requestFake, responseFake)
       expect(loggerStub.firstCall.args[1]).to.equal('/foo')
     })
 
     it('should log path-traversal-blocked when isPathTraversal returns true', async () => {
       isPathTraversalStub.returns(true)
       reqStub.params.path = 'evil'
-      await RootRoute(knexFake, requestFake, responseFake)
+      await rootRoute(knexFake, requestFake, responseFake)
       const hasTraversalLog = loggerStub.getCalls().some((c) => c.args[0] === 'path traversal blocked: %s')
       expect(hasTraversalLog).to.equal(true)
     })
@@ -148,23 +148,23 @@ describe('routes/slideshow RootRoute', () => {
       reqStub.params.path = 'foo'
       roomData.images = noImages
       getRoomStub.resolves(roomData)
-      await RootRoute(knexFake, requestFake, responseFake)
+      await rootRoute(knexFake, requestFake, responseFake)
       const hasEmptyLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow folder empty: %s')
       expect(hasEmptyLog).to.equal(true)
     })
 
-    it('should log slideshow-render-error when GetRoomAndIncrementImage rejects', async () => {
+    it('should log slideshow-render-error when getRoomAndIncrementImage rejects', async () => {
       reqStub.params.path = 'foo'
       getRoomStub.rejects(getRoomError)
-      await RootRoute(knexFake, requestFake, responseFake)
+      await rootRoute(knexFake, requestFake, responseFake)
       const hasRenderErrorLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow render error: %s')
       expect(hasRenderErrorLog).to.equal(true)
     })
 
-    it('should log a string fallback when GetRoomAndIncrementImage rejects with a non-Error', async () => {
+    it('should log a string fallback when getRoomAndIncrementImage rejects with a non-Error', async () => {
       reqStub.params.path = 'foo'
       getRoomStub.rejects(cast<Error>({ toString: () => 'rejection-token' }))
-      await RootRoute(knexFake, requestFake, responseFake)
+      await rootRoute(knexFake, requestFake, responseFake)
       const renderErrorCall = loggerStub.getCalls().find((c) => c.args[0] === 'slideshow render error: %s')
       expect(renderErrorCall?.args[1]).to.equal('rejection-token')
     })

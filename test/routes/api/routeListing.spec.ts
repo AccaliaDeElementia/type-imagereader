@@ -45,7 +45,7 @@ describe('routes/api route GET /listing', () => {
         post: sandbox.stub(),
       }),
     )
-    getListingStub = sandbox.stub(Imports, 'GetListing').resolves()
+    getListingStub = sandbox.stub(Imports, 'getListing').resolves()
     ;({ loggerStub } = stubDebug(sandbox, Imports))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
@@ -71,7 +71,7 @@ describe('routes/api route GET /listing', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.firstCall.args[0]).to.equal(listing)
   })
-  it('should pass Knex to GetListing', async () => {
+  it('should pass Knex to getListing', async () => {
     requestStub.params.path = []
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.firstCall.args[0]).to.equal(knexFake)
@@ -96,7 +96,7 @@ describe('routes/api route GET /listing', () => {
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
   })
-  it('should not call GetListing when isPathTraversal returns true', async () => {
+  it('should not call getListing when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     expect(getListingStub.callCount).to.equal(0)
