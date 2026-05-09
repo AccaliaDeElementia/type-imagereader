@@ -1,7 +1,15 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, Imports, WeatherConfigError, type OpenWeatherData, type WeatherResults } from '#routes/weather.js'
+import {
+  UpdateWeather,
+  Internals,
+  Imports,
+  Weather,
+  WeatherConfigError,
+  type OpenWeatherData,
+  type WeatherResults,
+} from '#routes/weather.js'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors.js'
 
@@ -25,8 +33,8 @@ describe('routes/weather function UpdateWeather', () => {
     }
     getLatestSunriseStub = sandbox.stub(Imports, 'getLatestSunrise').returns(123000)
     getEarliestSunsetStub = sandbox.stub(Imports, 'getEarliestSunset').returns(456000)
-    getWeatherStub = sandbox.stub(Functions, 'GetWeather').resolves(weatherData)
-    Functions.weather = {
+    getWeatherStub = sandbox.stub(Internals, 'GetWeather').resolves(weatherData)
+    Object.assign(Weather, {
       temp: -4.1,
       pressure: 1000.0,
       humidity: 72.1,
@@ -34,7 +42,7 @@ describe('routes/weather function UpdateWeather', () => {
       icon: 'defaultIcon',
       sunrise: -123000,
       sunset: -456000,
-    }
+    })
   })
   afterEach(() => {
     sandbox.restore()
@@ -42,21 +50,21 @@ describe('routes/weather function UpdateWeather', () => {
   it('should reject when getEarliestSunset throws', async () => {
     const err = new Error('FOO!')
     getEarliestSunsetStub.throws(err)
-    const result = await EventuallyRejects(Functions.UpdateWeather())
+    const result = await EventuallyRejects(UpdateWeather())
     expect(result).to.equal(err)
   })
   it('should reject when getLatestSunrise throws', async () => {
     const err = new Error('FOO!')
     getLatestSunriseStub.throws(err)
-    const result = await EventuallyRejects(Functions.UpdateWeather())
+    const result = await EventuallyRejects(UpdateWeather())
     expect(result).to.equal(err)
   })
-  it('should return Functions.weather', async () => {
-    const result = await Functions.UpdateWeather()
-    expect(result).to.equal(Functions.weather)
+  it('should return Weather', async () => {
+    const result = await UpdateWeather()
+    expect(result).to.equal(Weather)
   })
   const errorTests: Array<[string, (data: WeatherResults) => void]> = [
-    ['return Functions.weather', (result) => expect(result).to.equal(Functions.weather)],
+    ['return Weather', (result) => expect(result).to.equal(Weather)],
     ['set default temp', (weather) => expect(weather.temp).to.equal(undefined)],
     ['set default pressure', (weather) => expect(weather.pressure).to.equal(undefined)],
     ['set default humidity', (weather) => expect(weather.humidity).to.equal(undefined)],
@@ -68,12 +76,12 @@ describe('routes/weather function UpdateWeather', () => {
   errorTests.forEach(([title, validationFn]) => {
     it(`should ${title} when fetch rejects`, async () => {
       getWeatherStub.rejects(new Error('foo!'))
-      const result = await Functions.UpdateWeather()
+      const result = await UpdateWeather()
       validationFn(result)
     })
     it(`should ${title} when fetch throws`, async () => {
       getWeatherStub.throws(new Error('foo!'))
-      const result = await Functions.UpdateWeather()
+      const result = await UpdateWeather()
       validationFn(result)
     })
   })
@@ -137,23 +145,23 @@ describe('routes/weather function UpdateWeather', () => {
   successTests.forEach(([title, setupFn, validationFn]) => {
     it(`should ${title} when fetch resolves`, async () => {
       setupFn()
-      const result = await Functions.UpdateWeather()
+      const result = await UpdateWeather()
       validationFn(result)
     })
   })
   it('should set pressure to zero when API returns zero pressure', async () => {
     weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
-    const result = await Functions.UpdateWeather()
+    const result = await UpdateWeather()
     expect(result.pressure).to.equal(0)
   })
   it('should set humidity to zero when API returns zero humidity', async () => {
     weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
-    const result = await Functions.UpdateWeather()
+    const result = await UpdateWeather()
     expect(result.humidity).to.equal(0)
   })
   it('should set temp from zero kelvin when API returns zero temp', async () => {
     weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
-    const result = await Functions.UpdateWeather()
+    const result = await UpdateWeather()
     expect(result.temp).to.equal(-273.15)
   })
   describe('logging when GetWeather rejects', () => {
@@ -163,42 +171,42 @@ describe('routes/weather function UpdateWeather', () => {
     })
     it('should log the weather-update failure', async () => {
       getWeatherStub.rejects(new Error('openweather down'))
-      await Functions.UpdateWeather()
+      await UpdateWeather()
       const hasLog = loggerStub.getCalls().some((c) => c.args[0] === 'UpdateWeather error')
       expect(hasLog).to.equal(true)
     })
     it('should include the rejection error in the log arguments', async () => {
       const err = new Error('openweather down')
       getWeatherStub.rejects(err)
-      await Functions.UpdateWeather()
+      await UpdateWeather()
       const logCall = loggerStub.getCalls().find((c) => c.args[0] === 'UpdateWeather error')
       expect(logCall?.args[1]).to.equal(err)
     })
     it('should log once per failed call even though fields are reset', async () => {
       getWeatherStub.rejects(new Error('openweather down'))
-      await Functions.UpdateWeather()
+      await UpdateWeather()
       const matching = loggerStub.getCalls().filter((c) => c.args[0] === 'UpdateWeather error')
       expect(matching).to.have.lengthOf(1)
     })
     it('should log skipped-format when GetWeather rejects with WeatherConfigError', async () => {
       getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
-      await Functions.UpdateWeather()
+      await UpdateWeather()
       expect(loggerStub.firstCall.args[0]).to.equal('UpdateWeather skipped: %s')
     })
     it('should pass the error message string when GetWeather rejects with WeatherConfigError', async () => {
       getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
-      await Functions.UpdateWeather()
+      await UpdateWeather()
       expect(loggerStub.firstCall.args[1]).to.equal('no OpenWeather AppId Defined!')
     })
     it('should not include any Error instance in log args when GetWeather rejects with WeatherConfigError', async () => {
       getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
-      await Functions.UpdateWeather()
+      await UpdateWeather()
       const hasErrorArg = loggerStub.firstCall.args.some((a: unknown) => a instanceof Error)
       expect(hasErrorArg).to.equal(false)
     })
     it('should not log error-format when GetWeather rejects with WeatherConfigError', async () => {
       getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
-      await Functions.UpdateWeather()
+      await UpdateWeather()
       const hasErrorFormat = loggerStub.getCalls().some((c) => c.args[0] === 'UpdateWeather error')
       expect(hasErrorFormat).to.equal(false)
     })

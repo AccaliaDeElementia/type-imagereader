@@ -1,7 +1,7 @@
 'use sanity'
 
 import { assert, expect } from 'chai'
-import { Functions, getRouter, Imports } from '#routes/weather.js'
+import { Internals, Weather, getRouter, Imports } from '#routes/weather.js'
 import Sinon from 'sinon'
 
 import type { Application, Router, Response } from 'express'
@@ -27,7 +27,7 @@ describe('routes/weather function getRouter()', () => {
     process.env.OPENWEATHER_APPID = 'test-appid'
     process.env.OPENWEATHER_LOCATION = 'test-location'
     setIntervalStub = sandbox.stub(global, 'setInterval')
-    updateWeatherStub = sandbox.stub(Functions, 'UpdateWeather').resolves()
+    updateWeatherStub = sandbox.stub(Internals, 'UpdateWeather').resolves()
     routerStub = {
       get: sandbox.stub(),
     }
@@ -81,7 +81,7 @@ describe('routes/weather function getRouter()', () => {
     ['set status', () => expect(responseStub.status.callCount).to.equal(1)],
     ['set HTTP OK status', () => expect(responseStub.status.firstCall.args[0]).to.equal(200)],
     ['send json', () => expect(responseStub.json.callCount).to.equal(1)],
-    ['send weather data', () => expect(responseStub.json.firstCall.args[0]).to.equal(Functions.weather)],
+    ['send weather data', () => expect(responseStub.json.firstCall.args[0]).to.equal(Weather)],
   ]
   successTests.forEach(([title, validationFn]) => {
     it(`should ${title} on success`, async () => {

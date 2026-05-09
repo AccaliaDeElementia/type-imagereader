@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, WeatherConfigError } from '#routes/weather.js'
+import { GetWeather, WeatherConfigError } from '#routes/weather.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
@@ -44,39 +44,39 @@ describe('routes/weather function GetWeather', () => {
   it('should reject missing appId', async () => {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    const err = await EventuallyRejects(Functions.GetWeather())
+    const err = await EventuallyRejects(GetWeather())
     expect(err.message).to.equal('no OpenWeather AppId Defined!')
   })
   it('should reject with WeatherConfigError when appId is missing', async () => {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    const err = await EventuallyRejects(Functions.GetWeather())
+    const err = await EventuallyRejects(GetWeather())
     expect(err).to.be.instanceOf(WeatherConfigError)
   })
   it('should reject missing location', async () => {
     delete process.env.OPENWEATHER_LOCATION
-    const err = await EventuallyRejects(Functions.GetWeather())
+    const err = await EventuallyRejects(GetWeather())
     expect(err.message).to.equal('no OpenWeather Location Defined!')
   })
   it('should reject with WeatherConfigError when location is missing', async () => {
     delete process.env.OPENWEATHER_LOCATION
-    const err = await EventuallyRejects(Functions.GetWeather())
+    const err = await EventuallyRejects(GetWeather())
     expect(err).to.be.instanceOf(WeatherConfigError)
   })
   it('should reject when fetch fails', async () => {
     const err = new Error('FOO')
     fetchStub.rejects(err)
-    const result = await EventuallyRejects(Functions.GetWeather())
+    const result = await EventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when fetch throws', async () => {
     const err = new Error('FOO')
     fetchStub.rejects(err)
-    const result = await EventuallyRejects(Functions.GetWeather())
+    const result = await EventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should request expected openweather api url', async () => {
-    await Functions.GetWeather()
+    await GetWeather()
     expect(fetchStub.firstCall.args[0]).to.equal(
       'https://api.openweathermap.org/data/2.5/weather?q=location&appid=appid',
     )
@@ -84,45 +84,45 @@ describe('routes/weather function GetWeather', () => {
   it('should pass an AbortSignal in the fetch options', async () => {
     const sentinelSignal = Cast<AbortSignal>({})
     sandbox.stub(AbortSignal, 'timeout').returns(sentinelSignal)
-    await Functions.GetWeather()
+    await GetWeather()
     expect(Cast<{ signal: unknown }>(fetchStub.firstCall.args[1]).signal).to.equal(sentinelSignal)
   })
   it('should set the AbortSignal timeout to 60 seconds', async () => {
     const timeoutStub = sandbox.stub(AbortSignal, 'timeout').returns(Cast<AbortSignal>({}))
-    await Functions.GetWeather()
+    await GetWeather()
     expect(timeoutStub.firstCall.args).to.deep.equal([60_000])
   })
   it('should return JSON as parsed', async () => {
-    const result = await Functions.GetWeather()
+    const result = await GetWeather()
     expect(result).to.equal(weatherData)
   })
   it('should reject when fetch rejects', async () => {
     const err = new Error('FOO')
     fetchStub.rejects(err)
-    const result = await EventuallyRejects(Functions.GetWeather())
+    const result = await EventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when fetch throws', async () => {
     const err = new Error('FOO')
     fetchStub.throws(err)
-    const result = await EventuallyRejects(Functions.GetWeather())
+    const result = await EventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when json parse rejects', async () => {
     const err = new Error('FOO')
     fetchResult.json.rejects(err)
-    const result = await EventuallyRejects(Functions.GetWeather())
+    const result = await EventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when json parse throws', async () => {
     const err = new Error('FOO')
     fetchResult.json.throws(err)
-    const result = await EventuallyRejects(Functions.GetWeather())
+    const result = await EventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when fetch retrieves invalid data', async () => {
     fetchResult.json.resolves({})
-    const result = await EventuallyRejects(Functions.GetWeather())
+    const result = await EventuallyRejects(GetWeather())
     expect(result.message).to.equal('Invalid JSON returned from Open Weather Map')
   })
 })

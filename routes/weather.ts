@@ -116,7 +116,8 @@ export const Imports = {
   logger: debug('type-imagereader:weather'),
   Router,
 }
-const defaultWeather: WeatherResults = {
+
+export const Weather: WeatherResults = {
   temp: undefined,
   pressure: undefined,
   humidity: undefined,
@@ -125,58 +126,57 @@ const defaultWeather: WeatherResults = {
   sunrise: undefined,
   sunset: undefined,
 }
-export const Functions = {
-  weather: defaultWeather,
-  isOpenWeatherData: (data: unknown): data is OpenWeatherData => {
-    if (typeof data !== 'object' || data === null) return false
-    if (!isOptionalMainValid(data)) return false
-    if (!isWeatherValid(data)) return false
-    return isSysValid(data)
-  },
-  GetWeather: async (): Promise<OpenWeatherData> => {
-    const appId = process.env.OPENWEATHER_APPID
-    if (!StringishHasValue(appId)) throw new WeatherConfigError('no OpenWeather AppId Defined!')
-    const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
-    if (!StringishHasValue(location)) throw new WeatherConfigError('no OpenWeather Location Defined!')
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    })
-    const data: unknown = await response.json()
-    if (!Functions.isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
-    return data
-  },
-  UpdateWeather: async (): Promise<WeatherResults> => {
-    const weather = Functions.weather
-    const latestSunrise = Imports.getLatestSunrise()
-    const earliestSunset = Imports.getEarliestSunset()
-    try {
-      const data = await Functions.GetWeather()
-      if (data.main !== undefined) {
-        weather.temp = data.main.temp + KELVIN_TO_CELCIUS_OFFSET
-        weather.pressure = data.main.pressure
-        weather.humidity = data.main.humidity
-      }
-      const [firstForecast] = data.weather
-      weather.description = firstForecast?.main
-      weather.icon = firstForecast?.icon
-      weather.sunrise = Math.min(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunrise, latestSunrise)
-      weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, earliestSunset)
-    } catch (err) {
-      if (err instanceof WeatherConfigError) {
-        Imports.logger('UpdateWeather skipped: %s', err.message)
-      } else {
-        Imports.logger('UpdateWeather error', err)
-      }
-      weather.temp = undefined
-      weather.pressure = undefined
-      weather.humidity = undefined
-      weather.description = undefined
-      weather.icon = undefined
-      weather.sunrise = latestSunrise
-      weather.sunset = earliestSunset
+
+export function isOpenWeatherData(data: unknown): data is OpenWeatherData {
+  if (typeof data !== 'object' || data === null) return false
+  if (!isOptionalMainValid(data)) return false
+  if (!isWeatherValid(data)) return false
+  return isSysValid(data)
+}
+
+export async function GetWeather(): Promise<OpenWeatherData> {
+  const appId = process.env.OPENWEATHER_APPID
+  if (!StringishHasValue(appId)) throw new WeatherConfigError('no OpenWeather AppId Defined!')
+  const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
+  if (!StringishHasValue(location)) throw new WeatherConfigError('no OpenWeather Location Defined!')
+  const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  })
+  const data: unknown = await response.json()
+  if (!isOpenWeatherData(data)) throw new Error('Invalid JSON returned from Open Weather Map')
+  return data
+}
+
+export async function UpdateWeather(): Promise<WeatherResults> {
+  const latestSunrise = Imports.getLatestSunrise()
+  const earliestSunset = Imports.getEarliestSunset()
+  try {
+    const data = await Internals.GetWeather()
+    if (data.main !== undefined) {
+      Weather.temp = data.main.temp + KELVIN_TO_CELCIUS_OFFSET
+      Weather.pressure = data.main.pressure
+      Weather.humidity = data.main.humidity
     }
-    return weather
-  },
+    const [firstForecast] = data.weather
+    Weather.description = firstForecast?.main
+    Weather.icon = firstForecast?.icon
+    Weather.sunrise = Math.min(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunrise, latestSunrise)
+    Weather.sunset = Math.max(SECONDS_TO_MILLISECONDS_MULTIPLE * data.sys.sunset, earliestSunset)
+  } catch (err) {
+    if (err instanceof WeatherConfigError) {
+      Imports.logger('UpdateWeather skipped: %s', err.message)
+    } else {
+      Imports.logger('UpdateWeather error', err)
+    }
+    Weather.temp = undefined
+    Weather.pressure = undefined
+    Weather.humidity = undefined
+    Weather.description = undefined
+    Weather.icon = undefined
+    Weather.sunrise = latestSunrise
+    Weather.sunset = earliestSunset
+  }
+  return Weather
 }
 
 const findMissingWeatherConfigVar = (): string | undefined => {
@@ -190,15 +190,15 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
   const router = Imports.Router()
 
   router.get('/', (_: Request, res: Response): void => {
-    res.status(StatusCodes.OK).json(Functions.weather)
+    res.status(StatusCodes.OK).json(Weather)
   })
 
   const missingVar = findMissingWeatherConfigVar()
   if (missingVar === undefined) {
     setInterval(() => {
-      void Functions.UpdateWeather()
+      void Internals.UpdateWeather()
     }, UPDATE_INTERVAL)
-    void Functions.UpdateWeather()
+    void Internals.UpdateWeather()
   } else {
     Imports.logger('weather updates disabled: %s is not configured', missingVar)
   }
@@ -206,3 +206,5 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
   await Promise.resolve() // async required by getRouter signature
   return router
 }
+
+export const Internals = { GetWeather, UpdateWeather }

@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions } from '#routes/weather.js'
+import { isOpenWeatherData } from '#routes/weather.js'
 
 describe('routes/weather function isOpenWeatherData', () => {
   const minMain = { temp: 0, pressure: 0, humidity: 0 }
@@ -320,7 +320,7 @@ describe('routes/weather function isOpenWeatherData', () => {
   ]
   tests.forEach(([title, obj, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(Functions.isOpenWeatherData(obj)).to.equal(expected)
+      expect(isOpenWeatherData(obj)).to.equal(expected)
     })
   })
 })
