@@ -6,12 +6,12 @@ import Sinon from 'sinon'
 import { timeUpdater } from '#public/scripts/slideshow/time.js'
 import { overlayUpdater } from '#public/scripts/slideshow/overlay.js'
 import { weatherUpdater, localWeatherUpdater } from '#public/scripts/slideshow/weather.js'
-import { Imports, bootstrap } from '#public/scripts/slideshow/index.js'
+import { Imports, bootstrap } from '#public/scripts/slideshow/bootstrap.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/index', () => {
+describe('public/slideshow/bootstrap', () => {
   let fakeCyclicAdd: Sinon.SinonStub | undefined = undefined
   let fakeCyclicStart: Sinon.SinonStub | undefined = undefined
   let fakeSocketConnect: Sinon.SinonStub | undefined = undefined

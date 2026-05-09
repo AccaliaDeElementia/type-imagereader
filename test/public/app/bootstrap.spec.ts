@@ -3,11 +3,11 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { Imports, bootstrap } from '#public/scripts/app/index.js'
+import { Imports, bootstrap } from '#public/scripts/app/bootstrap.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app initialzation', () => {
+describe('public/app/bootstrap', () => {
   let loadingInitSpy: Sinon.SinonStub = sandbox.stub()
   let confirmInitSpy: Sinon.SinonStub = sandbox.stub()
   let actionsInitSpy: Sinon.SinonStub = sandbox.stub()

@@ -1,5 +1,5 @@
 'use sanity'
 
-import { bootstrap } from './index.js'
+import { bootstrap } from './bootstrap.js'
 
 bootstrap()
