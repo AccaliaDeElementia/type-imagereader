@@ -3,7 +3,7 @@
 import _debug from 'debug'
 
 import { Initialize as _Initialize } from '../utils/persistance.js'
-import { Functions as _FindItems } from './findItems.js'
+import { FindSyncItems as _FindSyncItems } from './findItems.js'
 import { SyncAllPictures as _SyncAllPictures } from './pictures.js'
 import { SyncAllFolders as _SyncAllFolders } from './folders.js'
 import {
@@ -12,6 +12,7 @@ import {
 } from './folderCounts.js'
 import { EmitSqliteSizeWarning as _EmitSqliteSizeWarning } from './sqliteWarning.js'
 
+const _FindItems = { FindSyncItems: _FindSyncItems }
 const _Pictures = { SyncAllPictures: _SyncAllPictures }
 const _Folders = { SyncAllFolders: _SyncAllFolders }
 const _FolderCounts = {

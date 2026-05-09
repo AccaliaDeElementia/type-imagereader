@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import type { EventEmitter } from 'node:events'
-import { Functions, Imports } from '#sync/findItems.js'
+import { FindSyncItems, Imports } from '#sync/findItems.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
@@ -61,39 +61,39 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
   })
 
   it('should not acquire a copy connection', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(acquireStub.called).to.equal(false)
   })
 
   it('should not release a copy connection', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(releaseStub.called).to.equal(false)
   })
 
   it('should not invoke copyFrom', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(copyFromStub.called).to.equal(false)
   })
 
   it('should not write to the COPY stream', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(streamFake.write.called).to.equal(false)
   })
 
   it('should still walk the filesystem', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(fsWalkerStub.callCount).to.equal(1)
   })
 
   it('should walk filesystem starting at /data', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(fsWalkerStub.calledWith('/data')).to.equal(true)
   })
 
   it('should walk filesystem starting at DATA_DIR when set', async () => {
     process.env.DATA_DIR = '/library/images'
     try {
-      await Functions.FindSyncItems(knexFnFake)
+      await FindSyncItems(knexFnFake)
       expect(fsWalkerStub.calledWith('/library/images')).to.equal(true)
     } finally {
       delete process.env.DATA_DIR
@@ -101,7 +101,7 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
   })
 
   it('should pass walker items through BuildSyncItemRows', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     await callback(items, 0)
@@ -114,7 +114,7 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
     fsWalkerStub.callsFake(async (_: string, callback: Callback) => {
       await callback([{ path: '/f.jpg', isFile: true }], 0)
     })
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(formatSyncItemCsvStub.called).to.equal(false)
   })
 
@@ -124,7 +124,7 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
     fsWalkerStub.callsFake(async (_: string, callback: Callback) => {
       await callback([{ path: '/f.jpg', isFile: true }], 0)
     })
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(knexInstanceStub.insert.callCount).to.equal(2)
   })
 
@@ -134,7 +134,7 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
     fsWalkerStub.callsFake(async (_: string, callback: Callback) => {
       await callback([{ path: '/f.jpg', isFile: true }], 0)
     })
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(knexInstanceStub.insert.secondCall.args[0]).to.deep.equal([row])
   })
 
@@ -143,12 +143,12 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
     fsWalkerStub.callsFake(async (_: string, callback: Callback) => {
       await callback([], 0)
     })
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(knexInstanceStub.insert.callCount).to.equal(1)
   })
 
   it('should log status on first loop', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     buildSyncItemRowsStub.returns({ files: 3, dirs: 9, rows: [] })
@@ -157,7 +157,7 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
   })
 
   it('should log status on 101st loop', async () => {
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     loggerStub.resetHistory()
     const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
@@ -184,7 +184,7 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
       }
       await chain
     })
-    await Functions.FindSyncItems(knexFnFake)
+    await FindSyncItems(knexFnFake)
     expect(loggerStub.calledWith('Found all 0 dirs and 5050 files')).to.equal(true)
   })
 
@@ -196,7 +196,7 @@ describe('utils/syncfolders FindSyncItems() when client is not postgres (sqlite 
       }
       await chain
     })
-    const result = await Functions.FindSyncItems(knexFnFake)
+    const result = await FindSyncItems(knexFnFake)
     expect(result).to.equal(5050)
   })
 })
