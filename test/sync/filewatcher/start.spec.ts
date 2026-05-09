@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { Imports, Functions } from '#sync/filewatcher.js'
+import { Imports, Filewatcher, Start } from '#sync/filewatcher.js'
 import type { FlushCallback, WatcherSubscription } from '#sync/filewatcher.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
@@ -11,7 +11,7 @@ type SubscriberCallback = (err: Error | null, events: Array<{ type: string; path
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/filewatcher Functions.start()', () => {
+describe('utils/filewatcher Start()', () => {
   let loggerStub = sandbox.stub()
   let debugStub = sandbox.stub()
   let subscribeStub = sandbox.stub()
@@ -32,8 +32,8 @@ describe('utils/filewatcher Functions.start()', () => {
     setTimeoutStub = sandbox.stub(Imports, 'setTimeout').returns(Cast<ReturnType<typeof setTimeout>>(42))
     clearTimeoutStub = sandbox.stub(Imports, 'clearTimeout')
     flushCallback = sandbox.stub().resolves()
-    Functions.debounceMs = 5000
-    Functions.maxPendingChanges = 500
+    Filewatcher.debounceMs = 5000
+    Filewatcher.maxPendingChanges = 500
   })
 
   afterEach(() => {
@@ -41,72 +41,72 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should create a debug logger', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     expect(debugStub.callCount).to.equal(1)
   })
 
   it('should call subscribe with the data directory', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     expect(subscribeStub.firstCall.args[0]).to.equal('/data')
   })
 
   it('should return the subscription', async () => {
-    const result = await Functions.start('/data', flushCallback)
+    const result = await Start('/data', flushCallback)
     expect(result).to.equal(fakeSubscription)
   })
 
   it('should log watcher started message', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     expect(loggerStub.firstCall.args[0]).to.equal('File watcher started on')
   })
 
   it('should log data directory in startup message', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     expect(loggerStub.firstCall.args[1]).to.equal('/data')
   })
 
   it('should schedule flush when create events arrive', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.callCount).to.equal(1)
   })
 
   it('should schedule flush with debounceMs delay', async () => {
-    Functions.debounceMs = 7000
-    await Functions.start('/data', flushCallback)
+    Filewatcher.debounceMs = 7000
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.firstCall.args[1]).to.equal(7000)
   })
 
   it('should not schedule flush when no qualifying events arrive', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'update', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.callCount).to.equal(0)
   })
 
   it('should call clearTimeout once when new events arrive', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     expect(clearTimeoutStub.callCount).to.equal(1)
   })
 
   it('should pass timer id to clearTimeout when new events arrive', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     expect(clearTimeoutStub.firstCall.args[0]).to.equal(42)
   })
 
   it('should log error when watcher reports error', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     const error = new Error('watch failed')
     subscriberCallback(error, [])
     expect(loggerStub.calledWith('watcher error', error)).to.equal(true)
   })
 
   it('should not schedule flush when watcher reports error', async () => {
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(new Error('watch failed'), [])
     expect(setTimeoutStub.callCount).to.equal(0)
   })
@@ -116,7 +116,7 @@ describe('utils/filewatcher Functions.start()', () => {
       fn()
       return 42
     })
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
@@ -128,7 +128,7 @@ describe('utils/filewatcher Functions.start()', () => {
       fn()
       return 42
     })
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
@@ -142,7 +142,7 @@ describe('utils/filewatcher Functions.start()', () => {
       flushFn = fn
       return 42
     })
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = Cast<() => void>(flushFn)
     callFlush()
@@ -160,7 +160,7 @@ describe('utils/filewatcher Functions.start()', () => {
       flushFn = fn
       return 42
     })
-    await Functions.start('/data', rejectingFlush)
+    await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = Cast<() => void>(flushFn)
     callFlush()
@@ -177,7 +177,7 @@ describe('utils/filewatcher Functions.start()', () => {
       flushFn = fn
       return 42
     })
-    await Functions.start('/data', flushCallback)
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     // First flush — processes the changeset
     const callFirstFlush = Cast<() => void>(flushFn)
@@ -208,7 +208,7 @@ describe('utils/filewatcher Functions.start()', () => {
       }
       return 42
     })
-    await Functions.start('/data', rejectingFlush)
+    await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
@@ -219,8 +219,8 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should flush immediately when changeset reaches maxPendingChanges', async () => {
-    Functions.maxPendingChanges = 2
-    await Functions.start('/data', flushCallback)
+    Filewatcher.maxPendingChanges = 2
+    await Start('/data', flushCallback)
     subscriberCallback(null, [
       { type: 'create', path: '/data/foo.jpg' },
       { type: 'create', path: '/data/bar.jpg' },
@@ -231,8 +231,8 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should not schedule a timer when force-flushing at threshold', async () => {
-    Functions.maxPendingChanges = 2
-    await Functions.start('/data', flushCallback)
+    Filewatcher.maxPendingChanges = 2
+    await Start('/data', flushCallback)
     subscriberCallback(null, [
       { type: 'create', path: '/data/foo.jpg' },
       { type: 'create', path: '/data/bar.jpg' },
@@ -241,8 +241,8 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should clear existing timer when force-flushing at threshold', async () => {
-    Functions.maxPendingChanges = 2
-    await Functions.start('/data', flushCallback)
+    Filewatcher.maxPendingChanges = 2
+    await Start('/data', flushCallback)
     // First event: below threshold, schedules a timer
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.callCount).to.equal(1)
@@ -252,15 +252,15 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should schedule a timer below maxPendingChanges', async () => {
-    Functions.maxPendingChanges = 10
-    await Functions.start('/data', flushCallback)
+    Filewatcher.maxPendingChanges = 10
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.callCount).to.equal(1)
   })
 
   it('should not call flush callback immediately below maxPendingChanges', async () => {
-    Functions.maxPendingChanges = 10
-    await Functions.start('/data', flushCallback)
+    Filewatcher.maxPendingChanges = 10
+    await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(Cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(0)
   })
@@ -275,7 +275,7 @@ describe('utils/filewatcher Functions.start()', () => {
       flushFn = fn
       return 42
     })
-    await Functions.start('/data', delayedReject)
+    await Start('/data', delayedReject)
     // Event arrives, scheduleFlush sets debounce timer
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = Cast<() => void>(flushFn)
@@ -293,10 +293,10 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should log flush error when force-flush and scheduleRetry both fail', async () => {
-    Functions.maxPendingChanges = 1
+    Filewatcher.maxPendingChanges = 1
     const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
     setTimeoutStub.throws(new Error('setTimeout broke'))
-    await Functions.start('/data', rejectingFlush)
+    await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
@@ -319,7 +319,7 @@ describe('utils/filewatcher Functions.start()', () => {
       }
       return 42
     })
-    await Functions.start('/data', rejectingFlush)
+    await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
@@ -334,32 +334,32 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should not schedule a timer for initial force-flush', async () => {
-    Functions.maxPendingChanges = 1
+    Filewatcher.maxPendingChanges = 1
     const delayedFlush: FlushCallback = sandbox.stub().callsFake(async () => {
       await Promise.resolve()
     })
-    await Functions.start('/data', delayedFlush)
+    await Start('/data', delayedFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.callCount).to.equal(0)
   })
 
   it('should schedule debounce timer for events during in-flight force-flush', async () => {
-    Functions.maxPendingChanges = 1
+    Filewatcher.maxPendingChanges = 1
     const delayedFlush: FlushCallback = sandbox.stub().callsFake(async () => {
       await Promise.resolve()
     })
-    await Functions.start('/data', delayedFlush)
+    await Start('/data', delayedFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     expect(setTimeoutStub.callCount).to.equal(1)
   })
 
   it('should not call flush a second time while force-flush is in progress', async () => {
-    Functions.maxPendingChanges = 1
+    Filewatcher.maxPendingChanges = 1
     const delayedFlush: FlushCallback = sandbox.stub().callsFake(async () => {
       await Promise.resolve()
     })
-    await Functions.start('/data', delayedFlush)
+    await Start('/data', delayedFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     await Promise.resolve()
@@ -370,13 +370,13 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should allow a new force-flush after previous force-flush completes', async () => {
-    Functions.maxPendingChanges = 1
+    Filewatcher.maxPendingChanges = 1
     let flushCount = 0
     const delayedFlush: FlushCallback = sandbox.stub().callsFake(async () => {
       flushCount += 1
       await Promise.resolve()
     })
-    await Functions.start('/data', delayedFlush)
+    await Start('/data', delayedFlush)
     // First event triggers force-flush
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     // Let force-flush complete
@@ -395,7 +395,7 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should allow a new force-flush after previous force-flush rejects', async () => {
-    Functions.maxPendingChanges = 1
+    Filewatcher.maxPendingChanges = 1
     const rejectOnce: FlushCallback = sandbox
       .stub()
       .onFirstCall()
@@ -407,7 +407,7 @@ describe('utils/filewatcher Functions.start()', () => {
       .callsFake(async () => {
         await Promise.resolve()
       })
-    await Functions.start('/data', rejectOnce)
+    await Start('/data', rejectOnce)
     // First event triggers force-flush which will reject
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
@@ -424,9 +424,9 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should log retry message when immediate force-flush fails', async () => {
-    Functions.maxPendingChanges = 1
+    Filewatcher.maxPendingChanges = 1
     const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
-    await Functions.start('/data', rejectingFlush)
+    await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
@@ -444,7 +444,7 @@ describe('utils/filewatcher Functions.start()', () => {
       return 42
     })
     const rejectingFlush: FlushCallback = sandbox.stub().rejects(flushErr)
-    await Functions.start('/data', rejectingFlush)
+    await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = Cast<() => void>(flushFn)
     callFlush()
@@ -465,7 +465,7 @@ describe('utils/filewatcher Functions.start()', () => {
       flushFn = fn
       return 42
     })
-    await Functions.start('/data', Cast<FlushCallback>(delayedFlush))
+    await Start('/data', Cast<FlushCallback>(delayedFlush))
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     Cast<() => void>(flushFn)()
     await Promise.resolve()
@@ -492,9 +492,9 @@ describe('utils/filewatcher Functions.start()', () => {
   })
 
   it('should schedule one debounce timer when immediate force-flush fails', async () => {
-    Functions.maxPendingChanges = 1
+    Filewatcher.maxPendingChanges = 1
     const rejectingFlush: FlushCallback = sandbox.stub().rejects(new Error('flush failed'))
-    await Functions.start('/data', rejectingFlush)
+    await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
