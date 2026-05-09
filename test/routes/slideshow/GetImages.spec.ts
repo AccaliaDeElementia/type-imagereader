@@ -2,7 +2,7 @@
 
 import { createKnexChainFake } from '#testutils/Knex.js'
 import { expect } from 'chai'
-import { Functions } from '#routes/slideshow.js'
+import { GetImages } from '#routes/slideshow.js'
 
 describe('routes/slideshow function GetImages()', () => {
   let {
@@ -57,12 +57,12 @@ describe('routes/slideshow function GetImages()', () => {
   ]
   tests.forEach(([title, page, limit, validationFn]) => {
     it(`should ${title}`, async () => {
-      const images = await Functions.GetImages(knexFake, '/foo/bar', page, limit)
+      const images = await GetImages(knexFake, '/foo/bar', page, limit)
       validationFn(images)
     })
   })
   it('should escape % in path for LIKE query', async () => {
-    await Functions.GetImages(knexFake, '/foo%bar', 0, 40)
+    await GetImages(knexFake, '/foo%bar', 0, 40)
     expect(knexInstanceStub.where.firstCall.args).to.deep.equal(['path', 'like', '/foo\\%bar%'])
   })
 })

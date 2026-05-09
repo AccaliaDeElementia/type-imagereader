@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { HandleSocketState, Functions, Imports, SocketHandlers } from '#routes/slideshow.js'
+import { HandleSocketState, HandleSocket, joinSlideshow, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -23,12 +23,12 @@ describe('routes/slideshow socket join-slideshow()', () => {
     serverFake = Cast<WebSocketServer>({})
     socketStub = { on: sandbox.stub(), join: sandbox.stub().resolves(), emit: sandbox.stub() }
     socketFake = Cast<Socket>(socketStub)
-    socketState = Functions.HandleSocket(knexFake, serverFake, socketFake)
+    socketState = HandleSocket(knexFake, serverFake, socketFake)
     socketState.roomName = 'NO_ROOM' // assign sentical value to test against later
     roomData = {
       uriSafeImage: '/foo/quux.png',
     }
-    getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Internals, 'GetRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
   })
   afterEach(() => {
@@ -60,7 +60,7 @@ describe('routes/slideshow socket join-slideshow()', () => {
   ]
   tests.forEach(([title, room, validationFn]) => {
     it(`should ${title}`, async () => {
-      await SocketHandlers.joinSlideshow(room, socketState, socketFake, knexFake)
+      await joinSlideshow(room, socketState, socketFake, knexFake)
       validationFn()
     })
   })
@@ -73,22 +73,22 @@ describe('routes/slideshow socket join-slideshow()', () => {
     })
 
     it('should log joinSlideshow format on valid invocation', async () => {
-      await SocketHandlers.joinSlideshow('/foo', socketState, socketFake, knexFake)
+      await joinSlideshow('/foo', socketState, socketFake, knexFake)
       expect(loggerStub.firstCall.args[0]).to.equal('joinSlideshow %s (socket=%s)')
     })
 
     it('should log the room name on valid invocation', async () => {
-      await SocketHandlers.joinSlideshow('/foo', socketState, socketFake, knexFake)
+      await joinSlideshow('/foo', socketState, socketFake, knexFake)
       expect(loggerStub.firstCall.args[1]).to.equal('/foo')
     })
 
     it('should log the socket id on valid invocation', async () => {
-      await SocketHandlers.joinSlideshow('/foo', socketState, socketFake, knexFake)
+      await joinSlideshow('/foo', socketState, socketFake, knexFake)
       expect(loggerStub.firstCall.args[2]).to.equal('socket-id-123')
     })
 
     it('should not log when room name is missing', async () => {
-      await SocketHandlers.joinSlideshow(undefined, socketState, socketFake, knexFake)
+      await joinSlideshow(undefined, socketState, socketFake, knexFake)
       expect(loggerStub.callCount).to.equal(0)
     })
   })

@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { HandleSocketState, Functions, Imports, SocketHandlers } from '#routes/slideshow.js'
+import { HandleSocketState, HandleSocket, gotoImage, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -26,10 +26,10 @@ describe('routes/slideshow socket goto-image', () => {
     serverFake = Cast<WebSocketServer>(ioStub)
     socketStub = { on: sandbox.stub() }
     socketFake = Cast<Socket>(socketStub)
-    socketState = Functions.HandleSocket(knexFake, serverFake, socketFake)
+    socketState = HandleSocket(knexFake, serverFake, socketFake)
     folder = { path: '/foo/bar' }
     roomData = { images: [folder], index: -1 }
-    getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Internals, 'GetRoomAndIncrementImage')
     getRoomStub.resolves(roomData)
     picturePath = `Picture-${Math.random()}.png`
     setLatestStub = sandbox.stub(Imports, 'setLatest').resolves(picturePath)
@@ -75,7 +75,7 @@ describe('routes/slideshow socket goto-image', () => {
       socketState.roomName = room
       roomData.index = index
       const spy = sandbox.stub()
-      await SocketHandlers.gotoImage(spy, socketState, knexFake)
+      await gotoImage(spy, socketState, knexFake)
       validationFn(spy)
     })
   })
@@ -84,7 +84,7 @@ describe('routes/slideshow socket goto-image', () => {
     socketState.roomName = '/foo'
     roomData.index = 0
     const spy = sandbox.stub()
-    await SocketHandlers.gotoImage(spy, socketState, knexFake)
+    await gotoImage(spy, socketState, knexFake)
     expect(spy.firstCall.args[0]).to.equal(null)
   })
 
@@ -97,20 +97,20 @@ describe('routes/slideshow socket goto-image', () => {
     it('should log gotoImage format on valid invocation', async () => {
       socketState.roomName = '/foo'
       roomData.index = 0
-      await SocketHandlers.gotoImage(sandbox.stub(), socketState, knexFake)
+      await gotoImage(sandbox.stub(), socketState, knexFake)
       expect(loggerStub.firstCall.args[0]).to.equal('gotoImage in %s')
     })
 
     it('should log the room name on valid invocation', async () => {
       socketState.roomName = '/foo'
       roomData.index = 0
-      await SocketHandlers.gotoImage(sandbox.stub(), socketState, knexFake)
+      await gotoImage(sandbox.stub(), socketState, knexFake)
       expect(loggerStub.firstCall.args[1]).to.equal('/foo')
     })
 
     it('should not log when room name is null', async () => {
       socketState.roomName = null
-      await SocketHandlers.gotoImage(sandbox.stub(), socketState, knexFake)
+      await gotoImage(sandbox.stub(), socketState, knexFake)
       expect(loggerStub.callCount).to.equal(0)
     })
   })

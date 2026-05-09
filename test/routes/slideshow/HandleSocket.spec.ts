@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { assert, expect } from 'chai'
-import { Functions, Imports, SocketHandlers } from '#routes/slideshow.js'
+import { HandleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 
@@ -23,11 +23,11 @@ describe('routes/slideshow function HandleSocket()', () => {
     socketFake = Cast<Socket>(socketStub)
     loggerStub = sandbox.stub(Imports, 'logger')
     socketStubs = [
-      ['get-launchId', sandbox.stub(SocketHandlers, 'getLaunchId')],
-      ['join-slideshow', sandbox.stub(SocketHandlers, 'joinSlideshow').resolves()],
-      ['prev-image', sandbox.stub(SocketHandlers, 'prevImage').resolves()],
-      ['next-image', sandbox.stub(SocketHandlers, 'nextImage').resolves()],
-      ['goto-image', sandbox.stub(SocketHandlers, 'gotoImage').resolves()],
+      ['get-launchId', sandbox.stub(Internals, 'getLaunchId')],
+      ['join-slideshow', sandbox.stub(Internals, 'joinSlideshow').resolves()],
+      ['prev-image', sandbox.stub(Internals, 'prevImage').resolves()],
+      ['next-image', sandbox.stub(Internals, 'nextImage').resolves()],
+      ['goto-image', sandbox.stub(Internals, 'gotoImage').resolves()],
     ]
   })
   afterEach(() => {
@@ -35,7 +35,7 @@ describe('routes/slideshow function HandleSocket()', () => {
   })
   const endpoints = ['get-launchId', 'join-slideshow', 'prev-image', 'next-image', 'goto-image']
   it('should register expected endpoint count', () => {
-    Functions.HandleSocket(knexFake, serverFake, socketFake)
+    HandleSocket(knexFake, serverFake, socketFake)
     expect(socketStub.on.callCount).to.equal(endpoints.length)
   })
   const getCallback = (endpoint: string): unknown =>
@@ -45,15 +45,15 @@ describe('routes/slideshow function HandleSocket()', () => {
       .map((call) => call.args[1] as unknown)[0]
   endpoints.forEach((endpoint) => {
     it(`should handle socket message '${endpoint}'`, () => {
-      Functions.HandleSocket(knexFake, serverFake, socketFake)
+      HandleSocket(knexFake, serverFake, socketFake)
       expect(socketStub.on.calledWith(endpoint)).to.equal(true)
     })
     it(`should register a callback for '${endpoint}'`, () => {
-      Functions.HandleSocket(knexFake, serverFake, socketFake)
+      HandleSocket(knexFake, serverFake, socketFake)
       assert.isFunction(getCallback(endpoint))
     })
     it(`should forward call for ${endpoint}`, () => {
-      Functions.HandleSocket(knexFake, serverFake, socketFake)
+      HandleSocket(knexFake, serverFake, socketFake)
       const fn = Cast<() => void>(getCallback(endpoint))
       fn()
       const stub = socketStubs.find(([name]) => name === endpoint)
@@ -73,7 +73,7 @@ describe('routes/slideshow function HandleSocket()', () => {
       assert(stub !== undefined)
       const err = new Error(`boom-${handlerName}`)
       stub[1].rejects(err)
-      Functions.HandleSocket(knexFake, serverFake, socketFake)
+      HandleSocket(knexFake, serverFake, socketFake)
       const fn = Cast<(cb?: () => void) => void>(getCallback(endpoint))
       fn(() => undefined)
       await yieldMacro()
@@ -85,7 +85,7 @@ describe('routes/slideshow function HandleSocket()', () => {
     const stub = socketStubs.find(([name]) => name === 'goto-image')
     assert(stub !== undefined)
     stub[1].rejects(new Error('goto failed'))
-    Functions.HandleSocket(knexFake, serverFake, socketFake)
+    HandleSocket(knexFake, serverFake, socketFake)
     const fn = Cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
     const callbackStub = sandbox.stub()
     fn(callbackStub)
@@ -93,15 +93,15 @@ describe('routes/slideshow function HandleSocket()', () => {
     expect(callbackStub.firstCall.args).to.deep.equal([null])
   })
   it('should return an object for state storage', () => {
-    const state = Functions.HandleSocket(knexFake, serverFake, socketFake)
+    const state = HandleSocket(knexFake, serverFake, socketFake)
     assert.isObject(state)
   })
   it('should return state object', () => {
-    const state = Functions.HandleSocket(knexFake, serverFake, socketFake)
+    const state = HandleSocket(knexFake, serverFake, socketFake)
     expect(state).to.have.all.keys('roomName')
   })
   it('should set initial roomName to null', () => {
-    const state = Functions.HandleSocket(knexFake, serverFake, socketFake)
+    const state = HandleSocket(knexFake, serverFake, socketFake)
     expect(state.roomName).to.equal(null)
   })
 })

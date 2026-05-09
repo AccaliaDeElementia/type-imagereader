@@ -3,7 +3,7 @@
 import { createKnexChainFake } from '#testutils/Knex.js'
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { Functions, Imports } from '#routes/slideshow.js'
+import { GetImageCount, Imports } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -37,7 +37,7 @@ describe('routes/slideshow function GetImageCount()', () => {
     ]
     queryTests.forEach(([title, validationFn]) => {
       it(`should ${title}`, async () => {
-        await Functions.GetImageCount(knexFake, '/slideshow/path')
+        await GetImageCount(knexFake, '/slideshow/path')
         validationFn()
       })
     })
@@ -58,12 +58,12 @@ describe('routes/slideshow function GetImageCount()', () => {
     resultsTests.forEach(([title, result, expected]) => {
       it(`should resolve ${title}`, async () => {
         knexInstanceStub.where.resolves(result)
-        const actual = await Functions.GetImageCount(knexFake, '/foo')
+        const actual = await GetImageCount(knexFake, '/foo')
         expect(actual).to.equal(expected)
       })
     })
     it('should escape % in path for LIKE query', async () => {
-      await Functions.GetImageCount(knexFake, '/foo%bar/')
+      await GetImageCount(knexFake, '/foo%bar/')
       expect(knexInstanceStub.where.firstCall.args).to.deep.equal(['path', 'like', '/foo\\%bar/%'])
     })
   })
@@ -81,16 +81,16 @@ describe('routes/slideshow function GetImageCount()', () => {
       } = createKnexChainFake(['count'] as const, ['where'] as const))
     })
     it('should query knex once', async () => {
-      await Functions.GetImageCount(knexFake, '/slideshow/path', 'all')
+      await GetImageCount(knexFake, '/slideshow/path', 'all')
       expect(knexStub.callCount).to.equal(1)
     })
     it('should filter results with where clause', async () => {
-      await Functions.GetImageCount(knexFake, '/slideshow/path', 'all')
+      await GetImageCount(knexFake, '/slideshow/path', 'all')
       expect(knexInstanceStub.where.callCount).to.equal(1)
     })
     it('should resolve number results', async () => {
       knexInstanceStub.where.resolves([{ count: 12 }])
-      const actual = await Functions.GetImageCount(knexFake, '/foo', 'all')
+      const actual = await GetImageCount(knexFake, '/foo', 'all')
       expect(actual).to.equal(12)
     })
   })
@@ -128,7 +128,7 @@ describe('routes/slideshow function GetImageCount()', () => {
     ]
     queryTests.forEach(([title, validationFn]) => {
       it(`should ${title}`, async () => {
-        await Functions.GetImageCount(knexFake, '/slideshow/path', 'unread')
+        await GetImageCount(knexFake, '/slideshow/path', 'unread')
         validationFn()
       })
     })
@@ -149,12 +149,12 @@ describe('routes/slideshow function GetImageCount()', () => {
     resultsTests.forEach(([title, result, expected]) => {
       it(`should resolve ${title}`, async () => {
         knexInstanceStub.andWhere.resolves(result)
-        const actual = await Functions.GetImageCount(knexFake, '/foo', 'unread')
+        const actual = await GetImageCount(knexFake, '/foo', 'unread')
         expect(actual).to.equal(expected)
       })
     })
     it('should escape % in path for LIKE query', async () => {
-      await Functions.GetImageCount(knexFake, '/foo%bar/', 'unread')
+      await GetImageCount(knexFake, '/foo%bar/', 'unread')
       expect(knexInstanceStub.where.firstCall.args).to.deep.equal(['path', 'like', '/foo\\%bar/%'])
     })
   })
@@ -178,23 +178,23 @@ describe('routes/slideshow function GetImageCount()', () => {
       sandbox.restore()
     })
     it('should still resolve to ZERO_COUNT as a safe fallback', async () => {
-      const actual = await Functions.GetImageCount(knexFake, '/foo')
+      const actual = await GetImageCount(knexFake, '/foo')
       expect(actual).to.equal(0)
     })
     it('should log the query failure', async () => {
-      await Functions.GetImageCount(knexFake, '/foo')
+      await GetImageCount(knexFake, '/foo')
       const hasLog = loggerStub.getCalls().some((c) => c.args[0] === 'GetImageCount query error')
       expect(hasLog).to.equal(true)
     })
     it('should include the rejection error in the log arguments', async () => {
       const err = new Error('db exploded')
       knexInstanceStub.where.rejects(err)
-      await Functions.GetImageCount(knexFake, '/foo')
+      await GetImageCount(knexFake, '/foo')
       const logCall = loggerStub.getCalls().find((c) => c.args[0] === 'GetImageCount query error')
       expect(logCall?.args[1]).to.equal(err)
     })
     it('should still call the query once before logging', async () => {
-      await Functions.GetImageCount(knexFake, '/foo')
+      await GetImageCount(knexFake, '/foo')
       expect(knexStub.callCount).to.equal(1)
     })
   })

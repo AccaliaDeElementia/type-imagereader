@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
-import { Config, Functions, Imports } from '#routes/slideshow.js'
+import { Config, TickCountdown, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer } from 'socket.io'
 
 const sandbox = Sinon.createSandbox()
@@ -51,18 +51,18 @@ describe('routes/slideshow function TickCountdown()', () => {
     ioStub.rooms = ioStub
     Config.rooms = {}
     Config.countdownDuration = 60
-    getRoomStub = sandbox.stub(Functions, 'GetRoomAndIncrementImage')
+    getRoomStub = sandbox.stub(Internals, 'GetRoomAndIncrementImage')
     loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
     sandbox.restore()
   })
   it('should not call io.of with empty room list', async () => {
-    await Functions.TickCountdown(knexFake, ioFake)
+    await TickCountdown(knexFake, ioFake)
     expect(ioStub.of.callCount).to.equal(0)
   })
   it('should not call GetRoom with empty room list', async () => {
-    await Functions.TickCountdown(knexFake, ioFake)
+    await TickCountdown(knexFake, ioFake)
     expect(getRoomStub.callCount).to.equal(0)
   })
   const clients = new Set(['/'])
@@ -147,7 +147,7 @@ describe('routes/slideshow function TickCountdown()', () => {
     it(`should ${title}`, async () => {
       buildRoom(countdown, '/Room', images, '/an/image.png')
       ioStub.get.returns(clients)
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       validationFn()
     })
   })
@@ -165,7 +165,7 @@ describe('routes/slideshow function TickCountdown()', () => {
           room.images = ['/new/image.png']
         }
       })
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       expect(ioStub.emit.firstCall.args[1]).to.equal('/new/image.png')
     })
     it('should not emit when GetRoomAndIncrementImage empties the image list', async () => {
@@ -176,7 +176,7 @@ describe('routes/slideshow function TickCountdown()', () => {
           room.uriSafeImage = ''
         }
       })
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       expect(ioStub.to.callCount).to.equal(0)
     })
   })
@@ -189,21 +189,21 @@ describe('routes/slideshow function TickCountdown()', () => {
       getRoomStub.rejects(tickFailedError)
     })
     it('should log once', async () => {
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       expect(loggerStub.callCount).to.equal(1)
     })
     it("should log with message 'TickCountdown error'", async () => {
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       expect(loggerStub.firstCall.args[0]).to.equal('TickCountdown error')
     })
     it('should log the error object', async () => {
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       expect(loggerStub.firstCall.args[1]).to.equal(tickFailedError)
     })
   })
 
   it('should not log when no error occurs', async () => {
-    await Functions.TickCountdown(knexFake, ioFake)
+    await TickCountdown(knexFake, ioFake)
     expect(loggerStub.callCount).to.equal(0)
   })
 
@@ -221,15 +221,15 @@ describe('routes/slideshow function TickCountdown()', () => {
         getRoomStub.onSecondCall().rejects(roomBError)
       })
       it('should log once', async () => {
-        await Functions.TickCountdown(knexFake, ioFake)
+        await TickCountdown(knexFake, ioFake)
         expect(loggerStub.callCount).to.equal(1)
       })
       it('should log the rejecting room error', async () => {
-        await Functions.TickCountdown(knexFake, ioFake)
+        await TickCountdown(knexFake, ioFake)
         expect(loggerStub.firstCall.args[1]).to.equal(roomBError)
       })
       it('should emit for the successful room', async () => {
-        await Functions.TickCountdown(knexFake, ioFake)
+        await TickCountdown(knexFake, ioFake)
         expect(ioStub.emit.callCount).to.equal(1)
       })
     })
@@ -241,15 +241,15 @@ describe('routes/slideshow function TickCountdown()', () => {
         getRoomStub.onSecondCall().resolves()
       })
       it('should log once', async () => {
-        await Functions.TickCountdown(knexFake, ioFake)
+        await TickCountdown(knexFake, ioFake)
         expect(loggerStub.callCount).to.equal(1)
       })
       it('should log the error', async () => {
-        await Functions.TickCountdown(knexFake, ioFake)
+        await TickCountdown(knexFake, ioFake)
         expect(loggerStub.firstCall.args[1]).to.equal(roomAError)
       })
       it('should emit for the successful room', async () => {
-        await Functions.TickCountdown(knexFake, ioFake)
+        await TickCountdown(knexFake, ioFake)
         expect(ioStub.emit.callCount).to.equal(1)
       })
     })
@@ -258,21 +258,21 @@ describe('routes/slideshow function TickCountdown()', () => {
   describe('room pruning logging', () => {
     it('should log room-pruned format when countdown ticks past prune threshold', async () => {
       buildRoom(-3600, '/PrunedRoom', ['/a.png'], '/a.png')
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       const hasPruneLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
       expect(hasPruneLog).to.equal(true)
     })
 
     it('should log the pruned room name', async () => {
       buildRoom(-3600, '/SpecificRoom', ['/a.png'], '/a.png')
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       const pruneCall = loggerStub.getCalls().find((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
       expect(pruneCall?.args[1]).to.equal('/SpecificRoom')
     })
 
     it('should not log room-pruned when room is still alive', async () => {
       buildRoom(5, '/PrunedRoom', ['/a.png'], '/a.png')
-      await Functions.TickCountdown(knexFake, ioFake)
+      await TickCountdown(knexFake, ioFake)
       const hasPruneLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow room pruned: %s (idle %ds)')
       expect(hasPruneLog).to.equal(false)
     })

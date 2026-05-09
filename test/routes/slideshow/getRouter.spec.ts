@@ -6,7 +6,7 @@ import type { Socket, Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { assert, expect } from 'chai'
-import { Config, Functions, getRouter, Imports } from '#routes/slideshow.js'
+import { Config, Internals, getRouter, Imports } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -33,10 +33,10 @@ describe('routes/slideshow function getRouter', () => {
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
     knexFake = StubToKnex({})
     sandbox.stub(Imports, 'Initialize').resolves(knexFake)
-    rootRouteStub = sandbox.stub(Functions, 'RootRoute').resolves()
-    handleSocketStub = sandbox.stub(Functions, 'HandleSocket')
+    rootRouteStub = sandbox.stub(Internals, 'RootRoute').resolves()
+    handleSocketStub = sandbox.stub(Internals, 'HandleSocket')
     setIntervalStub = sandbox.stub(global, 'setInterval')
-    tickCountdownStub = sandbox.stub(Functions, 'TickCountdown').resolves()
+    tickCountdownStub = sandbox.stub(Internals, 'TickCountdown').resolves()
     applicationFake = Cast<Application>({})
     serverFake = Cast<Server>({})
     ioStub = {
