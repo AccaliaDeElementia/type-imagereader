@@ -8,7 +8,7 @@ import type { Changeset } from './filewatcher.js'
 import _debug from 'debug'
 import type { Debugger } from 'debug'
 
-import _fsWalker from './fswalker.js'
+import { FsWalker as _FsWalker } from './fswalker.js'
 import {
   AddFolderAndAncestors as _AddFolderAndAncestors,
   Chunk as _Chunk,
@@ -33,7 +33,7 @@ const DECIMAL_RADIX = 10
 export const Imports = {
   logPrefix: 'type-imagereader:sync:incrementalsync',
   debug: _debug,
-  fsWalker: _fsWalker,
+  fsWalker: _FsWalker,
   Helpers: _Helpers,
   FolderFunctions: _FolderFunctions,
   getDbChunkSize: _getDbChunkSize,

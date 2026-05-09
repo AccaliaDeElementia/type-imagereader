@@ -5,24 +5,24 @@ import Sinon from 'sinon'
 
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 
-import fsWalker from '#sync/fswalker.js'
+import { FsWalker, Imports, Fswalker } from '#sync/fswalker.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/fswalker function fsWalker()', () => {
+describe('utils/fswalker function FsWalker()', () => {
   let readdirSpy = sandbox.stub()
-  const originalConcurrency = fsWalker.concurrency
+  const originalConcurrency = Fswalker.concurrency
   beforeEach(() => {
-    readdirSpy = sandbox.stub(fsWalker.fn, 'readdir')
+    readdirSpy = sandbox.stub(Imports, 'readdir')
     readdirSpy.resolves([])
   })
   afterEach(() => {
     sandbox.restore()
-    fsWalker.concurrency = originalConcurrency
+    Fswalker.concurrency = originalConcurrency
   })
   it('should call readdir starting at root', async () => {
-    await fsWalker('/foo/bar/baz', async () => {
+    await FsWalker('/foo/bar/baz', async () => {
       await Promise.resolve()
     })
     expect(readdirSpy.callCount).to.equal(1)
@@ -36,7 +36,7 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     const spy = sandbox.stub()
     spy.resolves()
-    await fsWalker('/bar/baz', spy)
+    await FsWalker('/bar/baz', spy)
     expect(spy.callCount).to.equal(1)
   })
   it('should call the item callback with expected items for root node', async () => {
@@ -48,7 +48,7 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     const spy = sandbox.stub()
     spy.resolves()
-    await fsWalker('/bar/baz', spy)
+    await FsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([
       {
         path: '/foo.png',
@@ -65,7 +65,7 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     const spy = sandbox.stub()
     spy.resolves()
-    await fsWalker('/bar/baz', spy)
+    await FsWalker('/bar/baz', spy)
     expect(spy.callCount).to.equal(2)
   })
   it('should add folder to list', async () => {
@@ -77,7 +77,7 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     const spy = sandbox.stub()
     spy.resolves()
-    await fsWalker('/bar/baz', spy)
+    await FsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([
       {
         path: '/foo.png',
@@ -94,7 +94,7 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     const spy = sandbox.stub()
     spy.resolves()
-    await fsWalker('/bar/baz', spy)
+    await FsWalker('/bar/baz', spy)
     expect(spy.callCount).to.equal(1)
   })
   it('should filter unexpected filetype', async () => {
@@ -106,7 +106,7 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     const spy = sandbox.stub()
     spy.resolves()
-    await fsWalker('/bar/baz', spy)
+    await FsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([])
   })
   const upperCaseExtensions = ['JPG', 'JPEG', 'PNG', 'WEBP', 'GIF', 'SVG', 'TIF', 'TIFF', 'BMP', 'JFIF', 'JPE']
@@ -114,7 +114,7 @@ describe('utils/fswalker function fsWalker()', () => {
     it(`should accept uppercase .${ext} extension`, async () => {
       readdirSpy.resolves([{ name: `foo.${ext}`, isDirectory: () => false }])
       const spy = sandbox.stub().resolves()
-      await fsWalker('/bar/baz', spy)
+      await FsWalker('/bar/baz', spy)
       expect(spy.firstCall.args[0]).to.deep.equal([{ path: `/foo.${ext}`, isFile: true }])
     })
   })
@@ -123,14 +123,14 @@ describe('utils/fswalker function fsWalker()', () => {
     it(`should accept mixed-case .${ext} extension`, async () => {
       readdirSpy.resolves([{ name: `foo.${ext}`, isDirectory: () => false }])
       const spy = sandbox.stub().resolves()
-      await fsWalker('/bar/baz', spy)
+      await FsWalker('/bar/baz', spy)
       expect(spy.firstCall.args[0]).to.deep.equal([{ path: `/foo.${ext}`, isFile: true }])
     })
   })
   it('should propagate rejection from eachItem callback', async () => {
     readdirSpy.resolves([{ name: 'foo.png', isDirectory: () => false }])
     const error = new Error('callback failed')
-    const err = await EventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(error)))
+    const err = await EventuallyRejects(FsWalker('/bar/baz', sandbox.stub().rejects(error)))
     expect(err).to.equal(error)
   })
   it('should stop walking when eachItem rejects mid-walk', async () => {
@@ -139,7 +139,7 @@ describe('utils/fswalker function fsWalker()', () => {
       { name: 'foo.png', isDirectory: () => false },
     ])
     readdirSpy.onSecondCall().resolves([])
-    await EventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(new Error('stop'))))
+    await EventuallyRejects(FsWalker('/bar/baz', sandbox.stub().rejects(new Error('stop'))))
     expect(readdirSpy.callCount).to.equal(1)
   })
   it('should preserve a single error when concurrent peer workers both reject', async () => {
@@ -149,7 +149,7 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     readdirSpy.onSecondCall().rejects(new Error('errA'))
     readdirSpy.onThirdCall().rejects(new Error('errB'))
-    const err = await EventuallyRejects(fsWalker('/bar/baz', sandbox.stub().resolves()))
+    const err = await EventuallyRejects(FsWalker('/bar/baz', sandbox.stub().resolves()))
     expect(err.message).to.match(/^err[AB]$/v)
   })
   it('should call the item callback once when hidden folder present', async () => {
@@ -161,7 +161,7 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     const spy = sandbox.stub()
     spy.resolves()
-    await fsWalker('/bar/baz', spy)
+    await FsWalker('/bar/baz', spy)
     expect(spy.callCount).to.equal(1)
   })
   it('should ignore hidden folder', async () => {
@@ -173,11 +173,11 @@ describe('utils/fswalker function fsWalker()', () => {
     ])
     const spy = sandbox.stub()
     spy.resolves()
-    await fsWalker('/bar/baz', spy)
+    await FsWalker('/bar/baz', spy)
     expect(spy.firstCall.args[0]).to.deep.equal([])
   })
   it('should run multiple readdirs in flight once the queue has siblings', async () => {
-    fsWalker.concurrency = 3
+    Fswalker.concurrency = 3
     const inFlight = { count: 0, peak: 0 }
     const release: Array<() => void> = []
     let drain = false
@@ -198,7 +198,7 @@ describe('utils/fswalker function fsWalker()', () => {
       inFlight.count -= 1
       return []
     })
-    const walk = fsWalker('/root', sandbox.stub().resolves())
+    const walk = FsWalker('/root', sandbox.stub().resolves())
     while (inFlight.count < 3) {
       // eslint-disable-next-line no-await-in-loop -- waiting for workers to saturate
       await yieldMacro()
@@ -209,7 +209,7 @@ describe('utils/fswalker function fsWalker()', () => {
     expect(inFlight.peak).to.equal(3)
   })
   it('should process all nested directories when concurrency exceeds queue depth', async () => {
-    fsWalker.concurrency = 4
+    Fswalker.concurrency = 4
     readdirSpy.onCall(0).resolves([
       { name: 'a', isDirectory: () => true },
       { name: 'b', isDirectory: () => true },
@@ -218,7 +218,7 @@ describe('utils/fswalker function fsWalker()', () => {
     readdirSpy.onCall(1).resolves([])
     readdirSpy.onCall(2).resolves([])
     readdirSpy.onCall(3).resolves([])
-    await fsWalker('/root', sandbox.stub().resolves())
+    await FsWalker('/root', sandbox.stub().resolves())
     expect(readdirSpy.callCount).to.equal(4)
   })
 })

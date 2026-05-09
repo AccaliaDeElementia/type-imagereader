@@ -13,7 +13,7 @@ const ONE = 1
 type EachItemFn = (items: Array<{ path: string; isFile: boolean }>, queuelength: number) => Promise<void>
 
 async function processDir(root: string, current: string, queue: string[], eachItem: EachItemFn): Promise<void> {
-  const items: Dirent[] = await fsWalker.fn.readdir(join(root, current), {
+  const items: Dirent[] = await Imports.readdir(join(root, current), {
     encoding: 'utf8',
     withFileTypes: true,
   })
@@ -31,9 +31,9 @@ async function processDir(root: string, current: string, queue: string[], eachIt
   )
 }
 
-async function fsWalker(root: string, eachItem: EachItemFn): Promise<void> {
+export async function FsWalker(root: string, eachItem: EachItemFn): Promise<void> {
   const queue = ['/']
-  const concurrency = fsWalker.concurrency
+  const concurrency = Fswalker.concurrency
   let active = ZERO
   let aborted = false
   let failure: unknown = null
@@ -96,9 +96,5 @@ async function fsWalker(root: string, eachItem: EachItemFn): Promise<void> {
   }
 }
 
-fsWalker.fn = {
-  readdir,
-}
-fsWalker.concurrency = DEFAULT_CONCURRENCY
-
-export default fsWalker
+export const Imports = { readdir }
+export const Fswalker = { concurrency: DEFAULT_CONCURRENCY }

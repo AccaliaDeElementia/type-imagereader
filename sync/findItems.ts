@@ -7,7 +7,7 @@ import type { Knex } from 'knex'
 import { from as _copyFrom } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
 
-import _fsWalker from './fswalker.js'
+import { FsWalker as _FsWalker } from './fswalker.js'
 import {
   BuildSyncItemRows as _BuildSyncItemRows,
   Chunk,
@@ -24,7 +24,7 @@ import { getDataDir as _getDataDir } from '../utils/helpers.js'
 export const Imports = {
   logPrefix: 'type-imagereader:sync:findItems',
   debug: _debug,
-  fsWalker: _fsWalker,
+  fsWalker: _FsWalker,
   getDataDir: _getDataDir,
   copyFrom: _copyFrom,
   IsPostgres: _IsPostgres,
