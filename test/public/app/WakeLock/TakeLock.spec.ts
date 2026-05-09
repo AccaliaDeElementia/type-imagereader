@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 
-import { WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
+import { TakeLock, WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/wakelock function TakeLock()', () => {
@@ -53,15 +53,15 @@ describe('public/app/wakelock function TakeLock()', () => {
     })
   })
   it('should take lock if sentinel is null', async () => {
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(wakelockRequest.callCount).to.equal(1)
   })
   it('should request screen level wakelock', async () => {
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(wakelockRequest.firstCall.args).to.deep.equal(['screen'])
   })
   it('should save sentinel when taking lock because sentinel is null', async () => {
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.sentinel).to.equal(sentinel)
   })
   it('should take lock when sentinal is already released', async () => {
@@ -69,7 +69,7 @@ describe('public/app/wakelock function TakeLock()', () => {
       release: sandbox.stub().resolves(),
       released: true,
     }
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(wakelockRequest.callCount).to.equal(1)
   })
   it('should save sentinel when taking lock because sentinel already released', async () => {
@@ -77,13 +77,13 @@ describe('public/app/wakelock function TakeLock()', () => {
       release: sandbox.stub().resolves(),
       released: true,
     }
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.sentinel).to.equal(sentinel)
   })
   it('should not take lock when sentinal is already held', async () => {
     WakeLock.sentinel = sentinel
     sentinel.released = false
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(wakelockRequest.callCount).to.equal(0)
   })
   it('should not overwrite sentinel when lock already held', async () => {
@@ -92,18 +92,18 @@ describe('public/app/wakelock function TakeLock()', () => {
       released: false,
     }
     WakeLock.sentinel = sent
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.sentinel).to.equal(sent)
   })
   it('should set timeout when taking lock initially', async () => {
     clock?.tick(3141)
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.timeout).to.equal(123141, 'Timeout should be 120 seconds in the future')
   })
   it('should reset timeout when taking already held lock', async () => {
     clock?.tick(6282)
     WakeLock.sentinel = sentinel
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.timeout).to.equal(126282, 'Timeout should be 120 seconds in the future')
   })
   it('should reset sentinal when lock request throws', async () => {
@@ -112,13 +112,13 @@ describe('public/app/wakelock function TakeLock()', () => {
       released: true,
     }
     wakelockRequest.throws('FOO')
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.sentinel).to.equal(null)
   })
   it('should reset timeout when lock request throws', async () => {
     WakeLock.timeout = 999999
     wakelockRequest.throws('FOO')
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.timeout).to.equal(0)
   })
   it('should reset sentinal when lock request rejects', async () => {
@@ -127,13 +127,13 @@ describe('public/app/wakelock function TakeLock()', () => {
       released: true,
     }
     wakelockRequest.rejects('FOO')
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.sentinel).to.equal(null)
   })
   it('should reset timeout when lock request rejects', async () => {
     WakeLock.timeout = 9999999
     wakelockRequest.rejects('FOO')
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.timeout).to.equal(0)
   })
   it('should gracefully handle missing wakelock functionality', async () => {
@@ -145,7 +145,7 @@ describe('public/app/wakelock function TakeLock()', () => {
       get: () => undefined,
     })
     const fn = async (): Promise<unknown> => {
-      await WakeLock.TakeLock()
+      await TakeLock()
       return undefined
     }
     expect(await fn()).to.equal(undefined, 'should not reject or throw')
@@ -158,14 +158,14 @@ describe('public/app/wakelock function TakeLock()', () => {
       configurable: true,
       get: () => undefined,
     })
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.sentinel).to.equal(null)
   })
   it('should request the wake lock only once when TakeLock is called concurrently', async () => {
     const { promise, resolve } = Promise.withResolvers<WakeLockSentinel>()
     wakelockRequest.returns(promise)
-    const a = WakeLock.TakeLock()
-    const b = WakeLock.TakeLock()
+    const a = TakeLock()
+    const b = TakeLock()
     resolve(sentinel)
     await Promise.all([a, b])
     expect(wakelockRequest.callCount).to.equal(1)
@@ -179,7 +179,7 @@ describe('public/app/wakelock function TakeLock()', () => {
       configurable: true,
       get: () => undefined,
     })
-    await WakeLock.TakeLock()
+    await TakeLock()
     expect(WakeLock.timeout).to.equal(0)
   })
 })

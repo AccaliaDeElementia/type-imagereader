@@ -8,38 +8,40 @@ const SCROLL_TOP = 0
 export const Tabs = {
   tabs: [] as HTMLElement[],
   tabNames: [] as string[],
-  Init: (): void => {
-    Tabs.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
-    Tabs.tabNames = Tabs.tabs.map((tab) => tab.getAttribute('href')).filter((name) => name !== null)
+}
 
-    for (const tab of Tabs.tabs) {
-      tab.parentElement?.addEventListener('click', (evt) => {
-        Tabs.SelectTab(tab.getAttribute('href') ?? '')
-        evt.preventDefault()
-      })
-    }
+export function Init(): void {
+  Tabs.tabs = Array.from(document.querySelectorAll<HTMLElement>('.tab-list a'))
+  Tabs.tabNames = Tabs.tabs.map((tab) => tab.getAttribute('href')).filter((name) => name !== null)
 
-    Subscribe('Tab:Select', async (name) => {
-      if (typeof name === 'string') Tabs.SelectTab(name)
-      await Promise.resolve()
+  for (const tab of Tabs.tabs) {
+    tab.parentElement?.addEventListener('click', (evt) => {
+      Internals.SelectTab(tab.getAttribute('href') ?? '')
+      evt.preventDefault()
     })
-    Tabs.SelectTab()
-  },
-  SelectTab: (href?: string): void => {
-    let target = href
-    if (href !== undefined && !href.startsWith('#')) {
-      target = `#tab${href}`
-    }
-    const lowerHref = target?.toLowerCase()
-    if (target === undefined || !Tabs.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
-      target = Tabs.tabNames[DEFAULT_TAB] ?? ''
-    }
-    for (const tab of Tabs.tabs) {
-      tab.parentElement?.classList.remove('active')
-      target = setTabActive(tab, lowerHref) ?? target
-    }
-    Publish('Tab:Selected', target)
-  },
+  }
+
+  Subscribe('Tab:Select', async (name) => {
+    if (typeof name === 'string') Internals.SelectTab(name)
+    await Promise.resolve()
+  })
+  Internals.SelectTab()
+}
+
+function SelectTab(href?: string): void {
+  let target = href
+  if (href !== undefined && !href.startsWith('#')) {
+    target = `#tab${href}`
+  }
+  const lowerHref = target?.toLowerCase()
+  if (target === undefined || !Tabs.tabNames.some((name) => name.toLowerCase() === lowerHref)) {
+    target = Tabs.tabNames[DEFAULT_TAB] ?? ''
+  }
+  for (const tab of Tabs.tabs) {
+    tab.parentElement?.classList.remove('active')
+    target = setTabActive(tab, lowerHref) ?? target
+  }
+  Publish('Tab:Selected', target)
 }
 
 function setTabActive(tab: HTMLElement, activeHref: string | undefined): string | null {
@@ -59,4 +61,8 @@ function setTabActive(tab: HTMLElement, activeHref: string | undefined): string 
     content?.style.setProperty('display', 'none')
   }
   return href
+}
+
+export const Internals = {
+  SelectTab,
 }

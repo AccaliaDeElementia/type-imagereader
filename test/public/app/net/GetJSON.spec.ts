@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Net } from '#public/scripts/app/net.js'
+import { GetJSON } from '#public/scripts/app/net.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 
@@ -38,16 +38,16 @@ describe('public/app/net function GetJSON()', () => {
   })
   it('should call fetch with provided path', async () => {
     const path = `/Some/Test/Path/${Math.random()}`
-    await Net.GetJSON(path, isUnknown)
+    await GetJSON(path, isUnknown)
     expect(fetchStub.calledWith(path)).to.equal(true)
   })
   it('should use GET method', async () => {
-    await Net.GetJSON('/foo', isUnknown)
+    await GetJSON('/foo', isUnknown)
     const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.method).to.equal('GET')
   })
   it('should set only expected headers', async () => {
-    await Net.GetJSON('', isUnknown)
+    await GetJSON('', isUnknown)
     const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.headers).to.have.all.keys(['Content-Type', 'Accept-Encoding', 'Accept'])
   })
@@ -58,19 +58,19 @@ describe('public/app/net function GetJSON()', () => {
   ]
   headerTests.forEach(([title, header, expected]) => {
     it(`should set ${title} header`, async () => {
-      await Net.GetJSON('/foo', isUnknown)
+      await GetJSON('/foo', isUnknown)
       const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
       expect(req.headers[header]).to.equal(expected)
     })
   })
   it('should not set body in request', async () => {
-    await Net.GetJSON('', isUnknown)
+    await GetJSON('', isUnknown)
     const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.body).to.equal(undefined)
   })
   it('should resolve to expected object', async () => {
     dataFake.foo = Math.random()
-    const result = await Net.GetJSON('', isUnknown)
+    const result = await GetJSON('', isUnknown)
     expect(result).to.equal(dataFake)
   })
 })

@@ -6,7 +6,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 import { resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, Internals } from '#public/scripts/app/bookmarks.js'
 import Sinon from 'sinon'
 import assert from 'node:assert'
 
@@ -40,9 +40,9 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     })
     mountDom(dom)
 
-    getFolderSpy = sandbox.stub(Bookmarks, 'GetOrCreateFolderElement').returns(dom.window.document.createElement('div'))
+    getFolderSpy = sandbox.stub(Internals, 'GetOrCreateFolderElement').returns(dom.window.document.createElement('div'))
     buildBookmarkSpy = sandbox
-      .stub(Bookmarks, 'BuildBookmark')
+      .stub(Internals, 'BuildBookmark')
       .returns(dom.window.document.createElement('div'))
       .returns(null)
 
@@ -65,7 +65,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     Bookmarks.bookmarksTab = null
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.called).to.equal(false)
   })
   it('should not call BuildBookmark when bookmarksTab is missing', () => {
@@ -76,7 +76,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     Bookmarks.bookmarksTab = null
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.called).to.equal(false)
   })
   it('should not call GetOrCreateFolderElement when bookmarkCard is missing', () => {
@@ -87,7 +87,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     Bookmarks.bookmarkCard = undefined
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.called).to.equal(false)
   })
   it('should not call BuildBookmark when bookmarkCard is missing', () => {
@@ -98,7 +98,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     Bookmarks.bookmarkCard = undefined
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.called).to.equal(false)
   })
   it('should not call GetOrCreateFolderElement when bookmarkFolder is missing', () => {
@@ -109,7 +109,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     Bookmarks.bookmarkFolder = undefined
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.called).to.equal(false)
   })
   it('should not call BuildBookmark when bookmarkFolder is missing', () => {
@@ -120,7 +120,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     Bookmarks.bookmarkFolder = undefined
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.called).to.equal(false)
   })
   it('should use the current path when no open details exist', () => {
@@ -142,7 +142,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
         },
       ],
     }
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[0]).to.equal('/FOO!/BAR!')
   })
   it('should use the current path when open details with no path exists', () => {
@@ -167,7 +167,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     const element = dom.window.document.createElement('div')
     element.classList.add('folder')
     Bookmarks.bookmarksTab?.appendChild(element)
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[0]).to.equal('/QUUX!')
   })
   it('should use the openPath fron open details when path exists', () => {
@@ -193,7 +193,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     element.classList.add('folder')
     element.setAttribute('data-folderPath', '/foo/bar/baz')
     Bookmarks.bookmarksTab?.appendChild(element)
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[0]).to.equal('/foo/bar/baz')
   })
   it('should remove existing details from bookmark tab', () => {
@@ -223,7 +223,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       element.setAttribute('data-folderPath', `/foo/bar/baz${i}`)
       Bookmarks.bookmarksTab?.appendChild(element)
     }
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(Bookmarks.bookmarksTab?.querySelectorAll('div.folder')).to.have.length(0)
   })
   it('should call GetOrCreateFolderElement to retrieve folder for bookmarks', () => {
@@ -245,7 +245,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
         },
       ],
     }
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
   })
   it('should pass bookmark folder as second arg to GetOrCreateFolderElement when GetOrCreateFolderElement fails', () => {
@@ -256,7 +256,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     getFolderSpy.returns(null)
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
   })
   it('should not call BuildBookmark if GetOrCreateFolderElement fails', () => {
@@ -267,7 +267,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     getFolderSpy.returns(null)
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.called).to.equal(false)
   })
   it('should pass bookmark folder as second arg to GetOrCreateFolderElement when GetOrCreateFolderElement succeeds', () => {
@@ -278,7 +278,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     getFolderSpy.returns(dom.window.document.createElement('div'))
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
   })
   it('should call BuildBookmark with the bookmark when GetOrCreateFolderElement succeeds', () => {
@@ -289,7 +289,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
     getFolderSpy.returns(dom.window.document.createElement('div'))
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.calledWith(data.bookmarks[0]?.bookmarks[0])).to.equal(true)
   })
   it('should not appendChild when BuildBookmark fails', () => {
@@ -315,7 +315,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     getFolderSpy.returns(folder)
     const spy = sandbox.stub(folder, 'appendChild')
     buildBookmarkSpy.returns(null)
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(spy.called).to.equal(false)
   })
   it('should appendChild when BuildBookmark succeeds', () => {
@@ -342,7 +342,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     const spy = sandbox.stub(folder, 'appendChild')
     const card = dom.window.document.createElement('div')
     buildBookmarkSpy.returns(card)
-    Bookmarks.buildBookmarks(data)
+    Internals.buildBookmarks(data)
     expect(spy.calledWith(Sinon.match.same(card))).to.equal(true)
   })
   const buildBookmarksWithFolders = (dom: JSDOM): void => {
@@ -354,7 +354,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
         { path: 'M', element: dom.window.document.createElement('details') },
       ]
     })
-    Bookmarks.buildBookmarks({
+    Internals.buildBookmarks({
       name: '',
       parent: '',
       path: '/',
@@ -390,7 +390,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
     const appendChildSpy = sandbox.stub(Bookmarks.bookmarksTab, 'appendChild')
-    Bookmarks.buildBookmarks({
+    Internals.buildBookmarks({
       name: '',
       parent: '',
       path: '/',
@@ -407,7 +407,7 @@ describe('public/app/bookmarks function buildBookmarks()', () => {
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
     const appendChildSpy = sandbox.stub(Bookmarks.bookmarksTab, 'appendChild')
-    Bookmarks.buildBookmarks({
+    Internals.buildBookmarks({
       name: '',
       parent: '',
       path: '/',

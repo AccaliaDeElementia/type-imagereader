@@ -6,43 +6,48 @@ import { Subscribe, Publish, Defer } from './pubsub.js'
 const ANIMATION_RESET_DELAY = 100
 const DISPLAY_VISIBLE = 'block'
 const DISPLAY_HIDDEN = 'none'
+
 export const Loading = {
   overlay: null as HTMLElement | null,
   navbar: null as HTMLElement | null,
-  Init: (): void => {
-    Loading.overlay = document.querySelector<HTMLElement>('#loadingScreen')
-    Loading.navbar = document.querySelector<HTMLElement>('#navbar')
+}
 
-    Subscribe('Loading:Error', async (message) => {
-      if (HasValue(message) && message !== '') {
-        window.console.error(message)
-      }
-      Loading.navbar?.style.removeProperty('transition')
-      Loading.navbar?.style.setProperty('background-color', '#FF0000')
-      await Promise.resolve()
-      Defer(() => {
-        Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
-        Loading.navbar?.style.removeProperty('background-color')
-      }, ANIMATION_RESET_DELAY)
-      Publish('Loading:Hide')
-    })
-    Subscribe('Loading:Success', async () => {
-      Loading.navbar?.style.removeProperty('transition')
-      Loading.navbar?.style.setProperty('background-color', '#00AA00')
-      await Promise.resolve()
-      Defer(() => {
-        Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
-        Loading.navbar?.style.removeProperty('background-color')
-      }, ANIMATION_RESET_DELAY)
-    })
-    Subscribe('Loading:Hide', async () => {
-      Loading.overlay?.style.setProperty('display', DISPLAY_HIDDEN)
-      await Promise.resolve()
-    })
-    Subscribe('Loading:Show', async () => {
-      Loading.overlay?.style.setProperty('display', DISPLAY_VISIBLE)
-      await Promise.resolve()
-    })
-  },
-  IsLoading: (): boolean => Loading.overlay?.style.getPropertyValue('display') === DISPLAY_VISIBLE,
+export function Init(): void {
+  Loading.overlay = document.querySelector<HTMLElement>('#loadingScreen')
+  Loading.navbar = document.querySelector<HTMLElement>('#navbar')
+
+  Subscribe('Loading:Error', async (message) => {
+    if (HasValue(message) && message !== '') {
+      window.console.error(message)
+    }
+    Loading.navbar?.style.removeProperty('transition')
+    Loading.navbar?.style.setProperty('background-color', '#FF0000')
+    await Promise.resolve()
+    Defer(() => {
+      Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
+      Loading.navbar?.style.removeProperty('background-color')
+    }, ANIMATION_RESET_DELAY)
+    Publish('Loading:Hide')
+  })
+  Subscribe('Loading:Success', async () => {
+    Loading.navbar?.style.removeProperty('transition')
+    Loading.navbar?.style.setProperty('background-color', '#00AA00')
+    await Promise.resolve()
+    Defer(() => {
+      Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
+      Loading.navbar?.style.removeProperty('background-color')
+    }, ANIMATION_RESET_DELAY)
+  })
+  Subscribe('Loading:Hide', async () => {
+    Loading.overlay?.style.setProperty('display', DISPLAY_HIDDEN)
+    await Promise.resolve()
+  })
+  Subscribe('Loading:Show', async () => {
+    Loading.overlay?.style.setProperty('display', DISPLAY_VISIBLE)
+    await Promise.resolve()
+  })
+}
+
+export function IsLoading(): boolean {
+  return Loading.overlay?.style.getPropertyValue('display') === DISPLAY_VISIBLE
 }

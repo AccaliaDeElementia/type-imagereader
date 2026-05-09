@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { Internals } from '#public/scripts/app/navigation.js'
 describe('public/app/navigation function GetFolderPath()', () => {
   let dom = new JSDOM('', {})
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('public/app/navigation function GetFolderPath()', () => {
   testCases.forEach(([url, expected]) => {
     it(`should return expected path for url: ${url}`, () => {
       dom.reconfigure({ url })
-      expect(Navigation.GetFolderPath()).to.equal(expected)
+      expect(Internals.GetFolderPath()).to.equal(expected)
     })
   })
 })

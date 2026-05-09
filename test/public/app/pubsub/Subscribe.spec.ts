@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { PubSub } from '#public/scripts/app/pubsub.js'
+import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { expect } from 'chai'
 
@@ -21,11 +21,11 @@ describe('public/app/pubsub function Subscribe()', () => {
   const topics = ['foobar:baz', 'Foobar:Baz', 'fOoBaR:bAz', 'FoOBaR:BaZ', 'FOOBAR:BAZ', 'foobar:BAZ', 'FOOBAR:baz']
   topics.forEach((topic) => {
     it(`should normalise ${topic} to FOOBAR:BAZ key`, () => {
-      PubSub.Subscribe(topic, subscriber)
+      Subscribe(topic, subscriber)
       expect(PubSub.subscribers).to.have.any.keys('FOOBAR:BAZ')
     })
     it(`should store subscriber under FOOBAR:BAZ when topic is ${topic}`, () => {
-      PubSub.Subscribe(topic, subscriber)
+      Subscribe(topic, subscriber)
       expect(PubSub.subscribers['FOOBAR:BAZ']).to.deep.equal([subscriber])
     })
   })
@@ -34,7 +34,7 @@ describe('public/app/pubsub function Subscribe()', () => {
     for (let i = 0; i < 10; i += 1) {
       PubSub.subscribers['FOOBAR:BAZ'].push(sandbox.stub().resolves())
     }
-    PubSub.Subscribe('Foobar:Baz', subscriber)
+    Subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ']).to.have.lengthOf(11)
   })
   it('should append subscriber as last element in subscriber list', () => {
@@ -42,7 +42,7 @@ describe('public/app/pubsub function Subscribe()', () => {
     for (let i = 0; i < 10; i += 1) {
       PubSub.subscribers['FOOBAR:BAZ'].push(sandbox.stub().resolves())
     }
-    PubSub.Subscribe('Foobar:Baz', subscriber)
+    Subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ'][10]).to.equal(subscriber)
   })
 })

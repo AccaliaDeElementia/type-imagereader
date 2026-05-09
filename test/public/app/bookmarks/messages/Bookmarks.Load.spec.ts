@@ -9,10 +9,9 @@ import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 import type { Listing } from '#contracts/listing.js'
 
-import { Net } from '#public/scripts/app/net.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, Imports, Init, Internals } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
 
@@ -58,9 +57,9 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = sandbox.stub(Bookmarks, 'buildBookmarks')
-    getJSONSpy = sandbox.stub(Net, 'GetJSON').resolves()
-    Bookmarks.Init()
+    BuildBookmarksSpy = sandbox.stub(Internals, 'buildBookmarks')
+    getJSONSpy = sandbox.stub(Imports, 'GetJSON').resolves()
+    Init()
   })
   afterEach(() => {
     sandbox.restore()

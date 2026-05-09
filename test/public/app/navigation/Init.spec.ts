@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
+import { Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -34,8 +34,8 @@ describe('public/app/navigation function Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    loadDataStub = sandbox.stub(Navigation, 'LoadData').resolves()
+    Subscribe('Tab:Selected', tabSelectedSpy)
+    loadDataStub = sandbox.stub(Internals, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -54,20 +54,20 @@ describe('public/app/navigation function Init()', () => {
     dom.reconfigure({
       url: 'http://type-imagereader.example.com/show/foo/bar/baz',
     })
-    Navigation.Init()
+    Init()
     expect(Navigation.current.path).to.equal('/foo/bar/baz')
   })
   it('should execute LoadData once with defaults', () => {
-    Navigation.Init()
+    Init()
     expect(loadDataStub.callCount).to.equal(1)
   })
   it('should execute LoadData with no arguments', () => {
-    Navigation.Init()
+    Init()
     expect(loadDataStub.firstCall.args).to.deep.equal([])
   })
   it('should tolerate LoadData rejecting', async () => {
     loadDataStub.rejects('FOO!')
-    Navigation.Init()
+    Init()
     await Promise.resolve()
     expect(loadDataStub.callCount).to.equal(1)
   })
@@ -100,7 +100,7 @@ describe('public/app/navigation function Init()', () => {
   describe('subscriber list after Init', () => {
     const subs = subscribers.map((s) => s.toUpperCase())
     beforeEach(() => {
-      Navigation.Init()
+      Init()
     })
     it('should contain all expected subscribers', () => {
       expect(PubSub.subscribers).to.have.all.keys(subs)
@@ -111,7 +111,7 @@ describe('public/app/navigation function Init()', () => {
   })
   subscribers.forEach((subscriber) => {
     const doInit = (): void => {
-      Navigation.Init()
+      Init()
     }
     it(`should subscribe to ${subscriber}`, () => {
       doInit()

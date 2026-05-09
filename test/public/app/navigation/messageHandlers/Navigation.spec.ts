@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { Subscribe } from '#public/scripts/app/pubsub.js'
+import { Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import type { Listing } from '#contracts/listing.js'
 
@@ -35,8 +35,8 @@ describe('public/app/navigation function Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    loadDataStub = sandbox.stub(Navigation, 'LoadData').resolves()
+    Subscribe('Tab:Selected', tabSelectedSpy)
+    loadDataStub = sandbox.stub(Internals, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -53,7 +53,7 @@ describe('public/app/navigation function Init()', () => {
   })
   describe('Navigate:Load Handler', () => {
     it('should set current location when passed string', async () => {
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('NAVIGATE:LOAD')
       await handler('a string')
       expect(Navigation.current).to.deep.equal({
@@ -68,27 +68,27 @@ describe('public/app/navigation function Init()', () => {
         name: 'Baz',
         parent: '/foo/bar',
       }
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('NAVIGATE:LOAD')
       await handler(data)
       expect(Navigation.current).to.equal(data)
     })
     it('should retain current location when passed invalid data', async () => {
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('NAVIGATE:LOAD')
       Navigation.current.path = '/foo/bar/bax/42'
       await handler(null)
       expect(Navigation.current.path).to.equal('/foo/bar/bax/42')
     })
     it('should not load data when passed invalid data', async () => {
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('NAVIGATE:LOAD')
       loadDataStub.resetHistory()
       await handler(null)
       expect(loadDataStub.callCount).to.equal(0)
     })
     it('should tolerate LoadData() rejecting', async () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       loadDataStub.rejects(new Event('FOO!'))
       const handler = getSubscriber('NAVIGATE:LOAD')
@@ -96,21 +96,21 @@ describe('public/app/navigation function Init()', () => {
       await handler('a string').catch(catcher)
     })
     it('should call LoadData() once with defaults', async () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const handler = getSubscriber('NAVIGATE:LOAD')
       await handler('a string')
       expect(loadDataStub.callCount).to.equal(1)
     })
     it('should call LoadData() with noHistory=false for string path', async () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const handler = getSubscriber('NAVIGATE:LOAD')
       await handler('a string')
       expect(loadDataStub.firstCall.args[0]).to.equal(false)
     })
     it('should call LoadData() with suppressMenu=false for string path', async () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const handler = getSubscriber('NAVIGATE:LOAD')
       await handler('a string')
@@ -123,7 +123,7 @@ describe('public/app/navigation function Init()', () => {
         parent: '/foo/bar',
         noMenu: true,
       }
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const handler = getSubscriber('NAVIGATE:LOAD')
       await handler(data)
@@ -136,7 +136,7 @@ describe('public/app/navigation function Init()', () => {
         parent: '/foo/bar',
         noMenu: false,
       }
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const handler = getSubscriber('NAVIGATE:LOAD')
       await handler(data)
@@ -148,7 +148,7 @@ describe('public/app/navigation function Init()', () => {
         name: 'Baz',
         parent: '/foo/bar',
       }
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const handler = getSubscriber('NAVIGATE:LOAD')
       await handler(data)
@@ -157,21 +157,21 @@ describe('public/app/navigation function Init()', () => {
   })
   describe('Navigate:Reload Message Handler', () => {
     it('should call LoadData() once', async () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const handler = getSubscriber('NAVIGATE:RELOAD')
       await handler('a string')
       expect(loadDataStub.callCount).to.equal(1)
     })
     it('should call LoadData() with no arguments', async () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const handler = getSubscriber('NAVIGATE:RELOAD')
       await handler('a string')
       expect(loadDataStub.firstCall.args).to.deep.equal([])
     })
     it('should tolerate LoadData() rejecting', async () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       loadDataStub.rejects(new Event('FOO!'))
       const handler = getSubscriber('NAVIGATE:RELOAD')
@@ -184,7 +184,7 @@ describe('public/app/navigation function Init()', () => {
       dom.reconfigure({
         url: 'http://type-imagereader.example.com/show/quux',
       })
-      Navigation.Init()
+      Init()
       Navigation.current = {
         path: '/',
         name: 'WRONG NAME',
@@ -201,7 +201,7 @@ describe('public/app/navigation function Init()', () => {
       })
     })
     it('should register popstate listener that tolerates LoadData rejecting', () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       loadDataStub.rejects(new Event('FOO!'))
       const popStateEvent = new dom.window.PopStateEvent('popstate', {
@@ -211,7 +211,7 @@ describe('public/app/navigation function Init()', () => {
       expect(loadDataStub.callCount).to.equal(1)
     })
     it('should register popstate listener that calls LoadData once with no history flag set', () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const popStateEvent = new dom.window.PopStateEvent('popstate', {
         state: {},
@@ -220,7 +220,7 @@ describe('public/app/navigation function Init()', () => {
       expect(loadDataStub.callCount).to.equal(1)
     })
     it('should register popstate listener that calls LoadData with no history flag set', () => {
-      Navigation.Init()
+      Init()
       loadDataStub.resetHistory()
       const popStateEvent = new dom.window.PopStateEvent('popstate', {
         state: {},
@@ -250,7 +250,7 @@ describe('public/app/navigation function Init()', () => {
     ]
     testCases.forEach(([name, data, expected]) => {
       it(`should${expected ? '' : ' not'} log data when passed ${name}`, async () => {
-        Navigation.Init()
+        Init()
         loadDataStub.resetHistory()
         const handler = getSubscriber('NAVIGATE:DATA')
         await handler(data)
@@ -261,14 +261,14 @@ describe('public/app/navigation function Init()', () => {
       .filter(([, , expected]) => expected)
       .forEach(([name, data]) => {
         it(`should log data with one argument when passed ${name}`, async () => {
-          Navigation.Init()
+          Init()
           loadDataStub.resetHistory()
           const handler = getSubscriber('NAVIGATE:DATA')
           await handler(data)
           expect(consoleLogSpy.firstCall.args).to.have.lengthOf(1)
         })
         it(`should log data value when passed ${name}`, async () => {
-          Navigation.Init()
+          Init()
           loadDataStub.resetHistory()
           const handler = getSubscriber('NAVIGATE:DATA')
           await handler(data)

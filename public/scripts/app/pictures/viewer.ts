@@ -5,13 +5,15 @@ import { Pictures } from './index.js'
 import { SelectPage as _SelectPage } from './grid.js'
 import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
 import { HasValues, IndexPercentToText, IndexToText, StringishHasValue } from '#utils/helpers.js'
-import { Loading } from '../loading.js'
-import { Net } from '../net.js'
+import { IsLoading as _IsLoading } from '../loading.js'
+import { PostJSON as _PostJSON } from '../net.js'
 import { Publish } from '../pubsub.js'
 
 export const Imports = {
   GetShowUnreadOnly: _GetShowUnreadOnly,
   SelectPage: _SelectPage,
+  IsLoading: _IsLoading,
+  PostJSON: _PostJSON,
 }
 
 export enum NavigateTo {
@@ -62,7 +64,7 @@ export function ResetMarkup(): void {
 }
 
 export async function ChangePicture(pic: Picture | undefined): Promise<void> {
-  if (Loading.IsLoading()) {
+  if (Imports.IsLoading()) {
     return
   }
   if (pic === undefined) {
@@ -84,7 +86,7 @@ export async function LoadImage(): Promise<void> {
     Pictures.current.seen = true
     Pictures.current.element?.classList.add('seen')
     const modCount = Pictures.modCount
-    const newModCount = await Net.PostJSON<number | undefined>(
+    const newModCount = await Imports.PostJSON<number | undefined>(
       '/api/navigate/latest',
       { path: Pictures.current.path, modCount },
       (o): o is number | undefined => (typeof o === 'number' && Number.isFinite(o)) || o === undefined,

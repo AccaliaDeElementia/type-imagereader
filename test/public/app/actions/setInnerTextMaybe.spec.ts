@@ -1,7 +1,7 @@
 'use sanity'
 
 import { assert, expect } from 'chai'
-import { Actions } from '#public/scripts/app/actions.js'
+import { Internals } from '#public/scripts/app/actions.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Cast } from '#testutils/TypeGuards.js'
@@ -26,15 +26,15 @@ describe('public/app/actions function setInnerTextMaybe', () => {
   })
   it('should handle no mathcing node to set text', () => {
     DoesNotThrow(() => {
-      Actions.setInnerTextMaybe(divNode, '.xyzzy', 'foo')
+      Internals.setInnerTextMaybe(divNode, '.xyzzy', 'foo')
     })
   })
   it('should set inner text for matching node by node name', () => {
-    Actions.setInnerTextMaybe(divNode, 'span', 'foo')
+    Internals.setInnerTextMaybe(divNode, 'span', 'foo')
     expect(spanNode.innerText).to.equal('foo')
   })
   it('should set inner text for matching node by class', () => {
-    Actions.setInnerTextMaybe(divNode, '.foo', 'foo')
+    Internals.setInnerTextMaybe(divNode, '.foo', 'foo')
     expect(spanNode.innerText).to.equal('foo')
   })
 })

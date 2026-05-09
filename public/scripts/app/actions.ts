@@ -252,89 +252,101 @@ const ActionGroups: ButtonGroups[] = [
 ]
 
 export const Actions = {
-  setInnerTextMaybe: (elem: HTMLElement, selector: string, text: string): void => {
-    const node = elem.querySelector<HTMLElement>(selector)
-    if (!HasValue(node)) return
-    node.innerText = text
-  },
-  createButtons: (buttons: ButtonDefinition[]): HTMLElement => {
-    const result = document.createElement('div')
-    result.classList.add('actions')
-    for (const { name, image } of buttons) {
-      const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
-      const button = CloneNode(template, isHTMLElement)
-      if (button === undefined) continue
-      Actions.setInnerTextMaybe(button, 'i', image)
-      Actions.setInnerTextMaybe(button, 'h5', name)
-      button.addEventListener('click', (event) => {
-        Publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
-        event.preventDefault()
-      })
-      result.appendChild(button)
-    }
-    return result
-  },
   ActionGroups,
-  BuildActions: (): void => {
-    for (const group of Actions.ActionGroups) {
-      const existing = document.querySelectorAll(`${group.target} .actions`)
-      for (const elem of existing) {
-        elem.remove()
-      }
-      for (const row of group.buttons) {
-        const container = Actions.createButtons(row)
-        document.querySelector(group.target)?.appendChild(container)
-      }
-    }
-  },
   gamepads: new GamepadButtons(),
-  ReadGamepad: (): void => {
-    if (document.hidden) return
-    const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
-    if (gamepads === undefined || !HasValues(gamepads)) return
-    for (const pad of gamepads) {
-      if (pad === null) continue
-      Actions.gamepads.Read(pad)
+}
+
+function setInnerTextMaybe(elem: HTMLElement, selector: string, text: string): void {
+  const node = elem.querySelector<HTMLElement>(selector)
+  if (!HasValue(node)) return
+  node.innerText = text
+}
+
+function createButtons(buttons: ButtonDefinition[]): HTMLElement {
+  const result = document.createElement('div')
+  result.classList.add('actions')
+  for (const { name, image } of buttons) {
+    const template = document.querySelector<HTMLTemplateElement>('#ActionCard')
+    const button = CloneNode(template, isHTMLElement)
+    if (button === undefined) continue
+    Internals.setInnerTextMaybe(button, 'i', image)
+    Internals.setInnerTextMaybe(button, 'h5', name)
+    button.addEventListener('click', (event) => {
+      Publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
+      event.preventDefault()
+    })
+    result.appendChild(button)
+  }
+  return result
+}
+
+function BuildActions(): void {
+  for (const group of Actions.ActionGroups) {
+    const existing = document.querySelectorAll(`${group.target} .actions`)
+    for (const elem of existing) {
+      elem.remove()
     }
-    if (!Actions.gamepads.pressingNow && HasValues(Actions.gamepads.pressedButtons)) {
-      const buttons = Actions.gamepads.pressedButtons.join('')
-      Actions.gamepads.Reset()
-      Publish(`Action:Gamepad:${buttons}`)
+    for (const row of group.buttons) {
+      const container = Internals.createButtons(row)
+      document.querySelector(group.target)?.appendChild(container)
     }
-  },
-  Init: (): void => {
-    Actions.BuildActions()
+  }
+}
+
+function ReadGamepad(): void {
+  if (document.hidden) return
+  const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
+  if (gamepads === undefined || !HasValues(gamepads)) return
+  for (const pad of gamepads) {
+    if (pad === null) continue
+    Actions.gamepads.Read(pad)
+  }
+  if (!Actions.gamepads.pressingNow && HasValues(Actions.gamepads.pressedButtons)) {
+    const buttons = Actions.gamepads.pressedButtons.join('')
     Actions.gamepads.Reset()
+    Publish(`Action:Gamepad:${buttons}`)
+  }
+}
 
-    Subscribe('Navigate:Data', async (data) => {
-      if (isListing(data) && !HasValues(data.pictures) && !HasValues(data.children)) {
-        Publish('Tab:Select', 'Actions')
-      }
-      await Promise.resolve()
-    })
+export function Init(): void {
+  Internals.BuildActions()
+  Actions.gamepads.Reset()
 
-    document.addEventListener('keyup', (event) => {
-      const key =
-        (event.ctrlKey ? '<CTRL>' : '') +
-        (event.altKey ? '<ALT>' : '') +
-        (event.shiftKey ? '<SHIFT>' : '') +
-        event.key.toUpperCase()
-      Publish(`Action:Keypress:${key}`, key)
-    })
-    window.addEventListener('gamepadconnected', () => {
-      AddInterval(
-        'ReadGamepad',
-        () => {
-          Actions.ReadGamepad()
-        },
-        POLLING_INTERVAL,
-      )
-    })
-    window.addEventListener('gamepaddisconnected', () => {
-      const remaining = navigator.getGamepads().filter((p) => p !== null)
-      if (remaining.length === ZERO_REMAINING_PADS) {
-        RemoveInterval('ReadGamepad')
-      }
-    })
-  },
+  Subscribe('Navigate:Data', async (data) => {
+    if (isListing(data) && !HasValues(data.pictures) && !HasValues(data.children)) {
+      Publish('Tab:Select', 'Actions')
+    }
+    await Promise.resolve()
+  })
+
+  document.addEventListener('keyup', (event) => {
+    const key =
+      (event.ctrlKey ? '<CTRL>' : '') +
+      (event.altKey ? '<ALT>' : '') +
+      (event.shiftKey ? '<SHIFT>' : '') +
+      event.key.toUpperCase()
+    Publish(`Action:Keypress:${key}`, key)
+  })
+  window.addEventListener('gamepadconnected', () => {
+    AddInterval(
+      'ReadGamepad',
+      () => {
+        Internals.ReadGamepad()
+      },
+      POLLING_INTERVAL,
+    )
+  })
+  window.addEventListener('gamepaddisconnected', () => {
+    const remaining = navigator.getGamepads().filter((p) => p !== null)
+    if (remaining.length === ZERO_REMAINING_PADS) {
+      RemoveInterval('ReadGamepad')
+    }
+  })
+}
+
+export const Internals = {
+  setInnerTextMaybe,
+  createButtons,
+  BuildActions,
+  ReadGamepad,
 }

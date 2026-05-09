@@ -6,8 +6,8 @@ import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Imports, Navigation } from '#public/scripts/app/navigation.js'
+import { Subscribe } from '#public/scripts/app/pubsub.js'
+import { Imports, Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { EventuallyRejects } from '#testutils/Errors.js'
@@ -36,8 +36,8 @@ describe('public/app/navigation function Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    sandbox.stub(Navigation, 'LoadData').resolves()
+    Subscribe('Tab:Selected', tabSelectedSpy)
+    sandbox.stub(Internals, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -69,9 +69,9 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
+      navigateToStub = sandbox.stub(Internals, 'NavigateTo')
       showUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
-      Navigation.Init()
+      Init()
       previousFolder = {
         name: `Foo ${Math.random()}`,
         path: `/Foo ${Math.random()}`,
@@ -153,9 +153,9 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
+      navigateToStub = sandbox.stub(Internals, 'NavigateTo')
       showUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
-      Navigation.Init()
+      Init()
       nextFolder = {
         name: `Foo ${Math.random()}`,
         path: `/Foo ${Math.random()}`,
@@ -227,8 +227,8 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
-      Navigation.Init()
+      navigateToStub = sandbox.stub(Internals, 'NavigateTo')
+      Init()
       parentFolder = `/Foo ${Math.random()}`
       Navigation.current.parent = parentFolder
       const h = getSubscriber('ACTION:EXECUTE:PARENTFOLDER')
@@ -268,8 +268,8 @@ describe('public/app/navigation function Init()', () => {
     }
     let children = [{ name: '', path: '', cover: '', seenCount: 0, totalCount: 0 }]
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Navigation, 'NavigateTo')
-      Navigation.Init()
+      navigateToStub = sandbox.stub(Internals, 'NavigateTo')
+      Init()
       children = Array(20)
         .fill(undefined)
         .map((_, i) => ({

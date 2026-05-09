@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Actions } from '#public/scripts/app/actions.js'
+import { Internals } from '#public/scripts/app/actions.js'
 
 import { resetPubSub } from '#testutils/PubSub.js'
 import { JSDOM } from 'jsdom'
@@ -41,16 +41,16 @@ describe('public/app/actions function createButtons()', () => {
     unmountDom()
   })
   it('should return div element', () => {
-    const result = Actions.createButtons([])
+    const result = Internals.createButtons([])
     expect(result).to.be.instanceOf(dom.window.HTMLDivElement)
   })
   it('should return div with css class `actions`', () => {
-    const result = Actions.createButtons([])
+    const result = Internals.createButtons([])
     expect(result.classList.contains('actions')).to.equal(true)
   })
   it('should ignore buttons for missing template', () => {
     dom.window.document.querySelector('#ActionCard')?.remove()
-    const result = Actions.createButtons([
+    const result = Internals.createButtons([
       {
         name: 'name',
         image: 'icon',
@@ -66,38 +66,38 @@ describe('public/app/actions function createButtons()', () => {
         name: `button${i}`,
         image: `image${i}`,
       }))
-    const result = Actions.createButtons(buttons)
+    const result = Internals.createButtons(buttons)
     expect(result.children).to.have.length(target)
   })
   it('should create an HTMLElement for each button card', () => {
-    const container = Actions.createButtons([{ name: 'name', image: 'icon' }])
+    const container = Internals.createButtons([{ name: 'name', image: 'icon' }])
     const [result] = container.children
     expect(result).to.be.instanceOf(dom.window.HTMLElement)
   })
   it('should create an HTMLElement for the icon element', () => {
-    const container = Actions.createButtons([{ name: 'name', image: 'icon' }])
+    const container = Internals.createButtons([{ name: 'name', image: 'icon' }])
     const [result] = container.children
     expect(result?.querySelector('i')).to.be.instanceOf(dom.window.HTMLElement)
   })
   it('should set icon text for buttons', () => {
     const expected = `RANDOM TEXT ${Math.random()}`
-    const container = Actions.createButtons([{ name: 'name', image: expected }])
+    const container = Internals.createButtons([{ name: 'name', image: expected }])
     const [result] = container.children
     expect(result?.querySelector('i')?.innerText).to.equal(expected)
   })
   it('should create an HTMLElement for the name element', () => {
-    const container = Actions.createButtons([{ name: 'name', image: 'icon' }])
+    const container = Internals.createButtons([{ name: 'name', image: 'icon' }])
     const [result] = container.children
     expect(result?.querySelector('h5')).to.be.instanceOf(dom.window.HTMLElement)
   })
   it('should set name text for buttons', () => {
     const expected = `RANDOM TEXT ${Math.random()}`
-    const container = Actions.createButtons([{ name: expected, image: 'icon' }])
+    const container = Internals.createButtons([{ name: expected, image: 'icon' }])
     const [result] = container.children
     expect(result?.querySelector('h5')?.innerText).to.equal(expected)
   })
   it('should prevent default on click', () => {
-    const container = Actions.createButtons([
+    const container = Internals.createButtons([
       {
         name: 'Button',
         image: 'icon',
@@ -115,7 +115,7 @@ describe('public/app/actions function createButtons()', () => {
     expect(spy.called).to.equal(true)
   })
   it('it should publish Action:Execute event on click', () => {
-    const container = Actions.createButtons([
+    const container = Internals.createButtons([
       {
         name: 'Button',
         image: 'icon',
@@ -129,7 +129,7 @@ describe('public/app/actions function createButtons()', () => {
     expect(spy.called).to.equal(true)
   })
   it('should collapse spaces from button name when publishing Action:Execute', () => {
-    const container = Actions.createButtons([
+    const container = Internals.createButtons([
       {
         name: 'This Is Not A Button',
         image: 'icon',

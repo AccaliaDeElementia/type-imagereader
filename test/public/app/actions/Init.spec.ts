@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Actions } from '#public/scripts/app/actions.js'
+import { Actions, Init, Internals } from '#public/scripts/app/actions.js'
 
 import { Cast } from '#testutils/TypeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
@@ -23,7 +23,7 @@ describe('public/app/actions function Init()', () => {
   beforeEach(() => {
     mountDom(dom)
     resetPubSub()
-    BuildActionsSpy = sandbox.stub(Actions, 'BuildActions')
+    BuildActionsSpy = sandbox.stub(Internals, 'BuildActions')
     GamepadResetSpy = sandbox.stub(Actions.gamepads, 'Reset')
   })
   afterEach(() => {
@@ -31,15 +31,15 @@ describe('public/app/actions function Init()', () => {
     unmountDom()
   })
   it('should build actions on init', () => {
-    Actions.Init()
+    Init()
     expect(BuildActionsSpy.called).to.equal(true)
   })
   it('should reset gamepads on init', () => {
-    Actions.Init()
+    Init()
     expect(GamepadResetSpy.called).to.equal(true)
   })
   it('should subscribe to Navigate:Data', () => {
-    Actions.Init()
+    Init()
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
   })
   const navigateDataTestCases: Array<[string, Listing, boolean]> = [
@@ -155,7 +155,7 @@ describe('public/app/actions function Init()', () => {
   ]
   navigateDataTestCases.forEach(([title, listing, expected]) => {
     const doNavigate = async (): Promise<Sinon.SinonStub> => {
-      Actions.Init()
+      Init()
       const handler = getSubscriber('NAVIGATE:DATA')
       const spy = sandbox.stub().resolves()
       PubSub.subscribers['TAB:SELECT'] = [spy]
@@ -176,7 +176,7 @@ describe('public/app/actions function Init()', () => {
   it('should add exactly one keyup event listener to document', () => {
     const spy = sandbox.stub(document, 'addEventListener')
     try {
-      Actions.Init()
+      Init()
       expect(spy.callCount).to.equal(1)
     } finally {
       spy.restore()
@@ -185,7 +185,7 @@ describe('public/app/actions function Init()', () => {
   it('should add keyup event listener to document', () => {
     const spy = sandbox.stub(document, 'addEventListener')
     try {
-      Actions.Init()
+      Init()
       expect(spy.firstCall.calledWith('keyup')).to.equal(true)
     } finally {
       spy.restore()
@@ -213,7 +213,7 @@ describe('public/app/actions function Init()', () => {
         handler = Cast<(o: unknown) => void>(h)
       })
       try {
-        Actions.Init()
+        Init()
         handler(event)
       } finally {
         documentSpy.restore()
@@ -231,7 +231,7 @@ describe('public/app/actions function Init()', () => {
   it('should add exactly two event listeners to window', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
-      Actions.Init()
+      Init()
       expect(spy.callCount).to.equal(2)
     } finally {
       spy.restore()
@@ -240,7 +240,7 @@ describe('public/app/actions function Init()', () => {
   it('should add gamepadconnected event listener to window', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
-      Actions.Init()
+      Init()
       expect(spy.firstCall.calledWith('gamepadconnected')).to.equal(true)
     } finally {
       spy.restore()
@@ -250,7 +250,7 @@ describe('public/app/actions function Init()', () => {
   it('should add ReadGamepad interval when gamepadConnected event fires', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
-      Actions.Init()
+      Init()
       Cast<() => void>(spy.firstCall.args[1])()
       expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
     } finally {
@@ -260,9 +260,9 @@ describe('public/app/actions function Init()', () => {
 
   it('should ReadGamepad() when ReadGamepad interval fires', () => {
     const spy = sandbox.stub(window, 'addEventListener')
-    const readspy = sandbox.stub(Actions, 'ReadGamepad')
+    const readspy = sandbox.stub(Internals, 'ReadGamepad')
     try {
-      Actions.Init()
+      Init()
       Cast<() => void>(spy.firstCall.args[1])()
       assert(PubSub.intervals.ReadGamepad !== undefined)
       PubSub.intervals.ReadGamepad.method()
@@ -275,7 +275,7 @@ describe('public/app/actions function Init()', () => {
   it('should add gamepaddisconnected event listener to window', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
-      Actions.Init()
+      Init()
       expect(spy.secondCall.calledWith('gamepaddisconnected')).to.equal(true)
     } finally {
       spy.restore()
@@ -290,7 +290,7 @@ describe('public/app/actions function Init()', () => {
     })
     dom.window.navigator.getGamepads = sandbox.stub().returns([null, null])
     try {
-      Actions.Init()
+      Init()
       Cast<() => void>(addSpy.firstCall.args[1])()
       assert(PubSub.intervals.ReadGamepad !== undefined)
       Cast<() => void>(addSpy.secondCall.args[1])()
@@ -310,7 +310,7 @@ describe('public/app/actions function Init()', () => {
     const fakePad = Cast<Gamepad>({ id: 'pad' })
     dom.window.navigator.getGamepads = sandbox.stub().returns([fakePad, null])
     try {
-      Actions.Init()
+      Init()
       Cast<() => void>(addSpy.firstCall.args[1])()
       assert(PubSub.intervals.ReadGamepad !== undefined)
       Cast<() => void>(addSpy.secondCall.args[1])()

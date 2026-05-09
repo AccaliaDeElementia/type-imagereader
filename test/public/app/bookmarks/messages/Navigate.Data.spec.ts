@@ -8,7 +8,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, Init, Internals } from '#public/scripts/app/bookmarks.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -46,9 +46,9 @@ describe('public/app/bookmarks Init Navigate:Data', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = sandbox.stub(Bookmarks, 'buildBookmarks')
+    BuildBookmarksSpy = sandbox.stub(Internals, 'buildBookmarks')
 
-    Bookmarks.Init()
+    Init()
   })
   afterEach(() => {
     sandbox.restore()

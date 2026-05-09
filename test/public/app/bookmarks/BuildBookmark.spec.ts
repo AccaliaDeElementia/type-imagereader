@@ -8,10 +8,9 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 
-import { Net } from '#public/scripts/app/net.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, Imports, Internals } from '#public/scripts/app/bookmarks.js'
 import assert from 'node:assert'
 import type { Bookmark } from '#contracts/listing.js'
 import { isListing } from '#contracts/listing.js'
@@ -61,7 +60,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
-    postJSONSpy = sandbox.stub(Net, 'PostJSON').resolves()
+    postJSONSpy = sandbox.stub(Imports, 'PostJSON').resolves()
   })
   afterEach(() => {
     sandbox.restore()
@@ -69,7 +68,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
   })
   it('should return null if card template is missing', () => {
     Bookmarks.bookmarkCard = undefined
-    const result = Bookmarks.BuildBookmark({
+    const result = Internals.BuildBookmark({
       name: '',
       path: 'foo',
       folder: 'bar',
@@ -77,7 +76,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     expect(result).to.equal(null)
   })
   it('should return HTMLElement if card template exists', () => {
-    const result = Bookmarks.BuildBookmark({
+    const result = Internals.BuildBookmark({
       name: '',
       path: 'foo',
       folder: 'bar',
@@ -85,7 +84,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     expect(result).to.be.instanceOf(dom.window.HTMLElement)
   })
   it('should set title in result card', () => {
-    const result = Bookmarks.BuildBookmark({
+    const result = Internals.BuildBookmark({
       name: '',
       path: 'foo',
       folder: 'bar',
@@ -94,7 +93,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     expect(elem?.innerHTML).to.equal('foo')
   })
   it('should set background image to bookmark in result card', () => {
-    const result = Bookmarks.BuildBookmark({
+    const result = Internals.BuildBookmark({
       name: '',
       path: '/foo/bar.png',
       folder: 'bar',
@@ -103,7 +102,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     expect(style).to.equal('url("/images/preview/foo/bar.png-image.webp")')
   })
   it('should strip leading folder path from title in result card', () => {
-    const result = Bookmarks.BuildBookmark({
+    const result = Internals.BuildBookmark({
       name: '',
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
@@ -112,7 +111,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     expect(elem?.innerHTML).to.equal('foo')
   })
   const ClickRemoveAndWait = async (data: Bookmark): Promise<HTMLElement> => {
-    const result = Bookmarks.BuildBookmark(data)
+    const result = Internals.BuildBookmark(data)
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
@@ -142,7 +141,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     expect(bookmarksRemoveSpy.calledWith('/path/to/foo/folder/foo')).to.equal(true)
   })
   it('should stop propagation of event after handling button click', async () => {
-    const result = Bookmarks.BuildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
+    const result = Internals.BuildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
     assert(result !== null)
     let stopPropagationCalled = false
     const evt = new dom.window.MouseEvent('click')
@@ -154,7 +153,7 @@ describe('public/app/bookmarks function BuildBookmark()', () => {
     expect(stopPropagationCalled).to.equal(true)
   })
   const ClickBookmarkAndWait = async (data: Bookmark): Promise<HTMLElement> => {
-    const result = Bookmarks.BuildBookmark(data)
+    const result = Internals.BuildBookmark(data)
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')

@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { IsMenuActive } from '#public/scripts/app/navigation.js'
 
 const markup = `
 html
@@ -32,14 +32,14 @@ describe('public/app/navigation function IsMenuActive()', () => {
   })
   it('should return true for missing menu!', () => {
     menuNode?.parentElement?.removeChild(menuNode)
-    expect(Navigation.IsMenuActive()).to.equal(true)
+    expect(IsMenuActive()).to.equal(true)
   })
   it('should return true for non hidden menu', () => {
     menuNode?.classList.remove('hidden')
-    expect(Navigation.IsMenuActive()).to.equal(true)
+    expect(IsMenuActive()).to.equal(true)
   })
   it('should return false for hidden menu', () => {
     menuNode?.classList.add('hidden')
-    expect(Navigation.IsMenuActive()).to.equal(false)
+    expect(IsMenuActive()).to.equal(false)
   })
 })

@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Confirm } from '#public/scripts/app/confirm.js'
+import { Confirm, Init, Show } from '#public/scripts/app/confirm.js'
 
 const markup = `
 html
@@ -26,7 +26,7 @@ describe('public/app/confirm function Init()', () => {
     Confirm.titleElement = null
     Confirm.messageElement = null
     Confirm.resolve = undefined
-    Confirm.Init()
+    Init()
   })
 
   afterEach(() => {
@@ -46,13 +46,13 @@ describe('public/app/confirm function Init()', () => {
   })
 
   it('should resolve true when confirm button is clicked', async () => {
-    const result = Confirm.Show('test', 'Test Title')
+    const result = Show('test', 'Test Title')
     document.querySelector<HTMLElement>('#confirmDialog .confirm')?.click()
     expect(await result).to.equal(true)
   })
 
   it('should resolve false when cancel button is clicked', async () => {
-    const result = Confirm.Show('test', 'Test Title')
+    const result = Show('test', 'Test Title')
     document.querySelector<HTMLElement>('#confirmDialog .cancel')?.click()
     expect(await result).to.equal(false)
   })

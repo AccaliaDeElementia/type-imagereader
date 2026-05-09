@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { Internals, Navigation } from '#public/scripts/app/navigation.js'
 describe('public/app/navigation function IsSuppressMenu()', () => {
   let dom = new JSDOM('', {})
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('public/app/navigation function IsSuppressMenu()', () => {
   testCases.forEach(([url, expected]) => {
     it(`should be${expected ? '' : ' not'} suppress menu for url: ${url}`, () => {
       dom.reconfigure({ url })
-      expect(Navigation.IsSuppressMenu()).to.equal(expected)
+      expect(Internals.IsSuppressMenu()).to.equal(expected)
     })
   })
 })

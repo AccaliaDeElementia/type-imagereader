@@ -1,7 +1,7 @@
 'use sanity'
 
 import { HasValue, HasValues, ZERO_LENGTH } from '#utils/helpers.js'
-import { Navigation } from '../navigation.js'
+import { IsMenuActive as _IsMenuActive } from '../navigation.js'
 import { UNINITIALIZED_SCALE } from './state.js'
 import { Pictures } from './index.js'
 import { ChangePicture as _ChangePicture, GetPicture as _GetPicture, NavigateTo } from './viewer.js'
@@ -14,6 +14,7 @@ export const Imports = {
   LoadCurrentPageImages: _LoadCurrentPageImages,
   ChangePicture: _ChangePicture,
   GetPicture: _GetPicture,
+  IsMenuActive: _IsMenuActive,
 }
 
 const LEFT_THIRD = 0.3333333333333333
@@ -21,7 +22,7 @@ const RIGHT_THIRD = 0.6666666666666666
 
 export function InitActions(): void {
   const doIfNoMenu = (action: string) => async () => {
-    if (!Navigation.IsMenuActive()) {
+    if (!Imports.IsMenuActive()) {
       Publish(`Action:Execute:${action}`)
     } else if (HasValues(Pictures.pictures)) {
       Publish('Action:Execute:HideMenu')

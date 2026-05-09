@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
+import { Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -33,8 +33,8 @@ describe('public/app/navigation function Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    sandbox.stub(Navigation, 'LoadData').resolves()
+    Subscribe('Tab:Selected', tabSelectedSpy)
+    sandbox.stub(Internals, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -55,7 +55,7 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      Navigation.Init()
+      Init()
       locationAssignSpy = sandbox.stub(Navigation, 'LocationAssign')
       const h = getSubscriber('ACTION:EXECUTE:SLIDESHOW')
       handler = h
@@ -86,7 +86,7 @@ describe('public/app/navigation function Init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      Navigation.Init()
+      Init()
       requestFullscreenStub.resolves()
       exitFullscreenStub.resolves()
       dom.window.document.body.requestFullscreen = requestFullscreenStub
@@ -180,7 +180,7 @@ describe('public/app/navigation function Init()', () => {
   })
   describe('Message Forwarding Message Handlers', () => {
     beforeEach(() => {
-      Navigation.Init()
+      Init()
     })
     const mappers: Array<[string, string]> = [
       ['Action:Execute:ShowMenu', 'Menu:Show'],

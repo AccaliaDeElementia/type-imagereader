@@ -8,10 +8,9 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Cast } from '#testutils/TypeGuards.js'
 
-import { Net } from '#public/scripts/app/net.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, Imports, Init } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
 
@@ -62,8 +61,8 @@ describe('public/app/bookmarks Init Bookmarks:Add', () => {
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    postJSONSpy = sandbox.stub(Net, 'PostJSON').resolves()
-    Bookmarks.Init()
+    postJSONSpy = sandbox.stub(Imports, 'PostJSON').resolves()
+    Init()
   })
   afterEach(() => {
     sandbox.restore()

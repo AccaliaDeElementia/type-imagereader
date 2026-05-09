@@ -6,8 +6,8 @@ import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
+import { Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { EventuallyFullfills } from '#testutils/Errors.js'
 
@@ -35,8 +35,8 @@ describe('public/app/navigation function Init()', () => {
 
     resetPubSub()
     tabSelectedSpy.resolves()
-    PubSub.Subscribe('Tab:Selected', tabSelectedSpy)
-    sandbox.stub(Navigation, 'LoadData').resolves()
+    Subscribe('Tab:Selected', tabSelectedSpy)
+    sandbox.stub(Internals, 'LoadData').resolves()
     Navigation.current = {
       path: '/',
       name: '',
@@ -61,7 +61,7 @@ describe('public/app/navigation function Init()', () => {
       menuNode = null
     })
     it('should remove hidden class from main menu node', async () => {
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('hidden')
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
@@ -69,7 +69,7 @@ describe('public/app/navigation function Init()', () => {
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
     })
     it('should remove hidden class while preserving other classes on main menu node', async () => {
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('foo')
       menuNode?.classList.add('bar')
@@ -79,7 +79,7 @@ describe('public/app/navigation function Init()', () => {
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
     })
     it('should tolerate already removed hidden class on main menu node', async () => {
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('MENU:SHOW')
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
       await handler(undefined)
@@ -87,7 +87,7 @@ describe('public/app/navigation function Init()', () => {
     })
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentNode?.removeChild(menuNode)
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('hidden')
       await EventuallyFullfills(handler(undefined))
@@ -103,14 +103,14 @@ describe('public/app/navigation function Init()', () => {
       menuNode = null
     })
     it('should add hidden class from main menu node', async () => {
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('MENU:HIDE')
       expect(menuNode?.classList.contains('hidden')).to.equal(false)
       await handler(undefined)
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
     })
     it('should preserve hidden class on hidden main menu node', async () => {
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('MENU:HIDE')
       menuNode?.classList.add('hidden')
       expect(menuNode?.classList.contains('hidden')).to.equal(true)
@@ -119,14 +119,14 @@ describe('public/app/navigation function Init()', () => {
     })
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentElement?.removeChild(menuNode)
-      Navigation.Init()
+      Init()
       const handler = getSubscriber('MENU:HIDE')
       await EventuallyFullfills(handler(undefined))
     })
   })
   describe('#mainMenu Click Handler', () => {
     it('should ignore click event targeting child of #mainMenu', () => {
-      Navigation.Init()
+      Init()
       Navigation.current.pictures = [
         {
           name: 'foo',
@@ -144,7 +144,7 @@ describe('public/app/navigation function Init()', () => {
       expect(spy.callCount).to.equal(0)
     })
     it('should ignore click event node outside of #mainMenu', () => {
-      Navigation.Init()
+      Init()
       Navigation.current.pictures = [
         {
           name: 'foo',
@@ -161,7 +161,7 @@ describe('public/app/navigation function Init()', () => {
       expect(spy.callCount).to.equal(0)
     })
     it('should ignore click event will missing pictures list', () => {
-      Navigation.Init()
+      Init()
       Navigation.current.pictures = undefined
       const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
@@ -172,7 +172,7 @@ describe('public/app/navigation function Init()', () => {
       expect(spy.callCount).to.equal(0)
     })
     it('should ignore click event will empty pictures list', () => {
-      Navigation.Init()
+      Init()
       Navigation.current.pictures = []
       const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:HIDE'] = [spy]
@@ -183,7 +183,7 @@ describe('public/app/navigation function Init()', () => {
       expect(spy.callCount).to.equal(0)
     })
     it('should publish hide menu event for click event with pictures', () => {
-      Navigation.Init()
+      Init()
       Navigation.current.pictures = [
         {
           name: 'FOO',
@@ -202,7 +202,7 @@ describe('public/app/navigation function Init()', () => {
   })
   describe('.menuButton click handler', () => {
     it('should publish Menu:Show', () => {
-      Navigation.Init()
+      Init()
       const spy = sandbox.stub().resolves()
       PubSub.subscribers['MENU:SHOW'] = [spy]
       const target = dom.window.document.querySelector('.menuButton')

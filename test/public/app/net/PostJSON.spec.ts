@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Net } from '#public/scripts/app/net.js'
+import { PostJSON } from '#public/scripts/app/net.js'
 import { Cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 
@@ -38,16 +38,16 @@ describe('public/app/net function PostJSON()', () => {
   })
   it('should call fetch with provided path', async () => {
     const path = `/Some/Test/Path/${Math.random()}`
-    await Net.PostJSON(path, {}, isUnknown)
+    await PostJSON(path, {}, isUnknown)
     expect(fetchStub.calledWith(path)).to.equal(true)
   })
   it('should use POST method', async () => {
-    await Net.PostJSON('/foo', {}, isUnknown)
+    await PostJSON('/foo', {}, isUnknown)
     const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.method).to.equal('POST')
   })
   it('should set only expected headers', async () => {
-    await Net.PostJSON('', {}, isUnknown)
+    await PostJSON('', {}, isUnknown)
     const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.headers).to.have.all.keys(['Content-Type', 'Accept-Encoding', 'Accept'])
   })
@@ -58,19 +58,19 @@ describe('public/app/net function PostJSON()', () => {
   ]
   headerTests.forEach(([title, header, expected]) => {
     it(`should set ${title} header`, async () => {
-      await Net.PostJSON('/foo', {}, isUnknown)
+      await PostJSON('/foo', {}, isUnknown)
       const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
       expect(req.headers[header]).to.equal(expected)
     })
   })
   it('should set body in request', async () => {
-    await Net.PostJSON('', { foo: 4, bar: false, baz: 'quux' }, isUnknown)
+    await PostJSON('', { foo: 4, bar: false, baz: 'quux' }, isUnknown)
     const req = Cast<TestRequest>(fetchStub.firstCall.args[1])
     expect(req.body).to.equal('{"foo":4,"bar":false,"baz":"quux"}')
   })
   it('should resolve to expected object', async () => {
     dataFake.foo = Math.random()
-    const result = await Net.PostJSON('', {}, isUnknown)
+    const result = await PostJSON('', {}, isUnknown)
     expect(result).to.equal(dataFake)
   })
 })

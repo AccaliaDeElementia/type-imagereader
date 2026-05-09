@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 
-import { Folders } from '#public/scripts/app/folders.js'
+import { Internals } from '#public/scripts/app/folders.js'
 
 const markup = `
 html
@@ -27,17 +27,17 @@ describe('public/app/folders tab visibility', () => {
 
   describe('HideTab()', () => {
     it('should add hidden class to parent of selected element', () => {
-      Folders.HideTab('a[href="#tabFolders"]')
+      Internals.HideTab('a[href="#tabFolders"]')
       expect(tabFolders?.classList.contains('hidden')).to.equal(true)
     })
     it('should retain hidden class on hidden parent of selected element', () => {
       tabFolders?.classList.add('hidden')
-      Folders.HideTab('a[href="#tabFolders"]')
+      Internals.HideTab('a[href="#tabFolders"]')
       expect(tabFolders?.classList.contains('hidden')).to.equal(true)
     })
     it('should not throw when selecting non existing element', () => {
       expect(() => {
-        Folders.HideTab('span[href="#THISISNOTALINK"]')
+        Internals.HideTab('span[href="#THISISNOTALINK"]')
       }).to.not.throw()
     })
   })
@@ -45,17 +45,17 @@ describe('public/app/folders tab visibility', () => {
   describe('UnhideTab()', () => {
     it('should remove hidden class from parent of selected element', () => {
       tabFolders?.classList.add('hidden')
-      Folders.UnhideTab('a[href="#tabFolders"]')
+      Internals.UnhideTab('a[href="#tabFolders"]')
       expect(tabFolders?.classList.contains('hidden')).to.equal(false)
     })
     it('should noop on visible parent of selected element', () => {
       tabFolders?.classList.remove('hidden')
-      Folders.UnhideTab('a[href="#tabFolders"]')
+      Internals.UnhideTab('a[href="#tabFolders"]')
       expect(tabFolders?.classList.contains('hidden')).to.equal(false)
     })
     it('should not throw when selecting non existing element', () => {
       expect(() => {
-        Folders.UnhideTab('span[href="#THISISNOTALINK"]')
+        Internals.UnhideTab('span[href="#THISISNOTALINK"]')
       }).to.not.throw()
     })
   })

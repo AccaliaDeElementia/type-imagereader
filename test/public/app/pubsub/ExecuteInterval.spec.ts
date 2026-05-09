@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { expect } from 'chai'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
+import { PubSub, Internals } from '#public/scripts/app/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/pubsub function ExecuteInterval()', () => {
@@ -32,76 +32,76 @@ describe('public/app/pubsub function ExecuteInterval()', () => {
     sandbox.restore()
   })
   it('should decrement delayCycle count once for pending defer', () => {
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testDefer.delayCycles).to.equal(9)
   })
   it('should decrement delayCycle count on successive call for pending defer', () => {
-    PubSub.ExecuteInterval()
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testDefer.delayCycles).to.equal(8)
   })
   it('should decrement delayCycle count once for interval', () => {
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testInterval.delayCycles).to.equal(9)
   })
   it('should decrement delayCycle count on successive call for interval', () => {
-    PubSub.ExecuteInterval()
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testInterval.delayCycles).to.equal(8)
   })
   it('should not execute defered task that has not expired', () => {
     testDefer.delayCycles = 10
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testDefer.method.callCount).to.equal(0)
   })
   it('should not execute interval task that has not expired', () => {
     testInterval.delayCycles = 10
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testInterval.method.callCount).to.equal(0)
   })
   it('should execute defered task that has expired', () => {
     testDefer.delayCycles = 0
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testDefer.method.callCount).to.equal(1)
   })
   it('should execute interval task that has expired', () => {
     testInterval.delayCycles = 0
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testInterval.method.callCount).to.equal(1)
   })
   it('should execute defered task that is overdue', () => {
     testDefer.delayCycles = -100
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testDefer.method.callCount).to.equal(1)
   })
   it('should execute interval task that is overdue', () => {
     testInterval.delayCycles = -1001
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testInterval.method.callCount).to.equal(1)
   })
   it('should remove expired delay method after executing', () => {
     testDefer.delayCycles = 0
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(PubSub.deferred).to.not.contain(testDefer)
   })
   it('should reset interval delay time when interval fires', () => {
     testInterval.delayCycles = 0
     testInterval.intervalCycles = 7
-    PubSub.ExecuteInterval()
+    Internals.ExecuteInterval()
     expect(testInterval.delayCycles).to.equal(7)
   })
   it('should tolerate deferred method throwing', () => {
     testDefer.delayCycles = 0
     testDefer.method.throws('BAD ERROR')
     expect(() => {
-      PubSub.ExecuteInterval()
+      Internals.ExecuteInterval()
     }).to.not.throw()
   })
   it('should tolerate interval throwing', () => {
     testInterval.delayCycles = 0
     testInterval.method.throws('BAD ERROR')
     expect(() => {
-      PubSub.ExecuteInterval()
+      Internals.ExecuteInterval()
     }).to.not.throw()
   })
 })

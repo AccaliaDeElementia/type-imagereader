@@ -9,7 +9,7 @@ import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
-import { Tabs } from '#public/scripts/app/tabs.js'
+import { Init, Internals, Tabs } from '#public/scripts/app/tabs.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -62,9 +62,9 @@ describe('public/app/tabs function SelectTab()', () => {
     PubSub.subscribers['TAB:SELECTED'] = [tabSelectedSpy]
     Tabs.tabs = []
     Tabs.tabNames = []
-    const spy = sandbox.stub(Tabs, 'SelectTab')
+    const spy = sandbox.stub(Internals, 'SelectTab')
     try {
-      Tabs.Init()
+      Init()
     } finally {
       spy.restore()
     }
@@ -82,105 +82,105 @@ describe('public/app/tabs function SelectTab()', () => {
     Tabs.tabNames = []
     Tabs.tabs = []
     expect(() => {
-      Tabs.SelectTab()
+      Internals.SelectTab()
     }).to.not.throw()
   })
   it('should accept null href', () => {
     expect(() => {
-      Tabs.SelectTab(undefined)
+      Internals.SelectTab(undefined)
     }).to.not.throw()
   })
   it('should publish once when selecting null tab', () => {
-    Tabs.SelectTab()
+    Internals.SelectTab()
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish first tab when selecting null tab', () => {
-    Tabs.SelectTab()
+    Internals.SelectTab()
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabActions', 'TAB:SELECTED'])
   })
   it('should publish once when selecting unknown tab', () => {
-    Tabs.SelectTab('#tabDoesNotExist')
+    Internals.SelectTab('#tabDoesNotExist')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish first tab when selecting unknown tab', () => {
-    Tabs.SelectTab('#tabDoesNotExist')
+    Internals.SelectTab('#tabDoesNotExist')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabActions', 'TAB:SELECTED'])
   })
   it('should publish once when selecting nonprefixed tab', () => {
-    Tabs.SelectTab('Bookmarks')
+    Internals.SelectTab('Bookmarks')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting nonprefixed tab', () => {
-    Tabs.SelectTab('Bookmarks')
+    Internals.SelectTab('Bookmarks')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabBookmarks', 'TAB:SELECTED'])
   })
   it('should publish once when selecting full tab', () => {
-    Tabs.SelectTab('#tabImages')
+    Internals.SelectTab('#tabImages')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting full tab', () => {
-    Tabs.SelectTab('#tabImages')
+    Internals.SelectTab('#tabImages')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabImages', 'TAB:SELECTED'])
   })
   it('should publish once even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
-    Tabs.SelectTab('#tabImages')
+    Internals.SelectTab('#tabImages')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
-    Tabs.SelectTab('#tabImages')
+    Internals.SelectTab('#tabImages')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabImages', 'TAB:SELECTED'])
   })
   it('should publish once when selecting tab case insensitively', () => {
-    Tabs.SelectTab('#TABFOLDERS')
+    Internals.SelectTab('#TABFOLDERS')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting tab case insensitively', () => {
-    Tabs.SelectTab('#TABFOLDERS')
+    Internals.SelectTab('#TABFOLDERS')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabFolders', 'TAB:SELECTED'])
   })
   it('should add active css class to selected tab', () => {
     expect(Tabs.tabs[1]?.parentElement?.classList.contains('active')).to.equal(false)
-    Tabs.SelectTab(Tabs.tabNames[1])
+    Internals.SelectTab(Tabs.tabNames[1])
     expect(Tabs.tabs[1]?.parentElement?.classList.contains('active')).to.equal(true)
   })
   it('should remove active css class from unselected tab', () => {
     Tabs.tabs[2]?.parentElement?.classList.add('active')
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).to.equal(true)
-    Tabs.SelectTab(Tabs.tabNames[1])
+    Internals.SelectTab(Tabs.tabNames[1])
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
   })
   it('should remove active css class from null hrwf tab', () => {
     Tabs.tabs[2]?.parentElement?.classList.add('active')
     Tabs.tabs[2]?.removeAttribute('href')
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).to.equal(true)
-    Tabs.SelectTab(Tabs.tabNames[2])
+    Internals.SelectTab(Tabs.tabNames[2])
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
   })
   it('should display connected content on tab select', () => {
     const elem = dom.window.document.getElementById('tabImages')
     assert(elem !== null)
     elem.style.display = 'none'
-    Tabs.SelectTab('Images')
+    Internals.SelectTab('Images')
     expect(elem.style.getPropertyValue('display')).to.equal('block')
   })
   it('should hide other content on tab select', () => {
     const elem = dom.window.document.getElementById('tabFolders')
     assert(elem !== null)
     elem.style.display = 'block'
-    Tabs.SelectTab('Images')
+    Internals.SelectTab('Images')
     expect(elem.style.getPropertyValue('display')).to.equal('none')
   })
   it('should scroll to top of content on tab select', () => {
     expect(imagesScroll.callCount).to.equal(0)
-    Tabs.SelectTab('Images')
+    Internals.SelectTab('Images')
     expect(imagesScroll.callCount).to.equal(1)
   })
   it('should scroll with expected options on tab select', () => {
-    Tabs.SelectTab('Images')
+    Internals.SelectTab('Images')
     expect(imagesScroll.firstCall.args).to.deep.equal([{ top: 0, behavior: 'smooth' }])
   })
 })

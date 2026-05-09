@@ -5,8 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Loading } from '#public/scripts/app/loading.js'
+import { Publish } from '#public/scripts/app/pubsub.js'
+import { Init, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -26,7 +26,7 @@ describe('public/app/loading subscriber "Loading:Show" and "Loading:Hide"', () =
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    Loading.Init()
+    Init()
   })
   afterEach(() => {
     sandbox.restore()
@@ -35,25 +35,25 @@ describe('public/app/loading subscriber "Loading:Show" and "Loading:Hide"', () =
   it('should show the loading overlay for "Loading:Show"', () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'none')
-    PubSub.Publish('Loading:Show')
+    Publish('Loading:Show')
     expect(overlay?.style.getPropertyValue('display')).to.equal('block')
   })
   it('should hide the loading overlay for "Loading:Hide"', () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'block')
-    PubSub.Publish('Loading:Hide')
+    Publish('Loading:Hide')
     expect(overlay?.style.getPropertyValue('display')).to.equal('none')
   })
   it('should tolerate missing overlay for "Loading:Show"', () => {
     Loading.overlay = null
     expect(() => {
-      PubSub.Publish('Loading:Show')
+      Publish('Loading:Show')
     }).to.not.throw()
   })
   it('should tolerate missing overlay for "Loading:Hide"', () => {
     Loading.overlay = null
     expect(() => {
-      PubSub.Publish('Loading:Hide')
+      Publish('Loading:Hide')
     }).to.not.throw()
   })
 })

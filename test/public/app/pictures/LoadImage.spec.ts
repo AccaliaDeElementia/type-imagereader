@@ -11,7 +11,6 @@ import { Cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Net } from '#public/scripts/app/net.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { Delay } from '#testutils/Utils.js'
 import assert from 'node:assert'
@@ -73,7 +72,7 @@ describe('public/app/pictures function LoadImage()', () => {
     current.element = element
     current.page = 40
     current.index = 1250
-    postJSONSpy = sandbox.stub(Net, 'PostJSON')
+    postJSONSpy = sandbox.stub(Imports, 'PostJSON')
     postJSONSpy.resolves(50)
     sandbox.stub(Internals, 'GetPicture').returns(undefined)
     selectPageSpy = sandbox.stub(Imports, 'SelectPage')

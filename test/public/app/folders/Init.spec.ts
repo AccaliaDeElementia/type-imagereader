@@ -7,7 +7,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Folders } from '#public/scripts/app/folders.js'
+import { Folders, Init, Internals } from '#public/scripts/app/folders.js'
 import Sinon from 'sinon'
 import type { Listing } from '#contracts/listing.js'
 
@@ -43,18 +43,18 @@ describe('public/app/folders function Init()', () => {
 
     resetPubSub()
     Folders.FolderCard = null
-    buildFoldersSpy = sandbox.stub(Folders, 'BuildFolders')
+    buildFoldersSpy = sandbox.stub(Internals, 'BuildFolders')
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
   })
   it('should subscribe to Navigate:Data', () => {
-    Folders.Init()
+    Init()
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
   })
   it('should build folders on Navigate:Data with valid listing', async () => {
-    Folders.Init()
+    Init()
     const subscriberfn = getSubscriber('NAVIGATE:DATA')
     const data: Listing = {
       name: 'FOO',
@@ -66,7 +66,7 @@ describe('public/app/folders function Init()', () => {
     expect(buildFoldersSpy.calledWith(data)).to.equal(true)
   })
   it('should not build folders on Navigate:Data with invalid data', async () => {
-    Folders.Init()
+    Init()
     const subscriberfn = getSubscriber('NAVIGATE:DATA')
     const data = {
       invalid: 'OBJECT',
@@ -75,12 +75,12 @@ describe('public/app/folders function Init()', () => {
     expect(buildFoldersSpy.called).to.equal(false)
   })
   it('should locate and save the folder card for use when building markup', () => {
-    Folders.Init()
+    Init()
     expect(Folders.FolderCard).to.not.equal(null)
   })
   it('should set null for missing folder card for use when building markup', () => {
     document.querySelector('#FolderCard')?.remove()
-    Folders.Init()
+    Init()
     expect(Folders.FolderCard).to.equal(null)
   })
 })

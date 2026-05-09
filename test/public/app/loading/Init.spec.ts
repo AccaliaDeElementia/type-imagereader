@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Loading } from '#public/scripts/app/loading.js'
+import { Init, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -26,7 +26,7 @@ describe('public/app/loading function Init()', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    Loading.Init()
+    Init()
   })
   afterEach(() => {
     sandbox.restore()

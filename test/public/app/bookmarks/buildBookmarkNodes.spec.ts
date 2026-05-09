@@ -6,7 +6,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 
 import { resetPubSub } from '#testutils/PubSub.js'
-import { Bookmarks } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, Internals } from '#public/scripts/app/bookmarks.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
@@ -39,8 +39,8 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     })
     mountDom(dom)
 
-    getFolderSpy = sandbox.stub(Bookmarks, 'GetOrCreateFolderElement').returns(dom.window.document.createElement('div'))
-    buildBookmarkSpy = sandbox.stub(Bookmarks, 'BuildBookmark').returns(dom.window.document.createElement('div'))
+    getFolderSpy = sandbox.stub(Internals, 'GetOrCreateFolderElement').returns(dom.window.document.createElement('div'))
+    buildBookmarkSpy = sandbox.stub(Internals, 'BuildBookmark').returns(dom.window.document.createElement('div'))
 
     resetPubSub()
 
@@ -51,7 +51,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     unmountDom()
   })
   it('should not retrieve folder when bookmarks are undefined', () => {
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       {
         name: '',
         path: '',
@@ -63,7 +63,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     expect(getFolderSpy.called).to.equal(false)
   })
   it('should not retrieve folder when bookmarks are empty', () => {
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       {
         name: '',
         path: '',
@@ -76,27 +76,27 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
   })
   it('should call GetOrCreateFolderElement once', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
-    Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
+    Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.callCount).to.equal(1)
   })
   it('should call GetOrCreateFolderElement with 2 arguments', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
-    Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
+    Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args).to.have.lengthOf(2)
   })
   it('should pass parent path as first argument to GetOrCreateFolderElement', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
-    Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
+    Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args[0]).to.equal('/FOO/BAR!')
   })
   it('should pass bookmark folder as second argument to GetOrCreateFolderElement', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
-    Bookmarks.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
+    Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args[1]).to.equal(folder)
   })
   it('should not build bookmarks when folder retrieve fails', () => {
     getFolderSpy.returns(null)
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       {
         name: '',
         path: '',
@@ -114,7 +114,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     expect(buildBookmarkSpy.callCount).to.equal(0)
   })
   it('should not build bookmarks when folder is empty', () => {
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       {
         name: '',
         path: '',
@@ -133,7 +133,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
   })
   it('should call BuildBookmark once per bookmark', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
       '',
     )
@@ -141,7 +141,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
   })
   it('should call BuildBookmark with 1 argument', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
       '',
     )
@@ -149,7 +149,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
   })
   it('should pass the bookmark to BuildBookmark', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
       '',
     )
@@ -162,7 +162,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     }
     getFolderSpy.returns(folder)
     buildBookmarkSpy.returns(dom.window.document.createElement('div'))
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       {
         name: '',
         path: '',
@@ -181,7 +181,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     getFolderSpy.returns(folder)
     const card = dom.window.document.createElement('div')
     buildBookmarkSpy.returns(card)
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       {
         name: '',
         path: '',
@@ -199,7 +199,7 @@ describe('public/app/bookmarks function buildBookmarkNodes()', () => {
     }
     getFolderSpy.returns(folder)
     buildBookmarkSpy.returns(null)
-    Bookmarks.buildBookmarkNodes(
+    Internals.buildBookmarkNodes(
       {
         name: '',
         path: '',

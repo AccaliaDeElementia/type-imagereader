@@ -8,7 +8,6 @@ import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { InitActions, Imports } from '#public/scripts/app/pictures/inputs.js'
 import { NavigateTo } from '#public/scripts/app/pictures/viewer.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import type { Picture } from '#contracts/listing.js'
 import { Cast } from '#testutils/TypeGuards.js'
@@ -32,7 +31,7 @@ describe('public/app/pictures function InitActions()', () => {
     resetPubSub()
     Pictures.mainImage = null
     Pictures.imageCard = null
-    isMenuActiveSpy = sandbox.stub(Navigation, 'IsMenuActive').returns(false)
+    isMenuActiveSpy = sandbox.stub(Imports, 'IsMenuActive').returns(false)
     getShowUnreadOnly = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
     getPictureFake = { number: Math.random() }
     getPictureSpy = sandbox.stub(Imports, 'GetPicture').returns(Cast<Picture>(getPictureFake))

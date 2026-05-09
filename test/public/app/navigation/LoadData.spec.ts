@@ -7,9 +7,8 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Navigation } from '#public/scripts/app/navigation.js'
+import { Imports, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { resetPubSub } from '#testutils/PubSub.js'
-import { Net } from '#public/scripts/app/net.js'
 import { isListing } from '#contracts/listing.js'
 import { EventuallyFullfills } from '#testutils/Errors.js'
 
@@ -64,12 +63,12 @@ describe('public/app/navigation function LoadData()', () => {
       name: '',
       parent: '',
     }
-    getJSONSpy = sandbox.stub(Net, 'GetJSON').resolves({
+    getJSONSpy = sandbox.stub(Imports, 'GetJSON').resolves({
       path: '/foo',
       name: 'foo',
       parent: '/',
     })
-    suppressMenuSpy = sandbox.stub(Navigation, 'IsSuppressMenu').returns(false)
+    suppressMenuSpy = sandbox.stub(Internals, 'IsSuppressMenu').returns(false)
   })
   afterEach(() => {
     sandbox.restore()
@@ -83,28 +82,28 @@ describe('public/app/navigation function LoadData()', () => {
     Sinon.restore()
   })
   it('should publish Loading:Show at start of processing', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(loadingShowSpy.called).to.equal(true)
   })
   it('should call getJSON', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(getJSONSpy.called).to.equal(true)
   })
   it('should call getJSON with 2 arguments', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(getJSONSpy.firstCall.args).to.have.lengthOf(2)
   })
   it('should call getJSON after Loading:Show has been published', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(getJSONSpy.calledAfter(loadingShowSpy)).to.equal(true)
   })
   it('should request data from expected listing path', async () => {
     Navigation.current.path = '/foo/bar/baz/99382111'
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(getJSONSpy.firstCall.args[0]).to.equal('/api/listing/foo/bar/baz/99382111')
   })
   it('should use isListing contract assertion method to validate getJSON results', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(getJSONSpy.firstCall.args[1]).to.equal(isListing)
   })
   it('should update Navigation.current with results from GetJSON call', async () => {
@@ -114,37 +113,37 @@ describe('public/app/navigation function LoadData()', () => {
       parent: '/N',
     }
     getJSONSpy.resolves(data)
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(Navigation.current).to.equal(data)
   })
   it('should set noMenu as false when menu is not suppressed', async () => {
     suppressMenuSpy.returns(false)
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(Navigation.current.noMenu).to.equal(false)
   })
   it('should set noMenu as true when menu is suppressed', async () => {
     suppressMenuSpy.returns(true)
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(Navigation.current.noMenu).to.equal(true)
   })
   it('should set noMenu as true when suppressMenu argument is true', async () => {
     suppressMenuSpy.returns(false)
-    await Navigation.LoadData(false, true)
+    await Internals.LoadData(false, true)
     expect(Navigation.current.noMenu).to.equal(true)
   })
   it('should set noMenu as true when suppressMenu argument is true and IsSuppressMenu is true', async () => {
     suppressMenuSpy.returns(true)
-    await Navigation.LoadData(false, true)
+    await Internals.LoadData(false, true)
     expect(Navigation.current.noMenu).to.equal(true)
   })
   it('should set noMenu as false when suppressMenu argument is false and IsSuppressMenu is false', async () => {
     suppressMenuSpy.returns(false)
-    await Navigation.LoadData(false, false)
+    await Internals.LoadData(false, false)
     expect(Navigation.current.noMenu).to.equal(false)
   })
   it('should set noMenu as true when suppressMenu argument is false and IsSuppressMenu is true', async () => {
     suppressMenuSpy.returns(true)
-    await Navigation.LoadData(false, false)
+    await Internals.LoadData(false, false)
     expect(Navigation.current.noMenu).to.equal(true)
   })
   it('should not inherit noMenu from prior Navigation.current state when suppressMenu argument is omitted', async () => {
@@ -155,107 +154,107 @@ describe('public/app/navigation function LoadData()', () => {
       parent: '',
       noMenu: true,
     }
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(Navigation.current.noMenu).to.equal(false)
   })
   it('should set title element content as retrieved name', async () => {
     getJSONSpy.resolves({ name: 'Nude in Bar', path: '/N/Nude in Bar' })
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(titleElement?.innerHTML).to.equal('Nude in Bar')
   })
   it('should set title element content as retrieved path when name is empty', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(titleElement?.innerHTML).to.equal('/N/Nude in Bar')
   })
   it('should set brand element content as retrieved name', async () => {
     getJSONSpy.resolves({ name: 'Nude in Bar', path: '/N/Nude in Bar' })
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(brandElement?.innerHTML).to.equal('Nude in Bar')
   })
   it('should set brand element content as retrieved path when name is empty', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(brandElement?.innerHTML).to.equal('/N/Nude in Bar')
   })
   it('should tolerate missing title element', async () => {
     titleElement?.parentElement?.removeChild(titleElement)
-    await EventuallyFullfills(Navigation.LoadData())
+    await EventuallyFullfills(Internals.LoadData())
   })
   it('should tolerate missing brand element', async () => {
     brandElement?.parentElement?.removeChild(brandElement)
-    await EventuallyFullfills(Navigation.LoadData())
+    await EventuallyFullfills(Internals.LoadData())
   })
   it('should not push state when loading data with no history flag set true', async () => {
-    await Navigation.LoadData(true)
+    await Internals.LoadData(true)
     expect(historySpy.called).to.equal(false)
   })
   it('should not push state when loading data with no history flag set false', async () => {
-    await Navigation.LoadData(false)
+    await Internals.LoadData(false)
     expect(historySpy.called).to.equal(true)
   })
   it('should not push state when loading data with no history flag unset', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(historySpy.called).to.equal(true)
   })
   it('should push history with 3 arguments', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(historySpy.firstCall.args).to.have.lengthOf(3)
   })
   it('should push history with empty state object', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(historySpy.firstCall.args[0]).to.deep.equal({})
   })
   it('should push history with empty title', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(historySpy.firstCall.args[1]).to.equal('')
   })
   it('should push history with URL derived from resolved path', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(historySpy.firstCall.args[2]).to.equal('http://127.0.0.1:2999//N/Nude in Bar')
   })
   it('should push history after retrieving data', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(historySpy.calledAfter(getJSONSpy)).to.equal(true)
   })
   it('should publish Loading:Hide after pushing history', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(loadingHideSpy.calledAfter(historySpy))
   })
   it('should publish Loading:Hide after retrieving data when not saving history', async () => {
-    await Navigation.LoadData(true)
+    await Internals.LoadData(true)
     expect(loadingHideSpy.calledAfter(getJSONSpy))
   })
   it('should publish Navigate:Data after hiding loading screen', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(navigateDataSpy.calledAfter(loadingHideSpy)).to.equal(true)
   })
   it('should publish retrieved data as Navigate:Data payload', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(navigateDataSpy.firstCall.args[0]).to.equal(Navigation.current)
   })
   it('should not publish Loading:Error when no error occurs', async () => {
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(loadingErrorSpy.called).to.equal(false)
   })
   it('should publish Loading:Error when GetJson rejects', async () => {
     getJSONSpy.rejects('FOO')
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(loadingErrorSpy.called).to.equal(true)
   })
   it('should publish Loading:Error when push history throws', async () => {
     historySpy.throws('FOO')
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(loadingErrorSpy.called).to.equal(true)
   })
   it('should publish recieved error when GetJson rejects', async () => {
     const err = new Error('FOO')
     getJSONSpy.rejects(err)
-    await Navigation.LoadData()
+    await Internals.LoadData()
     expect(loadingErrorSpy.firstCall.args[0]).to.equal(err)
   })
 
@@ -266,8 +265,8 @@ describe('public/app/navigation function LoadData()', () => {
     const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
     const secondData = { name: 'second', path: '/second', parent: '/' }
     getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
-    const a = Navigation.LoadData()
-    const b = Navigation.LoadData()
+    const a = Internals.LoadData()
+    const b = Internals.LoadData()
     resolveSecond(secondData)
     await b
     resolveFirst({ name: 'first', path: '/first', parent: '/' })
@@ -294,8 +293,8 @@ describe('public/app/navigation function LoadData()', () => {
     const { promise: firstPromise, reject: rejectFirst } = Promise.withResolvers<unknown>()
     const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
     getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
-    const a = Navigation.LoadData()
-    const b = Navigation.LoadData()
+    const a = Internals.LoadData()
+    const b = Internals.LoadData()
     resolveSecond({ name: 'second', path: '/second', parent: '/' })
     await b
     rejectFirst(new Error('stale'))

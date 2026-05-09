@@ -24,24 +24,25 @@ export async function decodeResult<T>(response: Response, isT: (obj: unknown) =>
 
 export const acceptAnyResponse = (_: unknown): _ is unknown => true
 
-export const Net = {
-  GetJSON: async <T>(path: string, isT: (obj: unknown) => obj is T): Promise<T> =>
-    await fetch(path, {
-      headers: {
-        'Accept-Encoding': 'gzip, deflate, br',
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      method: 'GET',
-    }).then(async (response) => await decodeResult<T>(response, isT)),
-  PostJSON: async <T>(path: string, data: unknown, isT: (obj: unknown) => obj is T): Promise<T> =>
-    await fetch(path, {
-      headers: {
-        'Accept-Encoding': 'gzip, deflate, br',
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).then(async (response) => await decodeResult<T>(response, isT)),
+export async function GetJSON<T>(path: string, isT: (obj: unknown) => obj is T): Promise<T> {
+  return await fetch(path, {
+    headers: {
+      'Accept-Encoding': 'gzip, deflate, br',
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: 'GET',
+  }).then(async (response) => await decodeResult<T>(response, isT))
+}
+
+export async function PostJSON<T>(path: string, data: unknown, isT: (obj: unknown) => obj is T): Promise<T> {
+  return await fetch(path, {
+    headers: {
+      'Accept-Encoding': 'gzip, deflate, br',
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: JSON.stringify(data),
+  }).then(async (response) => await decodeResult<T>(response, isT))
 }

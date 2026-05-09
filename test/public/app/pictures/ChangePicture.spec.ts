@@ -2,9 +2,8 @@
 
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
-import { ChangePicture, Internals } from '#public/scripts/app/pictures/viewer.js'
+import { ChangePicture, Imports, Internals } from '#public/scripts/app/pictures/viewer.js'
 import { expect } from 'chai'
-import { Loading } from '#public/scripts/app/loading.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -22,7 +21,7 @@ describe('public/app/pictures function ChangePicture()', () => {
     }
     menuHideSpy.resetHistory()
     loadingErrorSpy.resetHistory()
-    isLoadingSpy = sandbox.stub(Loading, 'IsLoading').returns(false)
+    isLoadingSpy = sandbox.stub(Imports, 'IsLoading').returns(false)
     loadImageSpy = sandbox.stub(Internals, 'LoadImage').resolves()
   })
   afterEach(() => {

@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Loading } from '#public/scripts/app/loading.js'
+import { Init, IsLoading, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -25,7 +25,7 @@ describe('public/app/loading function IsLoading()', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    Loading.Init()
+    Init()
   })
   afterEach(() => {
     sandbox.restore()
@@ -60,7 +60,7 @@ describe('public/app/loading function IsLoading()', () => {
     it(`should ${expected ? '' : 'not '}consider ${style} as IsLoading`, () => {
       const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
       overlay?.style.setProperty('display', style)
-      expect(Loading.IsLoading()).to.equal(expected)
+      expect(IsLoading()).to.equal(expected)
     })
   })
 })
