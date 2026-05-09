@@ -1,6 +1,6 @@
 'use sanity'
 
-import Updater, { Functions } from '#public/scripts/slideshow/time.js'
+import Updater, { Internals } from '#public/scripts/slideshow/time.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
@@ -25,8 +25,8 @@ describe('public/slideshow/time Updater()', () => {
   let dom = new JSDOM(render(markup))
   const now = new Date(2000, 3, 1, 0, 0, 0, 0)
   beforeEach(() => {
-    fakeFormatTime = sandbox.stub(Functions, 'FormatTime').returns('')
-    fakeFormatDate = sandbox.stub(Functions, 'FormatDate').returns('')
+    fakeFormatTime = sandbox.stub(Internals, 'FormatTime').returns('')
+    fakeFormatDate = sandbox.stub(Internals, 'FormatDate').returns('')
     sandbox.useFakeTimers({ now })
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',

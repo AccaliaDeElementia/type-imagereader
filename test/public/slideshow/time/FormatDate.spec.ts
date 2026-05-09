@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/time.js'
+import { Internals } from '#public/scripts/slideshow/time.js'
 import { expect } from 'chai'
 describe('public/slideshow/time FormatDate()', () => {
   const makeDate = (year: number, month: number, day: number): Date => {
@@ -39,7 +39,7 @@ describe('public/slideshow/time FormatDate()', () => {
   ]
   testCases.forEach(([date, expected]) => {
     it(`should format ${expected} correctly`, () => {
-      expect(Functions.FormatDate(date)).to.equal(expected)
+      expect(Internals.FormatDate(date)).to.equal(expected)
     })
   })
 })

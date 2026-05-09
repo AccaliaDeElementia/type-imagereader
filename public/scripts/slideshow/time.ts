@@ -20,17 +20,25 @@ const months = [
 
 const DIGITS_TO_KEEP = 2
 const TIME_UPDATE_INTERVAL = 100
-export const Functions = {
-  FormatTime: (now: Date): string =>
-    `${`00${now.getHours()}`.slice(-DIGITS_TO_KEEP)}:${`00${now.getMinutes()}`.slice(-DIGITS_TO_KEEP)}`,
-  FormatDate: (now: Date): string => `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`,
+
+function FormatTime(now: Date): string {
+  return `${`00${now.getHours()}`.slice(-DIGITS_TO_KEEP)}:${`00${now.getMinutes()}`.slice(-DIGITS_TO_KEEP)}`
+}
+
+function FormatDate(now: Date): string {
+  return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`
 }
 
 const updateTime = async (): Promise<void> => {
   const now = new Date()
-  document.querySelector('.time')?.replaceChildren(Functions.FormatTime(now))
-  document.querySelector('.date')?.replaceChildren(Functions.FormatDate(now))
+  document.querySelector('.time')?.replaceChildren(Internals.FormatTime(now))
+  document.querySelector('.date')?.replaceChildren(Internals.FormatDate(now))
   await Promise.resolve()
+}
+
+export const Internals = {
+  FormatTime,
+  FormatDate,
 }
 
 export default new CyclicUpdater(updateTime, TIME_UPDATE_INTERVAL)

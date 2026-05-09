@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Functions } from '#public/scripts/slideshow/time.js'
+import { Internals } from '#public/scripts/slideshow/time.js'
 import { expect } from 'chai'
 describe('public/slideshow/time FormatTime()', () => {
   const makeTime = (hours: number, minutes: number): Date => {
@@ -42,7 +42,7 @@ describe('public/slideshow/time FormatTime()', () => {
   ]
   testCases.forEach(([time, expected]) => {
     it(`should format ${expected} correctly`, () => {
-      expect(Functions.FormatTime(time)).to.equal(expected)
+      expect(Internals.FormatTime(time)).to.equal(expected)
     })
   })
 })
