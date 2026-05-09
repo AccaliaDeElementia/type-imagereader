@@ -9,7 +9,17 @@ import { normalize } from 'node:path'
 
 import { Initialize as _Initialize } from '#utils/persistance.js'
 
-import { ModCount, UriSafePath, Functions, INVALID_MOD_COUNT } from './apiFunctions.js'
+import {
+  AddBookmark as _AddBookmark,
+  GetBookmarks as _GetBookmarks,
+  GetListing as _GetListing,
+  INVALID_MOD_COUNT,
+  MarkFolderSeen as _MarkFolderSeen,
+  ModCount,
+  RemoveBookmark as _RemoveBookmark,
+  SetLatestPicture as _SetLatestPicture,
+  UriSafePath,
+} from './apiFunctions.js'
 
 import debug from 'debug'
 import { ReqParamToString } from '#utils/helpers.js'
@@ -22,6 +32,12 @@ export const Imports = {
   handleErrors: _handleErrors,
   isPathTraversal: _isPathTraversal,
   Initialize: _Initialize,
+  GetListing: _GetListing,
+  SetLatestPicture: _SetLatestPicture,
+  MarkFolderSeen: _MarkFolderSeen,
+  GetBookmarks: _GetBookmarks,
+  AddBookmark: _AddBookmark,
+  RemoveBookmark: _RemoveBookmark,
 }
 
 interface ReqWithBodyData {
@@ -94,7 +110,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     if (path === null) {
       return
     }
-    const folder = await Functions.GetListing(knex, normalize(`${path}/`))
+    const folder = await Imports.GetListing(knex, normalize(`${path}/`))
     if (folder === null) {
       logger('listing not found: %s', path)
       res.status(StatusCodes.NOT_FOUND).json({
@@ -124,7 +140,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       }
       logger('POST /navigate/latest %s', path)
       if (incomingModCount === INVALID_MOD_COUNT) {
-        await Functions.SetLatestPicture(knex, path)
+        await Imports.SetLatestPicture(knex, path)
       } else {
         const newCount = ModCount.ValidateAndIncrement(incomingModCount)
         if (newCount === null) {
@@ -133,7 +149,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
           return
         }
         response = newCount
-        await Functions.SetLatestPicture(knex, path)
+        await Imports.SetLatestPicture(knex, path)
       }
       res.status(StatusCodes.OK).send(`${response}`)
     }),
@@ -146,7 +162,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
         logger('POST /mark/read %s', path)
-        await Functions.MarkFolderSeen(knex, normalize(`${path}/`), true)
+        await Imports.MarkFolderSeen(knex, normalize(`${path}/`), true)
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -159,7 +175,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
         logger('POST /mark/unread %s', path)
-        await Functions.MarkFolderSeen(knex, normalize(`${path}/`), false)
+        await Imports.MarkFolderSeen(knex, normalize(`${path}/`), false)
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -167,7 +183,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
 
   const getBookmarks = handleErrors(async (_, res) => {
     logger('GET /bookmarks')
-    res.json(await Functions.GetBookmarks(knex))
+    res.json(await Imports.GetBookmarks(knex))
   })
 
   router.get('/bookmarks/*path', getBookmarks)
@@ -181,7 +197,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
         logger('POST /bookmarks/add %s', path)
-        await Functions.AddBookmark(knex, path)
+        await Imports.AddBookmark(knex, path)
         res.status(StatusCodes.OK).end()
       }
     }),
@@ -194,7 +210,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       const path = parsePath(UriSafePath.decode(body.path), res)
       if (path !== null) {
         logger('POST /bookmarks/remove %s', path)
-        await Functions.RemoveBookmark(knex, path)
+        await Imports.RemoveBookmark(knex, path)
         res.status(StatusCodes.OK).end()
       }
     }),

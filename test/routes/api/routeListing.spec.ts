@@ -5,7 +5,6 @@ import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
-import { Functions } from '#routes/apiFunctions.js'
 import { getRouter, Imports } from '#routes/api.js'
 import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
@@ -46,7 +45,7 @@ describe('routes/api route GET /listing', () => {
         post: sandbox.stub(),
       }),
     )
-    getListingStub = sandbox.stub(Functions, 'GetListing').resolves()
+    getListingStub = sandbox.stub(Imports, 'GetListing').resolves()
     ;({ loggerStub } = stubDebug(sandbox, Imports))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)

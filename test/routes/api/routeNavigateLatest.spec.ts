@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
-import { Functions, ModCount } from '#routes/apiFunctions.js'
+import { ModCount } from '#routes/apiFunctions.js'
 import { getRouter, Imports } from '#routes/api.js'
 import { StatusCodes } from 'http-status-codes'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
@@ -52,7 +52,7 @@ describe('routes/api route POST /navigate/latest', () => {
         get: sandbox.stub(),
       }),
     )
-    setLatestPictureStub = sandbox.stub(Functions, 'SetLatestPicture').resolves()
+    setLatestPictureStub = sandbox.stub(Imports, 'SetLatestPicture').resolves()
     validateAndIncrementStub = sandbox.stub(ModCount, 'ValidateAndIncrement').returns(1)
     getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
     ;({ loggerStub } = stubDebug(sandbox, Imports))

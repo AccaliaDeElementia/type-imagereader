@@ -1,7 +1,6 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Functions } from '#routes/apiFunctions.js'
 import { StubToKnex } from '#testutils/TypeGuards.js'
 import { Imports } from '#routes/slideshow.js'
 import { expect } from 'chai'
@@ -14,7 +13,7 @@ describe('routes/slideshow Imports', () => {
   let knexFake = StubToKnex({})
   beforeEach(() => {
     knexFake = StubToKnex({})
-    setLatestPictureStub = sandbox.stub(Functions, 'SetLatestPicture').resolves()
+    setLatestPictureStub = sandbox.stub(Imports, 'SetLatestPicture').resolves()
   })
   afterEach(() => {
     sandbox.restore()

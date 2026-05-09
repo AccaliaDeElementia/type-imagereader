@@ -6,7 +6,6 @@ import type { Application, RequestHandler as ExpressRequestHandler, Response as 
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
-import { Functions } from '#routes/apiFunctions.js'
 import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
 import { createResponseFake } from '#testutils/Express.js'
@@ -42,7 +41,7 @@ describe('routes/api route GET /bookmarks', () => {
         post: sandbox.stub(),
       }),
     )
-    getBookmarkStub = sandbox.stub(Functions, 'GetBookmarks').resolves()
+    getBookmarkStub = sandbox.stub(Imports, 'GetBookmarks').resolves()
     ;({ loggerStub } = stubDebug(sandbox, Imports))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
     await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))

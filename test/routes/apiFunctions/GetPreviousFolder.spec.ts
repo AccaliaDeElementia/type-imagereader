@@ -1,7 +1,7 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { Functions, type SiblingFolderSearch } from '#routes/apiFunctions.js'
+import { GetPreviousFolder, Internals, type SiblingFolderSearch } from '#routes/apiFunctions.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
@@ -15,17 +15,17 @@ describe('routes/apiFunctions function GetPreviousFolder', () => {
 
   beforeEach(() => {
     ;({ fake: knexFake } = createKnexChainFake([] as const, [] as const))
-    getDirectionFolderStub = sandbox.stub(Functions, 'GetDirectionFolder').resolves()
+    getDirectionFolderStub = sandbox.stub(Internals, 'GetDirectionFolder').resolves()
   })
   afterEach(() => {
     sandbox.restore()
   })
   it('should call GetDirectionFolder to do actual query', async () => {
-    await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
+    await GetPreviousFolder(knexFake, '/foo', 'foo')
     expect(getDirectionFolderStub.callCount).to.equal(1)
   })
   it('should call pass knex parameter to do actual query', async () => {
-    await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
+    await GetPreviousFolder(knexFake, '/foo', 'foo')
     expect(getDirectionFolderStub.firstCall.args[0]).to.equal(knexFake)
   })
   const paramTests: Array<[string, string, keyof SiblingFolderSearch, string]> = [
@@ -36,7 +36,7 @@ describe('routes/apiFunctions function GetPreviousFolder', () => {
   ]
   paramTests.forEach(([title, sortKey, prop, expected]) => {
     it(`should call pass ${title} to do actual query`, async () => {
-      await Functions.GetPreviousFolder(knexFake, '/foo', sortKey)
+      await GetPreviousFolder(knexFake, '/foo', sortKey)
       const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
       assert(param !== undefined)
       expect(param[prop]).to.equal(expected)
@@ -45,7 +45,7 @@ describe('routes/apiFunctions function GetPreviousFolder', () => {
   it('should resolve as result of actual query', async () => {
     const data = { data: Math.random() }
     getDirectionFolderStub.resolves(data)
-    const result = await Functions.GetPreviousFolder(knexFake, '/foo', 'foo')
+    const result = await GetPreviousFolder(knexFake, '/foo', 'foo')
     expect(result).to.equal(data)
   })
 })

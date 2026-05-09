@@ -10,7 +10,7 @@ import debug from 'debug'
 import { isPathTraversal as _isPathTraversal, GetParentFolders as _GetParentFolders } from '#utils/Path.js'
 
 import { Initialize as _Initialize } from '#utils/persistance.js'
-import { UriSafePath, Functions as api } from './apiFunctions.js'
+import { UriSafePath, SetLatestPicture as _SetLatestPicture } from './apiFunctions.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 
 import type { Knex } from 'knex'
@@ -110,11 +110,12 @@ export const SocketHandlers = {
 
 export const Imports = {
   logger,
-  setLatest: async (knex: Knex, path: string): Promise<string | null> => await api.SetLatestPicture(knex, path),
+  setLatest: async (knex: Knex, path: string): Promise<string | null> => await Imports.SetLatestPicture(knex, path),
   GetParentFolders: _GetParentFolders,
   isPathTraversal: _isPathTraversal,
   Router,
   Initialize: _Initialize,
+  SetLatestPicture: _SetLatestPicture,
 }
 export class HandleSocketState {
   roomName: string | null
