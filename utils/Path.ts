@@ -6,7 +6,7 @@ export function isPathTraversal(path: string): boolean {
   return normalize(path) !== path
 }
 
-export function GetParentFolders(path: string): string[] {
+export function getParentFolders(path: string): string[] {
   const results = []
   let current = path
   while (current !== sep) {

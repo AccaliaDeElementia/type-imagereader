@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { StringishHasValue } from '#utils/helpers.js'
+import { stringishHasValue } from '#utils/helpers.js'
 
-describe('utils/helpers StringishHasValue()', () => {
+describe('utils/helpers stringishHasValue()', () => {
   const tests: Array<[string, string | null | undefined, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],
@@ -14,7 +14,7 @@ describe('utils/helpers StringishHasValue()', () => {
   ]
   tests.forEach(([title, value, expected]) => {
     it(`should return ${String(expected)} for ${title}`, () => {
-      expect(StringishHasValue(value)).to.equal(expected)
+      expect(stringishHasValue(value)).to.equal(expected)
     })
   })
 })

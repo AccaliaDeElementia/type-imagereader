@@ -4,7 +4,7 @@ import { Subscribe, Publish, AddInterval, RemoveInterval } from './pubsub.js'
 import { CloneNode, isHTMLElement } from './utils.js'
 
 import { isListing } from '#contracts/listing.js'
-import { HasValue, HasValues } from '#utils/helpers.js'
+import { hasValue, hasValues } from '#utils/helpers.js'
 
 interface ButtonDefinition {
   name: string
@@ -258,7 +258,7 @@ export const Actions = {
 
 function setInnerTextMaybe(elem: HTMLElement, selector: string, text: string): void {
   const node = elem.querySelector<HTMLElement>(selector)
-  if (!HasValue(node)) return
+  if (!hasValue(node)) return
   node.innerText = text
 }
 
@@ -296,12 +296,12 @@ function BuildActions(): void {
 function ReadGamepad(): void {
   if (document.hidden) return
   const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
-  if (gamepads === undefined || !HasValues(gamepads)) return
+  if (gamepads === undefined || !hasValues(gamepads)) return
   for (const pad of gamepads) {
     if (pad === null) continue
     Actions.gamepads.Read(pad)
   }
-  if (!Actions.gamepads.pressingNow && HasValues(Actions.gamepads.pressedButtons)) {
+  if (!Actions.gamepads.pressingNow && hasValues(Actions.gamepads.pressedButtons)) {
     const buttons = Actions.gamepads.pressedButtons.join('')
     Actions.gamepads.Reset()
     Publish(`Action:Gamepad:${buttons}`)
@@ -313,7 +313,7 @@ export function Init(): void {
   Actions.gamepads.Reset()
 
   Subscribe('Navigate:Data', async (data) => {
-    if (isListing(data) && !HasValues(data.pictures) && !HasValues(data.children)) {
+    if (isListing(data) && !hasValues(data.pictures) && !hasValues(data.children)) {
       Publish('Tab:Select', 'Actions')
     }
     await Promise.resolve()

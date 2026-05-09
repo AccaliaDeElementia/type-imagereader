@@ -1,7 +1,7 @@
 'use sanity'
 
 import { io, type Socket } from 'socket.io-client'
-import { HasValue, StringishHasValue } from '#utils/helpers.js'
+import { hasValue, stringishHasValue } from '#utils/helpers.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 export type WebSocket = Socket
 
@@ -14,7 +14,7 @@ const RIGHT_THIRD = 0.6666666666666666
 const DEFAULT_ZOOM = 1
 
 function HandleKeys(event: KeyboardEvent, socket: WebSocket | undefined): void {
-  if (!HasValue(socket)) return
+  if (!hasValue(socket)) return
   if (event.key.toUpperCase() === 'ARROWRIGHT') {
     socket.emit(SocketEvents.NextImage)
   } else if (event.key.toUpperCase() === 'ARROWLEFT') {
@@ -23,8 +23,8 @@ function HandleKeys(event: KeyboardEvent, socket: WebSocket | undefined): void {
 }
 
 function HandleClick(event: MouseEvent, socket: WebSocket | undefined, initialScale: number): void {
-  if (!HasValue(socket)) return
-  if (HasValue(window.visualViewport) && window.visualViewport.scale > initialScale) {
+  if (!hasValue(socket)) return
+  if (hasValue(window.visualViewport) && window.visualViewport.scale > initialScale) {
     return
   }
   const pageWidth = window.innerWidth
@@ -62,7 +62,7 @@ function ShowBackingImageByType(path: string): void {
 
 function ParseRoomName(): string {
   let uri = window.location.pathname.replace(/^\/[^\/]+/v, '')
-  if (!StringishHasValue(uri)) {
+  if (!stringishHasValue(uri)) {
     uri = '/'
   }
   return decodeURIComponent(uri)
@@ -103,7 +103,7 @@ export function Connect(): void {
     WebSockets.socket?.emit(SocketEvents.GetLaunchId, Internals.HandleGetLaunchId)
   })
   WebSockets.socket.on(SocketEvents.ImageChanged, Internals.ShowBackingImageByType)
-  const initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
+  const initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
   document.body.addEventListener('click', (event) => {
     Internals.HandleClick(event, WebSockets.socket, initialScale)
   })

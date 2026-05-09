@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { IndexToText } from '#utils/helpers.js'
+import { indexToText } from '#utils/helpers.js'
 
-describe('utils/helpers IndexToText()', () => {
+describe('utils/helpers indexToText()', () => {
   const tests: Array<[string, number, string]> = [
     ['index 0', 0, (1).toLocaleString()],
     ['index 1', 1, (2).toLocaleString()],
@@ -13,7 +13,7 @@ describe('utils/helpers IndexToText()', () => {
   ]
   tests.forEach(([title, index, expected]) => {
     it(`should return '${expected}' for ${title}`, () => {
-      expect(IndexToText(index)).to.equal(expected)
+      expect(indexToText(index)).to.equal(expected)
     })
   })
 })

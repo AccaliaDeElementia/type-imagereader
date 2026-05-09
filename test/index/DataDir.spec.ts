@@ -36,7 +36,7 @@ describe('index.ts DATA_DIR handling', (): void => {
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
     StatStub = sandbox.stub(Imports, 'stat').resolves(fakeDirStats())
-    InitializeStub = sandbox.stub(Imports, 'Initialize').resolves(Cast({}))
+    InitializeStub = sandbox.stub(Imports, 'initialize').resolves(Cast({}))
     IncrementalSyncStub = sandbox.stub().resolves()
     sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
   })

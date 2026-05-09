@@ -38,7 +38,7 @@ describe('routes/api route GET /listing', () => {
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     knexFake = { Knex: Math.random() }
     const getFn = sandbox.stub()
-    const InitializeStub = sandbox.stub(Imports, 'Initialize').resolves(StubToKnex(knexFake))
+    const InitializeStub = sandbox.stub(Imports, 'initialize').resolves(StubToKnex(knexFake))
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         get: getFn,

@@ -32,7 +32,7 @@ describe('/index.ts tests', (): void => {
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
     sandbox.stub(Imports, 'stat').resolves(Cast<Stats>({ isDirectory: () => true }))
-    InitializeStub = sandbox.stub(Imports, 'Initialize').resolves(Cast({}))
+    InitializeStub = sandbox.stub(Imports, 'initialize').resolves(Cast({}))
     IncrementalSyncStub = sandbox.stub().resolves()
     sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
   })
@@ -447,7 +447,7 @@ describe('/index.ts tests', (): void => {
     expect(ImageReader.SyncLock._locked).to.equal(false)
   })
 
-  it('should call Initialize in flush callback', async () => {
+  it('should call initialize in flush callback', async () => {
     await ImageReader.Run()
     const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])

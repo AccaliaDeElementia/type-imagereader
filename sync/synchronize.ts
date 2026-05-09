@@ -2,7 +2,7 @@
 
 import _debug from 'debug'
 
-import { Initialize as _Initialize } from '../utils/persistance.js'
+import { initialize as _initialize } from '../utils/persistance.js'
 import { FindSyncItems as _FindSyncItems } from './findItems.js'
 import { SyncAllPictures as _SyncAllPictures } from './pictures.js'
 import { SyncAllFolders as _SyncAllFolders } from './folders.js'
@@ -20,7 +20,7 @@ export const LOG_PREFIX = 'type-imagereader:sync:synchronize'
 
 export const Imports = {
   debug: _debug,
-  Initialize: _Initialize,
+  initialize: _initialize,
   FindSyncItems: _FindSyncItems,
   SyncAllPictures: _SyncAllPictures,
   SyncAllFolders: _SyncAllFolders,
@@ -35,7 +35,7 @@ export async function Synchronize(): Promise<void> {
   const logger = Imports.debug(LOG_PREFIX)
   const start = Date.now()
   logger('Folder Synchronization Begins')
-  const knex = await Imports.Initialize()
+  const knex = await Imports.initialize()
   const runStep = async <T>(label: string, step: () => Promise<T>): Promise<T> => {
     const stepStart = Date.now()
     try {

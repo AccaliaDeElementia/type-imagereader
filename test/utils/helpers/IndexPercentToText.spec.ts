@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { IndexPercentToText } from '#utils/helpers.js'
+import { indexPercentToText } from '#utils/helpers.js'
 
-describe('utils/helpers IndexPercentToText()', () => {
+describe('utils/helpers indexPercentToText()', () => {
   const tests: Array<[string, number, number, string]> = [
     ['index 0 of 1', 0, 1, '100'],
     ['index 0 of 10', 0, 10, '10'],
@@ -25,7 +25,7 @@ describe('utils/helpers IndexPercentToText()', () => {
   ]
   tests.forEach(([title, index, total, expected]) => {
     it(`should return '${expected}' for ${title}`, () => {
-      expect(IndexPercentToText(index, total)).to.equal(expected)
+      expect(indexPercentToText(index, total)).to.equal(expected)
     })
   })
 })

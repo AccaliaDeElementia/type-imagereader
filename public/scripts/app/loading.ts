@@ -1,6 +1,6 @@
 'use sanity'
 
-import { HasValue } from '#utils/helpers.js'
+import { hasValue } from '#utils/helpers.js'
 import { Subscribe, Publish, Defer } from './pubsub.js'
 
 const ANIMATION_RESET_DELAY = 100
@@ -17,7 +17,7 @@ export function Init(): void {
   Loading.navbar = document.querySelector<HTMLElement>('#navbar')
 
   Subscribe('Loading:Error', async (message) => {
-    if (HasValue(message) && message !== '') {
+    if (hasValue(message) && message !== '') {
       window.console.error(message)
     }
     Loading.navbar?.style.removeProperty('transition')

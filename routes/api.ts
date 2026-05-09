@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'node:path'
 
-import { Initialize as _Initialize } from '#utils/persistance.js'
+import { initialize as _initialize } from '#utils/persistance.js'
 
 import {
   AddBookmark as _AddBookmark,
@@ -22,7 +22,7 @@ import {
 } from './apiFunctions.js'
 
 import debug from 'debug'
-import { ReqParamToString } from '#utils/helpers.js'
+import { reqParamToString } from '#utils/helpers.js'
 import { handleErrors as _handleErrors } from '#utils/Express.js'
 import { isPathTraversal as _isPathTraversal } from '#utils/Path.js'
 
@@ -31,7 +31,7 @@ export const Imports = {
   debug,
   handleErrors: _handleErrors,
   isPathTraversal: _isPathTraversal,
-  Initialize: _Initialize,
+  initialize: _initialize,
   GetListing: _GetListing,
   SetLatestPicture: _SetLatestPicture,
   MarkFolderSeen: _MarkFolderSeen,
@@ -64,7 +64,7 @@ export function ReadBody(req: unknown): BodyData {
 
 // Export the base-router
 export async function getRouter(_app: Application, _server: Server, _socket: WebSocketServer): Promise<Router> {
-  const knex = await Imports.Initialize()
+  const knex = await Imports.initialize()
   // Init router and path
   const router = Imports.Router()
 
@@ -104,7 +104,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   )
 
   const listing = handleErrors(async (req, res) => {
-    let path: string | null = `/${ReqParamToString(req.params.path)}`
+    let path: string | null = `/${reqParamToString(req.params.path)}`
     logger('GET /listing %s', path)
     path = parsePath(path, res)
     if (path === null) {

@@ -10,7 +10,7 @@ import { PubSub } from '#public/scripts/app/pubsub.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { Init, Internals, Tabs } from '#public/scripts/app/tabs.js'
 import assert from 'node:assert'
-import { HasValue } from '#utils/helpers.js'
+import { hasValue } from '#utils/helpers.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -100,7 +100,7 @@ describe('public/app/tabs Init()', () => {
     })
     it(`should call addEventListener once on tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
-      assert(HasValue(elem))
+      assert(hasValue(elem))
       const spy = sandbox.stub(elem, 'addEventListener')
       try {
         Init()
@@ -111,7 +111,7 @@ describe('public/app/tabs Init()', () => {
     })
     it(`should add click handler with two args to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
-      assert(HasValue(elem))
+      assert(hasValue(elem))
       const spy = sandbox.stub(elem, 'addEventListener')
       try {
         Init()
@@ -122,7 +122,7 @@ describe('public/app/tabs Init()', () => {
     })
     it(`should add click handler to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
-      assert(HasValue(elem))
+      assert(hasValue(elem))
       const spy = sandbox.stub(elem, 'addEventListener')
       try {
         Init()

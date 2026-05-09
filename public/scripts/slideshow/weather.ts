@@ -2,7 +2,7 @@
 
 import { CyclicUpdater } from './updater.js'
 import { type WeatherResults, isWeatherResults } from '#contracts/weather.js'
-import { HasValue, StringishHasValue } from '#utils/helpers.js'
+import { hasValue, stringishHasValue } from '#utils/helpers.js'
 
 type HTMLElementish = HTMLElement | null | undefined
 type Stringish = string | null | undefined
@@ -16,8 +16,8 @@ async function FetchWeather(uri: string | URL): Promise<WeatherResults> {
 }
 
 function ShowData(container: HTMLElementish, element: HTMLElementish, text: Stringish): void {
-  if (!HasValue(container) || !HasValue(element)) return
-  if (!StringishHasValue(text)) {
+  if (!hasValue(container) || !hasValue(element)) return
+  if (!stringishHasValue(text)) {
     container.style.setProperty('display', 'none')
     return
   }
@@ -26,8 +26,8 @@ function ShowData(container: HTMLElementish, element: HTMLElementish, text: Stri
 }
 
 function ShowIcon(element: HTMLElementish, icon: Stringish): void {
-  if (!HasValue(element)) return
-  if (!StringishHasValue(icon)) {
+  if (!hasValue(element)) return
+  if (!stringishHasValue(icon)) {
     element.style.setProperty('display', 'none')
     return
   }
@@ -36,7 +36,7 @@ function ShowIcon(element: HTMLElementish, icon: Stringish): void {
 }
 const DECIMAL_PLACES = 1
 function ShowWeather(base: HTMLElementish, weather: WeatherResults): WeatherResults {
-  if (!HasValue(base)) return weather
+  if (!hasValue(base)) return weather
   const temp =
     typeof weather.temp === 'number' && Number.isFinite(weather.temp)
       ? `${weather.temp.toFixed(DECIMAL_PLACES)}°C`

@@ -39,7 +39,7 @@ describe('routes/apiFunctions SetLatestPicture', () => {
   beforeEach(() => {
     knexStub = sandbox.stub().callsFake(() => StubToKnex(makeKnexInstance()))
     knexFake = StubToKnex(knexStub)
-    getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns([])
+    getParentFoldersStub = sandbox.stub(Imports, 'getParentFolders').returns([])
     loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
@@ -203,12 +203,12 @@ describe('routes/apiFunctions SetLatestPicture', () => {
     await SetLatestPicture(knexFake, '/foo/bar/image.pdf')
     expect(incrementer.increment.firstCall.args).to.deep.equal(['seenCount', 1])
   })
-  it('should call GetParentFolders once when conditional update flips a row', async () => {
+  it('should call getParentFolders once when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await SetLatestPicture(knexFake, '/foo/bar/image.pdf')
     expect(getParentFoldersStub.callCount).to.equal(1)
   })
-  it('should pass the picture path to GetParentFolders when conditional update flips a row', async () => {
+  it('should pass the picture path to getParentFolders when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await SetLatestPicture(knexFake, '/foo/bar/image.pdf')
     expect(getParentFoldersStub.firstCall.args).to.deep.equal(['/foo/bar/image.pdf'])

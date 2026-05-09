@@ -1,13 +1,13 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { ReadConfigurationBlock, Internals, Imports } from '#utils/persistance.js'
+import { readConfigurationBlock, Internals, Imports } from '#utils/persistance.js'
 import Sinon from 'sinon'
 import { EventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance ReadConfigurationBlock()', () => {
+describe('utils/persistance readConfigurationBlock()', () => {
   let configContent = {
     testtest: {
       client: 'foo' as string | null,
@@ -30,7 +30,7 @@ describe('utils/persistance ReadConfigurationBlock()', () => {
       },
     }
     configName = 'testtest'
-    sandbox.stub(Internals, 'GetEnvironmentName').returns(configName)
+    sandbox.stub(Internals, 'getEnvironmentName').returns(configName)
     readFileStub = sandbox
       .stub(Imports, 'readFile')
       .callsFake(async () => await Promise.resolve(JSON.stringify(configContent)))
@@ -39,37 +39,37 @@ describe('utils/persistance ReadConfigurationBlock()', () => {
     sandbox.restore()
   })
   it('should resolve to object', async () => {
-    const result = await ReadConfigurationBlock()
+    const result = await readConfigurationBlock()
     expect(result).to.deep.equal(configContent.testtest)
   })
   it('should reject when ReadFile rejects', async () => {
     readFileStub.rejects(new Error('poopy pants are no fun'))
-    const err = await EventuallyRejects(ReadConfigurationBlock())
+    const err = await EventuallyRejects(readConfigurationBlock())
     expect(err.message).to.equal('poopy pants are no fun')
   })
   it('should reject on empty file', async () => {
     readFileStub.resolves('')
-    const err = await EventuallyRejects(ReadConfigurationBlock())
+    const err = await EventuallyRejects(readConfigurationBlock())
     expect(err.message).to.equal('Invalid Configuration Detected!')
   })
   it('should reject on invalid JSON file', async () => {
     readFileStub.resolves('"')
-    const err = await EventuallyRejects(ReadConfigurationBlock())
+    const err = await EventuallyRejects(readConfigurationBlock())
     expect(err.message).to.equal('Unterminated string in JSON at position 1 (line 1 column 2)')
   })
   it('should reject on non object file', async () => {
     readFileStub.resolves('"not an object"')
-    const err = await EventuallyRejects(ReadConfigurationBlock())
+    const err = await EventuallyRejects(readConfigurationBlock())
     expect(err.message).to.equal('Invalid Configuration Detected!')
   })
   it('should reject on missing environment block file', async () => {
     readFileStub.resolves('{"a": {}}')
-    const err = await EventuallyRejects(ReadConfigurationBlock())
+    const err = await EventuallyRejects(readConfigurationBlock())
     expect(err.message).to.equal('Invalid Configuration Detected!')
   })
   it('should reject on bad config section file', async () => {
     configContent.testtest.client = null
-    const err = await EventuallyRejects(ReadConfigurationBlock())
+    const err = await EventuallyRejects(readConfigurationBlock())
     expect(err.message).to.equal('Invalid Configuration Detected!')
   })
 })

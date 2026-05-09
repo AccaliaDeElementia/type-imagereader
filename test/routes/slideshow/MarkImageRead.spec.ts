@@ -30,7 +30,7 @@ describe('routes/slideshow MarkImageRead()', () => {
     }
     knexStub = sandbox.stub().onFirstCall().returns(conditionalUpdate).onSecondCall().returns(incrementer)
     knexFake = StubToKnex(knexStub)
-    getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns(['/foo/bar/', '/foo/', '/'])
+    getParentFoldersStub = sandbox.stub(Imports, 'getParentFolders').returns(['/foo/bar/', '/foo/', '/'])
   })
   afterEach(() => {
     sandbox.restore()
@@ -62,7 +62,7 @@ describe('routes/slideshow MarkImageRead()', () => {
     await MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(knexStub.callCount).to.equal(1)
   })
-  it('should not call GetParentFolders when conditional update flips zero rows', async () => {
+  it('should not call getParentFolders when conditional update flips zero rows', async () => {
     conditionalUpdate.where.resolves(0)
     await MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(getParentFoldersStub.callCount).to.equal(0)
@@ -90,12 +90,12 @@ describe('routes/slideshow MarkImageRead()', () => {
     await MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(incrementer.increment.firstCall.args).to.deep.equal(['seenCount', 1])
   })
-  it('should call GetParentFolders once when conditional update flips a row', async () => {
+  it('should call getParentFolders once when conditional update flips a row', async () => {
     conditionalUpdate.where.resolves(1)
     await MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(getParentFoldersStub.callCount).to.equal(1)
   })
-  it('should pass the image path to GetParentFolders when conditional update flips a row', async () => {
+  it('should pass the image path to getParentFolders when conditional update flips a row', async () => {
     conditionalUpdate.where.resolves(1)
     await MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(getParentFoldersStub.firstCall.args).to.deep.equal(['/foo/bar/baz.png'])
@@ -105,7 +105,7 @@ describe('routes/slideshow MarkImageRead()', () => {
     await MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(incrementer.whereIn.callCount).to.equal(1)
   })
-  it('should filter ancestor folders using the result of GetParentFolders', async () => {
+  it('should filter ancestor folders using the result of getParentFolders', async () => {
     conditionalUpdate.where.resolves(1)
     await MarkImageRead(knexFake, '/foo/bar/baz.png')
     expect(incrementer.whereIn.firstCall.args).to.deep.equal(['path', ['/foo/bar/', '/foo/', '/']])

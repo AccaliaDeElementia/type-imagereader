@@ -1,13 +1,13 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { HasSetValues } from '#utils/helpers.js'
+import { hasSetValues } from '#utils/helpers.js'
 import Sinon from 'sinon'
 import { Cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/helpers HasSetValues()', () => {
+describe('utils/helpers hasSetValues()', () => {
   afterEach(() => {
     sandbox.restore()
   })
@@ -23,7 +23,7 @@ describe('utils/helpers HasSetValues()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${String(expected)} for ${title}`, () => {
-      expect(HasSetValues(Cast<Parameters<typeof HasSetValues>[0]>(input))).to.equal(expected)
+      expect(hasSetValues(Cast<Parameters<typeof hasSetValues>[0]>(input))).to.equal(expected)
     })
   })
 })

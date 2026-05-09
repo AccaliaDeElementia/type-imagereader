@@ -12,16 +12,16 @@ import { Synchronize as _Synchronize } from './sync/synchronize.js'
 import { IncrementalSync as _IncrementalSync } from './sync/incrementalsync.js'
 import { Start as startWatcher } from './sync/filewatcher.js'
 import type { Changeset, WatcherSubscription } from './sync/filewatcher.js'
-import { Initialize as _Initialize } from './utils/persistance.js'
+import { initialize as _initialize } from './utils/persistance.js'
 import { Start as start } from './Server.js'
-import { StringIsNullOrEmpty, getDataDir } from './utils/helpers.js'
+import { stringIsNullOrEmpty, getDataDir } from './utils/helpers.js'
 
 const IncrementalSyncFunctions = { IncrementalSync: _IncrementalSync }
 
 export const Imports = {
   logger: debug('type-imagereader:sync'),
   startWatcher,
-  Initialize: _Initialize,
+  initialize: _initialize,
   IncrementalSyncFunctions,
   stat,
   getDataDir,
@@ -98,7 +98,7 @@ const isSuppressed = (skipVar: string): boolean => {
 
 const parseSyncInterval = (): number | undefined => {
   const raw = process.env.SYNC_INTERVAL
-  if (StringIsNullOrEmpty(raw)) return undefined
+  if (stringIsNullOrEmpty(raw)) return undefined
   const parsed = Number(raw)
   if (Number.isNaN(parsed) || !Number.isFinite(parsed) || parsed <= ZERO) return undefined
   return parsed
@@ -117,7 +117,7 @@ export const ImageReader = {
     Imports.logger('using data directory: %s', dataDir)
     await Internals.ValidateDataDir(dataDir)
     await runIfNotSuppressed('SKIP_SERVE', async () => {
-      const port = Number(StringIsNullOrEmpty(process.env.PORT) ? DEFAULT_PORT : process.env.PORT)
+      const port = Number(stringIsNullOrEmpty(process.env.PORT) ? DEFAULT_PORT : process.env.PORT)
       if (Number.isNaN(port)) {
         throw new Error(`Port ${port} (from env: ${process.env.PORT}) is not a number. Valid ports must be a number.`)
       }
@@ -135,7 +135,7 @@ export const ImageReader = {
           await ImageReader.Synchronize()
         } finally {
           try {
-            const knex = await Imports.Initialize()
+            const knex = await Imports.initialize()
             await knex.destroy()
           } catch (err: unknown) {
             Imports.logger('failed to release knex pool in oneshot mode', err)
@@ -160,7 +160,7 @@ export const ImageReader = {
           const onFlush = async (changeset: Changeset): Promise<void> => {
             if (!ImageReader.SyncLock.take()) throw new Error('sync locked')
             try {
-              const knex = await Imports.Initialize()
+              const knex = await Imports.initialize()
               await Imports.IncrementalSyncFunctions.IncrementalSync(knex, changeset, dataDir)
             } finally {
               ImageReader.SyncLock.release()

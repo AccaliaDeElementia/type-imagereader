@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { GetFirst } from '#utils/helpers.js'
+import { getFirst } from '#utils/helpers.js'
 import { Cast } from '#testutils/TypeGuards.js'
 
-describe('utils/helpers GetFirst()', () => {
+describe('utils/helpers getFirst()', () => {
   const tests: Array<[string, unknown, unknown]> = [
     ['null', null, undefined],
     ['undefined', undefined, undefined],
@@ -17,7 +17,7 @@ describe('utils/helpers GetFirst()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${JSON.stringify(expected)} for ${title}`, () => {
-      expect(GetFirst(Cast<Parameters<typeof GetFirst>[0]>(input))).to.equal(expected)
+      expect(getFirst(Cast<Parameters<typeof getFirst>[0]>(input))).to.equal(expected)
     })
   })
 })

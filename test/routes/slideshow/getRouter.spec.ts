@@ -32,7 +32,7 @@ describe('routes/slideshow getRouter', () => {
     routerStub = { get: sandbox.stub() }
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
     knexFake = StubToKnex({})
-    sandbox.stub(Imports, 'Initialize').resolves(knexFake)
+    sandbox.stub(Imports, 'initialize').resolves(knexFake)
     rootRouteStub = sandbox.stub(Internals, 'RootRoute').resolves()
     handleSocketStub = sandbox.stub(Internals, 'HandleSocket')
     setIntervalStub = sandbox.stub(global, 'setInterval')

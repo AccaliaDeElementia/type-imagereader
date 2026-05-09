@@ -4,7 +4,7 @@ import { Publish, Subscribe } from './pubsub.js'
 
 import { isHTMLElement, CloneNode } from './utils.js'
 import { type FolderWithCounts, isListing, type Listing } from '#contracts/listing.js'
-import { HasValue, HasValues, StringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
+import { hasValue, hasValues, stringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
 
 const PERCENT_MULT = 100
 const FIXED_DECIMAL_PLACES = 2
@@ -26,7 +26,7 @@ function BuildCard(folder: FolderWithCounts): HTMLElement | null {
   if (card === undefined) {
     return null
   }
-  if (StringishHasValue(folder.cover)) {
+  if (stringishHasValue(folder.cover)) {
     card.querySelector('i')?.remove()
     card.style.backgroundImage = `url("/images/preview${folder.cover}-image.webp")`
   }
@@ -59,7 +59,7 @@ function BuildAllCards(data: Listing): void {
 
   for (const folder of data.children) {
     const card = Internals.BuildCard(folder)
-    if (!HasValue(card)) continue
+    if (!hasValue(card)) continue
     container.appendChild(card)
   }
 }
@@ -68,8 +68,8 @@ function BuildFolders(data: Listing): void {
   for (const folder of document.querySelectorAll('#tabFolders .folders')) {
     folder.remove()
   }
-  const hasChildren = HasValues(data.children)
-  const hasPictures = HasValues(data.pictures)
+  const hasChildren = hasValues(data.children)
+  const hasPictures = hasValues(data.pictures)
   if (hasChildren) {
     Internals.UnhideTab('a[href="#tabFolders"]')
     if (!hasPictures) {

@@ -2,7 +2,7 @@
 
 import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
-import { HasValues } from '#utils/helpers.js'
+import { hasValues } from '#utils/helpers.js'
 import { Publish } from '../pubsub.js'
 import { CloneNode, isHTMLElement } from '../utils.js'
 
@@ -107,7 +107,7 @@ function GetCurrentPage(): number {
 
 export function SelectPage(index: number): void {
   const links = document.querySelectorAll('.pagination .page-item')
-  if (!HasValues(links)) {
+  if (!hasValues(links)) {
     Publish('Pictures:SelectPage', 'Default Page Selected')
     return
   } else if (index <= MINIMUM_INDEX || index >= links.length - LAST_LINK_OFFSET) {

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 import type { Knex } from 'knex'
 import knex from 'knex'
-import { StringishHasValue, StringIsNullOrEmpty } from './helpers.js'
+import { stringishHasValue, stringIsNullOrEmpty } from './helpers.js'
 
 const moduleDir = dirname(fileURLToPath(import.meta.url))
 
@@ -71,27 +71,27 @@ export function isKnexOptions(obj: unknown): obj is KnexOptions {
   return true
 }
 
-export function GetEnvironmentName(): string {
-  if (!StringishHasValue(process.env.DB_CLIENT)) {
+export function getEnvironmentName(): string {
+  if (!stringishHasValue(process.env.DB_CLIENT)) {
     return 'development'
   }
   return process.env.DB_CLIENT
 }
 
-export async function ReadConfigurationBlock(): Promise<KnexOptions> {
+export async function readConfigurationBlock(): Promise<KnexOptions> {
   const content = await Imports.readFile(join(moduleDir, '../knexfile.json'), { encoding: 'utf-8' })
-  if (StringIsNullOrEmpty(content)) throw new Error('Invalid Configuration Detected!')
+  if (stringIsNullOrEmpty(content)) throw new Error('Invalid Configuration Detected!')
   const data = JSON.parse(content) as unknown
   if (!isDictionary(data)) throw new Error('Invalid Configuration Detected!')
-  const name = Internals.GetEnvironmentName()
+  const name = Internals.getEnvironmentName()
   if (!(name in data)) throw new Error('Invalid Configuration Detected!')
   const config = data[name]
   if (!isKnexOptions(config)) throw new Error('Invalid Configuration Detected!')
   return config
 }
 
-export async function GetKnexConfig(): Promise<KnexOptions> {
-  const connection = await Internals.ReadConfigurationBlock()
+export async function getKnexConfig(): Promise<KnexOptions> {
+  const connection = await Internals.readConfigurationBlock()
   const keys: Array<'host' | 'database' | 'user' | 'password' | 'filename'> = [
     'host',
     'database',
@@ -108,26 +108,26 @@ export async function GetKnexConfig(): Promise<KnexOptions> {
   return connection
 }
 
-export async function Initialize(): Promise<Knex> {
-  Persistance.Initializer ??= doInitialize()
-  return await Persistance.Initializer
+export async function initialize(): Promise<Knex> {
+  Persistance.initializer ??= doInitialize()
+  return await Persistance.initializer
 }
 
 async function doInitialize(): Promise<Knex> {
-  const config = await Internals.GetKnexConfig()
+  const config = await Internals.getKnexConfig()
   const knexInstance = Imports.knex(config)
   await knexInstance.migrate.latest()
   return knexInstance
 }
 
-export const Persistance = { Initializer: undefined as Promise<Knex> | undefined }
+export const Persistance = { initializer: undefined as Promise<Knex> | undefined }
 
 export const Imports = { knex, readFile }
 
 export const Internals = {
-  GetEnvironmentName,
-  ReadConfigurationBlock,
-  GetKnexConfig,
+  getEnvironmentName,
+  readConfigurationBlock,
+  getKnexConfig,
   isConnectionValid,
   isPoolValid,
   isMigrationsValid,

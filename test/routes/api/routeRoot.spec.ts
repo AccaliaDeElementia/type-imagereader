@@ -31,7 +31,7 @@ describe('routes/api route GET /', () => {
     requestFake = Cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     const getFn = sandbox.stub()
-    const InitializeStub = sandbox.stub(Imports, 'Initialize').resolves()
+    const InitializeStub = sandbox.stub(Imports, 'initialize').resolves()
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         get: getFn,

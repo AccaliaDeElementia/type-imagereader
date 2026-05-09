@@ -7,21 +7,21 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
-import { isPathTraversal as _isPathTraversal, GetParentFolders as _GetParentFolders } from '#utils/Path.js'
+import { isPathTraversal as _isPathTraversal, getParentFolders as _getParentFolders } from '#utils/Path.js'
 
-import { Initialize as _Initialize } from '#utils/persistance.js'
+import { initialize as _initialize } from '#utils/persistance.js'
 import { UriSafePath, SetLatestPicture as _SetLatestPicture } from './apiFunctions.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 
 import type { Knex } from 'knex'
 import {
   STEP,
-  HasSetValues,
-  HasValue,
-  HasValues,
-  EscapeLikeWildcards,
-  ReqParamToString,
-  StringishHasValue,
+  hasSetValues,
+  hasValue,
+  hasValues,
+  escapeLikeWildcards,
+  reqParamToString,
+  stringishHasValue,
   ZERO_COUNT,
 } from '#utils/helpers.js'
 
@@ -65,10 +65,10 @@ export const Config = {
 export const Imports = {
   logger,
   setLatest: async (knex: Knex, path: string): Promise<string | null> => await Imports.SetLatestPicture(knex, path),
-  GetParentFolders: _GetParentFolders,
+  getParentFolders: _getParentFolders,
   isPathTraversal: _isPathTraversal,
   Router,
-  Initialize: _Initialize,
+  initialize: _initialize,
   SetLatestPicture: _SetLatestPicture,
 }
 
@@ -85,13 +85,13 @@ export class HandleSocketState {
 export async function GetImageCount(knex: Knex, path: string, filter: 'all' | 'unread' = 'all'): Promise<number> {
   let query = knex('pictures')
     .count({ count: 'path' })
-    .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
+    .where('path', 'like', `${escapeLikeWildcards(path)}%`)
   if (filter === 'unread') {
     query = query.andWhere('seen', '=', false)
   }
   try {
     const count = (await query).shift()?.count
-    if (HasValue(count)) {
+    if (hasValue(count)) {
       return Number.parseInt(`${count}`, 10)
     }
   } catch (err) {
@@ -141,7 +141,7 @@ export async function GetImages(knex: Knex, path: string, page: number, count: n
   return (
     await knex('pictures')
       .select('path')
-      .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
+      .where('path', 'like', `${escapeLikeWildcards(path)}%`)
       .orderBy('seen')
       .orderBy('pathHash') // pseudo-random but stable order across pages and restarts
       .offset(page * count)
@@ -155,7 +155,7 @@ export async function MarkImageRead(knex: Knex, image: string): Promise<void> {
   // locks; SQLite via its whole-database write lock — same end-state either way.
   const flipped = await knex('pictures').update({ seen: true }).where({ path: image, seen: false })
   if (flipped <= ZERO_COUNT) return
-  await knex('folders').increment('seenCount', STEP.FORWARD).whereIn('path', Imports.GetParentFolders(image))
+  await knex('folders').increment('seenCount', STEP.FORWARD).whereIn('path', Imports.getParentFolders(image))
 }
 
 export async function GetRoomAndIncrementImage(
@@ -232,7 +232,7 @@ export async function TickCountdown(knex: Knex, io: WebSocketServer): Promise<vo
       }
       newRooms[room.path] = room
       const sockets = io.of('/').adapter.rooms.get(room.path)
-      if (!HasSetValues(sockets)) {
+      if (!hasSetValues(sockets)) {
         continue
       }
       if (room.countdown <= ZERO_COUNT) {
@@ -244,7 +244,7 @@ export async function TickCountdown(knex: Knex, io: WebSocketServer): Promise<vo
     await Promise.all(
       roomsToUpdate.map(async (room) => {
         await Internals.GetRoomAndIncrementImage(knex, room.path, STEP.FORWARD)
-        if (HasValues(room.images)) {
+        if (hasValues(room.images)) {
           io.to(room.path).emit(SocketEvents.ImageChanged, room.uriSafeImage)
         }
       }),
@@ -264,7 +264,7 @@ export async function joinSlideshow(
   socket: Socket,
   knex: Knex,
 ): Promise<void> {
-  if (!StringishHasValue(roomName)) return
+  if (!stringishHasValue(roomName)) return
   Imports.logger('joinSlideshow %s (socket=%s)', roomName, socket.id)
   state.setName(roomName)
   await socket.join(roomName)
@@ -332,7 +332,7 @@ export function HandleSocket(knex: Knex, io: WebSocketServer, socket: Socket): H
 }
 
 export async function RootRoute(knex: Knex, req: Request, res: Response): Promise<void> {
-  const folder = `/${ReqParamToString(req.params.path)}`
+  const folder = `/${reqParamToString(req.params.path)}`
   Imports.logger('GET /slideshow %s', folder)
   if (Imports.isPathTraversal(folder)) {
     Imports.logger('path traversal blocked: %s', folder)
@@ -345,7 +345,7 @@ export async function RootRoute(knex: Knex, req: Request, res: Response): Promis
   }
   await Internals.GetRoomAndIncrementImage(knex, folder).then(
     (room) => {
-      if (!HasValues(room.images)) {
+      if (!hasValues(room.images)) {
         Imports.logger('slideshow folder empty: %s', folder)
         res.status(StatusCodes.NOT_FOUND).render('error', {
           title: 'ERROR',
@@ -373,7 +373,7 @@ export async function RootRoute(knex: Knex, req: Request, res: Response): Promis
 
 export async function getRouter(_: Application, __: Server, io: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
-  const knex = await Imports.Initialize()
+  const knex = await Imports.initialize()
 
   Config.launchId = Date.now()
 

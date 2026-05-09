@@ -1,6 +1,6 @@
 'use sanity'
 
-import { HasValues } from '#utils/helpers.js'
+import { hasValues } from '#utils/helpers.js'
 
 export type SubscriberFunction = (recievedData: unknown, actualTopic?: string) => Promise<void>
 
@@ -47,11 +47,11 @@ async function PublishAsync(topic: string, data?: unknown): Promise<void> {
   const matchingTopics = Object.keys(PubSub.subscribers)
     .sort()
     .filter((key) => key === searchTopic || searchTopic.startsWith(`${key}:`))
-  if (HasValues(matchingTopics)) {
+  if (hasValues(matchingTopics)) {
     const allSubscribers = []
     for (const key of matchingTopics) {
       const subscribers = PubSub.subscribers[key]
-      if (HasValues(subscribers)) {
+      if (hasValues(subscribers)) {
         const errorHandler = (err: unknown): void => {
           window.console.error(`Subscriber for ${searchTopic} rejected with error:`, err)
         }
@@ -68,7 +68,7 @@ async function PublishAsync(topic: string, data?: unknown): Promise<void> {
         window.console.warn(`PUBSUB: topic ${key} registered without subscribers!`)
       }
     }
-    if (HasValues(allSubscribers)) {
+    if (hasValues(allSubscribers)) {
       await Promise.all(allSubscribers.flat())
     }
   } else {

@@ -9,7 +9,7 @@ import { Internals, PubSub, StartDeferred } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
 import { Cast } from '#testutils/TypeGuards.js'
-import { HasValue } from '#utils/helpers.js'
+import { hasValue } from '#utils/helpers.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -37,7 +37,7 @@ describe('public/app/pubsub StartDeferred()', () => {
   it('should call executeInterval with interval fn', () => {
     StartDeferred()
     const fn = setIntervalSpy.firstCall.args[0] as unknown
-    assert(HasValue(fn))
+    assert(hasValue(fn))
     Cast<() => void>(fn)()
     expect(executeIntervalSpy.callCount).to.equal(1)
   })

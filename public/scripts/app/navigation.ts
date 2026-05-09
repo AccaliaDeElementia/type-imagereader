@@ -4,7 +4,7 @@ import { GetShowUnreadOnly as _GetShowUnreadOnly } from './pictures/unreadFilter
 import { GetJSON as _GetJSON, PostJSON as _PostJSON, acceptAnyResponse } from './net.js'
 import { Publish, Subscribe } from './pubsub.js'
 import { isListing, type Listing } from '#contracts/listing.js'
-import { HasValue, HasValues, StringishHasValue } from '#utils/helpers.js'
+import { hasValue, hasValues, stringishHasValue } from '#utils/helpers.js'
 import { Show as _Show } from './confirm.js'
 
 export const Imports = {
@@ -29,14 +29,14 @@ function GetBaseUrl(): string {
     window.location.protocol,
     '//',
     window.location.hostname,
-    StringishHasValue(window.location.port) ? `:${window.location.port}` : '',
+    stringishHasValue(window.location.port) ? `:${window.location.port}` : '',
     [pathA, pathB].join('/'),
   ].join('')
 }
 
 function GetFolderPath(): string {
   const path = window.location.pathname.replace(/^\/[^\/]+/v, '')
-  return StringishHasValue(path) ? path : '/'
+  return stringishHasValue(path) ? path : '/'
 }
 
 export function IsMenuActive(): boolean {
@@ -49,7 +49,7 @@ function IsSuppressMenu(): boolean {
 }
 
 async function NavigateTo(path: string | undefined, action: string): Promise<void> {
-  if (!StringishHasValue(path)) {
+  if (!stringishHasValue(path)) {
     Publish('Loading:Error', `Action ${action} has no target`)
     return
   }
@@ -69,7 +69,7 @@ async function LoadData(noHistory = false, suppressMenu = false): Promise<void> 
     Navigation.current.noMenu = suppressMenu || Internals.IsSuppressMenu()
     for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
       let name = Navigation.current.name
-      if (!StringishHasValue(name)) {
+      if (!stringishHasValue(name)) {
         name = Navigation.current.path
       }
       element.innerHTML = name
@@ -113,7 +113,7 @@ export function Init(): void {
     Internals.LoadData(true).catch(() => null)
   })
   Subscribe('Navigate:Data', async (data: unknown) => {
-    if (HasValue(data) && data !== '') {
+    if (hasValue(data) && data !== '') {
       window.console.log(data)
     }
     await Promise.resolve()
@@ -128,7 +128,7 @@ export function Init(): void {
     await Promise.resolve()
   })
   mainMenu?.addEventListener('click', (event) => {
-    if (event.target === mainMenu && HasValues(Navigation.current.pictures)) {
+    if (event.target === mainMenu && hasValues(Navigation.current.pictures)) {
       Publish('Menu:Hide')
     }
   })
@@ -189,7 +189,7 @@ export function Init(): void {
     await Promise.resolve()
   })
   Subscribe('Action:Execute:FullScreen', async () => {
-    if (HasValue(document.fullscreenElement)) {
+    if (hasValue(document.fullscreenElement)) {
       await document.exitFullscreen().catch((err: unknown) => {
         Publish('Loading:Error', err)
       })

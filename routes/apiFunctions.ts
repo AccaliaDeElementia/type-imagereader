@@ -5,11 +5,11 @@ import { normalize, basename, dirname, extname, sep } from 'node:path'
 import type { Knex } from 'knex'
 import _debug from 'debug'
 import type { Debugger } from 'debug'
-import { EscapeLikeWildcards, StringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
-import { GetParentFolders as _GetParentFolders } from '#utils/Path.js'
+import { escapeLikeWildcards, stringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
+import { getParentFolders as _getParentFolders } from '#utils/Path.js'
 
-export const Imports: { GetParentFolders: typeof _GetParentFolders; logger: Debugger } = {
-  GetParentFolders: _GetParentFolders,
+export const Imports: { getParentFolders: typeof _getParentFolders; logger: Debugger } = {
+  getParentFolders: _getParentFolders,
   logger: _debug('type-imagereader:apiFunctions'),
 }
 
@@ -112,7 +112,7 @@ export const UriSafePath = {
       .map((part) => encodeURIComponent(part))
       .join('/'),
   encodeNullable: (uri: string | null | undefined): string | null => {
-    if (!StringishHasValue(uri)) {
+    if (!stringishHasValue(uri)) {
       return null
     }
     return UriSafePath.encode(uri)
@@ -149,7 +149,7 @@ interface DbBookmark {
 
 function getCoverPath(folder: { current: string | null; firstPicture: string | null }): string | null {
   // SyncMissingCoverImages writes '' as a "no valid cover" sentinel, so treat empty-string the same as null
-  return StringishHasValue(folder.current) ? folder.current : folder.firstPicture
+  return stringishHasValue(folder.current) ? folder.current : folder.firstPicture
 }
 
 export interface SiblingFolderSearch {
@@ -331,7 +331,7 @@ export async function SetLatestPicture(knex: Knex, path: string): Promise<string
   // locks; SQLite via its whole-database write lock — same end-state either way.
   const flipped = await knex('pictures').update({ seen: true }).where({ path, seen: false })
   if (flipped > ZERO_COUNT) {
-    await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Imports.GetParentFolders(path))
+    await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Imports.getParentFolders(path))
   }
   await knex('folders').update({ current: path }).where({ path: folder })
   return UriSafePath.encode(folder)
@@ -342,17 +342,17 @@ export async function MarkFolderSeen(knex: Knex, path: string, markAsSeen: boole
   const updates = await knex('pictures')
     .update({ seen: markAsSeen })
     .where({ seen: currentSeenState })
-    .andWhere('folder', 'like', `${EscapeLikeWildcards(path)}%`)
+    .andWhere('folder', 'like', `${escapeLikeWildcards(path)}%`)
   if (updates <= ZERO_COUNT) {
     Imports.logger('MarkFolderSeen: no rows updated for %s (markAsSeen=%s)', path, markAsSeen)
   }
   if (updates > ZERO_COUNT) {
     const increment = markAsSeen ? updates : -updates
-    await knex('folders').increment('seenCount', increment).whereIn('path', Imports.GetParentFolders(path))
+    await knex('folders').increment('seenCount', increment).whereIn('path', Imports.getParentFolders(path))
     const folderUpdate = markAsSeen ? { seenCount: knex.raw('"totalCount"') } : { seenCount: ZERO_COUNT, current: null }
     await knex('folders')
       .update(folderUpdate)
-      .where('path', 'like', `${EscapeLikeWildcards(path)}%`)
+      .where('path', 'like', `${escapeLikeWildcards(path)}%`)
       .orWhere({ path })
   }
 }

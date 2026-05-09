@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { EscapeLikeWildcards } from '#utils/helpers.js'
+import { escapeLikeWildcards } from '#utils/helpers.js'
 
-describe('utils/helpers EscapeLikeWildcards()', () => {
+describe('utils/helpers escapeLikeWildcards()', () => {
   const tests: Array<[string, string, string]> = [
     ['plain string', '/foo/bar/', '/foo/bar/'],
     ['percent sign', '/foo%/bar/', '/foo\\%/bar/'],
@@ -17,7 +17,7 @@ describe('utils/helpers EscapeLikeWildcards()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should escape ${title}`, () => {
-      expect(EscapeLikeWildcards(input)).to.equal(expected)
+      expect(escapeLikeWildcards(input)).to.equal(expected)
     })
   })
 })

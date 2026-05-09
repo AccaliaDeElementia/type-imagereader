@@ -40,7 +40,7 @@ describe('routes/api route POST /bookmarks/add', () => {
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     knexFake = { Knex: Math.random() }
     const postFn = sandbox.stub()
-    const InitializeStub = sandbox.stub(Imports, 'Initialize').resolves(StubToKnex(knexFake))
+    const InitializeStub = sandbox.stub(Imports, 'initialize').resolves(StubToKnex(knexFake))
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
       Cast<Router>({
         post: postFn,

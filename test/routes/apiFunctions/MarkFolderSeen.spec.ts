@@ -21,7 +21,7 @@ describe('routes/apiFunctions MarkFolderSeen', () => {
     knexFake = StubToKnex(knexStub)
     knexRawStub = sandbox.stub()
     knexFake.raw = knexRawStub
-    getParentFoldersStub = sandbox.stub(Imports, 'GetParentFolders').returns([])
+    getParentFoldersStub = sandbox.stub(Imports, 'getParentFolders').returns([])
     loggerStub = sandbox.stub(Imports, 'logger')
   })
   afterEach(() => {
@@ -102,7 +102,7 @@ describe('routes/apiFunctions MarkFolderSeen', () => {
       await MarkFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.increment.firstCall.args).to.deep.equal(['seenCount', 3.1415926])
     })
-    it('should use GetParentFolders once to find parent folders when updates update pictures', async () => {
+    it('should use getParentFolders once to find parent folders when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
       const instance = createKnexChainFake(chainMethods, terminalMethods).instance
@@ -110,7 +110,7 @@ describe('routes/apiFunctions MarkFolderSeen', () => {
       await MarkFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(getParentFoldersStub.callCount).to.equal(1)
     })
-    it('should use GetParentFolders with expected args to find parent folders when updates update pictures', async () => {
+    it('should use getParentFolders with expected args to find parent folders when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
       const instance = createKnexChainFake(chainMethods, terminalMethods).instance

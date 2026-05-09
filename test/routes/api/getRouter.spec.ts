@@ -27,7 +27,7 @@ describe('routes/api getRouter()', () => {
       get: sandbox.stub(),
       post: sandbox.stub(),
     }
-    sandbox.stub(Imports, 'Initialize').resolves()
+    sandbox.stub(Imports, 'initialize').resolves()
     sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
   })
   afterEach(() => {

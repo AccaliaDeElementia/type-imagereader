@@ -4,7 +4,7 @@ import type { Listing, Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
 import { MakeTab as _MakeTab } from './grid.js'
 import { LoadImage as _LoadImage } from './viewer.js'
-import { GetFirst } from '#utils/helpers.js'
+import { getFirst } from '#utils/helpers.js'
 import { Publish } from '../pubsub.js'
 
 const DEFAULT_MOD_COUNT = -1
@@ -22,7 +22,7 @@ function SetPictureIndices(): void {
 
 function SetPicturesGetFirst(data: Listing): Picture | null {
   if (Pictures.mainImage === null) return null
-  const firstPic = GetFirst(data.pictures)
+  const firstPic = getFirst(data.pictures)
   if (data.pictures === undefined || firstPic === undefined) {
     Pictures.mainImage.classList.add('hidden')
     Publish('Menu:Show')

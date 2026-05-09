@@ -1,6 +1,6 @@
 'use sanity'
 
-import { HasValue, HasValues, ZERO_LENGTH } from '#utils/helpers.js'
+import { hasValue, hasValues, ZERO_LENGTH } from '#utils/helpers.js'
 import { IsMenuActive as _IsMenuActive } from '../navigation.js'
 import { UNINITIALIZED_SCALE } from './state.js'
 import { Pictures } from './index.js'
@@ -24,7 +24,7 @@ export function InitActions(): void {
   const doIfNoMenu = (action: string) => async () => {
     if (!Imports.IsMenuActive()) {
       Publish(`Action:Execute:${action}`)
-    } else if (HasValues(Pictures.pictures)) {
+    } else if (hasValues(Pictures.pictures)) {
       Publish('Action:Execute:HideMenu')
     }
     await Promise.resolve()
@@ -93,9 +93,9 @@ export function InitActions(): void {
 }
 
 export function InitMouse(): void {
-  Pictures.initialScale = HasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
+  Pictures.initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
   Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
-    if (HasValue(window.visualViewport) && Pictures.initialScale < window.visualViewport.scale) {
+    if (hasValue(window.visualViewport) && Pictures.initialScale < window.visualViewport.scale) {
       Publish('Ignored Mouse Click', evt)
       return
     }

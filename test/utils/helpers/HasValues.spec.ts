@@ -1,10 +1,10 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { HasValues } from '#utils/helpers.js'
+import { hasValues } from '#utils/helpers.js'
 import { Cast } from '#testutils/TypeGuards.js'
 
-describe('utils/helpers HasValues()', () => {
+describe('utils/helpers hasValues()', () => {
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],
@@ -16,7 +16,7 @@ describe('utils/helpers HasValues()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${String(expected)} for ${title}`, () => {
-      expect(HasValues(Cast<Parameters<typeof HasValues>[0]>(input))).to.equal(expected)
+      expect(hasValues(Cast<Parameters<typeof hasValues>[0]>(input))).to.equal(expected)
     })
   })
 })

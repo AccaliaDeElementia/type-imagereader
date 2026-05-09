@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect } from 'chai'
-import { StringIsNullOrEmpty } from '#utils/helpers.js'
+import { stringIsNullOrEmpty } from '#utils/helpers.js'
 
-describe('utils/helpers StringIsNullOrEmpty()', () => {
+describe('utils/helpers stringIsNullOrEmpty()', () => {
   const tests: Array<[string, string | null | undefined, boolean]> = [
     ['null', null, true],
     ['undefined', undefined, true],
@@ -14,7 +14,7 @@ describe('utils/helpers StringIsNullOrEmpty()', () => {
   ]
   tests.forEach(([title, value, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(StringIsNullOrEmpty(value)).to.equal(expected)
+      expect(stringIsNullOrEmpty(value)).to.equal(expected)
     })
   })
 })

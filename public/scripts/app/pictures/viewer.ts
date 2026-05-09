@@ -4,7 +4,7 @@ import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './index.js'
 import { SelectPage as _SelectPage } from './grid.js'
 import { GetShowUnreadOnly as _GetShowUnreadOnly } from './unreadFilter.js'
-import { HasValues, IndexPercentToText, IndexToText, StringishHasValue } from '#utils/helpers.js'
+import { hasValues, indexPercentToText, indexToText, stringishHasValue } from '#utils/helpers.js'
 import { IsLoading as _IsLoading } from '../loading.js'
 import { PostJSON as _PostJSON } from '../net.js'
 import { Publish } from '../pubsub.js'
@@ -57,7 +57,7 @@ export function ResetMarkup(): void {
   })
   Pictures.mainImage?.addEventListener('error', () => {
     const src = Pictures.mainImage?.getAttribute('src')
-    if (StringishHasValue(src)) {
+    if (stringishHasValue(src)) {
       Publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
     }
   })
@@ -104,8 +104,8 @@ export async function LoadImage(): Promise<void> {
     )
     const { index = DEFAULT_INDEX } = Pictures.current
     const displayTotal = Pictures.pictures.length.toLocaleString()
-    const displayIndex = IndexToText(index)
-    const displayPercent = IndexPercentToText(index, Pictures.pictures.length)
+    const displayIndex = indexToText(index)
+    const displayPercent = indexPercentToText(index, Pictures.pictures.length)
     setTextContent('.statusBar.bottom .center', Pictures.current.name)
     setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
     setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
@@ -147,7 +147,7 @@ export function GetPicture(navi: NavigateTo): Picture | undefined {
 }
 
 function ChoosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[]): number {
-  if (!HasValues(Pictures.pictures)) return NO_SUCH_INDEX
+  if (!hasValues(Pictures.pictures)) return NO_SUCH_INDEX
   switch (navi) {
     case NavigateTo.First:
       return MINIMUM_INDEX

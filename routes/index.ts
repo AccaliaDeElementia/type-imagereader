@@ -7,7 +7,7 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
-import { ReqParamToString } from '#utils/helpers.js'
+import { reqParamToString } from '#utils/helpers.js'
 import { isPathTraversal as _isPathTraversal } from '#utils/Path.js'
 
 export const Imports = { Router, isPathTraversal: _isPathTraversal, logger: debug('type-imagereader:root') }
@@ -16,7 +16,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   const router = Imports.Router()
 
   const rootRoute = (req: Request, res: Response): void => {
-    const folder = `/${ReqParamToString(req.params.path)}`
+    const folder = `/${reqParamToString(req.params.path)}`
     Imports.logger('GET %s', folder)
     if (Imports.isPathTraversal(folder)) {
       Imports.logger('path traversal blocked: %s', folder)

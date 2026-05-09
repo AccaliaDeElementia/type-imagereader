@@ -12,7 +12,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import debug from 'debug'
 import type { Debugger } from 'debug'
-import { ReqParamToString, getDataDir as _getDataDir } from '#utils/helpers.js'
+import { reqParamToString, getDataDir as _getDataDir } from '#utils/helpers.js'
 import { handleErrors as _handleErrors } from '#utils/Express.js'
 import { isPathTraversal as _isPathTraversal } from '#utils/Path.js'
 
@@ -215,7 +215,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   router.get(
     '/full/*path',
     handleErrors(async (req, res) => {
-      const filename = `/${ReqParamToString(req.params.path)}`
+      const filename = `/${reqParamToString(req.params.path)}`
       Imports.logger('GET /images/full %s', filename)
       const image = await Internals.ReadImage(filename)
       Internals.SendImage(image, res)
@@ -230,12 +230,12 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   router.get(
     '/scaled/:width/:height/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${ReqParamToString(req.params.path)}`
+      const filename = `/${reqParamToString(req.params.path)}`
       if (req.params.width === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be provided')
         return
       }
-      const width = parseNumberParam(ReqParamToString(req.params.width))
+      const width = parseNumberParam(reqParamToString(req.params.width))
       if (width === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be positive integer')
         return
@@ -244,7 +244,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be provided')
         return
       }
-      const height = parseNumberParam(ReqParamToString(req.params.height))
+      const height = parseNumberParam(reqParamToString(req.params.height))
       if (height === undefined) {
         sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be positive integer')
         return
@@ -258,7 +258,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   router.get(
     '/preview/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${ReqParamToString(req.params.path)}`
+      const filename = `/${reqParamToString(req.params.path)}`
       Imports.logger('GET /images/preview %s', filename)
       const image = await Internals.ReadImage(filename)
       await Internals.RescaleImage(image, PREVIEW_WIDTH, PREVIEW_HEIGHT, false)
@@ -269,7 +269,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   router.get(
     '/kiosk/*path-image.webp',
     handleErrors(async (req, res) => {
-      const filename = `/${ReqParamToString(req.params.path)}`
+      const filename = `/${reqParamToString(req.params.path)}`
       Imports.logger('GET /images/kiosk %s', filename)
       const image = await CacheStorage.kioskCache.fetch(filename, KIOSK_WIDTH, KIOSK_HEIGHT)
       Internals.SendImage(image, res)

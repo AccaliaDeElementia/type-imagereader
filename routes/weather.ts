@@ -6,7 +6,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
-import { StringishHasValue } from '#utils/helpers.js'
+import { stringishHasValue } from '#utils/helpers.js'
 
 const KELVIN_TO_CELCIUS_OFFSET = -273.15
 const SECONDS_TO_MILLISECONDS_MULTIPLE = 1000
@@ -85,10 +85,10 @@ const MAX_MINUTES = 59
 function StringToTimeCode(input: string | undefined): TimeCode | undefined {
   if (input === undefined) return undefined
   const [iHour, iMinute] = input.split(':')
-  if (StringishHasValue(iHour)) {
+  if (stringishHasValue(iHour)) {
     const hour = Number.parseInt(iHour, 10)
     let minute = MIN_MINUTES
-    if (StringishHasValue(iMinute)) {
+    if (stringishHasValue(iMinute)) {
       minute = Number.parseInt(iMinute, 10)
     }
     if (hour >= MIN_HOUR && hour <= MAX_HOUR && minute >= MIN_MINUTES && minute <= MAX_MINUTES) {
@@ -136,9 +136,9 @@ export function isOpenWeatherData(data: unknown): data is OpenWeatherData {
 
 export async function GetWeather(): Promise<OpenWeatherData> {
   const appId = process.env.OPENWEATHER_APPID
-  if (!StringishHasValue(appId)) throw new WeatherConfigError('no OpenWeather AppId Defined!')
+  if (!stringishHasValue(appId)) throw new WeatherConfigError('no OpenWeather AppId Defined!')
   const location = encodeURIComponent(process.env.OPENWEATHER_LOCATION ?? '')
-  if (!StringishHasValue(location)) throw new WeatherConfigError('no OpenWeather Location Defined!')
+  if (!stringishHasValue(location)) throw new WeatherConfigError('no OpenWeather Location Defined!')
   const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${appId}`, {
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })
@@ -180,8 +180,8 @@ export async function UpdateWeather(): Promise<WeatherResults> {
 }
 
 const findMissingWeatherConfigVar = (): string | undefined => {
-  if (!StringishHasValue(process.env.OPENWEATHER_APPID)) return 'OPENWEATHER_APPID'
-  if (!StringishHasValue(process.env.OPENWEATHER_LOCATION)) return 'OPENWEATHER_LOCATION'
+  if (!stringishHasValue(process.env.OPENWEATHER_APPID)) return 'OPENWEATHER_APPID'
+  if (!stringishHasValue(process.env.OPENWEATHER_LOCATION)) return 'OPENWEATHER_LOCATION'
   return undefined
 }
 

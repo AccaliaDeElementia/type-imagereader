@@ -30,7 +30,7 @@ describe('index.ts ONESHOT mode tests', (): void => {
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
     sandbox.stub(Imports, 'stat').resolves(Cast<Stats>({ isDirectory: () => true }))
     DestroyStub = sandbox.stub().resolves()
-    sandbox.stub(Imports, 'Initialize').resolves(Cast({ destroy: DestroyStub }))
+    sandbox.stub(Imports, 'initialize').resolves(Cast({ destroy: DestroyStub }))
   })
 
   afterEach(() => {

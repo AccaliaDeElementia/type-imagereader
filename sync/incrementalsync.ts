@@ -12,7 +12,7 @@ import { FsWalker as _FsWalker } from './fswalker.js'
 import { AddFolderAndAncestors, Chunk, ExecChunksSynchronously, ToSortKey } from './helpers.js'
 import { SyncFolderFirstImages as _SyncFolderFirstImages } from './folders.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
-import { EscapeLikeWildcards } from '../utils/helpers.js'
+import { escapeLikeWildcards } from '../utils/helpers.js'
 
 const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1
@@ -75,7 +75,7 @@ export async function IncrementalRemovePicturesBulk(knex: Knex, paths: string[])
 }
 
 export async function IncrementalRemoveFolder(logger: Debugger, knex: Knex, dirPath: string): Promise<void> {
-  const escapedPrefix = `${EscapeLikeWildcards(dirPath)}%`
+  const escapedPrefix = `${escapeLikeWildcards(dirPath)}%`
   const deletedPics = await knex('pictures').where('folder', 'like', escapedPrefix).delete()
   await knex('bookmarks')
     .whereNotExists(function () {
