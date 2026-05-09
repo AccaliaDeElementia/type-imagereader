@@ -63,7 +63,9 @@ const almanac: SunTimes = {
   sunset: UNSET_SUNSET,
 }
 
-export const GetAlmanac = (): SunTimes => almanac
+export function GetAlmanac(): SunTimes {
+  return almanac
+}
 
 const ZERO_TIME = 0
 const DEFAULT_SUNRISE_HOUR = 6

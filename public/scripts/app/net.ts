@@ -22,7 +22,9 @@ export async function decodeResult<T>(response: Response, isT: (obj: unknown) =>
   return data
 }
 
-export const acceptAnyResponse = (_: unknown): _ is unknown => true
+export function acceptAnyResponse(_: unknown): _ is unknown {
+  return true
+}
 
 export async function GetJSON<T>(path: string, isT: (obj: unknown) => obj is T): Promise<T> {
   return await fetch(path, {

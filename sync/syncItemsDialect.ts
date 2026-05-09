@@ -55,7 +55,7 @@ export function getDbChunkSize(knex: Knex): number {
 }
 
 // Resolves on the stream's 'finish' event, rejects on 'error'.
-export const awaitCopyStreamCompletion = async (stream: CopyStreamQuery): Promise<void> => {
+export async function awaitCopyStreamCompletion(stream: CopyStreamQuery): Promise<void> {
   const { promise, resolve, reject } = Promise.withResolvers<undefined>()
   stream.on('finish', () => {
     resolve(undefined)
@@ -192,11 +192,11 @@ export class CopyState {
   }
 }
 
-export const FindSyncItemsViaInsert = async (
+export async function FindSyncItemsViaInsert(
   knex: Knex,
   logger: Debugger,
   helpers: InsertFallbackHelpers,
-): Promise<SyncItemCounts> => {
+): Promise<SyncItemCounts> {
   const state = new InsertState()
   await helpers.fsWalker(helpers.getDataDir(), async (items, pending) => {
     await state.advance({ knex, helpers, logger, items, pending })
@@ -204,11 +204,11 @@ export const FindSyncItemsViaInsert = async (
   return state.toCounts()
 }
 
-export const FindSyncItemsViaCopy = async (
+export async function FindSyncItemsViaCopy(
   knex: Knex,
   logger: Debugger,
   helpers: CopyHelpers,
-): Promise<SyncItemCounts> => {
+): Promise<SyncItemCounts> {
   const state = new CopyState()
   const client = await helpers.acquireCopyConnection(knex)
   try {
