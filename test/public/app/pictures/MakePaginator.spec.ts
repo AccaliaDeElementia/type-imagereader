@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Internals } from '#public/scripts/app/pictures/grid.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -89,28 +89,28 @@ describe('public/app/pictures MakePaginator()', () => {
   it('should select previous page for previous page selector when on valid page', () => {
     getCurrentPageSpy.returns(5)
     Internals.MakePaginator(7)
-    const fn = Cast<(() => number) | undefined>(makePageItemSpy.firstCall.args[1])
+    const fn = cast<(() => number) | undefined>(makePageItemSpy.firstCall.args[1])
     assert(fn !== undefined)
     expect(fn()).to.equal(4)
   })
   it('should select previous page for previous page selector when on huge page', () => {
     getCurrentPageSpy.returns(50)
     Internals.MakePaginator(7)
-    const fn = Cast<(() => number) | undefined>(makePageItemSpy.firstCall.args[1])
+    const fn = cast<(() => number) | undefined>(makePageItemSpy.firstCall.args[1])
     assert(fn !== undefined)
     expect(fn()).to.equal(49)
   })
   it('should select first page for previous page selector when on first page', () => {
     getCurrentPageSpy.returns(1)
     Internals.MakePaginator(7)
-    const fn = Cast<(() => number) | undefined>(makePageItemSpy.firstCall.args[1])
+    const fn = cast<(() => number) | undefined>(makePageItemSpy.firstCall.args[1])
     assert(fn !== undefined)
     expect(fn()).to.equal(1)
   })
   it('should select first page for previous page selector when on negative page', () => {
     getCurrentPageSpy.returns(-5)
     Internals.MakePaginator(7)
-    const fn = Cast<(() => number) | undefined>(makePageItemSpy.firstCall.args[1])
+    const fn = cast<(() => number) | undefined>(makePageItemSpy.firstCall.args[1])
     assert(fn !== undefined)
     expect(fn()).to.equal(1)
   })
@@ -132,28 +132,28 @@ describe('public/app/pictures MakePaginator()', () => {
   it('should select next page for next page selector when on valid page', () => {
     getCurrentPageSpy.returns(5)
     Internals.MakePaginator(7)
-    const fn = Cast<(() => number) | undefined>(makePageItemSpy.getCall(8).args[1])
+    const fn = cast<(() => number) | undefined>(makePageItemSpy.getCall(8).args[1])
     assert(fn !== undefined)
     expect(fn()).to.equal(6)
   })
   it('should select last page for next page selector when on huge page', () => {
     getCurrentPageSpy.returns(50)
     Internals.MakePaginator(7)
-    const fn = Cast<(() => number) | undefined>(makePageItemSpy.getCall(8).args[1])
+    const fn = cast<(() => number) | undefined>(makePageItemSpy.getCall(8).args[1])
     assert(fn !== undefined)
     expect(fn()).to.equal(7)
   })
   it('should select last page for next page selector when on last page', () => {
     getCurrentPageSpy.returns(7)
     Internals.MakePaginator(7)
-    const fn = Cast<(() => number) | undefined>(makePageItemSpy.getCall(8).args[1])
+    const fn = cast<(() => number) | undefined>(makePageItemSpy.getCall(8).args[1])
     assert(fn !== undefined)
     expect(fn()).to.equal(7)
   })
   it('should select next page for next page selector when on negative page', () => {
     getCurrentPageSpy.returns(-5)
     Internals.MakePaginator(7)
-    const fn = Cast<(() => number) | undefined>(makePageItemSpy.getCall(8).args[1])
+    const fn = cast<(() => number) | undefined>(makePageItemSpy.getCall(8).args[1])
     assert(fn !== undefined)
     expect(fn()).to.equal(-4)
   })
@@ -177,7 +177,7 @@ describe('public/app/pictures MakePaginator()', () => {
   it('should select specific page for middle pages', () => {
     Internals.MakePaginator(7)
     for (let i = 1; i <= 7; i += 1) {
-      const fn = Cast<(() => number) | undefined>(makePageItemSpy.getCall(i).args[1])
+      const fn = cast<(() => number) | undefined>(makePageItemSpy.getCall(i).args[1])
       assert(fn !== undefined)
       expect(fn()).to.equal(i)
     }

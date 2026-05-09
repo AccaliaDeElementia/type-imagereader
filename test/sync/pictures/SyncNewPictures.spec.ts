@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { SyncNewPictures } from '#sync/pictures.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
@@ -23,7 +23,7 @@ describe('sync/pictures SyncNewPictures()', () => {
     insert: sandbox.stub().resolves([0]),
     catch: sandbox.stub(),
   }
-  let knexFnFake = StubToKnex(knexInstanceStub)
+  let knexFnFake = stubToKnex(knexInstanceStub)
   beforeEach(() => {
     ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
     knexInnerInstanceStub = {
@@ -39,7 +39,7 @@ describe('sync/pictures SyncNewPictures()', () => {
       insert: sandbox.stub().resolves([0]),
       catch: sandbox.stub(),
     }
-    knexFnFake = StubToKnex(knexInstanceStub)
+    knexFnFake = stubToKnex(knexInstanceStub)
   })
   afterEach(() => {
     sandbox.restore()
@@ -100,13 +100,13 @@ describe('sync/pictures SyncNewPictures()', () => {
   })
   it('should call select once within insert subquery', async () => {
     await SyncNewPictures(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.callCount).to.equal(1)
   })
   it('should call select with expected columns within insert subquery', async () => {
     await SyncNewPictures(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.firstCall.args[0]).to.deep.equal([
       'syncitems.folder',
@@ -117,25 +117,25 @@ describe('sync/pictures SyncNewPictures()', () => {
   })
   it('should call select before from within insert subquery', async () => {
     await SyncNewPictures(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.calledBefore(knexInnerInstanceStub.from)).to.equal(true)
   })
   it('should call from with syncitems within insert subquery', async () => {
     await SyncNewPictures(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.from.calledWith('syncitems')).to.equal(true)
   })
   it('should call leftJoin with expected args within insert subquery', async () => {
     await SyncNewPictures(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.leftJoin.firstCall.args).to.deep.equal(['pictures', 'pictures.path', 'syncitems.path'])
   })
   it('should call andWhere with expected conditions within insert subquery', async () => {
     await SyncNewPictures(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.andWhere.firstCall.args[0]).to.deep.equal({
       'syncitems.isFile': true,

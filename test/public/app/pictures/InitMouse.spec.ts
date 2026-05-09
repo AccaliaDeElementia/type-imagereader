@@ -8,7 +8,7 @@ import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { InitMouse } from '#public/scripts/app/pictures/inputs.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { hasValue } from '#utils/helpers.js'
 
 const sandbox = Sinon.createSandbox()
@@ -55,7 +55,7 @@ describe('public/app/pictures InitMouse()', () => {
     }
     const tgt = Pictures.mainImage?.parentElement
     assert(hasValue(tgt))
-    sandbox.stub(tgt, 'getBoundingClientRect').callsFake(() => Cast<DOMRect>(boundingRect))
+    sandbox.stub(tgt, 'getBoundingClientRect').callsFake(() => cast<DOMRect>(boundingRect))
     ignoreClickSpy.resetHistory()
     executePreviousSpy.resetHistory()
     executeNextSpy.resetHistory()

@@ -7,12 +7,12 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Imports, Internals, LoadImage } from '#public/scripts/app/pictures/viewer.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
-import { Delay } from '#testutils/Utils.js'
+import { delay } from '#testutils/Utils.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
@@ -141,7 +141,7 @@ describe('public/app/pictures LoadImage()', () => {
   it('should not await next loader when image is null', async () => {
     Pictures.current = null
     let awaited = false
-    Pictures.nextLoader = Delay(10).then(() => {
+    Pictures.nextLoader = delay(10).then(() => {
       awaited = true
     })
     await LoadImage()
@@ -149,7 +149,7 @@ describe('public/app/pictures LoadImage()', () => {
   })
   it('should await next loader when image is valid', async () => {
     let awaited = false
-    Pictures.nextLoader = Delay(10).then(() => {
+    Pictures.nextLoader = delay(10).then(() => {
       awaited = true
     })
     await LoadImage()
@@ -199,7 +199,7 @@ describe('public/app/pictures LoadImage()', () => {
     it(`should ${result ? '' : 'not '}accept ${title} as modcount from PostJSON`, async () => {
       Pictures.modCount = 99
       await LoadImage()
-      const fn = Cast<(_: unknown) => unknown>(postJSONSpy.firstCall.args[2])
+      const fn = cast<(_: unknown) => unknown>(postJSONSpy.firstCall.args[2])
       expect(fn(input)).to.equal(result)
     })
   })

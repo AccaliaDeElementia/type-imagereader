@@ -5,22 +5,22 @@ import type { Express } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { CreateApp, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('Server CreateApp', () => {
-  let serverFake = Cast<Server>({})
-  let socketsFake = Cast<WebSocketServer>({})
+  let serverFake = cast<Server>({})
+  let socketsFake = cast<WebSocketServer>({})
   let socketsServerStub = sandbox.stub()
-  let appFake = Cast<Express>({})
+  let appFake = cast<Express>({})
   let expressStub = sandbox.stub().returns(appFake)
   let createServerStub = sandbox.stub().returns(serverFake)
   beforeEach(() => {
-    serverFake = Cast<Server>({})
-    socketsFake = Cast<WebSocketServer>({})
-    appFake = Cast<Express>({})
+    serverFake = cast<Server>({})
+    socketsFake = cast<WebSocketServer>({})
+    appFake = cast<Express>({})
     expressStub = sandbox.stub(Imports, 'express').returns(appFake)
     createServerStub = sandbox.stub(Imports, 'createServer').returns(serverFake)
     socketsServerStub = sandbox.stub(Imports, 'WebSocketServer').returns(socketsFake)
@@ -42,9 +42,9 @@ describe('Server CreateApp', () => {
   })
   it('should delegate incoming requests to the express app via the createServer listener', () => {
     const appCallStub = sandbox.stub()
-    expressStub.returns(Cast<Express>(appCallStub))
+    expressStub.returns(cast<Express>(appCallStub))
     CreateApp()
-    const listener = Cast<(req: unknown, res: unknown) => void>(createServerStub.firstCall.args[0])
+    const listener = cast<(req: unknown, res: unknown) => void>(createServerStub.firstCall.args[0])
     const reqFake = { req: true }
     const resFake = { res: true }
     listener(reqFake, resFake)

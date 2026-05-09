@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { HandleSocketState, HandleSocket, joinSlideshow, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
@@ -9,20 +9,20 @@ import type { Server as WebSocketServer, Socket } from 'socket.io'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow socket join-slideshow()', () => {
-  let knexFake = StubToKnex({})
-  let serverFake = Cast<WebSocketServer>({})
+  let knexFake = stubToKnex({})
+  let serverFake = cast<WebSocketServer>({})
   let socketStub = { on: sandbox.stub(), join: sandbox.stub().resolves(), emit: sandbox.stub() }
-  let socketFake = Cast<Socket>(socketStub)
+  let socketFake = cast<Socket>(socketStub)
   let socketState = new HandleSocketState()
   let roomData = {
     uriSafeImage: '/foo/bar/quux.png',
   }
   let getRoomStub = sandbox.stub().resolves(roomData)
   beforeEach(() => {
-    knexFake = StubToKnex({})
-    serverFake = Cast<WebSocketServer>({})
+    knexFake = stubToKnex({})
+    serverFake = cast<WebSocketServer>({})
     socketStub = { on: sandbox.stub(), join: sandbox.stub().resolves(), emit: sandbox.stub() }
-    socketFake = Cast<Socket>(socketStub)
+    socketFake = cast<Socket>(socketStub)
     socketState = HandleSocket(knexFake, serverFake, socketFake)
     socketState.roomName = 'NO_ROOM' // assign sentical value to test against later
     roomData = {
@@ -69,7 +69,7 @@ describe('routes/slideshow socket join-slideshow()', () => {
     let loggerStub = sandbox.stub()
     beforeEach(() => {
       loggerStub = sandbox.stub(Imports, 'logger')
-      Cast<{ id: string }>(socketStub).id = 'socket-id-123'
+      cast<{ id: string }>(socketStub).id = 'socket-id-123'
     })
 
     it('should log joinSlideshow format on valid invocation', async () => {

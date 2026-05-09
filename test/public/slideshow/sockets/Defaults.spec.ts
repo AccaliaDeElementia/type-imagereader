@@ -2,27 +2,27 @@
 
 import { Internals } from '#public/scripts/slideshow/sockets.js'
 import { expect } from 'chai'
-import { DefinitelyThrows } from '#testutils/Errors.js'
+import { definitelyThrows } from '#testutils/Errors.js'
 
 describe('public/slideshow/sockets uninitialized sentinels', () => {
   it('should definitely throw for Internals.UninitializedLocationAssign()', () => {
-    DefinitelyThrows(() => {
+    definitelyThrows(() => {
       Internals.UninitializedLocationAssign('')
     })
   })
   it('should throw expected error for Internals.UninitializedLocationAssign()', () => {
-    const err = DefinitelyThrows(() => {
+    const err = definitelyThrows(() => {
       Internals.UninitializedLocationAssign('')
     })
     expect(err.message).to.equal('LocationAssign called before Connect()')
   })
   it('should definitely throw for Internals.UninitializedLocationReload()', () => {
-    DefinitelyThrows(() => {
+    definitelyThrows(() => {
       Internals.UninitializedLocationReload()
     })
   })
   it('should throw expected error for Internals.UninitializedLocationReload()', () => {
-    const err = DefinitelyThrows(() => {
+    const err = definitelyThrows(() => {
       Internals.UninitializedLocationReload()
     })
     expect(err.message).to.equal('LocationReload called before Connect()')

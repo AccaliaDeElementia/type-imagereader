@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Imports, Internals, NavigateTo } from '#public/scripts/app/pictures/viewer.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
 
@@ -30,8 +30,8 @@ describe('public/app/pictures LoadNextImage()', () => {
     seen: false,
   }
   const mainImage = {
-    width: Cast<number | undefined>(1024),
-    height: Cast<number | undefined>(768),
+    width: cast<number | undefined>(1024),
+    height: cast<number | undefined>(768),
   }
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -45,7 +45,7 @@ describe('public/app/pictures LoadNextImage()', () => {
     getShowUnreadOnlyStub = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
     mainImage.width = 1024
     mainImage.height = 768
-    Pictures.mainImage = Cast<HTMLImageElement>(mainImage)
+    Pictures.mainImage = cast<HTMLImageElement>(mainImage)
   })
   afterEach(() => {
     sandbox.restore()

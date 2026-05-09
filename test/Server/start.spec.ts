@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { Start as start, Internals, SetClacksOverhead } from '#Server.js'
 import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
@@ -12,9 +12,9 @@ const sandbox = Sinon.createSandbox()
 
 describe('Server start', () => {
   let appStub = { use: sandbox.stub() }
-  let appFake = Cast<Express>(appStub)
-  let serverFake = Cast<HttpServer>({})
-  let socketsFake = Cast<WebSocketServer>({})
+  let appFake = cast<Express>(appStub)
+  let serverFake = cast<HttpServer>({})
+  let socketsFake = cast<WebSocketServer>({})
   let createAppStub = sandbox.stub()
   let configureBaseAppStub = sandbox.stub()
   let configureLoggingStub = sandbox.stub()
@@ -24,9 +24,9 @@ describe('Server start', () => {
   let listenOnPortStub = sandbox.stub()
   beforeEach(() => {
     appStub = { use: sandbox.stub() }
-    appFake = Cast<Express>(appStub)
-    serverFake = Cast<HttpServer>({})
-    socketsFake = Cast<WebSocketServer>({})
+    appFake = cast<Express>(appStub)
+    serverFake = cast<HttpServer>({})
+    socketsFake = cast<WebSocketServer>({})
     createAppStub = sandbox.stub(Internals, 'CreateApp').returns([appFake, serverFake, socketsFake])
     configureBaseAppStub = sandbox.stub(Internals, 'ConfigureBaseApp')
     configureLoggingStub = sandbox.stub(Internals, 'ConfigureLogging')

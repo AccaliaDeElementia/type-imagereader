@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from './TypeGuards.js'
+import { cast, stubToKnex } from './TypeGuards.js'
 
 type KnexQueryStub = Record<string, Sinon.SinonStub>
 
@@ -12,7 +12,7 @@ export function createKnexChainFake<C extends readonly string[], T extends reado
 ): {
   instance: Record<C[number] | T[number], Sinon.SinonStub>
   stub: Sinon.SinonStub
-  fake: ReturnType<typeof StubToKnex>
+  fake: ReturnType<typeof stubToKnex>
 } {
   const instance: KnexQueryStub = {}
   for (const method of chainMethods) {
@@ -23,8 +23,8 @@ export function createKnexChainFake<C extends readonly string[], T extends reado
   }
   const stub = Sinon.stub().returns(instance)
   return {
-    instance: Cast<Record<C[number] | T[number], Sinon.SinonStub>>(instance),
+    instance: cast<Record<C[number] | T[number], Sinon.SinonStub>>(instance),
     stub,
-    fake: StubToKnex(stub),
+    fake: stubToKnex(stub),
   }
 }

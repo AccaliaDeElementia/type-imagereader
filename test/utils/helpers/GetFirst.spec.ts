@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { getFirst } from '#utils/helpers.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 describe('utils/helpers getFirst()', () => {
   const tests: Array<[string, unknown, unknown]> = [
@@ -17,7 +17,7 @@ describe('utils/helpers getFirst()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${JSON.stringify(expected)} for ${title}`, () => {
-      expect(getFirst(Cast<Parameters<typeof getFirst>[0]>(input))).to.equal(expected)
+      expect(getFirst(cast<Parameters<typeof getFirst>[0]>(input))).to.equal(expected)
     })
   })
 })

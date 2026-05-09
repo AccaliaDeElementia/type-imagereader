@@ -9,7 +9,7 @@ import { render } from 'pug'
 import { PubSub, Subscribe } from '#public/scripts/app/pubsub.js'
 import { Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { EventuallyFullfills } from '#testutils/Errors.js'
+import { eventuallyFulfills } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -90,7 +90,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       Init()
       const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('hidden')
-      await EventuallyFullfills(handler(undefined))
+      await eventuallyFulfills(handler(undefined))
     })
   })
   describe('Menu:Hide Message Handler', () => {
@@ -121,7 +121,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       menuNode?.parentElement?.removeChild(menuNode)
       Init()
       const handler = getSubscriber('MENU:HIDE')
-      await EventuallyFullfills(handler(undefined))
+      await eventuallyFulfills(handler(undefined))
     })
   })
   describe('#mainMenu Click Handler', () => {

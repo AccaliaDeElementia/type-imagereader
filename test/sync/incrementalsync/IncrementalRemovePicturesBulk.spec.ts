@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { IncrementalRemovePicturesBulk } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -22,7 +22,7 @@ describe('sync/incrementalsync IncrementalRemovePicturesBulk()', () => {
     delete: sandbox.stub().resolves(0),
   }
   let knexFnStub = sandbox.stub()
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
     pictureWhereInCalls = []
@@ -56,7 +56,7 @@ describe('sync/incrementalsync IncrementalRemovePicturesBulk()', () => {
       if (table === 'bookmarks') return bookmarksQuery
       throw new Error(`Unexpected knex table: ${table}`)
     })
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
   }
 
   beforeEach(() => {

@@ -10,7 +10,7 @@ import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Imports, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import { isListing } from '#contracts/listing.js'
-import { EventuallyFullfills } from '#testutils/Errors.js'
+import { eventuallyFulfills } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -179,11 +179,11 @@ describe('public/app/navigation LoadData()', () => {
   })
   it('should tolerate missing title element', async () => {
     titleElement?.parentElement?.removeChild(titleElement)
-    await EventuallyFullfills(Internals.LoadData())
+    await eventuallyFulfills(Internals.LoadData())
   })
   it('should tolerate missing brand element', async () => {
     brandElement?.parentElement?.removeChild(brandElement)
-    await EventuallyFullfills(Internals.LoadData())
+    await eventuallyFulfills(Internals.LoadData())
   })
   it('should not push state when loading data with no history flag set true', async () => {
     await Internals.LoadData(true)

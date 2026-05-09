@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { Internals, type WebSocket } from '#public/scripts/slideshow/sockets.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import assert from 'node:assert'
@@ -12,7 +12,7 @@ const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeEmit = sandbox.stub()
-  const fakeSocket = Cast<WebSocket>({ emit: fakeEmit })
+  const fakeSocket = cast<WebSocket>({ emit: fakeEmit })
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
     mountDom(dom)
@@ -28,7 +28,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   it('should not break if socket is null', () => {
     const evt = new global.window.KeyboardEvent('keyup', { key: 'a' })
-    Internals.HandleKeys(evt, Cast<WebSocket>(null))
+    Internals.HandleKeys(evt, cast<WebSocket>(null))
     assert(true, 'should not throw when null socket provided')
   })
   it('should not break if socket is undefined', () => {

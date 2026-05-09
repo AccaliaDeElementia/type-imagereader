@@ -5,7 +5,7 @@ import type { Debugger } from 'debug'
 import { Imports, ReadImage, ImageData } from '#routes/images.js'
 import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -21,7 +21,7 @@ describe('routes/images ReadImage()', () => {
     readFileStub = sandbox.stub(Imports, 'readFile').resolves()
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'logger').value(cast<Debugger>(loggerStub))
   })
   afterEach(() => {
     sandbox.restore()
@@ -183,7 +183,7 @@ describe('routes/images ReadImage()', () => {
   ]
   validImagetests.forEach(([title, validatefn]) => {
     it(`should ${title} for valid image`, async () => {
-      const img = Cast<ImageData>({ img: Math.random() })
+      const img = cast<ImageData>({ img: Math.random() })
       const data = Buffer.from('SOME DATA HERE')
       fromImageStub.returns(img)
       readFileStub.resolves(data)
@@ -211,7 +211,7 @@ describe('routes/images ReadImage()', () => {
     process.env.DATA_DIR = '/library/images'
     try {
       readFileStub.resolves(Buffer.from('SOME DATA HERE'))
-      fromImageStub.returns(Cast<ImageData>({}))
+      fromImageStub.returns(cast<ImageData>({}))
       await ReadImage('/foo/bar/image.gif')
       expect(readFileStub.firstCall.args[0]).to.equal('/library/images/foo/bar/image.gif')
     } finally {
@@ -276,7 +276,7 @@ describe('routes/images ReadImage()', () => {
     it('should log a string fallback when readFile rejects with a non-Error', async () => {
       readFileStub.callsFake(async () => {
         await Promise.resolve()
-        throw Cast<Error>({ toString: () => 'rejection-token' })
+        throw cast<Error>({ toString: () => 'rejection-token' })
       })
       fromErrorStub.returns({})
       await ReadImage('/foo/bar/image.png')

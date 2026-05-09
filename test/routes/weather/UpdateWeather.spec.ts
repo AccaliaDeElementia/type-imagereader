@@ -11,7 +11,7 @@ import {
   type WeatherResults,
 } from '#routes/weather.js'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -50,13 +50,13 @@ describe('routes/weather UpdateWeather', () => {
   it('should reject when getEarliestSunset throws', async () => {
     const err = new Error('FOO!')
     getEarliestSunsetStub.throws(err)
-    const result = await EventuallyRejects(UpdateWeather())
+    const result = await eventuallyRejects(UpdateWeather())
     expect(result).to.equal(err)
   })
   it('should reject when getLatestSunrise throws', async () => {
     const err = new Error('FOO!')
     getLatestSunriseStub.throws(err)
-    const result = await EventuallyRejects(UpdateWeather())
+    const result = await eventuallyRejects(UpdateWeather())
     expect(result).to.equal(err)
   })
   it('should return Weather', async () => {

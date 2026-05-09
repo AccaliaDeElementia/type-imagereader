@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 
 import { FsWalker, Imports, Fswalker } from '#sync/fswalker.js'
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -130,7 +130,7 @@ describe('sync/fswalker FsWalker()', () => {
   it('should propagate rejection from eachItem callback', async () => {
     readdirSpy.resolves([{ name: 'foo.png', isDirectory: () => false }])
     const error = new Error('callback failed')
-    const err = await EventuallyRejects(FsWalker('/bar/baz', sandbox.stub().rejects(error)))
+    const err = await eventuallyRejects(FsWalker('/bar/baz', sandbox.stub().rejects(error)))
     expect(err).to.equal(error)
   })
   it('should stop walking when eachItem rejects mid-walk', async () => {
@@ -139,7 +139,7 @@ describe('sync/fswalker FsWalker()', () => {
       { name: 'foo.png', isDirectory: () => false },
     ])
     readdirSpy.onSecondCall().resolves([])
-    await EventuallyRejects(FsWalker('/bar/baz', sandbox.stub().rejects(new Error('stop'))))
+    await eventuallyRejects(FsWalker('/bar/baz', sandbox.stub().rejects(new Error('stop'))))
     expect(readdirSpy.callCount).to.equal(1)
   })
   it('should preserve a single error when concurrent peer workers both reject', async () => {
@@ -149,7 +149,7 @@ describe('sync/fswalker FsWalker()', () => {
     ])
     readdirSpy.onSecondCall().rejects(new Error('errA'))
     readdirSpy.onThirdCall().rejects(new Error('errB'))
-    const err = await EventuallyRejects(FsWalker('/bar/baz', sandbox.stub().resolves()))
+    const err = await eventuallyRejects(FsWalker('/bar/baz', sandbox.stub().resolves()))
     expect(err.message).to.match(/^err[AB]$/v)
   })
   it('should call the item callback once when hidden folder present', async () => {

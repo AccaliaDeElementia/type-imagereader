@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { HandleSocketState, HandleSocket, prevImage, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
@@ -9,20 +9,20 @@ import type { Server as WebSocketServer, Socket } from 'socket.io'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow socket prev-image', () => {
-  let knexFake = StubToKnex({})
+  let knexFake = stubToKnex({})
   let ioStub = { emit: sandbox.stub(), to: sandbox.stub().returnsThis() }
-  let serverFake = Cast<WebSocketServer>(ioStub)
+  let serverFake = cast<WebSocketServer>(ioStub)
   let socketStub = { on: sandbox.stub() }
-  let socketFake = Cast<Socket>(socketStub)
+  let socketFake = cast<Socket>(socketStub)
   let socketState = new HandleSocketState()
   let roomData = { path: '', uriSafeImage: '' }
   let getRoomStub = sandbox.stub().resolves(roomData)
   beforeEach(() => {
-    knexFake = StubToKnex({})
+    knexFake = stubToKnex({})
     ioStub = { emit: sandbox.stub(), to: sandbox.stub().returnsThis() }
-    serverFake = Cast<WebSocketServer>(ioStub)
+    serverFake = cast<WebSocketServer>(ioStub)
     socketStub = { on: sandbox.stub() }
-    socketFake = Cast<Socket>(socketStub)
+    socketFake = cast<Socket>(socketStub)
     socketState = HandleSocket(knexFake, serverFake, socketFake)
     roomData = {
       path: '/foo/bar',

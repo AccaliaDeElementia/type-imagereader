@@ -4,14 +4,14 @@ import { assert, expect } from 'chai'
 import { Internals } from '#public/scripts/app/actions.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
-import { Cast } from '#testutils/TypeGuards.js'
-import { DoesNotThrow } from '#testutils/Errors.js'
+import { cast } from '#testutils/TypeGuards.js'
+import { doesNotThrow } from '#testutils/Errors.js'
 
 describe('public/app/actions setInnerTextMaybe', () => {
   const dom: JSDOM = new JSDOM('<html><body><div><span class="foo"></span></div></div></html>', {})
 
-  let divNode = Cast<HTMLDivElement>(null)
-  let spanNode = Cast<HTMLSpanElement>(null)
+  let divNode = cast<HTMLDivElement>(null)
+  let spanNode = cast<HTMLSpanElement>(null)
   beforeEach(() => {
     mountDom(dom)
     const div = dom.window.document.querySelector('div')
@@ -25,7 +25,7 @@ describe('public/app/actions setInnerTextMaybe', () => {
     unmountDom()
   })
   it('should handle no mathcing node to set text', () => {
-    DoesNotThrow(() => {
+    doesNotThrow(() => {
       Internals.setInnerTextMaybe(divNode, '.xyzzy', 'foo')
     })
   })

@@ -8,7 +8,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Internals, PubSub, StartDeferred } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 import assert from 'node:assert'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { hasValue } from '#utils/helpers.js'
 
 const sandbox = Sinon.createSandbox()
@@ -38,7 +38,7 @@ describe('public/app/pubsub StartDeferred()', () => {
     StartDeferred()
     const fn = setIntervalSpy.firstCall.args[0] as unknown
     assert(hasValue(fn))
-    Cast<() => void>(fn)()
+    cast<() => void>(fn)()
     expect(executeIntervalSpy.callCount).to.equal(1)
   })
   it('should call setInterval with 2 arguments', () => {

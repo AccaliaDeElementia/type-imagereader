@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import type { EventEmitter } from 'node:events'
 import { FindSyncItems, Imports, LOG_PREFIX } from '#sync/findItems.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 import { createCopyStreamFake, scheduleEmit as scheduleEmitOn } from '#testutils/CopyStream.js'
 import { stubDebug } from '#testutils/Debug.js'
@@ -26,7 +26,7 @@ interface StreamFake extends EventEmitter {
 const makeRows = (count: number): Array<{ path: string; marker: number }> =>
   Array.from({ length: count }, (_, i) => ({ path: `/p${i}`, marker: i }))
 
-const makeStream = (): StreamFake => Cast<StreamFake>(createCopyStreamFake(sandbox, { emitOnEnd: 'finish' }).ee)
+const makeStream = (): StreamFake => cast<StreamFake>(createCopyStreamFake(sandbox, { emitOnEnd: 'finish' }).ee)
 
 const scheduleEmit = (target: EventEmitter, event: string, arg?: unknown): void => {
   if (arg === undefined) scheduleEmitOn(target, event)
@@ -61,8 +61,8 @@ describe('sync/findItems FindSyncItems()', () => {
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
     buildSyncItemRowsStub = sandbox.stub(Imports, 'BuildSyncItemRows').returns({ files: 0, dirs: 0, rows: [] })
     formatSyncItemCsvStub = sandbox.stub(Imports, 'FormatSyncItemCsv').returns('csv-row\n')
-    copyFromStub = sandbox.stub(Imports, 'copyFrom').returns(Cast<CopyStreamQuery>(sandbox.stub()))
-    acquireStub = sandbox.stub(Imports, 'acquireCopyConnection').resolves(Cast<PoolClient>(pgClientStub))
+    copyFromStub = sandbox.stub(Imports, 'copyFrom').returns(cast<CopyStreamQuery>(sandbox.stub()))
+    acquireStub = sandbox.stub(Imports, 'acquireCopyConnection').resolves(cast<PoolClient>(pgClientStub))
     releaseStub = sandbox.stub(Imports, 'releaseCopyConnection').resolves()
     sandbox.stub(Imports, 'IsPostgres').returns(true)
   })
@@ -99,7 +99,7 @@ describe('sync/findItems FindSyncItems()', () => {
   })
   it('should insert the root folder row with a non-empty pathHash to satisfy NOT NULL', async () => {
     await FindSyncItems(knexFnFake)
-    const row = Cast<{ pathHash: string }>(knexInstanceStub.insert.firstCall.args[0])
+    const row = cast<{ pathHash: string }>(knexInstanceStub.insert.firstCall.args[0])
     expect(row.pathHash.length).to.be.above(0)
   })
   it('should request syncitems on the first knex call', async () => {
@@ -177,7 +177,7 @@ describe('sync/findItems FindSyncItems()', () => {
   })
   it('should pass walker items through BuildSyncItemRows', async () => {
     await FindSyncItems(knexFnFake)
-    const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
+    const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     await callback(items, 0)
     expect(buildSyncItemRowsStub.calledWith(items)).to.equal(true)
@@ -248,7 +248,7 @@ describe('sync/findItems FindSyncItems()', () => {
   })
   it('should log status on first loop', async () => {
     await FindSyncItems(knexFnFake)
-    const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
+    const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     buildSyncItemRowsStub.returns({ files: 3, dirs: 9, rows: [] })
     await callback(items, 6)
@@ -257,7 +257,7 @@ describe('sync/findItems FindSyncItems()', () => {
   it('should log twice by the 101st loop', async () => {
     await FindSyncItems(knexFnFake)
     loggerStub.resetHistory()
-    const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
+    const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     const invocations: Array<Promise<void>> = []
     for (let i = 0; i < 100; i += 1) invocations.push(callback(items, 0))
@@ -269,7 +269,7 @@ describe('sync/findItems FindSyncItems()', () => {
   it('should log status on 101st loop', async () => {
     await FindSyncItems(knexFnFake)
     loggerStub.resetHistory()
-    const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
+    const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     const invocations: Array<Promise<void>> = []
     for (let i = 0; i < 100; i += 1) invocations.push(callback(items, 0))

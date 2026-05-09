@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { AddBookmark } from '#routes/apiFunctions.js'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { createKnexChainFake } from '#testutils/Knex.js'
 
@@ -14,11 +14,11 @@ const sandbox = Sinon.createSandbox()
 describe('routes/apiFunctions AddBookmark', () => {
   let knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
   let knexStub = sandbox.stub()
-  let knexFake = StubToKnex(knexStub)
+  let knexFake = stubToKnex(knexStub)
   beforeEach(() => {
     knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
     knexStub = sandbox.stub().returns(knexInstance)
-    knexFake = StubToKnex(knexStub)
+    knexFake = stubToKnex(knexStub)
   })
   afterEach(() => {
     sandbox.restore()

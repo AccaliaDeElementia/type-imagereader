@@ -5,7 +5,7 @@ import type { Debugger } from 'debug'
 import { Imports, RescaleImage, ImageData } from '#routes/images.js'
 import Sharp from 'sharp'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 describe('routes/images RescaleImage()', () => {
@@ -18,9 +18,9 @@ describe('routes/images RescaleImage()', () => {
   let sharpStub = sandbox.stub()
   let loggerStub = sandbox.stub()
   beforeEach(() => {
-    sharpStub = sandbox.stub(Imports, 'Sharp').returns(Cast<Sharp.Sharp>(sharpInstanceStub))
+    sharpStub = sandbox.stub(Imports, 'Sharp').returns(cast<Sharp.Sharp>(sharpInstanceStub))
     loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'logger').value(cast<Debugger>(loggerStub))
   })
   afterEach(() => {
     sandbox.restore()
@@ -43,7 +43,7 @@ describe('routes/images RescaleImage()', () => {
     fit: unknown
     withoutEnlargement: unknown
   }
-  const getSharpArgs = (): SharpResizeArgs => Cast<SharpResizeArgs>(sharpInstanceStub.resize.firstCall.args[0])
+  const getSharpArgs = (): SharpResizeArgs => cast<SharpResizeArgs>(sharpInstanceStub.resize.firstCall.args[0])
   const successTests: Array<[string, boolean, (data: Buffer, img: ImageData) => void]> = [
     ['parse Sharp data', true, () => expect(sharpStub.callCount).to.equal(1)],
     ['call Sharp with expected arg count', true, () => expect(sharpStub.firstCall.args).to.have.lengthOf(2)],
@@ -172,7 +172,7 @@ describe('routes/images RescaleImage()', () => {
       img.path = '/foo/bar.jpg'
       sharpInstanceStub.toBuffer.callsFake(async () => {
         await Promise.resolve()
-        throw Cast<Error>({ toString: () => 'rejection-token' })
+        throw cast<Error>({ toString: () => 'rejection-token' })
       })
       await RescaleImage(img, 1280, 720)
       expect(loggerStub.firstCall.args[2]).to.equal('rejection-token')

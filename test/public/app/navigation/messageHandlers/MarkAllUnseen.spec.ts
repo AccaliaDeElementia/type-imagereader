@@ -8,9 +8,9 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Imports, Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { EventuallyFullfills } from '#testutils/Errors.js'
+import { eventuallyFulfills } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -88,12 +88,12 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     payloadTests.forEach(([name, data]) => {
       it(`should provide a function as validator for ${name} result from postJSON`, async () => {
         await handler()
-        const fn = Cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
+        const fn = cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
         expect(fn).to.be.a('function')
       })
       it(`should accept ${name} as result from postJSON`, async () => {
         await handler()
-        const fn = Cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
+        const fn = cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
         expect(fn(data)).to.equal(true)
       })
     })
@@ -136,7 +136,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     })
     it('should swallow exception when LoadData rejects', async () => {
       loadDataStub.rejects('FOO')
-      await EventuallyFullfills(handler())
+      await eventuallyFulfills(handler())
     })
     it('should call Confirm.Show once', async () => {
       await handler()

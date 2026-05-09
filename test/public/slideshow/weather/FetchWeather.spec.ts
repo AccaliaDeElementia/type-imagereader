@@ -5,8 +5,8 @@ import { Internals } from '#public/scripts/slideshow/weather.js'
 import Sinon from 'sinon'
 import { URL } from 'node:url'
 import { JSDOM } from 'jsdom'
-import { EventuallyRejects } from '#testutils/Errors.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 
 const sandbox = Sinon.createSandbox()
@@ -65,13 +65,13 @@ describe('public/slideshow/weather FetchWeather()', () => {
     expect(fetchStub.firstCall.args[0]).to.equal(target)
   })
   it('should pass an AbortSignal in the fetch options', async () => {
-    const sentinelSignal = Cast<AbortSignal>({})
+    const sentinelSignal = cast<AbortSignal>({})
     sandbox.stub(AbortSignal, 'timeout').returns(sentinelSignal)
     await Internals.FetchWeather('https://localhost/x')
-    expect(Cast<{ signal: unknown }>(fetchStub.firstCall.args[1]).signal).to.equal(sentinelSignal)
+    expect(cast<{ signal: unknown }>(fetchStub.firstCall.args[1]).signal).to.equal(sentinelSignal)
   })
   it('should set the AbortSignal timeout to 60 seconds', async () => {
-    const timeoutStub = sandbox.stub(AbortSignal, 'timeout').returns(Cast<AbortSignal>({}))
+    const timeoutStub = sandbox.stub(AbortSignal, 'timeout').returns(cast<AbortSignal>({}))
     await Internals.FetchWeather('https://localhost/x')
     expect(timeoutStub.firstCall.args).to.deep.equal([60_000])
   })
@@ -79,20 +79,20 @@ describe('public/slideshow/weather FetchWeather()', () => {
   it('should reject when fetch rejects', async () => {
     const err = new Error('I AM ERROR')
     fetchStub.rejects(err)
-    const result = await EventuallyRejects(Internals.FetchWeather('FOO'))
+    const result = await eventuallyRejects(Internals.FetchWeather('FOO'))
     expect(result).to.equal(err)
   })
 
   it('should reject when json rejects', async () => {
     const err = new Error('I AM ERROR')
     fetchStub.resolves({ json: sandbox.stub().rejects(err) })
-    const result = await EventuallyRejects(Internals.FetchWeather('FOO'))
+    const result = await eventuallyRejects(Internals.FetchWeather('FOO'))
     expect(result).to.equal(err)
   })
 
   it('should reject when fetch resolves invalid WeatherResultsjects', async () => {
     fetchStub.resolves({ json: sandbox.stub().resolves(42) })
-    const result = await EventuallyRejects(Internals.FetchWeather('FOO'))
+    const result = await eventuallyRejects(Internals.FetchWeather('FOO'))
     expect(result.message).to.equal('Invalid WeatherResponse Retrieved')
   })
 })

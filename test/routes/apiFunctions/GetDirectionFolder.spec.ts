@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { GetDirectionFolder, type SiblingFolderSearch } from '#routes/apiFunctions.js'
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
@@ -24,7 +24,7 @@ describe('routes/apiFunctions GetDirectionFolder', () => {
     limit: sandbox.stub().returns([]),
   }
   let knexStub = sandbox.stub().onFirstCall().returns(knexFirstCall).onSecondCall().returns(knexSecondCall)
-  let knexFake = StubToKnex(knexStub)
+  let knexFake = stubToKnex(knexStub)
   const rawStub = sandbox.stub()
   beforeEach(() => {
     knexFirstCall = {
@@ -42,7 +42,7 @@ describe('routes/apiFunctions GetDirectionFolder', () => {
       limit: sandbox.stub().returns([]),
     }
     knexStub = sandbox.stub().onFirstCall().returns(knexFirstCall).onSecondCall().returns(knexSecondCall)
-    knexFake = StubToKnex(knexStub)
+    knexFake = stubToKnex(knexStub)
     knexFake.raw = rawStub
   })
   afterEach(() => {

@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { IncrementalEnsureFoldersBulk } from '#sync/incrementalsync.js'
 import { ToSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -22,7 +22,7 @@ describe('sync/incrementalsync IncrementalEnsureFoldersBulk()', () => {
     ignore: sandbox.stub().resolves(),
   }
   let knexFnStub = sandbox.stub()
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
     folderChunks = []
@@ -38,7 +38,7 @@ describe('sync/incrementalsync IncrementalEnsureFoldersBulk()', () => {
       if (table === 'folders') return foldersInsertQuery
       throw new Error(`Unexpected knex table: ${table}`)
     })
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
   }
 
   beforeEach(() => {

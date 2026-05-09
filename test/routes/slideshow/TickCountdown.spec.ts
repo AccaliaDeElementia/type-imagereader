@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { Config, TickCountdown, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer } from 'socket.io'
@@ -9,7 +9,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow TickCountdown()', () => {
-  let knexFake = StubToKnex({ knex: Math.random() })
+  let knexFake = stubToKnex({ knex: Math.random() })
   let ioStub = {
     of: sandbox.stub().returnsThis(),
     adapter: {},
@@ -18,7 +18,7 @@ describe('routes/slideshow TickCountdown()', () => {
     get: sandbox.stub().returns([]),
     emit: sandbox.stub().returnsThis(),
   }
-  let ioFake = Cast<WebSocketServer>(ioStub)
+  let ioFake = cast<WebSocketServer>(ioStub)
   let getRoomStub = sandbox.stub()
   let loggerStub = sandbox.stub()
   const buildRoom = (
@@ -37,7 +37,7 @@ describe('routes/slideshow TickCountdown()', () => {
     }
   }
   beforeEach(() => {
-    knexFake = StubToKnex({ knex: Math.random() })
+    knexFake = stubToKnex({ knex: Math.random() })
     ioStub = {
       of: sandbox.stub().returnsThis(),
       adapter: {},
@@ -46,7 +46,7 @@ describe('routes/slideshow TickCountdown()', () => {
       get: sandbox.stub().returns([]),
       emit: sandbox.stub().returnsThis(),
     }
-    ioFake = Cast<WebSocketServer>(ioStub)
+    ioFake = cast<WebSocketServer>(ioStub)
     ioStub.adapter = ioStub
     ioStub.rooms = ioStub
     Config.rooms = {}

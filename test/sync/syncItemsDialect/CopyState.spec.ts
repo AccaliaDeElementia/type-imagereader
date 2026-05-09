@@ -6,10 +6,10 @@ import { EventEmitter } from 'node:events'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 
 import { CopyState, awaitCopyStreamCompletion, type CopyHelpers } from '#sync/syncItemsDialect.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createCopyStreamFake, scheduleEmit } from '#testutils/CopyStream.js'
 import { noopLogger } from '#testutils/Debug.js'
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
@@ -195,7 +195,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       copyFrom: () => buildStreamHandles().stream,
       acquireCopyConnection: async () => {
         await Promise.resolve()
-        return Cast<PoolClient>({ query: (s: CopyStreamQuery) => s })
+        return cast<PoolClient>({ query: (s: CopyStreamQuery) => s })
       },
       releaseCopyConnection: async () => {
         await Promise.resolve()
@@ -254,7 +254,7 @@ describe('sync/syncItemsDialect CopyState', () => {
         helpers: buildHelpers({
           buildSyncItemRows: () => ({ files: FILE_DELTA, dirs: DIR_DELTA, rows: [] }),
         }),
-        logger: Cast<Debugger>(loggerSpy),
+        logger: cast<Debugger>(loggerSpy),
         items: [],
         pending: PENDING,
       })
@@ -287,7 +287,7 @@ describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
 
   it("should resolve when the stream emits 'finish'", async () => {
     const ee = new EventEmitter()
-    const stream = Cast<CopyStreamQuery>(ee)
+    const stream = cast<CopyStreamQuery>(ee)
     const promise = awaitCopyStreamCompletion(stream)
     scheduleEmit(ee, 'finish')
     await promise
@@ -297,11 +297,11 @@ describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
 
   it("should reject with the emitted error when the stream emits 'error'", async () => {
     const ee = new EventEmitter()
-    const stream = Cast<CopyStreamQuery>(ee)
+    const stream = cast<CopyStreamQuery>(ee)
     const streamErr = new Error('blew up')
     const promise = awaitCopyStreamCompletion(stream)
     scheduleEmit(ee, 'error', streamErr)
-    const err = await EventuallyRejects(promise)
+    const err = await eventuallyRejects(promise)
     expect(err).to.equal(streamErr)
   })
 })

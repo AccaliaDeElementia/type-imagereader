@@ -5,7 +5,7 @@ import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { Routers, RegisterRouters } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
@@ -17,9 +17,9 @@ describe('Server RegisterRouters', () => {
   let getSlideshowRouter = sandbox.stub()
   let getWeatherRouter = sandbox.stub()
   let appStub = { use: sandbox.stub() }
-  let appFake = Cast<Express>(appStub)
-  let serverFake = Cast<HttpServer>({})
-  let socketsFake = Cast<WebSocketServer>({})
+  let appFake = cast<Express>(appStub)
+  let serverFake = cast<HttpServer>({})
+  let socketsFake = cast<WebSocketServer>({})
   beforeEach(() => {
     getRootRouter = sandbox.stub(Routers, 'Root').resolves()
     getApiRouter = sandbox.stub(Routers, 'Api').resolves()
@@ -27,9 +27,9 @@ describe('Server RegisterRouters', () => {
     getSlideshowRouter = sandbox.stub(Routers, 'Slideshow').resolves()
     getWeatherRouter = sandbox.stub(Routers, 'Weather').resolves()
     appStub = { use: sandbox.stub() }
-    appFake = Cast<Express>(appStub)
-    serverFake = Cast<HttpServer>({})
-    socketsFake = Cast<WebSocketServer>({})
+    appFake = cast<Express>(appStub)
+    serverFake = cast<HttpServer>({})
+    socketsFake = cast<WebSocketServer>({})
   })
   afterEach(() => {
     sandbox.restore()

@@ -5,7 +5,7 @@ import { expect } from 'chai'
 
 import { PubSub, RemoveInterval } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 describe('public/app/pubsub RemoveInterval()', () => {
   beforeEach(() => {
@@ -53,7 +53,7 @@ describe('public/app/pubsub RemoveInterval()', () => {
   it('should not call method on removing interval even if the interval is expired', () => {
     assert(PubSub.intervals.FOOBAR !== undefined)
     PubSub.intervals.FOOBAR.delayCycles = -1
-    const spy = Cast<Sinon.SinonSpy>(PubSub.intervals.FOOBAR.method)
+    const spy = cast<Sinon.SinonSpy>(PubSub.intervals.FOOBAR.method)
     RemoveInterval('FOOBAR')
     expect(spy.callCount).to.equal(0)
   })

@@ -9,7 +9,7 @@ import {
   WebSockets,
   type WebSocket,
 } from '#public/scripts/slideshow/sockets.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { expect } from 'chai'
@@ -20,7 +20,7 @@ const sandbox = Sinon.createSandbox()
 describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeEmit = sandbox.stub()
   const fakeOn = sandbox.stub()
-  const fakeSocket = Cast<WebSocket>({ emit: fakeEmit, on: fakeOn, disconnect: Sinon.spy() })
+  const fakeSocket = cast<WebSocket>({ emit: fakeEmit, on: fakeOn, disconnect: Sinon.spy() })
   let fakeParseRoom: Sinon.SinonStub | undefined = undefined
   let fakeIO: Sinon.SinonStub | undefined = undefined
   let fakeAddEventListener: Sinon.SinonStub | undefined = undefined
@@ -43,7 +43,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       url: `http://127.0.0.1:2999/slideshow?`,
     })
     Disconnect()
-    global.window.visualViewport = Cast<VisualViewport>(fakeViewport)
+    global.window.visualViewport = cast<VisualViewport>(fakeViewport)
   })
   afterEach(() => {
     sandbox.restore()
@@ -99,29 +99,29 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   it('should provide function as callback for  connect message', () => {
     Connect()
-    const fn = Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])
+    const fn = cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])
     expect(fn).to.be.an.instanceOf(Function)
   })
   it('should emit join-slideshow when connected', () => {
     Connect()
-    Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
+    cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
     expect(fakeEmit.calledWith('join-slideshow')).to.equal(true)
   })
   it('should join slideshow room as expected', () => {
     fakeParseRoom?.returns('Fake Room Is Fake')
     Connect()
-    Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
+    cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
     const call = fakeEmit.getCalls().find((c) => c.args[0] === 'join-slideshow')
     expect(call?.args[1]).to.equal('Fake Room Is Fake')
   })
   it('should emit get-launchId when connected', () => {
     Connect()
-    Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
+    cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
     expect(fakeEmit.calledWith('get-launchId')).to.equal(true)
   })
   it('should handle callback from get-launchId with Internals.HandleGetLaunchId', () => {
     Connect()
-    Cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
+    cast<() => void>(fakeOn.getCalls().find((c) => c.args[0] === 'connect')?.args[1])()
     const call = fakeEmit.getCalls().find((c) => c.args[0] === 'get-launchId')
     expect(call?.args[1]).to.equal(Internals.HandleGetLaunchId)
   })
@@ -141,42 +141,42 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   it('should provide event listener for click event', () => {
     Connect()
-    const fn = Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])
+    const fn = cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])
     expect(fn).to.be.an.instanceOf(Function)
   })
   it('should call Internals.HandleClick when processing click event', () => {
     Connect()
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.callCount).to.equal(1)
   })
   it('should pass event to handler when processing click event', () => {
     Connect()
     const evt = { a: Math.random() }
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(evt)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(evt)
     expect(fakeHandleClick?.firstCall.args[0]).to.equal(evt)
   })
   it('should pass socket to handler when processing click event', () => {
     Connect()
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.firstCall.args[1]).to.equal(fakeSocket)
   })
   it('should pass inisial scale factor to handler when processing click event', () => {
     fakeViewport.scale = 1.2373
     Connect()
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.firstCall.args[2]).to.equal(1.2373)
   })
   it('should pass original sale factor even if changed when processing click event', () => {
     fakeViewport.scale = 0.63
     Connect()
     fakeViewport.scale = 99.72
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.firstCall.args[2]).to.equal(0.63)
   })
   it('should pass default scale factor when no fiewport defined for processing click event', () => {
     global.window.visualViewport = null
     Connect()
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'click')?.args[1])(undefined)
     expect(fakeHandleClick?.firstCall.args[2]).to.equal(1)
   })
   it('should add a document level onkeyup event handler', () => {
@@ -185,23 +185,23 @@ describe('public/slideshow/sockets HandleKeys()', () => {
   })
   it('should provide event listener for keyup event', () => {
     Connect()
-    const fn = Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])
+    const fn = cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])
     expect(fn).to.be.an.instanceOf(Function)
   })
   it('should call Internals.HandleKeys when processing keyup event', () => {
     Connect()
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(undefined)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(undefined)
     expect(fakeHandleKeys?.callCount).to.equal(1)
   })
   it('should pass event to handler when processing keyup event', () => {
     Connect()
     const evt = { a: Math.random() }
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(evt)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(evt)
     expect(fakeHandleKeys?.firstCall.args[0]).to.equal(evt)
   })
   it('should pass socket to handler when processing keyup event', () => {
     Connect()
-    Cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(undefined)
+    cast<(_: unknown) => void>(fakeAddEventListener?.getCalls().find((c) => c.args[0] === 'keyup')?.args[1])(undefined)
     expect(fakeHandleKeys?.firstCall.args[1]).to.equal(fakeSocket)
   })
 })

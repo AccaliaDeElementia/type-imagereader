@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import { STEP } from '#utils/helpers.js'
 import { expect } from 'chai'
 import { Config, GetRoomAndIncrementImage, Internals, Imports } from '#routes/slideshow.js'
@@ -12,7 +12,7 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() r
   let stockImages = Array(Config.memorySize)
     .fill(undefined)
     .map((_, i) => `/image${i}.png`)
-  let knexFake = StubToKnex({ knex: Math.random() })
+  let knexFake = stubToKnex({ knex: Math.random() })
   let getImagesStub = sandbox.stub()
   let getCountsStub = sandbox.stub()
   let markImageReadStub = sandbox.stub()
@@ -26,7 +26,7 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() r
     stockImages = Array(Config.memorySize)
       .fill(undefined)
       .map((_, i) => `/image${i}.png`)
-    knexFake = StubToKnex({ knex: Math.random() })
+    knexFake = stubToKnex({ knex: Math.random() })
     pages = { pages: 0, page: 0, unread: 0, all: 0 }
     Config.rooms = {}
     Config.countdownDuration = 60

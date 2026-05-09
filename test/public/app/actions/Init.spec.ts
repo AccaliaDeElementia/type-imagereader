@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Actions, Init, Internals } from '#public/scripts/app/actions.js'
 
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
@@ -43,13 +43,13 @@ describe('public/app/actions Init()', () => {
     expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
   })
   const navigateDataTestCases: Array<[string, Listing, boolean]> = [
-    ['null', Cast<Listing>(null), false],
-    ['undefined', Cast<Listing>(undefined), false],
-    ['boolean', Cast<Listing>(false), false],
-    ['number', Cast<Listing>(1701), false],
-    ['string', Cast<Listing>('Enterprise'), false],
-    ['array', Cast<Listing>([null]), false],
-    ['empty object', Cast<Listing>({}), false],
+    ['null', cast<Listing>(null), false],
+    ['undefined', cast<Listing>(undefined), false],
+    ['boolean', cast<Listing>(false), false],
+    ['number', cast<Listing>(1701), false],
+    ['string', cast<Listing>('Enterprise'), false],
+    ['array', cast<Listing>([null]), false],
+    ['empty object', cast<Listing>({}), false],
     [
       'unset pictures with unset children',
       {
@@ -210,7 +210,7 @@ describe('public/app/actions Init()', () => {
         expect.fail('Base Function should not be called!')
       }
       documentSpy.callsFake((_, h) => {
-        handler = Cast<(o: unknown) => void>(h)
+        handler = cast<(o: unknown) => void>(h)
       })
       try {
         Init()
@@ -251,7 +251,7 @@ describe('public/app/actions Init()', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
       Init()
-      Cast<() => void>(spy.firstCall.args[1])()
+      cast<() => void>(spy.firstCall.args[1])()
       expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
     } finally {
       spy.restore()
@@ -263,7 +263,7 @@ describe('public/app/actions Init()', () => {
     const readspy = sandbox.stub(Internals, 'ReadGamepad')
     try {
       Init()
-      Cast<() => void>(spy.firstCall.args[1])()
+      cast<() => void>(spy.firstCall.args[1])()
       assert(PubSub.intervals.ReadGamepad !== undefined)
       PubSub.intervals.ReadGamepad.method()
       expect(readspy.called).to.equal(true)
@@ -291,9 +291,9 @@ describe('public/app/actions Init()', () => {
     dom.window.navigator.getGamepads = sandbox.stub().returns([null, null])
     try {
       Init()
-      Cast<() => void>(addSpy.firstCall.args[1])()
+      cast<() => void>(addSpy.firstCall.args[1])()
       assert(PubSub.intervals.ReadGamepad !== undefined)
-      Cast<() => void>(addSpy.secondCall.args[1])()
+      cast<() => void>(addSpy.secondCall.args[1])()
       expect(PubSub.intervals.ReadGamepad).to.equal(undefined)
     } finally {
       Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
@@ -307,13 +307,13 @@ describe('public/app/actions Init()', () => {
       configurable: true,
       get: () => dom.window.navigator,
     })
-    const fakePad = Cast<Gamepad>({ id: 'pad' })
+    const fakePad = cast<Gamepad>({ id: 'pad' })
     dom.window.navigator.getGamepads = sandbox.stub().returns([fakePad, null])
     try {
       Init()
-      Cast<() => void>(addSpy.firstCall.args[1])()
+      cast<() => void>(addSpy.firstCall.args[1])()
       assert(PubSub.intervals.ReadGamepad !== undefined)
-      Cast<() => void>(addSpy.secondCall.args[1])()
+      cast<() => void>(addSpy.secondCall.args[1])()
       expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
     } finally {
       Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })

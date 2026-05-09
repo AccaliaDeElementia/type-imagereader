@@ -1,14 +1,14 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { Config, GetRoomAndIncrementImage, Internals } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() unread to all-images mode transition', () => {
-  let knexFake = StubToKnex({ knex: Math.random() })
+  let knexFake = stubToKnex({ knex: Math.random() })
   let getImagesStub = sandbox.stub()
   let getCountsStub = sandbox.stub()
   let markImageReadStub = sandbox.stub()
@@ -23,7 +23,7 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() u
     pages: { unread: 5, all: 30, pages: 1, page: 0 },
   }
   beforeEach(() => {
-    knexFake = StubToKnex({ knex: Math.random() })
+    knexFake = stubToKnex({ knex: Math.random() })
     transitionPages = { pages: 3, page: 1, unread: 0, all: 30 }
     freshPages = { pages: 3, page: 2, unread: 0, all: 30 }
     unreadRoom = {

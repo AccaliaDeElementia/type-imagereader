@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
@@ -213,7 +213,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
       })
       const acceptor = postJSONSpy.firstCall.args[2] as unknown
       assert(acceptor !== undefined)
-      const result = Cast<(o: unknown) => boolean>(acceptor)(obj)
+      const result = cast<(o: unknown) => boolean>(acceptor)(obj)
       expect(result).to.equal(true)
     })
   })

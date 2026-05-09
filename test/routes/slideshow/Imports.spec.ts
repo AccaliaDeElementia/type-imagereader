@@ -1,18 +1,18 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import { Imports } from '#routes/slideshow.js'
 import { expect } from 'chai'
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow Imports', () => {
   let setLatestPictureStub = sandbox.stub()
-  let knexFake = StubToKnex({})
+  let knexFake = stubToKnex({})
   beforeEach(() => {
-    knexFake = StubToKnex({})
+    knexFake = stubToKnex({})
     setLatestPictureStub = sandbox.stub(Imports, 'SetLatestPicture').resolves()
   })
   afterEach(() => {
@@ -34,13 +34,13 @@ describe('routes/slideshow Imports', () => {
     it('should not catch rejection from SetLatestPicture', async () => {
       const err = new Error('PKACHU! SMASH!')
       setLatestPictureStub.rejects(err)
-      const result = await EventuallyRejects(Imports.setLatest(knexFake, ''))
+      const result = await eventuallyRejects(Imports.setLatest(knexFake, ''))
       expect(result).to.equal(err)
     })
     it('should not catch thrown error from SetLatestPicture', async () => {
       const err = new Error('PKACHU! SMASH!')
       setLatestPictureStub.throws(err)
-      const result = await EventuallyRejects(Imports.setLatest(knexFake, ''))
+      const result = await eventuallyRejects(Imports.setLatest(knexFake, ''))
       expect(result).to.equal(err)
     })
   })

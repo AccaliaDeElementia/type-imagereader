@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { Disconnect, Internals, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import assert from 'node:assert'
 
@@ -10,7 +10,7 @@ const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/sockets Disconnect()', () => {
   const fakeDisconnect = sandbox.stub()
-  const fakeSocket = Cast<WebSocket>({ disconnect: fakeDisconnect })
+  const fakeSocket = cast<WebSocket>({ disconnect: fakeDisconnect })
   beforeEach(() => {
     WebSockets.socket = fakeSocket
     fakeDisconnect.reset()

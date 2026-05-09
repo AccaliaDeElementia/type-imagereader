@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import type { Express } from 'express'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { Imports, RegisterViewsAndMiddleware } from '#Server.js'
 import express from 'express'
 
@@ -14,11 +14,11 @@ type MiddlewareFn = (req: unknown, res: unknown, next: Sinon.SinonStub) => void
 describe('Server RegisterRouters', () => {
   let staticStub = sandbox.stub()
   let appStub = { use: sandbox.stub(), set: sandbox.stub() }
-  let appFake = Cast<Express>(appStub)
+  let appFake = cast<Express>(appStub)
   beforeEach(() => {
     staticStub = sandbox.stub(express, 'static')
     appStub = { use: sandbox.stub(), set: sandbox.stub() }
-    appFake = Cast<Express>(appStub)
+    appFake = cast<Express>(appStub)
   })
   afterEach(() => {
     sandbox.restore()
@@ -61,7 +61,7 @@ describe('Server RegisterRouters', () => {
       expect(staticStub.firstCall.args).to.deep.equal([`${Imports.dirname}/dist`])
     })
     it('should register serve static function as middleware', () => {
-      const fn = Cast<MiddlewareFn>(sandbox.stub())
+      const fn = cast<MiddlewareFn>(sandbox.stub())
       staticStub.returns(fn)
       RegisterViewsAndMiddleware(appFake)
       expect(appStub.use.firstCall.args[0]).to.equal(fn)

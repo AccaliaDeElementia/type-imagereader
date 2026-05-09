@@ -7,7 +7,7 @@ import { expect } from 'chai'
 
 import { PubSub, Publish, Internals } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/PubSub.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
@@ -106,7 +106,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     await Internals.PublishAsync('Foo:bar', 'Digital Life')
     expect(subscriber.callCount).to.equal(1)
     for (let i = 1; i <= 10; i += 1) {
-      const current = Cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i])
+      const current = cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i])
       expect(current.callCount).to.equal(1)
     }
   })
@@ -117,8 +117,8 @@ describe('public/app/pubsub PublishAsync()', () => {
     }
     await Internals.PublishAsync('Foo:bar', 'Digital Life')
     for (let i = 1; i <= 10; i += 1) {
-      const prior = Cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i - 1])
-      const current = Cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i])
+      const prior = cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i - 1])
+      const current = cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i])
       expect(prior.calledBefore(current)).to.equal(true)
     }
   })
@@ -237,7 +237,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     await Internals.PublishAsync('Foo:bar', 'Digital Life')
     expect(subscriber.callCount).to.equal(1)
     for (const sub of PubSub.subscribers['FOO:BAR']) {
-      expect(Cast<Sinon.SinonStub>(sub).callCount).to.equal(1)
+      expect(cast<Sinon.SinonStub>(sub).callCount).to.equal(1)
     }
   })
   it('should log error once when one subscriber rejects', async () => {
@@ -267,7 +267,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     await Internals.PublishAsync('Foo:bar', 'Digital Life')
     expect(subscriber.callCount).to.equal(1)
     for (const sub of PubSub.subscribers['FOO:BAR']) {
-      expect(Cast<Sinon.SinonStub>(sub).callCount).to.equal(1)
+      expect(cast<Sinon.SinonStub>(sub).callCount).to.equal(1)
     }
   })
   it('should log error once when one subscriber throws', async () => {

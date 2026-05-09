@@ -7,7 +7,7 @@ import Sinon from 'sinon'
 import type { Application, Router, Response } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
@@ -18,10 +18,10 @@ describe('routes/weather getRouter()', () => {
   let routerStub = {
     get: sandbox.stub(),
   }
-  let getRouterStub = sandbox.stub().returns(Cast<Router>(routerStub))
-  let applicationFake = Cast<Application>({})
-  let serverFake = Cast<Server>({})
-  let socketFake = Cast<WebSocketServer>({})
+  let getRouterStub = sandbox.stub().returns(cast<Router>(routerStub))
+  let applicationFake = cast<Application>({})
+  let serverFake = cast<Server>({})
+  let socketFake = cast<WebSocketServer>({})
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   beforeEach(() => {
     process.env.OPENWEATHER_APPID = 'test-appid'
@@ -31,10 +31,10 @@ describe('routes/weather getRouter()', () => {
     routerStub = {
       get: sandbox.stub(),
     }
-    applicationFake = Cast<Application>({})
-    serverFake = Cast<Server>({})
-    socketFake = Cast<WebSocketServer>({})
-    getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+    applicationFake = cast<Application>({})
+    serverFake = cast<Server>({})
+    socketFake = cast<WebSocketServer>({})
+    getRouterStub = sandbox.stub(Imports, 'Router').returns(cast<Router>(routerStub))
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
   afterEach(() => {
@@ -64,7 +64,7 @@ describe('routes/weather getRouter()', () => {
   })
   it('should call UpdateWeather when callback fires', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    const fn = Cast<() => void>(setIntervalStub.firstCall.args[0])
+    const fn = cast<() => void>(setIntervalStub.firstCall.args[0])
     updateWeatherStub.resetHistory()
     fn()
     expect(updateWeatherStub.callCount).to.equal(1)
@@ -86,7 +86,7 @@ describe('routes/weather getRouter()', () => {
   successTests.forEach(([title, validationFn]) => {
     it(`should ${title} on success`, async () => {
       await getRouter(applicationFake, serverFake, socketFake)
-      const fn = Cast<(_: unknown, res: Response) => Promise<void>>(routerStub.get.firstCall.args[1])
+      const fn = cast<(_: unknown, res: Response) => Promise<void>>(routerStub.get.firstCall.args[1])
       await fn(null, responseFake)
       validationFn()
     })

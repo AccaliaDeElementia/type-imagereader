@@ -6,7 +6,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import type { Listing } from '#contracts/listing.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
@@ -92,7 +92,7 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
       await fn(undefined)
       const acceptor = getJSONSpy.firstCall.args[1] as unknown
       assert(acceptor !== undefined)
-      const result = Cast<(o: unknown) => boolean>(acceptor)
+      const result = cast<(o: unknown) => boolean>(acceptor)
       expect(result(obj)).to.equal(expected)
     })
   })
@@ -107,20 +107,20 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
     getJSONSpy.resolves([])
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).name).to.equal('')
+    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).name).to.equal('')
   })
   it('should pass empty path to BuildBookmarks when GetJSON resolves', async () => {
     getJSONSpy.resolves([])
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).path).to.equal('')
+    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).path).to.equal('')
   })
   it('should pass resolved data as bookmarks to BuildBookmarks', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(data)
+    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(data)
   })
   it('should not publish Loading:Error when GetJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
@@ -172,7 +172,7 @@ describe('public/app/bookmarks Init Bookmarks:Load', () => {
   })
   it('should pass the newer response to buildBookmarks when a stale response arrives later', async () => {
     const { secondData } = await runStaleResponseScenario()
-    expect(Cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(secondData)
+    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(secondData)
   })
   it('should not publish Loading:Error for a stale rejection', async () => {
     const { promise: firstPromise, reject: rejectFirst } = Promise.withResolvers<unknown>()

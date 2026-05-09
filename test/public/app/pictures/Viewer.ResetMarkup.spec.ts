@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { ResetMarkup } from '#public/scripts/app/pictures/viewer.js'
@@ -121,7 +121,7 @@ describe('public/app/pictures ResetMarkup()', () => {
     const evt = new dom.window.ErrorEvent('error')
     ResetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
-    Pictures.current = { name: Cast<string>(null), path: '', seen: false }
+    Pictures.current = { name: cast<string>(null), path: '', seen: false }
     img.dispatchEvent(evt)
     expect(loadingErrorSpy.firstCall.args[0]).to.equal('Main Image Failed to Load: null')
   })

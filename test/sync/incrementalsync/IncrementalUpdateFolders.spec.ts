@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { IncrementalUpdateFolders } from '#sync/incrementalsync.js'
 import { ToSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
@@ -52,7 +52,7 @@ describe('sync/incrementalsync IncrementalUpdateFolders()', () => {
     delete: sandbox.stub().resolves(0),
   }
   let knexFnStub = sandbox.stub()
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
     ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
@@ -110,8 +110,8 @@ describe('sync/incrementalsync IncrementalUpdateFolders()', () => {
       }
       throw new Error(`Unexpected knex table: ${table}`)
     })
-    Cast<Record<string, unknown>>(knexFnStub).raw = sandbox.stub().returns('CASE WHEN seen THEN 1 ELSE 0 END')
-    knexFnFake = StubToKnex(knexFnStub)
+    cast<Record<string, unknown>>(knexFnStub).raw = sandbox.stub().returns('CASE WHEN seen THEN 1 ELSE 0 END')
+    knexFnFake = stubToKnex(knexFnStub)
   }
 
   let upsertCallExpectation = 1

@@ -1,9 +1,9 @@
 'use sanity'
 
 import { expect, assert } from 'chai'
-import { Cast } from './TypeGuards.js'
+import { cast } from './TypeGuards.js'
 
-export async function EventuallyRejects(promise: Promise<unknown>): Promise<Error> {
+export async function eventuallyRejects(promise: Promise<unknown>): Promise<Error> {
   try {
     await promise
   } catch (e: unknown) {
@@ -11,18 +11,18 @@ export async function EventuallyRejects(promise: Promise<unknown>): Promise<Erro
     if (typeof e === 'string') return new Error(e)
     return new Error(`An error of type ${typeof e} was rejected!`)
   }
-  expect.fail('EventuallyRejects did not reject!')
+  expect.fail('eventuallyRejects did not reject!')
 }
 
-export function DoesNotThrow(func: () => void): void {
+export function doesNotThrow(func: () => void): void {
   func()
 }
 
-export async function EventuallyFullfills(promise: Promise<unknown>): Promise<void> {
+export async function eventuallyFulfills(promise: Promise<unknown>): Promise<void> {
   await promise
 }
 
-export function DefinitelyThrows(fn: () => unknown): Error {
+export function definitelyThrows(fn: () => unknown): Error {
   try {
     fn()
   } catch (e: unknown) {
@@ -30,9 +30,9 @@ export function DefinitelyThrows(fn: () => unknown): Error {
     if (typeof e === 'string') return new Error(e)
     return new Error(`An error of type ${typeof e} was thrown!`)
   }
-  expect.fail('DefinitelyThrows did not throw!')
+  expect.fail('definitelyThrows did not throw!')
 }
 
-export function AlwaysFails<T>(message = 'Assertion Failed', _: T | null = null): T {
-  return Cast<T>(() => assert.fail(message))
+export function alwaysFails<T>(message = 'Assertion Failed', _: T | null = null): T {
+  return cast<T>(() => assert.fail(message))
 }

@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { InsertState, type InsertFallbackHelpers } from '#sync/syncItemsDialect.js'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { noopLogger } from '#testutils/Debug.js'
 import type { Debugger } from 'debug'
 
@@ -113,7 +113,7 @@ describe('sync/syncItemsDialect InsertState', () => {
 
     it('should add the buildSyncItemRows counts to state.files', async () => {
       const state = new InsertState()
-      const knex = StubToKnex(sandbox.stub())
+      const knex = stubToKnex(sandbox.stub())
       await state.advance({ knex, helpers: buildHelpers(), logger: noopLogger, items: [], pending: 0 })
       expect(state.files).to.equal(FILE_DELTA)
     })
@@ -123,7 +123,7 @@ describe('sync/syncItemsDialect InsertState', () => {
       const knexSpy = sandbox.stub().returns({ insert: insertSpy })
       const state = new InsertState()
       await state.advance({
-        knex: StubToKnex(knexSpy),
+        knex: stubToKnex(knexSpy),
         helpers: buildHelpers({
           buildSyncItemRows: () => ({ files: 1, dirs: 0, rows: [sampleRow] }),
         }),
@@ -136,7 +136,7 @@ describe('sync/syncItemsDialect InsertState', () => {
 
     it('should request chunks of size SQLITE_DB_CHUNK_SIZE', async () => {
       const chunkSpy = sandbox.stub().returns([[sampleRow]])
-      const knex = StubToKnex(sandbox.stub().returns({ insert: sandbox.stub().resolves() }))
+      const knex = stubToKnex(sandbox.stub().returns({ insert: sandbox.stub().resolves() }))
       const state = new InsertState()
       await state.advance({
         knex,
@@ -154,11 +154,11 @@ describe('sync/syncItemsDialect InsertState', () => {
     it('should log on the first iteration', async () => {
       const loggerSpy = sandbox.stub()
       const state = new InsertState()
-      const knex = StubToKnex(sandbox.stub())
+      const knex = stubToKnex(sandbox.stub())
       await state.advance({
         knex,
         helpers: buildHelpers(),
-        logger: Cast<Debugger>(loggerSpy),
+        logger: cast<Debugger>(loggerSpy),
         items: [],
         pending: PENDING,
       })
@@ -169,7 +169,7 @@ describe('sync/syncItemsDialect InsertState', () => {
 
     it('should advance the counter', async () => {
       const state = new InsertState()
-      const knex = StubToKnex(sandbox.stub())
+      const knex = stubToKnex(sandbox.stub())
       await state.advance({ knex, helpers: buildHelpers(), logger: noopLogger, items: [], pending: 0 })
       expect(state.counter).to.equal(1)
     })

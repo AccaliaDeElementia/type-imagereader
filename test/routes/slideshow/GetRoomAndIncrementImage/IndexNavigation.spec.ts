@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { Config, GetRoomAndIncrementImage, Internals, type SlideshowRoom } from '#routes/slideshow.js'
 import { STEP } from '#utils/helpers.js'
@@ -17,14 +17,14 @@ const isNumberMutator = (o: unknown): o is (_: number) => number => typeof o ===
 
 describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() index navigation', () => {
   let stockImages = pagedImages(Config.memorySize)
-  let knexFake = StubToKnex({ knex: Math.random() })
+  let knexFake = stubToKnex({ knex: Math.random() })
   let getImagesStub = sandbox.stub()
   let getCountsStub = sandbox.stub()
   let markImageReadStub = sandbox.stub()
   let pages = { pages: 0, page: 0, unread: 0, all: 0 }
   beforeEach(() => {
     stockImages = pagedImages(Config.memorySize)
-    knexFake = StubToKnex({ knex: Math.random() })
+    knexFake = stubToKnex({ knex: Math.random() })
     pages = { pages: 0, page: 0, unread: 0, all: 0 }
     Config.rooms = {}
     Config.countdownDuration = 60
@@ -39,7 +39,7 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     Config.memorySize = 100
   })
   describe('when decrementing past the start of the current page', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     let second: string[] = []
     beforeEach(async () => {
       second = pagedImages(100)
@@ -55,17 +55,17 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should pass path to GetCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
     it('should pass current page to GetCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(10))
     it('should pass decrement mutator to GetCounts', () =>
-      expect(Cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(3))
+      expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(3))
     it('should reload images from the new page', () => expect(getImagesStub.callCount).to.equal(2))
     it('should set index to last image of new page', () => expect(room.index).to.equal(99))
     it('should update room images from new page', () => expect(room.images).to.equal(second))
   })
   describe('when decrementing past the start of the page after prior decrements within the page', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     let second: string[] = []
     beforeEach(async () => {
       second = pagedImages(30)
-      room = Cast<SlideshowRoom>({
+      room = cast<SlideshowRoom>({
         countdown: 50,
         images: pagedImages(20, 200),
         path: '/path/',
@@ -86,14 +86,14 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should pass path to GetCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
     it('should pass current page to GetCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(11))
     it('should pass decrement mutator to GetCounts', () =>
-      expect(Cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(3))
+      expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(3))
     it('should reload images from the new page', () => expect(getImagesStub.callCount).to.equal(1))
     it('should set index to last image of new page', () => expect(room.index).to.equal(29))
     it('should load the correct number of images from new page', () => expect(room.images).to.have.lengthOf(30))
     it('should update room images from new page', () => expect(room.images).to.equal(second))
   })
   describe('when decrementing far past the start of the current page', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     let second: string[] = []
     beforeEach(async () => {
       second = pagedImages(100)
@@ -107,7 +107,7 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should update room images from new page', () => expect(room.images).to.equal(second))
   })
   describe('when incrementing past the end of the current page', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     let second: string[] = []
     beforeEach(async () => {
       second = pagedImages(100)
@@ -124,16 +124,16 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should pass path to GetCounts', () => expect(getCountsStub.firstCall.args[1]).to.equal('/path/'))
     it('should pass current page to GetCounts', () => expect(getCountsStub.firstCall.args[2]).to.equal(13))
     it('should pass increment mutator to GetCounts', () =>
-      expect(Cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(5))
+      expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).to.equal(5))
     it('should reload images from the new page', () => expect(getImagesStub.callCount).to.equal(2))
     it('should reset index to start of new page', () => expect(room.index).to.equal(0))
     it('should load a full page of images', () => expect(room.images).to.have.lengthOf(100))
     it('should update room images from new page', () => expect(room.images).to.equal(second))
   })
   describe('when incrementing on a room that already has an empty image list', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     beforeEach(async () => {
-      room = Cast<SlideshowRoom>({
+      room = cast<SlideshowRoom>({
         countdown: 60,
         images: [],
         path: '/path/',
@@ -151,9 +151,9 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should set uriSafeImage to empty string', () => expect(room.uriSafeImage).to.equal(''))
   })
   describe('when decrementing on a room that already has an empty image list', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     beforeEach(async () => {
-      room = Cast<SlideshowRoom>({
+      room = cast<SlideshowRoom>({
         countdown: 60,
         images: [],
         path: '/path/',
@@ -171,7 +171,7 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should set uriSafeImage to empty string', () => expect(room.uriSafeImage).to.equal(''))
   })
   describe('when incrementing to a page with no images', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     beforeEach(async () => {
       getImagesStub.resolves(pagedImages(1))
       room = await GetRoomAndIncrementImage(knexFake, '/path/')
@@ -186,7 +186,7 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should not call MarkImageRead for empty page', () => expect(markImageReadStub.callCount).to.equal(0))
   })
   describe('when decrementing to a page with no images', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     beforeEach(async () => {
       getImagesStub.resolves(pagedImages(200, 200))
       room = await GetRoomAndIncrementImage(knexFake, '/path/')
@@ -201,7 +201,7 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should not call MarkImageRead for empty page', () => expect(markImageReadStub.callCount).to.equal(0))
   })
   describe('when ticking a room after decrement landed on an empty page', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     beforeEach(async () => {
       getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves([])
       room = await GetRoomAndIncrementImage(knexFake, '/path/')
@@ -215,9 +215,9 @@ describe('routes/slideshow/GetRoomAndIncrementImage GetRoomAndIncrementImage() i
     it('should keep index at 0', () => expect(room.index).to.equal(0))
   })
   describe('countdown reset behaviour', () => {
-    let room = Cast<SlideshowRoom>({})
+    let room = cast<SlideshowRoom>({})
     beforeEach(() => {
-      room = Cast<SlideshowRoom>({
+      room = cast<SlideshowRoom>({
         countdown: 50,
         images: pagedImages(20),
         path: '/path/',

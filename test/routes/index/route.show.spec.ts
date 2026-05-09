@@ -7,7 +7,7 @@ import type { Server } from 'node:http'
 import { getRouter, Imports } from '#routes/index.js'
 import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
@@ -16,22 +16,22 @@ describe('routes/index route /show', () => {
   let routeFn: (_: Request, __: ExpressResponse) => void = sandbox.stub()
   let routeAltFn: (_: Request, __: ExpressResponse) => void = sandbox.stub()
   let requestStub = { params: { path: undefined as string[] | string | undefined } }
-  let requestFake = Cast<Request>(requestStub)
+  let requestFake = cast<Request>(requestStub)
   let { stub: resposeStub, fake: responseFake } = createResponseFake()
   let isPathTraversalStub = sandbox.stub()
   beforeEach(async () => {
-    const applicationFake = Cast<Application>({})
-    const serverFake = Cast<Server>({})
-    const socketsFake = Cast<WebSocketServer>({})
+    const applicationFake = cast<Application>({})
+    const serverFake = cast<Server>({})
+    const socketsFake = cast<WebSocketServer>({})
     const routerStub = { get: sandbox.stub() }
     let getRouterStub: Sinon.SinonStub | undefined = undefined
     try {
-      getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+      getRouterStub = sandbox.stub(Imports, 'Router').returns(cast<Router>(routerStub))
       await getRouter(applicationFake, serverFake, socketsFake)
-      routeFn = Cast<(_: Request, __: ExpressResponse) => void>(
+      routeFn = cast<(_: Request, __: ExpressResponse) => void>(
         routerStub.get.getCalls().find((c) => c.args[0] === '/show')?.args[1],
       )
-      routeAltFn = Cast<(_: Request, __: ExpressResponse) => void>(
+      routeAltFn = cast<(_: Request, __: ExpressResponse) => void>(
         routerStub.get.getCalls().find((c) => c.args[0] === '/show/*path')?.args[1],
       )
     } finally {
@@ -39,7 +39,7 @@ describe('routes/index route /show', () => {
     }
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
     requestStub = { params: { path: undefined } }
-    requestFake = Cast<Request>(requestStub)
+    requestFake = cast<Request>(requestStub)
     ;({ stub: resposeStub, fake: responseFake } = createResponseFake())
   })
   afterEach(() => {

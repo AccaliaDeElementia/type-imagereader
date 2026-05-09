@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { Config, getLaunchId, HandleSocket } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
@@ -9,15 +9,15 @@ import type { Server as WebSocketServer, Socket } from 'socket.io'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow socket get-launchId()', () => {
-  let knexFake = StubToKnex({})
-  let serverFake = Cast<WebSocketServer>({})
+  let knexFake = stubToKnex({})
+  let serverFake = cast<WebSocketServer>({})
   let socketStub = { on: sandbox.stub() }
-  let socketFake = Cast<Socket>(socketStub)
+  let socketFake = cast<Socket>(socketStub)
   beforeEach(() => {
-    knexFake = StubToKnex({})
-    serverFake = Cast<WebSocketServer>({})
+    knexFake = stubToKnex({})
+    serverFake = cast<WebSocketServer>({})
     socketStub = { on: sandbox.stub() }
-    socketFake = Cast<Socket>(socketStub)
+    socketFake = cast<Socket>(socketStub)
     HandleSocket(knexFake, serverFake, socketFake)
   })
   afterEach(() => {

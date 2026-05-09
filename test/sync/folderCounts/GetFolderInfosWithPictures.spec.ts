@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { type FolderInfo, GetFolderInfosWithPictures } from '#sync/folderCounts.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -15,7 +15,7 @@ describe('sync/folderCounts GetFolderInfosWithPictures()', () => {
     groupBy: sandbox.stub().resolves([]),
   }
   let knexFnStub: Sinon.SinonStub & { raw?: Sinon.SinonStub } = sandbox.stub().returns(knexStub)
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
   beforeEach(() => {
     knexStub = {
       select: sandbox.stub().returnsThis(),
@@ -24,7 +24,7 @@ describe('sync/folderCounts GetFolderInfosWithPictures()', () => {
       groupBy: sandbox.stub().resolves([]),
     }
     knexFnStub = sandbox.stub().returns(knexStub)
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
     knexFnStub.raw = sandbox.stub()
   })
   afterEach(() => {
@@ -54,7 +54,7 @@ describe('sync/folderCounts GetFolderInfosWithPictures()', () => {
   })
   it('should correct totalCount to number for invalid results', async () => {
     const data = [
-      Cast<FolderInfo>({
+      cast<FolderInfo>({
         path: 'foo',
         totalCount: '31415926',
         seenCount: 0,
@@ -78,7 +78,7 @@ describe('sync/folderCounts GetFolderInfosWithPictures()', () => {
   })
   it('should correct seenCount to number for invalid results', async () => {
     const data = [
-      Cast<FolderInfo>({
+      cast<FolderInfo>({
         path: 'foo',
         seenCount: '31415926',
         totalCount: 0,

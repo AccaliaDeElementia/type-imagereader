@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { SyncFolderFirstImages, Imports } from '#sync/folders.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
@@ -33,7 +33,7 @@ describe('sync/folders SyncFolderFirstImages()', () => {
     merge: sandbox.stub().resolves(0),
   }
   let knexFnStub = sandbox.stub().returns(knexInstanceStub)
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
   let chunkStub = sandbox.stub()
   beforeEach(() => {
     ;({ fake: loggerFake } = createLoggerFake(sandbox))
@@ -60,7 +60,7 @@ describe('sync/folders SyncFolderFirstImages()', () => {
       merge: sandbox.stub().resolves(0),
     }
     knexFnStub = sandbox.stub().returns(knexInstanceStub)
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
     chunkStub = sandbox.stub()
     knexFnFake.queryBuilder = queryBuilderStub
     chunkStub = sandbox.stub(Imports, 'Chunk').returns([])
@@ -86,42 +86,42 @@ describe('sync/folders SyncFolderFirstImages()', () => {
   })
   it('should call select once in CTE', async () => {
     await SyncFolderFirstImages(loggerFake, knexFnFake)
-    Cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
+    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
     expect(innerQueryBuilder.select.callCount).to.equal(1)
   })
   it('should select folder name in CTE', async () => {
     await SyncFolderFirstImages(loggerFake, knexFnFake)
-    Cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
+    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
     expect(innerQueryBuilder.select.firstCall.args[0]).to.equal('pictures.folder')
   })
   it('should call min once in CTE', async () => {
     await SyncFolderFirstImages(loggerFake, knexFnFake)
-    Cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
+    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
     expect(innerQueryBuilder.min.callCount).to.equal(1)
   })
   it('should select minimum sortKey in CTE', async () => {
     await SyncFolderFirstImages(loggerFake, knexFnFake)
-    Cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
+    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
     expect(innerQueryBuilder.min.firstCall.args[0]).to.equal('pictures.sortKey as sortKey')
   })
   it('should call from once in CTE', async () => {
     await SyncFolderFirstImages(loggerFake, knexFnFake)
-    Cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
+    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
     expect(innerQueryBuilder.from.callCount).to.equal(1)
   })
   it('should select from pictures table in CTE', async () => {
     await SyncFolderFirstImages(loggerFake, knexFnFake)
-    Cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
+    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
     expect(innerQueryBuilder.from.firstCall.args[0]).to.equal('pictures')
   })
   it('should call groupBy once in CTE', async () => {
     await SyncFolderFirstImages(loggerFake, knexFnFake)
-    Cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
+    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
     expect(innerQueryBuilder.groupBy.callCount).to.equal(1)
   })
   it('should group by foldername in CTE', async () => {
     await SyncFolderFirstImages(loggerFake, knexFnFake)
-    Cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
+    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
     expect(innerQueryBuilder.groupBy.firstCall.args[0]).to.equal('pictures.folder')
   })
   it('should call select once for update', async () => {

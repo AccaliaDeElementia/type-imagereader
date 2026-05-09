@@ -9,7 +9,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 
 import { CacheStorage, Internals, getRouter, ImageData, Imports } from '#routes/images.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createResponseFake } from '#testutils/Express.js'
 
 const sandbox = Sinon.createSandbox()
@@ -29,9 +29,9 @@ interface Req {
 describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   const defaultKioskCache = CacheStorage.kioskCache
   const defaultScaledCache = CacheStorage.scaledCache
-  let applicationFake = Cast<Application>({})
-  let serverFake = Cast<Server>({})
-  let websocketsFake = Cast<WebSocketServer>({})
+  let applicationFake = cast<Application>({})
+  let serverFake = cast<Server>({})
+  let websocketsFake = cast<WebSocketServer>({})
   let requestStub: Req = {
     params: {
       path: undefined,
@@ -41,32 +41,32 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     body: '',
     originalUrl: '',
   }
-  let requestFake = Cast<Request>(requestStub)
+  let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routerFake = {
     get: sandbox.stub().returnsThis(),
   }
   let loggerStub = sandbox.stub()
-  let router = Cast<(req: Request, res: Response) => Promise<void>>(sandbox.stub())
+  let router = cast<(req: Request, res: Response) => Promise<void>>(sandbox.stub())
   let fetchImageStub = sandbox.stub()
   let sendImageStub = sandbox.stub()
   beforeEach(async () => {
-    applicationFake = Cast<Application>({})
-    serverFake = Cast<Server>({})
-    websocketsFake = Cast<WebSocketServer>({})
+    applicationFake = cast<Application>({})
+    serverFake = cast<Server>({})
+    websocketsFake = cast<WebSocketServer>({})
     routerFake = {
       get: sandbox.stub().returnsThis(),
     }
-    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
+    sandbox.stub(Imports, 'Router').returns(cast<Router>(routerFake))
     loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
-    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<RequestHandler>(action))
+    sandbox.stub(Imports, 'logger').value(cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get
       .getCalls()
       .filter((call) => call.args[0] === '/scaled/:width/:height/*path-image.webp')
       .map((call) => call.args[1] as unknown)
-    router = Cast<(req: Request, res: Response) => Promise<void>>(fn)
+    router = cast<(req: Request, res: Response) => Promise<void>>(fn)
     fetchImageStub = sandbox.stub(CacheStorage.scaledCache, 'fetch').resolves()
     sendImageStub = sandbox.stub(Internals, 'SendImage').resolves()
     requestStub = {
@@ -74,7 +74,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
       body: '',
       originalUrl: '',
     }
-    requestFake = Cast<Request>(requestStub)
+    requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
   afterEach(() => {

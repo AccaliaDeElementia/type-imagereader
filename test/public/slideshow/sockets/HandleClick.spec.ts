@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { Internals, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import assert from 'node:assert'
@@ -12,14 +12,14 @@ const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/sockets HandleKeys()', () => {
   const fakeEmit = sandbox.stub()
-  const fakeSocket = Cast<WebSocket>({ emit: fakeEmit })
+  const fakeSocket = cast<WebSocket>({ emit: fakeEmit })
   let fakeAssign = sandbox.stub()
   const fakeViewport = { scale: 1 }
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
     fakeAssign = sandbox.stub(WebSockets, 'LocationAssign')
     mountDom(dom)
-    global.window.visualViewport = Cast<VisualViewport>(fakeViewport)
+    global.window.visualViewport = cast<VisualViewport>(fakeViewport)
   })
   afterAll(() => {
     fakeAssign.restore()
@@ -39,7 +39,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       clientX: global.window.innerWidth * (1 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    Internals.HandleClick(event, Cast<WebSocket>(null), 1)
+    Internals.HandleClick(event, cast<WebSocket>(null), 1)
     assert(true, 'should not throw when null socket provided')
   })
   it('should not break if socket is undefined', () => {
@@ -140,7 +140,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
       global.window.visualViewport = null
     })
     afterEach(() => {
-      global.window.visualViewport = Cast<VisualViewport>(fakeViewport)
+      global.window.visualViewport = cast<VisualViewport>(fakeViewport)
     })
     it('should still process click when visualViewport is null', () => {
       const event = new global.window.MouseEvent('click', {
@@ -166,7 +166,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientY: global.window.innerHeight * 0.5,
       })
       Internals.HandleClick(event, fakeSocket, 1)
-      const fn = Cast<(x: string | null) => void>(fakeEmit.firstCall.args[1])
+      const fn = cast<(x: string | null) => void>(fakeEmit.firstCall.args[1])
       fn(null)
     })
     it('should not call location.assign from goto-image callback when folder is null', () => {
@@ -180,7 +180,7 @@ describe('public/slideshow/sockets HandleKeys()', () => {
         clientY: global.window.innerHeight * 0.5,
       })
       Internals.HandleClick(event, fakeSocket, 1)
-      const fn = Cast<(x: string) => void>(fakeEmit.firstCall.args[1])
+      const fn = cast<(x: string) => void>(fakeEmit.firstCall.args[1])
       fn('/foo/bar/baz')
     })
     it('should call location.assign from goto-image callback', () => {

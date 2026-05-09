@@ -8,9 +8,9 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
 import { Subscribe } from '#public/scripts/app/pubsub.js'
 import { Imports, Init, Internals, Navigation } from '#public/scripts/app/navigation.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -133,7 +133,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     it('should reject when NavigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
-      expect(await EventuallyRejects(handler())).to.equal(err)
+      expect(await eventuallyRejects(handler())).to.equal(err)
     })
   })
   describe('Action:Execute:NextFolder message Handler', () => {
@@ -217,7 +217,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     it('should reject when NavigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
-      expect(await EventuallyRejects(handler())).to.equal(err)
+      expect(await eventuallyRejects(handler())).to.equal(err)
     })
   })
   describe('Action:Execute:ParentFolder message Handler', () => {
@@ -246,19 +246,19 @@ describe('public/app/navigation/messageHandlers Init()', () => {
       expect(navigateToStub.firstCall.args).to.deep.equal([parentFolder, 'ParentFolder'])
     })
     it('should call NavigateTo once when tolerating undefined parent folder', async () => {
-      Navigation.current.parent = Cast<string>(undefined)
+      Navigation.current.parent = cast<string>(undefined)
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
     })
     it('should tolerate invalidly undefined parent folder', async () => {
-      Navigation.current.parent = Cast<string>(undefined)
+      Navigation.current.parent = cast<string>(undefined)
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'ParentFolder'])
     })
     it('should reject when NavigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
-      expect(await EventuallyRejects(handler())).to.equal(err)
+      expect(await eventuallyRejects(handler())).to.equal(err)
     })
   })
   describe('Action:Execute:FirstUnfinished message Handler', () => {
@@ -357,7 +357,7 @@ describe('public/app/navigation/messageHandlers Init()', () => {
     it('should reject when NavigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
-      expect(await EventuallyRejects(handler())).to.equal(err)
+      expect(await eventuallyRejects(handler())).to.equal(err)
     })
   })
 })

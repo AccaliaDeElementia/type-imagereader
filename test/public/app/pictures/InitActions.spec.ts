@@ -10,7 +10,7 @@ import { NavigateTo } from '#public/scripts/app/pictures/viewer.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { getSubscriber, resetPubSub } from '#testutils/PubSub.js'
 import type { Picture } from '#contracts/listing.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -34,7 +34,7 @@ describe('public/app/pictures InitActions()', () => {
     isMenuActiveSpy = sandbox.stub(Imports, 'IsMenuActive').returns(false)
     getShowUnreadOnly = sandbox.stub(Imports, 'GetShowUnreadOnly').returns(false)
     getPictureFake = { number: Math.random() }
-    getPictureSpy = sandbox.stub(Imports, 'GetPicture').returns(Cast<Picture>(getPictureFake))
+    getPictureSpy = sandbox.stub(Imports, 'GetPicture').returns(cast<Picture>(getPictureFake))
     changePictureSpy = sandbox.stub(Imports, 'ChangePicture')
     loadCurrentPageSpy = sandbox.stub(Imports, 'LoadCurrentPageImages')
     windowOpenSpy = sandbox.stub(global.window, 'open')
@@ -105,7 +105,7 @@ describe('public/app/pictures InitActions()', () => {
     })
     it(`should call Action:Execute:HideMenu once for ${action} when menu is active`, async () => {
       InitActions()
-      Pictures.pictures = [Cast<Picture>({})]
+      Pictures.pictures = [cast<Picture>({})]
       const fn = getSubscriber(action.toUpperCase())
       isMenuActiveSpy.returns(true)
       const spy = sandbox.stub().resolves()
@@ -115,7 +115,7 @@ describe('public/app/pictures InitActions()', () => {
     })
     it(`should publish Action:Execute:HideMenu for ${action} when menu is active`, async () => {
       InitActions()
-      Pictures.pictures = [Cast<Picture>({})]
+      Pictures.pictures = [cast<Picture>({})]
       const subscriberName = `Action:Execute:HideMenu`.toUpperCase()
       const fn = getSubscriber(action.toUpperCase())
       isMenuActiveSpy.returns(true)

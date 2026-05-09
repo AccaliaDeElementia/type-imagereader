@@ -2,12 +2,12 @@
 
 import { expect } from 'chai'
 import { GetListing, Internals, ModCount, type ModCountInternals } from '#routes/apiFunctions.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 import assert from 'node:assert'
 import Sinon from 'sinon'
 
-const modCountInternals = Cast<ModCountInternals>(ModCount)
+const modCountInternals = cast<ModCountInternals>(ModCount)
 
 const sandbox = Sinon.createSandbox()
 

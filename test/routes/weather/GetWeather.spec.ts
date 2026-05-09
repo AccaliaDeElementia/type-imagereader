@@ -3,8 +3,8 @@
 import { expect } from 'chai'
 import { GetWeather, WeatherConfigError } from '#routes/weather.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { cast } from '#testutils/TypeGuards.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -34,7 +34,7 @@ describe('routes/weather GetWeather', () => {
     fetchResult = {
       json: sandbox.stub().resolves(weatherData),
     }
-    fetchStub = sandbox.stub(global, 'fetch').resolves(Cast<globalThis.Response>(fetchResult))
+    fetchStub = sandbox.stub(global, 'fetch').resolves(cast<globalThis.Response>(fetchResult))
   })
   afterEach(() => {
     sandbox.restore()
@@ -44,35 +44,35 @@ describe('routes/weather GetWeather', () => {
   it('should reject missing appId', async () => {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    const err = await EventuallyRejects(GetWeather())
+    const err = await eventuallyRejects(GetWeather())
     expect(err.message).to.equal('no OpenWeather AppId Defined!')
   })
   it('should reject with WeatherConfigError when appId is missing', async () => {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    const err = await EventuallyRejects(GetWeather())
+    const err = await eventuallyRejects(GetWeather())
     expect(err).to.be.instanceOf(WeatherConfigError)
   })
   it('should reject missing location', async () => {
     delete process.env.OPENWEATHER_LOCATION
-    const err = await EventuallyRejects(GetWeather())
+    const err = await eventuallyRejects(GetWeather())
     expect(err.message).to.equal('no OpenWeather Location Defined!')
   })
   it('should reject with WeatherConfigError when location is missing', async () => {
     delete process.env.OPENWEATHER_LOCATION
-    const err = await EventuallyRejects(GetWeather())
+    const err = await eventuallyRejects(GetWeather())
     expect(err).to.be.instanceOf(WeatherConfigError)
   })
   it('should reject when fetch fails', async () => {
     const err = new Error('FOO')
     fetchStub.rejects(err)
-    const result = await EventuallyRejects(GetWeather())
+    const result = await eventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when fetch throws', async () => {
     const err = new Error('FOO')
     fetchStub.rejects(err)
-    const result = await EventuallyRejects(GetWeather())
+    const result = await eventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should request expected openweather api url', async () => {
@@ -82,13 +82,13 @@ describe('routes/weather GetWeather', () => {
     )
   })
   it('should pass an AbortSignal in the fetch options', async () => {
-    const sentinelSignal = Cast<AbortSignal>({})
+    const sentinelSignal = cast<AbortSignal>({})
     sandbox.stub(AbortSignal, 'timeout').returns(sentinelSignal)
     await GetWeather()
-    expect(Cast<{ signal: unknown }>(fetchStub.firstCall.args[1]).signal).to.equal(sentinelSignal)
+    expect(cast<{ signal: unknown }>(fetchStub.firstCall.args[1]).signal).to.equal(sentinelSignal)
   })
   it('should set the AbortSignal timeout to 60 seconds', async () => {
-    const timeoutStub = sandbox.stub(AbortSignal, 'timeout').returns(Cast<AbortSignal>({}))
+    const timeoutStub = sandbox.stub(AbortSignal, 'timeout').returns(cast<AbortSignal>({}))
     await GetWeather()
     expect(timeoutStub.firstCall.args).to.deep.equal([60_000])
   })
@@ -99,30 +99,30 @@ describe('routes/weather GetWeather', () => {
   it('should reject when fetch rejects', async () => {
     const err = new Error('FOO')
     fetchStub.rejects(err)
-    const result = await EventuallyRejects(GetWeather())
+    const result = await eventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when fetch throws', async () => {
     const err = new Error('FOO')
     fetchStub.throws(err)
-    const result = await EventuallyRejects(GetWeather())
+    const result = await eventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when json parse rejects', async () => {
     const err = new Error('FOO')
     fetchResult.json.rejects(err)
-    const result = await EventuallyRejects(GetWeather())
+    const result = await eventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when json parse throws', async () => {
     const err = new Error('FOO')
     fetchResult.json.throws(err)
-    const result = await EventuallyRejects(GetWeather())
+    const result = await eventuallyRejects(GetWeather())
     expect(result).to.equal(err)
   })
   it('should reject when fetch retrieves invalid data', async () => {
     fetchResult.json.resolves({})
-    const result = await EventuallyRejects(GetWeather())
+    const result = await eventuallyRejects(GetWeather())
     expect(result.message).to.equal('Invalid JSON returned from Open Weather Map')
   })
 })

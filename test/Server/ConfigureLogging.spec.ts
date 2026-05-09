@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import type { Express } from 'express'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { ConfigureLogging, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
@@ -12,16 +12,16 @@ describe('Server ConfigureLogging', () => {
   let helmetStub = sandbox.stub()
   let morganStub = sandbox.stub()
   let appStub = { use: sandbox.stub() }
-  let appFake = Cast<Express>(appStub)
+  let appFake = cast<Express>(appStub)
   beforeEach(() => {
     helmetStub = sandbox.stub(Imports, 'helmet')
     // sandbox.stub(Imports, 'morgan') would trigger morgan's deprecated `default`
     // property getter via sinon's mirrorProperties, emitting a spurious warning.
     // sandbox.replace bypasses mirrorProperties, avoiding the read entirely.
     morganStub = sandbox.stub()
-    sandbox.replace(Imports, 'morgan', Cast<typeof Imports.morgan>(morganStub))
+    sandbox.replace(Imports, 'morgan', cast<typeof Imports.morgan>(morganStub))
     appStub = { use: sandbox.stub() }
-    appFake = Cast<Express>(appStub)
+    appFake = cast<Express>(appStub)
     delete process.env.NODE_ENV
   })
   afterEach(() => {
@@ -83,7 +83,7 @@ describe('Server ConfigureLogging', () => {
   it('should allow openweathermap.org images in the helmet CSP img-src directive', () => {
     process.env.NODE_ENV = 'production'
     ConfigureLogging(appFake)
-    const opts = Cast<{ contentSecurityPolicy?: { directives?: Record<string, string[]> } }>(
+    const opts = cast<{ contentSecurityPolicy?: { directives?: Record<string, string[]> } }>(
       helmetStub.firstCall.args[0],
     )
     expect(opts.contentSecurityPolicy?.directives?.['img-src']).to.include('https://openweathermap.org')
@@ -91,7 +91,7 @@ describe('Server ConfigureLogging', () => {
   it('should allow https://localhost:8443 in the helmet CSP connect-src directive so the slideshow can fetch local weather', () => {
     process.env.NODE_ENV = 'production'
     ConfigureLogging(appFake)
-    const opts = Cast<{ contentSecurityPolicy?: { directives?: Record<string, string[]> } }>(
+    const opts = cast<{ contentSecurityPolicy?: { directives?: Record<string, string[]> } }>(
       helmetStub.firstCall.args[0],
     )
     expect(opts.contentSecurityPolicy?.directives?.['connect-src']).to.include('https://localhost:8443')

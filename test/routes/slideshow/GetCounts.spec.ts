@@ -1,19 +1,19 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import { Config, GetCounts, Internals } from '#routes/slideshow.js'
 import { expect } from 'chai'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow GetCounts()', () => {
-  let knexFake = StubToKnex({})
+  let knexFake = stubToKnex({})
   let getImageCountStub = sandbox.stub().resolves()
   let randomStub = sandbox.stub()
   beforeEach(() => {
     Config.memorySize = 10
-    knexFake = StubToKnex({})
+    knexFake = stubToKnex({})
     getImageCountStub = sandbox.stub(Internals, 'GetImageCount').resolves(0)
     randomStub = sandbox.stub(Math, 'random').returns(0.5)
   })

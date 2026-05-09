@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { SyncMissingAncestorFolders } from '#sync/folders.js'
 import { ToSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
@@ -37,7 +37,7 @@ describe('sync/folders SyncMissingAncestorFolders()', () => {
     ignore: sandbox.stub(),
   }
   let knexFnStub = sandbox.stub()
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
     ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
@@ -77,7 +77,7 @@ describe('sync/folders SyncMissingAncestorFolders()', () => {
       }
       throw new Error(`Unexpected knex table: ${table}`)
     })
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
   }
 
   beforeEach(() => {

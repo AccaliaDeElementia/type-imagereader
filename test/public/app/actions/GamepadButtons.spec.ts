@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { GamepadButtons } from '#public/scripts/app/actions.js'
 
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 interface TestGamepadButton {
@@ -22,7 +22,7 @@ describe('public/app/actions GamepadButtons', () => {
     axes: [],
     buttons: [],
   }
-  let gamePad = Cast<Gamepad>(testGamePad)
+  let gamePad = cast<Gamepad>(testGamePad)
   let buttons: GamepadButtons = new GamepadButtons()
   beforeEach(() => {
     buttons = new GamepadButtons()
@@ -32,7 +32,7 @@ describe('public/app/actions GamepadButtons', () => {
         .fill({ pressed: false, value: -9999, touched: false })
         .map(() => ({ pressed: false, value: 0, touched: false })),
     }
-    gamePad = Cast<Gamepad>(testGamePad)
+    gamePad = cast<Gamepad>(testGamePad)
   })
 
   afterEach(() => {

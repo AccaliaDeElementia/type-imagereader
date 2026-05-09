@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import { Imports, Filewatcher, Start } from '#sync/filewatcher.js'
 import type { FlushCallback, WatcherSubscription } from '#sync/filewatcher.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
 
 type SubscriberCallback = (err: Error | null, events: Array<{ type: string; path: string }>) => unknown
@@ -26,10 +26,10 @@ describe('sync/filewatcher Start()', () => {
     fakeSubscription = { unsubscribe: sandbox.stub().resolves() }
     subscriberCallback = sandbox.stub()
     subscribeStub = sandbox.stub(Imports, 'subscribe').callsFake(async (_dir, fn) => {
-      subscriberCallback = Cast<SubscriberCallback>(fn)
+      subscriberCallback = cast<SubscriberCallback>(fn)
       return await Promise.resolve(fakeSubscription)
     })
-    setTimeoutStub = sandbox.stub(Imports, 'setTimeout').returns(Cast<ReturnType<typeof setTimeout>>(42))
+    setTimeoutStub = sandbox.stub(Imports, 'setTimeout').returns(cast<ReturnType<typeof setTimeout>>(42))
     clearTimeoutStub = sandbox.stub(Imports, 'clearTimeout')
     flushCallback = sandbox.stub().resolves()
     Filewatcher.debounceMs = 5000
@@ -120,7 +120,7 @@ describe('sync/filewatcher Start()', () => {
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
-    expect(Cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
+    expect(cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
   })
 
   it('should pass changeset to flush callback', async () => {
@@ -132,7 +132,7 @@ describe('sync/filewatcher Start()', () => {
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     await Promise.resolve()
     await Promise.resolve()
-    const changeset = Cast<Map<string, string>>(Cast<Sinon.SinonStub>(flushCallback).firstCall.args[0])
+    const changeset = cast<Map<string, string>>(cast<Sinon.SinonStub>(flushCallback).firstCall.args[0])
     expect(changeset.get('/foo.jpg')).to.equal('create')
   })
 
@@ -144,7 +144,7 @@ describe('sync/filewatcher Start()', () => {
     })
     await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    const callFlush = Cast<() => void>(flushFn)
+    const callFlush = cast<() => void>(flushFn)
     callFlush()
     await Promise.resolve()
     await Promise.resolve()
@@ -162,7 +162,7 @@ describe('sync/filewatcher Start()', () => {
     })
     await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    const callFlush = Cast<() => void>(flushFn)
+    const callFlush = cast<() => void>(flushFn)
     callFlush()
     await Promise.resolve()
     await Promise.resolve()
@@ -180,17 +180,17 @@ describe('sync/filewatcher Start()', () => {
     await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     // First flush — processes the changeset
-    const callFirstFlush = Cast<() => void>(flushFn)
+    const callFirstFlush = cast<() => void>(flushFn)
     callFirstFlush()
     await Promise.resolve()
     await Promise.resolve()
-    expect(Cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
+    expect(cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
     // Second flush — changeset is now empty, should not call onFlush again
-    const callSecondFlush = Cast<() => void>(flushFn)
+    const callSecondFlush = cast<() => void>(flushFn)
     callSecondFlush()
     await Promise.resolve()
     await Promise.resolve()
-    expect(Cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
+    expect(cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
   })
 
   it('should log flush error when retry scheduling throws', async () => {
@@ -227,7 +227,7 @@ describe('sync/filewatcher Start()', () => {
     ])
     await Promise.resolve()
     await Promise.resolve()
-    expect(Cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
+    expect(cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(1)
   })
 
   it('should not schedule a timer when force-flushing at threshold', async () => {
@@ -262,7 +262,7 @@ describe('sync/filewatcher Start()', () => {
     Filewatcher.maxPendingChanges = 10
     await Start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    expect(Cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(0)
+    expect(cast<Sinon.SinonStub>(flushCallback).callCount).to.equal(0)
   })
 
   it('should clear pending timer in scheduleRetry when events arrive during flush', async () => {
@@ -278,7 +278,7 @@ describe('sync/filewatcher Start()', () => {
     await Start('/data', delayedReject)
     // Event arrives, scheduleFlush sets debounce timer
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    const callFlush = Cast<() => void>(flushFn)
+    const callFlush = cast<() => void>(flushFn)
     // Timer fires — flush() sets debounceTimer = null, then awaits onFlush
     callFlush()
     // While onFlush is pending, new events arrive — scheduleFlush sets a new timer
@@ -366,7 +366,7 @@ describe('sync/filewatcher Start()', () => {
     await Promise.resolve()
     await Promise.resolve()
     await Promise.resolve()
-    expect(Cast<Sinon.SinonStub>(delayedFlush).callCount).to.equal(1)
+    expect(cast<Sinon.SinonStub>(delayedFlush).callCount).to.equal(1)
   })
 
   it('should allow a new force-flush after previous force-flush completes', async () => {
@@ -420,7 +420,7 @@ describe('sync/filewatcher Start()', () => {
     await Promise.resolve()
     await Promise.resolve()
     await Promise.resolve()
-    expect(Cast<Sinon.SinonStub>(rejectOnce).callCount).to.equal(2)
+    expect(cast<Sinon.SinonStub>(rejectOnce).callCount).to.equal(2)
   })
 
   it('should log retry message when immediate force-flush fails', async () => {
@@ -446,7 +446,7 @@ describe('sync/filewatcher Start()', () => {
     const rejectingFlush: FlushCallback = sandbox.stub().rejects(flushErr)
     await Start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    const callFlush = Cast<() => void>(flushFn)
+    const callFlush = cast<() => void>(flushFn)
     callFlush()
     await Promise.resolve()
     await Promise.resolve()
@@ -465,9 +465,9 @@ describe('sync/filewatcher Start()', () => {
       flushFn = fn
       return 42
     })
-    await Start('/data', Cast<FlushCallback>(delayedFlush))
+    await Start('/data', cast<FlushCallback>(delayedFlush))
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    Cast<() => void>(flushFn)()
+    cast<() => void>(flushFn)()
     await Promise.resolve()
     await Promise.resolve()
     subscriberCallback(null, [{ type: 'delete', path: '/data/foo.jpg' }])
@@ -475,7 +475,7 @@ describe('sync/filewatcher Start()', () => {
     await Promise.resolve()
     await Promise.resolve()
     await Promise.resolve()
-    Cast<() => void>(flushFn)()
+    cast<() => void>(flushFn)()
     await Promise.resolve()
     await Promise.resolve()
     return delayedFlush
@@ -488,7 +488,7 @@ describe('sync/filewatcher Start()', () => {
 
   it('should pass the re-set value to the second flush when an event arrives during flush', async () => {
     const stub = await runFlushRaceScenario()
-    expect(Cast<Map<string, string>>(stub.secondCall.args[0]).get('/foo.jpg')).to.equal('delete')
+    expect(cast<Map<string, string>>(stub.secondCall.args[0]).get('/foo.jpg')).to.equal('delete')
   })
 
   it('should schedule one debounce timer when immediate force-flush fails', async () => {

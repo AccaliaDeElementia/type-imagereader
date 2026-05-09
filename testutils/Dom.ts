@@ -2,7 +2,7 @@
 
 import type { JSDOM } from 'jsdom'
 
-import { Cast } from './TypeGuards.js'
+import { cast } from './TypeGuards.js'
 
 let originalWindow: Window & typeof globalThis = global.window
 let originalDocument: Document = global.document
@@ -18,7 +18,7 @@ export function mountDom(dom: JSDOM): JSDOM {
     originalDocument = global.document
     originalsCaptured = true
   }
-  global.window = Cast<Window & typeof globalThis>(dom.window)
+  global.window = cast<Window & typeof globalThis>(dom.window)
   global.document = dom.window.document
   return dom
 }

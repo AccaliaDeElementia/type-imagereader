@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import type { Response } from 'express'
 
-import { Cast } from './TypeGuards.js'
+import { cast } from './TypeGuards.js'
 
 export interface ResponseStub {
   status: Sinon.SinonStub
@@ -23,5 +23,5 @@ export function createResponseFake(): { stub: ResponseStub; fake: Response } {
     render: Sinon.stub().resolvesThis(),
     set: Sinon.stub().returnsThis(),
   }
-  return { stub, fake: Cast<Response>(stub) }
+  return { stub, fake: cast<Response>(stub) }
 }

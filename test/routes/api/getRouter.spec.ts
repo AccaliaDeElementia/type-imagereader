@@ -6,29 +6,29 @@ import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/api getRouter()', () => {
-  let applicationFake = Cast<Application>({ App: Math.random() })
-  let serverFake = Cast<Server>({ Server: Math.random() })
-  let socketServerFake = Cast<WebSocketServer>({ Sockets: Math.random() })
+  let applicationFake = cast<Application>({ App: Math.random() })
+  let serverFake = cast<Server>({ Server: Math.random() })
+  let socketServerFake = cast<WebSocketServer>({ Sockets: Math.random() })
   let routerStub = {
     get: sandbox.stub(),
     post: sandbox.stub(),
   }
   beforeEach(() => {
-    applicationFake = Cast<Application>({ App: Math.random() })
-    serverFake = Cast<Server>({ Server: Math.random() })
-    socketServerFake = Cast<WebSocketServer>({ Sockets: Math.random() })
+    applicationFake = cast<Application>({ App: Math.random() })
+    serverFake = cast<Server>({ Server: Math.random() })
+    socketServerFake = cast<WebSocketServer>({ Sockets: Math.random() })
     routerStub = {
       get: sandbox.stub(),
       post: sandbox.stub(),
     }
     sandbox.stub(Imports, 'initialize').resolves()
-    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+    sandbox.stub(Imports, 'Router').returns(cast<Router>(routerStub))
   })
   afterEach(() => {
     sandbox.restore()

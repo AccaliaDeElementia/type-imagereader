@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { SetLatestPicture, Imports } from '#routes/apiFunctions.js'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
@@ -33,12 +33,12 @@ const makeKnexInstance = (): KnexStub => {
 }
 describe('routes/apiFunctions SetLatestPicture', () => {
   let knexStub = sandbox.stub()
-  let knexFake = StubToKnex(knexStub)
+  let knexFake = stubToKnex(knexStub)
   let getParentFoldersStub = sandbox.stub()
   let loggerStub: Sinon.SinonStub = sandbox.stub()
   beforeEach(() => {
-    knexStub = sandbox.stub().callsFake(() => StubToKnex(makeKnexInstance()))
-    knexFake = StubToKnex(knexStub)
+    knexStub = sandbox.stub().callsFake(() => stubToKnex(makeKnexInstance()))
+    knexFake = stubToKnex(knexStub)
     getParentFoldersStub = sandbox.stub(Imports, 'getParentFolders').returns([])
     loggerStub = sandbox.stub(Imports, 'logger')
   })

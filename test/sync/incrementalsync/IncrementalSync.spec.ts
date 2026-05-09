@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { IncrementalSync, Internals, Imports } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
 import type { Changeset } from '#sync/filewatcher.js'
 
@@ -19,7 +19,7 @@ describe('sync/incrementalsync IncrementalSync()', () => {
   let incrementalUpdateFoldersStub = sandbox.stub()
   let incrementalUpdateFirstImagesStub = sandbox.stub()
   let knexFnStub = sandbox.stub()
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
 
   beforeEach(() => {
     ;({ loggerStub } = stubDebug(sandbox, Imports))
@@ -31,7 +31,7 @@ describe('sync/incrementalsync IncrementalSync()', () => {
     incrementalUpdateFoldersStub = sandbox.stub(Internals, 'IncrementalUpdateFolders').resolves()
     incrementalUpdateFirstImagesStub = sandbox.stub(Internals, 'IncrementalUpdateFirstImages').resolves()
     knexFnStub = sandbox.stub()
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
   })
 
   afterEach(() => {
@@ -112,7 +112,7 @@ describe('sync/incrementalsync IncrementalSync()', () => {
       ['/photos/new/', 'dir-create'],
     ])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/comics/series/')).to.equal(true)
   })
 
@@ -122,7 +122,7 @@ describe('sync/incrementalsync IncrementalSync()', () => {
       ['/photos/new/', 'dir-create'],
     ])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/photos/new/')).to.equal(true)
   })
 
@@ -166,8 +166,8 @@ describe('sync/incrementalsync IncrementalSync()', () => {
   it('should pass the affected folders set to IncrementalEnsureAncestors', async () => {
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await IncrementalSync(knexFnFake, changeset)
-    const ensuredSet = Cast<Set<string>>(incrementalEnsureAncestorsStub.firstCall.args[2])
-    const updatedSet = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const ensuredSet = cast<Set<string>>(incrementalEnsureAncestorsStub.firstCall.args[2])
+    const updatedSet = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(ensuredSet).to.equal(updatedSet)
   })
   it('should call IncrementalUpdateFolders once', async () => {
@@ -185,7 +185,7 @@ describe('sync/incrementalsync IncrementalSync()', () => {
       ['/photos/trip.png', 'delete'],
     ])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/comics/')).to.equal(true)
   })
 
@@ -195,7 +195,7 @@ describe('sync/incrementalsync IncrementalSync()', () => {
       ['/photos/trip.png', 'delete'],
     ])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/photos/')).to.equal(true)
   })
 
@@ -250,105 +250,105 @@ describe('sync/incrementalsync IncrementalSync()', () => {
   it('should use / as folder for root-level create path', async () => {
     const changeset: Changeset = new Map([['/image.jpg', 'create']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/')).to.equal(true)
   })
 
   it('should use / as folder for root-level delete path', async () => {
     const changeset: Changeset = new Map([['/image.jpg', 'delete']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/')).to.equal(true)
   })
 
   it('should include immediate parent folder of a deep create path', async () => {
     const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'create']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/b/c/')).to.equal(true)
   })
 
   it('should include grandparent folder of a deep create path', async () => {
     const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'create']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/b/')).to.equal(true)
   })
 
   it('should include great-grandparent folder of a deep create path', async () => {
     const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'create']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/')).to.equal(true)
   })
 
   it('should include root folder when adding a deep create path', async () => {
     const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'create']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/')).to.equal(true)
   })
 
   it('should include immediate parent folder of a deep delete path', async () => {
     const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'delete']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/b/c/')).to.equal(true)
   })
 
   it('should include grandparent folder of a deep delete path', async () => {
     const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'delete']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/b/')).to.equal(true)
   })
 
   it('should include great-grandparent folder of a deep delete path', async () => {
     const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'delete']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/')).to.equal(true)
   })
 
   it('should include root folder when deleting a deep path', async () => {
     const changeset: Changeset = new Map([['/a/b/c/pic.jpg', 'delete']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/')).to.equal(true)
   })
 
   it('should include parent of a deleted directory in affected folders', async () => {
     const changeset: Changeset = new Map([['/a/b/c/', 'dir-delete']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/b/')).to.equal(true)
   })
 
   it('should include grandparent of a deleted directory in affected folders', async () => {
     const changeset: Changeset = new Map([['/a/b/c/', 'dir-delete']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/')).to.equal(true)
   })
 
   it('should include root when deleting a deep directory', async () => {
     const changeset: Changeset = new Map([['/a/b/c/', 'dir-delete']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/')).to.equal(true)
   })
 
   it('should include parent of a created directory in affected folders', async () => {
     const changeset: Changeset = new Map([['/a/b/c/', 'dir-create']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/a/b/')).to.equal(true)
   })
 
   it('should include root when creating a deep directory', async () => {
     const changeset: Changeset = new Map([['/a/b/c/', 'dir-create']])
     await IncrementalSync(knexFnFake, changeset)
-    const affectedFolders = Cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.firstCall.args[2])
     expect(affectedFolders.has('/')).to.equal(true)
   })
 

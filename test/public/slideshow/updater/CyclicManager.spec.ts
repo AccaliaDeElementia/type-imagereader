@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Add, CyclicManager, CyclicUpdater, Internals, Start, Stop } from '#public/scripts/slideshow/updater.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { expect } from 'chai'
 import { assert } from 'node:console'
@@ -36,7 +36,7 @@ describe('public/slideshow/updater CyclicManager', () => {
     it('should trigger many updaters', async () => {
       const updater = new CyclicUpdater()
       const spy = sandbox.stub(updater, 'trigger').resolves()
-      CyclicManager.__updaters = Cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
+      CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
       expect(spy.callCount).to.equal(10)
     })
@@ -52,7 +52,7 @@ describe('public/slideshow/updater CyclicManager', () => {
       const updater = new CyclicUpdater()
       const spy = sandbox.stub(updater, 'trigger').resolves()
       spy.onThirdCall().rejects(new Error('This is a rejection error!'))
-      CyclicManager.__updaters = Cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
+      CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
       expect(spy.callCount).to.equal(10)
     })
@@ -60,7 +60,7 @@ describe('public/slideshow/updater CyclicManager', () => {
       const updater = new CyclicUpdater()
       const spy = sandbox.stub(updater, 'trigger').resolves()
       spy.onThirdCall().throws(new Error('This is a rejection error!'))
-      CyclicManager.__updaters = Cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
+      CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
       expect(spy.callCount).to.equal(10)
     })
@@ -138,7 +138,7 @@ describe('public/slideshow/updater CyclicManager', () => {
     })
     it('should trigger updaters when interval fires', () => {
       Start(1000)
-      const fn = Cast<() => void>(fakeSetInterval?.firstCall.args[0])
+      const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
       expect(fakeTrigger?.callCount).to.equal(0)
       fn()
       expect(fakeTrigger?.callCount).to.equal(1)
@@ -146,7 +146,7 @@ describe('public/slideshow/updater CyclicManager', () => {
     it('should trigger updaters with provided interval', () => {
       const ival = Math.round(Math.random() * 1e9)
       Start(ival)
-      const fn = Cast<() => void>(fakeSetInterval?.firstCall.args[0])
+      const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
       fn()
       expect(fakeTrigger?.firstCall.args).to.deep.equal([ival])
     })
@@ -157,7 +157,7 @@ describe('public/slideshow/updater CyclicManager', () => {
         return await Promise.reject(new Error('this should get swallowed!'))
       })
       Start(1000)
-      const fn = Cast<() => void>(fakeSetInterval?.firstCall.args[0])
+      const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
       fn()
       await a
       assert(true, 'the error should have been thrown aweay and not treated as uncaught error')

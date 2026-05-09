@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { Synchronize, Imports, LOG_PREFIX } from '#sync/synchronize.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
 import { findStubCall } from '#testutils/Sinon.js'
 
@@ -28,7 +28,7 @@ describe('sync/synchronize Synchronize()', () => {
   beforeEach(() => {
     knexFnStub = sandbox.stub().returnsThis()
     ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
-    persistenceIntitializerStub = sandbox.stub(Imports, 'initialize').resolves(StubToKnex(knexFnStub))
+    persistenceIntitializerStub = sandbox.stub(Imports, 'initialize').resolves(stubToKnex(knexFnStub))
     findSyncItemsStub = sandbox.stub(Imports, 'FindSyncItems').resolves(1)
     syncAllPicturesStub = sandbox.stub(Imports, 'SyncAllPictures').resolves()
     syncAllFoldersStub = sandbox.stub(Imports, 'SyncAllFolders').resolves()
@@ -125,14 +125,14 @@ describe('sync/synchronize Synchronize()', () => {
     findSyncItemsStub.resolves(-1)
     await Synchronize().catch(() => null)
     const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
-    const error = Cast(call?.args[1], (e) => e instanceof Error)
+    const error = cast(call?.args[1], (e) => e instanceof Error)
     expect(error).to.be.an('Error')
   })
   it('should log error message when aborting synchronizing with zero images found', async () => {
     findSyncItemsStub.resolves(-1)
     await Synchronize().catch(() => null)
     const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
-    const error = Cast(call?.args[1], (e) => e instanceof Error)
+    const error = cast(call?.args[1], (e) => e instanceof Error)
     expect(error.message).to.equal('Found Zero images, refusing to process empty base folder')
   })
   it('should log success message at end of successful processing', async () => {

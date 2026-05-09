@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { render } from 'pug'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Imports } from '#public/scripts/app/pictures/state.js'
@@ -77,17 +77,17 @@ describe('public/app/pictures Init()', () => {
     unmountDom()
   })
   it('should clear pictures array', () => {
-    Pictures.pictures = Cast<Picture[]>(null)
+    Pictures.pictures = cast<Picture[]>(null)
     Pictures.Init()
     expect(Pictures.pictures).to.deep.equal([])
   })
   it('should clear current picture', () => {
-    Pictures.current = Cast<Picture>(false)
+    Pictures.current = cast<Picture>(false)
     Pictures.Init()
     expect(Pictures.current).to.equal(null)
   })
   it('should reset nextLoader promise', () => {
-    Pictures.nextLoader = Cast<Promise<void>>(null)
+    Pictures.nextLoader = cast<Promise<void>>(null)
     Pictures.Init()
     expect(Pictures.nextLoader).to.be.an.instanceOf(Promise)
   })

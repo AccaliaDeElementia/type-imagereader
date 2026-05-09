@@ -4,8 +4,8 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Internals, Navigation } from '#public/scripts/app/navigation.js'
-import { Cast } from '#testutils/TypeGuards.js'
-import { EventuallyFullfills } from '#testutils/Errors.js'
+import { cast } from '#testutils/TypeGuards.js'
+import { eventuallyFulfills } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/navigation NavigateTo()', () => {
@@ -25,7 +25,7 @@ describe('public/app/navigation NavigateTo()', () => {
   const invalidPaths: Array<[string, string | undefined]> = [
     ['empty', ''],
     ['undefined', undefined],
-    ['null', Cast<string>(null)],
+    ['null', cast<string>(null)],
   ]
   invalidPaths.forEach(([title, path]) => {
     it(`should publish error when path is ${title}`, async () => {
@@ -62,6 +62,6 @@ describe('public/app/navigation NavigateTo()', () => {
   })
   it('should swallow error when LoadData rejects', async () => {
     loadDataSpy.rejects('FOO')
-    await EventuallyFullfills(Internals.NavigateTo('/foo', 'FOO'))
+    await eventuallyFulfills(Internals.NavigateTo('/foo', 'FOO'))
   })
 })

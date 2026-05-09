@@ -8,7 +8,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 import { ModCount } from '#routes/apiFunctions.js'
 import { getRouter, Imports } from '#routes/api.js'
 import { StatusCodes } from 'http-status-codes'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
 import { createResponseFake } from '#testutils/Express.js'
 
@@ -24,9 +24,9 @@ describe('routes/api route POST /navigate/latest', () => {
     },
     originalUrl: '/',
   }
-  let requestFake = Cast<Request>(requestStub)
+  let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
+  let routeHandler = cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
   let isPathTraversalStub = sandbox.stub()
   let setLatestPictureStub = sandbox.stub()
   let validateAndIncrementStub = sandbox.stub()
@@ -41,13 +41,13 @@ describe('routes/api route POST /navigate/latest', () => {
       },
       originalUrl: '/',
     }
-    requestFake = Cast<Request>(requestStub)
+    requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     knexFake = { Knex: Math.random() }
     const postFn = sandbox.stub()
-    const InitializeStub = sandbox.stub(Imports, 'initialize').resolves(StubToKnex(knexFake))
+    const InitializeStub = sandbox.stub(Imports, 'initialize').resolves(stubToKnex(knexFake))
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
-      Cast<Router>({
+      cast<Router>({
         post: postFn,
         get: sandbox.stub(),
       }),
@@ -56,10 +56,10 @@ describe('routes/api route POST /navigate/latest', () => {
     validateAndIncrementStub = sandbox.stub(ModCount, 'ValidateAndIncrement').returns(1)
     getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
     ;({ loggerStub } = stubDebug(sandbox, Imports))
-    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
+    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
-    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
-    routeHandler = Cast(
+    await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
+    routeHandler = cast(
       postFn.getCalls().find((call) => call.args[0] === '/navigate/latest')?.args[1],
       (fn): fn is RequestHandler => fn !== null,
     )
@@ -85,7 +85,7 @@ describe('routes/api route POST /navigate/latest', () => {
   })
   it('should return new modcount when validate passes', async () => {
     validateAndIncrementStub.returns(5050)
-    const req = Cast<Request>({ body: { path: '/image.png' }, originalUrl: '/' })
+    const req = cast<Request>({ body: { path: '/image.png' }, originalUrl: '/' })
     await routeHandler(req, responseFake)
     expect(responseStub.send.firstCall.args).to.deep.equal(['5050'])
   })

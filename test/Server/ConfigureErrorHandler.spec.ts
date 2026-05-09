@@ -4,7 +4,7 @@ import { assert, expect } from 'chai'
 import type { Express, Response } from 'express'
 import Sinon from 'sinon'
 import { StatusCodes } from 'http-status-codes'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createResponseFake } from '#testutils/Express.js'
 import { ConfigureErrorHandler } from '#Server.js'
 
@@ -12,11 +12,11 @@ const sandbox = Sinon.createSandbox()
 
 describe('Server ConfigureErrorHandler', () => {
   let appStub = { use: sandbox.stub() }
-  let appFake = Cast<Express>(appStub)
+  let appFake = cast<Express>(appStub)
   let { stub: responseStub } = createResponseFake()
   beforeEach(() => {
     appStub = { use: sandbox.stub() }
-    appFake = Cast<Express>(appStub)
+    appFake = cast<Express>(appStub)
     ;({ stub: responseStub } = createResponseFake())
   })
   afterEach(() => {
@@ -43,9 +43,9 @@ describe('Server ConfigureErrorHandler', () => {
   errorHandlerTests.forEach(([title, validationFn]) => {
     it(`should ${title} when handling an error`, () => {
       ConfigureErrorHandler(appFake)
-      const fn = Cast<(err: Error, _: unknown, res: Response, __: unknown) => void>(appStub.use.firstCall.args[0])
+      const fn = cast<(err: Error, _: unknown, res: Response, __: unknown) => void>(appStub.use.firstCall.args[0])
       const err = new Error('FOO!')
-      fn(err, null, Cast<Response>(responseStub), null)
+      fn(err, null, cast<Response>(responseStub), null)
       validationFn()
     })
   })

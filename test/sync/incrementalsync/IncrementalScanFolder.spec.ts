@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { IncrementalScanFolder, Internals, Imports } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
@@ -14,7 +14,7 @@ describe('sync/incrementalsync IncrementalScanFolder()', () => {
   let incrementalAddPicturesBulkStub = sandbox.stub()
   let incrementalEnsureFoldersBulkStub = sandbox.stub()
   let knexFnStub = sandbox.stub()
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
 
   beforeEach(() => {
     ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
@@ -22,7 +22,7 @@ describe('sync/incrementalsync IncrementalScanFolder()', () => {
     incrementalAddPicturesBulkStub = sandbox.stub(Internals, 'IncrementalAddPicturesBulk').resolves()
     incrementalEnsureFoldersBulkStub = sandbox.stub(Internals, 'IncrementalEnsureFoldersBulk').resolves()
     knexFnStub = sandbox.stub()
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
   })
 
   afterEach(() => {
@@ -85,7 +85,7 @@ describe('sync/incrementalsync IncrementalScanFolder()', () => {
       },
     )
     await IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
-    const folderPaths = Cast<string[]>(incrementalEnsureFoldersBulkStub.firstCall.args[1])
+    const folderPaths = cast<string[]>(incrementalEnsureFoldersBulkStub.firstCall.args[1])
     expect(folderPaths).to.include('/comics/new/')
   })
 
@@ -99,7 +99,7 @@ describe('sync/incrementalsync IncrementalScanFolder()', () => {
       },
     )
     await IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
-    const folderPaths = Cast<string[]>(incrementalEnsureFoldersBulkStub.firstCall.args[1])
+    const folderPaths = cast<string[]>(incrementalEnsureFoldersBulkStub.firstCall.args[1])
     expect(folderPaths).to.include.members(['/comics/new/sub1/', '/comics/new/sub2/'])
   })
 
@@ -110,7 +110,7 @@ describe('sync/incrementalsync IncrementalScanFolder()', () => {
       },
     )
     await IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
-    const folderPaths = Cast<string[]>(incrementalEnsureFoldersBulkStub.firstCall.args[1])
+    const folderPaths = cast<string[]>(incrementalEnsureFoldersBulkStub.firstCall.args[1])
     expect(folderPaths).to.not.include('/comics/new/page.jpg')
   })
 
@@ -124,7 +124,7 @@ describe('sync/incrementalsync IncrementalScanFolder()', () => {
       },
     )
     await IncrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
-    const picturePaths = Cast<string[]>(incrementalAddPicturesBulkStub.firstCall.args[1])
+    const picturePaths = cast<string[]>(incrementalAddPicturesBulkStub.firstCall.args[1])
     expect(picturePaths).to.deep.equal(['/comics/new/page.jpg'])
   })
 

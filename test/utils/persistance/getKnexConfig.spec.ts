@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { getKnexConfig, Internals } from '#utils/persistance.js'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -45,7 +45,7 @@ describe('utils/persistance getKnexConfig()', () => {
   })
   it('should reject when readConfig rejects', async () => {
     readConfigurationBlockStub.rejects(new Error('FOO I FAIL'))
-    const err = await EventuallyRejects(getKnexConfig())
+    const err = await eventuallyRejects(getKnexConfig())
     expect(err.message).to.equal('FOO I FAIL')
   })
   it('should not alter host when env is not set', async () => {

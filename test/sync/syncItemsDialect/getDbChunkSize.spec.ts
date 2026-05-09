@@ -3,9 +3,9 @@
 import { expect } from 'chai'
 import type { Knex } from 'knex'
 import { getDbChunkSize } from '#sync/syncItemsDialect.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
-const fakeKnex = (clientName: string): Knex => Cast<Knex>({ client: { config: { client: clientName } } })
+const fakeKnex = (clientName: string): Knex => cast<Knex>({ client: { config: { client: clientName } } })
 
 describe('sync/syncItemsDialect getDbChunkSize()', () => {
   it('should return 5000 when client is postgresql', () => {

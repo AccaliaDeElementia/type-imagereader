@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { hasValues } from '#utils/helpers.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 describe('utils/helpers hasValues()', () => {
   const tests: Array<[string, unknown, boolean]> = [
@@ -16,7 +16,7 @@ describe('utils/helpers hasValues()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${String(expected)} for ${title}`, () => {
-      expect(hasValues(Cast<Parameters<typeof hasValues>[0]>(input))).to.equal(expected)
+      expect(hasValues(cast<Parameters<typeof hasValues>[0]>(input))).to.equal(expected)
     })
   })
 })

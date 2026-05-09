@@ -3,8 +3,8 @@
 import assert from 'node:assert'
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '#testutils/Errors.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
+import { cast } from '#testutils/TypeGuards.js'
 import type { Stats } from 'node:fs'
 import type { Changeset, FlushCallback } from '#sync/filewatcher.js'
 
@@ -31,8 +31,8 @@ describe('/index.ts tests', (): void => {
     ClockFake = sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
-    sandbox.stub(Imports, 'stat').resolves(Cast<Stats>({ isDirectory: () => true }))
-    InitializeStub = sandbox.stub(Imports, 'initialize').resolves(Cast({}))
+    sandbox.stub(Imports, 'stat').resolves(cast<Stats>({ isDirectory: () => true }))
+    InitializeStub = sandbox.stub(Imports, 'initialize').resolves(cast({}))
     IncrementalSyncStub = sandbox.stub().resolves()
     sandbox.stub(Imports, 'IncrementalSyncFunctions').value({ IncrementalSync: IncrementalSyncStub })
   })
@@ -48,13 +48,13 @@ describe('/index.ts tests', (): void => {
 
   it('should reject when StartServer throws', async () => {
     StartServerStub?.throws(new Error('FOO'))
-    const err = await EventuallyRejects(ImageReader.Run())
+    const err = await eventuallyRejects(ImageReader.Run())
     expect(err.message).to.equal('FOO')
   })
 
   it('should reject when StartServer rejects', async () => {
     StartServerStub?.rejects(new Error('FOO'))
-    const err = await EventuallyRejects(ImageReader.Run())
+    const err = await eventuallyRejects(ImageReader.Run())
     expect(err.message).to.equal('FOO')
   })
 
@@ -96,73 +96,73 @@ describe('/index.ts tests', (): void => {
 
   it('should not call StartServer when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(StartServerStub?.called).to.equal(false)
   })
 
   it('should not call Synchronize when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
   })
 
   it('should reject with descriptive message when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
-    const e = await EventuallyRejects(ImageReader.Run())
+    const e = await eventuallyRejects(ImageReader.Run())
     expect(e.message).to.equal('Port NaN (from env: FOO) is not a number. Valid ports must be a number.')
   })
 
   it('should not call StartServer when PORT is too small', async () => {
     process.env.PORT = '-1'
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(StartServerStub?.called).to.equal(false)
   })
 
   it('should not call Synchronize when PORT is too small', async () => {
     process.env.PORT = '-1'
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
   })
 
   it('should reject with descriptive message when PORT is too small', async () => {
     process.env.PORT = '-1'
-    const e = await EventuallyRejects(ImageReader.Run())
+    const e = await eventuallyRejects(ImageReader.Run())
     expect(e.message).to.equal('Port -1 is out of range. Valid ports must be between 0 and 65535.')
   })
 
   it('should not call StartServer when PORT is too big', async () => {
     process.env.PORT = '131072'
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(StartServerStub?.called).to.equal(false)
   })
 
   it('should not call Synchronize when PORT is too big', async () => {
     process.env.PORT = '131072'
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
   })
 
   it('should reject with descriptive message when PORT is too big', async () => {
     process.env.PORT = '131072'
-    const e = await EventuallyRejects(ImageReader.Run())
+    const e = await eventuallyRejects(ImageReader.Run())
     expect(e.message).to.equal('Port 131072 is out of range. Valid ports must be between 0 and 65535.')
   })
 
   it('should not call StartServer when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(StartServerStub?.called).to.equal(false)
   })
 
   it('should not call Synchronize when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(SynchronizeStub?.called).to.equal(false)
   })
 
   it('should reject with descriptive message when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
-    const e = await EventuallyRejects(ImageReader.Run())
+    const e = await eventuallyRejects(ImageReader.Run())
     expect(e.message).to.equal('Port 3.1415926 is not integer. Valid ports must be integer between 0 and 65535.')
   })
 
@@ -441,7 +441,7 @@ describe('/index.ts tests', (): void => {
 
   it('should acquire SyncLock when flush callback is invoked', async () => {
     await ImageReader.Run()
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
     expect(ImageReader.SyncLock._locked).to.equal(false)
@@ -449,7 +449,7 @@ describe('/index.ts tests', (): void => {
 
   it('should call initialize in flush callback', async () => {
     await ImageReader.Run()
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
     expect(InitializeStub?.callCount).to.equal(1)
@@ -457,9 +457,9 @@ describe('/index.ts tests', (): void => {
 
   it('should call IncrementalSync once in flush callback', async () => {
     const fakeKnex = { fake: true }
-    InitializeStub?.resolves(Cast(fakeKnex))
+    InitializeStub?.resolves(cast(fakeKnex))
     await ImageReader.Run()
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
     expect(IncrementalSyncStub?.callCount).to.equal(1)
@@ -467,9 +467,9 @@ describe('/index.ts tests', (): void => {
 
   it('should pass knex to IncrementalSync in flush callback', async () => {
     const fakeKnex = { fake: true }
-    InitializeStub?.resolves(Cast(fakeKnex))
+    InitializeStub?.resolves(cast(fakeKnex))
     await ImageReader.Run()
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
     expect(IncrementalSyncStub?.firstCall.args[0]).to.equal(fakeKnex)
@@ -477,9 +477,9 @@ describe('/index.ts tests', (): void => {
 
   it('should pass changeset to IncrementalSync in flush callback', async () => {
     const fakeKnex = { fake: true }
-    InitializeStub?.resolves(Cast(fakeKnex))
+    InitializeStub?.resolves(cast(fakeKnex))
     await ImageReader.Run()
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
     expect(IncrementalSyncStub?.firstCall.args[1]).to.equal(changeset)
@@ -487,7 +487,7 @@ describe('/index.ts tests', (): void => {
 
   it('should release SyncLock after flush callback completes', async () => {
     await ImageReader.Run()
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
     expect(ImageReader.SyncLock._locked).to.equal(false)
@@ -496,7 +496,7 @@ describe('/index.ts tests', (): void => {
   it('should release SyncLock when IncrementalSync rejects', async () => {
     IncrementalSyncStub?.rejects(new Error('incremental failed'))
     await ImageReader.Run()
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     try {
       await onFlush(changeset)
@@ -510,9 +510,9 @@ describe('/index.ts tests', (): void => {
     await ImageReader.Run()
     // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
     ImageReader.SyncLock._locked = true
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
-    const err = await EventuallyRejects(onFlush(changeset))
+    const err = await eventuallyRejects(onFlush(changeset))
     expect(err.message).to.equal('sync locked')
   })
 
@@ -520,9 +520,9 @@ describe('/index.ts tests', (): void => {
     await ImageReader.Run()
     // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
     ImageReader.SyncLock._locked = true
-    const onFlush = Cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
+    const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
-    await EventuallyRejects(onFlush(changeset))
+    await eventuallyRejects(onFlush(changeset))
     expect(IncrementalSyncStub?.callCount).to.equal(0)
   })
 })

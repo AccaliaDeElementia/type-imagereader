@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { assert, expect } from 'chai'
 import { HandleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
@@ -10,17 +10,17 @@ import { setImmediate as yieldMacro } from 'node:timers/promises'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow HandleSocket()', () => {
-  let knexFake = StubToKnex({})
-  let serverFake = Cast<WebSocketServer>({})
+  let knexFake = stubToKnex({})
+  let serverFake = cast<WebSocketServer>({})
   let socketStub = { on: sandbox.stub() }
-  let socketFake = Cast<Socket>(socketStub)
+  let socketFake = cast<Socket>(socketStub)
   let socketStubs: Array<[string, Sinon.SinonStub]> = []
   let loggerStub = sandbox.stub()
   beforeEach(() => {
-    knexFake = StubToKnex({})
-    serverFake = Cast<WebSocketServer>({})
+    knexFake = stubToKnex({})
+    serverFake = cast<WebSocketServer>({})
     socketStub = { on: sandbox.stub() }
-    socketFake = Cast<Socket>(socketStub)
+    socketFake = cast<Socket>(socketStub)
     loggerStub = sandbox.stub(Imports, 'logger')
     socketStubs = [
       ['get-launchId', sandbox.stub(Internals, 'getLaunchId')],
@@ -54,7 +54,7 @@ describe('routes/slideshow HandleSocket()', () => {
     })
     it(`should forward call for ${endpoint}`, () => {
       HandleSocket(knexFake, serverFake, socketFake)
-      const fn = Cast<() => void>(getCallback(endpoint))
+      const fn = cast<() => void>(getCallback(endpoint))
       fn()
       const stub = socketStubs.find(([name]) => name === endpoint)
       assert(stub !== undefined)
@@ -74,7 +74,7 @@ describe('routes/slideshow HandleSocket()', () => {
       const err = new Error(`boom-${handlerName}`)
       stub[1].rejects(err)
       HandleSocket(knexFake, serverFake, socketFake)
-      const fn = Cast<(cb?: () => void) => void>(getCallback(endpoint))
+      const fn = cast<(cb?: () => void) => void>(getCallback(endpoint))
       fn(() => undefined)
       await yieldMacro()
       const matching = loggerStub.getCalls().find((call) => call.args[1] === err)
@@ -86,7 +86,7 @@ describe('routes/slideshow HandleSocket()', () => {
     assert(stub !== undefined)
     stub[1].rejects(new Error('goto failed'))
     HandleSocket(knexFake, serverFake, socketFake)
-    const fn = Cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
+    const fn = cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
     const callbackStub = sandbox.stub()
     fn(callbackStub)
     await yieldMacro()

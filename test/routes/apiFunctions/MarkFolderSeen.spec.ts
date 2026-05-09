@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { MarkFolderSeen, Imports } from '#routes/apiFunctions.js'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import Sinon from 'sinon'
 import { createKnexChainFake } from '#testutils/Knex.js'
 
@@ -12,13 +12,13 @@ const chainMethods = ['select', 'increment', 'update', 'where'] as const
 const terminalMethods = ['whereIn', 'orWhere', 'andWhere'] as const
 describe('routes/apiFunctions MarkFolderSeen', () => {
   let knexStub = sandbox.stub()
-  let knexFake = StubToKnex(knexStub)
+  let knexFake = stubToKnex(knexStub)
   let knexRawStub = sandbox.stub()
   let getParentFoldersStub = sandbox.stub()
   let loggerStub: Sinon.SinonStub = sandbox.stub()
   beforeEach(() => {
     knexStub = sandbox.stub().callsFake(() => createKnexChainFake(chainMethods, terminalMethods).instance)
-    knexFake = StubToKnex(knexStub)
+    knexFake = stubToKnex(knexStub)
     knexRawStub = sandbox.stub()
     knexFake.raw = knexRawStub
     getParentFoldersStub = sandbox.stub(Imports, 'getParentFolders').returns([])

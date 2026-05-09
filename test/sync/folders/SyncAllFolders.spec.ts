@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { SyncAllFolders, Internals, Imports, LOG_PREFIX } from '#sync/folders.js'
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
@@ -16,7 +16,7 @@ describe('sync/folders SyncAllFolders()', () => {
   let syncFolderFirstImagesStub = sandbox.stub()
   let loggerStub = sandbox.stub()
   let debugStub = sandbox.stub()
-  let knexFake = StubToKnex({ id: Math.random() })
+  let knexFake = stubToKnex({ id: Math.random() })
   beforeEach(() => {
     ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
     syncNewFoldersStub = sandbox.stub(Internals, 'SyncNewFolders').resolves()
@@ -24,7 +24,7 @@ describe('sync/folders SyncAllFolders()', () => {
     syncMissingAncestorFoldersStub = sandbox.stub(Internals, 'SyncMissingAncestorFolders').resolves()
     syncMissingCoverImagesStub = sandbox.stub(Internals, 'SyncMissingCoverImages').resolves()
     syncFolderFirstImagesStub = sandbox.stub(Internals, 'SyncFolderFirstImages').resolves()
-    knexFake = StubToKnex({ id: Math.random() })
+    knexFake = stubToKnex({ id: Math.random() })
   })
   afterEach(() => {
     sandbox.restore()

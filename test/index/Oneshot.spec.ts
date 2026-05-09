@@ -2,8 +2,8 @@
 
 import { expect } from 'chai'
 import Sinon from 'sinon'
-import { EventuallyRejects } from '#testutils/Errors.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
+import { cast } from '#testutils/TypeGuards.js'
 import type { Stats } from 'node:fs'
 
 import { ImageReader, Imports } from '#app.js'
@@ -28,9 +28,9 @@ describe('index.ts ONESHOT mode tests', (): void => {
     ClockFake = sandbox.useFakeTimers()
     LoggerStub = sandbox.stub(Imports, 'logger')
     StartWatcherStub = sandbox.stub(Imports, 'startWatcher').resolves({ unsubscribe: sandbox.stub().resolves() })
-    sandbox.stub(Imports, 'stat').resolves(Cast<Stats>({ isDirectory: () => true }))
+    sandbox.stub(Imports, 'stat').resolves(cast<Stats>({ isDirectory: () => true }))
     DestroyStub = sandbox.stub().resolves()
-    sandbox.stub(Imports, 'initialize').resolves(Cast({ destroy: DestroyStub }))
+    sandbox.stub(Imports, 'initialize').resolves(cast({ destroy: DestroyStub }))
   })
 
   afterEach(() => {
@@ -103,14 +103,14 @@ describe('index.ts ONESHOT mode tests', (): void => {
   it('should call knex.destroy even when Synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
-    await EventuallyRejects(ImageReader.Run())
+    await eventuallyRejects(ImageReader.Run())
     expect(DestroyStub?.called).to.equal(true)
   })
 
   it('should reject with sync error when Synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
-    const err = await EventuallyRejects(ImageReader.Run())
+    const err = await eventuallyRejects(ImageReader.Run())
     expect(err.message).to.equal('SYNC FAILED')
   })
 

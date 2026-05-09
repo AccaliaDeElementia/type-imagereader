@@ -4,7 +4,7 @@ import { EventEmitter } from 'node:events'
 import type { SinonSandbox, SinonStub } from 'sinon'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 
-import { Cast } from './TypeGuards.js'
+import { cast } from './TypeGuards.js'
 
 export interface CopyStreamFake {
   stream: CopyStreamQuery
@@ -42,7 +42,7 @@ export function createCopyStreamFake(sandbox: SinonSandbox, opts: CopyStreamFake
     })
   }
   Object.assign(ee, { write: writeSpy, end: endSpy, destroy: destroySpy })
-  return { stream: Cast<CopyStreamQuery>(ee), ee, writeSpy, endSpy, destroySpy }
+  return { stream: cast<CopyStreamQuery>(ee), ee, writeSpy, endSpy, destroySpy }
 }
 
 // Schedule an EventEmitter emit on the next microtask. Used when a test wants

@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import type { EventEmitter } from 'node:events'
 import { FindSyncItems, Imports } from '#sync/findItems.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 import { createCopyStreamFake } from '#testutils/CopyStream.js'
 import { stubDebug } from '#testutils/Debug.js'
@@ -21,7 +21,7 @@ interface StreamFake extends EventEmitter {
   destroy: Sinon.SinonStub
 }
 
-const makeStream = (): StreamFake => Cast<StreamFake>(createCopyStreamFake(sandbox, { emitOnEnd: 'finish' }).ee)
+const makeStream = (): StreamFake => cast<StreamFake>(createCopyStreamFake(sandbox, { emitOnEnd: 'finish' }).ee)
 
 describe('sync/findItems FindSyncItems() when client is not postgres (sqlite fallback)', () => {
   let loggerStub = sandbox.stub()
@@ -51,8 +51,8 @@ describe('sync/findItems FindSyncItems() when client is not postgres (sqlite fal
     fsWalkerStub = sandbox.stub(Imports, 'fsWalker').resolves()
     buildSyncItemRowsStub = sandbox.stub(Imports, 'BuildSyncItemRows').returns({ files: 0, dirs: 0, rows: [] })
     formatSyncItemCsvStub = sandbox.stub(Imports, 'FormatSyncItemCsv').returns('csv-row\n')
-    copyFromStub = sandbox.stub(Imports, 'copyFrom').returns(Cast<CopyStreamQuery>(sandbox.stub()))
-    acquireStub = sandbox.stub(Imports, 'acquireCopyConnection').resolves(Cast<PoolClient>(pgClientStub))
+    copyFromStub = sandbox.stub(Imports, 'copyFrom').returns(cast<CopyStreamQuery>(sandbox.stub()))
+    acquireStub = sandbox.stub(Imports, 'acquireCopyConnection').resolves(cast<PoolClient>(pgClientStub))
     releaseStub = sandbox.stub(Imports, 'releaseCopyConnection').resolves()
     sandbox.stub(Imports, 'IsPostgres').returns(false)
   })
@@ -102,7 +102,7 @@ describe('sync/findItems FindSyncItems() when client is not postgres (sqlite fal
 
   it('should pass walker items through BuildSyncItemRows', async () => {
     await FindSyncItems(knexFnFake)
-    const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
+    const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     await callback(items, 0)
     expect(buildSyncItemRowsStub.calledWith(items)).to.equal(true)
@@ -149,7 +149,7 @@ describe('sync/findItems FindSyncItems() when client is not postgres (sqlite fal
 
   it('should log status on first loop', async () => {
     await FindSyncItems(knexFnFake)
-    const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
+    const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     buildSyncItemRowsStub.returns({ files: 3, dirs: 9, rows: [] })
     await callback(items, 6)
@@ -159,7 +159,7 @@ describe('sync/findItems FindSyncItems() when client is not postgres (sqlite fal
   it('should log status on 101st loop', async () => {
     await FindSyncItems(knexFnFake)
     loggerStub.resetHistory()
-    const callback = Cast<Callback>(fsWalkerStub.firstCall.args[1])
+    const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     const invocations: Array<Promise<void>> = []
     for (let i = 0; i < 100; i += 1) invocations.push(callback(items, 0))

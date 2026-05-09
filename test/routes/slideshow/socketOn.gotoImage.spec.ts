@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { HandleSocketState, HandleSocket, gotoImage, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
@@ -9,11 +9,11 @@ import type { Server as WebSocketServer, Socket } from 'socket.io'
 const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow socket goto-image', () => {
-  let knexFake = StubToKnex({})
+  let knexFake = stubToKnex({})
   let ioStub = {}
-  let serverFake = Cast<WebSocketServer>(ioStub)
+  let serverFake = cast<WebSocketServer>(ioStub)
   let socketStub = { on: sandbox.stub() }
-  let socketFake = Cast<Socket>(socketStub)
+  let socketFake = cast<Socket>(socketStub)
   let socketState = new HandleSocketState()
   let folder = { path: '/foo/bar' }
   let roomData = { images: [folder], index: -1 }
@@ -21,11 +21,11 @@ describe('routes/slideshow socket goto-image', () => {
   let picturePath = ''
   let setLatestStub = sandbox.stub().resolves(picturePath)
   beforeEach(() => {
-    knexFake = StubToKnex({})
+    knexFake = stubToKnex({})
     ioStub = {}
-    serverFake = Cast<WebSocketServer>(ioStub)
+    serverFake = cast<WebSocketServer>(ioStub)
     socketStub = { on: sandbox.stub() }
-    socketFake = Cast<Socket>(socketStub)
+    socketFake = cast<Socket>(socketStub)
     socketState = HandleSocket(knexFake, serverFake, socketFake)
     folder = { path: '/foo/bar' }
     roomData = { images: [folder], index: -1 }

@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { IncrementalAddPicturesBulk } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -34,7 +34,7 @@ describe('sync/incrementalsync IncrementalAddPicturesBulk()', () => {
     ignore: sandbox.stub().resolves(),
   }
   let knexFnStub = sandbox.stub()
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
     pictureChunks = []
@@ -60,7 +60,7 @@ describe('sync/incrementalsync IncrementalAddPicturesBulk()', () => {
       if (table === 'folders') return foldersInsertQuery
       throw new Error(`Unexpected knex table: ${table}`)
     })
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
   }
 
   beforeEach(() => {

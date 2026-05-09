@@ -8,7 +8,7 @@ import { mountDom, unmountDom } from '#testutils/Dom.js'
 import { Pictures } from '#public/scripts/app/pictures/index.js'
 import { Internals } from '#public/scripts/app/pictures/grid.js'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { resetPubSub } from '#testutils/PubSub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -32,7 +32,7 @@ describe('public/app/pictures MakePictureCard()', () => {
     const template = dom.window.document.createElement('div')
     template.innerHTML =
       '<template id="ImageCard><div class="card"><div class="card-body"><h5>placeholder</h5></div></div></template>'
-    Pictures.imageCard = Cast<HTMLTemplateElement>(template.firstChild)
+    Pictures.imageCard = cast<HTMLTemplateElement>(template.firstChild)
   })
   afterEach(() => {
     sandbox.restore()

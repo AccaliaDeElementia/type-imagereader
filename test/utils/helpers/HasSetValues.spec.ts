@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { hasSetValues } from '#utils/helpers.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -23,7 +23,7 @@ describe('utils/helpers hasSetValues()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${String(expected)} for ${title}`, () => {
-      expect(hasSetValues(Cast<Parameters<typeof hasSetValues>[0]>(input))).to.equal(expected)
+      expect(hasSetValues(cast<Parameters<typeof hasSetValues>[0]>(input))).to.equal(expected)
     })
   })
 })

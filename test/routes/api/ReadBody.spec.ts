@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import { ReadBody } from '#routes/api.js'
-import { DefinitelyThrows } from '#testutils/Errors.js'
+import { definitelyThrows } from '#testutils/Errors.js'
 
 describe('routes/api ReadBody()', () => {
   it('should return body when successful parse', () => {
@@ -15,7 +15,7 @@ describe('routes/api ReadBody()', () => {
     expect(ReadBody(obj)).to.equal(obj.body)
   })
   it('should throw when body does not parse', () => {
-    const err = DefinitelyThrows(() => ReadBody({}))
+    const err = definitelyThrows(() => ReadBody({}))
     expect(err.message).to.equal('Invalid JSON Object provided as input')
   })
 })

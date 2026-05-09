@@ -1,7 +1,7 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { MarkImageRead, Imports } from '#routes/slideshow.js'
 
@@ -17,7 +17,7 @@ describe('routes/slideshow MarkImageRead()', () => {
     whereIn: sandbox.stub().resolves(),
   }
   let knexStub = sandbox.stub().onFirstCall().returns(conditionalUpdate).onSecondCall().returns(incrementer)
-  let knexFake = StubToKnex(knexStub)
+  let knexFake = stubToKnex(knexStub)
   let getParentFoldersStub = sandbox.stub()
   beforeEach(() => {
     conditionalUpdate = {
@@ -29,7 +29,7 @@ describe('routes/slideshow MarkImageRead()', () => {
       whereIn: sandbox.stub().resolves(),
     }
     knexStub = sandbox.stub().onFirstCall().returns(conditionalUpdate).onSecondCall().returns(incrementer)
-    knexFake = StubToKnex(knexStub)
+    knexFake = stubToKnex(knexStub)
     getParentFoldersStub = sandbox.stub(Imports, 'getParentFolders').returns(['/foo/bar/', '/foo/', '/'])
   })
   afterEach(() => {

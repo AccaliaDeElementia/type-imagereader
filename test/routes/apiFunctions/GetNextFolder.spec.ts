@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { GetNextFolder, Internals, type SiblingFolderSearch } from '#routes/apiFunctions.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 import assert from 'node:assert'
 
@@ -36,7 +36,7 @@ describe('routes/apiFunctions GetNextFolder', () => {
   paramTests.forEach(([title, sortKey, prop, expected]) => {
     it(`should call pass ${title} to do actual query`, async () => {
       await GetNextFolder(knexFake, '/foo', sortKey)
-      const param = Cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
+      const param = cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.firstCall.args[1])
       assert(param !== undefined)
       expect(param[prop]).to.equal(expected)
     })

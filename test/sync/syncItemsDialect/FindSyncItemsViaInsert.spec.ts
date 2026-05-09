@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { FindSyncItemsViaInsert, type InsertFallbackHelpers } from '#sync/syncItemsDialect.js'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { noopLogger } from '#testutils/Debug.js'
 import type { Debugger } from 'debug'
 
@@ -37,7 +37,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
   })
 
   it('should return aggregated counts from buildSyncItemRows', async () => {
-    const knex = StubToKnex(sandbox.stub())
+    const knex = stubToKnex(sandbox.stub())
     const result = await FindSyncItemsViaInsert(knex, noopLogger, buildHelpers())
     expect(result).to.deep.equal({ files: FILE_COUNT, dirs: DIR_COUNT })
   })
@@ -48,13 +48,13 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
     const helpers = buildHelpers({
       buildSyncItemRows: () => ({ files: 1, dirs: 0, rows: [sampleRow] }),
     })
-    await FindSyncItemsViaInsert(StubToKnex(knexSpy), noopLogger, helpers)
+    await FindSyncItemsViaInsert(stubToKnex(knexSpy), noopLogger, helpers)
     expect(insertSpy.callCount).to.equal(1)
   })
 
   it('should pass getDataDir() result as fsWalker root', async () => {
     const fsWalkerSpy = sandbox.stub().resolves()
-    const knex = StubToKnex(sandbox.stub())
+    const knex = stubToKnex(sandbox.stub())
     await FindSyncItemsViaInsert(
       knex,
       noopLogger,
@@ -66,7 +66,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
   it('should pass items from fsWalker through to buildSyncItemRows', async () => {
     const items = [{ path: '/a.jpg', isFile: true }]
     const buildRowsSpy = sandbox.stub().returns({ files: 0, dirs: 0, rows: [] })
-    const knex = StubToKnex(sandbox.stub())
+    const knex = stubToKnex(sandbox.stub())
     await FindSyncItemsViaInsert(
       knex,
       noopLogger,
@@ -82,7 +82,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
 
   it('should request chunks of size SQLITE_DB_CHUNK_SIZE', async () => {
     const chunkSpy = sandbox.stub().returns([[sampleRow]])
-    const knex = StubToKnex(sandbox.stub().returns({ insert: sandbox.stub().resolves() }))
+    const knex = stubToKnex(sandbox.stub().returns({ insert: sandbox.stub().resolves() }))
     await FindSyncItemsViaInsert(
       knex,
       noopLogger,
@@ -97,7 +97,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
   it("should insert into the 'syncitems' table", async () => {
     const knexSpy = sandbox.stub().returns({ insert: sandbox.stub().resolves() })
     await FindSyncItemsViaInsert(
-      StubToKnex(knexSpy),
+      stubToKnex(knexSpy),
       noopLogger,
       buildHelpers({ buildSyncItemRows: () => ({ files: 1, dirs: 0, rows: [sampleRow] }) }),
     )
@@ -105,7 +105,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
   })
 
   it('should accumulate files and dirs across multiple fsWalker iterations', async () => {
-    const knex = StubToKnex(sandbox.stub())
+    const knex = stubToKnex(sandbox.stub())
     const result = await FindSyncItemsViaInsert(
       knex,
       noopLogger,
@@ -124,7 +124,7 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
     const insertSpy = sandbox.stub().resolves()
     const knexSpy = sandbox.stub().returns({ insert: insertSpy })
     await FindSyncItemsViaInsert(
-      StubToKnex(knexSpy),
+      stubToKnex(knexSpy),
       noopLogger,
       buildHelpers({
         buildSyncItemRows: () => ({ files: CHUNK_COUNT, dirs: 0, rows: [sampleRow] }),
@@ -137,10 +137,10 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
   it('should log "Found N dirs (P pending) and F files" on the first iteration', async () => {
     const PENDING = 5
     const loggerSpy = sandbox.stub()
-    const knex = StubToKnex(sandbox.stub())
+    const knex = stubToKnex(sandbox.stub())
     await FindSyncItemsViaInsert(
       knex,
-      Cast<Debugger>(loggerSpy),
+      cast<Debugger>(loggerSpy),
       buildHelpers({
         fsWalker: async (_root, cb) => {
           await cb([], PENDING)
@@ -152,10 +152,10 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
 
   it('should not log on the second iteration', async () => {
     const loggerSpy = sandbox.stub()
-    const knex = StubToKnex(sandbox.stub())
+    const knex = stubToKnex(sandbox.stub())
     await FindSyncItemsViaInsert(
       knex,
-      Cast<Debugger>(loggerSpy),
+      cast<Debugger>(loggerSpy),
       buildHelpers({
         fsWalker: async (_root, cb) => {
           await cb([], 0)
@@ -170,10 +170,10 @@ describe('sync/syncItemsDialect FindSyncItemsViaInsert()', () => {
     const ITERATIONS = LOGGING_INTERVAL + 1
     const EXPECTED_LOG_COUNT = 2
     const loggerSpy = sandbox.stub()
-    const knex = StubToKnex(sandbox.stub())
+    const knex = stubToKnex(sandbox.stub())
     await FindSyncItemsViaInsert(
       knex,
-      Cast<Debugger>(loggerSpy),
+      cast<Debugger>(loggerSpy),
       buildHelpers({
         fsWalker: async (_root, cb) => {
           let chain = Promise.resolve()

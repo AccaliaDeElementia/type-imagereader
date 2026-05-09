@@ -7,7 +7,7 @@ import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
 import { StatusCodes } from 'http-status-codes'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { stubDebug } from '#testutils/Debug.js'
 import { createResponseFake } from '#testutils/Express.js'
 
@@ -20,28 +20,28 @@ describe('routes/api route GET /', () => {
     body: { Body: -1 },
     originalUrl: '/',
   }
-  let requestFake = Cast<Request>(requestStub)
+  let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let routeHandler = Cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
+  let routeHandler = cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
   beforeEach(async () => {
     requestStub = {
       body: { Body: -1 },
       originalUrl: '/',
     }
-    requestFake = Cast<Request>(requestStub)
+    requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     const getFn = sandbox.stub()
     const InitializeStub = sandbox.stub(Imports, 'initialize').resolves()
     const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
-      Cast<Router>({
+      cast<Router>({
         get: getFn,
         post: sandbox.stub(),
       }),
     )
     stubDebug(sandbox, Imports)
-    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => Cast<ExpressRequestHandler>(action))
-    await getRouter(Cast<Application>(null), Cast<Server>(null), Cast<WebSocketServer>(null))
-    routeHandler = Cast(
+    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
+    await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
+    routeHandler = cast(
       getFn.getCalls().find((call) => call.args[0] === '/')?.args[1],
       (fn): fn is RequestHandler => fn !== null,
     )

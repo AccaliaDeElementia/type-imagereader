@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { UpdateFolderPictureCounts, Internals, Imports, LOG_PREFIX } from '#sync/folderCounts.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { createKnexChainFake } from '#testutils/Knex.js'
 import { stubDebug } from '#testutils/Debug.js'
 
@@ -145,7 +145,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
       { path: '/orphan/', totalCount: 1, seenCount: 0 },
     ])
     await UpdateFolderPictureCounts(knexFnFake)
-    const chunked = Cast<Array<{ path: string }>>(chunkStub.firstCall.args[0])
+    const chunked = cast<Array<{ path: string }>>(chunkStub.firstCall.args[0])
     expect(chunked.map((r) => r.path)).to.deep.equal(['/existing/'])
   })
   it('should drop every calculated folder when none exist in the folders table', async () => {
@@ -160,7 +160,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
     })
     calculateFolderInfosStub.returns([{ path: '/existing/', totalCount: 1, seenCount: 0 }])
     await UpdateFolderPictureCounts(knexFnFake)
-    const chunked = Cast<Array<{ folder: string }>>(chunkStub.firstCall.args[0])
+    const chunked = cast<Array<{ folder: string }>>(chunkStub.firstCall.args[0])
     expect(chunked[0]?.folder).to.equal('/')
   })
   it('should enrich the upsert payload with sortKey column from the existing row', async () => {
@@ -169,7 +169,7 @@ describe('sync/folderCounts UpdateFolderPictureCounts()', () => {
     })
     calculateFolderInfosStub.returns([{ path: '/existing/', totalCount: 1, seenCount: 0 }])
     await UpdateFolderPictureCounts(knexFnFake)
-    const chunked = Cast<Array<{ sortKey: string }>>(chunkStub.firstCall.args[0])
+    const chunked = cast<Array<{ sortKey: string }>>(chunkStub.firstCall.args[0])
     expect(chunked[0]?.sortKey).to.equal('existing')
   })
   it('should call knex with folders table when inserting', async () => {

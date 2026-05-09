@@ -6,33 +6,33 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { getRouter, Imports } from '#routes/index.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/index route /', () => {
   let routeFn: (_: Request, __: Response) => void = sandbox.stub()
-  let requestFake = Cast<Request>({})
+  let requestFake = cast<Request>({})
   let resposeStub = { redirect: sandbox.stub() }
-  let responseFake = Cast<Response>(resposeStub)
+  let responseFake = cast<Response>(resposeStub)
   beforeEach(async () => {
-    const applicationFake = Cast<Application>({})
-    const serverFake = Cast<Server>({})
-    const socketsFake = Cast<WebSocketServer>({})
+    const applicationFake = cast<Application>({})
+    const serverFake = cast<Server>({})
+    const socketsFake = cast<WebSocketServer>({})
     const routerStub = { get: sandbox.stub() }
     let getRouterStub: Sinon.SinonStub | undefined = undefined
     try {
-      getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+      getRouterStub = sandbox.stub(Imports, 'Router').returns(cast<Router>(routerStub))
       await getRouter(applicationFake, serverFake, socketsFake)
-      routeFn = Cast<(_: Request, __: Response) => void>(
+      routeFn = cast<(_: Request, __: Response) => void>(
         routerStub.get.getCalls().find((c) => c.args[0] === '/')?.args[1],
       )
     } finally {
       getRouterStub?.restore()
     }
-    requestFake = Cast<Request>({})
+    requestFake = cast<Request>({})
     resposeStub = { redirect: sandbox.stub() }
-    responseFake = Cast<Response>(resposeStub)
+    responseFake = cast<Response>(resposeStub)
   })
   afterEach(() => {
     sandbox.restore()

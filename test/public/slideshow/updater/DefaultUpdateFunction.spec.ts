@@ -1,12 +1,12 @@
 'use sanity'
 
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 import { Internals } from '#public/scripts/slideshow/updater.js'
 import { expect } from 'chai'
 
 describe('public/slideshow/updater DefaultUpdateFn()', () => {
   it('should reject with expected Error', async () => {
-    const err = await EventuallyRejects(Internals.defaultUpdateFn())
+    const err = await eventuallyRejects(Internals.defaultUpdateFn())
     expect(err.message).to.equal('CyclicUpdater fired before an updateFn was provided to the constructor')
   })
 })

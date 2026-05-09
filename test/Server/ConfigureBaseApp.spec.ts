@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import type { Express } from 'express'
 import express from 'express'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 import { ConfigureBaseApp, Imports } from '#Server.js'
 
 const sandbox = Sinon.createSandbox()
@@ -16,7 +16,7 @@ describe('Server ConfigureBaseApp', () => {
   let faviconStub = sandbox.stub().returns({})
   let loggerStub = sandbox.stub()
   let appStub = { use: sandbox.stub() }
-  let appFake = Cast<Express>(appStub)
+  let appFake = cast<Express>(appStub)
   const FAVICON_ERROR_MESSAGE = "ENOENT: no such file or directory, stat '/app/dist/images/favicon.ico'"
   const isErrorInstance = (a: unknown): boolean => a instanceof Error
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe('Server ConfigureBaseApp', () => {
     faviconStub = sandbox.stub(Imports, 'favicon')
     loggerStub = sandbox.stub(Imports, 'logger')
     appStub = { use: sandbox.stub() }
-    appFake = Cast<Express>(appStub)
+    appFake = cast<Express>(appStub)
   })
   afterEach(() => {
     sandbox.restore()
@@ -140,7 +140,7 @@ describe('Server ConfigureBaseApp', () => {
   })
 
   it('should coerce non-Error throws to a string in the log', () => {
-    faviconStub.throws(Cast<Error>({ toString: () => 'plain-rejection' }))
+    faviconStub.throws(cast<Error>({ toString: () => 'plain-rejection' }))
     ConfigureBaseApp(appFake)
     expect(loggerStub.firstCall.args[1]).to.equal('plain-rejection')
   })

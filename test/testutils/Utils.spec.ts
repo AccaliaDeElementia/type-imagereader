@@ -3,11 +3,11 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 
-import { Delay } from '#testutils/Utils.js'
+import { delay } from '#testutils/Utils.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('testutils Delay()', () => {
+describe('testutils delay()', () => {
   let clock: sinon.SinonFakeTimers | undefined = undefined
 
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('testutils Delay()', () => {
 
   it('should not resolve before the specified delay elapses', async () => {
     let resolved = false
-    const promise = Delay(100).then(() => {
+    const promise = delay(100).then(() => {
       resolved = true
     })
     await clock?.tickAsync(99)
@@ -30,7 +30,7 @@ describe('testutils Delay()', () => {
   })
   it('should resolve after the specified delay elapses', async () => {
     let resolved = false
-    const promise = Delay(100).then(() => {
+    const promise = delay(100).then(() => {
       resolved = true
     })
     await clock?.tickAsync(100)

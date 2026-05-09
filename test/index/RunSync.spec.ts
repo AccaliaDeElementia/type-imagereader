@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { ImageReader, RunSync, Internals, Imports } from '#app.js'
 import { expect } from 'chai'
-import { EventuallyFullfills } from '#testutils/Errors.js'
+import { eventuallyFulfills } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -39,7 +39,7 @@ describe('index.ts RunSync() tests', () => {
   })
   it('should resolve when ActuallyRun rejects', async () => {
     actuallyRunSpy.rejects('foo!')
-    await EventuallyFullfills(RunSync())
+    await eventuallyFulfills(RunSync())
   })
   it('should log once when the initial sync rejects', async () => {
     actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))

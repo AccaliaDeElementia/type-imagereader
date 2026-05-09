@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 import { ImageReader, RunSyncWithLock } from '#app.js'
 import { expect } from 'chai'
-import { EventuallyRejects } from '#testutils/Errors.js'
+import { eventuallyRejects } from '#testutils/Errors.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -71,7 +71,7 @@ describe('index.ts RunSyncWithLock()', () => {
   it('should propagate rejection from synchronize', async () => {
     const err = new Error('SYNC ERROR')
     synchronizeStub.rejects(err)
-    const caught = await EventuallyRejects(RunSyncWithLock())
+    const caught = await eventuallyRejects(RunSyncWithLock())
     expect(caught).to.equal(err)
   })
 })

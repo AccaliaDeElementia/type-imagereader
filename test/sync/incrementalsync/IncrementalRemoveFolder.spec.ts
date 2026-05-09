@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { IncrementalRemoveFolder } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
-import { StubToKnex } from '#testutils/TypeGuards.js'
+import { stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
@@ -28,7 +28,7 @@ describe('sync/incrementalsync IncrementalRemoveFolder()', () => {
     delete: sandbox.stub().resolves(0),
   }
   let knexFnStub = sandbox.stub()
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
 
   beforeEach(() => {
     ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
@@ -56,7 +56,7 @@ describe('sync/incrementalsync IncrementalRemoveFolder()', () => {
     knexFnStub.withArgs('pictures').returns(picturesStub)
     knexFnStub.withArgs('bookmarks').returns(bookmarksStub)
     knexFnStub.withArgs('folders').returns(foldersStub)
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
   })
 
   afterEach(() => {

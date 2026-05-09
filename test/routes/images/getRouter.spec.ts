@@ -9,31 +9,31 @@ import type { Server as WebSocketServer } from 'socket.io'
 
 import { CacheStorage, ReadAndRescaleImage, getRouter, Imports } from '#routes/images.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/images export getRouter()', () => {
   const defaultKioskCache = CacheStorage.kioskCache
   const defaultScaledCache = CacheStorage.scaledCache
-  let applicationFake = Cast<Application>({})
-  let serverFake = Cast<Server>({})
-  let websocketsFake = Cast<WebSocketServer>({})
+  let applicationFake = cast<Application>({})
+  let serverFake = cast<Server>({})
+  let websocketsFake = cast<WebSocketServer>({})
   let routerFake = {
     get: sandbox.stub().returnsThis(),
   }
   let getRouterStub = sandbox.stub()
   let loggerStub = sandbox.stub()
   beforeEach(() => {
-    applicationFake = Cast<Application>({})
-    serverFake = Cast<Server>({})
-    websocketsFake = Cast<WebSocketServer>({})
+    applicationFake = cast<Application>({})
+    serverFake = cast<Server>({})
+    websocketsFake = cast<WebSocketServer>({})
     routerFake = {
       get: sandbox.stub().returnsThis(),
     }
-    getRouterStub = sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerFake))
+    getRouterStub = sandbox.stub(Imports, 'Router').returns(cast<Router>(routerFake))
     loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'logger').value(Cast<Debugger>(loggerStub))
+    sandbox.stub(Imports, 'logger').value(cast<Debugger>(loggerStub))
   })
   afterEach(() => {
     sandbox.restore()

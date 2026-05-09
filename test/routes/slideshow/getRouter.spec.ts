@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import type { Request, Response, Application, Router } from 'express'
 import type { Socket, Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { assert, expect } from 'chai'
 import { Config, Internals, getRouter, Imports } from '#routes/slideshow.js'
 
@@ -12,41 +12,41 @@ const sandbox = Sinon.createSandbox()
 
 describe('routes/slideshow getRouter', () => {
   let routerStub = { get: sandbox.stub() }
-  let knexFake = StubToKnex({})
+  let knexFake = stubToKnex({})
   sandbox.stub().resolves(knexFake)
   let rootRouteStub = sandbox.stub()
   let handleSocketStub = sandbox.stub()
   let setIntervalStub = sandbox.stub()
   let tickCountdownStub = sandbox.stub()
-  let applicationFake = Cast<Application>({})
-  let serverFake = Cast<Server>({})
+  let applicationFake = cast<Application>({})
+  let serverFake = cast<Server>({})
   let ioStub = {
     on: sandbox.stub(),
   }
-  let socketsFake = Cast<WebSocketServer>(ioStub)
-  let requestFake = Cast<Request>({})
+  let socketsFake = cast<WebSocketServer>(ioStub)
+  let requestFake = cast<Request>({})
   let responseStub = { json: sandbox.stub() }
-  let responseFake = Cast<Response>(responseStub)
+  let responseFake = cast<Response>(responseStub)
   beforeEach(() => {
     sandbox.useFakeTimers({ now: 3141592 })
     routerStub = { get: sandbox.stub() }
-    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
-    knexFake = StubToKnex({})
+    sandbox.stub(Imports, 'Router').returns(cast<Router>(routerStub))
+    knexFake = stubToKnex({})
     sandbox.stub(Imports, 'initialize').resolves(knexFake)
     rootRouteStub = sandbox.stub(Internals, 'RootRoute').resolves()
     handleSocketStub = sandbox.stub(Internals, 'HandleSocket')
     setIntervalStub = sandbox.stub(global, 'setInterval')
     tickCountdownStub = sandbox.stub(Internals, 'TickCountdown').resolves()
-    applicationFake = Cast<Application>({})
-    serverFake = Cast<Server>({})
+    applicationFake = cast<Application>({})
+    serverFake = cast<Server>({})
     ioStub = {
       on: sandbox.stub(),
     }
-    socketsFake = Cast<WebSocketServer>(ioStub)
+    socketsFake = cast<WebSocketServer>(ioStub)
     Config.launchId = -1
-    requestFake = Cast<Request>({})
+    requestFake = cast<Request>({})
     responseStub = { json: sandbox.stub() }
-    responseFake = Cast<Response>(responseStub)
+    responseFake = cast<Response>(responseStub)
   })
   afterEach(() => {
     sandbox.restore()
@@ -83,7 +83,7 @@ describe('routes/slideshow getRouter', () => {
   routeTests.forEach(([title, path, validationFn]) => {
     it(`should ${title} for ${path}`, async () => {
       await getRouter(applicationFake, serverFake, socketsFake)
-      const fn = Cast<(req: Request, res: Response) => void>(
+      const fn = cast<(req: Request, res: Response) => void>(
         routerStub.get.getCalls().find((call) => call.args[0] === path)?.args[1],
       )
       fn(requestFake, responseFake)
@@ -100,26 +100,26 @@ describe('routes/slideshow getRouter', () => {
   })
   it('should handle socket on new connection', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    const socket = Cast<Socket>({})
-    Cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
+    const socket = cast<Socket>({})
+    cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
     expect(handleSocketStub.callCount).to.equal(1)
   })
   it('should handle socket with knex', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    const socket = Cast<Socket>({})
-    Cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
+    const socket = cast<Socket>({})
+    cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
     expect(handleSocketStub.firstCall.args[0]).to.equal(knexFake)
   })
   it('should handle socket with socket.io server', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    const socket = Cast<Socket>({})
-    Cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
+    const socket = cast<Socket>({})
+    cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
     expect(handleSocketStub.firstCall.args[1]).to.equal(socketsFake)
   })
   it('should handle socket with socket', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    const socket = Cast<Socket>({})
-    Cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
+    const socket = cast<Socket>({})
+    cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
     expect(handleSocketStub.firstCall.args[2]).to.equal(socket)
   })
   it('should set interval for periodic processing', async () => {
@@ -133,19 +133,19 @@ describe('routes/slideshow getRouter', () => {
   })
   it('should process TickCountdown in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    const callback = Cast<() => Promise<void>>(setIntervalStub.firstCall.args[0])
+    const callback = cast<() => Promise<void>>(setIntervalStub.firstCall.args[0])
     await callback()
     expect(tickCountdownStub.callCount).to.equal(1)
   })
   it('should process TickCountdown with knex in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    const callback = Cast<() => Promise<void>>(setIntervalStub.firstCall.args[0])
+    const callback = cast<() => Promise<void>>(setIntervalStub.firstCall.args[0])
     await callback()
     expect(tickCountdownStub.firstCall.args[0]).to.equal(knexFake)
   })
   it('should process TickCountdown with websocket server in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    const callback = Cast<() => void>(setIntervalStub.firstCall.args[0])
+    const callback = cast<() => void>(setIntervalStub.firstCall.args[0])
     callback()
     expect(tickCountdownStub.firstCall.args[1]).to.equal(socketsFake)
   })

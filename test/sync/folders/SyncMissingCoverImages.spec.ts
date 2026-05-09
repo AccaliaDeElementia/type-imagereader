@@ -3,7 +3,7 @@
 import { expect } from 'chai'
 import { SyncMissingCoverImages } from '#sync/folders.js'
 import Sinon from 'sinon'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { createLoggerFake } from '#testutils/Debug.js'
 
 const sandbox = Sinon.createSandbox()
@@ -23,7 +23,7 @@ describe('sync/folders SyncMissingCoverImages()', () => {
     catch: sandbox.stub(),
   }
   let knexFnStub = sandbox.stub().returns(knexInstanceStub)
-  let knexFnFake = StubToKnex(knexFnStub)
+  let knexFnFake = stubToKnex(knexFnStub)
   beforeEach(() => {
     ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
     knexInnerInstanceStub = {
@@ -39,7 +39,7 @@ describe('sync/folders SyncMissingCoverImages()', () => {
       catch: sandbox.stub(),
     }
     knexFnStub = sandbox.stub().returns(knexInstanceStub)
-    knexFnFake = StubToKnex(knexFnStub)
+    knexFnFake = stubToKnex(knexFnStub)
   })
   afterEach(() => {
     sandbox.restore()
@@ -66,37 +66,37 @@ describe('sync/folders SyncMissingCoverImages()', () => {
   })
   it('should call select once in inner query', async () => {
     await SyncMissingCoverImages(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.callCount).to.equal(1)
   })
   it("should call select with '*' in inner query", async () => {
     await SyncMissingCoverImages(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.select.firstCall.args).to.deep.equal(['*'])
   })
   it('should call from once in inner query', async () => {
     await SyncMissingCoverImages(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.from.callCount).to.equal(1)
   })
   it("should call from with 'pictures' in inner query", async () => {
     await SyncMissingCoverImages(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.from.firstCall.args).to.deep.equal(['pictures'])
   })
   it('should call whereRaw once in inner query', async () => {
     await SyncMissingCoverImages(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.whereRaw.callCount).to.equal(1)
   })
   it('should call whereRaw with correct condition in inner query', async () => {
     await SyncMissingCoverImages(loggerFake, knexFnFake)
-    const fn = Cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
     expect(knexInnerInstanceStub.whereRaw.firstCall.args).to.deep.equal(['pictures.path = folders.current'])
   })

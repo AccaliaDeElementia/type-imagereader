@@ -3,9 +3,9 @@
 import { expect } from 'chai'
 import type { Knex } from 'knex'
 import { IsPostgres } from '#sync/syncItemsDialect.js'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
-const fakeKnex = (clientName: string): Knex => Cast<Knex>({ client: { config: { client: clientName } } })
+const fakeKnex = (clientName: string): Knex => cast<Knex>({ client: { config: { client: clientName } } })
 
 describe('sync/syncItemsDialect IsPostgres()', () => {
   it('should return true when client is postgresql', () => {

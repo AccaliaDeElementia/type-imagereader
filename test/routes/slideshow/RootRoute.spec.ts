@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import type { Request } from 'express'
-import { Cast, StubToKnex } from '#testutils/TypeGuards.js'
+import { cast, stubToKnex } from '#testutils/TypeGuards.js'
 import { expect } from 'chai'
 import { RootRoute, Internals, Imports } from '#routes/slideshow.js'
 import { createResponseFake } from '#testutils/Express.js'
@@ -14,8 +14,8 @@ describe('routes/slideshow RootRoute', () => {
     params: { path: undefined as string | undefined },
   }
   let { stub: resStub, fake: responseFake } = createResponseFake()
-  let requestFake = Cast<Request>(reqStub)
-  let knexFake = StubToKnex({})
+  let requestFake = cast<Request>(reqStub)
+  let knexFake = stubToKnex({})
   let roomData = { images: [''], uriSafeImage: '' }
   let getRoomStub = sandbox.stub().resolves()
   let isPathTraversalStub = sandbox.stub()
@@ -27,8 +27,8 @@ describe('routes/slideshow RootRoute', () => {
       params: { path: undefined },
     }
     ;({ stub: resStub, fake: responseFake } = createResponseFake())
-    requestFake = Cast<Request>(reqStub)
-    knexFake = StubToKnex({})
+    requestFake = cast<Request>(reqStub)
+    knexFake = stubToKnex({})
     noImages = []
     fullImages = ['1', '2', '3', '4', '5', '6', '7', '8']
     roomData = { images: noImages, uriSafeImage: '/foo/bar/baz.png' }
@@ -163,7 +163,7 @@ describe('routes/slideshow RootRoute', () => {
 
     it('should log a string fallback when GetRoomAndIncrementImage rejects with a non-Error', async () => {
       reqStub.params.path = 'foo'
-      getRoomStub.rejects(Cast<Error>({ toString: () => 'rejection-token' }))
+      getRoomStub.rejects(cast<Error>({ toString: () => 'rejection-token' }))
       await RootRoute(knexFake, requestFake, responseFake)
       const renderErrorCall = loggerStub.getCalls().find((c) => c.args[0] === 'slideshow render error: %s')
       expect(renderErrorCall?.args[1]).to.equal('rejection-token')

@@ -6,18 +6,18 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { getRouter, Imports } from '#routes/index.js'
 import Sinon from 'sinon'
-import { Cast } from '#testutils/TypeGuards.js'
+import { cast } from '#testutils/TypeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('routes/index getRouter()', () => {
-  const applicationFake = Cast<Application>({})
-  const serverFake = Cast<Server>({})
-  const socketsFake = Cast<WebSocketServer>({})
+  const applicationFake = cast<Application>({})
+  const serverFake = cast<Server>({})
+  const socketsFake = cast<WebSocketServer>({})
   let routerStub = { get: sandbox.stub() }
   beforeEach(() => {
     routerStub = { get: sandbox.stub() }
-    sandbox.stub(Imports, 'Router').returns(Cast<Router>(routerStub))
+    sandbox.stub(Imports, 'Router').returns(cast<Router>(routerStub))
   })
   afterEach(() => {
     sandbox.restore()
