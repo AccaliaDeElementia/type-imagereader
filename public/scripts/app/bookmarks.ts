@@ -2,7 +2,8 @@
 
 import { publish, subscribe } from './pubsub.js'
 import { getJSON as _getJSON, postJSON as _postJSON, acceptAnyResponse } from './net.js'
-import { cloneNode, isHTMLElement } from './utils.js'
+import { cloneNode } from './utils.js'
+import { isHTMLElement } from '#contracts/markup.js'
 import {
   type Bookmark,
   type BookmarkFolder,

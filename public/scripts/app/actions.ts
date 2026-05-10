@@ -1,7 +1,8 @@
 'use sanity'
 
 import { subscribe, publish, addInterval, removeInterval } from './pubsub.js'
-import { cloneNode, isHTMLElement } from './utils.js'
+import { cloneNode } from './utils.js'
+import { isHTMLElement } from '#contracts/markup.js'
 
 import { isListing } from '#contracts/listing.js'
 import { hasValue, hasValues } from '#utils/helpers.js'

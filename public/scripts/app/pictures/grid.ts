@@ -4,7 +4,8 @@ import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './state.js'
 import { hasValues } from '#utils/helpers.js'
 import { publish } from '../pubsub.js'
-import { cloneNode, isHTMLElement } from '../utils.js'
+import { cloneNode } from '../utils.js'
+import { isHTMLElement } from '#contracts/markup.js'
 
 const INDEX_TO_PAGE_OFFSET = 1
 const MINIMUM_PAGE_COUNT = 2

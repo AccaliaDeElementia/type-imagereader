@@ -2,7 +2,8 @@
 
 import { publish, subscribe } from './pubsub.js'
 
-import { isHTMLElement, cloneNode } from './utils.js'
+import { cloneNode } from './utils.js'
+import { isHTMLElement } from '#contracts/markup.js'
 import { type FolderWithCounts, isListing, type Listing } from '#contracts/listing.js'
 import { hasValue, hasValues, stringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
 

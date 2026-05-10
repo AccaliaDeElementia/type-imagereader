@@ -10,10 +10,6 @@ function isElement(obj: unknown): obj is Element {
   return obj !== null && typeof obj === 'object' && 'firstElementChild' in obj
 }
 
-export function isHTMLElement(obj: unknown): obj is HTMLElement {
-  return obj !== null && typeof obj === 'object' && 'style' in obj
-}
-
 export function cloneNode<T extends HTMLElement>(
   source: T | DocumentFragment | undefined | null,
   isT: (obj: Element | null) => obj is T,
