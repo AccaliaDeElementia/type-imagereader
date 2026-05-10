@@ -82,7 +82,7 @@ const MIN_HOUR = 0
 const MAX_HOUR = 23
 const MIN_MINUTES = 0
 const MAX_MINUTES = 59
-function StringToTimeCode(input: string | undefined): TimeCode | undefined {
+function stringToTimeCode(input: string | undefined): TimeCode | undefined {
   if (input === undefined) return undefined
   const [iHour, iMinute] = input.split(':')
   if (stringishHasValue(iHour)) {
@@ -103,7 +103,7 @@ function getTimeOfDay(envVar: string | undefined, defaultHour: number, defaultMi
   time.setSeconds(DEFAULT_SECONDS)
   time.setMinutes(defaultMinute)
   time.setHours(defaultHour)
-  const code = StringToTimeCode(envVar)
+  const code = stringToTimeCode(envVar)
   if (code !== undefined) {
     time.setHours(code.hour)
     time.setMinutes(code.minute)

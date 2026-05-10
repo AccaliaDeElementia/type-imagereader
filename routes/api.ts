@@ -142,9 +142,9 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
       if (incomingModCount === INVALID_MOD_COUNT) {
         await Imports.setLatestPicture(knex, path)
       } else {
-        const newCount = ModCount.ValidateAndIncrement(incomingModCount)
+        const newCount = ModCount.validateAndIncrement(incomingModCount)
         if (newCount === null) {
-          logger('modcount mismatch: client=%d server=%d for %s', incomingModCount, ModCount.Get(), path)
+          logger('modcount mismatch: client=%d server=%d for %s', incomingModCount, ModCount.get(), path)
           res.status(StatusCodes.BAD_REQUEST).send(`${INVALID_MOD_COUNT}`)
           return
         }

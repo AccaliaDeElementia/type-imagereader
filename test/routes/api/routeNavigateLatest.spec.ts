@@ -53,8 +53,8 @@ describe('routes/api route POST /navigate/latest', () => {
       }),
     )
     setLatestPictureStub = sandbox.stub(Imports, 'setLatestPicture').resolves()
-    validateAndIncrementStub = sandbox.stub(ModCount, 'ValidateAndIncrement').returns(1)
-    getModcountStub = sandbox.stub(ModCount, 'Get').returns(69)
+    validateAndIncrementStub = sandbox.stub(ModCount, 'validateAndIncrement').returns(1)
+    getModcountStub = sandbox.stub(ModCount, 'get').returns(69)
     ;({ loggerStub } = stubDebug(sandbox, Imports))
     sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
     isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
@@ -106,12 +106,12 @@ describe('routes/api route POST /navigate/latest', () => {
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.firstCall.args).to.deep.equal([knexFake, '/foo/bar/a image.png'])
   })
-  it('should not call ValidateAndIncrement when validate is bypassed', async () => {
+  it('should not call validateAndIncrement when validate is bypassed', async () => {
     requestStub.body.modCount = -1
     await routeHandler(requestFake, responseFake)
     expect(validateAndIncrementStub.callCount).to.equal(0)
   })
-  it('should not call Get when validate is bypassed', async () => {
+  it('should not call get when validate is bypassed', async () => {
     requestStub.body.modCount = -1
     await routeHandler(requestFake, responseFake)
     expect(getModcountStub.callCount).to.equal(0)

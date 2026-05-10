@@ -70,25 +70,25 @@ interface Listing {
   modCount: number
 }
 interface ModCountPublic {
-  Get: () => number
+  get: () => number
   // Atomic compare-and-increment: returns the new (post-increment) count on match, null on mismatch.
   // Combining the validate and increment steps into a single synchronous call removes the temptation
   // for callers to interleave an `await` between them and silently race concurrent requests.
-  ValidateAndIncrement: (incoming: number) => number | null
+  validateAndIncrement: (incoming: number) => number | null
 }
 export interface ModCountInternals {
   modCount: number
-  Reset: () => number
+  reset: () => number
 }
 const modCountImpl: ModCountPublic & ModCountInternals = {
   modCount: RESET_MOD_COUNT,
-  Reset: (): number => {
+  reset: (): number => {
     modCountImpl.modCount = Math.floor(Math.random() * MODCOUNT_INITIAL_MAGNITUDE)
     Imports.logger('ModCount reset to %d', modCountImpl.modCount)
     return modCountImpl.modCount
   },
-  Get: (): number => modCountImpl.modCount,
-  ValidateAndIncrement: (incoming: number): number | null => {
+  get: (): number => modCountImpl.modCount,
+  validateAndIncrement: (incoming: number): number | null => {
     if (modCountImpl.modCount !== incoming) return null
     if (modCountImpl.modCount >= MAXIMUM_MOD_COUNT) {
       modCountImpl.modCount = RESET_MOD_COUNT
@@ -97,7 +97,7 @@ const modCountImpl: ModCountPublic & ModCountInternals = {
     return modCountImpl.modCount
   },
 }
-modCountImpl.Reset()
+modCountImpl.reset()
 export const ModCount: ModCountPublic = modCountImpl
 
 export const UriSafePath = {
@@ -313,7 +313,7 @@ export async function getListing(knex: Knex, path: string): Promise<Listing | nu
     children,
     pictures,
     bookmarks,
-    modCount: ModCount.Get(),
+    modCount: ModCount.get(),
   }
 }
 
