@@ -184,7 +184,7 @@ export const ImageReader = {
   },
 }
 
-// Match argv[1] against either this file or its directory: `tsx ./index.ts` sets
+// Match argv[1] against either this file or its directory: `tsx ./app.ts` sets
 // argv[1] to the file path, while `tsx .` sets it to the directory and lets Node
 // resolve the entry. Both should trigger startup; tests that import this module
 // (e.g., `#app.js`) leave argv[1] pointing at the test runner, so the guard stays

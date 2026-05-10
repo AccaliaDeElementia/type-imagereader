@@ -12,7 +12,7 @@ const fireImmediately = (fn: () => Promise<void>): number => {
   return 0
 }
 
-describe('index.ts runSync() tests', () => {
+describe('app.ts runSync() tests', () => {
   let actuallyRunSpy = sandbox.stub().resolves()
   let setIntervalFake = sandbox.stub()
   let loggerStub = sandbox.stub()

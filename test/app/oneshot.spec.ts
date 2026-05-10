@@ -10,7 +10,7 @@ import { ImageReader, Imports } from '#app.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('index.ts ONESHOT mode tests', (): void => {
+describe('app.ts ONESHOT mode tests', (): void => {
   let SynchronizeStub: Sinon.SinonStub | undefined = undefined
   let ClockFake: Sinon.SinonFakeTimers | undefined = undefined
   let LoggerStub: Sinon.SinonStub | undefined = undefined

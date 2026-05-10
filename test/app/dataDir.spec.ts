@@ -14,7 +14,7 @@ const sandbox = Sinon.createSandbox()
 const fakeDirStats = (): Stats => cast<Stats>({ isDirectory: () => true })
 const fakeFileStats = (): Stats => cast<Stats>({ isDirectory: () => false })
 
-describe('index.ts DATA_DIR handling', (): void => {
+describe('app.ts DATA_DIR handling', (): void => {
   let StartServerStub: Sinon.SinonStub | undefined = undefined
   let SynchronizeStub: Sinon.SinonStub | undefined = undefined
   let StartWatcherStub: Sinon.SinonStub | undefined = undefined

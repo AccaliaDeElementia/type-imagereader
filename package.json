@@ -2,6 +2,7 @@
   "name": "type-imagereader",
   "version": "1.0.0",
   "type": "module",
+  "main": "./app.ts",
   "description": "Self-hosted web app for browsing local image and comic collections, with PostgreSQL-backed indexing and live filesystem sync",
   "scripts": {
     "prebuild": "npm run lint",
@@ -46,7 +47,7 @@
     "#sync/*.js": "./sync/*.ts",
     "#contracts/*.js": "./contracts/*.ts",
     "#server.js": "./server.ts",
-    "#app.js": "./index.ts"
+    "#app.js": "./app.ts"
   },
   "dependencies": {
     "@parcel/watcher": "^2.5.6",

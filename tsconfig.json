@@ -30,7 +30,7 @@
       "#sync/*": ["./sync/*"],
       "#contracts/*": ["./contracts/*"],
       "#server.js": ["./server.js"],
-      "#app.js": ["./index.js"]
+      "#app.js": ["./app.js"]
     },
     "typeRoots": ["node_modules/@types", "@types"],
     "esModuleInterop": true,

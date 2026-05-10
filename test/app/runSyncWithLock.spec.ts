@@ -7,7 +7,7 @@ import { eventuallyRejects } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('index.ts runSyncWithLock()', () => {
+describe('app.ts runSyncWithLock()', () => {
   let synchronizeStub = sandbox.stub()
   let takeStub = sandbox.stub()
   let releaseStub = sandbox.stub()
