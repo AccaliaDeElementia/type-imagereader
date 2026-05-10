@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isRowCountResult } from '#sync/helpers.js'
 
 describe('sync/helpers isRowCountResult()', () => {
@@ -22,7 +21,7 @@ describe('sync/helpers isRowCountResult()', () => {
   ]
   tests.forEach(([title, value, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(isRowCountResult(value)).to.equal(expected)
+      expect(isRowCountResult(value)).toBe(expected)
     })
   })
 })

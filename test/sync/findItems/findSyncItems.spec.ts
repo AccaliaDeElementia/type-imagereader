@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { EventEmitter } from 'node:events'
 import { findSyncItems, Imports, LOG_PREFIX } from '#sync/findItems.js'
 import Sinon from 'sinon'
@@ -71,23 +70,23 @@ describe('sync/findItems findSyncItems()', () => {
   })
   it('should call debug once when creating logger', async () => {
     await findSyncItems(knexFnFake)
-    expect(debugStub.callCount).to.equal(1)
+    expect(debugStub.callCount).toBe(1)
   })
   it('should create logger with the module prefix', async () => {
     await findSyncItems(knexFnFake)
-    expect(debugStub.firstCall.args[0]).to.equal(LOG_PREFIX)
+    expect(debugStub.firstCall.args[0]).toBe(LOG_PREFIX)
   })
   it('should truncate syncitems once to clear prior contents', async () => {
     await findSyncItems(knexFnFake)
-    expect(knexInstanceStub.truncate.callCount).to.equal(1)
+    expect(knexInstanceStub.truncate.callCount).toBe(1)
   })
   it('should insert the root folder row once', async () => {
     await findSyncItems(knexFnFake)
-    expect(knexInstanceStub.insert.callCount).to.equal(1)
+    expect(knexInstanceStub.insert.callCount).toBe(1)
   })
   it('should insert the root folder row with the root sentinel in the folder column', async () => {
     await findSyncItems(knexFnFake)
-    expect(knexInstanceStub.insert.firstCall.args).to.deep.equal([
+    expect(knexInstanceStub.insert.firstCall.args).toEqual([
       {
         folder: '',
         path: '/',
@@ -100,37 +99,37 @@ describe('sync/findItems findSyncItems()', () => {
   it('should insert the root folder row with a non-empty pathHash to satisfy NOT NULL', async () => {
     await findSyncItems(knexFnFake)
     const row = cast<{ pathHash: string }>(knexInstanceStub.insert.firstCall.args[0])
-    expect(row.pathHash.length).to.be.above(0)
+    expect(row.pathHash.length).toBeGreaterThan(0)
   })
   it('should request syncitems on the first knex call', async () => {
     await findSyncItems(knexFnFake)
-    expect(knexFnStub.firstCall.calledWith('syncitems')).to.equal(true)
+    expect(knexFnStub.firstCall.calledWith('syncitems')).toBe(true)
   })
   it('should request syncitems on the second knex call', async () => {
     await findSyncItems(knexFnFake)
-    expect(knexFnStub.secondCall.calledWith('syncitems')).to.equal(true)
+    expect(knexFnStub.secondCall.calledWith('syncitems')).toBe(true)
   })
   it('should acquire a pool connection for the COPY stream', async () => {
     await findSyncItems(knexFnFake)
-    expect(acquireStub.callCount).to.equal(1)
+    expect(acquireStub.callCount).toBe(1)
   })
   it('should release the pool connection after the COPY stream completes', async () => {
     await findSyncItems(knexFnFake)
-    expect(releaseStub.callCount).to.equal(1)
+    expect(releaseStub.callCount).toBe(1)
   })
   it('should release the connection that was acquired', async () => {
     await findSyncItems(knexFnFake)
-    expect(releaseStub.firstCall.args[1]).to.equal(pgClientStub)
+    expect(releaseStub.firstCall.args[1]).toBe(pgClientStub)
   })
   it('should release the pool connection even when the walker rejects', async () => {
     fsWalkerStub.rejects(new Error('walker failed'))
     await findSyncItems(knexFnFake).catch(() => undefined)
-    expect(releaseStub.callCount).to.equal(1)
+    expect(releaseStub.callCount).toBe(1)
   })
   it('should destroy the stream if the walker rejects', async () => {
     fsWalkerStub.rejects(new Error('walker failed'))
     await findSyncItems(knexFnFake).catch(() => undefined)
-    expect(streamFake.destroy.callCount).to.equal(1)
+    expect(streamFake.destroy.callCount).toBe(1)
   })
   it('should wrap a non-Error rejection in an Error when destroying the stream', async () => {
     fsWalkerStub.callsFake(
@@ -138,39 +137,39 @@ describe('sync/findItems findSyncItems()', () => {
       () => Promise.reject('plain string failure'),
     )
     await findSyncItems(knexFnFake).catch(() => undefined)
-    expect(streamFake.destroy.firstCall.args[0]).to.be.an('Error')
+    expect(streamFake.destroy.firstCall.args[0]).toBeInstanceOf(Error)
   })
   it('should open exactly one COPY stream', async () => {
     await findSyncItems(knexFnFake)
-    expect(copyFromStub.callCount).to.equal(1)
+    expect(copyFromStub.callCount).toBe(1)
   })
   it('should issue a COPY FROM STDIN statement targeting syncitems', async () => {
     await findSyncItems(knexFnFake)
-    expect(copyFromStub.firstCall.args[0]).to.equal(
+    expect(copyFromStub.firstCall.args[0]).toBe(
       'COPY syncitems (folder, path, "isFile", "sortKey", "pathHash") FROM STDIN WITH (FORMAT csv)',
     )
   })
   it('should submit the COPY stream through the acquired pg client', async () => {
     await findSyncItems(knexFnFake)
-    expect(pgClientStub.query.callCount).to.equal(1)
+    expect(pgClientStub.query.callCount).toBe(1)
   })
   it('should end the COPY stream once the walk finishes', async () => {
     await findSyncItems(knexFnFake)
-    expect(streamFake.end.callCount).to.equal(1)
+    expect(streamFake.end.callCount).toBe(1)
   })
   it('should call fsWalker once', async () => {
     await findSyncItems(knexFnFake)
-    expect(fsWalkerStub.callCount).to.equal(1)
+    expect(fsWalkerStub.callCount).toBe(1)
   })
   it('should walk filesystem starting at /data', async () => {
     await findSyncItems(knexFnFake)
-    expect(fsWalkerStub.calledWith('/data')).to.equal(true)
+    expect(fsWalkerStub.calledWith('/data')).toBe(true)
   })
   it('should walk filesystem starting at DATA_DIR when set', async () => {
     process.env.DATA_DIR = '/library/images'
     try {
       await findSyncItems(knexFnFake)
-      expect(fsWalkerStub.calledWith('/library/images')).to.equal(true)
+      expect(fsWalkerStub.calledWith('/library/images')).toBe(true)
     } finally {
       delete process.env.DATA_DIR
     }
@@ -180,7 +179,7 @@ describe('sync/findItems findSyncItems()', () => {
     const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     await callback(items, 0)
-    expect(buildSyncItemRowsStub.calledWith(items)).to.equal(true)
+    expect(buildSyncItemRowsStub.calledWith(items)).toBe(true)
   })
   it('should format each row through formatSyncItemCsv', async () => {
     const row = { folder: '/', path: '/f.jpg', isFile: true, sortKey: 'f', pathHash: 'h' }
@@ -189,7 +188,7 @@ describe('sync/findItems findSyncItems()', () => {
       await callback([{ path: '/f.jpg', isFile: true }], 0)
     })
     await findSyncItems(knexFnFake)
-    expect(formatSyncItemCsvStub.calledWith(row)).to.equal(true)
+    expect(formatSyncItemCsvStub.calledWith(row)).toBe(true)
   })
   it('should write buffered rows to the stream when the threshold is reached', async () => {
     fsWalkerStub.callsFake(async (_: string, callback: Callback) => {
@@ -198,7 +197,7 @@ describe('sync/findItems findSyncItems()', () => {
     })
     await findSyncItems(knexFnFake)
     const writes = streamFake.write.getCalls().filter((c) => typeof c.args[0] === 'string' && c.args[0].length > 0)
-    expect(writes).to.have.lengthOf.at.least(1)
+    expect(writes.length).toBeGreaterThanOrEqual(1)
   })
   it('should issue a single write call when only the tail flush produces a batch', async () => {
     fsWalkerStub.callsFake(async (_: string, callback: Callback) => {
@@ -206,7 +205,7 @@ describe('sync/findItems findSyncItems()', () => {
       await callback([], 0)
     })
     await findSyncItems(knexFnFake)
-    expect(streamFake.write.callCount).to.equal(1)
+    expect(streamFake.write.callCount).toBe(1)
   })
   it('should flush the tail buffer via stream.write before ending', async () => {
     fsWalkerStub.callsFake(async (_: string, callback: Callback) => {
@@ -214,7 +213,7 @@ describe('sync/findItems findSyncItems()', () => {
       await callback([], 0)
     })
     await findSyncItems(knexFnFake)
-    expect(streamFake.write.getCalls()).to.have.lengthOf.at.least(1)
+    expect(streamFake.write.getCalls().length).toBeGreaterThanOrEqual(1)
   })
   it('should wait for drain when stream.write signals backpressure', async () => {
     streamFake.write.onFirstCall().callsFake(() => {
@@ -227,7 +226,7 @@ describe('sync/findItems findSyncItems()', () => {
       await callback([], 0)
     })
     await findSyncItems(knexFnFake)
-    expect(streamFake.end.callCount).to.equal(1)
+    expect(streamFake.end.callCount).toBe(1)
   })
   it('should reject when the stream emits an error before finish', async () => {
     const err = new Error('copy failed')
@@ -244,7 +243,7 @@ describe('sync/findItems findSyncItems()', () => {
     } catch (e) {
       caught = e
     }
-    expect(caught).to.equal(err)
+    expect(caught).toBe(err)
   })
   it('should log status on first loop', async () => {
     await findSyncItems(knexFnFake)
@@ -252,7 +251,7 @@ describe('sync/findItems findSyncItems()', () => {
     const items = [{ path: '/foo', isFile: false }]
     buildSyncItemRowsStub.returns({ files: 3, dirs: 9, rows: [] })
     await callback(items, 6)
-    expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).to.equal(true)
+    expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).toBe(true)
   })
   it('should log twice by the 101st loop', async () => {
     await findSyncItems(knexFnFake)
@@ -264,7 +263,7 @@ describe('sync/findItems findSyncItems()', () => {
     await Promise.all(invocations)
     buildSyncItemRowsStub.returns({ files: 3, dirs: 9, rows: [] })
     await callback(items, 6)
-    expect(loggerStub.callCount).to.equal(2)
+    expect(loggerStub.callCount).toBe(2)
   })
   it('should log status on 101st loop', async () => {
     await findSyncItems(knexFnFake)
@@ -276,7 +275,7 @@ describe('sync/findItems findSyncItems()', () => {
     await Promise.all(invocations)
     buildSyncItemRowsStub.returns({ files: 3, dirs: 9, rows: [] })
     await callback(items, 6)
-    expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).to.equal(true)
+    expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).toBe(true)
   })
   const ChainableFileCounter = async (prev: Promise<void>, callback: Callback, files: number): Promise<void> => {
     const items = [{ path: '/foo', isFile: false }]
@@ -293,7 +292,7 @@ describe('sync/findItems findSyncItems()', () => {
       await chain
     })
     await findSyncItems(knexFnFake)
-    expect(loggerStub.calledWith('Found all 0 dirs and 5050 files')).to.equal(true)
+    expect(loggerStub.calledWith('Found all 0 dirs and 5050 files')).toBe(true)
   })
   const ChainableDirCounter = async (prev: Promise<void>, callback: Callback, dirs: number): Promise<void> => {
     const items = [{ path: '/foo', isFile: false }]
@@ -310,7 +309,7 @@ describe('sync/findItems findSyncItems()', () => {
       await chain
     })
     await findSyncItems(knexFnFake)
-    expect(loggerStub.calledWith('Found all 5050 dirs and 0 files')).to.equal(true)
+    expect(loggerStub.calledWith('Found all 5050 dirs and 0 files')).toBe(true)
   })
   it('should return count of files', async () => {
     fsWalkerStub.callsFake(async (_: string, callback: Callback) => {
@@ -321,6 +320,6 @@ describe('sync/findItems findSyncItems()', () => {
       await chain
     })
     const result = await findSyncItems(knexFnFake)
-    expect(result).to.equal(5050)
+    expect(result).toBe(5050)
   })
 })

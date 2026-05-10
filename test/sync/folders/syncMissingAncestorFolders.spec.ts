@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { syncMissingAncestorFolders } from '#sync/folders.js'
 import { toSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
@@ -96,11 +95,11 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should not attempt folder inserts', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(foldersInsertQuery.insert.callCount).to.equal(0)
+      expect(foldersInsertQuery.insert.callCount).toBe(0)
     })
     it('should log zero added ancestors', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(loggerStub.firstCall.args[0]).to.equal('Added 0 missing ancestor folders')
+      expect(loggerStub.firstCall.args[0]).toBe('Added 0 missing ancestor folders')
     })
   })
 
@@ -112,7 +111,7 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should not insert any rows (root is implicit)', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(insertedChunks.flat()).to.have.lengthOf(0)
+      expect(insertedChunks.flat()).toHaveLength(0)
     })
   })
 
@@ -125,39 +124,39 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     it('should insert a row for each missing ancestor', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
       const paths = insertedChunks.flat().map((r) => r.path)
-      expect(paths).to.have.members(['/a/', '/a/b/', '/a/b/c/'])
+      expect([...paths].sort()).toEqual(['/a/', '/a/b/', '/a/b/c/'].sort())
     })
     it('should not insert a row for the implicit root', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
       const paths = insertedChunks.flat().map((r) => r.path)
-      expect(paths).to.not.include('/')
+      expect(paths).not.toContain('/')
     })
     it('should set the correct parent folder on each inserted row', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
       const rowsByPath = Object.fromEntries(insertedChunks.flat().map((r) => [r.path, r]))
-      expect(rowsByPath['/a/b/']?.folder).to.equal('/a/')
+      expect(rowsByPath['/a/b/']?.folder).toBe('/a/')
     })
     it('should set the parent to root for a top-level ancestor', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
       const rowsByPath = Object.fromEntries(insertedChunks.flat().map((r) => [r.path, r]))
-      expect(rowsByPath['/a/']?.folder).to.equal('/')
+      expect(rowsByPath['/a/']?.folder).toBe('/')
     })
     it('should derive sortKey from the folder basename', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
       const rowsByPath = Object.fromEntries(insertedChunks.flat().map((r) => [r.path, r]))
-      expect(rowsByPath['/a/b/c/']?.sortKey).to.equal(toSortKey('c'))
+      expect(rowsByPath['/a/b/c/']?.sortKey).toBe(toSortKey('c'))
     })
     it('should log the number of ancestors added', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(loggerStub.firstCall.args[0]).to.equal('Added 3 missing ancestor folders')
+      expect(loggerStub.firstCall.args[0]).toBe('Added 3 missing ancestor folders')
     })
     it('should use onConflict on path when inserting', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(foldersInsertQuery.onConflict.firstCall.args).to.deep.equal(['path'])
+      expect(foldersInsertQuery.onConflict.firstCall.args).toEqual(['path'])
     })
     it('should use ignore (not merge) when inserting', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(foldersInsertQuery.ignore.callCount).to.be.above(0)
+      expect(foldersInsertQuery.ignore.callCount).toBeGreaterThan(0)
     })
   })
 
@@ -170,11 +169,11 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     it('should only insert the missing ancestor', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
       const paths = insertedChunks.flat().map((r) => r.path)
-      expect(paths).to.deep.equal(['/a/b/'])
+      expect(paths).toEqual(['/a/b/'])
     })
     it('should log the number of ancestors actually added', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(loggerStub.firstCall.args[0]).to.equal('Added 1 missing ancestor folders')
+      expect(loggerStub.firstCall.args[0]).toBe('Added 1 missing ancestor folders')
     })
   })
 
@@ -186,11 +185,11 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should not call insert', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(foldersInsertQuery.insert.callCount).to.equal(0)
+      expect(foldersInsertQuery.insert.callCount).toBe(0)
     })
     it('should log zero ancestors added', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(loggerStub.firstCall.args[0]).to.equal('Added 0 missing ancestor folders')
+      expect(loggerStub.firstCall.args[0]).toBe('Added 0 missing ancestor folders')
     })
   })
 
@@ -203,7 +202,7 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     it('should de-duplicate the shared ancestors', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
       const paths = insertedChunks.flat().map((r) => r.path)
-      expect(paths).to.have.members(['/a/', '/a/b/', '/a/b/c/', '/a/b/d/'])
+      expect([...paths].sort()).toEqual(['/a/', '/a/b/', '/a/b/c/', '/a/b/d/'].sort())
     })
   })
 
@@ -215,19 +214,19 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should query pictures once for distinct folders', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(knexFnStub.withArgs('pictures').callCount).to.equal(1)
+      expect(knexFnStub.withArgs('pictures').callCount).toBe(1)
     })
     it('should call distinct with folder column', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(picturesQuery.distinct.firstCall.args).to.deep.equal(['folder'])
+      expect(picturesQuery.distinct.firstCall.args).toEqual(['folder'])
     })
     it('should exclude null folders from the picture query', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(picturesQuery.whereNotNull.firstCall.args).to.deep.equal(['folder'])
+      expect(picturesQuery.whereNotNull.firstCall.args).toEqual(['folder'])
     })
     it('should look up existing folder paths with whereIn', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(whereInCalls.flat()).to.include('/a/')
+      expect(whereInCalls.flat()).toContain('/a/')
     })
   })
 })

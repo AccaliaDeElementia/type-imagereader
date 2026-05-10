@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { incrementalRemoveFolder } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/typeGuards.js'
@@ -65,71 +64,71 @@ describe('sync/incrementalsync incrementalRemoveFolder()', () => {
 
   it('should query pictures by folder prefix', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(picturesStub.where.calledWith('folder', 'like', '/comics/series/%')).to.equal(true)
+    expect(picturesStub.where.calledWith('folder', 'like', '/comics/series/%')).toBe(true)
   })
 
   it('should call delete on pictures', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(picturesStub.delete.callCount).to.equal(1)
+    expect(picturesStub.delete.callCount).toBe(1)
   })
 
   it('should call whereNotExists for orphaned bookmarks', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(bookmarksStub.whereNotExists.callCount).to.equal(1)
+    expect(bookmarksStub.whereNotExists.callCount).toBe(1)
   })
 
   it('should call delete on bookmarks', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(bookmarksStub.delete.callCount).to.equal(1)
+    expect(bookmarksStub.delete.callCount).toBe(1)
   })
 
   it('should select all columns in bookmarks subquery', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(bookmarksInnerStub.select.calledWith('*')).to.equal(true)
+    expect(bookmarksInnerStub.select.calledWith('*')).toBe(true)
   })
 
   it('should query from pictures in bookmarks subquery', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(bookmarksInnerStub.from.calledWith('pictures')).to.equal(true)
+    expect(bookmarksInnerStub.from.calledWith('pictures')).toBe(true)
   })
 
   it('should join on path in bookmarks subquery', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(bookmarksInnerStub.whereRaw.calledWith('pictures.path = bookmarks.path')).to.equal(true)
+    expect(bookmarksInnerStub.whereRaw.calledWith('pictures.path = bookmarks.path')).toBe(true)
   })
 
   it('should query folders by path prefix', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(foldersStub.where.calledWith('path', 'like', '/comics/series/%')).to.equal(true)
+    expect(foldersStub.where.calledWith('path', 'like', '/comics/series/%')).toBe(true)
   })
 
   it('should call delete on folders', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(foldersStub.delete.callCount).to.equal(1)
+    expect(foldersStub.delete.callCount).toBe(1)
   })
 
   it('should log summary with picture and folder counts', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
-    expect(loggerStub.calledWith('Incremental remove folder: /comics/series/ (5 pictures, 3 folders)')).to.equal(true)
+    expect(loggerStub.calledWith('Incremental remove folder: /comics/series/ (5 pictures, 3 folders)')).toBe(true)
   })
 
   it('should escape underscore wildcards when querying pictures', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/foo_bar/')
-    expect(picturesStub.where.calledWith('folder', 'like', '/foo\\_bar/%')).to.equal(true)
+    expect(picturesStub.where.calledWith('folder', 'like', '/foo\\_bar/%')).toBe(true)
   })
 
   it('should escape percent wildcards when querying pictures', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/foo%bar/')
-    expect(picturesStub.where.calledWith('folder', 'like', '/foo\\%bar/%')).to.equal(true)
+    expect(picturesStub.where.calledWith('folder', 'like', '/foo\\%bar/%')).toBe(true)
   })
 
   it('should escape underscore wildcards when querying folders', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/foo_bar/')
-    expect(foldersStub.where.calledWith('path', 'like', '/foo\\_bar/%')).to.equal(true)
+    expect(foldersStub.where.calledWith('path', 'like', '/foo\\_bar/%')).toBe(true)
   })
 
   it('should escape percent wildcards when querying folders', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/foo%bar/')
-    expect(foldersStub.where.calledWith('path', 'like', '/foo\\%bar/%')).to.equal(true)
+    expect(foldersStub.where.calledWith('path', 'like', '/foo\\%bar/%')).toBe(true)
   })
 })

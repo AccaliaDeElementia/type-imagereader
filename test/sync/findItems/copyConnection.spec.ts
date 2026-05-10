@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { Imports } from '#sync/findItems.js'
 import { cast } from '#testutils/typeGuards.js'
@@ -19,13 +18,13 @@ describe('sync/findItems copy connection helpers', () => {
       const acquireStub = sandbox.stub().resolves('THE_CLIENT')
       const knexFake = cast<Knex>({ client: { acquireConnection: acquireStub } })
       await Imports.acquireCopyConnection(knexFake)
-      expect(acquireStub.callCount).to.equal(1)
+      expect(acquireStub.callCount).toBe(1)
     })
     it('should return whatever knex.client.acquireConnection resolves with', async () => {
       const expected = { marker: 'pg-client' }
       const knexFake = cast<Knex>({ client: { acquireConnection: sandbox.stub().resolves(expected) } })
       const result = await Imports.acquireCopyConnection(knexFake)
-      expect(result).to.equal(expected)
+      expect(result).toBe(expected)
     })
   })
 
@@ -34,14 +33,14 @@ describe('sync/findItems copy connection helpers', () => {
       const releaseStub = sandbox.stub().resolves()
       const knexFake = cast<Knex>({ client: { releaseConnection: releaseStub } })
       await Imports.releaseCopyConnection(knexFake, cast<PoolClient>({}))
-      expect(releaseStub.callCount).to.equal(1)
+      expect(releaseStub.callCount).toBe(1)
     })
     it('should hand back the same client that was acquired', async () => {
       const releaseStub = sandbox.stub().resolves()
       const knexFake = cast<Knex>({ client: { releaseConnection: releaseStub } })
       const client = cast<PoolClient>({ marker: 'client' })
       await Imports.releaseCopyConnection(knexFake, client)
-      expect(releaseStub.firstCall.args[0]).to.equal(client)
+      expect(releaseStub.firstCall.args[0]).toBe(client)
     })
   })
 })

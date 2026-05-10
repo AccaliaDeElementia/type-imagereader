@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { incrementalRemovePicturesBulk } from '#sync/incrementalsync.js'
 import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/typeGuards.js'
@@ -70,49 +69,49 @@ describe('sync/incrementalsync incrementalRemovePicturesBulk()', () => {
   describe('when given an empty list of paths', () => {
     it('should not call pictures.delete', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, [])
-      expect(pictureDeleteCount).to.equal(0)
+      expect(pictureDeleteCount).toBe(0)
     })
     it('should not call bookmarks.delete', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, [])
-      expect(bookmarkDeleteCount).to.equal(0)
+      expect(bookmarkDeleteCount).toBe(0)
     })
   })
 
   describe('when given a single path', () => {
     it('should issue exactly one pictures.delete call', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/comics/page.jpg'])
-      expect(pictureDeleteCount).to.equal(1)
+      expect(pictureDeleteCount).toBe(1)
     })
     it('should issue exactly one bookmarks.delete call', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/comics/page.jpg'])
-      expect(bookmarkDeleteCount).to.equal(1)
+      expect(bookmarkDeleteCount).toBe(1)
     })
     it('should pass the path to pictures.whereIn', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/comics/page.jpg'])
-      expect(pictureWhereInCalls.flat()).to.deep.equal(['/comics/page.jpg'])
+      expect(pictureWhereInCalls.flat()).toEqual(['/comics/page.jpg'])
     })
     it('should pass the path to bookmarks.whereIn', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/comics/page.jpg'])
-      expect(bookmarkWhereInCalls.flat()).to.deep.equal(['/comics/page.jpg'])
+      expect(bookmarkWhereInCalls.flat()).toEqual(['/comics/page.jpg'])
     })
   })
 
   describe('when given many paths in a single chunk', () => {
     it('should issue exactly one pictures.delete call (single chunk)', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/a.jpg', '/b.jpg', '/c.jpg'])
-      expect(pictureDeleteCount).to.equal(1)
+      expect(pictureDeleteCount).toBe(1)
     })
     it('should pass all paths in one whereIn for pictures', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/a.jpg', '/b.jpg', '/c.jpg'])
-      expect(pictureWhereInCalls).to.have.lengthOf(1)
+      expect(pictureWhereInCalls).toHaveLength(1)
     })
     it('should call whereIn on the path column for pictures', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/a.jpg'])
-      expect(picturesQuery.whereIn.firstCall.args[0]).to.equal('path')
+      expect(picturesQuery.whereIn.firstCall.args[0]).toBe('path')
     })
     it('should call whereIn on the path column for bookmarks', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/a.jpg'])
-      expect(bookmarksQuery.whereIn.firstCall.args[0]).to.equal('path')
+      expect(bookmarksQuery.whereIn.firstCall.args[0]).toBe('path')
     })
   })
 })

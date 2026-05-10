@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { pruneEmptyFolders, Imports, LOG_PREFIX } from '#sync/folderCounts.js'
 import Sinon from 'sinon'
 import { createKnexChainFake } from '#testutils/knex.js'
@@ -29,55 +28,55 @@ describe('sync/folderCounts pruneEmptyFolders()', () => {
   })
   it('should call debug once when constructing logger', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(debugStub.callCount).to.equal(1)
+    expect(debugStub.callCount).toBe(1)
   })
   it('should construct prefixed logger', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(debugStub.firstCall.args[0])
-      .to.be.a('string')
-      .and.satisfy((msg: string) => msg.startsWith(`${LOG_PREFIX}:`), 'Logger should be prefixed')
-      .and.satisfy((msg: string) => msg.endsWith(':pruneEmpty'), 'Logger should be suffixed with `pruneEmpty`')
+    expect(debugStub.firstCall.args[0]).toSatisfy(
+      (msg: unknown): msg is string =>
+        typeof msg === 'string' && msg.startsWith(`${LOG_PREFIX}:`) && msg.endsWith(':pruneEmpty'),
+    )
   })
   it('should call knex once when deleting empty folders', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(knexFnStub.callCount).to.equal(1)
+    expect(knexFnStub.callCount).toBe(1)
   })
   it('should delete from folders table', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(knexFnStub.firstCall.args).to.deep.equal(['folders'])
+    expect(knexFnStub.firstCall.args).toEqual(['folders'])
   })
   it('should call where once when filtering empty folders', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(knexStub.where.callCount).to.equal(1)
+    expect(knexStub.where.callCount).toBe(1)
   })
   it('should filter folders with totalCount=0', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(knexStub.where.firstCall.args).to.deep.equal(['totalCount', '=', 0])
+    expect(knexStub.where.firstCall.args).toEqual(['totalCount', '=', 0])
   })
   it('should call andWhere once when excluding root', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(knexStub.andWhere.callCount).to.equal(1)
+    expect(knexStub.andWhere.callCount).toBe(1)
   })
   it('should exclude root folder from prune delete', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(knexStub.andWhere.firstCall.args).to.deep.equal(['path', '<>', '/'])
+    expect(knexStub.andWhere.firstCall.args).toEqual(['path', '<>', '/'])
   })
   it('should call delete once', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(knexStub.delete.callCount).to.equal(1)
+    expect(knexStub.delete.callCount).toBe(1)
   })
   it('should delete with no arguments', async () => {
     await pruneEmptyFolders(knexFnFake)
-    expect(knexStub.delete.firstCall.args).to.deep.equal([])
+    expect(knexStub.delete.firstCall.args).toEqual([])
   })
   it('should log removed folder count once', async () => {
     knexStub.delete.resolves(42)
     await pruneEmptyFolders(knexFnFake)
-    expect(loggerStub.callCount).to.equal(1)
+    expect(loggerStub.callCount).toBe(1)
   })
   it('should log removed folder count', async () => {
     knexStub.delete.resolves(42)
     await pruneEmptyFolders(knexFnFake)
-    expect(loggerStub.firstCall.args).to.deep.equal(['Removed 42 empty folders'])
+    expect(loggerStub.firstCall.args).toEqual(['Removed 42 empty folders'])
   })
 })

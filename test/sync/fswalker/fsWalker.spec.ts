@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { setImmediate as yieldMacro } from 'node:timers/promises'
@@ -25,7 +24,7 @@ describe('sync/fswalker fsWalker()', () => {
     await fsWalker('/foo/bar/baz', async () => {
       await Promise.resolve()
     })
-    expect(readdirSpy.callCount).to.equal(1)
+    expect(readdirSpy.callCount).toBe(1)
   })
   it('should call the item callback once for root node', async () => {
     readdirSpy.resolves([
@@ -37,7 +36,7 @@ describe('sync/fswalker fsWalker()', () => {
     const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
-    expect(spy.callCount).to.equal(1)
+    expect(spy.callCount).toBe(1)
   })
   it('should call the item callback with expected items for root node', async () => {
     readdirSpy.resolves([
@@ -49,7 +48,7 @@ describe('sync/fswalker fsWalker()', () => {
     const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
-    expect(spy.firstCall.args[0]).to.deep.equal([
+    expect(spy.firstCall.args[0]).toEqual([
       {
         path: '/foo.png',
         isFile: true,
@@ -66,7 +65,7 @@ describe('sync/fswalker fsWalker()', () => {
     const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
-    expect(spy.callCount).to.equal(2)
+    expect(spy.callCount).toBe(2)
   })
   it('should add folder to list', async () => {
     readdirSpy.onFirstCall().resolves([
@@ -78,7 +77,7 @@ describe('sync/fswalker fsWalker()', () => {
     const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
-    expect(spy.firstCall.args[0]).to.deep.equal([
+    expect(spy.firstCall.args[0]).toEqual([
       {
         path: '/foo.png',
         isFile: false,
@@ -95,7 +94,7 @@ describe('sync/fswalker fsWalker()', () => {
     const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
-    expect(spy.callCount).to.equal(1)
+    expect(spy.callCount).toBe(1)
   })
   it('should filter unexpected filetype', async () => {
     readdirSpy.resolves([
@@ -107,7 +106,7 @@ describe('sync/fswalker fsWalker()', () => {
     const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
-    expect(spy.firstCall.args[0]).to.deep.equal([])
+    expect(spy.firstCall.args[0]).toEqual([])
   })
   const upperCaseExtensions = ['JPG', 'JPEG', 'PNG', 'WEBP', 'GIF', 'SVG', 'TIF', 'TIFF', 'BMP', 'JFIF', 'JPE']
   upperCaseExtensions.forEach((ext) => {
@@ -115,7 +114,7 @@ describe('sync/fswalker fsWalker()', () => {
       readdirSpy.resolves([{ name: `foo.${ext}`, isDirectory: () => false }])
       const spy = sandbox.stub().resolves()
       await fsWalker('/bar/baz', spy)
-      expect(spy.firstCall.args[0]).to.deep.equal([{ path: `/foo.${ext}`, isFile: true }])
+      expect(spy.firstCall.args[0]).toEqual([{ path: `/foo.${ext}`, isFile: true }])
     })
   })
   const mixedCaseExtensions = ['Jpg', 'jPeG', 'Png', 'WebP', 'Gif', 'Svg', 'Tif', 'tIfF', 'Bmp', 'jFiF', 'Jpe']
@@ -124,14 +123,14 @@ describe('sync/fswalker fsWalker()', () => {
       readdirSpy.resolves([{ name: `foo.${ext}`, isDirectory: () => false }])
       const spy = sandbox.stub().resolves()
       await fsWalker('/bar/baz', spy)
-      expect(spy.firstCall.args[0]).to.deep.equal([{ path: `/foo.${ext}`, isFile: true }])
+      expect(spy.firstCall.args[0]).toEqual([{ path: `/foo.${ext}`, isFile: true }])
     })
   })
   it('should propagate rejection from eachItem callback', async () => {
     readdirSpy.resolves([{ name: 'foo.png', isDirectory: () => false }])
     const error = new Error('callback failed')
     const err = await eventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(error)))
-    expect(err).to.equal(error)
+    expect(err).toBe(error)
   })
   it('should stop walking when eachItem rejects mid-walk', async () => {
     readdirSpy.onFirstCall().resolves([
@@ -140,7 +139,7 @@ describe('sync/fswalker fsWalker()', () => {
     ])
     readdirSpy.onSecondCall().resolves([])
     await eventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(new Error('stop'))))
-    expect(readdirSpy.callCount).to.equal(1)
+    expect(readdirSpy.callCount).toBe(1)
   })
   it('should preserve a single error when concurrent peer workers both reject', async () => {
     readdirSpy.onFirstCall().resolves([
@@ -150,7 +149,7 @@ describe('sync/fswalker fsWalker()', () => {
     readdirSpy.onSecondCall().rejects(new Error('errA'))
     readdirSpy.onThirdCall().rejects(new Error('errB'))
     const err = await eventuallyRejects(fsWalker('/bar/baz', sandbox.stub().resolves()))
-    expect(err.message).to.match(/^err[AB]$/v)
+    expect(err.message).toMatch(/^err[AB]$/v)
   })
   it('should call the item callback once when hidden folder present', async () => {
     readdirSpy.onFirstCall().resolves([
@@ -162,7 +161,7 @@ describe('sync/fswalker fsWalker()', () => {
     const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
-    expect(spy.callCount).to.equal(1)
+    expect(spy.callCount).toBe(1)
   })
   it('should ignore hidden folder', async () => {
     readdirSpy.onFirstCall().resolves([
@@ -174,7 +173,7 @@ describe('sync/fswalker fsWalker()', () => {
     const spy = sandbox.stub()
     spy.resolves()
     await fsWalker('/bar/baz', spy)
-    expect(spy.firstCall.args[0]).to.deep.equal([])
+    expect(spy.firstCall.args[0]).toEqual([])
   })
   it('should run multiple readdirs in flight once the queue has siblings', async () => {
     Fswalker.concurrency = 3
@@ -206,7 +205,7 @@ describe('sync/fswalker fsWalker()', () => {
     drain = true
     while (release.length > 0) release.shift()?.()
     await walk
-    expect(inFlight.peak).to.equal(3)
+    expect(inFlight.peak).toBe(3)
   })
   it('should process all nested directories when concurrency exceeds queue depth', async () => {
     Fswalker.concurrency = 4
@@ -219,6 +218,6 @@ describe('sync/fswalker fsWalker()', () => {
     readdirSpy.onCall(2).resolves([])
     readdirSpy.onCall(3).resolves([])
     await fsWalker('/root', sandbox.stub().resolves())
-    expect(readdirSpy.callCount).to.equal(4)
+    expect(readdirSpy.callCount).toBe(4)
   })
 })

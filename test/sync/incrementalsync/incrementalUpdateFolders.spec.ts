@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { incrementalUpdateFolders } from '#sync/incrementalsync.js'
 import { toSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
@@ -134,106 +133,106 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     })
     it('should not run the aggregate picture query', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set())
-      expect(picturesAggregateQuery.whereRaw.callCount).to.equal(0)
+      expect(picturesAggregateQuery.whereRaw.callCount).toBe(0)
     })
     it('should not run any folder upsert', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set())
-      expect(foldersUpsertQuery.insert.callCount).to.equal(0)
+      expect(foldersUpsertQuery.insert.callCount).toBe(0)
     })
     it('should still run the empty-folder prune', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set())
-      expect(foldersPruneQuery.delete.callCount).to.equal(1)
+      expect(foldersPruneQuery.delete.callCount).toBe(1)
     })
   })
 
   describe('with one affected folder', () => {
     it('should issue exactly one aggregate picture query (single chunk)', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(picturesAggregateQuery.whereRaw.callCount).to.equal(1)
+      expect(picturesAggregateQuery.whereRaw.callCount).toBe(1)
     })
     it('should call select on the folder column for the aggregate', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(picturesAggregateQuery.select.calledWith('folder')).to.equal(true)
+      expect(picturesAggregateQuery.select.calledWith('folder')).toBe(true)
     })
     it('should call count with totalCount alias', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(picturesAggregateQuery.count.calledWith({ totalCount: '*' })).to.equal(true)
+      expect(picturesAggregateQuery.count.calledWith({ totalCount: '*' })).toBe(true)
     })
     it('should call sum with seenCount alias', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(picturesAggregateQuery.sum.callCount).to.equal(1)
+      expect(picturesAggregateQuery.sum.callCount).toBe(1)
     })
     it('should group the aggregate by folder', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(groupByCalls).to.deep.equal(['folder'])
+      expect(groupByCalls).toEqual(['folder'])
     })
     it('should pass the LIKE prefix as the binding', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(whereRawCalls[0]?.bindings).to.deep.equal(['/comics/%'])
+      expect(whereRawCalls[0]?.bindings).toEqual(['/comics/%'])
     })
     it('should issue exactly one bulk upsert call (single chunk)', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(foldersUpsertQuery.insert.callCount).to.equal(1)
+      expect(foldersUpsertQuery.insert.callCount).toBe(1)
     })
     it('should pass the rolled-up totalCount in the upsert payload', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.totalCount).to.equal(5)
+      expect(upsertChunks.flat()[0]?.totalCount).toBe(5)
     })
     it('should pass the rolled-up seenCount in the upsert payload', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.seenCount).to.equal(3)
+      expect(upsertChunks.flat()[0]?.seenCount).toBe(3)
     })
     it('should pass the affected folder path in the upsert payload', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.path).to.equal('/comics/')
+      expect(upsertChunks.flat()[0]?.path).toBe('/comics/')
     })
     it('should populate the parent folder column for INSERT safety', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.folder).to.equal('/')
+      expect(upsertChunks.flat()[0]?.folder).toBe('/')
     })
     it('should populate sortKey for INSERT safety', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.sortKey).to.equal(toSortKey('comics'))
+      expect(upsertChunks.flat()[0]?.sortKey).toBe(toSortKey('comics'))
     })
     it('should call onConflict with path on the upsert', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(foldersUpsertQuery.onConflict.firstCall.args).to.deep.equal(['path'])
+      expect(foldersUpsertQuery.onConflict.firstCall.args).toEqual(['path'])
     })
     it('should merge only totalCount and seenCount on conflict', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(foldersUpsertQuery.merge.firstCall.args[0]).to.deep.equal(['totalCount', 'seenCount'])
+      expect(foldersUpsertQuery.merge.firstCall.args[0]).toEqual(['totalCount', 'seenCount'])
     })
   })
 
   describe('with multiple affected folders sharing a chunk', () => {
     it('should issue one aggregate query covering all affected folders', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/a/', '/b/']))
-      expect(picturesAggregateQuery.whereRaw.callCount).to.equal(1)
+      expect(picturesAggregateQuery.whereRaw.callCount).toBe(1)
     })
     it('should pass each affected folder as a LIKE binding', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/a/', '/b/']))
-      expect(whereRawCalls[0]?.bindings).to.have.members(['/a/%', '/b/%'])
+      expect([...cast<string[]>(whereRawCalls[0]?.bindings ?? [])].sort()).toEqual(['/a/%', '/b/%'].sort())
     })
     it('should produce one OR-of-LIKE clause per affected folder', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/a/', '/b/']))
       const orCount = (whereRawCalls[0]?.pattern.match(/folder LIKE \?/giv) ?? []).length
-      expect(orCount).to.equal(2)
+      expect(orCount).toBe(2)
     })
   })
 
@@ -245,7 +244,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       ]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.totalCount).to.equal(7)
+      expect(upsertChunks.flat()[0]?.totalCount).toBe(7)
     })
     it('should sum descendant seen counts into the affected folder seenCount', async () => {
       aggregateRowsForReturn = [
@@ -254,7 +253,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       ]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.seenCount).to.equal(5)
+      expect(upsertChunks.flat()[0]?.seenCount).toBe(5)
     })
     it('should not roll up unrelated folders into an affected folder', async () => {
       aggregateRowsForReturn = [
@@ -263,25 +262,25 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       ]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.totalCount).to.equal(2)
+      expect(upsertChunks.flat()[0]?.totalCount).toBe(2)
     })
     it('should treat null seenCount aggregate as zero', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '0', seenCount: null }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.seenCount).to.equal(0)
+      expect(upsertChunks.flat()[0]?.seenCount).toBe(0)
     })
     it('should treat null totalCount aggregate as zero', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: null, seenCount: '0' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.totalCount).to.equal(0)
+      expect(upsertChunks.flat()[0]?.totalCount).toBe(0)
     })
     it('should produce zero totals when no descendant rows are returned', async () => {
       aggregateRowsForReturn = []
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(upsertChunks.flat()[0]?.totalCount).to.equal(0)
+      expect(upsertChunks.flat()[0]?.totalCount).toBe(0)
     })
   })
 
@@ -290,7 +289,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       aggregateRowsForReturn = [{ folder: '/comics/series/', totalCount: '2', seenCount: '0' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/series/']))
-      expect(upsertChunks.flat()[0]?.folder).to.equal('/comics/')
+      expect(upsertChunks.flat()[0]?.folder).toBe('/comics/')
     })
   })
 
@@ -299,34 +298,34 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       aggregateRowsForReturn = [{ folder: '/', totalCount: '4', seenCount: '0' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/']))
-      expect(upsertChunks.flat()[0]?.folder).to.equal('')
+      expect(upsertChunks.flat()[0]?.folder).toBe('')
     })
     it('should emit an empty sortKey for the root upsert', async () => {
       aggregateRowsForReturn = [{ folder: '/', totalCount: '4', seenCount: '0' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/']))
-      expect(upsertChunks.flat()[0]?.sortKey).to.equal('')
+      expect(upsertChunks.flat()[0]?.sortKey).toBe('')
     })
     it('should set the upsert path to the root sentinel', async () => {
       aggregateRowsForReturn = [{ folder: '/', totalCount: '4', seenCount: '0' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/']))
-      expect(upsertChunks.flat()[0]?.path).to.equal('/')
+      expect(upsertChunks.flat()[0]?.path).toBe('/')
     })
   })
 
   describe('prune step', () => {
     it('should call delete on the prune query', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(foldersPruneQuery.delete.callCount).to.equal(1)
+      expect(foldersPruneQuery.delete.callCount).toBe(1)
     })
     it('should filter prune to folders with totalCount zero', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(pruneWhereCalls).to.deep.include(['totalCount', '=', 0])
+      expect(pruneWhereCalls).toContainEqual(['totalCount', '=', 0])
     })
     it('should exclude root folder from prune delete', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(pruneAndWhereCalls).to.deep.include(['path', '<>', '/'])
+      expect(pruneAndWhereCalls).toContainEqual(['path', '<>', '/'])
     })
   })
 
@@ -335,9 +334,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       pruneDeletedRows = 2
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/', '/photos/']))
-      expect(loggerStub.lastCall.args[0]).to.equal(
-        'Incremental folder update: 2 folders checked, 2 empty folders pruned',
-      )
+      expect(loggerStub.lastCall.args[0]).toBe('Incremental folder update: 2 folders checked, 2 empty folders pruned')
     })
   })
 })

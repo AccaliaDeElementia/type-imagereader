@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { InsertState, type InsertFallbackHelpers } from '#sync/syncItemsDialect.js'
@@ -27,40 +26,40 @@ describe('sync/syncItemsDialect InsertState', () => {
     it('should increment files by cf', () => {
       const state = new InsertState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
-      expect(state.files).to.equal(FILE_DELTA)
+      expect(state.files).toBe(FILE_DELTA)
     })
 
     it('should increment dirs by cd', () => {
       const state = new InsertState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
-      expect(state.dirs).to.equal(DIR_DELTA)
+      expect(state.dirs).toBe(DIR_DELTA)
     })
 
     it('should accumulate files across multiple calls', () => {
       const state = new InsertState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
       state.addCounts(FILE_DELTA_2, DIR_DELTA_2)
-      expect(state.files).to.equal(FILE_DELTA + FILE_DELTA_2)
+      expect(state.files).toBe(FILE_DELTA + FILE_DELTA_2)
     })
 
     it('should accumulate dirs across multiple calls', () => {
       const state = new InsertState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
       state.addCounts(FILE_DELTA_2, DIR_DELTA_2)
-      expect(state.dirs).to.equal(DIR_DELTA + DIR_DELTA_2)
+      expect(state.dirs).toBe(DIR_DELTA + DIR_DELTA_2)
     })
   })
 
   describe('shouldLog()', () => {
     it('should return true on a fresh state', () => {
       const state = new InsertState()
-      expect(state.shouldLog()).to.equal(true)
+      expect(state.shouldLog()).toBe(true)
     })
 
     it('should return false after one tick', () => {
       const state = new InsertState()
       state.tickCounter()
-      expect(state.shouldLog()).to.equal(false)
+      expect(state.shouldLog()).toBe(false)
     })
   })
 
@@ -68,7 +67,7 @@ describe('sync/syncItemsDialect InsertState', () => {
     it('should embed dirs, pending, and files in the standard format', () => {
       const state = new InsertState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
-      expect(state.formatProgressMessage(PENDING)).to.equal(
+      expect(state.formatProgressMessage(PENDING)).toBe(
         `Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`,
       )
     })
@@ -78,13 +77,13 @@ describe('sync/syncItemsDialect InsertState', () => {
     it('should increment counter by one', () => {
       const state = new InsertState()
       state.tickCounter()
-      expect(state.counter).to.equal(1)
+      expect(state.counter).toBe(1)
     })
 
     it('should wrap counter to zero after LOGGING_INTERVAL ticks', () => {
       const state = new InsertState()
       for (let i = 0; i < LOGGING_INTERVAL; i += 1) state.tickCounter()
-      expect(state.counter).to.equal(0)
+      expect(state.counter).toBe(0)
     })
   })
 
@@ -92,7 +91,7 @@ describe('sync/syncItemsDialect InsertState', () => {
     it('should return a plain object with files and dirs', () => {
       const state = new InsertState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
-      expect(state.toCounts()).to.deep.equal({ files: FILE_DELTA, dirs: DIR_DELTA })
+      expect(state.toCounts()).toEqual({ files: FILE_DELTA, dirs: DIR_DELTA })
     })
   })
 
@@ -115,7 +114,7 @@ describe('sync/syncItemsDialect InsertState', () => {
       const state = new InsertState()
       const knex = stubToKnex(sandbox.stub())
       await state.advance({ knex, helpers: buildHelpers(), logger: noopLogger, items: [], pending: 0 })
-      expect(state.files).to.equal(FILE_DELTA)
+      expect(state.files).toBe(FILE_DELTA)
     })
 
     it('should call knex insert when buildSyncItemRows returns rows', async () => {
@@ -131,7 +130,7 @@ describe('sync/syncItemsDialect InsertState', () => {
         items: [],
         pending: 0,
       })
-      expect(insertSpy.callCount).to.equal(1)
+      expect(insertSpy.callCount).toBe(1)
     })
 
     it('should request chunks of size SQLITE_DB_CHUNK_SIZE', async () => {
@@ -148,7 +147,7 @@ describe('sync/syncItemsDialect InsertState', () => {
         items: [],
         pending: 0,
       })
-      expect(chunkSpy.firstCall.args[1]).to.equal(SQLITE_DB_CHUNK_SIZE)
+      expect(chunkSpy.firstCall.args[1]).toBe(SQLITE_DB_CHUNK_SIZE)
     })
 
     it('should log on the first iteration', async () => {
@@ -162,16 +161,14 @@ describe('sync/syncItemsDialect InsertState', () => {
         items: [],
         pending: PENDING,
       })
-      expect(loggerSpy.firstCall.args[0]).to.equal(
-        `Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`,
-      )
+      expect(loggerSpy.firstCall.args[0]).toBe(`Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`)
     })
 
     it('should advance the counter', async () => {
       const state = new InsertState()
       const knex = stubToKnex(sandbox.stub())
       await state.advance({ knex, helpers: buildHelpers(), logger: noopLogger, items: [], pending: 0 })
-      expect(state.counter).to.equal(1)
+      expect(state.counter).toBe(1)
     })
   })
 })

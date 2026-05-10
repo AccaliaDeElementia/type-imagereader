@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { EventEmitter } from 'node:events'
 import { findSyncItems, Imports } from '#sync/findItems.js'
 import Sinon from 'sinon'
@@ -62,39 +61,39 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
 
   it('should not acquire a copy connection', async () => {
     await findSyncItems(knexFnFake)
-    expect(acquireStub.called).to.equal(false)
+    expect(acquireStub.called).toBe(false)
   })
 
   it('should not release a copy connection', async () => {
     await findSyncItems(knexFnFake)
-    expect(releaseStub.called).to.equal(false)
+    expect(releaseStub.called).toBe(false)
   })
 
   it('should not invoke copyFrom', async () => {
     await findSyncItems(knexFnFake)
-    expect(copyFromStub.called).to.equal(false)
+    expect(copyFromStub.called).toBe(false)
   })
 
   it('should not write to the COPY stream', async () => {
     await findSyncItems(knexFnFake)
-    expect(streamFake.write.called).to.equal(false)
+    expect(streamFake.write.called).toBe(false)
   })
 
   it('should still walk the filesystem', async () => {
     await findSyncItems(knexFnFake)
-    expect(fsWalkerStub.callCount).to.equal(1)
+    expect(fsWalkerStub.callCount).toBe(1)
   })
 
   it('should walk filesystem starting at /data', async () => {
     await findSyncItems(knexFnFake)
-    expect(fsWalkerStub.calledWith('/data')).to.equal(true)
+    expect(fsWalkerStub.calledWith('/data')).toBe(true)
   })
 
   it('should walk filesystem starting at DATA_DIR when set', async () => {
     process.env.DATA_DIR = '/library/images'
     try {
       await findSyncItems(knexFnFake)
-      expect(fsWalkerStub.calledWith('/library/images')).to.equal(true)
+      expect(fsWalkerStub.calledWith('/library/images')).toBe(true)
     } finally {
       delete process.env.DATA_DIR
     }
@@ -105,7 +104,7 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
     const callback = cast<Callback>(fsWalkerStub.firstCall.args[1])
     const items = [{ path: '/foo', isFile: false }]
     await callback(items, 0)
-    expect(buildSyncItemRowsStub.calledWith(items)).to.equal(true)
+    expect(buildSyncItemRowsStub.calledWith(items)).toBe(true)
   })
 
   it('should not invoke formatSyncItemCsv', async () => {
@@ -115,7 +114,7 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
       await callback([{ path: '/f.jpg', isFile: true }], 0)
     })
     await findSyncItems(knexFnFake)
-    expect(formatSyncItemCsvStub.called).to.equal(false)
+    expect(formatSyncItemCsvStub.called).toBe(false)
   })
 
   it('should insert each chunk via knex when rows are produced', async () => {
@@ -125,7 +124,7 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
       await callback([{ path: '/f.jpg', isFile: true }], 0)
     })
     await findSyncItems(knexFnFake)
-    expect(knexInstanceStub.insert.callCount).to.equal(2)
+    expect(knexInstanceStub.insert.callCount).toBe(2)
   })
 
   it('should pass chunk rows to insert', async () => {
@@ -135,7 +134,7 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
       await callback([{ path: '/f.jpg', isFile: true }], 0)
     })
     await findSyncItems(knexFnFake)
-    expect(knexInstanceStub.insert.secondCall.args[0]).to.deep.equal([row])
+    expect(knexInstanceStub.insert.secondCall.args[0]).toEqual([row])
   })
 
   it('should not insert when a callback yields zero rows', async () => {
@@ -144,7 +143,7 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
       await callback([], 0)
     })
     await findSyncItems(knexFnFake)
-    expect(knexInstanceStub.insert.callCount).to.equal(1)
+    expect(knexInstanceStub.insert.callCount).toBe(1)
   })
 
   it('should log status on first loop', async () => {
@@ -153,7 +152,7 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
     const items = [{ path: '/foo', isFile: false }]
     buildSyncItemRowsStub.returns({ files: 3, dirs: 9, rows: [] })
     await callback(items, 6)
-    expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).to.equal(true)
+    expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).toBe(true)
   })
 
   it('should log status on 101st loop', async () => {
@@ -166,7 +165,7 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
     await Promise.all(invocations)
     buildSyncItemRowsStub.returns({ files: 3, dirs: 9, rows: [] })
     await callback(items, 6)
-    expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).to.equal(true)
+    expect(loggerStub.calledWith('Found 9 dirs (6 pending) and 3 files')).toBe(true)
   })
 
   const ChainableFileCounter = async (prev: Promise<void>, callback: Callback, files: number): Promise<void> => {
@@ -185,7 +184,7 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
       await chain
     })
     await findSyncItems(knexFnFake)
-    expect(loggerStub.calledWith('Found all 0 dirs and 5050 files')).to.equal(true)
+    expect(loggerStub.calledWith('Found all 0 dirs and 5050 files')).toBe(true)
   })
 
   it('should return count of files', async () => {
@@ -197,6 +196,6 @@ describe('sync/findItems findSyncItems() when client is not postgres (sqlite fal
       await chain
     })
     const result = await findSyncItems(knexFnFake)
-    expect(result).to.equal(5050)
+    expect(result).toBe(5050)
   })
 })

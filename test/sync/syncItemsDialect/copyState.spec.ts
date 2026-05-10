@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { EventEmitter } from 'node:events'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
@@ -35,27 +34,27 @@ describe('sync/syncItemsDialect CopyState', () => {
     it('should increment files by cf', () => {
       const state = new CopyState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
-      expect(state.files).to.equal(FILE_DELTA)
+      expect(state.files).toBe(FILE_DELTA)
     })
 
     it('should increment dirs by cd', () => {
       const state = new CopyState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
-      expect(state.dirs).to.equal(DIR_DELTA)
+      expect(state.dirs).toBe(DIR_DELTA)
     })
 
     it('should accumulate files across calls', () => {
       const state = new CopyState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
       state.addCounts(FILE_DELTA_2, DIR_DELTA_2)
-      expect(state.files).to.equal(FILE_DELTA + FILE_DELTA_2)
+      expect(state.files).toBe(FILE_DELTA + FILE_DELTA_2)
     })
 
     it('should accumulate dirs across calls', () => {
       const state = new CopyState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
       state.addCounts(FILE_DELTA_2, DIR_DELTA_2)
-      expect(state.dirs).to.equal(DIR_DELTA + DIR_DELTA_2)
+      expect(state.dirs).toBe(DIR_DELTA + DIR_DELTA_2)
     })
   })
 
@@ -63,20 +62,20 @@ describe('sync/syncItemsDialect CopyState', () => {
     it('should append the formatted row to the buffer', () => {
       const state = new CopyState()
       state.pushRow('csv-line\n')
-      expect(state.buffer).to.deep.equal(['csv-line\n'])
+      expect(state.buffer).toEqual(['csv-line\n'])
     })
   })
 
   describe('needsFlush()', () => {
     it('should return false on a fresh state', () => {
       const state = new CopyState()
-      expect(state.needsFlush()).to.equal(false)
+      expect(state.needsFlush()).toBe(false)
     })
 
     it('should return true once the buffer reaches DEFAULT_CHUNK_SIZE', () => {
       const state = new CopyState()
       for (let i = 0; i < DEFAULT_CHUNK_SIZE; i += 1) state.pushRow('row')
-      expect(state.needsFlush()).to.equal(true)
+      expect(state.needsFlush()).toBe(true)
     })
   })
 
@@ -85,7 +84,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       const handles = buildStreamHandles()
       const state = new CopyState()
       await state.flushBuffer(handles.stream)
-      expect(handles.writeSpy.callCount).to.equal(0)
+      expect(handles.writeSpy.callCount).toBe(0)
     })
 
     it('should write the joined buffer payload to the stream', async () => {
@@ -94,7 +93,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       state.pushRow('a')
       state.pushRow('b')
       await state.flushBuffer(handles.stream)
-      expect(handles.writeSpy.firstCall.args[0]).to.equal('ab')
+      expect(handles.writeSpy.firstCall.args[0]).toBe('ab')
     })
 
     it('should empty the buffer after flushing', async () => {
@@ -102,7 +101,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       const state = new CopyState()
       state.pushRow('a')
       await state.flushBuffer(handles.stream)
-      expect(state.buffer.length).to.equal(0)
+      expect(state.buffer.length).toBe(0)
     })
 
     it("should wait for 'drain' when stream.write returns false", async () => {
@@ -113,7 +112,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       const flushPromise = state.flushBuffer(handles.stream)
       scheduleEmit(handles.ee, 'drain')
       await flushPromise
-      expect(handles.writeSpy.callCount).to.equal(1)
+      expect(handles.writeSpy.callCount).toBe(1)
     })
   })
 
@@ -123,7 +122,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       const state = new CopyState()
       state.pushRow('only-row')
       await state.scheduleFlush(handles.stream)
-      expect(handles.writeSpy.firstCall.args[0]).to.equal('only-row')
+      expect(handles.writeSpy.firstCall.args[0]).toBe('only-row')
     })
 
     it('should drain rows pushed between back-to-back scheduleFlush calls into the first flush', async () => {
@@ -134,20 +133,20 @@ describe('sync/syncItemsDialect CopyState', () => {
       state.pushRow('second')
       const b = state.scheduleFlush(handles.stream)
       await Promise.all([a, b])
-      expect(handles.writeSpy.firstCall.args[0]).to.equal('firstsecond')
+      expect(handles.writeSpy.firstCall.args[0]).toBe('firstsecond')
     })
   })
 
   describe('shouldLog()', () => {
     it('should return true on a fresh state', () => {
       const state = new CopyState()
-      expect(state.shouldLog()).to.equal(true)
+      expect(state.shouldLog()).toBe(true)
     })
 
     it('should return false after one tick', () => {
       const state = new CopyState()
       state.tickCounter()
-      expect(state.shouldLog()).to.equal(false)
+      expect(state.shouldLog()).toBe(false)
     })
   })
 
@@ -155,7 +154,7 @@ describe('sync/syncItemsDialect CopyState', () => {
     it('should embed dirs, pending, and files in the standard format', () => {
       const state = new CopyState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
-      expect(state.formatProgressMessage(PENDING)).to.equal(
+      expect(state.formatProgressMessage(PENDING)).toBe(
         `Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`,
       )
     })
@@ -165,13 +164,13 @@ describe('sync/syncItemsDialect CopyState', () => {
     it('should increment counter by one', () => {
       const state = new CopyState()
       state.tickCounter()
-      expect(state.counter).to.equal(1)
+      expect(state.counter).toBe(1)
     })
 
     it('should wrap counter to zero after LOGGING_INTERVAL ticks', () => {
       const state = new CopyState()
       for (let i = 0; i < LOGGING_INTERVAL; i += 1) state.tickCounter()
-      expect(state.counter).to.equal(0)
+      expect(state.counter).toBe(0)
     })
   })
 
@@ -179,7 +178,7 @@ describe('sync/syncItemsDialect CopyState', () => {
     it('should return a plain object with files and dirs', () => {
       const state = new CopyState()
       state.addCounts(FILE_DELTA, DIR_DELTA)
-      expect(state.toCounts()).to.deep.equal({ files: FILE_DELTA, dirs: DIR_DELTA })
+      expect(state.toCounts()).toEqual({ files: FILE_DELTA, dirs: DIR_DELTA })
     })
   })
 
@@ -213,7 +212,7 @@ describe('sync/syncItemsDialect CopyState', () => {
         items: [],
         pending: 0,
       })
-      expect(state.files).to.equal(FILE_DELTA)
+      expect(state.files).toBe(FILE_DELTA)
     })
 
     it('should push formatted rows into the buffer', async () => {
@@ -226,7 +225,7 @@ describe('sync/syncItemsDialect CopyState', () => {
         items: [],
         pending: 0,
       })
-      expect(state.buffer).to.deep.equal(['unique-tag\n'])
+      expect(state.buffer).toEqual(['unique-tag\n'])
     })
 
     it('should flush mid-iteration when buffer reaches DEFAULT_CHUNK_SIZE', async () => {
@@ -242,7 +241,7 @@ describe('sync/syncItemsDialect CopyState', () => {
         items: [],
         pending: 0,
       })
-      expect(handles.writeSpy.callCount).to.equal(1)
+      expect(handles.writeSpy.callCount).toBe(1)
     })
 
     it('should log on the first iteration', async () => {
@@ -258,9 +257,7 @@ describe('sync/syncItemsDialect CopyState', () => {
         items: [],
         pending: PENDING,
       })
-      expect(loggerSpy.firstCall.args[0]).to.equal(
-        `Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`,
-      )
+      expect(loggerSpy.firstCall.args[0]).toBe(`Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`)
     })
 
     it('should advance the counter', async () => {
@@ -275,7 +272,7 @@ describe('sync/syncItemsDialect CopyState', () => {
         items: [],
         pending: 0,
       })
-      expect(state.counter).to.equal(1)
+      expect(state.counter).toBe(1)
     })
   })
 })
@@ -292,7 +289,7 @@ describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
     scheduleEmit(ee, 'finish')
     await promise
     await yieldMacro()
-    expect(true).to.equal(true)
+    expect(true).toBe(true)
   })
 
   it("should reject with the emitted error when the stream emits 'error'", async () => {
@@ -302,6 +299,6 @@ describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
     const promise = awaitCopyStreamCompletion(stream)
     scheduleEmit(ee, 'error', streamErr)
     const err = await eventuallyRejects(promise)
-    expect(err).to.equal(streamErr)
+    expect(err).toBe(streamErr)
   })
 })

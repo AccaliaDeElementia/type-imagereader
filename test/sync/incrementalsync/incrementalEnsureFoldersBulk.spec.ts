@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { incrementalEnsureFoldersBulk } from '#sync/incrementalsync.js'
 import { toSortKey } from '#sync/helpers.js'
 import Sinon from 'sinon'
@@ -52,45 +51,45 @@ describe('sync/incrementalsync incrementalEnsureFoldersBulk()', () => {
   describe('when given an empty list', () => {
     it('should not call folders.insert', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, [])
-      expect(foldersInsertQuery.insert.callCount).to.equal(0)
+      expect(foldersInsertQuery.insert.callCount).toBe(0)
     })
   })
 
   describe('when given only the root folder', () => {
     it('should not call folders.insert (root sentinel is implicit)', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/'])
-      expect(foldersInsertQuery.insert.callCount).to.equal(0)
+      expect(foldersInsertQuery.insert.callCount).toBe(0)
     })
   })
 
   describe('when given a single non-root folder', () => {
     it('should bulk-insert one folder row', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(folderChunks.flat()).to.have.lengthOf(1)
+      expect(folderChunks.flat()).toHaveLength(1)
     })
     it('should set the folder row path to the supplied folder', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(folderChunks.flat()[0]?.path).to.equal('/comics/')
+      expect(folderChunks.flat()[0]?.path).toBe('/comics/')
     })
     it('should set the folder row parent to / for a top-level folder', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(folderChunks.flat()[0]?.folder).to.equal('/')
+      expect(folderChunks.flat()[0]?.folder).toBe('/')
     })
     it('should set the folder row parent to the immediate parent for a nested folder', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/series/'])
-      expect(folderChunks.flat()[0]?.folder).to.equal('/comics/')
+      expect(folderChunks.flat()[0]?.folder).toBe('/comics/')
     })
     it('should derive sortKey from the folder basename', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(folderChunks.flat()[0]?.sortKey).to.equal(toSortKey('comics'))
+      expect(folderChunks.flat()[0]?.sortKey).toBe(toSortKey('comics'))
     })
     it('should call onConflict with path', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(foldersInsertQuery.onConflict.firstCall.args).to.deep.equal(['path'])
+      expect(foldersInsertQuery.onConflict.firstCall.args).toEqual(['path'])
     })
     it('should call ignore (not merge)', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(foldersInsertQuery.ignore.callCount).to.be.above(0)
+      expect(foldersInsertQuery.ignore.callCount).toBeGreaterThan(0)
     })
   })
 
@@ -98,7 +97,7 @@ describe('sync/incrementalsync incrementalEnsureFoldersBulk()', () => {
     it('should de-duplicate and insert each folder once', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/a/', '/a/', '/b/'])
       const paths = folderChunks.flat().map((r) => r.path)
-      expect(paths.filter((p) => p === '/a/')).to.have.lengthOf(1)
+      expect(paths.filter((p) => p === '/a/')).toHaveLength(1)
     })
   })
 
@@ -106,14 +105,14 @@ describe('sync/incrementalsync incrementalEnsureFoldersBulk()', () => {
     it('should drop root and insert only the non-root folders', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/', '/a/', '/b/'])
       const paths = folderChunks.flat().map((r) => r.path)
-      expect(paths).to.have.members(['/a/', '/b/'])
+      expect([...paths].sort()).toEqual(['/a/', '/b/'].sort())
     })
   })
 
   describe('when given many folders', () => {
     it('should issue one bulk insert call for the chunk', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/a/', '/b/', '/c/'])
-      expect(foldersInsertQuery.insert.callCount).to.equal(1)
+      expect(foldersInsertQuery.insert.callCount).toBe(1)
     })
   })
 })

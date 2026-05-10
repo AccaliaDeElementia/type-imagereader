@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { findSyncItemsViaInsert, type InsertFallbackHelpers } from '#sync/syncItemsDialect.js'
@@ -39,7 +38,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
   it('should return aggregated counts from buildSyncItemRows', async () => {
     const knex = stubToKnex(sandbox.stub())
     const result = await findSyncItemsViaInsert(knex, noopLogger, buildHelpers())
-    expect(result).to.deep.equal({ files: FILE_COUNT, dirs: DIR_COUNT })
+    expect(result).toEqual({ files: FILE_COUNT, dirs: DIR_COUNT })
   })
 
   it('should call knex insert exactly once when one chunk of rows is produced', async () => {
@@ -49,7 +48,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
       buildSyncItemRows: () => ({ files: 1, dirs: 0, rows: [sampleRow] }),
     })
     await findSyncItemsViaInsert(stubToKnex(knexSpy), noopLogger, helpers)
-    expect(insertSpy.callCount).to.equal(1)
+    expect(insertSpy.callCount).toBe(1)
   })
 
   it('should pass getDataDir() result as fsWalker root', async () => {
@@ -60,7 +59,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
       noopLogger,
       buildHelpers({ fsWalker: fsWalkerSpy, getDataDir: () => '/custom/data' }),
     )
-    expect(fsWalkerSpy.firstCall.args[0]).to.equal('/custom/data')
+    expect(fsWalkerSpy.firstCall.args[0]).toBe('/custom/data')
   })
 
   it('should pass items from fsWalker through to buildSyncItemRows', async () => {
@@ -77,7 +76,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         buildSyncItemRows: buildRowsSpy,
       }),
     )
-    expect(buildRowsSpy.firstCall.args[0]).to.equal(items)
+    expect(buildRowsSpy.firstCall.args[0]).toBe(items)
   })
 
   it('should request chunks of size SQLITE_DB_CHUNK_SIZE', async () => {
@@ -91,7 +90,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         chunk: chunkSpy,
       }),
     )
-    expect(chunkSpy.firstCall.args[1]).to.equal(SQLITE_DB_CHUNK_SIZE)
+    expect(chunkSpy.firstCall.args[1]).toBe(SQLITE_DB_CHUNK_SIZE)
   })
 
   it("should insert into the 'syncitems' table", async () => {
@@ -101,7 +100,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
       noopLogger,
       buildHelpers({ buildSyncItemRows: () => ({ files: 1, dirs: 0, rows: [sampleRow] }) }),
     )
-    expect(knexSpy.firstCall.args[0]).to.equal('syncitems')
+    expect(knexSpy.firstCall.args[0]).toBe('syncitems')
   })
 
   it('should accumulate files and dirs across multiple fsWalker iterations', async () => {
@@ -116,7 +115,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         },
       }),
     )
-    expect(result).to.deep.equal({ files: FILE_COUNT * 2, dirs: DIR_COUNT * 2 })
+    expect(result).toEqual({ files: FILE_COUNT * 2, dirs: DIR_COUNT * 2 })
   })
 
   it('should call insert once per chunk when chunk() returns multiple chunks', async () => {
@@ -131,7 +130,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         chunk: <T>(arr: T[]): T[][] => Array.from({ length: CHUNK_COUNT }, () => arr),
       }),
     )
-    expect(insertSpy.callCount).to.equal(CHUNK_COUNT)
+    expect(insertSpy.callCount).toBe(CHUNK_COUNT)
   })
 
   it('should log "Found N dirs (P pending) and F files" on the first iteration', async () => {
@@ -147,7 +146,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         },
       }),
     )
-    expect(loggerSpy.firstCall.args[0]).to.equal(`Found ${DIR_COUNT} dirs (${PENDING} pending) and ${FILE_COUNT} files`)
+    expect(loggerSpy.firstCall.args[0]).toBe(`Found ${DIR_COUNT} dirs (${PENDING} pending) and ${FILE_COUNT} files`)
   })
 
   it('should not log on the second iteration', async () => {
@@ -163,7 +162,7 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         },
       }),
     )
-    expect(loggerSpy.callCount).to.equal(1)
+    expect(loggerSpy.callCount).toBe(1)
   })
 
   it('should log again every LOGGING_INTERVAL iterations', async () => {
@@ -186,6 +185,6 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         },
       }),
     )
-    expect(loggerSpy.callCount).to.equal(EXPECTED_LOG_COUNT)
+    expect(loggerSpy.callCount).toBe(EXPECTED_LOG_COUNT)
   })
 })

@@ -1,21 +1,20 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { calculateFolderInfos } from '#sync/folderCounts.js'
 
 describe('sync/folderCounts calculateFolderInfos()', () => {
   it('should handle empty input map gracefully', () => {
-    expect(calculateFolderInfos({}, [])).to.deep.equal([])
+    expect(calculateFolderInfos({}, [])).toEqual([])
   })
   it('should handle empty input map with input list gracefully', () => {
     const folders = [{ path: '/', totalCount: 5, seenCount: 0 }]
-    expect(calculateFolderInfos({}, folders)).to.deep.equal([{ path: '/', totalCount: 5, seenCount: 0 }])
+    expect(calculateFolderInfos({}, folders)).toEqual([{ path: '/', totalCount: 5, seenCount: 0 }])
   })
   it('should handle empty input list gracefully', () => {
     const allFolders = {
       '/': { path: '/', totalCount: 5, seenCount: 0 },
     }
-    expect(calculateFolderInfos(allFolders, [])).to.deep.equal([{ path: '/', totalCount: 5, seenCount: 0 }])
+    expect(calculateFolderInfos(allFolders, [])).toEqual([{ path: '/', totalCount: 5, seenCount: 0 }])
   })
   it('should return 6 results for 6-folder input', () => {
     const allFolders = {
@@ -34,7 +33,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/quux/', totalCount: 40, seenCount: 4 },
       { path: '/quux/is/', totalCount: 50, seenCount: 5 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.have.lengthOf(6)
+    expect(calculateFolderInfos(allFolders, folders)).toHaveLength(6)
   })
   it('should calculate counts for leaf folder /quux/is/', () => {
     const allFolders = {
@@ -53,7 +52,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/quux/', totalCount: 40, seenCount: 4 },
       { path: '/quux/is/', totalCount: 50, seenCount: 5 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/quux/is/',
       totalCount: 50,
       seenCount: 5,
@@ -76,7 +75,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/quux/', totalCount: 40, seenCount: 4 },
       { path: '/quux/is/', totalCount: 50, seenCount: 5 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/quux/',
       totalCount: 90,
       seenCount: 9,
@@ -99,7 +98,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/quux/', totalCount: 40, seenCount: 4 },
       { path: '/quux/is/', totalCount: 50, seenCount: 5 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/baz/',
       totalCount: 30,
       seenCount: 3,
@@ -122,7 +121,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/quux/', totalCount: 40, seenCount: 4 },
       { path: '/quux/is/', totalCount: 50, seenCount: 5 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/foo/bar/',
       totalCount: 20,
       seenCount: 2,
@@ -145,7 +144,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/quux/', totalCount: 40, seenCount: 4 },
       { path: '/quux/is/', totalCount: 50, seenCount: 5 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/foo/',
       totalCount: 30,
       seenCount: 3,
@@ -168,7 +167,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/quux/', totalCount: 40, seenCount: 4 },
       { path: '/quux/is/', totalCount: 50, seenCount: 5 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/',
       totalCount: 151,
       seenCount: 16,
@@ -180,7 +179,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/', totalCount: 1, seenCount: 1 },
       { path: '/foo/bar/baz/', totalCount: 20, seenCount: 2 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.have.lengthOf(4)
+    expect(calculateFolderInfos(allFolders, folders)).toHaveLength(4)
   })
   it('should include leaf folder /foo/bar/baz/ with its own counts', () => {
     const allFolders = { '/': { path: '/', totalCount: 0, seenCount: 0 } }
@@ -188,7 +187,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/', totalCount: 1, seenCount: 1 },
       { path: '/foo/bar/baz/', totalCount: 20, seenCount: 2 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/foo/bar/baz/',
       totalCount: 20,
       seenCount: 2,
@@ -200,7 +199,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/', totalCount: 1, seenCount: 1 },
       { path: '/foo/bar/baz/', totalCount: 20, seenCount: 2 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/foo/bar/',
       totalCount: 20,
       seenCount: 2,
@@ -212,7 +211,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/', totalCount: 1, seenCount: 1 },
       { path: '/foo/bar/baz/', totalCount: 20, seenCount: 2 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/foo/',
       totalCount: 20,
       seenCount: 2,
@@ -224,7 +223,7 @@ describe('sync/folderCounts calculateFolderInfos()', () => {
       { path: '/', totalCount: 1, seenCount: 1 },
       { path: '/foo/bar/baz/', totalCount: 20, seenCount: 2 },
     ]
-    expect(calculateFolderInfos(allFolders, folders)).to.deep.include({
+    expect(calculateFolderInfos(allFolders, folders)).toContainEqual({
       path: '/',
       totalCount: 21,
       seenCount: 3,

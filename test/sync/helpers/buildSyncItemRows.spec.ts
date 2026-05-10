@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { buildSyncItemRows } from '#sync/helpers.js'
 
 describe('sync/helpers buildSyncItemRows()', () => {
@@ -16,7 +15,7 @@ describe('sync/helpers buildSyncItemRows()', () => {
       { path: '/quuux', isFile: false },
     ]
     const result = buildSyncItemRows(items)
-    expect(result.files).to.equal(3)
+    expect(result.files).toBe(3)
   })
   it('should count dirs in input', () => {
     const items = [
@@ -30,7 +29,7 @@ describe('sync/helpers buildSyncItemRows()', () => {
       { path: '/quuux', isFile: false },
     ]
     const result = buildSyncItemRows(items)
-    expect(result.dirs).to.equal(5)
+    expect(result.dirs).toBe(5)
   })
   it('should return one row per input item', () => {
     const items = [
@@ -39,51 +38,51 @@ describe('sync/helpers buildSyncItemRows()', () => {
       { path: '/c', isFile: false },
     ]
     const result = buildSyncItemRows(items)
-    expect(result.rows).to.have.lengthOf(3)
+    expect(result.rows).toHaveLength(3)
   })
   it('should set dirname for root folder item', () => {
     const items = [{ path: '/foo', isFile: false }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.folder).to.equal('/')
+    expect(result?.folder).toBe('/')
   })
   it('should set dirname for non root folder item', () => {
     const items = [{ path: '/foo/bar', isFile: false }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.folder).to.equal('/foo/')
+    expect(result?.folder).toBe('/foo/')
   })
   it('should set path for root folder folder', () => {
     const items = [{ path: '/foo', isFile: false }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.path).to.equal('/foo/')
+    expect(result?.path).toBe('/foo/')
   })
   it('should set path for root folder file', () => {
     const items = [{ path: '/foo.bmp', isFile: true }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.path).to.equal('/foo.bmp')
+    expect(result?.path).toBe('/foo.bmp')
   })
   it('should set path for non root folder folder', () => {
     const items = [{ path: '/foo/bar', isFile: false }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.path).to.equal('/foo/bar/')
+    expect(result?.path).toBe('/foo/bar/')
   })
   it('should set path for non root folder file', () => {
     const items = [{ path: '/foo/bar.jpg', isFile: true }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.path).to.equal('/foo/bar.jpg')
+    expect(result?.path).toBe('/foo/bar.jpg')
   })
   it('should set isFile for file', () => {
     const items = [{ path: '/foo/bar.jpg', isFile: true }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.isFile).to.equal(true)
+    expect(result?.isFile).toBe(true)
   })
   it('should set isFile for folder', () => {
     const items = [{ path: '/foo/bar', isFile: false }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.isFile).to.equal(false)
+    expect(result?.isFile).toBe(false)
   })
   it('should set sort key', () => {
     const items = [{ path: '/foo/bar', isFile: false }]
     const result = buildSyncItemRows(items).rows.pop()
-    expect(result?.sortKey).to.equal('bar')
+    expect(result?.sortKey).toBe('bar')
   })
 })

@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { syncNewPictures } from '#sync/pictures.js'
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
@@ -46,69 +45,69 @@ describe('sync/pictures syncNewPictures()', () => {
   })
   it('should call raw once for pictures table', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(knexInstanceStub.raw.callCount).to.equal(1)
+    expect(knexInstanceStub.raw.callCount).toBe(1)
   })
   it('should call raw with expected template for pictures table', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(knexInstanceStub.raw.firstCall.args[0]).to.equal('?? (??, ??, ??, ??)')
+    expect(knexInstanceStub.raw.firstCall.args[0]).toBe('?? (??, ??, ??, ??)')
   })
   it('should call raw with expected column names for pictures table', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(knexInstanceStub.raw.firstCall.args[1]).to.deep.equal(['pictures', 'folder', 'path', 'sortKey', 'pathHash'])
+    expect(knexInstanceStub.raw.firstCall.args[1]).toEqual(['pictures', 'folder', 'path', 'sortKey', 'pathHash'])
   })
   it('should call from after raw for pictures table', async () => {
     const rawQuery = { a: 'flapjacks for breakfast' }
     knexInstanceStub.raw.returns(rawQuery)
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(knexInstanceStub.from.calledAfter(knexInstanceStub.raw)).to.equal(true)
+    expect(knexInstanceStub.from.calledAfter(knexInstanceStub.raw)).toBe(true)
   })
   it('should call from with raw result for pictures table', async () => {
     const rawQuery = { a: 'flapjacks for breakfast' }
     knexInstanceStub.raw.returns(rawQuery)
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(knexInstanceStub.from.calledWith(rawQuery)).to.equal(true)
+    expect(knexInstanceStub.from.calledWith(rawQuery)).toBe(true)
   })
   it('should log once with sqlite return style', async () => {
     knexInstanceStub.insert.resolves([65536])
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(loggerStub.callCount).to.equal(1)
+    expect(loggerStub.callCount).toBe(1)
   })
   it('should log results with sqlite return style', async () => {
     knexInstanceStub.insert.resolves([65536])
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(loggerStub.firstCall.args[0]).to.equal('Added 65536 new pictures')
+    expect(loggerStub.firstCall.args[0]).toBe('Added 65536 new pictures')
   })
   it('should log once with postgresql return style', async () => {
     knexInstanceStub.insert.resolves({ rowCount: 256 })
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(loggerStub.callCount).to.equal(1)
+    expect(loggerStub.callCount).toBe(1)
   })
   it('should log results with postgresql return style', async () => {
     knexInstanceStub.insert.resolves({ rowCount: 256 })
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(loggerStub.firstCall.args[0]).to.equal('Added 256 new pictures')
+    expect(loggerStub.firstCall.args[0]).toBe('Added 256 new pictures')
   })
   it('should log 0 new pictures with empty array return style', async () => {
     knexInstanceStub.insert.resolves([])
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(loggerStub.firstCall.args[0]).to.equal('Added 0 new pictures')
+    expect(loggerStub.firstCall.args[0]).toBe('Added 0 new pictures')
   })
   it('should log 0 new pictures with undefined return style', async () => {
     knexInstanceStub.insert.resolves(undefined)
     await syncNewPictures(loggerFake, knexFnFake)
-    expect(loggerStub.firstCall.args[0]).to.equal('Added 0 new pictures')
+    expect(loggerStub.firstCall.args[0]).toBe('Added 0 new pictures')
   })
   it('should call select once within insert subquery', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.select.callCount).to.equal(1)
+    expect(knexInnerInstanceStub.select.callCount).toBe(1)
   })
   it('should call select with expected columns within insert subquery', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.select.firstCall.args[0]).to.deep.equal([
+    expect(knexInnerInstanceStub.select.firstCall.args[0]).toEqual([
       'syncitems.folder',
       'syncitems.path',
       'syncitems.sortKey',
@@ -119,25 +118,25 @@ describe('sync/pictures syncNewPictures()', () => {
     await syncNewPictures(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.select.calledBefore(knexInnerInstanceStub.from)).to.equal(true)
+    expect(knexInnerInstanceStub.select.calledBefore(knexInnerInstanceStub.from)).toBe(true)
   })
   it('should call from with syncitems within insert subquery', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.from.calledWith('syncitems')).to.equal(true)
+    expect(knexInnerInstanceStub.from.calledWith('syncitems')).toBe(true)
   })
   it('should call leftJoin with expected args within insert subquery', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.leftJoin.firstCall.args).to.deep.equal(['pictures', 'pictures.path', 'syncitems.path'])
+    expect(knexInnerInstanceStub.leftJoin.firstCall.args).toEqual(['pictures', 'pictures.path', 'syncitems.path'])
   })
   it('should call andWhere with expected conditions within insert subquery', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
     const fn = cast<(this: unknown) => void>(knexInstanceStub.insert.firstCall.args[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.andWhere.firstCall.args[0]).to.deep.equal({
+    expect(knexInnerInstanceStub.andWhere.firstCall.args[0]).toEqual({
       'syncitems.isFile': true,
       'pictures.path': null,
     })
