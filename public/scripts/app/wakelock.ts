@@ -60,7 +60,7 @@ export async function takeLock(): Promise<void> {
 export async function releaseLock(): Promise<void> {
   if (WakeLock.timeout > Date.now()) return
   WakeLock.timeout = RELEASED_TIMEOUT
-  const sentinel = WakeLock.sentinel
+  const { sentinel } = WakeLock
   if (sentinel === null) return
   try {
     if (!sentinel.released) {

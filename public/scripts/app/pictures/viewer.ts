@@ -85,7 +85,7 @@ export async function loadImage(): Promise<void> {
   try {
     Pictures.current.seen = true
     Pictures.current.element?.classList.add('seen')
-    const modCount = Pictures.modCount
+    const { modCount } = Pictures
     const newModCount = await Imports.postJSON<number | undefined>(
       '/api/navigate/latest',
       { path: Pictures.current.path, modCount },

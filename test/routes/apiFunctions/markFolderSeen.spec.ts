@@ -37,37 +37,37 @@ describe('routes/apiFunctions markFolderSeen', () => {
       expect(knexStub.firstCall.args).to.deep.equal(['pictures'])
     })
     it('should update setting seen flag once for called path', async () => {
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.update.callCount).to.equal(1)
     })
     it('should update setting seen flag with expected args for called path', async () => {
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.update.firstCall.args).to.deep.equal([{ seen: true }])
     })
     it('should update filtering only unseen pictures once for called path', async () => {
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.where.callCount).to.equal(1)
     })
     it('should update filtering only unseen pictures with expected args for called path', async () => {
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.where.firstCall.args).to.deep.equal([{ seen: false }])
     })
     it('should update filtering paths prefixed with called path once', async () => {
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.andWhere.callCount).to.equal(1)
     })
     it('should update filtering paths prefixed with called path with expected args', async () => {
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.andWhere.firstCall.args).to.deep.equal(['folder', 'like', '/foo/bar/baz/quux/%'])
@@ -89,7 +89,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should increment seenCount once when updating parent folders', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.increment.callCount).to.equal(1)
@@ -97,7 +97,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should increment seenCount with positive update count when marking as seen', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(instance.increment.firstCall.args).to.deep.equal(['seenCount', 3.1415926])
@@ -105,7 +105,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should use getParentFolders once to find parent folders when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(getParentFoldersStub.callCount).to.equal(1)
@@ -113,7 +113,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should use getParentFolders with expected args to find parent folders when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(getParentFoldersStub.firstCall.args).to.deep.equal(['/foo/bar/baz/quux/'])
@@ -121,7 +121,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should filter folders in list of parent folders once when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
       getParentFoldersStub.returns('FOOBAR')
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
@@ -130,7 +130,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should filter folders in list of parent folders with expected args when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
       getParentFoldersStub.returns('FOOBAR')
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
@@ -139,7 +139,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should query folders table on third call when updating child seenCount', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(knexStub.callCount).to.equal(3)
@@ -147,7 +147,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should query folders table with expected args on third call when updating child seenCount', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(knexStub.thirdCall.args).to.deep.equal(['folders'])
@@ -155,7 +155,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should use knexRaw once to update seen count for child folders when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(knexRawStub.callCount).to.equal(1)
@@ -163,7 +163,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should use knexRaw with expected args to update seen count for child folders when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
       expect(knexRawStub.firstCall.args).to.deep.equal(['"totalCount"'])
@@ -171,7 +171,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should update once with knexRaw result for child seen count when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       knexRawStub.returns(2.71828)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
@@ -180,7 +180,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should update with knexRaw result for child seen count when updates update pictures', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       knexRawStub.returns(2.71828)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
@@ -189,7 +189,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should filter child folders once when updating seen count for child folders', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       knexRawStub.returns(2.71828)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
@@ -198,7 +198,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should filter child folders with expected args when updating seen count for child folders', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       knexRawStub.returns(2.71828)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
@@ -207,7 +207,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should include selected folder once when updating seen count for child folders', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       knexRawStub.returns(2.71828)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
@@ -216,7 +216,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should include selected folder with expected args when updating seen count for child folders', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       knexRawStub.returns(2.71828)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)
@@ -246,13 +246,13 @@ describe('routes/apiFunctions markFolderSeen', () => {
   })
   describe('with markAsSeen = false', () => {
     it('should update setting seen flag to false', async () => {
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', false)
       expect(instance.update.firstCall.args).to.deep.equal([{ seen: false }])
     })
     it('should filter only seen pictures', async () => {
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', false)
       expect(instance.where.firstCall.args).to.deep.equal([{ seen: true }])
@@ -260,7 +260,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should decrement seenCount for parent folders', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onSecondCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', false)
       expect(instance.increment.firstCall.args).to.deep.equal(['seenCount', -3.1415926])
@@ -268,7 +268,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     it('should reset seenCount and current for child folders', async () => {
       const query = createKnexChainFake(chainMethods, terminalMethods).instance
       query.andWhere.resolves(3.1415926)
-      const instance = createKnexChainFake(chainMethods, terminalMethods).instance
+      const { instance } = createKnexChainFake(chainMethods, terminalMethods)
       knexStub.onFirstCall().returns(query).onThirdCall().returns(instance)
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', false)
       expect(instance.update.firstCall.args).to.deep.equal([{ seenCount: 0, current: null }])

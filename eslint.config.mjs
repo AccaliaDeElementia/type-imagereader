@@ -102,12 +102,24 @@ export default [
       ],
       'require-atomic-updates': 'error',
       'require-unicode-regexp': 'error',
+      // Destructure same-name extractions in declarations (`const { foo } = obj`
+      // over `const foo = obj.foo`), but leave two cases alone:
+      //  - Assignment-form (`obj.x = src.x`) requires a leading `;({ x: obj.x } = src)`
+      //    to defeat ASI, which reads worse than the direct assignment for negligible gain.
+      //  - Renamed extractions (`const userId = user.id` → `const { id: userId } = user`)
+      //    flip the read order from local-then-property to property-then-local, which
+      //    is consistently harder to skim. The local name often carries domain meaning
+      //    the property name doesn't.
+      // Both exemptions are deliberate — eslint-config-love's defaults flag both, and
+      // we override here. Surveyed in May 2026 against ~150 surfaced sites; refactoring
+      // them into compliant forms costs more readability than the rule recovers.
       '@typescript-eslint/prefer-destructuring': [
         'error',
         {
-          array: true, // This makes sense and is good. avoids a lot of magic numbers too
-          object: false, // This really hurts readability IMO. at the very least it bends my brain so dont enable this yet
+          VariableDeclarator: { array: true, object: true },
+          AssignmentExpression: { array: false, object: false },
         },
+        { enforceForRenamedProperties: false, enforceForDeclarationWithTypeAnnotation: false },
       ],
       '@typescript-eslint/no-floating-promises': 'error',
       'no-restricted-syntax': [

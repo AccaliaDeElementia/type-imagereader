@@ -62,13 +62,13 @@ async function loadData(noHistory = false, suppressMenu = false): Promise<void> 
   const token = Navigation.loadToken
   try {
     publish('Loading:show')
-    const path = Navigation.current.path
+    const { path } = Navigation.current
     const data = await Imports.getJSON<Listing>(`/api/listing${path}`, isListing)
     if (token !== Navigation.loadToken) return
     Navigation.current = data
     Navigation.current.noMenu = suppressMenu || Internals.isSuppressMenu()
     for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
-      let name = Navigation.current.name
+      let { name } = Navigation.current
       if (!stringishHasValue(name)) {
         name = Navigation.current.path
       }
