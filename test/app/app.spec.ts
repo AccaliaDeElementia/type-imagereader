@@ -1,7 +1,6 @@
 'use sanity'
 
 import assert from 'node:assert'
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
 import { cast } from '#testutils/typeGuards.js'
@@ -49,169 +48,169 @@ describe('/app.ts tests', (): void => {
   it('should reject when startServer throws', async () => {
     StartServerStub?.throws(new Error('FOO'))
     const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).to.equal('FOO')
+    expect(err.message).toBe('FOO')
   })
 
   it('should reject when startServer rejects', async () => {
     StartServerStub?.rejects(new Error('FOO'))
     const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).to.equal('FOO')
+    expect(err.message).toBe('FOO')
   })
 
   it('should call startServer when PORT is not defined', async () => {
     delete process.env.PORT
     await ImageReader.run()
-    expect(StartServerStub?.called).to.equal(true)
+    expect(StartServerStub?.called).toBe(true)
   })
 
   it('should pass default port 3030 to startServer when PORT is not defined', async () => {
     delete process.env.PORT
     await ImageReader.run()
-    expect(StartServerStub?.firstCall.args[0]).to.equal(3030)
+    expect(StartServerStub?.firstCall.args[0]).toBe(3030)
   })
 
   it('should call startServer when PORT is blank', async () => {
     process.env.PORT = ''
     await ImageReader.run()
-    expect(StartServerStub?.called).to.equal(true)
+    expect(StartServerStub?.called).toBe(true)
   })
 
   it('should pass default port 3030 to startServer when PORT is blank', async () => {
     process.env.PORT = ''
     await ImageReader.run()
-    expect(StartServerStub?.firstCall.args[0]).to.equal(3030)
+    expect(StartServerStub?.firstCall.args[0]).toBe(3030)
   })
 
   it('should call startServer when PORT is valid', async () => {
     process.env.PORT = '5555'
     await ImageReader.run()
-    expect(StartServerStub?.called).to.equal(true)
+    expect(StartServerStub?.called).toBe(true)
   })
 
   it('should pass specified port to startServer when PORT is valid', async () => {
     process.env.PORT = '5555'
     await ImageReader.run()
-    expect(StartServerStub?.firstCall.args[0]).to.equal(5555)
+    expect(StartServerStub?.firstCall.args[0]).toBe(5555)
   })
 
   it('should not call startServer when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
     await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).to.equal(false)
+    expect(StartServerStub?.called).toBe(false)
   })
 
   it('should not call synchronize when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
     await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should reject with descriptive message when PORT fails to parse', async () => {
     process.env.PORT = 'FOO'
     const e = await eventuallyRejects(ImageReader.run())
-    expect(e.message).to.equal('Port NaN (from env: FOO) is not a number. Valid ports must be a number.')
+    expect(e.message).toBe('Port NaN (from env: FOO) is not a number. Valid ports must be a number.')
   })
 
   it('should not call startServer when PORT is too small', async () => {
     process.env.PORT = '-1'
     await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).to.equal(false)
+    expect(StartServerStub?.called).toBe(false)
   })
 
   it('should not call synchronize when PORT is too small', async () => {
     process.env.PORT = '-1'
     await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should reject with descriptive message when PORT is too small', async () => {
     process.env.PORT = '-1'
     const e = await eventuallyRejects(ImageReader.run())
-    expect(e.message).to.equal('Port -1 is out of range. Valid ports must be between 0 and 65535.')
+    expect(e.message).toBe('Port -1 is out of range. Valid ports must be between 0 and 65535.')
   })
 
   it('should not call startServer when PORT is too big', async () => {
     process.env.PORT = '131072'
     await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).to.equal(false)
+    expect(StartServerStub?.called).toBe(false)
   })
 
   it('should not call synchronize when PORT is too big', async () => {
     process.env.PORT = '131072'
     await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should reject with descriptive message when PORT is too big', async () => {
     process.env.PORT = '131072'
     const e = await eventuallyRejects(ImageReader.run())
-    expect(e.message).to.equal('Port 131072 is out of range. Valid ports must be between 0 and 65535.')
+    expect(e.message).toBe('Port 131072 is out of range. Valid ports must be between 0 and 65535.')
   })
 
   it('should not call startServer when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
     await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).to.equal(false)
+    expect(StartServerStub?.called).toBe(false)
   })
 
   it('should not call synchronize when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
     await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should reject with descriptive message when PORT is not integer', async () => {
     process.env.PORT = '3.1415926'
     const e = await eventuallyRejects(ImageReader.run())
-    expect(e.message).to.equal('Port 3.1415926 is not integer. Valid ports must be integer between 0 and 65535.')
+    expect(e.message).toBe('Port 3.1415926 is not integer. Valid ports must be integer between 0 and 65535.')
   })
 
   it('should run Synchronization if SKIP_SYNC is not set', async () => {
     delete process.env.SKIP_SYNC
     await ImageReader.run()
-    expect(SynchronizeStub?.called).to.equal(true)
+    expect(SynchronizeStub?.called).toBe(true)
   })
 
   it('should run Synchronization if SKIP_SYNC is blank', async () => {
     process.env.SKIP_SYNC = ''
     await ImageReader.run()
-    expect(SynchronizeStub?.called).to.equal(true)
+    expect(SynchronizeStub?.called).toBe(true)
   })
 
   it('should not run Synchronization if SKIP_SYNC is true', async () => {
     process.env.SKIP_SYNC = 'true'
     await ImageReader.run()
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should not run Synchronization if SKIP_SYNC is 1', async () => {
     process.env.SKIP_SYNC = '1'
     await ImageReader.run()
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should run server if SKIP_SERVE is not set', async () => {
     delete process.env.SKIP_SERVE
     await ImageReader.run()
-    expect(StartServerStub?.called).to.equal(true)
+    expect(StartServerStub?.called).toBe(true)
   })
 
   it('should run server if SKIP_SERVE is blank', async () => {
     process.env.SKIP_SERVE = ''
     await ImageReader.run()
-    expect(StartServerStub?.called).to.equal(true)
+    expect(StartServerStub?.called).toBe(true)
   })
 
   it('should not run server if SKIP_SERVE is true', async () => {
     process.env.SKIP_SERVE = 'true'
     await ImageReader.run()
-    expect(StartServerStub?.called).to.equal(false)
+    expect(StartServerStub?.called).toBe(false)
   })
 
   it('should not run server if SKIP_SERVE is 1', async () => {
     process.env.SKIP_SERVE = '1'
     await ImageReader.run()
-    expect(StartServerStub?.called).to.equal(false)
+    expect(StartServerStub?.called).toBe(false)
   })
 
   it('should run Synchronization again after syncInterval miliseconds', async () => {
@@ -219,9 +218,9 @@ describe('/app.ts tests', (): void => {
     await ImageReader.run()
     SynchronizeStub?.resetHistory()
     ClockFake?.tick(99)
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
     ClockFake?.tick(1)
-    expect(SynchronizeStub?.called).to.equal(true)
+    expect(SynchronizeStub?.called).toBe(true)
   })
 
   it('should skip Synchronization if a previous run is still running', async () => {
@@ -231,21 +230,21 @@ describe('/app.ts tests', (): void => {
     // eslint-disable-next-line require-atomic-updates -- intentional test-only mutation to simulate a locked sync state
     ImageReader.syncLock._locked = true
     ClockFake?.tick(101)
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should reset sync running if Synchronization throws', async () => {
     SynchronizeStub?.throws(new Error('FOO!'))
     process.env.SYNC_INTERVAL = '100'
     await ImageReader.run()
-    expect(ImageReader.syncLock._locked).to.equal(false)
+    expect(ImageReader.syncLock._locked).toBe(false)
   })
 
   it('should reset sync running if Synchronization rejects', async () => {
     SynchronizeStub?.rejects(new Error('FOO!'))
     process.env.SYNC_INTERVAL = '100'
     await ImageReader.run()
-    expect(ImageReader.syncLock._locked).to.equal(false)
+    expect(ImageReader.syncLock._locked).toBe(false)
   })
 
   it('should tolerate Synchronization rejects in interval', async () => {
@@ -264,25 +263,25 @@ describe('/app.ts tests', (): void => {
     const err = new Error('SYNC FAILED')
     SynchronizeStub?.rejects(err)
     await ImageReader.run()
-    expect(syncLogCalls().length).to.equal(1)
+    expect(syncLogCalls().length).toBe(1)
   })
 
   it("should log with message 'sync error' when initial sync rejects", async () => {
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
     await ImageReader.run()
-    expect(syncLogCalls()[0]?.args[0]).to.equal('sync error')
+    expect(syncLogCalls()[0]?.args[0]).toBe('sync error')
   })
 
   it('should log the error object when initial sync rejects', async () => {
     const err = new Error('SYNC FAILED')
     SynchronizeStub?.rejects(err)
     await ImageReader.run()
-    expect(syncLogCalls()[0]?.args[1]).to.equal(err)
+    expect(syncLogCalls()[0]?.args[1]).toBe(err)
   })
 
   it('should not log sync errors when initial sync resolves', async () => {
     await ImageReader.run()
-    expect(syncLogCalls().length).to.equal(0)
+    expect(syncLogCalls().length).toBe(0)
   })
 
   it('should log once when interval sync rejects', async () => {
@@ -290,7 +289,7 @@ describe('/app.ts tests', (): void => {
     await ImageReader.run()
     SynchronizeStub?.rejects(new Error('INTERVAL SYNC FAILED'))
     await ClockFake?.tickAsync(101)
-    expect(syncLogCalls().length).to.equal(1)
+    expect(syncLogCalls().length).toBe(1)
   })
 
   it("should log with message 'sync interval error' when interval sync rejects", async () => {
@@ -298,7 +297,7 @@ describe('/app.ts tests', (): void => {
     await ImageReader.run()
     SynchronizeStub?.rejects(new Error('INTERVAL SYNC FAILED'))
     await ClockFake?.tickAsync(101)
-    expect(syncLogCalls()[0]?.args[0]).to.equal('sync interval error')
+    expect(syncLogCalls()[0]?.args[0]).toBe('sync interval error')
   })
 
   it('should log the error object when interval sync rejects', async () => {
@@ -307,7 +306,7 @@ describe('/app.ts tests', (): void => {
     await ImageReader.run()
     SynchronizeStub?.rejects(err)
     await ClockFake?.tickAsync(101)
-    expect(syncLogCalls()[0]?.args[1]).to.equal(err)
+    expect(syncLogCalls()[0]?.args[1]).toBe(err)
   })
 
   it('should not log sync errors when interval sync resolves', async () => {
@@ -315,59 +314,59 @@ describe('/app.ts tests', (): void => {
     await ImageReader.run()
     ClockFake?.tick(101)
     await Promise.resolve()
-    expect(syncLogCalls().length).to.equal(0)
+    expect(syncLogCalls().length).toBe(0)
   })
 
   it('should start watcher by default', async () => {
     await ImageReader.run()
-    expect(StartWatcherStub?.called).to.equal(true)
+    expect(StartWatcherStub?.called).toBe(true)
   })
 
   it('should start watcher on /data', async () => {
     await ImageReader.run()
-    expect(StartWatcherStub?.firstCall.args[0]).to.equal('/data')
+    expect(StartWatcherStub?.firstCall.args[0]).toBe('/data')
   })
 
   it('should set watcherEnabled to true when watcher starts', async () => {
     await ImageReader.run()
-    expect(ImageReader.watcherEnabled).to.equal(true)
+    expect(ImageReader.watcherEnabled).toBe(true)
   })
 
   it('should store watcher subscription', async () => {
     const sub = { unsubscribe: sandbox.stub().resolves() }
     StartWatcherStub?.resolves(sub)
     await ImageReader.run()
-    expect(ImageReader.watcherSubscription).to.equal(sub)
+    expect(ImageReader.watcherSubscription).toBe(sub)
   })
 
   it('should not start watcher when DISABLE_WATCHER is 1', async () => {
     process.env.DISABLE_WATCHER = '1'
     await ImageReader.run()
-    expect(StartWatcherStub?.called).to.equal(false)
+    expect(StartWatcherStub?.called).toBe(false)
   })
 
   it('should not start watcher when DISABLE_WATCHER is true', async () => {
     process.env.DISABLE_WATCHER = 'true'
     await ImageReader.run()
-    expect(StartWatcherStub?.called).to.equal(false)
+    expect(StartWatcherStub?.called).toBe(false)
   })
 
   it('should set watcherEnabled to false when DISABLE_WATCHER is 1', async () => {
     process.env.DISABLE_WATCHER = '1'
     await ImageReader.run()
-    expect(ImageReader.watcherEnabled).to.equal(false)
+    expect(ImageReader.watcherEnabled).toBe(false)
   })
 
   it('should not start watcher when SKIP_SYNC is 1', async () => {
     process.env.SKIP_SYNC = '1'
     await ImageReader.run()
-    expect(StartWatcherStub?.called).to.equal(false)
+    expect(StartWatcherStub?.called).toBe(false)
   })
 
   it('should fall back gracefully when watcher fails to start', async () => {
     StartWatcherStub?.rejects(new Error('inotify failed'))
     await ImageReader.run()
-    expect(ImageReader.watcherEnabled).to.equal(false)
+    expect(ImageReader.watcherEnabled).toBe(false)
   })
 
   it('should log when watcher fails to start', async () => {
@@ -376,67 +375,67 @@ describe('/app.ts tests', (): void => {
     const hasWatcherFailLog = (LoggerStub?.getCalls() ?? []).some(
       (c) => c.args[0] === 'watcher start failed, falling back to polling only',
     )
-    expect(hasWatcherFailLog).to.equal(true)
+    expect(hasWatcherFailLog).toBe(true)
   })
 
   it('should default syncInterval to 24 hours when watcher is enabled', async () => {
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(86_400_000)
+    expect(ImageReader.syncInterval).toBe(86_400_000)
   })
 
   it('should default syncInterval to 3 hours when watcher is disabled', async () => {
     process.env.DISABLE_WATCHER = '1'
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(10_800_000)
+    expect(ImageReader.syncInterval).toBe(10_800_000)
   })
 
   it('should default syncInterval to 3 hours when watcher fails to start', async () => {
     StartWatcherStub?.rejects(new Error('nope'))
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(10_800_000)
+    expect(ImageReader.syncInterval).toBe(10_800_000)
   })
 
   it('should use SYNC_INTERVAL env var when set', async () => {
     process.env.SYNC_INTERVAL = '60000'
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(60000)
+    expect(ImageReader.syncInterval).toBe(60000)
   })
 
   it('should use SYNC_INTERVAL even when watcher is enabled', async () => {
     process.env.SYNC_INTERVAL = '60000'
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(60000)
+    expect(ImageReader.syncInterval).toBe(60000)
   })
 
   it('should use SYNC_INTERVAL even when watcher is disabled', async () => {
     process.env.DISABLE_WATCHER = '1'
     process.env.SYNC_INTERVAL = '60000'
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(60000)
+    expect(ImageReader.syncInterval).toBe(60000)
   })
 
   it('should ignore invalid SYNC_INTERVAL', async () => {
     process.env.SYNC_INTERVAL = 'banana'
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(86_400_000)
+    expect(ImageReader.syncInterval).toBe(86_400_000)
   })
 
   it('should ignore negative SYNC_INTERVAL', async () => {
     process.env.SYNC_INTERVAL = '-1000'
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(86_400_000)
+    expect(ImageReader.syncInterval).toBe(86_400_000)
   })
 
   it('should ignore zero SYNC_INTERVAL', async () => {
     process.env.SYNC_INTERVAL = '0'
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(86_400_000)
+    expect(ImageReader.syncInterval).toBe(86_400_000)
   })
 
   it('should ignore empty SYNC_INTERVAL', async () => {
     process.env.SYNC_INTERVAL = ''
     await ImageReader.run()
-    expect(ImageReader.syncInterval).to.equal(86_400_000)
+    expect(ImageReader.syncInterval).toBe(86_400_000)
   })
 
   it('should acquire syncLock when flush callback is invoked', async () => {
@@ -444,7 +443,7 @@ describe('/app.ts tests', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
-    expect(ImageReader.syncLock._locked).to.equal(false)
+    expect(ImageReader.syncLock._locked).toBe(false)
   })
 
   it('should call initialize in flush callback', async () => {
@@ -452,7 +451,7 @@ describe('/app.ts tests', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
-    expect(InitializeStub?.callCount).to.equal(1)
+    expect(InitializeStub?.callCount).toBe(1)
   })
 
   it('should call incrementalSync once in flush callback', async () => {
@@ -462,7 +461,7 @@ describe('/app.ts tests', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
-    expect(IncrementalSyncStub?.callCount).to.equal(1)
+    expect(IncrementalSyncStub?.callCount).toBe(1)
   })
 
   it('should pass knex to incrementalSync in flush callback', async () => {
@@ -472,7 +471,7 @@ describe('/app.ts tests', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
-    expect(IncrementalSyncStub?.firstCall.args[0]).to.equal(fakeKnex)
+    expect(IncrementalSyncStub?.firstCall.args[0]).toBe(fakeKnex)
   })
 
   it('should pass changeset to incrementalSync in flush callback', async () => {
@@ -482,7 +481,7 @@ describe('/app.ts tests', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
-    expect(IncrementalSyncStub?.firstCall.args[1]).to.equal(changeset)
+    expect(IncrementalSyncStub?.firstCall.args[1]).toBe(changeset)
   })
 
   it('should release syncLock after flush callback completes', async () => {
@@ -490,7 +489,7 @@ describe('/app.ts tests', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
-    expect(ImageReader.syncLock._locked).to.equal(false)
+    expect(ImageReader.syncLock._locked).toBe(false)
   })
 
   it('should release syncLock when incrementalSync rejects', async () => {
@@ -503,7 +502,7 @@ describe('/app.ts tests', (): void => {
     } catch {
       // expected
     }
-    expect(ImageReader.syncLock._locked).to.equal(false)
+    expect(ImageReader.syncLock._locked).toBe(false)
   })
 
   it('should reject with sync locked message when syncLock is held', async () => {
@@ -513,7 +512,7 @@ describe('/app.ts tests', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     const err = await eventuallyRejects(onFlush(changeset))
-    expect(err.message).to.equal('sync locked')
+    expect(err.message).toBe('sync locked')
   })
 
   it('should not call incrementalSync when syncLock is held', async () => {
@@ -523,6 +522,6 @@ describe('/app.ts tests', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await eventuallyRejects(onFlush(changeset))
-    expect(IncrementalSyncStub?.callCount).to.equal(0)
+    expect(IncrementalSyncStub?.callCount).toBe(0)
   })
 })

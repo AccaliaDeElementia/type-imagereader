@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { Routers } from '#server.js'
 
 import { getRouter as getApiRouter } from '#routes/api.js'
@@ -11,18 +10,18 @@ import { getRouter as getWeatherRouter } from '#routes/weather.js'
 
 describe('Server registerRouters', () => {
   it('should store root router', () => {
-    expect(Routers.Root).to.equal(getRootRouter)
+    expect(Routers.Root).toBe(getRootRouter)
   })
   it('should store api router', () => {
-    expect(Routers.Api).to.equal(getApiRouter)
+    expect(Routers.Api).toBe(getApiRouter)
   })
   it('should store images router', () => {
-    expect(Routers.Images).to.equal(getImagesRouter)
+    expect(Routers.Images).toBe(getImagesRouter)
   })
   it('should store slideshow router', () => {
-    expect(Routers.Slideshow).to.equal(getSlideshowRouter)
+    expect(Routers.Slideshow).toBe(getSlideshowRouter)
   })
   it('should store weather router', () => {
-    expect(Routers.Weather).to.equal(getWeatherRouter)
+    expect(Routers.Weather).toBe(getWeatherRouter)
   })
 })

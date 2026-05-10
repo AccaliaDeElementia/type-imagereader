@@ -1,6 +1,6 @@
 'use sanity'
 
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import type { Express, Response } from 'express'
 import Sinon from 'sinon'
 import { StatusCodes } from 'http-status-codes'
@@ -24,7 +24,7 @@ describe('Server configureErrorHandler', () => {
   })
   it('should register exactly one handler', () => {
     configureErrorHandler(appFake)
-    expect(appStub.use.callCount).to.equal(1)
+    expect(appStub.use.callCount).toBe(1)
   })
   it('should register a function as the error handler', () => {
     configureErrorHandler(appFake)
@@ -32,13 +32,30 @@ describe('Server configureErrorHandler', () => {
     assert.isFunction(fn)
   })
   const errorHandlerTests: Array<[string, () => void]> = [
-    ['set status code once', () => expect(responseStub.status.callCount).to.equal(1)],
+    [
+      'set status code once',
+      () => {
+        expect(responseStub.status.callCount).toBe(1)
+      },
+    ],
     [
       'set INTERNAL_SERVER_ERROR status code',
-      () => expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.INTERNAL_SERVER_ERROR]),
+      () => {
+        expect(responseStub.status.firstCall.args).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
+      },
     ],
-    ['send JSON message', () => expect(responseStub.json.callCount).to.equal(1)],
-    ['send encoded JSON error', () => expect(responseStub.json.firstCall.args).to.deep.equal([{ error: 'FOO!' }])],
+    [
+      'send JSON message',
+      () => {
+        expect(responseStub.json.callCount).toBe(1)
+      },
+    ],
+    [
+      'send encoded JSON error',
+      () => {
+        expect(responseStub.json.firstCall.args).toEqual([{ error: 'FOO!' }])
+      },
+    ],
   ]
   errorHandlerTests.forEach(([title, validationFn]) => {
     it(`should ${title} when handling an error`, () => {

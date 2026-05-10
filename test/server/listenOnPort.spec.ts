@@ -1,6 +1,6 @@
 'use sanity'
 
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import type { Server } from 'node:http'
 import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
@@ -22,11 +22,11 @@ describe('Server listenOnPort', () => {
   })
   it('should call server.listen once', () => {
     listenOnPort(serverFake, 65535)
-    expect(listenStub.callCount).to.equal(1)
+    expect(listenStub.callCount).toBe(1)
   })
   it('should listen on the provided port', () => {
     listenOnPort(serverFake, 65535)
-    expect(listenStub.firstCall.args[0]).to.equal(65535)
+    expect(listenStub.firstCall.args[0]).toBe(65535)
   })
   it('should provide a listen callback to the server', () => {
     listenOnPort(serverFake, 1)
@@ -37,37 +37,37 @@ describe('Server listenOnPort', () => {
     listenOnPort(serverFake, 1)
     const fn = cast<() => unknown>(listenStub.firstCall.args[1])
     fn()
-    expect(loggerFake.callCount).to.equal(0)
+    expect(loggerFake.callCount).toBe(0)
   })
   it('should not log when the callback is invoked with an undefined error parameter', () => {
     listenOnPort(serverFake, 1)
     const fn = cast<(err: Error | undefined) => unknown>(listenStub.firstCall.args[1])
     fn(undefined)
-    expect(loggerFake.callCount).to.equal(0)
+    expect(loggerFake.callCount).toBe(0)
   })
   it('should log twice when the callback is invoked with an error parameter', () => {
     listenOnPort(serverFake, 1)
     const fn = cast<(err: Error | undefined) => unknown>(listenStub.firstCall.args[1])
     fn(new Error('FOO!'))
-    expect(loggerFake.callCount).to.equal(2)
+    expect(loggerFake.callCount).toBe(2)
   })
   it('should log a friendly message first when the callback is invoked with an error parameter', () => {
     listenOnPort(serverFake, 1)
     const fn = cast<(err: Error | undefined) => unknown>(listenStub.firstCall.args[1])
     fn(new Error('FOO!'))
-    expect(loggerFake.firstCall.args).to.deep.equal(['Error encountered creating server'])
+    expect(loggerFake.firstCall.args).toEqual(['Error encountered creating server'])
   })
   it('should log only the error object when the callback is invoked with an error parameter', () => {
     listenOnPort(serverFake, 1)
     const fn = cast<(err: Error | undefined) => unknown>(listenStub.firstCall.args[1])
     fn(new Error("D'OH!"))
-    expect(loggerFake.secondCall.args).to.have.lengthOf(1)
+    expect(loggerFake.secondCall.args).toHaveLength(1)
   })
   it('should log the error object when the callback is invoked with an error parameter', () => {
     listenOnPort(serverFake, 1)
     const fn = cast<(err: Error | undefined) => unknown>(listenStub.firstCall.args[1])
     const err = new Error("D'OH!")
     fn(err)
-    expect(loggerFake.secondCall.args[0]).to.equal(err)
+    expect(loggerFake.secondCall.args[0]).toBe(err)
   })
 })

@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Express } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
@@ -30,15 +29,15 @@ describe('Server createApp', () => {
   })
   it('should construct express app', () => {
     createApp()
-    expect(expressStub.callCount).to.equal(1)
+    expect(expressStub.callCount).toBe(1)
   })
   it('should construct express app with default config', () => {
     createApp()
-    expect(expressStub.firstCall.args).to.have.lengthOf(0)
+    expect(expressStub.firstCall.args).toHaveLength(0)
   })
   it('should create an http server wrapping the express app', () => {
     createApp()
-    expect(createServerStub.callCount).to.equal(1)
+    expect(createServerStub.callCount).toBe(1)
   })
   it('should delegate incoming requests to the express app via the createServer listener', () => {
     const appCallStub = sandbox.stub()
@@ -48,24 +47,24 @@ describe('Server createApp', () => {
     const reqFake = { req: true }
     const resFake = { res: true }
     listener(reqFake, resFake)
-    expect(appCallStub.firstCall.args).to.deep.equal([reqFake, resFake])
+    expect(appCallStub.firstCall.args).toEqual([reqFake, resFake])
   })
   it('should not start listening from createApp', () => {
     createApp()
     // createApp must stay passive — listening is deferred to listenOnPort at the end of start()
     // so requests cannot reach handlers until every router is registered.
-    expect(serverFake).to.not.have.property('listen')
+    expect(serverFake).not.toHaveProperty('listen')
   })
   it('should create websocket server', () => {
     createApp()
-    expect(socketsServerStub.callCount).to.equal(1)
+    expect(socketsServerStub.callCount).toBe(1)
   })
   it('should create websocket server from the http server', () => {
     createApp()
-    expect(socketsServerStub.firstCall.args[0]).to.equal(serverFake)
+    expect(socketsServerStub.firstCall.args[0]).toBe(serverFake)
   })
   it('should return tuple of [express app, http server, websocket server]', () => {
     const result = createApp()
-    expect(result).to.deep.equal([appFake, serverFake, socketsFake])
+    expect(result).toEqual([appFake, serverFake, socketsFake])
   })
 })

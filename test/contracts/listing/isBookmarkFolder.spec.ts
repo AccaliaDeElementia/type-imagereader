@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isBookmarkFolder } from '#contracts/listing.js'
 
 describe('Contracts: isBookmarkFolder()', () => {
@@ -162,7 +161,7 @@ describe('Contracts: isBookmarkFolder()', () => {
 
   cases.forEach(([title, obj, expected]) => {
     it(`should return ${expected} for ${title}`, () => {
-      expect(isBookmarkFolder(obj)).to.equal(expected)
+      expect(isBookmarkFolder(obj)).toBe(expected)
     })
   })
 })

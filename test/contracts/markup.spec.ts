@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { isHTMLElement } from '#contracts/markup.js'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -24,7 +23,7 @@ describe('Contracts: isHTMLElement()', () => {
   ]
   cases.forEach(([title, build, expected]) => {
     it(`should return ${expected} for ${title}`, () => {
-      expect(isHTMLElement(build())).to.equal(expected)
+      expect(isHTMLElement(build())).toBe(expected)
     })
   })
 })

@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isWeatherResults } from '#contracts/weather.js'
 
 describe('Contracts: IsWeatherResults()', () => {
@@ -148,7 +147,7 @@ describe('Contracts: IsWeatherResults()', () => {
   ]
   testCases.forEach(([name, value, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${name} object`, () => {
-      expect(isWeatherResults(value)).to.equal(expected)
+      expect(isWeatherResults(value)).toBe(expected)
     })
   })
   it('should accept weather from local env service', () => {
@@ -191,6 +190,6 @@ describe('Contracts: IsWeatherResults()', () => {
         precipitation: 0,
       },
     }
-    expect(isWeatherResults(data)).to.equal(true)
+    expect(isWeatherResults(data)).toBe(true)
   })
 })

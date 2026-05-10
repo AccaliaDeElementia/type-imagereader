@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { isPicture } from '#contracts/listing.js'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -329,7 +328,7 @@ describe('Contracts: isPicture()', () => {
   ]
   cases.forEach(([title, build, expected]) => {
     it(`should return ${expected} for ${title}`, () => {
-      expect(isPicture(build())).to.equal(expected)
+      expect(isPicture(build())).toBe(expected)
     })
   })
 })

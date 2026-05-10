@@ -2,7 +2,6 @@
 
 import Sinon from 'sinon'
 import { ImageReader, runSyncWithLock } from '#app.js'
-import { expect } from 'chai'
 import { eventuallyRejects } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
@@ -21,21 +20,21 @@ describe('app.ts runSyncWithLock()', () => {
   })
   it('should attempt to take the sync lock', async () => {
     await runSyncWithLock()
-    expect(takeStub.callCount).to.equal(1)
+    expect(takeStub.callCount).toBe(1)
   })
   it('should not synchronize when lock is already held', async () => {
     takeStub.returns(false)
     await runSyncWithLock()
-    expect(synchronizeStub.callCount).to.equal(0)
+    expect(synchronizeStub.callCount).toBe(0)
   })
   it('should not release lock when lock was not acquired', async () => {
     takeStub.returns(false)
     await runSyncWithLock()
-    expect(releaseStub.callCount).to.equal(0)
+    expect(releaseStub.callCount).toBe(0)
   })
   it('should synchronize when lock is acquired', async () => {
     await runSyncWithLock()
-    expect(synchronizeStub.callCount).to.equal(1)
+    expect(synchronizeStub.callCount).toBe(1)
   })
   it('should take lock before synchronizing', async () => {
     let lockTakenBeforeSync = false
@@ -44,7 +43,7 @@ describe('app.ts runSyncWithLock()', () => {
       await Promise.resolve()
     })
     await runSyncWithLock()
-    expect(lockTakenBeforeSync).to.equal(true)
+    expect(lockTakenBeforeSync).toBe(true)
   })
   it('should not release lock before synchronizing', async () => {
     let lockReleasedBeforeSync = false
@@ -53,25 +52,25 @@ describe('app.ts runSyncWithLock()', () => {
       await Promise.resolve()
     })
     await runSyncWithLock()
-    expect(lockReleasedBeforeSync).to.equal(false)
+    expect(lockReleasedBeforeSync).toBe(false)
   })
   it('should release lock once after synchronize resolves', async () => {
     await runSyncWithLock()
-    expect(releaseStub.callCount).to.equal(1)
+    expect(releaseStub.callCount).toBe(1)
   })
   it('should release lock after (not before) synchronize resolves', async () => {
     await runSyncWithLock()
-    expect(releaseStub.calledAfter(synchronizeStub)).to.equal(true)
+    expect(releaseStub.calledAfter(synchronizeStub)).toBe(true)
   })
   it('should release lock after synchronize rejects', async () => {
     synchronizeStub.rejects(new Error('SYNC ERROR'))
     await runSyncWithLock().catch(() => null)
-    expect(releaseStub.callCount).to.equal(1)
+    expect(releaseStub.callCount).toBe(1)
   })
   it('should propagate rejection from synchronize', async () => {
     const err = new Error('SYNC ERROR')
     synchronizeStub.rejects(err)
     const caught = await eventuallyRejects(runSyncWithLock())
-    expect(caught).to.equal(err)
+    expect(caught).toBe(err)
   })
 })

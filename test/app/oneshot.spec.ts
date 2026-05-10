@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
 import { cast } from '#testutils/typeGuards.js'
@@ -46,37 +45,37 @@ describe('app.ts ONESHOT mode tests', (): void => {
   it('should call synchronize when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
     await ImageReader.run()
-    expect(SynchronizeStub?.called).to.equal(true)
+    expect(SynchronizeStub?.called).toBe(true)
   })
 
   it('should call synchronize when ONESHOT is true', async () => {
     process.env.ONESHOT = 'true'
     await ImageReader.run()
-    expect(SynchronizeStub?.called).to.equal(true)
+    expect(SynchronizeStub?.called).toBe(true)
   })
 
   it('should not start watcher when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
     await ImageReader.run()
-    expect(StartWatcherStub?.called).to.equal(false)
+    expect(StartWatcherStub?.called).toBe(false)
   })
 
   it('should not start watcher when ONESHOT is true', async () => {
     process.env.ONESHOT = 'true'
     await ImageReader.run()
-    expect(StartWatcherStub?.called).to.equal(false)
+    expect(StartWatcherStub?.called).toBe(false)
   })
 
   it('should leave watcherEnabled false when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
     await ImageReader.run()
-    expect(ImageReader.watcherEnabled).to.equal(false)
+    expect(ImageReader.watcherEnabled).toBe(false)
   })
 
   it('should leave WatcherSubscription undefined when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
     await ImageReader.run()
-    expect(ImageReader.watcherSubscription).to.equal(undefined)
+    expect(ImageReader.watcherSubscription).toBe(undefined)
   })
 
   it('should not schedule recurring sync when ONESHOT is 1', async () => {
@@ -85,33 +84,33 @@ describe('app.ts ONESHOT mode tests', (): void => {
     await ImageReader.run()
     SynchronizeStub?.resetHistory()
     ClockFake?.tick(10_000)
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should leave Interval undefined when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
     await ImageReader.run()
-    expect(ImageReader.interval).to.equal(undefined)
+    expect(ImageReader.interval).toBe(undefined)
   })
 
   it('should call knex.destroy after sync when ONESHOT is 1', async () => {
     process.env.ONESHOT = '1'
     await ImageReader.run()
-    expect(DestroyStub?.called).to.equal(true)
+    expect(DestroyStub?.called).toBe(true)
   })
 
   it('should call knex.destroy even when synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
     await eventuallyRejects(ImageReader.run())
-    expect(DestroyStub?.called).to.equal(true)
+    expect(DestroyStub?.called).toBe(true)
   })
 
   it('should reject with sync error when synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.rejects(new Error('SYNC FAILED'))
     const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).to.equal('SYNC FAILED')
+    expect(err.message).toBe('SYNC FAILED')
   })
 
   it('should log when knex.destroy rejects in ONESHOT mode', async () => {
@@ -121,20 +120,20 @@ describe('app.ts ONESHOT mode tests', (): void => {
     const hasDestroyFailLog = (LoggerStub?.getCalls() ?? []).some(
       (c) => c.args[0] === 'failed to release knex pool in oneshot mode',
     )
-    expect(hasDestroyFailLog).to.equal(true)
+    expect(hasDestroyFailLog).toBe(true)
   })
 
   it('should not call synchronize when ONESHOT and SKIP_SYNC are both set', async () => {
     process.env.ONESHOT = '1'
     process.env.SKIP_SYNC = '1'
     await ImageReader.run()
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should not call knex.destroy when ONESHOT and SKIP_SYNC are both set', async () => {
     process.env.ONESHOT = '1'
     process.env.SKIP_SYNC = '1'
     await ImageReader.run()
-    expect(DestroyStub?.called).to.equal(false)
+    expect(DestroyStub?.called).toBe(false)
   })
 })

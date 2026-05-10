@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Express } from 'express'
 import express from 'express'
 import Sinon from 'sinon'
@@ -33,71 +32,71 @@ describe('Server configureBaseApp', () => {
   })
   it('should use correct count of extensions', () => {
     configureBaseApp(appFake)
-    expect(appStub.use.callCount).to.equal(4)
+    expect(appStub.use.callCount).toBe(4)
   })
   it('should configure jsonify', () => {
     configureBaseApp(appFake)
-    expect(jsonifyStub.callCount).to.equal(1)
+    expect(jsonifyStub.callCount).toBe(1)
   })
   it('should configure jsonify without config options', () => {
     configureBaseApp(appFake)
-    expect(jsonifyStub.firstCall.args).to.have.lengthOf(0)
+    expect(jsonifyStub.firstCall.args).toHaveLength(0)
   })
   it('should app.use result of jsonify', () => {
     const jsonify = {}
     jsonifyStub.returns(jsonify)
     configureBaseApp(appFake)
-    expect(appStub.use.calledWithExactly(jsonify)).to.equal(true)
+    expect(appStub.use.calledWithExactly(jsonify)).toBe(true)
   })
   it('should configure urlencoded', () => {
     configureBaseApp(appFake)
-    expect(urlEncoderStub.callCount).to.equal(1)
+    expect(urlEncoderStub.callCount).toBe(1)
   })
   it('should configure urlencoded with custom config', () => {
     configureBaseApp(appFake)
-    expect(urlEncoderStub.firstCall.args).to.have.lengthOf(1)
+    expect(urlEncoderStub.firstCall.args).toHaveLength(1)
   })
   it('should configure urlencoded with extended encodings', () => {
     configureBaseApp(appFake)
-    expect(urlEncoderStub.firstCall.args[0]).to.deep.equal({ extended: true })
+    expect(urlEncoderStub.firstCall.args[0]).toEqual({ extended: true })
   })
   it('should app.use result of urlencoded', () => {
     const encoded = {}
     urlEncoderStub.returns(encoded)
     configureBaseApp(appFake)
-    expect(appStub.use.calledWithExactly(encoded)).to.equal(true)
+    expect(appStub.use.calledWithExactly(encoded)).toBe(true)
   })
   it('should configure cookieParser', () => {
     configureBaseApp(appFake)
-    expect(cookieParserStub.callCount).to.equal(1)
+    expect(cookieParserStub.callCount).toBe(1)
   })
   it('should configure cookieParser with custom config', () => {
     configureBaseApp(appFake)
-    expect(cookieParserStub.firstCall.args).to.have.lengthOf(0)
+    expect(cookieParserStub.firstCall.args).toHaveLength(0)
   })
   it('should app.use result of cookieParser', () => {
     const cookies = {}
     cookieParserStub.returns(cookies)
     configureBaseApp(appFake)
-    expect(appStub.use.calledWithExactly(cookies)).to.equal(true)
+    expect(appStub.use.calledWithExactly(cookies)).toBe(true)
   })
   it('should configure favicon', () => {
     configureBaseApp(appFake)
-    expect(faviconStub.callCount).to.equal(1)
+    expect(faviconStub.callCount).toBe(1)
   })
   it('should configure favicon with custom config', () => {
     configureBaseApp(appFake)
-    expect(faviconStub.firstCall.args).to.have.lengthOf(1)
+    expect(faviconStub.firstCall.args).toHaveLength(1)
   })
   it('should configure favicon with extended encodings', () => {
     configureBaseApp(appFake)
-    expect(faviconStub.firstCall.args[0]).to.equal(`${Imports.dirname}/dist/images/favicon.ico`)
+    expect(faviconStub.firstCall.args[0]).toBe(`${Imports.dirname}/dist/images/favicon.ico`)
   })
   it('should app.use result of favicon', () => {
     const favicon = {}
     faviconStub.returns(favicon)
     configureBaseApp(appFake)
-    expect(appStub.use.calledWithExactly(favicon)).to.equal(true)
+    expect(appStub.use.calledWithExactly(favicon)).toBe(true)
   })
 
   it('should not throw when favicon registration fails', () => {
@@ -105,43 +104,43 @@ describe('Server configureBaseApp', () => {
     const action = (): void => {
       configureBaseApp(appFake)
     }
-    expect(action).to.not.throw()
+    expect(action).not.toThrow()
   })
 
   it('should not register favicon middleware when favicon registration fails', () => {
     faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
     configureBaseApp(appFake)
-    expect(appStub.use.callCount).to.equal(3)
+    expect(appStub.use.callCount).toBe(3)
   })
 
   it('should log skipped-format when favicon registration fails', () => {
     faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
     configureBaseApp(appFake)
-    expect(loggerStub.firstCall.args[0]).to.equal('favicon middleware skipped: %s')
+    expect(loggerStub.firstCall.args[0]).toBe('favicon middleware skipped: %s')
   })
 
   it('should pass the error message string when favicon registration fails', () => {
     faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
     configureBaseApp(appFake)
-    expect(loggerStub.firstCall.args[1]).to.equal(FAVICON_ERROR_MESSAGE)
+    expect(loggerStub.firstCall.args[1]).toBe(FAVICON_ERROR_MESSAGE)
   })
 
   it('should not include any Error instance in log args when favicon registration fails', () => {
     faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
     configureBaseApp(appFake)
     const hasErrorArg = loggerStub.firstCall.args.some(isErrorInstance)
-    expect(hasErrorArg).to.equal(false)
+    expect(hasErrorArg).toBe(false)
   })
 
   it('should still register the other three middlewares when favicon registration fails', () => {
     faviconStub.throws(new Error(FAVICON_ERROR_MESSAGE))
     configureBaseApp(appFake)
-    expect(jsonifyStub.callCount + urlEncoderStub.callCount + cookieParserStub.callCount).to.equal(3)
+    expect(jsonifyStub.callCount + urlEncoderStub.callCount + cookieParserStub.callCount).toBe(3)
   })
 
   it('should coerce non-Error throws to a string in the log', () => {
     faviconStub.throws(cast<Error>({ toString: () => 'plain-rejection' }))
     configureBaseApp(appFake)
-    expect(loggerStub.firstCall.args[1]).to.equal('plain-rejection')
+    expect(loggerStub.firstCall.args[1]).toBe('plain-rejection')
   })
 })

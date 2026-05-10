@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
 import { cast } from '#testutils/typeGuards.js'
@@ -53,25 +52,25 @@ describe('app.ts DATA_DIR handling', (): void => {
 
   it('should call stat once to validate the data directory', async () => {
     await ImageReader.run()
-    expect(StatStub?.callCount).to.equal(1)
+    expect(StatStub?.callCount).toBe(1)
   })
 
   it('should pass the default /data path to stat when DATA_DIR is unset', async () => {
     await ImageReader.run()
-    expect(StatStub?.firstCall.args[0]).to.equal('/data')
+    expect(StatStub?.firstCall.args[0]).toBe('/data')
   })
 
   it('should pass the DATA_DIR value to stat when set', async () => {
     process.env.DATA_DIR = '/library/images'
     await ImageReader.run()
-    expect(StatStub?.firstCall.args[0]).to.equal('/library/images')
+    expect(StatStub?.firstCall.args[0]).toBe('/library/images')
   })
 
   it('should log the selected data directory', async () => {
     await ImageReader.run()
     const calls = LoggerStub?.getCalls() ?? []
     const hasDataDirLog = calls.some((c) => `${c.args[0]}`.startsWith('using data directory'))
-    expect(hasDataDirLog).to.equal(true)
+    expect(hasDataDirLog).toBe(true)
   })
 
   it('should log the resolved data directory value', async () => {
@@ -79,7 +78,7 @@ describe('app.ts DATA_DIR handling', (): void => {
     await ImageReader.run()
     const calls = LoggerStub?.getCalls() ?? []
     const dataDirLog = calls.find((c) => `${c.args[0]}`.startsWith('using data directory'))
-    expect(dataDirLog?.args[1]).to.equal('/library/images')
+    expect(dataDirLog?.args[1]).toBe('/library/images')
   })
 
   it('should log the data directory before stat rejects', async () => {
@@ -87,69 +86,69 @@ describe('app.ts DATA_DIR handling', (): void => {
     await eventuallyRejects(ImageReader.run())
     const calls = LoggerStub?.getCalls() ?? []
     const hasDataDirLog = calls.some((c) => `${c.args[0]}`.startsWith('using data directory'))
-    expect(hasDataDirLog).to.equal(true)
+    expect(hasDataDirLog).toBe(true)
   })
 
   it('should reject when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
     const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).to.match(/DATA_DIR/v)
+    expect(err.message).toMatch(/DATA_DIR/v)
   })
 
   it('should include the data directory in the rejection message when stat rejects', async () => {
     process.env.DATA_DIR = '/missing/path'
     StatStub?.rejects(new Error('ENOENT'))
     const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).to.contain('/missing/path')
+    expect(err.message).toContain('/missing/path')
   })
 
   it('should not call startServer when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
     await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).to.equal(false)
+    expect(StartServerStub?.called).toBe(false)
   })
 
   it('should not call synchronize when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
     await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should not start watcher when stat rejects', async () => {
     StatStub?.rejects(new Error('ENOENT'))
     await eventuallyRejects(ImageReader.run())
-    expect(StartWatcherStub?.called).to.equal(false)
+    expect(StartWatcherStub?.called).toBe(false)
   })
 
   it('should reject when stat returns a non-directory', async () => {
     StatStub?.resolves(fakeFileStats())
     const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).to.match(/not a directory/v)
+    expect(err.message).toMatch(/not a directory/v)
   })
 
   it('should include the data directory in the rejection when stat returns a non-directory', async () => {
     process.env.DATA_DIR = '/etc/passwd'
     StatStub?.resolves(fakeFileStats())
     const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).to.contain('/etc/passwd')
+    expect(err.message).toContain('/etc/passwd')
   })
 
   it('should not call startServer when stat returns a non-directory', async () => {
     StatStub?.resolves(fakeFileStats())
     await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).to.equal(false)
+    expect(StartServerStub?.called).toBe(false)
   })
 
   it('should not call synchronize when stat returns a non-directory', async () => {
     StatStub?.resolves(fakeFileStats())
     await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).to.equal(false)
+    expect(SynchronizeStub?.called).toBe(false)
   })
 
   it('should pass the resolved DATA_DIR to startWatcher when set', async () => {
     process.env.DATA_DIR = '/library/images'
     await ImageReader.run()
-    expect(StartWatcherStub?.firstCall.args[0]).to.equal('/library/images')
+    expect(StartWatcherStub?.firstCall.args[0]).toBe('/library/images')
   })
 
   it('should pass the resolved DATA_DIR to incrementalSync in the flush callback', async () => {
@@ -160,6 +159,6 @@ describe('app.ts DATA_DIR handling', (): void => {
     const onFlush = cast<FlushCallback>(StartWatcherStub?.firstCall.args[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
     await onFlush(changeset)
-    expect(IncrementalSyncStub?.firstCall.args[2]).to.equal('/library/images')
+    expect(IncrementalSyncStub?.firstCall.args[2]).toBe('/library/images')
   })
 })

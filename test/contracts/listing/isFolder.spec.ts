@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isFolder, isFolderWithCounts } from '#contracts/listing.js'
 
 describe('Contracts: isFolder(), isFolderWithCounts()', () => {
@@ -272,12 +271,12 @@ describe('Contracts: isFolder(), isFolderWithCounts()', () => {
 
   commonCases.concat(foldersTests).forEach(([title, obj, expected]) => {
     it(`isFolder() should return ${expected} for ${title}`, () => {
-      expect(isFolder(obj)).to.equal(expected)
+      expect(isFolder(obj)).toBe(expected)
     })
   })
   commonCases.concat(foldersWithCountsTests).forEach(([title, obj, expected]) => {
     it(`isFolderWithCounts() should return ${expected} for ${title}`, () => {
-      expect(isFolderWithCounts(obj)).to.equal(expected)
+      expect(isFolderWithCounts(obj)).toBe(expected)
     })
   })
 })

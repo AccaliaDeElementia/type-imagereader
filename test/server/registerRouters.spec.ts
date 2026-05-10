@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Express } from 'express'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
@@ -43,44 +42,44 @@ describe('Server registerRouters', () => {
   ]
   it('should register expected number of routers', async () => {
     await registerRouters(appFake, serverFake, socketsFake)
-    expect(appStub.use.callCount).to.equal(tests.length)
+    expect(appStub.use.callCount).toBe(tests.length)
   })
   tests.forEach(([title, url, getStub]) => {
     it(`should register a router for '${url}'`, async () => {
       await registerRouters(appFake, serverFake, socketsFake)
-      expect(appStub.use.calledWith(url)).to.equal(true)
+      expect(appStub.use.calledWith(url)).toBe(true)
     })
     it(`should register correct number of parameters for '${url}'`, async () => {
       await registerRouters(appFake, serverFake, socketsFake)
       const args = appStub.use.getCalls().find((call) => call.args[0] === url)?.args as unknown[] | undefined
-      expect(args).to.have.lengthOf(2)
+      expect(args).toHaveLength(2)
     })
     it(`should register a created ${title} router for '${url}'`, async () => {
       const expected = {}
       getStub().resolves(expected)
       await registerRouters(appFake, serverFake, socketsFake)
       const router = appStub.use.getCalls().find((call) => call.args[0] === url)?.args[1] as unknown
-      expect(router).to.equal(expected)
+      expect(router).toBe(expected)
     })
     it(`should create ${title} router`, async () => {
       await registerRouters(appFake, serverFake, socketsFake)
-      expect(getStub().callCount).to.equal(1)
+      expect(getStub().callCount).toBe(1)
     })
     it(`should create ${title} router with proper argument count`, async () => {
       await registerRouters(appFake, serverFake, socketsFake)
-      expect(getStub().firstCall.args).to.have.lengthOf(3)
+      expect(getStub().firstCall.args).toHaveLength(3)
     })
     it(`should create ${title} router with express app`, async () => {
       await registerRouters(appFake, serverFake, socketsFake)
-      expect(getStub().firstCall.args[0]).to.equal(appFake)
+      expect(getStub().firstCall.args[0]).toBe(appFake)
     })
     it(`should create ${title} router with http server`, async () => {
       await registerRouters(appFake, serverFake, socketsFake)
-      expect(getStub().firstCall.args[1]).to.equal(serverFake)
+      expect(getStub().firstCall.args[1]).toBe(serverFake)
     })
     it(`should create ${title} router with websocket server`, async () => {
       await registerRouters(appFake, serverFake, socketsFake)
-      expect(getStub().firstCall.args[2]).to.equal(socketsFake)
+      expect(getStub().firstCall.args[2]).toBe(socketsFake)
     })
   })
 })

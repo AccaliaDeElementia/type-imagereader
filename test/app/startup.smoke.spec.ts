@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { spawn } from 'node:child_process'
 import type { ChildProcess } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -77,19 +76,19 @@ describe(
     })
 
     it('should respond 200 to /api/healthcheck', () => {
-      expect(healthStatus).to.equal(200)
+      expect(healthStatus).toBe(200)
     })
 
     it('should return body "OK" from /api/healthcheck', () => {
-      expect(healthBody).to.equal('OK')
+      expect(healthBody).toBe('OK')
     })
 
     it('should not emit ReferenceError during startup', () => {
-      expect(stderr).to.not.include('ReferenceError')
+      expect(stderr).not.toContain('ReferenceError')
     })
 
     it('should not emit uncaught exception or unhandled rejection during startup', () => {
-      expect(stderr).to.not.match(/UnhandledPromiseRejection|UncaughtException/v)
+      expect(stderr).not.toMatch(/UnhandledPromiseRejection|UncaughtException/v)
     })
   },
   STARTUP_TIMEOUT_MS,

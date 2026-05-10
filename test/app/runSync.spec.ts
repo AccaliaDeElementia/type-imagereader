@@ -2,7 +2,6 @@
 
 import Sinon from 'sinon'
 import { ImageReader, runSync, Internals, Imports } from '#app.js'
-import { expect } from 'chai'
 import { eventuallyFulfills } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
@@ -29,13 +28,13 @@ describe('app.ts runSync() tests', () => {
   })
   it('should set interval to execute sync on schedule', async () => {
     await runSync()
-    expect(setIntervalFake.callCount).to.equal(1)
+    expect(setIntervalFake.callCount).toBe(1)
   })
   it('should take call ActuallyRun synchronously on initial call', async () => {
     const promise = runSync()
     const beforeWaitCallcount = actuallyRunSpy.callCount
     await promise
-    expect(beforeWaitCallcount).to.equal(1)
+    expect(beforeWaitCallcount).toBe(1)
   })
   it('should resolve when ActuallyRun rejects', async () => {
     actuallyRunSpy.rejects('foo!')
@@ -44,18 +43,18 @@ describe('app.ts runSync() tests', () => {
   it('should log once when the initial sync rejects', async () => {
     actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))
     await runSync()
-    expect(loggerStub.callCount).to.equal(1)
+    expect(loggerStub.callCount).toBe(1)
   })
   it("should log with message 'initial sync error' when the initial sync rejects", async () => {
     actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))
     await runSync()
-    expect(loggerStub.firstCall.args[0]).to.equal('initial sync error')
+    expect(loggerStub.firstCall.args[0]).toBe('initial sync error')
   })
   it('should log the error object when the initial sync rejects', async () => {
     const err = new Error('INITIAL SYNC FAILED')
     actuallyRunSpy.rejects(err)
     await runSync()
-    expect(loggerStub.firstCall.args[1]).to.equal(err)
+    expect(loggerStub.firstCall.args[1]).toBe(err)
   })
   it('should log once when interval callback rejects', async () => {
     actuallyRunSpy.resolves()
@@ -63,7 +62,7 @@ describe('app.ts runSync() tests', () => {
     actuallyRunSpy.onSecondCall().rejects(new Error('SYNC FAILED'))
     await runSync()
     await Promise.resolve()
-    expect(loggerStub.callCount).to.equal(1)
+    expect(loggerStub.callCount).toBe(1)
   })
   it("should log with message 'sync interval error' when interval callback rejects", async () => {
     actuallyRunSpy.resolves()
@@ -71,7 +70,7 @@ describe('app.ts runSync() tests', () => {
     actuallyRunSpy.onSecondCall().rejects(new Error('SYNC FAILED'))
     await runSync()
     await Promise.resolve()
-    expect(loggerStub.firstCall.args[0]).to.equal('sync interval error')
+    expect(loggerStub.firstCall.args[0]).toBe('sync interval error')
   })
   it('should log the error object when interval callback rejects', async () => {
     const err = new Error('SYNC FAILED')
@@ -80,12 +79,12 @@ describe('app.ts runSync() tests', () => {
     actuallyRunSpy.onSecondCall().rejects(err)
     await runSync()
     await Promise.resolve()
-    expect(loggerStub.firstCall.args[1]).to.equal(err)
+    expect(loggerStub.firstCall.args[1]).toBe(err)
   })
   it('should not log when interval callback resolves', async () => {
     setIntervalFake.callsFake(fireImmediately)
     await runSync()
     await Promise.resolve()
-    expect(loggerStub.callCount).to.equal(0)
+    expect(loggerStub.callCount).toBe(0)
   })
 })

@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isListing } from '#contracts/listing.js'
 
 describe('Contracts: isListing()', () => {
@@ -86,7 +85,7 @@ describe('Contracts: isListing()', () => {
   ]
   cases.forEach(([title, obj, expected]) => {
     it(`should return ${expected} for ${title}`, () => {
-      expect(isListing(obj)).to.equal(expected)
+      expect(isListing(obj)).toBe(expected)
     })
   })
 })

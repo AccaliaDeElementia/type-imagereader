@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Request, Response } from 'express'
 import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
@@ -22,22 +21,22 @@ describe('Server setClacksOverhead', () => {
   })
   it('should call res.set once', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(resStub.set.callCount).to.equal(1)
+    expect(resStub.set.callCount).toBe(1)
   })
   it('should set the X-Clacks-Overhead header name', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(resStub.set.firstCall.args[0]).to.equal('X-Clacks-Overhead')
+    expect(resStub.set.firstCall.args[0]).toBe('X-Clacks-Overhead')
   })
   it('should set the GNU Terry Pratchett header value', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(resStub.set.firstCall.args[1]).to.equal('GNU Terry Pratchett')
+    expect(resStub.set.firstCall.args[1]).toBe('GNU Terry Pratchett')
   })
   it('should call next once', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(nextStub.callCount).to.equal(1)
+    expect(nextStub.callCount).toBe(1)
   })
   it('should call next after setting the header', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(nextStub.calledAfter(resStub.set)).to.equal(true)
+    expect(nextStub.calledAfter(resStub.set)).toBe(true)
   })
 })
