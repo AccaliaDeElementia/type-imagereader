@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { Imports } from '#routes/weather.js'
 import Sinon from 'sinon'
 
@@ -42,7 +41,7 @@ describe('routes/weather getEarliestSunset()', () => {
         process.env.NIGHT_NOT_BEFORE = env
       }
       const result = Imports.getEarliestSunset()
-      expect(result).to.equal(expected)
+      expect(result).toBe(expected)
     })
   })
 })

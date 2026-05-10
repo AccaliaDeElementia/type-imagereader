@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { removeBookmark } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/knex.js'
 
@@ -19,26 +18,26 @@ describe('routes/apiFunctions removeBookmark', () => {
   })
   it('should query bookmarks table once to remove bookmark', async () => {
     await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexStub.callCount).to.equal(1)
+    expect(knexStub.callCount).toBe(1)
   })
   it('should query bookmarks table with expected args to remove bookmark', async () => {
     await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexStub.firstCall.args).to.deep.equal(['bookmarks'])
+    expect(knexStub.firstCall.args).toEqual(['bookmarks'])
   })
   it('should filter on provided path once to remove bookmark', async () => {
     await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.where.callCount).to.equal(1)
+    expect(knexInstance.where.callCount).toBe(1)
   })
   it('should filter on provided path with expected args to remove bookmark', async () => {
     await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.where.firstCall.args).to.deep.equal([{ path: '/foo/bar/baz.png' }])
+    expect(knexInstance.where.firstCall.args).toEqual([{ path: '/foo/bar/baz.png' }])
   })
   it('should delete matched bookmarks once to remove bookmark', async () => {
     await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.delete.callCount).to.equal(1)
+    expect(knexInstance.delete.callCount).toBe(1)
   })
   it('should delete matched bookmarks with expected args to remove bookmark', async () => {
     await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.delete.firstCall.args).to.deep.equal([])
+    expect(knexInstance.delete.firstCall.args).toEqual([])
   })
 })

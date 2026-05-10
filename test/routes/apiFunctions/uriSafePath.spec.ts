@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { UriSafePath } from '#routes/apiFunctions.js'
 
 describe('routes/apiFunctions UriSafePath', () => {
@@ -11,7 +10,7 @@ describe('routes/apiFunctions UriSafePath', () => {
   ]
   decodeTests.forEach(([title, input, expected]) => {
     it(`decode() it should accept ${title}`, () => {
-      expect(UriSafePath.decode(input)).to.equal(expected)
+      expect(UriSafePath.decode(input)).toBe(expected)
     })
   })
   const encodeNullableTests: Array<[string, string | null, string | null]> = [
@@ -21,7 +20,7 @@ describe('routes/apiFunctions UriSafePath', () => {
   ]
   encodeNullableTests.forEach(([title, input, expected]) => {
     it(`encodeNullable() it should accept ${title}`, () => {
-      expect(UriSafePath.encodeNullable(input)).to.equal(expected)
+      expect(UriSafePath.encodeNullable(input)).toBe(expected)
     })
   })
   const encodeTests: Array<[string, string, string]> = [
@@ -32,7 +31,7 @@ describe('routes/apiFunctions UriSafePath', () => {
   ]
   encodeTests.forEach(([title, input, expected]) => {
     it(`encode() it should ${title}`, () => {
-      expect(UriSafePath.encode(input)).to.equal(expected)
+      expect(UriSafePath.encode(input)).toBe(expected)
     })
   })
 })

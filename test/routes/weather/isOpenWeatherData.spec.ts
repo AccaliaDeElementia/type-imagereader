@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isOpenWeatherData } from '#routes/weather.js'
 
 describe('routes/weather isOpenWeatherData', () => {
@@ -320,7 +319,7 @@ describe('routes/weather isOpenWeatherData', () => {
   ]
   tests.forEach(([title, obj, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(isOpenWeatherData(obj)).to.equal(expected)
+      expect(isOpenWeatherData(obj)).toBe(expected)
     })
   })
 })

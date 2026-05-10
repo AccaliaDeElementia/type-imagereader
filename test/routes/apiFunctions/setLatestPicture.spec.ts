@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { setLatestPicture, Imports } from '#routes/apiFunctions.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
 import Sinon from 'sinon'
@@ -50,59 +49,59 @@ describe('routes/apiFunctions setLatestPicture', () => {
 
   it('should call knex with the pictures table when checking existence', async () => {
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.firstCall.args).to.deep.equal(['pictures'])
+    expect(knexStub.firstCall.args).toEqual(['pictures'])
   })
   it('should call select once when checking picture existence', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.select.callCount).to.equal(1)
+    expect(instance.select.callCount).toBe(1)
   })
   it('should select path column when checking picture existence', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.select.firstCall.args).to.deep.equal(['path'])
+    expect(instance.select.firstCall.args).toEqual(['path'])
   })
   it('should call where once when filtering existence-check by path', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.where.callCount).to.equal(1)
+    expect(instance.where.callCount).toBe(1)
   })
   it('should filter existence-check by provided path', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.where.firstCall.args).to.deep.equal([{ path: '/foo/bar/image.pdf' }])
+    expect(instance.where.firstCall.args).toEqual([{ path: '/foo/bar/image.pdf' }])
   })
   it('should call limit when checking picture existence', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.limit.callCount).to.equal(1)
+    expect(instance.limit.callCount).toBe(1)
   })
   it('should limit existence check to a single record', async () => {
     const instance = makeKnexInstance()
     knexStub.onFirstCall().returns(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.limit.firstCall.args).to.deep.equal([1])
+    expect(instance.limit.firstCall.args).toEqual([1])
   })
 
   // ---- Picture not found ----
 
   it('should resolve to null when path is not found', async () => {
     const result = await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should make no additional knex calls when picture not found', async () => {
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.callCount).to.equal(1)
+    expect(knexStub.callCount).toBe(1)
   })
   it('should log when picture is not found', async () => {
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
     const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('setLatestPicture: picture not found'))
-    expect(matched).to.equal(true)
+    expect(matched).toBe(true)
   })
 
   // ---- Conditional UPDATE on pictures (atomic flip) ----
@@ -117,28 +116,28 @@ describe('routes/apiFunctions setLatestPicture', () => {
   it('should call knex with the pictures table for the conditional UPDATE', async () => {
     setupExistingPicture()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.getCall(1).args).to.deep.equal(['pictures'])
+    expect(knexStub.getCall(1).args).toEqual(['pictures'])
   })
   it('should call update once on the conditional UPDATE', async () => {
     setupExistingPicture()
     const cond = makeKnexInstance()
     knexStub.onCall(1).returns(cond)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(cond.update.callCount).to.equal(1)
+    expect(cond.update.callCount).toBe(1)
   })
   it('should set seen=true on the conditional UPDATE', async () => {
     setupExistingPicture()
     const cond = makeKnexInstance()
     knexStub.onCall(1).returns(cond)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(cond.update.firstCall.args).to.deep.equal([{ seen: true }])
+    expect(cond.update.firstCall.args).toEqual([{ seen: true }])
   })
   it('should atomically gate the conditional UPDATE on path AND seen=false', async () => {
     setupExistingPicture()
     const cond = makeKnexInstance()
     knexStub.onCall(1).returns(cond)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(cond.where.firstCall.args).to.deep.equal([{ path: '/foo/bar/image.pdf', seen: false }])
+    expect(cond.where.firstCall.args).toEqual([{ path: '/foo/bar/image.pdf', seen: false }])
   })
 
   // ---- Conditional update flips 0 rows (already seen / lost-the-race) ----
@@ -156,17 +155,17 @@ describe('routes/apiFunctions setLatestPicture', () => {
     const folderInst = makeKnexInstance()
     knexStub.onCall(2).returns(folderInst)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(folderInst.increment.callCount).to.equal(0)
+    expect(folderInst.increment.callCount).toBe(0)
   })
   it('should call knex three times when conditional update flips zero rows', async () => {
     setupAlreadySeen()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.callCount).to.equal(3)
+    expect(knexStub.callCount).toBe(3)
   })
   it('should query folders to update current cover when conditional update flips zero rows', async () => {
     setupAlreadySeen()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.getCall(2).args).to.deep.equal(['folders'])
+    expect(knexStub.getCall(2).args).toEqual(['folders'])
   })
 
   // ---- Conditional update flips 1 row (caller is the flipper) ----
@@ -182,36 +181,36 @@ describe('routes/apiFunctions setLatestPicture', () => {
   it('should call knex four times when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.callCount).to.equal(4)
+    expect(knexStub.callCount).toBe(4)
   })
   it('should query folders to increment seen count when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.getCall(2).args).to.deep.equal(['folders'])
+    expect(knexStub.getCall(2).args).toEqual(['folders'])
   })
   it('should call increment once when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     const incrementer = makeKnexInstance()
     knexStub.onCall(2).returns(incrementer)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(incrementer.increment.callCount).to.equal(1)
+    expect(incrementer.increment.callCount).toBe(1)
   })
   it('should increment seenCount by 1 when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     const incrementer = makeKnexInstance()
     knexStub.onCall(2).returns(incrementer)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(incrementer.increment.firstCall.args).to.deep.equal(['seenCount', 1])
+    expect(incrementer.increment.firstCall.args).toEqual(['seenCount', 1])
   })
   it('should call getParentFolders once when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(getParentFoldersStub.callCount).to.equal(1)
+    expect(getParentFoldersStub.callCount).toBe(1)
   })
   it('should pass the picture path to getParentFolders when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(getParentFoldersStub.firstCall.args).to.deep.equal(['/foo/bar/image.pdf'])
+    expect(getParentFoldersStub.firstCall.args).toEqual(['/foo/bar/image.pdf'])
   })
   it('should call whereIn once when filtering ancestor folders for increment', async () => {
     setupSuccessfulFlip()
@@ -219,7 +218,7 @@ describe('routes/apiFunctions setLatestPicture', () => {
     knexStub.onCall(2).returns(incrementer)
     getParentFoldersStub.returns('FOOBAR')
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(incrementer.whereIn.callCount).to.equal(1)
+    expect(incrementer.whereIn.callCount).toBe(1)
   })
   it('should filter ancestor folders by path when incrementing seenCount', async () => {
     setupSuccessfulFlip()
@@ -227,7 +226,7 @@ describe('routes/apiFunctions setLatestPicture', () => {
     knexStub.onCall(2).returns(incrementer)
     getParentFoldersStub.returns('FOOBAR')
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(incrementer.whereIn.firstCall.args).to.deep.equal(['path', 'FOOBAR'])
+    expect(incrementer.whereIn.firstCall.args).toEqual(['path', 'FOOBAR'])
   })
 
   // ---- Final UPDATE folders.current (runs in both flip and no-flip paths) ----
@@ -235,34 +234,34 @@ describe('routes/apiFunctions setLatestPicture', () => {
   it('should query folders to update current cover after flipping', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.getCall(3).args).to.deep.equal(['folders'])
+    expect(knexStub.getCall(3).args).toEqual(['folders'])
   })
   it('should call update once on folders.current after flipping', async () => {
     setupSuccessfulFlip()
     const updater = makeKnexInstance()
     knexStub.onCall(3).returns(updater)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(updater.update.callCount).to.equal(1)
+    expect(updater.update.callCount).toBe(1)
   })
   it('should set folders.current to the picture path after flipping', async () => {
     setupSuccessfulFlip()
     const updater = makeKnexInstance()
     knexStub.onCall(3).returns(updater)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(updater.update.firstCall.args).to.deep.equal([{ current: '/foo/bar/image.pdf' }])
+    expect(updater.update.firstCall.args).toEqual([{ current: '/foo/bar/image.pdf' }])
   })
   it('should filter folders.current update by parent folder path', async () => {
     setupSuccessfulFlip()
     const updater = makeKnexInstance()
     knexStub.onCall(3).returns(updater)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(updater.where.firstCall.args).to.deep.equal([{ path: '/foo/bar/' }])
+    expect(updater.where.firstCall.args).toEqual([{ path: '/foo/bar/' }])
   })
   it('should set folders.current even when conditional update flips zero rows', async () => {
     setupAlreadySeen()
     const updater = makeKnexInstance()
     knexStub.onCall(2).returns(updater)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(updater.update.firstCall.args).to.deep.equal([{ current: '/foo/bar/image.pdf' }])
+    expect(updater.update.firstCall.args).toEqual([{ current: '/foo/bar/image.pdf' }])
   })
 })

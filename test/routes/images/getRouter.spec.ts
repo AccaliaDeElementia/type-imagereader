@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Debugger } from 'debug'
 
 import type { Application, Router } from 'express'
@@ -44,35 +43,35 @@ describe('routes/images export getRouter()', () => {
   })
   it('should use router import to construct router', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(getRouterStub.callCount).to.equal(1)
+    expect(getRouterStub.callCount).toBe(1)
   })
   it('should call router import with no arguments', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(getRouterStub.firstCall.args).to.deep.equal([])
+    expect(getRouterStub.firstCall.args).toEqual([])
   })
   it('should not generate logging messages on construction', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(loggerStub.callCount).to.equal(0)
+    expect(loggerStub.callCount).toBe(0)
   })
   it('should create new kiosk mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.kioskCache).to.not.equal(defaultKioskCache)
+    expect(CacheStorage.kioskCache).not.toBe(defaultKioskCache)
   })
   it('should use readAndRescaleImage() to fill kiosk mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.kioskCache.cacheFunction).to.equal(readAndRescaleImage)
+    expect(CacheStorage.kioskCache.cacheFunction).toBe(readAndRescaleImage)
   })
   it('should create new scaled mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.scaledCache).to.not.equal(defaultScaledCache)
+    expect(CacheStorage.scaledCache).not.toBe(defaultScaledCache)
   })
   it('should use readAndRescaleImage() to fill scaled mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.scaledCache.cacheFunction).to.equal(readAndRescaleImage)
+    expect(CacheStorage.scaledCache.cacheFunction).toBe(readAndRescaleImage)
   })
   it('should create separate kiosk and scaled mode image caches', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.kioskCache).to.not.equal(CacheStorage.scaledCache)
+    expect(CacheStorage.kioskCache).not.toBe(CacheStorage.scaledCache)
   })
   const routes = [
     '/full/*path',
@@ -82,12 +81,12 @@ describe('routes/images export getRouter()', () => {
   ]
   it('should register only expected router count', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(routerFake.get.callCount).to.equal(routes.length)
+    expect(routerFake.get.callCount).toBe(routes.length)
   })
   routes.forEach((route) => {
     it(`should register expected router: ${route}`, async () => {
       await getRouter(applicationFake, serverFake, websocketsFake)
-      expect(routerFake.get.calledWith(route)).to.equal(true)
+      expect(routerFake.get.calledWith(route)).toBe(true)
     })
   })
 })

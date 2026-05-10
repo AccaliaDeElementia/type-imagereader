@@ -1,6 +1,6 @@
 'use sanity'
 
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import type { Application, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
@@ -25,12 +25,12 @@ describe('routes/root getRouter()', () => {
   const endpoints = ['/', '/show', '/show/*path']
   it('should register expected number of endpoints', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    expect(routerStub.get.callCount).to.equal(endpoints.length)
+    expect(routerStub.get.callCount).toBe(endpoints.length)
   })
   endpoints.forEach((endpoint) => {
     it(`should register endpoint '${endpoint}`, async () => {
       await getRouter(applicationFake, serverFake, socketsFake)
-      expect(routerStub.get.calledWith(endpoint)).to.equal(true)
+      expect(routerStub.get.calledWith(endpoint)).toBe(true)
     })
     it(`should register handler function for endpoint '${endpoint}`, async () => {
       await getRouter(applicationFake, serverFake, socketsFake)

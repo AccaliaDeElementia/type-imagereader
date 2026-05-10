@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Debugger } from 'debug'
 
 import type { Request, RequestHandler, Response, Application, Router } from 'express'
@@ -70,15 +69,60 @@ describe('routes/images route /full/*', () => {
   })
   const testPaths = ['', 'foo/bar.png']
   const successTests: Array<[string, (path: string, image: ImageData) => void]> = [
-    ['not generate error status call', () => expect(responseStub.status.callCount).to.equal(0)],
-    ['not generate error json call', () => expect(responseStub.json.callCount).to.equal(0)],
-    ['log invocation once', () => expect(loggerStub.callCount).to.equal(1)],
-    ['log invocation with GET-format', () => expect(loggerStub.firstCall.args[0]).to.equal('GET /images/full %s')],
-    ['log invocation with filename', (path) => expect(loggerStub.firstCall.args[1]).to.equal(`/${path}`)],
-    ['read image using readImage()', () => expect(readImageStub.callCount).to.equal(1)],
-    ['read image with filename', (path) => expect(readImageStub.firstCall.args).to.deep.equal([`/${path}`])],
-    ['send retrieved image with sendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
-    ['send retrieved imageData', (_, data) => expect(sendImageStub.firstCall.args).to.deep.equal([data, responseFake])],
+    [
+      'not generate error status call',
+      () => {
+        expect(responseStub.status.callCount).toBe(0)
+      },
+    ],
+    [
+      'not generate error json call',
+      () => {
+        expect(responseStub.json.callCount).toBe(0)
+      },
+    ],
+    [
+      'log invocation once',
+      () => {
+        expect(loggerStub.callCount).toBe(1)
+      },
+    ],
+    [
+      'log invocation with GET-format',
+      () => {
+        expect(loggerStub.firstCall.args[0]).toBe('GET /images/full %s')
+      },
+    ],
+    [
+      'log invocation with filename',
+      (path) => {
+        expect(loggerStub.firstCall.args[1]).toBe(`/${path}`)
+      },
+    ],
+    [
+      'read image using readImage()',
+      () => {
+        expect(readImageStub.callCount).toBe(1)
+      },
+    ],
+    [
+      'read image with filename',
+      (path) => {
+        expect(readImageStub.firstCall.args).toEqual([`/${path}`])
+      },
+    ],
+    [
+      'send retrieved image with sendImage()',
+      () => {
+        expect(sendImageStub.callCount).toBe(1)
+      },
+    ],
+    [
+      'send retrieved imageData',
+      (_, data) => {
+        expect(sendImageStub.firstCall.args).toEqual([data, responseFake])
+      },
+    ],
   ]
   const successTestRunner = (
     path: string,

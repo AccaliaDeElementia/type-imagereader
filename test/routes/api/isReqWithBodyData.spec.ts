@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isReqWithBodyData } from '#routes/api.js'
 
 describe('routes/api isReqWithBodyData()', () => {
@@ -21,7 +20,7 @@ describe('routes/api isReqWithBodyData()', () => {
   ]
   tests.forEach(([title, value, expected]) => {
     it(title, () => {
-      expect(isReqWithBodyData(value)).to.equal(expected)
+      expect(isReqWithBodyData(value)).toBe(expected)
     })
   })
 })

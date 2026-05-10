@@ -5,7 +5,7 @@ import type { Request, Response, Application, Router } from 'express'
 import type { Socket, Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import { Config, Internals, getRouter, Imports } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
@@ -54,31 +54,97 @@ describe('routes/slideshow getRouter', () => {
   const routes = ['/launchId', '/', '/*path']
   it('should set launch Id to current time', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    expect(Config.launchId).to.equal(3141592)
+    expect(Config.launchId).toBe(3141592)
   })
   it('should register correct route count', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    expect(routerStub.get.callCount).to.equal(routes.length)
+    expect(routerStub.get.callCount).toBe(routes.length)
   })
   routes.forEach((route) => {
     it(`should register get handler for route '${route}`, async () => {
       await getRouter(applicationFake, serverFake, socketsFake)
-      expect(routerStub.get.calledWith(route)).to.equal(true)
+      expect(routerStub.get.calledWith(route)).toBe(true)
     })
   })
   const getArgs = (stub: Sinon.SinonStub): unknown[] => stub.firstCall.args
   const routeTests: Array<[string, string, () => void]> = [
-    ['respond with json', '/launchId', () => expect(responseStub.json.callCount).to.equal(1)],
-    ['respond with obj', '/launchId', () => expect(getArgs(responseStub.json)[0]).to.be.an.instanceOf(Object)],
-    ['respond with keys', '/launchId', () => expect(getArgs(responseStub.json)[0]).to.have.all.keys('launchId')],
-    ['send launchId', '/launchId', () => expect(getArgs(responseStub.json)[0]).to.deep.equal({ launchId: 3141592 })],
-    ['call rootRoute', '/', () => expect(rootRouteStub.callCount).to.equal(1)],
-    ['call rootRoute with knex', '/', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
-    ['call rootRoute with request', '/', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
-    ['call rootRoute with response', '/', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
-    ['call rootRoute with knex', '/*path', () => expect(getArgs(rootRouteStub)[0]).to.equal(knexFake)],
-    ['call rootRoute with request', '/*path', () => expect(getArgs(rootRouteStub)[1]).to.equal(requestFake)],
-    ['call rootRoute with response', '/*path', () => expect(getArgs(rootRouteStub)[2]).to.equal(responseFake)],
+    [
+      'respond with json',
+      '/launchId',
+      () => {
+        expect(responseStub.json.callCount).toBe(1)
+      },
+    ],
+    [
+      'respond with obj',
+      '/launchId',
+      () => {
+        expect(getArgs(responseStub.json)[0]).toBeInstanceOf(Object)
+      },
+    ],
+    [
+      'respond with keys',
+      '/launchId',
+      () => {
+        expect(Object.keys(cast<object>(getArgs(responseStub.json)[0]))).toEqual(['launchId'])
+      },
+    ],
+    [
+      'send launchId',
+      '/launchId',
+      () => {
+        expect(getArgs(responseStub.json)[0]).toEqual({ launchId: 3141592 })
+      },
+    ],
+    [
+      'call rootRoute',
+      '/',
+      () => {
+        expect(rootRouteStub.callCount).toBe(1)
+      },
+    ],
+    [
+      'call rootRoute with knex',
+      '/',
+      () => {
+        expect(getArgs(rootRouteStub)[0]).toBe(knexFake)
+      },
+    ],
+    [
+      'call rootRoute with request',
+      '/',
+      () => {
+        expect(getArgs(rootRouteStub)[1]).toBe(requestFake)
+      },
+    ],
+    [
+      'call rootRoute with response',
+      '/',
+      () => {
+        expect(getArgs(rootRouteStub)[2]).toBe(responseFake)
+      },
+    ],
+    [
+      'call rootRoute with knex',
+      '/*path',
+      () => {
+        expect(getArgs(rootRouteStub)[0]).toBe(knexFake)
+      },
+    ],
+    [
+      'call rootRoute with request',
+      '/*path',
+      () => {
+        expect(getArgs(rootRouteStub)[1]).toBe(requestFake)
+      },
+    ],
+    [
+      'call rootRoute with response',
+      '/*path',
+      () => {
+        expect(getArgs(rootRouteStub)[2]).toBe(responseFake)
+      },
+    ],
   ]
   routeTests.forEach(([title, path, validationFn]) => {
     it(`should ${title} for ${path}`, async () => {
@@ -92,39 +158,39 @@ describe('routes/slideshow getRouter', () => {
   })
   it('should listen to socketIo events', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    expect(ioStub.on.callCount).to.equal(1)
+    expect(ioStub.on.callCount).toBe(1)
   })
   it('should listen to new websocket connections', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    expect(ioStub.on.firstCall.args[0]).to.equal('connection')
+    expect(ioStub.on.firstCall.args[0]).toBe('connection')
   })
   it('should handle socket on new connection', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const socket = cast<Socket>({})
     cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
-    expect(handleSocketStub.callCount).to.equal(1)
+    expect(handleSocketStub.callCount).toBe(1)
   })
   it('should handle socket with knex', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const socket = cast<Socket>({})
     cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
-    expect(handleSocketStub.firstCall.args[0]).to.equal(knexFake)
+    expect(handleSocketStub.firstCall.args[0]).toBe(knexFake)
   })
   it('should handle socket with socket.io server', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const socket = cast<Socket>({})
     cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
-    expect(handleSocketStub.firstCall.args[1]).to.equal(socketsFake)
+    expect(handleSocketStub.firstCall.args[1]).toBe(socketsFake)
   })
   it('should handle socket with socket', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const socket = cast<Socket>({})
     cast<(socket: Socket) => void>(ioStub.on.firstCall.args[1])(socket)
-    expect(handleSocketStub.firstCall.args[2]).to.equal(socket)
+    expect(handleSocketStub.firstCall.args[2]).toBe(socket)
   })
   it('should set interval for periodic processing', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    expect(setIntervalStub.callCount).to.equal(1)
+    expect(setIntervalStub.callCount).toBe(1)
   })
   it('should set interval function for periodic processing', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
@@ -135,22 +201,22 @@ describe('routes/slideshow getRouter', () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const callback = cast<() => Promise<void>>(setIntervalStub.firstCall.args[0])
     await callback()
-    expect(tickCountdownStub.callCount).to.equal(1)
+    expect(tickCountdownStub.callCount).toBe(1)
   })
   it('should process tickCountdown with knex in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const callback = cast<() => Promise<void>>(setIntervalStub.firstCall.args[0])
     await callback()
-    expect(tickCountdownStub.firstCall.args[0]).to.equal(knexFake)
+    expect(tickCountdownStub.firstCall.args[0]).toBe(knexFake)
   })
   it('should process tickCountdown with websocket server in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const callback = cast<() => void>(setIntervalStub.firstCall.args[0])
     callback()
-    expect(tickCountdownStub.firstCall.args[1]).to.equal(socketsFake)
+    expect(tickCountdownStub.firstCall.args[1]).toBe(socketsFake)
   })
   it('should set interval of expected length for periodic processing', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
-    expect(setIntervalStub.firstCall.args[1]).to.equal(1000)
+    expect(setIntervalStub.firstCall.args[1]).toBe(1000)
   })
 })

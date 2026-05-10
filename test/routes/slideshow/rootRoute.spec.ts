@@ -3,7 +3,6 @@
 import Sinon from 'sinon'
 import type { Request } from 'express'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { expect } from 'chai'
 import { rootRoute, Internals, Imports } from '#routes/slideshow.js'
 import { createResponseFake } from '#testutils/express.js'
 
@@ -59,39 +58,144 @@ describe('routes/slideshow rootRoute', () => {
   it('should return FORBIDDEN when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await rootRoute(knexFake, requestFake, responseFake)
-    expect(getArgs(resStub.status)[0]).to.equal(403)
+    expect(getArgs(resStub.status)[0]).toBe(403)
   })
   it('should render error template when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await rootRoute(knexFake, requestFake, responseFake)
-    expect(getArgs(resStub.render)[0]).to.equal('error')
+    expect(getArgs(resStub.render)[0]).toBe('error')
   })
   it('should render E_NO_TRAVERSE error data when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await rootRoute(knexFake, requestFake, responseFake)
-    expect(getArgs(resStub.render)[1]).to.deep.equal(eTraverse)
+    expect(getArgs(resStub.render)[1]).toEqual(eTraverse)
   })
   it('should not get room when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await rootRoute(knexFake, requestFake, responseFake)
-    expect(getRoomStub.callCount).to.equal(0)
+    expect(getRoomStub.callCount).toBe(0)
   })
   const tests: Array<[string, string | undefined, string[] | null, (data: unknown) => void]> = [
-    ['get room', undefined, fullImages, () => expect(getRoomStub.callCount).to.equal(1)],
-    ['get room', 'foo', fullImages, () => expect(getRoomStub.callCount).to.equal(1)],
-    ['set not found status', 'foo', noImages, () => expect(resStub.status.callCount).to.equal(1)],
-    ['set not found status code', 'foo', noImages, () => expect(getArgs(resStub.status)[0]).to.equal(404)],
-    ['render not found error', 'foo', noImages, () => expect(getArgs(resStub.render)[0]).to.deep.equal('error')],
-    ['render not found data', 'foo', noImages, () => expect(getArgs(resStub.render)[1]).to.deep.equal(eNotFound)],
-    ['not set success status', 'foo', fullImages, () => expect(resStub.status.callCount).to.equal(0)],
-    ['render success', 'foo', fullImages, () => expect(resStub.render.callCount).to.equal(1)],
-    ['render success tmpl', 'foo', fullImages, () => expect(getArgs(resStub.render)[0]).to.equal('slideshow')],
-    ['render success data', 'foo', fullImages, (data) => expect(getArgs(resStub.render)[1]).to.deep.equal(data)],
-    ['set server error status', 'foo', null, () => expect(resStub.status.callCount).to.equal(1)],
-    ['set server error status code', 'foo', null, () => expect(getArgs(resStub.status)[0]).to.equal(500)],
-    ['render server error', 'foo', null, () => expect(resStub.render.callCount).to.equal(1)],
-    ['render server error template', 'foo', null, () => expect(getArgs(resStub.render)[0]).to.equal('error')],
-    ['render server error data', 'foo', null, () => expect(getArgs(resStub.render)[1]).to.deep.equal(eGeneric)],
+    [
+      'get room',
+      undefined,
+      fullImages,
+      () => {
+        expect(getRoomStub.callCount).toBe(1)
+      },
+    ],
+    [
+      'get room',
+      'foo',
+      fullImages,
+      () => {
+        expect(getRoomStub.callCount).toBe(1)
+      },
+    ],
+    [
+      'set not found status',
+      'foo',
+      noImages,
+      () => {
+        expect(resStub.status.callCount).toBe(1)
+      },
+    ],
+    [
+      'set not found status code',
+      'foo',
+      noImages,
+      () => {
+        expect(getArgs(resStub.status)[0]).toBe(404)
+      },
+    ],
+    [
+      'render not found error',
+      'foo',
+      noImages,
+      () => {
+        expect(getArgs(resStub.render)[0]).toEqual('error')
+      },
+    ],
+    [
+      'render not found data',
+      'foo',
+      noImages,
+      () => {
+        expect(getArgs(resStub.render)[1]).toEqual(eNotFound)
+      },
+    ],
+    [
+      'not set success status',
+      'foo',
+      fullImages,
+      () => {
+        expect(resStub.status.callCount).toBe(0)
+      },
+    ],
+    [
+      'render success',
+      'foo',
+      fullImages,
+      () => {
+        expect(resStub.render.callCount).toBe(1)
+      },
+    ],
+    [
+      'render success tmpl',
+      'foo',
+      fullImages,
+      () => {
+        expect(getArgs(resStub.render)[0]).toBe('slideshow')
+      },
+    ],
+    [
+      'render success data',
+      'foo',
+      fullImages,
+      (data) => {
+        expect(getArgs(resStub.render)[1]).toEqual(data)
+      },
+    ],
+    [
+      'set server error status',
+      'foo',
+      null,
+      () => {
+        expect(resStub.status.callCount).toBe(1)
+      },
+    ],
+    [
+      'set server error status code',
+      'foo',
+      null,
+      () => {
+        expect(getArgs(resStub.status)[0]).toBe(500)
+      },
+    ],
+    [
+      'render server error',
+      'foo',
+      null,
+      () => {
+        expect(resStub.render.callCount).toBe(1)
+      },
+    ],
+    [
+      'render server error template',
+      'foo',
+      null,
+      () => {
+        expect(getArgs(resStub.render)[0]).toBe('error')
+      },
+    ],
+    [
+      'render server error data',
+      'foo',
+      null,
+      () => {
+        expect(getArgs(resStub.render)[1]).toEqual(eGeneric)
+      },
+    ],
   ]
   tests.forEach(([title, path, images, validationFn]) => {
     it(`should ${title} for '/${path}'`, async () => {
@@ -125,7 +229,7 @@ describe('routes/slideshow rootRoute', () => {
       roomData.images = fullImages
       getRoomStub.resolves(roomData)
       await rootRoute(knexFake, requestFake, responseFake)
-      expect(loggerStub.firstCall.args[0]).to.equal('GET /slideshow %s')
+      expect(loggerStub.firstCall.args[0]).toBe('GET /slideshow %s')
     })
 
     it('should log the folder path on rootRoute invocation', async () => {
@@ -133,7 +237,7 @@ describe('routes/slideshow rootRoute', () => {
       roomData.images = fullImages
       getRoomStub.resolves(roomData)
       await rootRoute(knexFake, requestFake, responseFake)
-      expect(loggerStub.firstCall.args[1]).to.equal('/foo')
+      expect(loggerStub.firstCall.args[1]).toBe('/foo')
     })
 
     it('should log path-traversal-blocked when isPathTraversal returns true', async () => {
@@ -141,7 +245,7 @@ describe('routes/slideshow rootRoute', () => {
       reqStub.params.path = 'evil'
       await rootRoute(knexFake, requestFake, responseFake)
       const hasTraversalLog = loggerStub.getCalls().some((c) => c.args[0] === 'path traversal blocked: %s')
-      expect(hasTraversalLog).to.equal(true)
+      expect(hasTraversalLog).toBe(true)
     })
 
     it('should log slideshow-folder-empty when room has no images', async () => {
@@ -150,7 +254,7 @@ describe('routes/slideshow rootRoute', () => {
       getRoomStub.resolves(roomData)
       await rootRoute(knexFake, requestFake, responseFake)
       const hasEmptyLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow folder empty: %s')
-      expect(hasEmptyLog).to.equal(true)
+      expect(hasEmptyLog).toBe(true)
     })
 
     it('should log slideshow-render-error when getRoomAndIncrementImage rejects', async () => {
@@ -158,7 +262,7 @@ describe('routes/slideshow rootRoute', () => {
       getRoomStub.rejects(getRoomError)
       await rootRoute(knexFake, requestFake, responseFake)
       const hasRenderErrorLog = loggerStub.getCalls().some((c) => c.args[0] === 'slideshow render error: %s')
-      expect(hasRenderErrorLog).to.equal(true)
+      expect(hasRenderErrorLog).toBe(true)
     })
 
     it('should log a string fallback when getRoomAndIncrementImage rejects with a non-Error', async () => {
@@ -166,7 +270,7 @@ describe('routes/slideshow rootRoute', () => {
       getRoomStub.rejects(cast<Error>({ toString: () => 'rejection-token' }))
       await rootRoute(knexFake, requestFake, responseFake)
       const renderErrorCall = loggerStub.getCalls().find((c) => c.args[0] === 'slideshow render error: %s')
-      expect(renderErrorCall?.args[1]).to.equal('rejection-token')
+      expect(renderErrorCall?.args[1]).toBe('rejection-token')
     })
   })
 })

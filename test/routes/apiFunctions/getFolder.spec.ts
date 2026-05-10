@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { getFolder } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/knex.js'
 
@@ -19,42 +18,42 @@ describe('routes/apiFunctions getFolder', () => {
   })
   it('should select from folders table once', async () => {
     await getFolder(knexFake, '/foo/bar')
-    expect(knexStub.callCount).to.equal(1)
+    expect(knexStub.callCount).toBe(1)
   })
   it('should select from folders table with expected args', async () => {
     await getFolder(knexFake, '/foo/bar')
-    expect(knexStub.firstCall.args).to.deep.equal(['folders'])
+    expect(knexStub.firstCall.args).toEqual(['folders'])
   })
   it('should select expected columns once', async () => {
     await getFolder(knexFake, '/foo/bar')
-    expect(knexInstance.select.callCount).to.equal(1)
+    expect(knexInstance.select.callCount).toBe(1)
   })
   it('should select exactly five columns', async () => {
     await getFolder(knexFake, '/foo/bar')
-    expect(knexInstance.select.firstCall.args).to.have.lengthOf(5)
+    expect(knexInstance.select.firstCall.args).toHaveLength(5)
   })
   const columns = ['path', 'folder', 'sortKey', 'current', 'firstPicture'] as const
   columns.forEach((col) => {
     it(`should select ${col} column`, async () => {
       await getFolder(knexFake, '/foo/bar')
-      expect(knexInstance.select.firstCall.args).to.include(col)
+      expect(knexInstance.select.firstCall.args).toContain(col)
     })
   })
   it('should limit to only one result once', async () => {
     await getFolder(knexFake, '/foo/bar')
-    expect(knexInstance.limit.callCount).to.equal(1)
+    expect(knexInstance.limit.callCount).toBe(1)
   })
   it('should limit to only one result with one argument', async () => {
     await getFolder(knexFake, '/foo/bar')
-    expect(knexInstance.limit.firstCall.args).to.have.lengthOf(1)
+    expect(knexInstance.limit.firstCall.args).toHaveLength(1)
   })
   it('should limit to only one result', async () => {
     await getFolder(knexFake, '/foo/bar')
-    expect(knexInstance.limit.firstCall.args[0]).to.equal(1)
+    expect(knexInstance.limit.firstCall.args[0]).toBe(1)
   })
   it('should return null when db returns no results', async () => {
     const result = await getFolder(knexFake, '/foo/bar')
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should return result from db', async () => {
     knexInstance.limit.resolves([
@@ -67,7 +66,7 @@ describe('routes/apiFunctions getFolder', () => {
       },
     ])
     const result = await getFolder(knexFake, '/foo/bar')
-    expect(result).to.be.an('object')
+    expect(result).toBeTypeOf('object')
   })
   const namePathTests: Array<[string, string, 'name' | 'path', string]> = [
     ['name from db', '/foo/Rocketgirl Adventures/', 'name', 'Rocketgirl Adventures'],
@@ -87,7 +86,7 @@ describe('routes/apiFunctions getFolder', () => {
         },
       ])
       const result = await getFolder(knexFake, '/foo/bar')
-      expect(result?.[prop]).to.equal(expected)
+      expect(result?.[prop]).toBe(expected)
     })
   })
   const folderTests: Array<[string, string, string]> = [
@@ -107,7 +106,7 @@ describe('routes/apiFunctions getFolder', () => {
         },
       ])
       const result = await getFolder(knexFake, '/foo/bar')
-      expect(result?.folder).to.equal(expected)
+      expect(result?.folder).toBe(expected)
     })
   })
   const coverTests: Array<[string, string | null, string | null, string | null]> = [
@@ -142,7 +141,7 @@ describe('routes/apiFunctions getFolder', () => {
     it(`should set ${title}`, async () => {
       knexInstance.limit.resolves([{ path: '/foo/bar/', folder: '/foo/', sortKey: 'bar', current, firstPicture }])
       const result = await getFolder(knexFake, '/foo/bar')
-      expect(result?.cover).to.equal(expected)
+      expect(result?.cover).toBe(expected)
     })
   })
 })

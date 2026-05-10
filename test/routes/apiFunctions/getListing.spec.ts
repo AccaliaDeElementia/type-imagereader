@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { getListing, Internals, Imports, ModCount, type ModCountInternals } from '#routes/apiFunctions.js'
 import { cast } from '#testutils/typeGuards.js'
 import { createKnexChainFake } from '#testutils/knex.js'
@@ -49,51 +48,51 @@ describe('routes/apiFunctions getListing', () => {
   describe('getFolder() interface', () => {
     it('should call getFolder() once', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getFolderStub.callCount).to.equal(1)
+      expect(getFolderStub.callCount).toBe(1)
     })
     it('should call getFolder() with two arguments', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getFolderStub.firstCall.args).to.have.lengthOf(2)
+      expect(getFolderStub.firstCall.args).toHaveLength(2)
     })
     it('should call getFolder() with knex', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getFolderStub.firstCall.args[0]).to.equal(knexFake)
+      expect(getFolderStub.firstCall.args[0]).toBe(knexFake)
     })
     it('should call getFolder() with path', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
+      expect(getFolderStub.firstCall.args[1]).toBe('/foo/bar/')
     })
   })
 
   describe('when getFolder() resolves to null', () => {
     it('should return null', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
-      expect(result).to.equal(null)
+      expect(result).toBe(null)
     })
     it('should not call getNextFolder', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.callCount).to.equal(0)
+      expect(getNextFolderStub.callCount).toBe(0)
     })
     it('should not call getPreviousFolder', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.callCount).to.equal(0)
+      expect(getPreviousFolderStub.callCount).toBe(0)
     })
     it('should not call getChildFolders', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getChildFoldersStub.callCount).to.equal(0)
+      expect(getChildFoldersStub.callCount).toBe(0)
     })
     it('should not call getPictures', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPicturesStub.callCount).to.equal(0)
+      expect(getPicturesStub.callCount).toBe(0)
     })
     it('should not call getBookmarks', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getBookmarksStub.callCount).to.equal(0)
+      expect(getBookmarksStub.callCount).toBe(0)
     })
     it('should not log getListing timing', async () => {
       await getListing(knexFake, '/foo/bar/')
       const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('getListing'))
-      expect(matched).to.equal(false)
+      expect(matched).toBe(false)
     })
   })
 
@@ -104,28 +103,28 @@ describe('routes/apiFunctions getListing', () => {
 
     it('should call getNextFolder', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.callCount).to.equal(1)
+      expect(getNextFolderStub.callCount).toBe(1)
     })
     it('should call getPreviousFolder', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.callCount).to.equal(1)
+      expect(getPreviousFolderStub.callCount).toBe(1)
     })
     it('should call getChildFolders', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getChildFoldersStub.callCount).to.equal(1)
+      expect(getChildFoldersStub.callCount).toBe(1)
     })
     it('should call getPictures', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPicturesStub.callCount).to.equal(1)
+      expect(getPicturesStub.callCount).toBe(1)
     })
     it('should call getBookmarks', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getBookmarksStub.callCount).to.equal(1)
+      expect(getBookmarksStub.callCount).toBe(1)
     })
     it('should log getListing timing', async () => {
       await getListing(knexFake, '/foo/bar/')
       const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('getListing'))
-      expect(matched).to.equal(true)
+      expect(matched).toBe(true)
     })
   })
 
@@ -137,19 +136,19 @@ describe('routes/apiFunctions getListing', () => {
     })
     it('should be called with three arguments', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.firstCall.args).to.have.lengthOf(3)
+      expect(getNextFolderStub.firstCall.args).toHaveLength(3)
     })
     it('should be called with knex', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.firstCall.args[0]).to.equal(knexFake)
+      expect(getNextFolderStub.firstCall.args[0]).toBe(knexFake)
     })
     it('should be called with path', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
+      expect(getNextFolderStub.firstCall.args[1]).toBe('/foo/bar/')
     })
     it('should be called with sortKey', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.firstCall.args[2]).to.equal('bar>-<')
+      expect(getNextFolderStub.firstCall.args[2]).toBe('bar>-<')
     })
   })
 
@@ -159,19 +158,19 @@ describe('routes/apiFunctions getListing', () => {
     })
     it('should be called with three arguments', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.firstCall.args).to.have.lengthOf(3)
+      expect(getPreviousFolderStub.firstCall.args).toHaveLength(3)
     })
     it('should be called with knex', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.firstCall.args[0]).to.equal(knexFake)
+      expect(getPreviousFolderStub.firstCall.args[0]).toBe(knexFake)
     })
     it('should be called with path', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.firstCall.args[1]).to.equal('/foo/bar/')
+      expect(getPreviousFolderStub.firstCall.args[1]).toBe('/foo/bar/')
     })
     it('should be called with sortKey', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.firstCall.args[2]).to.equal('bar>-<')
+      expect(getPreviousFolderStub.firstCall.args[2]).toBe('bar>-<')
     })
   })
 
@@ -181,15 +180,15 @@ describe('routes/apiFunctions getListing', () => {
     })
     it('should be called with two arguments', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getChildFoldersStub.firstCall.args).to.have.lengthOf(2)
+      expect(getChildFoldersStub.firstCall.args).toHaveLength(2)
     })
     it('should be called with knex', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getChildFoldersStub.firstCall.args[0]).to.equal(knexFake)
+      expect(getChildFoldersStub.firstCall.args[0]).toBe(knexFake)
     })
     it('should be called with path', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getChildFoldersStub.firstCall.args[1]).to.equal('/foo/bar/')
+      expect(getChildFoldersStub.firstCall.args[1]).toBe('/foo/bar/')
     })
   })
 
@@ -199,15 +198,15 @@ describe('routes/apiFunctions getListing', () => {
     })
     it('should be called with two arguments', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPicturesStub.firstCall.args).to.have.lengthOf(2)
+      expect(getPicturesStub.firstCall.args).toHaveLength(2)
     })
     it('should be called with knex', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPicturesStub.firstCall.args[0]).to.equal(knexFake)
+      expect(getPicturesStub.firstCall.args[0]).toBe(knexFake)
     })
     it('should be called with path', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getPicturesStub.firstCall.args[1]).to.equal('/foo/bar/')
+      expect(getPicturesStub.firstCall.args[1]).toBe('/foo/bar/')
     })
   })
 
@@ -217,11 +216,11 @@ describe('routes/apiFunctions getListing', () => {
     })
     it('should be called with one argument', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getBookmarksStub.firstCall.args).to.have.lengthOf(1)
+      expect(getBookmarksStub.firstCall.args).toHaveLength(1)
     })
     it('should be called with knex', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getBookmarksStub.firstCall.args[0]).to.equal(knexFake)
+      expect(getBookmarksStub.firstCall.args[0]).toBe(knexFake)
     })
   })
 })

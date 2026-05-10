@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
@@ -64,40 +63,40 @@ describe('routes/api route POST /bookmarks/remove', () => {
   })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.OK])
   })
   it('should return empty response body on success', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.end.firstCall.args).to.have.lengthOf(0)
+    expect(responseStub.end.firstCall.args).toHaveLength(0)
   })
   it('should call removeBookmark with knex instance', async () => {
     requestStub.body.path = 'foo/a%20bar/baz.gif'
     await routeHandler(requestFake, responseFake)
-    expect(removeBookmarkStub.firstCall.args[0]).to.equal(knexFake)
+    expect(removeBookmarkStub.firstCall.args[0]).toBe(knexFake)
   })
   it('should call removeBookmark with decoded path', async () => {
     requestStub.body.path = 'foo/a%20bar/baz.gif'
     await routeHandler(requestFake, responseFake)
-    expect(removeBookmarkStub.firstCall.args[1]).to.equal('/foo/a bar/baz.gif')
+    expect(removeBookmarkStub.firstCall.args[1]).toBe('/foo/a bar/baz.gif')
   })
   it('should not call removeBookmark when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(removeBookmarkStub.callCount).to.equal(0)
+    expect(removeBookmarkStub.callCount).toBe(0)
   })
   it('should return status FORBIDDEN when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
+    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.FORBIDDEN])
   })
   it('should return E_NO_TRAVERSE json error when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
+    expect(responseStub.json.firstCall.args[0]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
   })
   it('should log on entry to bookmarks/remove handler', async () => {
     await routeHandler(requestFake, responseFake)
     const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('POST /bookmarks/remove'))
-    expect(matched).to.equal(true)
+    expect(matched).toBe(true)
   })
 })

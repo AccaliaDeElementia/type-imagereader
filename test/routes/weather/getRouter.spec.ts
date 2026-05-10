@@ -1,6 +1,6 @@
 'use sanity'
 
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import { Internals, Weather, getRouter, Imports } from '#routes/weather.js'
 import Sinon from 'sinon'
 
@@ -44,19 +44,19 @@ describe('routes/weather getRouter()', () => {
   })
   it('should create Router', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    expect(getRouterStub.callCount).to.equal(1)
+    expect(getRouterStub.callCount).toBe(1)
   })
   it('should register correct endpoint count', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    expect(routerStub.get.callCount).to.equal(1)
+    expect(routerStub.get.callCount).toBe(1)
   })
   it('should register root route', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    expect(routerStub.get.firstCall.args[0]).to.equal('/')
+    expect(routerStub.get.firstCall.args[0]).toBe('/')
   })
   it('should register interval', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    expect(setIntervalStub.callCount).to.equal(1)
+    expect(setIntervalStub.callCount).toBe(1)
   })
   it('should register callback for interval', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
@@ -67,21 +67,41 @@ describe('routes/weather getRouter()', () => {
     const fn = cast<() => void>(setIntervalStub.firstCall.args[0])
     updateWeatherStub.resetHistory()
     fn()
-    expect(updateWeatherStub.callCount).to.equal(1)
+    expect(updateWeatherStub.callCount).toBe(1)
   })
   it('should register interval of expected length', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    expect(setIntervalStub.firstCall.args[1]).to.equal(600000)
+    expect(setIntervalStub.firstCall.args[1]).toBe(600000)
   })
   it('should call updateWeather when creating router', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    expect(updateWeatherStub.callCount).to.equal(1)
+    expect(updateWeatherStub.callCount).toBe(1)
   })
   const successTests: Array<[string, () => void]> = [
-    ['set status', () => expect(responseStub.status.callCount).to.equal(1)],
-    ['set HTTP OK status', () => expect(responseStub.status.firstCall.args[0]).to.equal(200)],
-    ['send json', () => expect(responseStub.json.callCount).to.equal(1)],
-    ['send weather data', () => expect(responseStub.json.firstCall.args[0]).to.equal(Weather)],
+    [
+      'set status',
+      () => {
+        expect(responseStub.status.callCount).toBe(1)
+      },
+    ],
+    [
+      'set HTTP OK status',
+      () => {
+        expect(responseStub.status.firstCall.args[0]).toBe(200)
+      },
+    ],
+    [
+      'send json',
+      () => {
+        expect(responseStub.json.callCount).toBe(1)
+      },
+    ],
+    [
+      'send weather data',
+      () => {
+        expect(responseStub.json.firstCall.args[0]).toBe(Weather)
+      },
+    ],
   ]
   successTests.forEach(([title, validationFn]) => {
     it(`should ${title} on success`, async () => {
@@ -101,70 +121,70 @@ describe('routes/weather getRouter()', () => {
     it('should not register interval when OPENWEATHER_APPID is missing', async () => {
       delete process.env.OPENWEATHER_APPID
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(setIntervalStub.callCount).to.equal(0)
+      expect(setIntervalStub.callCount).toBe(0)
     })
 
     it('should not call updateWeather when OPENWEATHER_APPID is missing', async () => {
       delete process.env.OPENWEATHER_APPID
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(updateWeatherStub.callCount).to.equal(0)
+      expect(updateWeatherStub.callCount).toBe(0)
     })
 
     it('should still register the root route when OPENWEATHER_APPID is missing', async () => {
       delete process.env.OPENWEATHER_APPID
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(routerStub.get.firstCall.args[0]).to.equal('/')
+      expect(routerStub.get.firstCall.args[0]).toBe('/')
     })
 
     it('should log once when OPENWEATHER_APPID is missing', async () => {
       delete process.env.OPENWEATHER_APPID
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(loggerStub.callCount).to.equal(1)
+      expect(loggerStub.callCount).toBe(1)
     })
 
     it('should log without an Error instance when OPENWEATHER_APPID is missing', async () => {
       delete process.env.OPENWEATHER_APPID
       await getRouter(applicationFake, serverFake, socketFake)
       const hasErrorArg = loggerStub.firstCall.args.some((a: unknown) => a instanceof Error)
-      expect(hasErrorArg).to.equal(false)
+      expect(hasErrorArg).toBe(false)
     })
 
     it('should name the missing OPENWEATHER_APPID env var in the log', async () => {
       delete process.env.OPENWEATHER_APPID
       await getRouter(applicationFake, serverFake, socketFake)
       const joined = loggerStub.firstCall.args.map((a: unknown) => String(a)).join(' ')
-      expect(joined).to.contain('OPENWEATHER_APPID')
+      expect(joined).toContain('OPENWEATHER_APPID')
     })
 
     it('should not register interval when OPENWEATHER_LOCATION is missing', async () => {
       delete process.env.OPENWEATHER_LOCATION
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(setIntervalStub.callCount).to.equal(0)
+      expect(setIntervalStub.callCount).toBe(0)
     })
 
     it('should not call updateWeather when OPENWEATHER_LOCATION is missing', async () => {
       delete process.env.OPENWEATHER_LOCATION
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(updateWeatherStub.callCount).to.equal(0)
+      expect(updateWeatherStub.callCount).toBe(0)
     })
 
     it('should name the missing OPENWEATHER_LOCATION env var in the log', async () => {
       delete process.env.OPENWEATHER_LOCATION
       await getRouter(applicationFake, serverFake, socketFake)
       const joined = loggerStub.firstCall.args.map((a: unknown) => String(a)).join(' ')
-      expect(joined).to.contain('OPENWEATHER_LOCATION')
+      expect(joined).toContain('OPENWEATHER_LOCATION')
     })
 
     it('should not register interval when OPENWEATHER_APPID is blank', async () => {
       process.env.OPENWEATHER_APPID = ''
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(setIntervalStub.callCount).to.equal(0)
+      expect(setIntervalStub.callCount).toBe(0)
     })
 
     it('should not register interval when OPENWEATHER_LOCATION is blank', async () => {
       process.env.OPENWEATHER_LOCATION = ''
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(setIntervalStub.callCount).to.equal(0)
+      expect(setIntervalStub.callCount).toBe(0)
     })
   })
 })

@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { getPictures } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/knex.js'
 
@@ -19,63 +18,63 @@ describe('routes/apiFunctions getPictures', () => {
   })
   it('should call knex once when selecting from pictures', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexStub.callCount).to.equal(1)
+    expect(knexStub.callCount).toBe(1)
   })
   it('should select data from pictures', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexStub.firstCall.args).to.deep.equal(['pictures'])
+    expect(knexStub.firstCall.args).toEqual(['pictures'])
   })
   it('should call select once', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.select.callCount).to.equal(1)
+    expect(knexInstance.select.callCount).toBe(1)
   })
   it('should select two columns', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.select.firstCall.args).to.have.lengthOf(2)
+    expect(knexInstance.select.firstCall.args).toHaveLength(2)
   })
   it('should select path column', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.select.firstCall.args).to.include('path')
+    expect(knexInstance.select.firstCall.args).toContain('path')
   })
   it('should select seen column', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.select.firstCall.args).to.include('seen')
+    expect(knexInstance.select.firstCall.args).toContain('seen')
   })
   it('should call where once when filtering results', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.where.callCount).to.equal(1)
+    expect(knexInstance.where.callCount).toBe(1)
   })
   it('should filter with three arguments', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.where.firstCall.args).to.have.lengthOf(3)
+    expect(knexInstance.where.firstCall.args).toHaveLength(3)
   })
   it('should filter on folder column', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.where.firstCall.args[0]).to.equal('folder')
+    expect(knexInstance.where.firstCall.args[0]).toBe('folder')
   })
   it('should filter with equality operator', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.where.firstCall.args[1]).to.equal('=')
+    expect(knexInstance.where.firstCall.args[1]).toBe('=')
   })
   it('should filter results to folder', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.where.firstCall.args[2]).to.equal('/foo/bar/')
+    expect(knexInstance.where.firstCall.args[2]).toBe('/foo/bar/')
   })
   it('should call orderBy once', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.orderBy.callCount).to.equal(1)
+    expect(knexInstance.orderBy.callCount).toBe(1)
   })
   it('should order by two columns', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.orderBy.firstCall.args).to.have.lengthOf(2)
+    expect(knexInstance.orderBy.firstCall.args).toHaveLength(2)
   })
   it('should order results by sort key', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.orderBy.firstCall.args[0]).to.equal('sortKey')
+    expect(knexInstance.orderBy.firstCall.args[0]).toBe('sortKey')
   })
   it('should order results by sort key then path', async () => {
     await getPictures(knexFake, '/foo/bar/')
-    expect(knexInstance.orderBy.firstCall.args[1]).to.equal('path')
+    expect(knexInstance.orderBy.firstCall.args[1]).toBe('path')
   })
   it('should select name from pictures', async () => {
     const data = {
@@ -83,7 +82,7 @@ describe('routes/apiFunctions getPictures', () => {
     }
     knexInstance.orderBy.resolves([data])
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(result[0]?.name).to.equal('baz')
+    expect(result[0]?.name).toBe('baz')
   })
   it('should select non uri safe name from pictures', async () => {
     const data = {
@@ -91,7 +90,7 @@ describe('routes/apiFunctions getPictures', () => {
     }
     knexInstance.orderBy.resolves([data])
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(result[0]?.name).to.equal('<baz>')
+    expect(result[0]?.name).toBe('<baz>')
   })
   it('should select path from pictures', async () => {
     const data = {
@@ -99,7 +98,7 @@ describe('routes/apiFunctions getPictures', () => {
     }
     knexInstance.orderBy.resolves([data])
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(result[0]?.path).to.equal('/foo/bar/baz.png')
+    expect(result[0]?.path).toBe('/foo/bar/baz.png')
   })
   it('should select uri safe path from pictures', async () => {
     const data = {
@@ -107,7 +106,7 @@ describe('routes/apiFunctions getPictures', () => {
     }
     knexInstance.orderBy.resolves([data])
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(result[0]?.path).to.equal('/foo/bar/%3Cbaz%3E.png')
+    expect(result[0]?.path).toBe('/foo/bar/%3Cbaz%3E.png')
   })
   it('should preserve seen=true from pictures', async () => {
     const data = [
@@ -116,7 +115,7 @@ describe('routes/apiFunctions getPictures', () => {
     ]
     knexInstance.orderBy.resolves(data)
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(result[0]?.seen).to.equal(true)
+    expect(result[0]?.seen).toBe(true)
   })
   it('should preserve seen=false from pictures', async () => {
     const data = [
@@ -125,22 +124,22 @@ describe('routes/apiFunctions getPictures', () => {
     ]
     knexInstance.orderBy.resolves(data)
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(result[1]?.seen).to.equal(false)
+    expect(result[1]?.seen).toBe(false)
   })
   it('should coerce sqlite-style seen=1 to true', async () => {
     knexInstance.orderBy.resolves([{ path: '/foo/bar/baz.png', seen: 1 }])
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(result[0]?.seen).to.equal(true)
+    expect(result[0]?.seen).toBe(true)
   })
   it('should coerce sqlite-style seen=0 to false', async () => {
     knexInstance.orderBy.resolves([{ path: '/foo/bar/baz.png', seen: 0 }])
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(result[0]?.seen).to.equal(false)
+    expect(result[0]?.seen).toBe(false)
   })
   it('should produce a boolean-typed seen value for sqlite-style integer input', async () => {
     knexInstance.orderBy.resolves([{ path: '/foo/bar/baz.png', seen: 1 }])
     const result = await getPictures(knexFake, '/foo/bar/')
-    expect(typeof result[0]?.seen).to.equal('boolean')
+    expect(typeof result[0]?.seen).toBe('boolean')
   })
   it('should map index onto picture list', async () => {
     const data = Array(100).fill({
@@ -150,7 +149,7 @@ describe('routes/apiFunctions getPictures', () => {
     knexInstance.orderBy.resolves(data)
     const result = await getPictures(knexFake, '/foo/bar/')
     for (let i = 0; i < result.length; i += 1) {
-      expect(result[i]?.index).to.equal(i)
+      expect(result[i]?.index).toBe(i)
     }
   })
 })

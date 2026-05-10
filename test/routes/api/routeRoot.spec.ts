@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
@@ -53,10 +52,10 @@ describe('routes/api route GET /', () => {
   })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.OK])
   })
   it('should return JSON data', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args).to.deep.equal([{ title: 'API' }])
+    expect(responseStub.json.firstCall.args).toEqual([{ title: 'API' }])
   })
 })

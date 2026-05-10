@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { getListing, Internals, ModCount, type ModCountInternals } from '#routes/apiFunctions.js'
 import { cast } from '#testutils/typeGuards.js'
 import { createKnexChainFake } from '#testutils/knex.js'
@@ -46,19 +45,19 @@ describe('routes/apiFunctions getListing direction and result', () => {
     })
     it('should call getDirectionFolder twice', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getDirectionFolderStub.callCount).to.equal(2)
+      expect(getDirectionFolderStub.callCount).toBe(2)
     })
     it('should call getDirectionFolder for next unread with two arguments', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getDirectionFolderStub.firstCall.args).to.have.lengthOf(2)
+      expect(getDirectionFolderStub.firstCall.args).toHaveLength(2)
     })
     it('should call getDirectionFolder for next unread with knex', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getDirectionFolderStub.firstCall.args[0]).to.equal(knexFake)
+      expect(getDirectionFolderStub.firstCall.args[0]).toBe(knexFake)
     })
     it('should call getDirectionFolder for next unread with expected options', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getDirectionFolderStub.firstCall.args[1]).to.deep.equal({
+      expect(getDirectionFolderStub.firstCall.args[1]).toEqual({
         path: '/foo/bar/',
         sortKey: 'bar>-<',
         direction: 'asc',
@@ -67,15 +66,15 @@ describe('routes/apiFunctions getListing direction and result', () => {
     })
     it('should call getDirectionFolder for previous unread with two arguments', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getDirectionFolderStub.secondCall.args).to.have.lengthOf(2)
+      expect(getDirectionFolderStub.secondCall.args).toHaveLength(2)
     })
     it('should call getDirectionFolder for previous unread with knex', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getDirectionFolderStub.secondCall.args[0]).to.equal(knexFake)
+      expect(getDirectionFolderStub.secondCall.args[0]).toBe(knexFake)
     })
     it('should call getDirectionFolder for previous unread with expected options', async () => {
       await getListing(knexFake, '/foo/bar/')
-      expect(getDirectionFolderStub.secondCall.args[1]).to.deep.equal({
+      expect(getDirectionFolderStub.secondCall.args[1]).toEqual({
         path: '/foo/bar/',
         sortKey: 'bar>-<',
         direction: 'desc',
@@ -97,22 +96,22 @@ describe('routes/apiFunctions getListing direction and result', () => {
     it('should resolve folder name', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.name).to.equal('bar<=>')
+      expect(result.name).toBe('bar<=>')
     })
     it('should resolve folder path', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.path).to.equal('/fop/bat/')
+      expect(result.path).toBe('/fop/bat/')
     })
     it('should resolve folder parent', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.parent).to.equal('/foo/')
+      expect(result.parent).toBe('/foo/')
     })
     it('should resolve folder cover', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.cover).to.equal('/foo/bar/image.png')
+      expect(result.cover).toBe('/foo/bar/image.png')
     })
   })
 
@@ -125,35 +124,35 @@ describe('routes/apiFunctions getListing direction and result', () => {
       getNextFolderStub.resolves(data)
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.next).to.equal(data)
+      expect(result.next).toBe(data)
     })
     it('should set prev from getPreviousFolder()', async () => {
       const data = { data: Math.random() }
       getPreviousFolderStub.resolves(data)
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.prev).to.equal(data)
+      expect(result.prev).toBe(data)
     })
     it('should set children from getChildFolders()', async () => {
       const data = { data: Math.random() }
       getChildFoldersStub.resolves(data)
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.children).to.equal(data)
+      expect(result.children).toBe(data)
     })
     it('should set pictures from getPictures()', async () => {
       const data = { data: Math.random() }
       getPicturesStub.resolves(data)
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.pictures).to.equal(data)
+      expect(result.pictures).toBe(data)
     })
     it('should set bookmarks from getBookmarks()', async () => {
       const data = { data: Math.random() }
       getBookmarksStub.resolves(data)
       const result = await getListing(knexFake, '/foo/bar/')
       assert(result !== null)
-      expect(result.bookmarks).to.equal(data)
+      expect(result.bookmarks).toBe(data)
     })
   })
   it('should set modcount', async () => {
@@ -161,6 +160,6 @@ describe('routes/apiFunctions getListing direction and result', () => {
     modCountInternals.modCount = 9090
     const result = await getListing(knexFake, '/foo/bar/')
     assert(result !== null)
-    expect(result.modCount).to.equal(9090)
+    expect(result.modCount).toBe(9090)
   })
 })

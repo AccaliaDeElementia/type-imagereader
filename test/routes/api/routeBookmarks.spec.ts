@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
@@ -58,15 +57,15 @@ describe('routes/api route GET /bookmarks', () => {
     const bookmarks = { Bookmarks: Math.random() }
     getBookmarkStub.resolves(bookmarks)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).to.equal(bookmarks)
+    expect(responseStub.json.firstCall.args[0]).toBe(bookmarks)
   })
   it('should pass knex to getBookmarks', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(getBookmarkStub.firstCall.args[0]).to.equal(knexFake)
+    expect(getBookmarkStub.firstCall.args[0]).toBe(knexFake)
   })
   it('should log on entry to bookmarks handler', async () => {
     await routeHandler(requestFake, responseFake)
     const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GET /bookmarks'))
-    expect(matched).to.equal(true)
+    expect(matched).toBe(true)
   })
 })

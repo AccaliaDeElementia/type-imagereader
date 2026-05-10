@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import { handleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
@@ -36,7 +36,7 @@ describe('routes/slideshow handleSocket()', () => {
   const endpoints = ['get-launchId', 'join-slideshow', 'prev-image', 'next-image', 'goto-image']
   it('should register expected endpoint count', () => {
     handleSocket(knexFake, serverFake, socketFake)
-    expect(socketStub.on.callCount).to.equal(endpoints.length)
+    expect(socketStub.on.callCount).toBe(endpoints.length)
   })
   const getCallback = (endpoint: string): unknown =>
     socketStub.on
@@ -46,7 +46,7 @@ describe('routes/slideshow handleSocket()', () => {
   endpoints.forEach((endpoint) => {
     it(`should handle socket message '${endpoint}'`, () => {
       handleSocket(knexFake, serverFake, socketFake)
-      expect(socketStub.on.calledWith(endpoint)).to.equal(true)
+      expect(socketStub.on.calledWith(endpoint)).toBe(true)
     })
     it(`should register a callback for '${endpoint}'`, () => {
       handleSocket(knexFake, serverFake, socketFake)
@@ -58,7 +58,7 @@ describe('routes/slideshow handleSocket()', () => {
       fn()
       const stub = socketStubs.find(([name]) => name === endpoint)
       assert(stub !== undefined)
-      expect(stub[1].callCount).to.equal(1)
+      expect(stub[1].callCount).toBe(1)
     })
   })
   const asyncEndpoints: Array<[string, string]> = [
@@ -90,7 +90,7 @@ describe('routes/slideshow handleSocket()', () => {
     const callbackStub = sandbox.stub()
     fn(callbackStub)
     await yieldMacro()
-    expect(callbackStub.firstCall.args).to.deep.equal([null])
+    expect(callbackStub.firstCall.args).toEqual([null])
   })
   it('should return an object for state storage', () => {
     const state = handleSocket(knexFake, serverFake, socketFake)
@@ -98,10 +98,10 @@ describe('routes/slideshow handleSocket()', () => {
   })
   it('should return state object', () => {
     const state = handleSocket(knexFake, serverFake, socketFake)
-    expect(state).to.have.all.keys('roomName')
+    expect(Object.keys(state)).toEqual(['roomName'])
   })
   it('should set initial roomName to null', () => {
     const state = handleSocket(knexFake, serverFake, socketFake)
-    expect(state.roomName).to.equal(null)
+    expect(state.roomName).toBe(null)
   })
 })

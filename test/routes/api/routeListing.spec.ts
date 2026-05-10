@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
@@ -63,58 +62,58 @@ describe('routes/api route GET /listing', () => {
   it('should return status OK', async () => {
     getListingStub.resolves({})
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.OK])
+    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.OK])
   })
   it('should json send listing response', async () => {
     const listing = { listing: Math.random() }
     getListingStub.resolves(listing)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).to.equal(listing)
+    expect(responseStub.json.firstCall.args[0]).toBe(listing)
   })
   it('should pass Knex to getListing', async () => {
     requestStub.params.path = []
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[0]).to.equal(knexFake)
+    expect(getListingStub.firstCall.args[0]).toBe(knexFake)
   })
   it('should retrieve implicit root listing', async () => {
     requestStub.params.path = []
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[1]).to.equal('/')
+    expect(getListingStub.firstCall.args[1]).toBe('/')
   })
   it('should retrieve explicit root listing', async () => {
     requestStub.params.path = ['']
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[1]).to.equal('/')
+    expect(getListingStub.firstCall.args[1]).toBe('/')
   })
   it('should retrieve web path listing for string', async () => {
     requestStub.params.path = 'foo/a bar/baz'
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
+    expect(getListingStub.firstCall.args[1]).toBe('/foo/a bar/baz/')
   })
   it('should retrieve web path listing for string array', async () => {
     requestStub.params.path = ['foo', 'a bar', 'baz']
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[1]).to.equal('/foo/a bar/baz/')
+    expect(getListingStub.firstCall.args[1]).toBe('/foo/a bar/baz/')
   })
   it('should not call getListing when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.callCount).to.equal(0)
+    expect(getListingStub.callCount).toBe(0)
   })
   it('should return status FORBIDDEN when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
+    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.FORBIDDEN])
   })
   it('should return E_NO_TRAVERSE json error when isPathTraversal returns true', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
+    expect(responseStub.json.firstCall.args[0]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
   })
   it('should return status NOT_FOUND for missing folder', async () => {
     getListingStub.resolves(null)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.NOT_FOUND])
+    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.NOT_FOUND])
   })
   it('should json error for missing folder', async () => {
     const err = {
@@ -126,24 +125,24 @@ describe('routes/api route GET /listing', () => {
     }
     getListingStub.resolves(null)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).to.deep.equal(err)
+    expect(responseStub.json.firstCall.args[0]).toEqual(err)
   })
   it('should log on entry to listing handler', async () => {
     getListingStub.resolves({})
     await routeHandler(requestFake, responseFake)
     const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GET /listing'))
-    expect(matched).to.equal(true)
+    expect(matched).toBe(true)
   })
   it('should log a path traversal attempt', async () => {
     isPathTraversalStub.returns(true)
     await routeHandler(requestFake, responseFake)
     const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('path traversal blocked'))
-    expect(matched).to.equal(true)
+    expect(matched).toBe(true)
   })
   it('should log when listing is not found', async () => {
     getListingStub.resolves(null)
     await routeHandler(requestFake, responseFake)
     const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('listing not found'))
-    expect(matched).to.equal(true)
+    expect(matched).toBe(true)
   })
 })

@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Debugger } from 'debug'
 
 import type { Request, RequestHandler, Response, Application, Router } from 'express'
@@ -85,23 +84,90 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     CacheStorage.scaledCache = defaultScaledCache
   })
   const successTests: Array<[string, (data: ImageData) => void]> = [
-    ['not set response status', () => expect(responseStub.status.callCount).to.equal(0)],
-    ['not send json data response', () => expect(responseStub.json.callCount).to.equal(0)],
-    ['log invocation once', () => expect(loggerStub.callCount).to.equal(1)],
+    [
+      'not set response status',
+      () => {
+        expect(responseStub.status.callCount).toBe(0)
+      },
+    ],
+    [
+      'not send json data response',
+      () => {
+        expect(responseStub.json.callCount).toBe(0)
+      },
+    ],
+    [
+      'log invocation once',
+      () => {
+        expect(loggerStub.callCount).toBe(1)
+      },
+    ],
     [
       'log invocation with GET-format',
-      () => expect(loggerStub.firstCall.args[0]).to.equal('GET /images/scaled %dx%d %s'),
+      () => {
+        expect(loggerStub.firstCall.args[0]).toBe('GET /images/scaled %dx%d %s')
+      },
     ],
-    ['log invocation with width arg', () => expect(loggerStub.firstCall.args[1]).to.equal(123)],
-    ['log invocation with height arg', () => expect(loggerStub.firstCall.args[2]).to.equal(456)],
-    ['log invocation with filename arg', () => expect(loggerStub.firstCall.args[3]).to.equal('/full/image/test.png')],
-    ['fetch image from cache', () => expect(fetchImageStub.callCount).to.equal(1)],
-    ['fetch image from cache', () => expect(fetchImageStub.firstCall.args[0]).to.equal('/full/image/test.png')],
-    ['fetch image from cache', () => expect(fetchImageStub.firstCall.args[1]).to.equal(123)],
-    ['fetch image from cache', () => expect(fetchImageStub.firstCall.args[2]).to.equal(456)],
-    ['send image with sendImage()', () => expect(sendImageStub.callCount).to.equal(1)],
-    ['send image data with sendImage()', (data) => expect(sendImageStub.firstCall.args[0]).to.equal(data)],
-    ['send to response with sendImage()', () => expect(sendImageStub.firstCall.args[1]).to.equal(responseFake)],
+    [
+      'log invocation with width arg',
+      () => {
+        expect(loggerStub.firstCall.args[1]).toBe(123)
+      },
+    ],
+    [
+      'log invocation with height arg',
+      () => {
+        expect(loggerStub.firstCall.args[2]).toBe(456)
+      },
+    ],
+    [
+      'log invocation with filename arg',
+      () => {
+        expect(loggerStub.firstCall.args[3]).toBe('/full/image/test.png')
+      },
+    ],
+    [
+      'fetch image from cache',
+      () => {
+        expect(fetchImageStub.callCount).toBe(1)
+      },
+    ],
+    [
+      'fetch image from cache',
+      () => {
+        expect(fetchImageStub.firstCall.args[0]).toBe('/full/image/test.png')
+      },
+    ],
+    [
+      'fetch image from cache',
+      () => {
+        expect(fetchImageStub.firstCall.args[1]).toBe(123)
+      },
+    ],
+    [
+      'fetch image from cache',
+      () => {
+        expect(fetchImageStub.firstCall.args[2]).toBe(456)
+      },
+    ],
+    [
+      'send image with sendImage()',
+      () => {
+        expect(sendImageStub.callCount).toBe(1)
+      },
+    ],
+    [
+      'send image data with sendImage()',
+      (data) => {
+        expect(sendImageStub.firstCall.args[0]).toBe(data)
+      },
+    ],
+    [
+      'send to response with sendImage()',
+      () => {
+        expect(sendImageStub.firstCall.args[1]).toBe(responseFake)
+      },
+    ],
   ]
   successTests.forEach(([title, validationFn]) => {
     it(`should ${title} on success`, async () => {
@@ -139,23 +205,54 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     ['explicit positive height', { path: '', height: '+100', width: '10' }, eHeightBad],
   ]
   const validationTests: Array<[string, (msg: string) => void]> = [
-    ['not fetch image', () => expect(fetchImageStub.callCount).to.equal(0)],
-    ['not send image', () => expect(sendImageStub.callCount).to.equal(0)],
-    ['not log message', () => expect(loggerStub.callCount).to.equal(0)],
-    ['send response status', () => expect(responseStub.status.callCount).to.equal(1)],
-    ['send BAD_REQUEST status code', () => expect(responseStub.status.firstCall.args).to.deep.equal([400])],
-    ['send json response data', () => expect(responseStub.json.callCount).to.equal(1)],
+    [
+      'not fetch image',
+      () => {
+        expect(fetchImageStub.callCount).toBe(0)
+      },
+    ],
+    [
+      'not send image',
+      () => {
+        expect(sendImageStub.callCount).toBe(0)
+      },
+    ],
+    [
+      'not log message',
+      () => {
+        expect(loggerStub.callCount).toBe(0)
+      },
+    ],
+    [
+      'send response status',
+      () => {
+        expect(responseStub.status.callCount).toBe(1)
+      },
+    ],
+    [
+      'send BAD_REQUEST status code',
+      () => {
+        expect(responseStub.status.firstCall.args).toEqual([400])
+      },
+    ],
     [
       'send json response data',
-      (msg) =>
-        expect(responseStub.json.firstCall.args).to.deep.equal([
+      () => {
+        expect(responseStub.json.callCount).toBe(1)
+      },
+    ],
+    [
+      'send json response data',
+      (msg) => {
+        expect(responseStub.json.firstCall.args).toEqual([
           {
             error: {
               code: 'E_BAD_REQUEST',
               message: msg,
             },
           },
-        ]),
+        ])
+      },
     ],
   ]
   const executeValidationTest = (

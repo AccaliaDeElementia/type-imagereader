@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Application, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
@@ -39,14 +38,14 @@ describe('routes/root route /', () => {
   })
   it('should redirect response', () => {
     routeFn(requestFake, responseFake)
-    expect(resposeStub.redirect.callCount).to.equal(1)
+    expect(resposeStub.redirect.callCount).toBe(1)
   })
   it('should redirect with temporary redirect', () => {
     routeFn(requestFake, responseFake)
-    expect(resposeStub.redirect.firstCall.args[0]).to.equal(302)
+    expect(resposeStub.redirect.firstCall.args[0]).toBe(302)
   })
   it("should redirect to '/show'", () => {
     routeFn(requestFake, responseFake)
-    expect(resposeStub.redirect.firstCall.args[1]).to.equal('/show')
+    expect(resposeStub.redirect.firstCall.args[1]).toBe('/show')
   })
 })

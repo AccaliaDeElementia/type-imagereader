@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import type { Application, Response as ExpressResponse, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
@@ -46,27 +45,27 @@ describe('routes/root route /show', () => {
     sandbox.restore()
   })
   it("should alias same handler for both '/show' and '/show/*path' routes", () => {
-    expect(routeFn).to.equal(routeAltFn)
+    expect(routeFn).toBe(routeAltFn)
   })
   it('should return FORBIDDEN when isPathTraversal returns true', () => {
     isPathTraversalStub.returns(true)
     routeFn(requestFake, responseFake)
-    expect(resposeStub.status.firstCall.args).to.deep.equal([StatusCodes.FORBIDDEN])
+    expect(resposeStub.status.firstCall.args).toEqual([StatusCodes.FORBIDDEN])
   })
   it('should render error template when isPathTraversal returns true', () => {
     isPathTraversalStub.returns(true)
     routeFn(requestFake, responseFake)
-    expect(resposeStub.render.firstCall.args[0]).to.equal('error')
+    expect(resposeStub.render.firstCall.args[0]).toBe('error')
   })
   it('should render E_NO_TRAVERSE error data when isPathTraversal returns true', () => {
     isPathTraversalStub.returns(true)
     routeFn(requestFake, responseFake)
-    expect(resposeStub.render.firstCall.args[1]).to.have.nested.property('error.code', 'E_NO_TRAVERSE')
+    expect(resposeStub.render.firstCall.args[1]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
   })
   it('should not render app when isPathTraversal returns true', () => {
     isPathTraversalStub.returns(true)
     routeFn(requestFake, responseFake)
-    expect(resposeStub.render.firstCall.args[0]).to.not.equal('app')
+    expect(resposeStub.render.firstCall.args[0]).not.toBe('app')
   })
   const successPaths: Array<string | string[] | undefined> = [
     undefined,
@@ -81,21 +80,21 @@ describe('routes/root route /show', () => {
         requestStub.params.path = path
       }
       routeFn(requestFake, responseFake)
-      expect(resposeStub.render.callCount).to.equal(1)
+      expect(resposeStub.render.callCount).toBe(1)
     })
     it(`should render app for '${JSON.stringify(path)}'`, () => {
       if (path === undefined) {
         requestStub.params.path = path
       }
       routeFn(requestFake, responseFake)
-      expect(resposeStub.render.firstCall.args).to.deep.equal(['app'])
+      expect(resposeStub.render.firstCall.args).toEqual(['app'])
     })
     it(`should not set explicit status '${JSON.stringify(path)}'`, () => {
       if (path === undefined) {
         requestStub.params.path = path
       }
       routeFn(requestFake, responseFake)
-      expect(resposeStub.status.callCount).to.equal(0)
+      expect(resposeStub.status.callCount).toBe(0)
     })
   })
 
@@ -110,13 +109,13 @@ describe('routes/root route /show', () => {
     it('should log GET-format on rootRoute invocation', () => {
       requestStub.params.path = 'foo/bar'
       routeFn(requestFake, responseFake)
-      expect(loggerStub.firstCall.args[0]).to.equal('GET %s')
+      expect(loggerStub.firstCall.args[0]).toBe('GET %s')
     })
 
     it('should log the folder path on rootRoute invocation', () => {
       requestStub.params.path = 'foo/bar'
       routeFn(requestFake, responseFake)
-      expect(loggerStub.firstCall.args[1]).to.equal('/foo/bar')
+      expect(loggerStub.firstCall.args[1]).toBe('/foo/bar')
     })
 
     it('should log path-traversal-blocked format when isPathTraversal returns true', () => {
@@ -124,7 +123,7 @@ describe('routes/root route /show', () => {
       requestStub.params.path = 'evil'
       routeFn(requestFake, responseFake)
       const hasTraversalLog = loggerStub.getCalls().some(isTraversalCall)
-      expect(hasTraversalLog).to.equal(true)
+      expect(hasTraversalLog).toBe(true)
     })
 
     it('should log the blocked folder path when isPathTraversal returns true', () => {
@@ -132,7 +131,7 @@ describe('routes/root route /show', () => {
       requestStub.params.path = 'evil'
       routeFn(requestFake, responseFake)
       const traversalCall = loggerStub.getCalls().find(isTraversalCall)
-      expect(traversalCall?.args[1]).to.equal('/evil')
+      expect(traversalCall?.args[1]).toBe('/evil')
     })
   })
 })

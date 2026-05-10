@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { readBody } from '#routes/api.js'
 import { definitelyThrows } from '#testutils/errors.js'
 
@@ -12,10 +11,10 @@ describe('routes/api readBody()', () => {
         rand: Math.random(),
       },
     }
-    expect(readBody(obj)).to.equal(obj.body)
+    expect(readBody(obj)).toBe(obj.body)
   })
   it('should throw when body does not parse', () => {
     const err = definitelyThrows(() => readBody({}))
-    expect(err.message).to.equal('Invalid JSON Object provided as input')
+    expect(err.message).toBe('Invalid JSON Object provided as input')
   })
 })

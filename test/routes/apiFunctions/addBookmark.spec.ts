@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { addBookmark } from '#routes/apiFunctions.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
 import Sinon from 'sinon'
@@ -25,34 +24,34 @@ describe('routes/apiFunctions addBookmark', () => {
   })
   it('should query bookmarks table once to set bookmark', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexStub.callCount).to.equal(1)
+    expect(knexStub.callCount).toBe(1)
   })
   it('should query bookmarks table with expected args to set bookmark', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexStub.firstCall.args).to.deep.equal(['bookmarks'])
+    expect(knexStub.firstCall.args).toEqual(['bookmarks'])
   })
   it('should insert provided path once to set bookmark', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.insert.callCount).to.equal(1)
+    expect(knexInstance.insert.callCount).toBe(1)
   })
   it('should insert provided path with expected args to set bookmark', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.insert.firstCall.args).to.deep.equal([{ path: '/foo/bar/baz.png' }])
+    expect(knexInstance.insert.firstCall.args).toEqual([{ path: '/foo/bar/baz.png' }])
   })
   it('should resolve conflicts once when path already exists', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.onConflict.callCount).to.equal(1)
+    expect(knexInstance.onConflict.callCount).toBe(1)
   })
   it('should resolve conflicts with expected args when path already exists', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.onConflict.firstCall.args).to.deep.equal(['path'])
+    expect(knexInstance.onConflict.firstCall.args).toEqual(['path'])
   })
   it('should ignore conflicts once on insert to set bookmark', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.ignore.callCount).to.equal(1)
+    expect(knexInstance.ignore.callCount).toBe(1)
   })
   it('should ignore conflicts with expected args on insert to set bookmark', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.ignore.firstCall.args).to.deep.equal([])
+    expect(knexInstance.ignore.firstCall.args).toEqual([])
   })
 })

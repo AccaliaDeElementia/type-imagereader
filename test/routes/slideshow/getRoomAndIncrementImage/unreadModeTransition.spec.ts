@@ -2,7 +2,6 @@
 
 import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/typeGuards.js'
-import { expect } from 'chai'
 import { Config, getRoomAndIncrementImage, Internals } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
@@ -51,96 +50,96 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage() u
   })
   it('it should call getCounts twice when transitioning from unread to all-images on increment', async () => {
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(getCountsStub.callCount).to.equal(2)
+    expect(getCountsStub.callCount).toBe(2)
   })
   it('it should call second getCounts with no currentPage on unread to all-images transition on increment', async () => {
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(getCountsStub.secondCall.args).to.have.lengthOf(2)
+    expect(getCountsStub.secondCall.args).toHaveLength(2)
   })
   it('it should call second getCounts with knex on unread to all-images transition on increment', async () => {
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(getCountsStub.secondCall.args[0]).to.equal(knexFake)
+    expect(getCountsStub.secondCall.args[0]).toBe(knexFake)
   })
   it('it should call second getCounts with path on unread to all-images transition on increment', async () => {
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(getCountsStub.secondCall.args[1]).to.equal('/path/')
+    expect(getCountsStub.secondCall.args[1]).toBe('/path/')
   })
   it('it should load images from fresh random page on unread to all-images transition on increment', async () => {
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(getImagesStub.firstCall.args[2]).to.equal(freshPages.page)
+    expect(getImagesStub.firstCall.args[2]).toBe(freshPages.page)
   })
   it('it should call getCounts twice when transitioning from unread to all-images on decrement', async () => {
     unreadRoom.index = 0
     await getRoomAndIncrementImage(knexFake, '/path/', -1)
-    expect(getCountsStub.callCount).to.equal(2)
+    expect(getCountsStub.callCount).toBe(2)
   })
   it('it should call second getCounts with no currentPage on unread to all-images transition on decrement', async () => {
     unreadRoom.index = 0
     await getRoomAndIncrementImage(knexFake, '/path/', -1)
-    expect(getCountsStub.secondCall.args).to.have.lengthOf(2)
+    expect(getCountsStub.secondCall.args).toHaveLength(2)
   })
   it('it should load images from fresh random page on unread to all-images transition on decrement', async () => {
     unreadRoom.index = 0
     await getRoomAndIncrementImage(knexFake, '/path/', -1)
-    expect(getImagesStub.firstCall.args[2]).to.equal(freshPages.page)
+    expect(getImagesStub.firstCall.args[2]).toBe(freshPages.page)
   })
   it('it should not call getCounts twice when unread remains above zero on increment', async () => {
     getCountsStub.onFirstCall().resolves({ ...transitionPages, unread: 3 })
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(getCountsStub.callCount).to.equal(1)
+    expect(getCountsStub.callCount).toBe(1)
   })
   it('it should not call getCounts twice when unread remains above zero on decrement', async () => {
     unreadRoom.index = 0
     getCountsStub.onFirstCall().resolves({ ...transitionPages, unread: 3 })
     await getRoomAndIncrementImage(knexFake, '/path/', -1)
-    expect(getCountsStub.callCount).to.equal(1)
+    expect(getCountsStub.callCount).toBe(1)
   })
   it('it should not call getCounts twice when already in all-images mode on increment', async () => {
     unreadRoom.pages.unread = 0
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(getCountsStub.callCount).to.equal(1)
+    expect(getCountsStub.callCount).toBe(1)
   })
   it('it should not call getCounts twice when already in all-images mode on decrement', async () => {
     unreadRoom.pages.unread = 0
     unreadRoom.index = 0
     await getRoomAndIncrementImage(knexFake, '/path/', -1)
-    expect(getCountsStub.callCount).to.equal(1)
+    expect(getCountsStub.callCount).toBe(1)
   })
   it('it should call markImageRead once on unread to all-images transition on increment', async () => {
     getImagesStub.resolves(['/new_image.png'])
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(markImageReadStub.calledOnce).to.equal(true)
+    expect(markImageReadStub.calledOnce).toBe(true)
   })
   it('it should call markImageRead with knex on unread to all-images transition on increment', async () => {
     getImagesStub.resolves(['/new_image.png'])
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(markImageReadStub.firstCall.args[0]).to.equal(knexFake)
+    expect(markImageReadStub.firstCall.args[0]).toBe(knexFake)
   })
   it('it should call markImageRead with the first fresh image on unread to all-images transition on increment', async () => {
     getImagesStub.resolves(['/new_image.png'])
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(markImageReadStub.firstCall.args[1]).to.equal('/new_image.png')
+    expect(markImageReadStub.firstCall.args[1]).toBe('/new_image.png')
   })
   it('it should call markImageRead once on unread to all-images transition on decrement', async () => {
     unreadRoom.index = 0
     getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
     await getRoomAndIncrementImage(knexFake, '/path/', -1)
-    expect(markImageReadStub.calledOnce).to.equal(true)
+    expect(markImageReadStub.calledOnce).toBe(true)
   })
   it('it should call markImageRead with knex on unread to all-images transition on decrement', async () => {
     unreadRoom.index = 0
     getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
     await getRoomAndIncrementImage(knexFake, '/path/', -1)
-    expect(markImageReadStub.firstCall.args[0]).to.equal(knexFake)
+    expect(markImageReadStub.firstCall.args[0]).toBe(knexFake)
   })
   it('it should call markImageRead with the last fresh image on unread to all-images transition on decrement', async () => {
     unreadRoom.index = 0
     getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
     await getRoomAndIncrementImage(knexFake, '/path/', -1)
-    expect(markImageReadStub.firstCall.args[1]).to.equal('/prev_b.png')
+    expect(markImageReadStub.firstCall.args[1]).toBe('/prev_b.png')
   })
   it('it should not call markImageRead when no images are available after transition', async () => {
     await getRoomAndIncrementImage(knexFake, '/path/', 1)
-    expect(markImageReadStub.notCalled).to.equal(true)
+    expect(markImageReadStub.notCalled).toBe(true)
   })
 })

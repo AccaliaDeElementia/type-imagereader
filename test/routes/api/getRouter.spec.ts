@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
@@ -37,7 +36,7 @@ describe('routes/api getRouter()', () => {
   getRoutes.forEach((path) => {
     it(`should attach handler for get \`${path}\``, async () => {
       await getRouter(applicationFake, serverFake, socketServerFake)
-      expect(routerStub.get.calledWith(path)).to.equal(true)
+      expect(routerStub.get.calledWith(path)).toBe(true)
     })
   })
 
@@ -45,7 +44,7 @@ describe('routes/api getRouter()', () => {
   postRoutes.forEach((path) => {
     it(`should attach handler for post \`${path}\``, async () => {
       await getRouter(applicationFake, serverFake, socketServerFake)
-      expect(routerStub.post.calledWith(path)).to.equal(true)
+      expect(routerStub.post.calledWith(path)).toBe(true)
     })
   })
 
@@ -60,7 +59,7 @@ describe('routes/api getRouter()', () => {
       const fn2 = routerStub.get.getCalls().find((call) => call.args[0] === wildcard)?.args[1] as unknown
       assert(fn1 !== undefined)
       assert(fn2 !== undefined)
-      expect(fn1).to.equal(fn2)
+      expect(fn1).toBe(fn2)
     })
   })
 })
