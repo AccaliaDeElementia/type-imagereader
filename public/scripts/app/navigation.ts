@@ -23,7 +23,7 @@ export const Navigation = {
   loadToken: INITIAL_LOAD_TOKEN,
 }
 
-function GetBaseUrl(): string {
+function getBaseUrl(): string {
   const [pathA, pathB] = window.location.pathname.split('/')
   return [
     window.location.protocol,
@@ -34,7 +34,7 @@ function GetBaseUrl(): string {
   ].join('')
 }
 
-function GetFolderPath(): string {
+function getFolderPath(): string {
   const path = window.location.pathname.replace(/^\/[^\/]+/v, '')
   return stringishHasValue(path) ? path : '/'
 }
@@ -44,11 +44,11 @@ export function isMenuActive(): boolean {
   return !(mainMenu?.classList.contains('hidden') ?? false)
 }
 
-function IsSuppressMenu(): boolean {
+function isSuppressMenu(): boolean {
   return new URLSearchParams(window.location.search).has('noMenu')
 }
 
-async function NavigateTo(path: string | undefined, action: string): Promise<void> {
+async function navigateTo(path: string | undefined, action: string): Promise<void> {
   if (!stringishHasValue(path)) {
     publish('Loading:Error', `Action ${action} has no target`)
     return
@@ -66,7 +66,7 @@ async function loadData(noHistory = false, suppressMenu = false): Promise<void> 
     const data = await Imports.getJSON<Listing>(`/api/listing${path}`, isListing)
     if (token !== Navigation.loadToken) return
     Navigation.current = data
-    Navigation.current.noMenu = suppressMenu || Internals.IsSuppressMenu()
+    Navigation.current.noMenu = suppressMenu || Internals.isSuppressMenu()
     for (const element of document.querySelectorAll('head title, a.navbar-brand')) {
       let name = Navigation.current.name
       if (!stringishHasValue(name)) {
@@ -75,7 +75,7 @@ async function loadData(noHistory = false, suppressMenu = false): Promise<void> 
       element.innerHTML = name
     }
     if (!noHistory) {
-      window.history.pushState({}, '', Internals.GetBaseUrl() + Navigation.current.path)
+      window.history.pushState({}, '', Internals.getBaseUrl() + Navigation.current.path)
     }
     publish('Loading:Hide')
     publish('Navigate:Data', Navigation.current)
@@ -87,7 +87,7 @@ async function loadData(noHistory = false, suppressMenu = false): Promise<void> 
 
 export function init(): void {
   Navigation.locationAssign = window.location.assign.bind(window.location)
-  Navigation.current.path = Internals.GetFolderPath()
+  Navigation.current.path = Internals.getFolderPath()
   Internals.loadData().catch(() => null)
   subscribe('Navigate:Load', async (path) => {
     let suppressMenu = false
@@ -106,7 +106,7 @@ export function init(): void {
   })
   window.addEventListener('popstate', () => {
     Navigation.current = {
-      path: Internals.GetFolderPath(),
+      path: Internals.getFolderPath(),
       name: '',
       parent: '',
     }
@@ -137,18 +137,18 @@ export function init(): void {
   })
   subscribe('Action:Execute:PreviousFolder', async () => {
     const prev = Imports.getShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
-    await Internals.NavigateTo(prev?.path, 'PreviousFolder')
+    await Internals.navigateTo(prev?.path, 'PreviousFolder')
   })
   subscribe('Action:Execute:NextFolder', async () => {
     const next = Imports.getShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
-    await Internals.NavigateTo(next?.path, 'NextFolder')
+    await Internals.navigateTo(next?.path, 'NextFolder')
   })
   subscribe('Action:Execute:ParentFolder', async () => {
-    await Internals.NavigateTo(Navigation.current.parent, 'ParentFolder')
+    await Internals.navigateTo(Navigation.current.parent, 'ParentFolder')
   })
   subscribe('Action:Execute:FirstUnfinished', async () => {
     const target = Navigation.current.children?.find((child) => child.seenCount < child.totalCount)
-    await Internals.NavigateTo(target?.path, 'FirstUnfinished')
+    await Internals.navigateTo(target?.path, 'FirstUnfinished')
   })
   subscribe('Action:Execute:ShowMenu', async () => {
     publish('Menu:show')
@@ -234,9 +234,9 @@ export function init(): void {
 }
 
 export const Internals = {
-  GetBaseUrl,
-  GetFolderPath,
-  IsSuppressMenu,
-  NavigateTo,
+  getBaseUrl,
+  getFolderPath,
+  isSuppressMenu,
+  navigateTo,
   loadData,
 }

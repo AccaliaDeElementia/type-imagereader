@@ -40,9 +40,9 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     })
     mountDom(dom)
 
-    getFolderSpy = sandbox.stub(Internals, 'GetOrCreateFolderElement').returns(dom.window.document.createElement('div'))
+    getFolderSpy = sandbox.stub(Internals, 'getOrCreateFolderElement').returns(dom.window.document.createElement('div'))
     buildBookmarkSpy = sandbox
-      .stub(Internals, 'BuildBookmark')
+      .stub(Internals, 'buildBookmark')
       .returns(dom.window.document.createElement('div'))
       .returns(null)
 
@@ -57,7 +57,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     sandbox.restore()
     unmountDom()
   })
-  it('should not call GetOrCreateFolderElement when bookmarksTab is missing', () => {
+  it('should not call getOrCreateFolderElement when bookmarksTab is missing', () => {
     const data = {
       name: '',
       parent: '',
@@ -68,7 +68,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(getFolderSpy.called).to.equal(false)
   })
-  it('should not call BuildBookmark when bookmarksTab is missing', () => {
+  it('should not call buildBookmark when bookmarksTab is missing', () => {
     const data = {
       name: '',
       parent: '',
@@ -79,7 +79,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.called).to.equal(false)
   })
-  it('should not call GetOrCreateFolderElement when bookmarkCard is missing', () => {
+  it('should not call getOrCreateFolderElement when bookmarkCard is missing', () => {
     const data = {
       name: '',
       parent: '',
@@ -90,7 +90,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(getFolderSpy.called).to.equal(false)
   })
-  it('should not call BuildBookmark when bookmarkCard is missing', () => {
+  it('should not call buildBookmark when bookmarkCard is missing', () => {
     const data = {
       name: '',
       parent: '',
@@ -101,7 +101,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.called).to.equal(false)
   })
-  it('should not call GetOrCreateFolderElement when bookmarkFolder is missing', () => {
+  it('should not call getOrCreateFolderElement when bookmarkFolder is missing', () => {
     const data = {
       name: '',
       parent: '',
@@ -112,7 +112,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(getFolderSpy.called).to.equal(false)
   })
-  it('should not call BuildBookmark when bookmarkFolder is missing', () => {
+  it('should not call buildBookmark when bookmarkFolder is missing', () => {
     const data = {
       name: '',
       parent: '',
@@ -226,7 +226,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(Bookmarks.bookmarksTab?.querySelectorAll('div.folder')).to.have.length(0)
   })
-  it('should call GetOrCreateFolderElement to retrieve folder for bookmarks', () => {
+  it('should call getOrCreateFolderElement to retrieve folder for bookmarks', () => {
     const data = {
       name: '',
       parent: '',
@@ -248,7 +248,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
   })
-  it('should pass bookmark folder as second arg to GetOrCreateFolderElement when GetOrCreateFolderElement fails', () => {
+  it('should pass bookmark folder as second arg to getOrCreateFolderElement when getOrCreateFolderElement fails', () => {
     const data = {
       name: '',
       parent: '',
@@ -259,7 +259,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
   })
-  it('should not call BuildBookmark if GetOrCreateFolderElement fails', () => {
+  it('should not call buildBookmark if getOrCreateFolderElement fails', () => {
     const data = {
       name: '',
       parent: '',
@@ -270,7 +270,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.called).to.equal(false)
   })
-  it('should pass bookmark folder as second arg to GetOrCreateFolderElement when GetOrCreateFolderElement succeeds', () => {
+  it('should pass bookmark folder as second arg to getOrCreateFolderElement when getOrCreateFolderElement succeeds', () => {
     const data = {
       name: '',
       parent: '',
@@ -281,7 +281,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(getFolderSpy.firstCall.args[1]).to.deep.equal(data.bookmarks[0])
   })
-  it('should call BuildBookmark with the bookmark when GetOrCreateFolderElement succeeds', () => {
+  it('should call buildBookmark with the bookmark when getOrCreateFolderElement succeeds', () => {
     const data = {
       name: '',
       parent: '',
@@ -292,7 +292,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(buildBookmarkSpy.calledWith(data.bookmarks[0]?.bookmarks[0])).to.equal(true)
   })
-  it('should not appendChild when BuildBookmark fails', () => {
+  it('should not appendChild when buildBookmark fails', () => {
     const data = {
       name: '',
       parent: '',
@@ -318,7 +318,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Internals.buildBookmarks(data)
     expect(spy.called).to.equal(false)
   })
-  it('should appendChild when BuildBookmark succeeds', () => {
+  it('should appendChild when buildBookmark succeeds', () => {
     const data = {
       name: '',
       parent: '',

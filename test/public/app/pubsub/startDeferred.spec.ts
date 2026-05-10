@@ -24,7 +24,7 @@ describe('public/app/pubsub startDeferred()', () => {
     setIntervalSpy.returns(1)
     PubSub.cycleTime = 17
     resetPubSub()
-    executeIntervalSpy = sandbox.stub(Internals, 'ExecuteInterval')
+    executeIntervalSpy = sandbox.stub(Internals, 'executeInterval')
   })
   afterEach(() => {
     sandbox.restore()

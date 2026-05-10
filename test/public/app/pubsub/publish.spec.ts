@@ -15,18 +15,18 @@ const sandbox = Sinon.createSandbox()
 describe('public/app/pubsub publish()', () => {
   let publishAsyncSpy = sandbox.stub().resolves()
   beforeEach(() => {
-    publishAsyncSpy = sandbox.stub(Internals, 'PublishAsync').resolves()
+    publishAsyncSpy = sandbox.stub(Internals, 'publishAsync').resolves()
   })
   afterEach(() => {
     sandbox.restore()
   })
-  it('should call PublishAsync once when publishing', () => {
+  it('should call publishAsync once when publishing', () => {
     const topic = `TOPIC${Math.random()}`
     const data = `DATA${Math.random()}`
     publish(topic, data)
     expect(publishAsyncSpy.callCount).to.equal(1)
   })
-  it('should pass parameters to voided PublishAsync', () => {
+  it('should pass parameters to voided publishAsync', () => {
     const topic = `TOPIC${Math.random()}`
     const data = `DATA${Math.random()}`
     publish(topic, data)
@@ -34,7 +34,7 @@ describe('public/app/pubsub publish()', () => {
   })
 })
 
-describe('public/app/pubsub PublishAsync()', () => {
+describe('public/app/pubsub publishAsync()', () => {
   let subscriber = sandbox.stub().resolves()
   let dom = new JSDOM('<html></html')
   let consoleWarn = sandbox.stub()
@@ -57,45 +57,45 @@ describe('public/app/pubsub PublishAsync()', () => {
     unmountDom()
   })
   it('should print warning once on publish for unknown topic', async () => {
-    await Internals.PublishAsync('Quux', 'Digital')
+    await Internals.publishAsync('Quux', 'Digital')
     expect(consoleWarn.callCount).to.equal(1)
   })
   it('should print warning with expected args on publish for unknown topic', async () => {
-    await Internals.PublishAsync('Quux', 'Digital')
+    await Internals.publishAsync('Quux', 'Digital')
     expect(consoleWarn.firstCall.args).to.deep.equal(['PUBSUB: topic Quux published without subscribers', 'Digital'])
   })
   it('should print warning once on publish with only subscribers to child event', async () => {
-    await Internals.PublishAsync('Foo', 'Digital')
+    await Internals.publishAsync('Foo', 'Digital')
     expect(consoleWarn.callCount).to.equal(1)
   })
   it('should print warning with expected args on publish with only subscribers to child event', async () => {
-    await Internals.PublishAsync('Foo', 'Digital')
+    await Internals.publishAsync('Foo', 'Digital')
     expect(consoleWarn.firstCall.args).to.deep.equal(['PUBSUB: topic Foo published without subscribers', 'Digital'])
   })
   it('should print warning once on publish with registered topic missing subscribers', async () => {
     PubSub.subscribers.QUUX = []
-    await Internals.PublishAsync('Quux', 'Digital')
+    await Internals.publishAsync('Quux', 'Digital')
     expect(consoleWarn.callCount).to.equal(1)
   })
   it('should print warning with expected args on publish with registered topic missing subscribers', async () => {
     PubSub.subscribers.QUUX = []
-    await Internals.PublishAsync('Quux', 'Digital')
+    await Internals.publishAsync('Quux', 'Digital')
     expect(consoleWarn.firstCall.args).to.deep.equal(['PUBSUB: topic QUUX registered without subscribers!'])
   })
   it('should call subscriber once on valid event', async () => {
-    await Internals.PublishAsync('foo:bar', 'Quux')
+    await Internals.publishAsync('foo:bar', 'Quux')
     expect(subscriber.callCount).to.equal(1)
   })
   it('should call subscriber with expected args on valid event', async () => {
-    await Internals.PublishAsync('foo:bar', 'Quux')
+    await Internals.publishAsync('foo:bar', 'Quux')
     expect(subscriber.firstCall.args).to.deep.equal(['Quux', 'FOO:BAR'])
   })
   it('should call subscriber once on valid cascading event', async () => {
-    await Internals.PublishAsync('foo:bar:baz:xyzzy', 'Quux')
+    await Internals.publishAsync('foo:bar:baz:xyzzy', 'Quux')
     expect(subscriber.callCount).to.equal(1)
   })
   it('should call subscriber with expected args on valid cascading event', async () => {
-    await Internals.PublishAsync('foo:bar:baz:xyzzy', 'Quux')
+    await Internals.publishAsync('foo:bar:baz:xyzzy', 'Quux')
     expect(subscriber.firstCall.args).to.deep.equal(['Quux', 'FOO:BAR:BAZ:XYZZY'])
   })
   it('should call all subscribers when publishing', async () => {
@@ -103,7 +103,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
-    await Internals.PublishAsync('Foo:bar', 'Digital Life')
+    await Internals.publishAsync('Foo:bar', 'Digital Life')
     expect(subscriber.callCount).to.equal(1)
     for (let i = 1; i <= 10; i += 1) {
       const current = cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i])
@@ -115,7 +115,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
-    await Internals.PublishAsync('Foo:bar', 'Digital Life')
+    await Internals.publishAsync('Foo:bar', 'Digital Life')
     for (let i = 1; i <= 10; i += 1) {
       const prior = cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i - 1])
       const current = cast<Sinon.SinonStub>(PubSub.subscribers['FOO:BAR'][i])
@@ -129,7 +129,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D:E'] = [sandbox.stub().resolves()]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(a.callCount).to.equal(1)
   })
   it('should call ab subscriber when publishing top down', async () => {
@@ -139,7 +139,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D:E'] = [sandbox.stub().resolves()]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(ab.callCount).to.equal(1)
   })
   it('should call abc subscriber when publishing top down', async () => {
@@ -149,7 +149,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [abc]
     PubSub.subscribers['_:A:B:C:D'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D:E'] = [sandbox.stub().resolves()]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(abc.callCount).to.equal(1)
   })
   it('should call abcd subscriber when publishing top down', async () => {
@@ -159,7 +159,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D'] = [abcd]
     PubSub.subscribers['_:A:B:C:D:E'] = [sandbox.stub().resolves()]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(abcd.callCount).to.equal(1)
   })
   it('should call abcde subscriber when publishing top down', async () => {
@@ -169,7 +169,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D'] = [sandbox.stub().resolves()]
     PubSub.subscribers['_:A:B:C:D:E'] = [abcde]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(abcde.callCount).to.equal(1)
   })
   it('should publish ab after a in hierarchy top down', async () => {
@@ -183,7 +183,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [abc]
     PubSub.subscribers['_:A:B:C:D'] = [abcd]
     PubSub.subscribers['_:A:B:C:D:E'] = [abcde]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(ab.calledAfter(a)).to.equal(true)
   })
   it('should publish abc after ab in hierarchy top down', async () => {
@@ -197,7 +197,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [abc]
     PubSub.subscribers['_:A:B:C:D'] = [abcd]
     PubSub.subscribers['_:A:B:C:D:E'] = [abcde]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(abc.calledAfter(ab)).to.equal(true)
   })
   it('should publish abcd after abc in hierarchy top down', async () => {
@@ -211,7 +211,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [abc]
     PubSub.subscribers['_:A:B:C:D'] = [abcd]
     PubSub.subscribers['_:A:B:C:D:E'] = [abcde]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(abcd.calledAfter(abc)).to.equal(true)
   })
   it('should publish abcde after abcd in hierarchy top down', async () => {
@@ -225,7 +225,7 @@ describe('public/app/pubsub PublishAsync()', () => {
     PubSub.subscribers['_:A:B:C'] = [abc]
     PubSub.subscribers['_:A:B:C:D'] = [abcd]
     PubSub.subscribers['_:A:B:C:D:E'] = [abcde]
-    await Internals.PublishAsync('_:a:b:c:d:e', 'FOO')
+    await Internals.publishAsync('_:a:b:c:d:e', 'FOO')
     expect(abcde.calledAfter(abcd)).to.equal(true)
   })
   it('should still call all subscribers when one rejects', async () => {
@@ -234,7 +234,7 @@ describe('public/app/pubsub PublishAsync()', () => {
       PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.rejects('foo rejects!')
-    await Internals.PublishAsync('Foo:bar', 'Digital Life')
+    await Internals.publishAsync('Foo:bar', 'Digital Life')
     expect(subscriber.callCount).to.equal(1)
     for (const sub of PubSub.subscribers['FOO:BAR']) {
       expect(cast<Sinon.SinonStub>(sub).callCount).to.equal(1)
@@ -246,7 +246,7 @@ describe('public/app/pubsub PublishAsync()', () => {
       PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.rejects('foo rejects!')
-    await Internals.PublishAsync('Foo:bar', 'Digital Life')
+    await Internals.publishAsync('Foo:bar', 'Digital Life')
     expect(consoleError.callCount).to.equal(1)
   })
   it('should log expected message when one subscriber rejects', async () => {
@@ -255,7 +255,7 @@ describe('public/app/pubsub PublishAsync()', () => {
       PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.rejects('foo rejects!')
-    await Internals.PublishAsync('Foo:bar', 'Digital Life')
+    await Internals.publishAsync('Foo:bar', 'Digital Life')
     expect(consoleError.firstCall.args[0]).to.equal('Subscriber for FOO:BAR rejected with error:')
   })
   it('should still call all subscribers when one throws', async () => {
@@ -264,7 +264,7 @@ describe('public/app/pubsub PublishAsync()', () => {
       PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.throws('foo throws!')
-    await Internals.PublishAsync('Foo:bar', 'Digital Life')
+    await Internals.publishAsync('Foo:bar', 'Digital Life')
     expect(subscriber.callCount).to.equal(1)
     for (const sub of PubSub.subscribers['FOO:BAR']) {
       expect(cast<Sinon.SinonStub>(sub).callCount).to.equal(1)
@@ -276,7 +276,7 @@ describe('public/app/pubsub PublishAsync()', () => {
       PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.throws('foo throws!')
-    await Internals.PublishAsync('Foo:bar', 'Digital Life')
+    await Internals.publishAsync('Foo:bar', 'Digital Life')
     expect(consoleError.callCount).to.equal(1)
   })
   it('should log expected message when one subscriber throws', async () => {
@@ -285,7 +285,7 @@ describe('public/app/pubsub PublishAsync()', () => {
       PubSub.subscribers['FOO:BAR'].push(sandbox.stub().resolves())
     }
     subscriber.throws('foo throws!')
-    await Internals.PublishAsync('Foo:bar', 'Digital Life')
+    await Internals.publishAsync('Foo:bar', 'Digital Life')
     expect(consoleError.firstCall.args[0]).to.equal('Subscriber for FOO:BAR rejected with error:')
   })
 })

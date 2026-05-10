@@ -43,7 +43,7 @@ describe('public/app/folders init()', () => {
 
     resetPubSub()
     Folders.folderCard = null
-    buildFoldersSpy = sandbox.stub(Internals, 'BuildFolders')
+    buildFoldersSpy = sandbox.stub(Internals, 'buildFolders')
   })
   afterEach(() => {
     sandbox.restore()

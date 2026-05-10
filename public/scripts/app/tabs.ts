@@ -16,19 +16,19 @@ export function init(): void {
 
   for (const tab of Tabs.tabs) {
     tab.parentElement?.addEventListener('click', (evt) => {
-      Internals.SelectTab(tab.getAttribute('href') ?? '')
+      Internals.selectTab(tab.getAttribute('href') ?? '')
       evt.preventDefault()
     })
   }
 
   subscribe('Tab:Select', async (name) => {
-    if (typeof name === 'string') Internals.SelectTab(name)
+    if (typeof name === 'string') Internals.selectTab(name)
     await Promise.resolve()
   })
-  Internals.SelectTab()
+  Internals.selectTab()
 }
 
-function SelectTab(href?: string): void {
+function selectTab(href?: string): void {
   let target = href
   if (href !== undefined && !href.startsWith('#')) {
     target = `#tab${href}`
@@ -64,5 +64,5 @@ function setTabActive(tab: HTMLElement, activeHref: string | undefined): string 
 }
 
 export const Internals = {
-  SelectTab,
+  selectTab,
 }

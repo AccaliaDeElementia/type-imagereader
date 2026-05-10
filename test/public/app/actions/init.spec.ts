@@ -23,8 +23,8 @@ describe('public/app/actions init()', () => {
   beforeEach(() => {
     mountDom(dom)
     resetPubSub()
-    BuildActionsSpy = sandbox.stub(Internals, 'BuildActions')
-    GamepadResetSpy = sandbox.stub(Actions.gamepads, 'Reset')
+    BuildActionsSpy = sandbox.stub(Internals, 'buildActions')
+    GamepadResetSpy = sandbox.stub(Actions.gamepads, 'reset')
   })
   afterEach(() => {
     sandbox.restore()
@@ -247,25 +247,25 @@ describe('public/app/actions init()', () => {
     }
   })
 
-  it('should add ReadGamepad interval when gamepadConnected event fires', () => {
+  it('should add readGamepad interval when gamepadConnected event fires', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
       init()
       cast<() => void>(spy.firstCall.args[1])()
-      expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
+      expect(PubSub.intervals.readGamepad).to.not.equal(undefined)
     } finally {
       spy.restore()
     }
   })
 
-  it('should ReadGamepad() when ReadGamepad interval fires', () => {
+  it('should readGamepad() when readGamepad interval fires', () => {
     const spy = sandbox.stub(window, 'addEventListener')
-    const readspy = sandbox.stub(Internals, 'ReadGamepad')
+    const readspy = sandbox.stub(Internals, 'readGamepad')
     try {
       init()
       cast<() => void>(spy.firstCall.args[1])()
-      assert(PubSub.intervals.ReadGamepad !== undefined)
-      PubSub.intervals.ReadGamepad.method()
+      assert(PubSub.intervals.readGamepad !== undefined)
+      PubSub.intervals.readGamepad.method()
       expect(readspy.called).to.equal(true)
     } finally {
       readspy.restore()
@@ -281,7 +281,7 @@ describe('public/app/actions init()', () => {
       spy.restore()
     }
   })
-  it('should remove ReadGamepad interval when gamepaddisconnected fires and no gamepads remain', () => {
+  it('should remove readGamepad interval when gamepaddisconnected fires and no gamepads remain', () => {
     const addSpy = sandbox.stub(window, 'addEventListener')
     const existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
@@ -292,15 +292,15 @@ describe('public/app/actions init()', () => {
     try {
       init()
       cast<() => void>(addSpy.firstCall.args[1])()
-      assert(PubSub.intervals.ReadGamepad !== undefined)
+      assert(PubSub.intervals.readGamepad !== undefined)
       cast<() => void>(addSpy.secondCall.args[1])()
-      expect(PubSub.intervals.ReadGamepad).to.equal(undefined)
+      expect(PubSub.intervals.readGamepad).to.equal(undefined)
     } finally {
       Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
       addSpy.restore()
     }
   })
-  it('should keep ReadGamepad interval when gamepaddisconnected fires but other gamepads remain', () => {
+  it('should keep readGamepad interval when gamepaddisconnected fires but other gamepads remain', () => {
     const addSpy = sandbox.stub(window, 'addEventListener')
     const existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
@@ -312,9 +312,9 @@ describe('public/app/actions init()', () => {
     try {
       init()
       cast<() => void>(addSpy.firstCall.args[1])()
-      assert(PubSub.intervals.ReadGamepad !== undefined)
+      assert(PubSub.intervals.readGamepad !== undefined)
       cast<() => void>(addSpy.secondCall.args[1])()
-      expect(PubSub.intervals.ReadGamepad).to.not.equal(undefined)
+      expect(PubSub.intervals.readGamepad).to.not.equal(undefined)
     } finally {
       Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
       addSpy.restore()

@@ -20,7 +20,7 @@ describe('public/app/pubsub stopDeferred()', () => {
     PubSub.cycleTime = 17
     resetPubSub()
     PubSub.timer = 12
-    sandbox.stub(Internals, 'ExecuteInterval')
+    sandbox.stub(Internals, 'executeInterval')
   })
   afterEach(() => {
     sandbox.restore()

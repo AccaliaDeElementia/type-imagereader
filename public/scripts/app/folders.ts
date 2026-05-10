@@ -13,15 +13,15 @@ export const Folders = {
   folderCard: null as DocumentFragment | null,
 }
 
-function HideTab(selector: string): void {
+function hideTab(selector: string): void {
   document.querySelector(selector)?.parentElement?.classList.add('hidden')
 }
 
-function UnhideTab(selector: string): void {
+function unhideTab(selector: string): void {
   document.querySelector(selector)?.parentElement?.classList.remove('hidden')
 }
 
-function BuildCard(folder: FolderWithCounts): HTMLElement | null {
+function buildCard(folder: FolderWithCounts): HTMLElement | null {
   const card = cloneNode(Folders.folderCard, isHTMLElement)
   if (card === undefined) {
     return null
@@ -51,48 +51,48 @@ function BuildCard(folder: FolderWithCounts): HTMLElement | null {
   return card
 }
 
-function BuildAllCards(data: Listing): void {
+function buildAllCards(data: Listing): void {
   if (data.children === undefined) return
   const container: HTMLElement = document.createElement('div')
   container.classList.add('folders')
   document.querySelector('#tabFolders')?.appendChild(container)
 
   for (const folder of data.children) {
-    const card = Internals.BuildCard(folder)
+    const card = Internals.buildCard(folder)
     if (!hasValue(card)) continue
     container.appendChild(card)
   }
 }
 
-function BuildFolders(data: Listing): void {
+function buildFolders(data: Listing): void {
   for (const folder of document.querySelectorAll('#tabFolders .folders')) {
     folder.remove()
   }
   const hasChildren = hasValues(data.children)
   const hasPictures = hasValues(data.pictures)
   if (hasChildren) {
-    Internals.UnhideTab('a[href="#tabFolders"]')
+    Internals.unhideTab('a[href="#tabFolders"]')
     if (!hasPictures) {
       publish('Tab:Select', 'Folders')
     }
   } else {
-    Internals.HideTab('a[href="#tabFolders"]')
+    Internals.hideTab('a[href="#tabFolders"]')
   }
-  Internals.BuildAllCards(data)
+  Internals.buildAllCards(data)
 }
 
 export function init(): void {
   Folders.folderCard = document.querySelector<HTMLTemplateElement>('#folderCard')?.content ?? null
   subscribe('Navigate:Data', async (data) => {
-    if (isListing(data)) Internals.BuildFolders(data)
+    if (isListing(data)) Internals.buildFolders(data)
     await Promise.resolve()
   })
 }
 
 export const Internals = {
-  HideTab,
-  UnhideTab,
-  BuildCard,
-  BuildAllCards,
-  BuildFolders,
+  hideTab,
+  unhideTab,
+  buildCard,
+  buildAllCards,
+  buildFolders,
 }

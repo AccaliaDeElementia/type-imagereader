@@ -68,7 +68,7 @@ describe('public/app/navigation loadData()', () => {
       name: 'foo',
       parent: '/',
     })
-    suppressMenuSpy = sandbox.stub(Internals, 'IsSuppressMenu').returns(false)
+    suppressMenuSpy = sandbox.stub(Internals, 'isSuppressMenu').returns(false)
   })
   afterEach(() => {
     sandbox.restore()
@@ -131,17 +131,17 @@ describe('public/app/navigation loadData()', () => {
     await Internals.loadData(false, true)
     expect(Navigation.current.noMenu).to.equal(true)
   })
-  it('should set noMenu as true when suppressMenu argument is true and IsSuppressMenu is true', async () => {
+  it('should set noMenu as true when suppressMenu argument is true and isSuppressMenu is true', async () => {
     suppressMenuSpy.returns(true)
     await Internals.loadData(false, true)
     expect(Navigation.current.noMenu).to.equal(true)
   })
-  it('should set noMenu as false when suppressMenu argument is false and IsSuppressMenu is false', async () => {
+  it('should set noMenu as false when suppressMenu argument is false and isSuppressMenu is false', async () => {
     suppressMenuSpy.returns(false)
     await Internals.loadData(false, false)
     expect(Navigation.current.noMenu).to.equal(false)
   })
-  it('should set noMenu as true when suppressMenu argument is false and IsSuppressMenu is true', async () => {
+  it('should set noMenu as true when suppressMenu argument is false and isSuppressMenu is true', async () => {
     suppressMenuSpy.returns(true)
     await Internals.loadData(false, false)
     expect(Navigation.current.noMenu).to.equal(true)

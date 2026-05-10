@@ -23,7 +23,7 @@ export function resetMarkup(): void {
   }
 }
 
-function MakePictureCard(picture: Picture): HTMLElement | undefined {
+function makePictureCard(picture: Picture): HTMLElement | undefined {
   const card = cloneNode(Pictures.imageCard, isHTMLElement)
   card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
   if (picture.seen) {
@@ -37,11 +37,11 @@ function MakePictureCard(picture: Picture): HTMLElement | undefined {
   return card
 }
 
-function MakePicturesPage(pageNum: number, pictures: Picture[]): HTMLElement {
+function makePicturesPage(pageNum: number, pictures: Picture[]): HTMLElement {
   const page = document.createElement('div')
   page.classList.add('page')
   for (const picture of pictures) {
-    const card = Internals.MakePictureCard(picture)
+    const card = Internals.makePictureCard(picture)
     if (card === undefined) continue
     picture.element = card
     picture.page = pageNum
@@ -50,7 +50,7 @@ function MakePicturesPage(pageNum: number, pictures: Picture[]): HTMLElement {
   return page
 }
 
-function MakePaginatorItem(label: string, selector: PageSelector): HTMLElement | undefined {
+function makePaginatorItem(label: string, selector: PageSelector): HTMLElement | undefined {
   const pageItem = document.querySelector<HTMLTemplateElement>('#PaginatorItem')
   const item = cloneNode(pageItem, isHTMLElement)
   item?.querySelector('span')?.replaceChildren(document.createTextNode(label))
@@ -61,21 +61,21 @@ function MakePaginatorItem(label: string, selector: PageSelector): HTMLElement |
   return item
 }
 
-function MakePaginator(pageCount: number): HTMLElement | null {
+function makePaginator(pageCount: number): HTMLElement | null {
   if (pageCount < MINIMUM_PAGE_COUNT) return null
   const paginator = cloneNode(document.querySelector<HTMLTemplateElement>('#Paginator'), isHTMLElement)
   if (paginator === undefined) return null
   const domItems = paginator.querySelector('.pagination')
-  const firstItem = Internals.MakePaginatorItem('«', () =>
-    Math.max(Internals.GetCurrentPage() - PAGE_NUMBER_INCREMENT, FIRST_PAGE_NUMBER),
+  const firstItem = Internals.makePaginatorItem('«', () =>
+    Math.max(Internals.getCurrentPage() - PAGE_NUMBER_INCREMENT, FIRST_PAGE_NUMBER),
   )
   if (firstItem !== undefined) domItems?.appendChild(firstItem)
   for (let i = FIRST_PAGE_NUMBER; i <= pageCount; i += PAGE_NUMBER_INCREMENT) {
-    const item = Internals.MakePaginatorItem(`${i}`, () => i)
+    const item = Internals.makePaginatorItem(`${i}`, () => i)
     if (item !== undefined) domItems?.appendChild(item)
   }
-  const lastItem = Internals.MakePaginatorItem('»', () =>
-    Math.min(Internals.GetCurrentPage() + PAGE_NUMBER_INCREMENT, pageCount),
+  const lastItem = Internals.makePaginatorItem('»', () =>
+    Math.min(Internals.getCurrentPage() + PAGE_NUMBER_INCREMENT, pageCount),
   )
   if (lastItem !== undefined) domItems?.appendChild(lastItem)
   return paginator
@@ -86,12 +86,12 @@ export function makeTab(): void {
   const tab = document.querySelector<HTMLElement>('#tabImages')
   const pages: HTMLElement[] = Array.from({ length: pageCount }).map((_, i) => {
     const offsetPage = i + INDEX_TO_PAGE_OFFSET
-    return Internals.MakePicturesPage(
+    return Internals.makePicturesPage(
       offsetPage,
       Pictures.pictures.slice(i * Pictures.pageSize, offsetPage * Pictures.pageSize),
     )
   })
-  const pagninator = Internals.MakePaginator(pageCount)
+  const pagninator = Internals.makePaginator(pageCount)
   if (pagninator !== null) {
     tab?.appendChild(pagninator)
   }
@@ -100,7 +100,7 @@ export function makeTab(): void {
   })
 }
 
-function GetCurrentPage(): number {
+function getCurrentPage(): number {
   const items = document.querySelectorAll('.pagination .page-item')
   return Array.from(items).findIndex((elem) => elem.classList.contains('active'))
 }
@@ -142,10 +142,10 @@ export function loadCurrentPageImages(): void {
 }
 
 export const Internals = {
-  MakePictureCard,
-  MakePicturesPage,
-  MakePaginatorItem,
-  MakePaginator,
-  GetCurrentPage,
+  makePictureCard,
+  makePicturesPage,
+  makePaginatorItem,
+  makePaginator,
+  getCurrentPage,
   selectPage,
 }

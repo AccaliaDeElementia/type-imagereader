@@ -50,23 +50,23 @@ export class GamepadButtons {
   public pressingNow = false
   public pressedButtons: string[] = []
 
-  public Reset(): void {
+  public reset(): void {
     this.pressedButtons = []
     this.pressingNow = false
   }
 
-  public static IsPressed(pad: Gamepad, button: number): boolean {
+  public static isPressed(pad: Gamepad, button: number): boolean {
     return pad.buttons[button]?.pressed ?? false
   }
 
-  private SetButton(btn: string, pressed: boolean): boolean {
+  private setButton(btn: string, pressed: boolean): boolean {
     if (pressed && this.pressedButtons.find((v) => v === btn) === undefined) {
       this.pressedButtons.push(btn)
     }
     return pressed
   }
 
-  private ReadThumbAxis(pad: Gamepad): boolean {
+  private readThumbAxis(pad: Gamepad): boolean {
     const Xaxis = pad.axes[AXIS_X] ?? AXIS_CENTERED
     const Yaxis = pad.axes[AXIS_Y] ?? AXIS_CENTERED
     const directions: Array<[string, boolean]> = [
@@ -77,17 +77,17 @@ export class GamepadButtons {
     ]
     let result = false
     for (const [direction, pressed] of directions) {
-      result ||= this.SetButton(direction, pressed)
+      result ||= this.setButton(direction, pressed)
     }
     return result
   }
 
-  public Read(pad: Gamepad): boolean {
+  public read(pad: Gamepad): boolean {
     let result = false
     for (const [name, id] of Object.entries(this.buttons)) {
-      result ||= this.SetButton(name, GamepadButtons.IsPressed(pad, id))
+      result ||= this.setButton(name, GamepadButtons.isPressed(pad, id))
     }
-    result ||= this.ReadThumbAxis(pad)
+    result ||= this.readThumbAxis(pad)
     this.pressingNow = result
     return result
   }
@@ -280,7 +280,7 @@ function createButtons(buttons: ButtonDefinition[]): HTMLElement {
   return result
 }
 
-function BuildActions(): void {
+function buildActions(): void {
   for (const group of Actions.ActionGroups) {
     const existing = document.querySelectorAll(`${group.target} .actions`)
     for (const elem of existing) {
@@ -293,24 +293,24 @@ function BuildActions(): void {
   }
 }
 
-function ReadGamepad(): void {
+function readGamepad(): void {
   if (document.hidden) return
   const gamepads = navigator.getGamepads() as Array<Gamepad | null> | undefined
   if (gamepads === undefined || !hasValues(gamepads)) return
   for (const pad of gamepads) {
     if (pad === null) continue
-    Actions.gamepads.Read(pad)
+    Actions.gamepads.read(pad)
   }
   if (!Actions.gamepads.pressingNow && hasValues(Actions.gamepads.pressedButtons)) {
     const buttons = Actions.gamepads.pressedButtons.join('')
-    Actions.gamepads.Reset()
+    Actions.gamepads.reset()
     publish(`Action:Gamepad:${buttons}`)
   }
 }
 
 export function init(): void {
-  Internals.BuildActions()
-  Actions.gamepads.Reset()
+  Internals.buildActions()
+  Actions.gamepads.reset()
 
   subscribe('Navigate:Data', async (data) => {
     if (isListing(data) && !hasValues(data.pictures) && !hasValues(data.children)) {
@@ -329,9 +329,9 @@ export function init(): void {
   })
   window.addEventListener('gamepadconnected', () => {
     addInterval(
-      'ReadGamepad',
+      'readGamepad',
       () => {
-        Internals.ReadGamepad()
+        Internals.readGamepad()
       },
       POLLING_INTERVAL,
     )
@@ -339,7 +339,7 @@ export function init(): void {
   window.addEventListener('gamepaddisconnected', () => {
     const remaining = navigator.getGamepads().filter((p) => p !== null)
     if (remaining.length === ZERO_REMAINING_PADS) {
-      removeInterval('ReadGamepad')
+      removeInterval('readGamepad')
     }
   })
 }
@@ -347,6 +347,6 @@ export function init(): void {
 export const Internals = {
   setInnerTextMaybe,
   createButtons,
-  BuildActions,
-  ReadGamepad,
+  buildActions,
+  readGamepad,
 }

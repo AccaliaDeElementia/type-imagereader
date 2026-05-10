@@ -12,7 +12,7 @@ import type { Picture } from '#contracts/listing.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures MakePicturesPage()', () => {
+describe('public/app/pictures makePicturesPage()', () => {
   let dom = new JSDOM('<html></html>', {})
   const menuHideSpy = sandbox.stub().resolves()
   let makePictureCardSpy = sandbox.stub()
@@ -27,7 +27,7 @@ describe('public/app/pictures MakePicturesPage()', () => {
       'MENU:HIDE': [menuHideSpy],
     }
     makePictureCardSpy = sandbox
-      .stub(Internals, 'MakePictureCard')
+      .stub(Internals, 'makePictureCard')
       .callsFake(() => dom.window.document.createElement('div'))
   })
   afterEach(() => {
@@ -35,11 +35,11 @@ describe('public/app/pictures MakePicturesPage()', () => {
     unmountDom()
   })
   it('should return div element', () => {
-    const page = Internals.MakePicturesPage(666, [])
+    const page = Internals.makePicturesPage(666, [])
     expect(page).to.be.an.instanceOf(dom.window.HTMLDivElement)
   })
   it('should return page classed element', () => {
-    const page = Internals.MakePicturesPage(666, [])
+    const page = Internals.makePicturesPage(666, [])
     expect(page.classList.contains('page')).to.equal(true)
   })
   it('should set page number on input pictures', () => {
@@ -48,34 +48,34 @@ describe('public/app/pictures MakePicturesPage()', () => {
       path: '',
       seen: false,
     }
-    Internals.MakePicturesPage(69, [pic])
+    Internals.makePicturesPage(69, [pic])
     expect(pic.page).to.equal(69)
   })
-  it('should call MakePictureCard once per picture', () => {
-    Internals.MakePicturesPage(69, [{ name: '', path: '', seen: false }])
+  it('should call makePictureCard once per picture', () => {
+    Internals.makePicturesPage(69, [{ name: '', path: '', seen: false }])
     expect(makePictureCardSpy.callCount).to.equal(1)
   })
-  it('should call MakePictureCard with 1 argument', () => {
-    Internals.MakePicturesPage(69, [{ name: '', path: '', seen: false }])
+  it('should call makePictureCard with 1 argument', () => {
+    Internals.makePicturesPage(69, [{ name: '', path: '', seen: false }])
     expect(makePictureCardSpy.firstCall.args).to.have.lengthOf(1)
   })
-  it('should pass the picture to MakePictureCard', () => {
+  it('should pass the picture to makePictureCard', () => {
     const pic: Picture = { name: '', path: '', seen: false }
-    Internals.MakePicturesPage(69, [pic])
+    Internals.makePicturesPage(69, [pic])
     expect(makePictureCardSpy.firstCall.args[0]).to.equal(pic)
   })
   it('should save card element to picture on success', () => {
     const picture: Picture = { name: 'foo', path: '/foo/bar/baz.jpg', seen: false }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
-    Internals.MakePicturesPage(69, [picture])
+    Internals.makePicturesPage(69, [picture])
     expect(picture).to.have.any.keys('element')
   })
   it('should save the returned card as the picture element', () => {
     const picture: Picture = { name: 'foo', path: '/foo/bar/baz.jpg', seen: false }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
-    Internals.MakePicturesPage(69, [picture])
+    Internals.makePicturesPage(69, [picture])
     expect(picture.element).to.equal(card)
   })
   it('should not set page number when card creation fails', () => {
@@ -85,7 +85,7 @@ describe('public/app/pictures MakePicturesPage()', () => {
       seen: false,
     }
     makePictureCardSpy.returns(undefined)
-    Internals.MakePicturesPage(69, [pic])
+    Internals.makePicturesPage(69, [pic])
     expect(pic.page).to.equal(undefined)
   })
   it('should add all cards to built page', () => {
@@ -96,7 +96,7 @@ describe('public/app/pictures MakePicturesPage()', () => {
         seen: false,
       }),
     )
-    const page = Internals.MakePicturesPage(1, pics)
+    const page = Internals.makePicturesPage(1, pics)
     expect(page.children).to.have.lengthOf(50)
   })
   it('should add card to built page', () => {
@@ -107,7 +107,7 @@ describe('public/app/pictures MakePicturesPage()', () => {
     }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
-    const page = Internals.MakePicturesPage(69, [pic])
+    const page = Internals.makePicturesPage(69, [pic])
     expect(page.firstChild).to.equal(card)
   })
 })

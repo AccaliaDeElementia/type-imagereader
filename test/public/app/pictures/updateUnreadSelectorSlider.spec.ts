@@ -16,7 +16,7 @@ const markup = `html
     div.selectUnreadAll
       div#slider4test
       `
-describe('public/app/pictures SetShowUnreadOnly()', () => {
+describe('public/app/pictures setShowUnreadOnly()', () => {
   let dom = new JSDOM('<html></html>')
   let getShowUnreadOnlySpy = sandbox.stub()
   beforeEach(() => {
@@ -32,27 +32,27 @@ describe('public/app/pictures SetShowUnreadOnly()', () => {
     const elem = dom.window.document.querySelector('body > div')
     elem?.parentElement?.removeChild(elem)
     expect(() => {
-      Internals.UpdateUnreadSelectorSlider()
+      Internals.updateUnreadSelectorSlider()
     }).to.not.throw()
   })
   it('should remove unread class from slider when value is false', () => {
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     elem.classList.add('unread')
-    Internals.UpdateUnreadSelectorSlider()
+    Internals.updateUnreadSelectorSlider()
     expect(elem.classList.contains('unread')).to.equal(false)
   })
   it('should add all class from slider when value is false', () => {
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
-    Internals.UpdateUnreadSelectorSlider()
+    Internals.updateUnreadSelectorSlider()
     expect(elem.classList.contains('all')).to.equal(true)
   })
   it('should add unread class from slider when value is true', () => {
     getShowUnreadOnlySpy.returns(true)
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
-    Internals.UpdateUnreadSelectorSlider()
+    Internals.updateUnreadSelectorSlider()
     expect(elem.classList.contains('unread')).to.equal(true)
   })
   it('should remove all class from slider when value is true', () => {
@@ -60,7 +60,7 @@ describe('public/app/pictures SetShowUnreadOnly()', () => {
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     elem.classList.add('all')
-    Internals.UpdateUnreadSelectorSlider()
+    Internals.updateUnreadSelectorSlider()
     expect(elem.classList.contains('all')).to.equal(false)
   })
 })

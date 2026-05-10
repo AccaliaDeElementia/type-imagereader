@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/navigation.js'
-describe('public/app/navigation GetBaseUrl()', () => {
+describe('public/app/navigation getBaseUrl()', () => {
   let dom = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM('', {
@@ -26,7 +26,7 @@ describe('public/app/navigation GetBaseUrl()', () => {
   testCases.forEach(([url, expected]) => {
     it(`should return expected output for url: ${url}`, () => {
       dom.reconfigure({ url })
-      expect(Internals.GetBaseUrl()).to.equal(expected)
+      expect(Internals.getBaseUrl()).to.equal(expected)
     })
   })
 })

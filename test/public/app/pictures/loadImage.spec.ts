@@ -76,7 +76,7 @@ describe('public/app/pictures loadImage()', () => {
     postJSONSpy.resolves(50)
     sandbox.stub(Internals, 'getPicture').returns(undefined)
     selectPageSpy = sandbox.stub(Imports, 'selectPage')
-    loadNextImageSpy = sandbox.stub(Internals, 'LoadNextImage').resolves()
+    loadNextImageSpy = sandbox.stub(Internals, 'loadNextImage').resolves()
     PubSub.subscribers = {
       'LOADING:SHOW': [loadingShowSpy],
       'LOADING:ERROR': [loadingErrorSpy],
@@ -327,12 +327,12 @@ describe('public/app/pictures loadImage()', () => {
     await loadImage()
     expect(loadingErrorSpy.callCount).to.equal(0)
   })
-  it('should publish LoadNew message even if LoadNextImage rejects', async () => {
+  it('should publish LoadNew message even if loadNextImage rejects', async () => {
     loadNextImageSpy.rejects('ERROR!')
     await loadImage()
     expect(loadNewSpy.callCount).to.equal(1)
   })
-  it('should not publish LoadingError even if LoadNextImage rejects', async () => {
+  it('should not publish LoadingError even if loadNextImage rejects', async () => {
     loadNextImageSpy.rejects('ERROR!')
     await loadImage()
     expect(loadingErrorSpy.callCount).to.equal(0)

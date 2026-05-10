@@ -35,7 +35,7 @@ describe('public/app/pictures loadData()', () => {
     }))
     Pictures.current = null
     resetMarkupSpy = sandbox.stub(Pictures, 'resetMarkup')
-    setPicturesSpy = sandbox.stub(Internals, 'SetPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
+    setPicturesSpy = sandbox.stub(Internals, 'setPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
     makeTabSpy = sandbox.stub(Imports, 'makeTab')
     loadImageSpy = sandbox.stub(Imports, 'loadImage').resolves()
   })

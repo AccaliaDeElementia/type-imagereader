@@ -13,7 +13,7 @@ import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures MakePictureCard()', () => {
+describe('public/app/pictures makePictureCard()', () => {
   let dom = new JSDOM('<html></html>', {})
   const menuHideSpy = sandbox.stub().resolves()
   const changePictureSpy = sandbox.stub().resolves()
@@ -40,7 +40,7 @@ describe('public/app/pictures MakePictureCard()', () => {
   })
   it('should return an HTMLElement on failure', () => {
     Pictures.imageCard = null
-    const card = Internals.MakePictureCard({
+    const card = Internals.makePictureCard({
       name: 'foo',
       path: '/foo/bar/baz.jpg',
       seen: false,
@@ -48,7 +48,7 @@ describe('public/app/pictures MakePictureCard()', () => {
     expect(card).to.equal(undefined)
   })
   it('should return an HTMLElement on success', () => {
-    const card = Internals.MakePictureCard({
+    const card = Internals.makePictureCard({
       name: 'foo',
       path: '/foo/bar/baz.jpg',
       seen: false,
@@ -56,7 +56,7 @@ describe('public/app/pictures MakePictureCard()', () => {
     expect(card).to.be.instanceOf(dom.window.HTMLElement)
   })
   it('should set background image data attribute on success', () => {
-    const card = Internals.MakePictureCard({
+    const card = Internals.makePictureCard({
       name: 'foo',
       path: '/foo/bar/baz.jpg',
       seen: false,
@@ -64,7 +64,7 @@ describe('public/app/pictures MakePictureCard()', () => {
     expect(card?.getAttribute('data-backgroundImage')).to.equal('url("/images/preview/foo/bar/baz.jpg-image.webp")')
   })
   it('should add seen class when input is seen', () => {
-    const card = Internals.MakePictureCard({
+    const card = Internals.makePictureCard({
       name: 'foo',
       path: '/foo/bar/baz.jpg',
       seen: true,
@@ -72,7 +72,7 @@ describe('public/app/pictures MakePictureCard()', () => {
     expect(card?.classList.contains('seen')).to.equal(true)
   })
   it('should not add seen class when input is unseen', () => {
-    const card = Internals.MakePictureCard({
+    const card = Internals.makePictureCard({
       name: 'foo',
       path: '/foo/bar/baz.jpg',
       seen: false,
@@ -80,7 +80,7 @@ describe('public/app/pictures MakePictureCard()', () => {
     expect(card?.classList.contains('seen')).to.equal(false)
   })
   it('should set image title', () => {
-    const card = Internals.MakePictureCard({
+    const card = Internals.makePictureCard({
       name: 'Foobar 9001',
       path: '/foo/bar/baz.jpg',
       seen: false,
@@ -88,7 +88,7 @@ describe('public/app/pictures MakePictureCard()', () => {
     expect(card?.querySelector('h5')?.innerHTML).to.equal('Foobar 9001')
   })
   it('should register click handler', () => {
-    const card = Internals.MakePictureCard({
+    const card = Internals.makePictureCard({
       name: 'Foobar 9001',
       path: '/foo/bar/baz.jpg',
       seen: false,
@@ -99,13 +99,13 @@ describe('public/app/pictures MakePictureCard()', () => {
   })
   it('should publish Pictures:Change once on click event', () => {
     const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
-    const card = Internals.MakePictureCard(pic)
+    const card = Internals.makePictureCard(pic)
     card?.dispatchEvent(new dom.window.MouseEvent('click'))
     expect(changePictureSpy.callCount).to.equal(1)
   })
   it('should pass the picture as Pictures:Change data on click event', () => {
     const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
-    const card = Internals.MakePictureCard(pic)
+    const card = Internals.makePictureCard(pic)
     card?.dispatchEvent(new dom.window.MouseEvent('click'))
     expect(changePictureSpy.firstCall.args[0]).to.equal(pic)
   })
@@ -115,7 +115,7 @@ describe('public/app/pictures MakePictureCard()', () => {
       path: '/foo/bar/baz.jpg',
       seen: false,
     }
-    const card = Internals.MakePictureCard(pic)
+    const card = Internals.makePictureCard(pic)
     const evt = new dom.window.MouseEvent('click')
     card?.dispatchEvent(evt)
     expect(menuHideSpy.callCount).to.equal(1)

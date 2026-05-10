@@ -25,37 +25,37 @@ describe('public/app/folders tab visibility', () => {
     unmountDom()
   })
 
-  describe('HideTab()', () => {
+  describe('hideTab()', () => {
     it('should add hidden class to parent of selected element', () => {
-      Internals.HideTab('a[href="#tabFolders"]')
+      Internals.hideTab('a[href="#tabFolders"]')
       expect(tabFolders?.classList.contains('hidden')).to.equal(true)
     })
     it('should retain hidden class on hidden parent of selected element', () => {
       tabFolders?.classList.add('hidden')
-      Internals.HideTab('a[href="#tabFolders"]')
+      Internals.hideTab('a[href="#tabFolders"]')
       expect(tabFolders?.classList.contains('hidden')).to.equal(true)
     })
     it('should not throw when selecting non existing element', () => {
       expect(() => {
-        Internals.HideTab('span[href="#THISISNOTALINK"]')
+        Internals.hideTab('span[href="#THISISNOTALINK"]')
       }).to.not.throw()
     })
   })
 
-  describe('UnhideTab()', () => {
+  describe('unhideTab()', () => {
     it('should remove hidden class from parent of selected element', () => {
       tabFolders?.classList.add('hidden')
-      Internals.UnhideTab('a[href="#tabFolders"]')
+      Internals.unhideTab('a[href="#tabFolders"]')
       expect(tabFolders?.classList.contains('hidden')).to.equal(false)
     })
     it('should noop on visible parent of selected element', () => {
       tabFolders?.classList.remove('hidden')
-      Internals.UnhideTab('a[href="#tabFolders"]')
+      Internals.unhideTab('a[href="#tabFolders"]')
       expect(tabFolders?.classList.contains('hidden')).to.equal(false)
     })
     it('should not throw when selecting non existing element', () => {
       expect(() => {
-        Internals.UnhideTab('span[href="#THISISNOTALINK"]')
+        Internals.unhideTab('span[href="#THISISNOTALINK"]')
       }).to.not.throw()
     })
   })

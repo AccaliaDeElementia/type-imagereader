@@ -10,7 +10,7 @@ import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures MakePaginatorItem()', () => {
+describe('public/app/pictures makePaginatorItem()', () => {
   let dom = new JSDOM('<html></html>', {})
   let selectPageSpy = sandbox.stub().resolves()
   beforeEach(() => {
@@ -30,29 +30,29 @@ describe('public/app/pictures MakePaginatorItem()', () => {
     unmountDom()
   })
   it('returns an List Item Element', () => {
-    const result = Internals.MakePaginatorItem('foobar', () => 0)
+    const result = Internals.makePaginatorItem('foobar', () => 0)
     expect(result).to.be.an.instanceOf(dom.window.HTMLLIElement)
   })
   it('should replace span contents as label', () => {
-    const result = Internals.MakePaginatorItem('frobitz', () => 0)
+    const result = Internals.makePaginatorItem('frobitz', () => 0)
     const label = result?.querySelector('span')?.innerHTML
     expect(label).to.equal('frobitz')
   })
   it('should add click handler that calls provided selector to determine page to navigate to', () => {
     const spy = sandbox.stub().returns(71)
-    const result = Internals.MakePaginatorItem('frobitz', spy)
+    const result = Internals.makePaginatorItem('frobitz', spy)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
     expect(spy.callCount).to.equal(1)
   })
   it('should add click handler that calls selectPage', () => {
-    const result = Internals.MakePaginatorItem('frobitz', () => 99)
+    const result = Internals.makePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
     expect(selectPageSpy.callCount).to.equal(1)
   })
   it('should add click handler that passes selector result to selectPage', () => {
-    const result = Internals.MakePaginatorItem('frobitz', () => 99)
+    const result = Internals.makePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
     expect(selectPageSpy.firstCall.args).to.deep.equal([99])

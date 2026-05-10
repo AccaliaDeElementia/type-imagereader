@@ -110,14 +110,14 @@ export async function loadImage(): Promise<void> {
     setTextContent('.statusBar.bottom .left', `(${displayIndex}/${displayTotal})`)
     setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
     Imports.selectPage(Pictures.current.page ?? DEFAULT_PAGE)
-    void Internals.LoadNextImage().catch(() => undefined)
+    void Internals.loadNextImage().catch(() => undefined)
     publish('Picture:LoadNew')
   } catch (err) {
     publish('Loading:Error', err)
   }
 }
 
-async function LoadNextImage(): Promise<void> {
+async function loadNextImage(): Promise<void> {
   const next = Internals.getPicture(Imports.getShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
   if (next === undefined) {
     Pictures.nextPending = false
@@ -142,11 +142,11 @@ export function getPicture(navi: NavigateTo): Picture | undefined {
     ...Pictures.pictures.filter((image) => !image.seen && image.index !== undefined && image.index > current),
     ...Pictures.pictures.filter((image) => !image.seen && image.index !== undefined && image.index < current),
   ]
-  const index = Internals.ChoosePictureIndex(navi, current, unreads)
+  const index = Internals.choosePictureIndex(navi, current, unreads)
   return Pictures.pictures[index]
 }
 
-function ChoosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[]): number {
+function choosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[]): number {
   if (!hasValues(Pictures.pictures)) return NO_SUCH_INDEX
   switch (navi) {
     case NavigateTo.First:
@@ -166,8 +166,8 @@ function ChoosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[
 
 export const Internals = {
   loadImage,
-  LoadNextImage,
+  loadNextImage,
   getPicture,
-  ChoosePictureIndex,
+  choosePictureIndex,
   makeURI,
 }

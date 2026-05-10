@@ -30,7 +30,7 @@ const rowCases = Actions.ActionGroups.flatMap(({ target, buttons }) =>
   buttons.map((row, rowIndex) => ({ target, rowIndex, buttonCount: row.length })),
 )
 
-describe('public/app/actions BuildActions()', () => {
+describe('public/app/actions buildActions()', () => {
   let dom: JSDOM = new JSDOM('', {})
 
   beforeEach(() => {
@@ -39,7 +39,7 @@ describe('public/app/actions BuildActions()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    sandbox.stub(Actions.gamepads, 'Reset')
+    sandbox.stub(Actions.gamepads, 'reset')
   })
   afterEach(() => {
     sandbox.restore()
@@ -48,19 +48,19 @@ describe('public/app/actions BuildActions()', () => {
 
   Actions.ActionGroups.forEach(({ target, buttons }) => {
     it(`should create ${buttons.length} action rows in ${target}`, () => {
-      Internals.BuildActions()
+      Internals.buildActions()
       expect(dom.window.document.querySelectorAll(`${target} .actions`)).to.have.length(buttons.length)
     })
   })
 
   rowCases.forEach(({ target, rowIndex, buttonCount }) => {
     it(`should make ${target} row ${rowIndex} an HTMLDivElement`, () => {
-      Internals.BuildActions()
+      Internals.buildActions()
       const rows = dom.window.document.querySelectorAll(`${target} .actions`)
       expect(rows[rowIndex]).to.be.instanceOf(dom.window.HTMLDivElement)
     })
     it(`should put ${buttonCount} buttons in ${target} row ${rowIndex}`, () => {
-      Internals.BuildActions()
+      Internals.buildActions()
       const rows = dom.window.document.querySelectorAll(`${target} .actions`)
       expect(rows[rowIndex]?.children).to.have.length(buttonCount)
     })
@@ -68,22 +68,22 @@ describe('public/app/actions BuildActions()', () => {
 
   Actions.ActionGroups.forEach(({ target, buttons }) => {
     it(`should create ${buttons.length} action rows in ${target} when called twice`, () => {
-      Internals.BuildActions()
-      Internals.BuildActions()
+      Internals.buildActions()
+      Internals.buildActions()
       expect(dom.window.document.querySelectorAll(`${target} .actions`)).to.have.length(buttons.length)
     })
   })
 
   rowCases.forEach(({ target, rowIndex, buttonCount }) => {
     it(`should make ${target} row ${rowIndex} an HTMLDivElement when called twice`, () => {
-      Internals.BuildActions()
-      Internals.BuildActions()
+      Internals.buildActions()
+      Internals.buildActions()
       const rows = dom.window.document.querySelectorAll(`${target} .actions`)
       expect(rows[rowIndex]).to.be.instanceOf(dom.window.HTMLDivElement)
     })
     it(`should put ${buttonCount} buttons in ${target} row ${rowIndex} when called twice`, () => {
-      Internals.BuildActions()
-      Internals.BuildActions()
+      Internals.buildActions()
+      Internals.buildActions()
       const rows = dom.window.document.querySelectorAll(`${target} .actions`)
       expect(rows[rowIndex]?.children).to.have.length(buttonCount)
     })

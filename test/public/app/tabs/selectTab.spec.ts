@@ -34,7 +34,7 @@ html
       div#tabBookmarks
 `
 
-describe('public/app/tabs SelectTab()', () => {
+describe('public/app/tabs selectTab()', () => {
   let dom = new JSDOM('<html></html>', {})
   const actionsScroll = sandbox.stub()
   const foldersScroll = sandbox.stub()
@@ -62,7 +62,7 @@ describe('public/app/tabs SelectTab()', () => {
     PubSub.subscribers['TAB:SELECTED'] = [tabSelectedSpy]
     Tabs.tabs = []
     Tabs.tabNames = []
-    const spy = sandbox.stub(Internals, 'SelectTab')
+    const spy = sandbox.stub(Internals, 'selectTab')
     try {
       init()
     } finally {
@@ -82,105 +82,105 @@ describe('public/app/tabs SelectTab()', () => {
     Tabs.tabNames = []
     Tabs.tabs = []
     expect(() => {
-      Internals.SelectTab()
+      Internals.selectTab()
     }).to.not.throw()
   })
   it('should accept null href', () => {
     expect(() => {
-      Internals.SelectTab(undefined)
+      Internals.selectTab(undefined)
     }).to.not.throw()
   })
   it('should publish once when selecting null tab', () => {
-    Internals.SelectTab()
+    Internals.selectTab()
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish first tab when selecting null tab', () => {
-    Internals.SelectTab()
+    Internals.selectTab()
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabActions', 'TAB:SELECTED'])
   })
   it('should publish once when selecting unknown tab', () => {
-    Internals.SelectTab('#tabDoesNotExist')
+    Internals.selectTab('#tabDoesNotExist')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish first tab when selecting unknown tab', () => {
-    Internals.SelectTab('#tabDoesNotExist')
+    Internals.selectTab('#tabDoesNotExist')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabActions', 'TAB:SELECTED'])
   })
   it('should publish once when selecting nonprefixed tab', () => {
-    Internals.SelectTab('Bookmarks')
+    Internals.selectTab('Bookmarks')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting nonprefixed tab', () => {
-    Internals.SelectTab('Bookmarks')
+    Internals.selectTab('Bookmarks')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabBookmarks', 'TAB:SELECTED'])
   })
   it('should publish once when selecting full tab', () => {
-    Internals.SelectTab('#tabImages')
+    Internals.selectTab('#tabImages')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting full tab', () => {
-    Internals.SelectTab('#tabImages')
+    Internals.selectTab('#tabImages')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabImages', 'TAB:SELECTED'])
   })
   it('should publish once even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
-    Internals.SelectTab('#tabImages')
+    Internals.selectTab('#tabImages')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
-    Internals.SelectTab('#tabImages')
+    Internals.selectTab('#tabImages')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabImages', 'TAB:SELECTED'])
   })
   it('should publish once when selecting tab case insensitively', () => {
-    Internals.SelectTab('#TABFOLDERS')
+    Internals.selectTab('#TABFOLDERS')
     expect(tabSelectedSpy.callCount).to.equal(1)
   })
   it('should publish selected tab when selecting tab case insensitively', () => {
-    Internals.SelectTab('#TABFOLDERS')
+    Internals.selectTab('#TABFOLDERS')
     expect(tabSelectedSpy.firstCall.args).to.deep.equal(['#tabFolders', 'TAB:SELECTED'])
   })
   it('should add active css class to selected tab', () => {
     expect(Tabs.tabs[1]?.parentElement?.classList.contains('active')).to.equal(false)
-    Internals.SelectTab(Tabs.tabNames[1])
+    Internals.selectTab(Tabs.tabNames[1])
     expect(Tabs.tabs[1]?.parentElement?.classList.contains('active')).to.equal(true)
   })
   it('should remove active css class from unselected tab', () => {
     Tabs.tabs[2]?.parentElement?.classList.add('active')
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).to.equal(true)
-    Internals.SelectTab(Tabs.tabNames[1])
+    Internals.selectTab(Tabs.tabNames[1])
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
   })
   it('should remove active css class from null hrwf tab', () => {
     Tabs.tabs[2]?.parentElement?.classList.add('active')
     Tabs.tabs[2]?.removeAttribute('href')
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).to.equal(true)
-    Internals.SelectTab(Tabs.tabNames[2])
+    Internals.selectTab(Tabs.tabNames[2])
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).to.equal(false)
   })
   it('should display connected content on tab select', () => {
     const elem = dom.window.document.getElementById('tabImages')
     assert(elem !== null)
     elem.style.display = 'none'
-    Internals.SelectTab('Images')
+    Internals.selectTab('Images')
     expect(elem.style.getPropertyValue('display')).to.equal('block')
   })
   it('should hide other content on tab select', () => {
     const elem = dom.window.document.getElementById('tabFolders')
     assert(elem !== null)
     elem.style.display = 'block'
-    Internals.SelectTab('Images')
+    Internals.selectTab('Images')
     expect(elem.style.getPropertyValue('display')).to.equal('none')
   })
   it('should scroll to top of content on tab select', () => {
     expect(imagesScroll.callCount).to.equal(0)
-    Internals.SelectTab('Images')
+    Internals.selectTab('Images')
     expect(imagesScroll.callCount).to.equal(1)
   })
   it('should scroll with expected options on tab select', () => {
-    Internals.SelectTab('Images')
+    Internals.selectTab('Images')
     expect(imagesScroll.firstCall.args).to.deep.equal([{ top: 0, behavior: 'smooth' }])
   })
 })

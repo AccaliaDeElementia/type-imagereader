@@ -37,7 +37,7 @@ export const Bookmarks = {
   loadToken: INITIAL_LOAD_TOKEN,
 }
 
-function GetOrCreateFolderElement(openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null {
+function getOrCreateFolderElement(openPath: string, bookmarkFolder: BookmarkFolder): HTMLElement | null {
   let folder = Bookmarks.bookmarkFolders.find((e) => e.path === bookmarkFolder.path)
   if (folder === undefined) {
     const element = cloneNode(Bookmarks.bookmarkFolder, isHTMLElement)
@@ -65,7 +65,7 @@ function GetOrCreateFolderElement(openPath: string, bookmarkFolder: BookmarkFold
   return folder.element
 }
 
-function BuildBookmark(bookmark: Bookmark): HTMLElement | null {
+function buildBookmark(bookmark: Bookmark): HTMLElement | null {
   const card = cloneNode(Bookmarks.bookmarkCard, isHTMLElement)
   if (card === undefined) {
     return null
@@ -107,12 +107,12 @@ function BuildBookmark(bookmark: Bookmark): HTMLElement | null {
 function buildBookmarkNodes(data: Listing, openPath: string): void {
   if (data.bookmarks === undefined) return
   for (const folder of data.bookmarks) {
-    const folderNode = Internals.GetOrCreateFolderElement(openPath, folder)
+    const folderNode = Internals.getOrCreateFolderElement(openPath, folder)
     if (folderNode === null) {
       continue
     }
     for (const bookmark of folder.bookmarks) {
-      const card = Internals.BuildBookmark(bookmark)
+      const card = Internals.buildBookmark(bookmark)
       if (card === null) {
         continue
       }
@@ -192,8 +192,8 @@ export function init(): void {
 }
 
 export const Internals = {
-  GetOrCreateFolderElement,
-  BuildBookmark,
+  getOrCreateFolderElement,
+  buildBookmark,
   buildBookmarkNodes,
   buildBookmarks,
 }

@@ -22,7 +22,7 @@ html
       a(href="#tabImages") Pictures
 `
 
-describe('public/app/pictures SetPicturesGetFirst()', () => {
+describe('public/app/pictures setPicturesGetFirst()', () => {
   let dom = new JSDOM('<html></html>', {})
 
   let element: HTMLElement | null = null
@@ -46,7 +46,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
   })
   it('should abort gracefully for null mainImage', () => {
     Pictures.mainImage = null
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -56,7 +56,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
   })
   it('should return null for null mainImage', () => {
     Pictures.mainImage = null
-    const result = Internals.SetPicturesGetFirst({
+    const result = Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -65,7 +65,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(result).to.equal(null)
   })
   it('should hide mainImage when listing has null pictures', () => {
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -74,7 +74,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(Pictures.mainImage?.classList.contains('hidden')).to.equal(true)
   })
   it('should hide image tab link when listing has null pictures', () => {
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -83,7 +83,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(element?.classList.contains('hidden')).to.equal(true)
   })
   it('should publish MenuShow when listing has null pictures', () => {
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -92,7 +92,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(menuShow.callCount).to.equal(1)
   })
   it('should hide mainImage when listing has null pictures', () => {
-    const result = Internals.SetPicturesGetFirst({
+    const result = Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -101,7 +101,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(result).to.equal(null)
   })
   it('should ignore incoming modCount when listing has null pictures', () => {
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -110,7 +110,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(Pictures.modCount).to.equal(-65535)
   })
   it('should hide mainImage when listing has empty pictures', () => {
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -120,7 +120,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(Pictures.mainImage?.classList.contains('hidden')).to.equal(true)
   })
   it('should hide image tab link when listing has empty pictures', () => {
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -130,7 +130,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(element?.classList.contains('hidden')).to.equal(true)
   })
   it('should publish MenuShow when listing has empty pictures', () => {
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -140,7 +140,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(menuShow.callCount).to.equal(1)
   })
   it('should hide mainImage when listing has empty pictures', () => {
-    const result = Internals.SetPicturesGetFirst({
+    const result = Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -150,7 +150,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
     expect(result).to.equal(null)
   })
   it('should ignore incoming modCount when listing has empty pictures', () => {
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -161,7 +161,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
   })
   it('should unhide mainImage when listing has pictures', () => {
     Pictures.mainImage?.classList.add('hidden')
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -178,7 +178,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
   })
   it('should unhide images tab link when listing has pictures', () => {
     element?.classList.add('hidden')
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -200,7 +200,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
       seen: false,
     }))
     element?.classList.add('hidden')
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -216,7 +216,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
       seen: false,
     }))
     element?.classList.add('hidden')
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -234,7 +234,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
       seen: false,
     }))
     element?.classList.add('hidden')
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -250,7 +250,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
       seen: false,
     }))
     element?.classList.add('hidden')
-    Internals.SetPicturesGetFirst({
+    Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',
@@ -265,7 +265,7 @@ describe('public/app/pictures SetPicturesGetFirst()', () => {
       seen: false,
     }))
     element?.classList.add('hidden')
-    const res = Internals.SetPicturesGetFirst({
+    const res = Internals.setPicturesGetFirst({
       name: '',
       path: '',
       parent: '',

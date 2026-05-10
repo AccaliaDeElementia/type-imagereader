@@ -69,7 +69,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Internals, 'NavigateTo')
+      navigateToStub = sandbox.stub(Internals, 'navigateTo')
       showUnreadOnlyStub = sandbox.stub(Imports, 'getShowUnreadOnly').returns(false)
       init()
       previousFolder = {
@@ -90,7 +90,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     afterEach(() => {
       sandbox.restore()
     })
-    it('should call NavigateTo once when showUnreadOnly is not set', async () => {
+    it('should call navigateTo once when showUnreadOnly is not set', async () => {
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
     })
@@ -98,7 +98,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([previousFolder.path, 'PreviousFolder'])
     })
-    it('should call NavigateTo once when tolerating missing previous folder', async () => {
+    it('should call navigateTo once when tolerating missing previous folder', async () => {
       Navigation.current.prev = undefined
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
@@ -108,7 +108,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'PreviousFolder'])
     })
-    it('should call NavigateTo once when showUnreadOnly is set', async () => {
+    it('should call navigateTo once when showUnreadOnly is set', async () => {
       showUnreadOnlyStub.returns(true)
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
@@ -118,7 +118,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([previousUnreadFolder.path, 'PreviousFolder'])
     })
-    it('should call NavigateTo once when tolerating missing previous unread folder', async () => {
+    it('should call navigateTo once when tolerating missing previous unread folder', async () => {
       Navigation.current.prevUnread = undefined
       showUnreadOnlyStub.returns(true)
       await handler()
@@ -130,7 +130,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'PreviousFolder'])
     })
-    it('should reject when NavigateTo rejects', async () => {
+    it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
       expect(await eventuallyRejects(handler())).to.equal(err)
@@ -153,7 +153,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Internals, 'NavigateTo')
+      navigateToStub = sandbox.stub(Internals, 'navigateTo')
       showUnreadOnlyStub = sandbox.stub(Imports, 'getShowUnreadOnly').returns(false)
       init()
       nextFolder = {
@@ -174,7 +174,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     afterEach(() => {
       sandbox.restore()
     })
-    it('should call NavigateTo once when showUnreadOnly is not set', async () => {
+    it('should call navigateTo once when showUnreadOnly is not set', async () => {
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
     })
@@ -182,7 +182,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([nextFolder.path, 'NextFolder'])
     })
-    it('should call NavigateTo once when tolerating missing next folder', async () => {
+    it('should call navigateTo once when tolerating missing next folder', async () => {
       Navigation.current.next = undefined
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
@@ -192,7 +192,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'NextFolder'])
     })
-    it('should call NavigateTo once when showUnreadOnly is set', async () => {
+    it('should call navigateTo once when showUnreadOnly is set', async () => {
       showUnreadOnlyStub.returns(true)
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
@@ -202,7 +202,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([nextUnreadFolder.path, 'NextFolder'])
     })
-    it('should call NavigateTo once when tolerating missing next unread folder', async () => {
+    it('should call navigateTo once when tolerating missing next unread folder', async () => {
       Navigation.current.nextUnread = undefined
       showUnreadOnlyStub.returns(true)
       await handler()
@@ -214,7 +214,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'NextFolder'])
     })
-    it('should reject when NavigateTo rejects', async () => {
+    it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
       expect(await eventuallyRejects(handler())).to.equal(err)
@@ -227,7 +227,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Internals, 'NavigateTo')
+      navigateToStub = sandbox.stub(Internals, 'navigateTo')
       init()
       parentFolder = `/Foo ${Math.random()}`
       Navigation.current.parent = parentFolder
@@ -237,7 +237,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     afterEach(() => {
       sandbox.restore()
     })
-    it('should call NavigateTo once when navigating to parent folder', async () => {
+    it('should call navigateTo once when navigating to parent folder', async () => {
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
     })
@@ -245,7 +245,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([parentFolder, 'ParentFolder'])
     })
-    it('should call NavigateTo once when tolerating undefined parent folder', async () => {
+    it('should call navigateTo once when tolerating undefined parent folder', async () => {
       Navigation.current.parent = cast<string>(undefined)
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
@@ -255,7 +255,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'ParentFolder'])
     })
-    it('should reject when NavigateTo rejects', async () => {
+    it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
       expect(await eventuallyRejects(handler())).to.equal(err)
@@ -268,7 +268,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     }
     let children = [{ name: '', path: '', cover: '', seenCount: 0, totalCount: 0 }]
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Internals, 'NavigateTo')
+      navigateToStub = sandbox.stub(Internals, 'navigateTo')
       init()
       children = Array(20)
         .fill(undefined)
@@ -286,7 +286,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     afterEach(() => {
       sandbox.restore()
     })
-    it('should call NavigateTo once when children are undefined', async () => {
+    it('should call navigateTo once when children are undefined', async () => {
       Navigation.current.children = undefined
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
@@ -296,7 +296,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'FirstUnfinished'])
     })
-    it('should call NavigateTo once when no child folder exist', async () => {
+    it('should call navigateTo once when no child folder exist', async () => {
       Navigation.current.children = []
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
@@ -306,7 +306,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'FirstUnfinished'])
     })
-    it('should call NavigateTo once when no child folder is unfinished', async () => {
+    it('should call navigateTo once when no child folder is unfinished', async () => {
       await handler()
       expect(navigateToStub.callCount).to.equal(1)
     })
@@ -314,7 +314,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([undefined, 'FirstUnfinished'])
     })
-    it('should call NavigateTo once when navigating to unfinished child folder', async () => {
+    it('should call navigateTo once when navigating to unfinished child folder', async () => {
       assert(children[10] !== undefined)
       children[10].totalCount = 100
       children[10].seenCount = 10
@@ -328,7 +328,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([children[10].path, 'FirstUnfinished'])
     })
-    it('should call NavigateTo once when navigating to first unfinished child folder', async () => {
+    it('should call navigateTo once when navigating to first unfinished child folder', async () => {
       assert(children[10] !== undefined)
       children[10].totalCount = 100
       children[10].seenCount = 10
@@ -354,7 +354,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(navigateToStub.firstCall.args).to.deep.equal([children[10].path, 'FirstUnfinished'])
     })
-    it('should reject when NavigateTo rejects', async () => {
+    it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.rejects(err)
       expect(await eventuallyRejects(handler())).to.equal(err)

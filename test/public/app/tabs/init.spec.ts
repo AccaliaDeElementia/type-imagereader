@@ -43,7 +43,7 @@ describe('public/app/tabs init()', () => {
       url: 'https://127.1.1.1:5050/',
     })
     mountDom(dom)
-    selectTabSpy = sandbox.stub(Internals, 'SelectTab')
+    selectTabSpy = sandbox.stub(Internals, 'selectTab')
     resetPubSub()
     Tabs.tabs = []
     Tabs.tabNames = []
@@ -67,7 +67,7 @@ describe('public/app/tabs init()', () => {
     init()
     expect(PubSub.subscribers).to.have.any.keys('TAB:SELECT')
   })
-  it('should call SelectTab once for Tab:Select event', async () => {
+  it('should call selectTab once for Tab:Select event', async () => {
     init()
     selectTabSpy.resetHistory()
     const fn = getSubscriber('TAB:SELECT')
@@ -131,7 +131,7 @@ describe('public/app/tabs init()', () => {
         spy.restore()
       }
     })
-    it(`should trigger SelectTab on tab click for ${link}`, () => {
+    it(`should trigger selectTab on tab click for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
       init()
       selectTabSpy.resetHistory()

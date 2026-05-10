@@ -39,8 +39,8 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
     })
     mountDom(dom)
 
-    getFolderSpy = sandbox.stub(Internals, 'GetOrCreateFolderElement').returns(dom.window.document.createElement('div'))
-    buildBookmarkSpy = sandbox.stub(Internals, 'BuildBookmark').returns(dom.window.document.createElement('div'))
+    getFolderSpy = sandbox.stub(Internals, 'getOrCreateFolderElement').returns(dom.window.document.createElement('div'))
+    buildBookmarkSpy = sandbox.stub(Internals, 'buildBookmark').returns(dom.window.document.createElement('div'))
 
     resetPubSub()
 
@@ -74,22 +74,22 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
     )
     expect(getFolderSpy.called).to.equal(false)
   })
-  it('should call GetOrCreateFolderElement once', () => {
+  it('should call getOrCreateFolderElement once', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.callCount).to.equal(1)
   })
-  it('should call GetOrCreateFolderElement with 2 arguments', () => {
+  it('should call getOrCreateFolderElement with 2 arguments', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args).to.have.lengthOf(2)
   })
-  it('should pass parent path as first argument to GetOrCreateFolderElement', () => {
+  it('should pass parent path as first argument to getOrCreateFolderElement', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args[0]).to.equal('/FOO/BAR!')
   })
-  it('should pass bookmark folder as second argument to GetOrCreateFolderElement', () => {
+  it('should pass bookmark folder as second argument to getOrCreateFolderElement', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
     expect(getFolderSpy.firstCall.args[1]).to.equal(folder)
@@ -131,7 +131,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
     )
     expect(buildBookmarkSpy.callCount).to.equal(0)
   })
-  it('should call BuildBookmark once per bookmark', () => {
+  it('should call buildBookmark once per bookmark', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
     Internals.buildBookmarkNodes(
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
@@ -139,7 +139,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
     )
     expect(buildBookmarkSpy.callCount).to.equal(1)
   })
-  it('should call BuildBookmark with 1 argument', () => {
+  it('should call buildBookmark with 1 argument', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
     Internals.buildBookmarkNodes(
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
@@ -147,7 +147,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
     )
     expect(buildBookmarkSpy.firstCall.args).to.have.lengthOf(1)
   })
-  it('should pass the bookmark to BuildBookmark', () => {
+  it('should pass the bookmark to buildBookmark', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
     Internals.buildBookmarkNodes(
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },

@@ -36,7 +36,7 @@ html
           div.slider(style="width: 0")
 `
 
-describe('public/app/folders BuildAllCards()', () => {
+describe('public/app/folders buildAllCards()', () => {
   let dom: JSDOM = new JSDOM('', {})
   let folderCard: DocumentFragment | null = null
   let buildCardStub = sandbox.stub()
@@ -50,7 +50,7 @@ describe('public/app/folders BuildAllCards()', () => {
     assert(template !== null)
     folderCard = template.content
     Folders.folderCard = folderCard
-    buildCardStub = sandbox.stub(Internals, 'BuildCard').returns(null)
+    buildCardStub = sandbox.stub(Internals, 'buildCard').returns(null)
   })
   afterEach(() => {
     sandbox.restore()
@@ -60,70 +60,70 @@ describe('public/app/folders BuildAllCards()', () => {
     for (let i = 0; i < 5; i += 1) {
       tabFolders?.appendChild(dom.window.document.createElement('div'))
     }
-    Internals.BuildAllCards(cast<Listing>({ children: undefined }))
+    Internals.buildAllCards(cast<Listing>({ children: undefined }))
     expect(tabFolders?.children).to.have.lengthOf(5)
   })
   it('should handle empty listing', () => {
     for (let i = 0; i < 5; i += 1) {
       tabFolders?.appendChild(dom.window.document.createElement('div'))
     }
-    Internals.BuildAllCards(cast<Listing>({ children: [] }))
+    Internals.buildAllCards(cast<Listing>({ children: [] }))
     expect(tabFolders?.children).to.have.lengthOf(6)
   })
   it('should append folder div to folder tab element', () => {
     tabFolders?.appendChild(dom.window.document.createElement('div'))
-    Internals.BuildAllCards(cast<Listing>({ children: [] }))
+    Internals.buildAllCards(cast<Listing>({ children: [] }))
     expect(tabFolders?.lastElementChild?.nodeName).to.equal('DIV')
   })
   it('should append folder div with folders class to folder tab element', () => {
     tabFolders?.appendChild(dom.window.document.createElement('div'))
-    Internals.BuildAllCards(cast<Listing>({ children: [] }))
+    Internals.buildAllCards(cast<Listing>({ children: [] }))
     expect(tabFolders?.lastElementChild?.classList.contains('folders')).to.equal(true)
   })
-  it('should call BuildCard for each folder found in the folder list', () => {
+  it('should call buildCard for each folder found in the folder list', () => {
     const data = { children: [{ A: 1 }, { B: 2 }, { C: 3 }] }
-    Internals.BuildAllCards(cast<Listing>(data))
+    Internals.buildAllCards(cast<Listing>(data))
     expect(buildCardStub.callCount).to.equal(3)
   })
-  it('should call BuildCard with first child', () => {
+  it('should call buildCard with first child', () => {
     const data = { children: [{ A: 1 }, { B: 2 }, { C: 3 }] }
-    Internals.BuildAllCards(cast<Listing>(data))
+    Internals.buildAllCards(cast<Listing>(data))
     expect(buildCardStub.calledWithExactly(data.children[0])).to.equal(true)
   })
-  it('should call BuildCard with second child', () => {
+  it('should call buildCard with second child', () => {
     const data = { children: [{ A: 1 }, { B: 2 }, { C: 3 }] }
-    Internals.BuildAllCards(cast<Listing>(data))
+    Internals.buildAllCards(cast<Listing>(data))
     expect(buildCardStub.calledWithExactly(data.children[1])).to.equal(true)
   })
-  it('should call BuildCard with third child', () => {
+  it('should call buildCard with third child', () => {
     const data = { children: [{ A: 1 }, { B: 2 }, { C: 3 }] }
-    Internals.BuildAllCards(cast<Listing>(data))
+    Internals.buildAllCards(cast<Listing>(data))
     expect(buildCardStub.calledWithExactly(data.children[2])).to.equal(true)
   })
-  it('should not add folder card when BuildCard returns undefined', () => {
+  it('should not add folder card when buildCard returns undefined', () => {
     const data = { children: [{ A: 1 }] }
     buildCardStub.returns(undefined)
-    Internals.BuildAllCards(cast<Listing>(data))
+    Internals.buildAllCards(cast<Listing>(data))
     expect(tabFolders?.lastElementChild?.children).to.have.lengthOf(0)
   })
-  it('should not add folder card when BuildCard returns null', () => {
+  it('should not add folder card when buildCard returns null', () => {
     const data = { children: [{ A: 1 }] }
     buildCardStub.returns(null)
-    Internals.BuildAllCards(cast<Listing>(data))
+    Internals.buildAllCards(cast<Listing>(data))
     expect(tabFolders?.lastElementChild?.children).to.have.lengthOf(0)
   })
-  it('should add one folder card from BuildCard', () => {
+  it('should add one folder card from buildCard', () => {
     const data = { children: [{ A: 1 }] }
     const e = dom.window.document.createElement('div')
     buildCardStub.returns(e)
-    Internals.BuildAllCards(cast<Listing>(data))
+    Internals.buildAllCards(cast<Listing>(data))
     expect(tabFolders?.lastElementChild?.children).to.have.lengthOf(1)
   })
-  it('should add folder card from BuildCard', () => {
+  it('should add folder card from buildCard', () => {
     const data = { children: [{ A: 1 }] }
     const e = dom.window.document.createElement('div')
     buildCardStub.returns(e)
-    Internals.BuildAllCards(cast<Listing>(data))
+    Internals.buildAllCards(cast<Listing>(data))
     expect(tabFolders?.lastElementChild?.firstElementChild).to.equal(e)
   })
 })

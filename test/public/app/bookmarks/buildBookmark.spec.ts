@@ -34,7 +34,7 @@ html
         button Remove
 `
 
-describe('public/app/bookmarks BuildBookmark()', () => {
+describe('public/app/bookmarks buildBookmark()', () => {
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
   let bookmarksRemoveSpy = sandbox.stub()
@@ -68,7 +68,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
   })
   it('should return null if card template is missing', () => {
     Bookmarks.bookmarkCard = undefined
-    const result = Internals.BuildBookmark({
+    const result = Internals.buildBookmark({
       name: '',
       path: 'foo',
       folder: 'bar',
@@ -76,7 +76,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     expect(result).to.equal(null)
   })
   it('should return HTMLElement if card template exists', () => {
-    const result = Internals.BuildBookmark({
+    const result = Internals.buildBookmark({
       name: '',
       path: 'foo',
       folder: 'bar',
@@ -84,7 +84,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     expect(result).to.be.instanceOf(dom.window.HTMLElement)
   })
   it('should set title in result card', () => {
-    const result = Internals.BuildBookmark({
+    const result = Internals.buildBookmark({
       name: '',
       path: 'foo',
       folder: 'bar',
@@ -93,7 +93,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     expect(elem?.innerHTML).to.equal('foo')
   })
   it('should set background image to bookmark in result card', () => {
-    const result = Internals.BuildBookmark({
+    const result = Internals.buildBookmark({
       name: '',
       path: '/foo/bar.png',
       folder: 'bar',
@@ -102,7 +102,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     expect(style).to.equal('url("/images/preview/foo/bar.png-image.webp")')
   })
   it('should strip leading folder path from title in result card', () => {
-    const result = Internals.BuildBookmark({
+    const result = Internals.buildBookmark({
       name: '',
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
@@ -111,7 +111,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     expect(elem?.innerHTML).to.equal('foo')
   })
   const ClickRemoveAndWait = async (data: Bookmark): Promise<HTMLElement> => {
-    const result = Internals.BuildBookmark(data)
+    const result = Internals.buildBookmark(data)
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
@@ -141,7 +141,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     expect(bookmarksRemoveSpy.calledWith('/path/to/foo/folder/foo')).to.equal(true)
   })
   it('should stop propagation of event after handling button click', async () => {
-    const result = Internals.BuildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
+    const result = Internals.buildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
     assert(result !== null)
     let stopPropagationCalled = false
     const evt = new dom.window.MouseEvent('click')
@@ -153,7 +153,7 @@ describe('public/app/bookmarks BuildBookmark()', () => {
     expect(stopPropagationCalled).to.equal(true)
   })
   const ClickBookmarkAndWait = async (data: Bookmark): Promise<HTMLElement> => {
-    const result = Internals.BuildBookmark(data)
+    const result = Internals.buildBookmark(data)
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')

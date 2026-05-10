@@ -14,13 +14,13 @@ export const Imports = {
   loadImage: _loadImage,
 }
 
-function SetPictureIndices(): void {
+function setPictureIndices(): void {
   for (const [pic, i] of Pictures.pictures.map((pic, i): [Picture, number] => [pic, i])) {
     pic.index = i
   }
 }
 
-function SetPicturesGetFirst(data: Listing): Picture | null {
+function setPicturesGetFirst(data: Listing): Picture | null {
   if (Pictures.mainImage === null) return null
   const firstPic = getFirst(data.pictures)
   if (data.pictures === undefined || firstPic === undefined) {
@@ -33,18 +33,18 @@ function SetPicturesGetFirst(data: Listing): Picture | null {
   document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
   Pictures.pictures = data.pictures
   Pictures.modCount = data.modCount ?? DEFAULT_MOD_COUNT
-  Internals.SetPictureIndices()
+  Internals.setPictureIndices()
   return firstPic
 }
 
 export const Internals = {
-  SetPicturesGetFirst,
-  SetPictureIndices,
+  setPicturesGetFirst,
+  setPictureIndices,
 }
 
 export async function loadData(data: Listing): Promise<void> {
   Pictures.resetMarkup()
-  const firstPic = Internals.SetPicturesGetFirst(data)
+  const firstPic = Internals.setPicturesGetFirst(data)
   if (firstPic === null) return
 
   const selected = Pictures.pictures.find((picture) => picture.path === data.cover)

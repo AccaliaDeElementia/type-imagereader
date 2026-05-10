@@ -10,7 +10,7 @@ import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/app/pictures GetCurrentPage()', () => {
+describe('public/app/pictures getCurrentPage()', () => {
   let dom = new JSDOM('<html></html>', {})
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
@@ -40,21 +40,21 @@ describe('public/app/pictures GetCurrentPage()', () => {
   }
   it('should return -1 for no pages', () => {
     makePages(0)
-    expect(Internals.GetCurrentPage()).to.equal(-1)
+    expect(Internals.getCurrentPage()).to.equal(-1)
   })
   it('should return -1 for no active pages', () => {
     makePages(20)
-    expect(Internals.GetCurrentPage()).to.equal(-1)
+    expect(Internals.getCurrentPage()).to.equal(-1)
   })
   it('should return number for active page', () => {
     const pages = makePages(20)
     pages[10]?.classList.add('active')
-    expect(Internals.GetCurrentPage()).to.equal(10)
+    expect(Internals.getCurrentPage()).to.equal(10)
   })
   it('should return number for first active page', () => {
     const pages = makePages(20)
     pages[10]?.classList.add('active')
     pages[15]?.classList.add('active')
-    expect(Internals.GetCurrentPage()).to.equal(10)
+    expect(Internals.getCurrentPage()).to.equal(10)
   })
 })

@@ -39,10 +39,10 @@ export function subscribe(topic: string, subscriber: SubscriberFunction): void {
 }
 
 export function publish(topic: string, data?: unknown): void {
-  void Internals.PublishAsync(topic, data)
+  void Internals.publishAsync(topic, data)
 }
 
-async function PublishAsync(topic: string, data?: unknown): Promise<void> {
+async function publishAsync(topic: string, data?: unknown): Promise<void> {
   const searchTopic = topic.toUpperCase()
   const matchingTopics = Object.keys(PubSub.subscribers)
     .sort()
@@ -100,7 +100,7 @@ export function removeInterval(name: string): void {
   PubSub.intervals = ivals
 }
 
-function ExecuteInterval(): void {
+function executeInterval(): void {
   PubSub.deferred
     .filter((delay) => delay.delayCycles <= CYCLES_DUE_THRESHOLD)
     .forEach((delay) => {
@@ -129,7 +129,7 @@ function ExecuteInterval(): void {
 
 export function startDeferred(): void {
   PubSub.timer = window.setInterval((): void => {
-    Internals.ExecuteInterval()
+    Internals.executeInterval()
   }, PubSub.cycleTime)
 }
 
@@ -141,6 +141,6 @@ export function stopDeferred(): void {
 }
 
 export const Internals = {
-  PublishAsync,
-  ExecuteInterval,
+  publishAsync,
+  executeInterval,
 }
