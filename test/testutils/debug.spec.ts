@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { Debugger } from 'debug'
 
@@ -9,47 +8,47 @@ import { cast } from '#testutils/typeGuards.js'
 
 describe('testutils/Debug noopLogger', () => {
   it('should be a function (satisfying the Debugger callable shape)', () => {
-    expect(noopLogger).to.be.a('function')
+    expect(noopLogger).toBeTypeOf('function')
   })
   it('should not throw when invoked with a message', () => {
     expect(() => {
       noopLogger('msg')
-    }).to.not.throw()
+    }).not.toThrow()
   })
   it('should not throw when invoked with a format string and arguments', () => {
     expect(() => {
       noopLogger('hello %s', 'world', { x: 2 })
-    }).to.not.throw()
+    }).not.toThrow()
   })
 })
 
 describe('testutils createLoggerFake()', () => {
   it('should return an object with a stub property', () => {
     const sandbox = Sinon.createSandbox()
-    expect(createLoggerFake(sandbox).stub).to.be.a('function')
+    expect(createLoggerFake(sandbox).stub).toBeTypeOf('function')
   })
   it('should return an object with a fake property', () => {
     const sandbox = Sinon.createSandbox()
-    expect(createLoggerFake(sandbox).fake).to.be.a('function')
+    expect(createLoggerFake(sandbox).fake).toBeTypeOf('function')
   })
   it('should record a call on stub when fake is invoked', () => {
     const sandbox = Sinon.createSandbox()
     const { stub, fake } = createLoggerFake(sandbox)
     fake('hello')
-    expect(stub.callCount).to.equal(1)
+    expect(stub.callCount).toBe(1)
   })
   it('should pass arguments through fake to stub', () => {
     const sandbox = Sinon.createSandbox()
     const { stub, fake } = createLoggerFake(sandbox)
     fake('hello %s', 'world')
-    expect(stub.firstCall.args).to.deep.equal(['hello %s', 'world'])
+    expect(stub.firstCall.args).toEqual(['hello %s', 'world'])
   })
   it('should return independent stubs across calls', () => {
     const sandbox = Sinon.createSandbox()
     const a = createLoggerFake(sandbox)
     const b = createLoggerFake(sandbox)
     a.fake('only-a')
-    expect(b.stub.callCount).to.equal(0)
+    expect(b.stub.callCount).toBe(0)
   })
 })
 
@@ -58,20 +57,20 @@ describe('testutils stubDebug()', () => {
     const sandbox = Sinon.createSandbox()
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
     const { debugStub } = stubDebug(sandbox, target)
-    expect(target.debug).to.equal(debugStub)
+    expect(target.debug).toBe(debugStub)
   })
   it('should make target.debug return the loggerStub', () => {
     const sandbox = Sinon.createSandbox()
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
     const { loggerStub } = stubDebug(sandbox, target)
-    expect(target.debug('any:prefix')).to.equal(loggerStub)
+    expect(target.debug('any:prefix')).toBe(loggerStub)
   })
   it('should record calls to target.debug on debugStub', () => {
     const sandbox = Sinon.createSandbox()
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
     const { debugStub } = stubDebug(sandbox, target)
     target.debug('the:prefix')
-    expect(debugStub.firstCall.args).to.deep.equal(['the:prefix'])
+    expect(debugStub.firstCall.args).toEqual(['the:prefix'])
   })
   it('should record calls made through the returned logger on loggerStub', () => {
     const sandbox = Sinon.createSandbox()
@@ -79,19 +78,19 @@ describe('testutils stubDebug()', () => {
     const { loggerStub } = stubDebug(sandbox, target)
     const logger = target.debug('prefix')
     logger('a message')
-    expect(loggerStub.firstCall.args).to.deep.equal(['a message'])
+    expect(loggerStub.firstCall.args).toEqual(['a message'])
   })
   it('should return the same logger regardless of which prefix is passed', () => {
     const sandbox = Sinon.createSandbox()
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
     stubDebug(sandbox, target)
-    expect(target.debug('first')).to.equal(target.debug('second'))
+    expect(target.debug('first')).toBe(target.debug('second'))
   })
   it('should return the loggerStub itself when target.debug is invoked', () => {
     const sandbox = Sinon.createSandbox()
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
     const { loggerStub } = stubDebug(sandbox, target)
-    expect(target.debug('any')).to.equal(loggerStub)
+    expect(target.debug('any')).toBe(loggerStub)
   })
   it('should restore target.debug when the sandbox is restored', () => {
     const sandbox = Sinon.createSandbox()
@@ -99,6 +98,6 @@ describe('testutils stubDebug()', () => {
     const target = { debug: original }
     stubDebug(sandbox, target)
     sandbox.restore()
-    expect(target.debug).to.equal(original)
+    expect(target.debug).toBe(original)
   })
 })

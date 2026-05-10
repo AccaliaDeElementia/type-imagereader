@@ -1,7 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
-
 import {
   alwaysFails,
   definitelyThrows,
@@ -14,27 +12,27 @@ describe('testutils eventuallyRejects()', () => {
   it('should return the Error when promise rejects with an Error', async () => {
     const err = new Error('test error')
     const result = await eventuallyRejects(Promise.reject<unknown>(err))
-    expect(result).to.equal(err)
+    expect(result).toBe(err)
   })
   it('should return an Error when promise rejects with a string', async () => {
     // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing non-Error rejection handling
     const result = await eventuallyRejects(Promise.reject<unknown>('oops'))
-    expect(result).to.be.instanceOf(Error)
+    expect(result).toBeInstanceOf(Error)
   })
   it('should set the string as the message when promise rejects with a string', async () => {
     // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing non-Error rejection handling
     const result = await eventuallyRejects(Promise.reject<unknown>('oops'))
-    expect(result.message).to.equal('oops')
+    expect(result.message).toBe('oops')
   })
   it('should return an Error when promise rejects with a non-Error non-string', async () => {
     // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing non-Error rejection handling
     const result = await eventuallyRejects(Promise.reject<unknown>(42))
-    expect(result).to.be.instanceOf(Error)
+    expect(result).toBeInstanceOf(Error)
   })
   it('should include the type in the message when promise rejects with a non-Error non-string', async () => {
     // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- testing non-Error rejection handling
     const result = await eventuallyRejects(Promise.reject<unknown>(42))
-    expect(result.message).to.include('number')
+    expect(result.message).toContain('number')
   })
   it('should throw an assertion error when the promise resolves', async () => {
     let threw = false
@@ -43,7 +41,7 @@ describe('testutils eventuallyRejects()', () => {
     } catch (_) {
       threw = true
     }
-    expect(threw).to.equal(true)
+    expect(threw).toBe(true)
   })
 })
 
@@ -53,7 +51,7 @@ describe('testutils doesNotThrow()', () => {
     doesNotThrow(() => {
       called = true
     })
-    expect(called).to.equal(true)
+    expect(called).toBe(true)
   })
 })
 
@@ -69,35 +67,35 @@ describe('testutils definitelyThrows()', () => {
     const result = definitelyThrows(() => {
       throw err
     })
-    expect(result).to.equal(err)
+    expect(result).toBe(err)
   })
   it('should return an Error when the function throws a string', () => {
     const result = definitelyThrows(() => {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing the string-throw branch of definitelyThrows
       throw 'oops'
     })
-    expect(result).to.be.instanceOf(Error)
+    expect(result).toBeInstanceOf(Error)
   })
   it('should set the string as the message when the function throws a string', () => {
     const result = definitelyThrows(() => {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing the string-throw branch of definitelyThrows
       throw 'oops'
     })
-    expect(result.message).to.equal('oops')
+    expect(result.message).toBe('oops')
   })
   it('should return an Error when the function throws a non-Error non-string', () => {
     const result = definitelyThrows(() => {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing the non-Error non-string branch of definitelyThrows
       throw 42
     })
-    expect(result).to.be.instanceOf(Error)
+    expect(result).toBeInstanceOf(Error)
   })
   it('should include the type in the message when the function throws a non-Error non-string', () => {
     const result = definitelyThrows(() => {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing the non-Error non-string branch of definitelyThrows
       throw 42
     })
-    expect(result.message).to.include('number')
+    expect(result.message).toContain('number')
   })
   it('should throw an assertion error when the function does not throw', () => {
     let threw = false
@@ -106,16 +104,16 @@ describe('testutils definitelyThrows()', () => {
     } catch (_) {
       threw = true
     }
-    expect(threw).to.equal(true)
+    expect(threw).toBe(true)
   })
 })
 
 describe('testutils alwaysFails()', () => {
   it('should produce a callable that throws an assertion error when invoked', () => {
-    expect(alwaysFails<() => void>('failure message')).to.throw()
+    expect(alwaysFails<() => void>('failure message')).toThrow()
   })
 
   it('should default to "Assertion Failed" when no message argument is provided', () => {
-    expect(alwaysFails<() => void>()).to.throw('Assertion Failed')
+    expect(alwaysFails<() => void>()).toThrow('Assertion Failed')
   })
 })

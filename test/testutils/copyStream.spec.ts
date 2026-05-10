@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { EventEmitter } from 'node:events'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 import Sinon from 'sinon'
@@ -14,38 +13,38 @@ describe('testutils createCopyStreamFake()', () => {
     sandbox.restore()
   })
   it('should return an object exposing the typed stream', () => {
-    expect(createCopyStreamFake(sandbox).stream).to.be.an('object')
+    expect(createCopyStreamFake(sandbox).stream).toBeTypeOf('object')
   })
   it('should return an EventEmitter handle', () => {
-    expect(createCopyStreamFake(sandbox).ee).to.be.instanceOf(EventEmitter)
+    expect(createCopyStreamFake(sandbox).ee).toBeInstanceOf(EventEmitter)
   })
   it('should record stream.write() calls on writeSpy', () => {
     const { stream, writeSpy } = createCopyStreamFake(sandbox)
     stream.write('payload')
-    expect(writeSpy.callCount).to.equal(1)
+    expect(writeSpy.callCount).toBe(1)
   })
   it('should pass write() arguments through to writeSpy', () => {
     const { stream, writeSpy } = createCopyStreamFake(sandbox)
     stream.write('payload')
-    expect(writeSpy.firstCall.args[0]).to.equal('payload')
+    expect(writeSpy.firstCall.args[0]).toBe('payload')
   })
   it('should make stream.write() return true by default', () => {
     const { stream } = createCopyStreamFake(sandbox)
-    expect(stream.write('x')).to.equal(true)
+    expect(stream.write('x')).toBe(true)
   })
   it('should honour writeReturns when overridden to false', () => {
     const { stream } = createCopyStreamFake(sandbox, { writeReturns: false })
-    expect(stream.write('x')).to.equal(false)
+    expect(stream.write('x')).toBe(false)
   })
   it('should record stream.end() calls on endSpy', () => {
     const { stream, endSpy } = createCopyStreamFake(sandbox)
     stream.end()
-    expect(endSpy.callCount).to.equal(1)
+    expect(endSpy.callCount).toBe(1)
   })
   it('should record stream.destroy() calls on destroySpy', () => {
     const { stream, destroySpy } = createCopyStreamFake(sandbox)
     stream.destroy(new Error('boom'))
-    expect(destroySpy.callCount).to.equal(1)
+    expect(destroySpy.callCount).toBe(1)
   })
   it('should not auto-emit anything on end() by default', async () => {
     const { stream, ee } = createCopyStreamFake(sandbox)
@@ -53,7 +52,7 @@ describe('testutils createCopyStreamFake()', () => {
     ee.on('finish', finishSpy)
     stream.end()
     await yieldMacro()
-    expect(finishSpy.callCount).to.equal(0)
+    expect(finishSpy.callCount).toBe(0)
   })
   it('should emit "finish" on the next microtask when emitOnEnd is "finish"', async () => {
     const { stream, ee } = createCopyStreamFake(sandbox, { emitOnEnd: 'finish' })
@@ -61,7 +60,7 @@ describe('testutils createCopyStreamFake()', () => {
     ee.once('finish', finishSpy)
     stream.end()
     await yieldMacro()
-    expect(finishSpy.callCount).to.equal(1)
+    expect(finishSpy.callCount).toBe(1)
   })
   it('should emit "error" with the supplied error when emitOnEnd is { error }', async () => {
     const err = new Error('boom')
@@ -70,7 +69,7 @@ describe('testutils createCopyStreamFake()', () => {
     ee.once('error', errorSpy)
     stream.end()
     await yieldMacro()
-    expect(errorSpy.firstCall.args[0]).to.equal(err)
+    expect(errorSpy.firstCall.args[0]).toBe(err)
   })
 })
 
@@ -81,7 +80,7 @@ describe('testutils scheduleEmit()', () => {
     ee.once('drain', drainSpy)
     scheduleEmit(ee, 'drain')
     await yieldMacro()
-    expect(drainSpy.callCount).to.equal(1)
+    expect(drainSpy.callCount).toBe(1)
   })
   it('should pass extra arguments through to the listener', async () => {
     const ee = new EventEmitter()
@@ -89,6 +88,6 @@ describe('testutils scheduleEmit()', () => {
     ee.once('payload', payloadSpy)
     scheduleEmit(ee, 'payload', 'first', 42)
     await yieldMacro()
-    expect(payloadSpy.firstCall.args).to.deep.equal(['first', 42])
+    expect(payloadSpy.firstCall.args).toEqual(['first', 42])
   })
 })

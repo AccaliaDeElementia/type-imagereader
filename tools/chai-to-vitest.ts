@@ -33,6 +33,46 @@ interface Bail {
 }
 
 const PURE_MODIFIERS = new Set(['to', 'be', 'have', 'that', 'and'])
+// Vocabulary used to discriminate chai chains from already-converted vitest
+// chains on re-runs. If the first non-`not` token isn't in this set, the
+// chain isn't chai syntax and the codemod skips it silently (no bail noise).
+const CHAI_VOCAB = new Set([
+  'to',
+  'be',
+  'have',
+  'that',
+  'and',
+  'deep',
+  'nested',
+  'an',
+  'a',
+  'any',
+  'all',
+  'equal',
+  'lengthOf',
+  'length',
+  'include',
+  'contain',
+  'instanceOf',
+  'property',
+  'match',
+  'above',
+  'greaterThan',
+  'greaterThanOrEqual',
+  'throw',
+  'keys',
+  'members',
+  'satisfy',
+])
+
+function isChaiChain(tokens: readonly ChainToken[]): boolean {
+  for (const t of tokens) {
+    if (!t.isCall && t.name === 'not') continue
+    return CHAI_VOCAB.has(t.name)
+  }
+  return false
+}
+
 const TERMINAL_METHOD_MAP: Readonly<Record<string, string>> = {
   equal: 'toBe',
   lengthOf: 'toHaveLength',
@@ -173,6 +213,7 @@ function rewriteFile(sourceFile: SourceFile): RewriteSummary {
   for (const { outermost, expectCall } of targets) {
     if (outermost.wasForgotten() || expectCall.wasForgotten()) continue
     const tokens = collectTokens(expectCall, outermost)
+    if (!isChaiChain(tokens)) continue
     const result = analyze(tokens)
     if (result.kind === 'bail') {
       bails.push({
@@ -189,15 +230,21 @@ function rewriteFile(sourceFile: SourceFile): RewriteSummary {
     rewrites++
   }
 
-  const chaiImport = sourceFile.getImportDeclaration((d) => d.getModuleSpecifierValue() === 'chai')
-  if (chaiImport) {
-    const named = chaiImport.getNamedImports()
-    const expectNode = named.find((n) => n.getName() === 'expect')
-    if (expectNode) {
-      if (named.length === 1) {
-        chaiImport.remove()
-      } else {
-        expectNode.remove()
+  // Keep the chai import when bails remain — those sites still call `.to.X(...)`
+  // and need the chai expect in scope until they're hand-fixed. The workflow is:
+  // run codemod, hand-fix bails, re-run codemod (clean run with 0 bails removes
+  // the now-unused import).
+  if (bails.length === 0) {
+    const chaiImport = sourceFile.getImportDeclaration((d) => d.getModuleSpecifierValue() === 'chai')
+    if (chaiImport) {
+      const named = chaiImport.getNamedImports()
+      const expectNode = named.find((n) => n.getName() === 'expect')
+      if (expectNode) {
+        if (named.length === 1) {
+          chaiImport.remove()
+        } else {
+          expectNode.remove()
+        }
       }
     }
   }

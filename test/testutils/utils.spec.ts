@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { delay } from '#testutils/utils.js'
@@ -23,10 +22,10 @@ describe('testutils delay()', () => {
       resolved = true
     })
     await clock?.tickAsync(99)
-    expect(resolved).to.equal(false)
+    expect(resolved).toBe(false)
     await clock?.tickAsync(1)
     await promise
-    expect(resolved).to.equal(true)
+    expect(resolved).toBe(true)
   })
   it('should resolve after the specified delay elapses', async () => {
     let resolved = false
@@ -35,6 +34,6 @@ describe('testutils delay()', () => {
     })
     await clock?.tickAsync(100)
     await promise
-    expect(resolved).to.equal(true)
+    expect(resolved).toBe(true)
   })
 })
