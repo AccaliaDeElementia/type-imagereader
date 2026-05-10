@@ -34,7 +34,7 @@ const POLLING_INTERVAL = 20
 const ZERO_REMAINING_PADS = 0
 
 export class GamepadButtons {
-  public Buttons: Record<string, number> = {
+  public buttons: Record<string, number> = {
     A: BUTTON_A,
     B: BUTTON_B,
     X: BUTTON_X,
@@ -84,7 +84,7 @@ export class GamepadButtons {
 
   public Read(pad: Gamepad): boolean {
     let result = false
-    for (const [name, id] of Object.entries(this.Buttons)) {
+    for (const [name, id] of Object.entries(this.buttons)) {
       result ||= this.SetButton(name, GamepadButtons.IsPressed(pad, id))
     }
     result ||= this.ReadThumbAxis(pad)
