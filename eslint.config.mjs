@@ -84,11 +84,6 @@ export default [
   {
     rules: {
       // Naming convention enforcement. See CLAUDE.md for the full convention.
-      // The `function` and `method` selectors are deferred until the remaining
-      // PascalCase stragglers are renamed to camelCase; enabling them now would
-      // break the build. Add once those renames land:
-      //   { selector: 'function', format: ['camelCase'] },
-      //   { selector: 'method', format: ['camelCase'] },
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'class', format: ['PascalCase'] },
@@ -97,6 +92,8 @@ export default [
         { selector: 'enum', format: ['PascalCase'] },
         { selector: 'enumMember', format: ['PascalCase', 'UPPER_CASE'] },
         { selector: 'typeParameter', format: ['PascalCase'] },
+        { selector: 'function', format: ['camelCase'] },
+        { selector: 'method', format: ['camelCase'] },
         // Class properties: camelCase, with `_foo` allowed as the codebase's informal-private convention.
         { selector: 'classProperty', format: ['camelCase'], leadingUnderscore: 'allow' },
         // Variables: camelCase locals, UPPER_CASE module constants, PascalCase
