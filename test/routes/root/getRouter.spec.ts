@@ -4,13 +4,13 @@ import { assert, expect } from 'chai'
 import type { Application, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { getRouter, Imports } from '#routes/index.js'
+import { getRouter, Imports } from '#routes/root.js'
 import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/index getRouter()', () => {
+describe('routes/root getRouter()', () => {
   const applicationFake = cast<Application>({})
   const serverFake = cast<Server>({})
   const socketsFake = cast<WebSocketServer>({})

@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import type { Application, Response as ExpressResponse, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import { getRouter, Imports } from '#routes/index.js'
+import { getRouter, Imports } from '#routes/root.js'
 import { StatusCodes } from 'http-status-codes'
 import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
@@ -12,7 +12,7 @@ import { createResponseFake } from '#testutils/express.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('routes/index route /show', () => {
+describe('routes/root route /show', () => {
   let routeFn: (_: Request, __: ExpressResponse) => void = sandbox.stub()
   let routeAltFn: (_: Request, __: ExpressResponse) => void = sandbox.stub()
   let requestStub = { params: { path: undefined as string[] | string | undefined } }
