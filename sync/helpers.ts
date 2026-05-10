@@ -67,7 +67,7 @@ export function chunk<T>(arr: T[], size = DEFAULT_CHUNK_SIZE): T[][] {
 
 export async function execChunksSynchronously<T>(chunks: T[][], execFn: (chunk: T[]) => Promise<void>): Promise<void> {
   for (const chunk of chunks) {
-    //eslint-disable-next-line no-await-in-loop -- Deliberately doing this synchronously
+    // eslint-disable-next-line no-await-in-loop -- Deliberately doing this synchronously
     await execFn(chunk)
   }
 }

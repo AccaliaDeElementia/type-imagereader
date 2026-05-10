@@ -1,7 +1,7 @@
 'use sanity'
 
 import type { Knex } from 'knex'
-//eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Allow Knex Tests, Use the default Knex typing
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Allow Knex Tests, Use the default Knex typing
 type KnexDefault = Knex<{}, unknown>
 
 export function cast<T>(obj: unknown, isT: (o: unknown) => o is T = (_: unknown): _ is T => true): T {

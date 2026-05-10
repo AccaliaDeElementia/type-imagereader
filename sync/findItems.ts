@@ -32,10 +32,10 @@ export const Imports = {
   findSyncItemsViaCopy: _findSyncItemsViaCopy,
   findSyncItemsViaInsert: _findSyncItemsViaInsert,
   acquireCopyConnection: async (knex: Knex): Promise<PoolClient> =>
-    //eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.acquireConnection is typed `any`; PoolClient is the concrete shape for the pg dialect
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.acquireConnection is typed `any`; PoolClient is the concrete shape for the pg dialect
     await knex.client.acquireConnection(),
   releaseCopyConnection: async (knex: Knex, client: PoolClient): Promise<void> => {
-    //eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.releaseConnection is typed `any`; we hand back the same PoolClient we acquired
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- knex.client.releaseConnection is typed `any`; we hand back the same PoolClient we acquired
     await knex.client.releaseConnection(client)
   },
   buildSyncItemRows: _buildSyncItemRows,

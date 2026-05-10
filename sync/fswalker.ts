@@ -62,7 +62,7 @@ export async function fsWalker(root: string, eachItem: EachItemFn): Promise<void
           notify()
           return
         }
-        //eslint-disable-next-line no-await-in-loop -- worker-pool coordination
+        // eslint-disable-next-line no-await-in-loop -- worker-pool coordination
         await waitForWork()
       }
       if (aborted) return
@@ -70,10 +70,10 @@ export async function fsWalker(root: string, eachItem: EachItemFn): Promise<void
       assert(current !== undefined)
       active += ONE
       try {
-        //eslint-disable-next-line no-await-in-loop -- per-worker sequential processing
+        // eslint-disable-next-line no-await-in-loop -- per-worker sequential processing
         await processDir(root, current, queue, eachItem)
       } catch (err) {
-        //eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- concurrent peer may have set aborted
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- concurrent peer may have set aborted
         if (!aborted) {
           aborted = true
           failure = err
@@ -91,7 +91,7 @@ export async function fsWalker(root: string, eachItem: EachItemFn): Promise<void
     }),
   )
   if (failure !== null) {
-    //eslint-disable-next-line @typescript-eslint/only-throw-error -- preserve original rejection value
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- preserve original rejection value
     throw failure
   }
 }

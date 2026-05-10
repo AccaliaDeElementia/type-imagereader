@@ -15,10 +15,9 @@ export async function show(message: string, title: string): Promise<boolean> {
     Confirm.messageElement.innerText = message
   }
   Confirm.dialogElement?.classList.remove('hidden')
-  // eslint-disable-next-line promise/avoid-new -- deferred resolution requires storing the resolver for a later button-click event
-  return await new Promise<boolean>((resolve) => {
-    Confirm.resolve = resolve
-  })
+  const { promise, resolve } = Promise.withResolvers<boolean>()
+  Confirm.resolve = resolve
+  return await promise
 }
 
 export function init(): void {

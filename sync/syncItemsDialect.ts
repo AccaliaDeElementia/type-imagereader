@@ -45,7 +45,7 @@ export interface CopyHelpers extends SharedHelpers {
 }
 
 export function isPostgres(knex: Knex): boolean {
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- knex.client.config is typed `any`
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- knex.client.config is typed `any`
   const client: unknown = knex.client.config.client
   return client === 'pg' || client === 'postgresql'
 }

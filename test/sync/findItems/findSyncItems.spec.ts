@@ -134,7 +134,7 @@ describe('sync/findItems findSyncItems()', () => {
   })
   it('should wrap a non-Error rejection in an Error when destroying the stream', async () => {
     fsWalkerStub.callsFake(
-      //eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/prefer-promise-reject-errors -- deliberately testing the non-Error rejection branch
+      // eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/prefer-promise-reject-errors -- deliberately testing the non-Error rejection branch
       () => Promise.reject('plain string failure'),
     )
     await findSyncItems(knexFnFake).catch(() => undefined)

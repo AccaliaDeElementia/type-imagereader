@@ -237,7 +237,7 @@ export async function incrementalSync(knex: Knex, changeset: Changeset, dataDir 
   const affectedFolders = new Set<string>()
   for (const dirPath of dirDeletes) {
     addFolderAndAncestors(affectedFolders, dirPath)
-    //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
+    // eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
     await Internals.incrementalRemoveFolder(logger, knex, dirPath)
   }
   for (const path of fileDeletes) {
@@ -250,7 +250,7 @@ export async function incrementalSync(knex: Knex, changeset: Changeset, dataDir 
   }
   for (const dirPath of dirCreates) {
     addFolderAndAncestors(affectedFolders, dirPath)
-    //eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
+    // eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
     await Internals.incrementalScanFolder(logger, knex, dirPath, dataDir)
   }
   for (const path of fileCreates) {
