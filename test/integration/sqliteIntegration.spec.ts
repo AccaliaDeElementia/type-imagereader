@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import knex from 'knex'
 import type { Knex } from 'knex'
 import { dirname, join } from 'node:path'
@@ -49,36 +48,36 @@ describe(
     it('should run all migrations to completion', async () => {
       assertDb(db)
       const rows = await db('knex_migrations').select<Array<{ name: string }>>('name')
-      expect(rows.length).to.be.greaterThan(0)
+      expect(rows.length).toBeGreaterThan(0)
     })
 
     it('should create the folders table', async () => {
       assertDb(db)
       const result = await db('folders').count<Array<{ count: number | string }>>('* as count')
-      expect(Number(result[0]?.count ?? -1)).to.equal(0)
+      expect(Number(result[0]?.count ?? -1)).toBe(0)
     })
 
     it('should create the pictures table', async () => {
       assertDb(db)
       const result = await db('pictures').count<Array<{ count: number | string }>>('* as count')
-      expect(Number(result[0]?.count ?? -1)).to.equal(0)
+      expect(Number(result[0]?.count ?? -1)).toBe(0)
     })
 
     it('should create the bookmarks table', async () => {
       assertDb(db)
       const result = await db('bookmarks').count<Array<{ count: number | string }>>('* as count')
-      expect(Number(result[0]?.count ?? -1)).to.equal(0)
+      expect(Number(result[0]?.count ?? -1)).toBe(0)
     })
 
     it('should create the syncitems table', async () => {
       assertDb(db)
       const result = await db('syncitems').count<Array<{ count: number | string }>>('* as count')
-      expect(Number(result[0]?.count ?? -1)).to.equal(0)
+      expect(Number(result[0]?.count ?? -1)).toBe(0)
     })
 
     it('should detect the dialect as non-postgres', () => {
       assertDb(db)
-      expect(isPostgres(db)).to.equal(false)
+      expect(isPostgres(db)).toBe(false)
     })
 
     it('should insert a row through the chunked-INSERT fallback path', async () => {
@@ -100,7 +99,7 @@ describe(
         execChunksSynchronously,
         getDataDir: () => '/data',
       })
-      expect(counts.files).to.equal(2)
+      expect(counts.files).toBe(2)
     })
 
     it('should round-trip rows inserted by the fallback path', async () => {
@@ -116,7 +115,7 @@ describe(
         getDataDir: () => '/data',
       })
       const rows = await db('syncitems').select<Array<{ path: string }>>('path')
-      expect(rows.map((r) => r.path)).to.include('/comics/page1.jpg')
+      expect(rows.map((r) => r.path)).toContain('/comics/page1.jpg')
     })
 
     it('should reject inserts that violate the path uniqueness constraint', async () => {
@@ -134,7 +133,7 @@ describe(
       } catch (err) {
         caught = err
       }
-      expect(caught).to.be.an.instanceOf(Error)
+      expect(caught).toBeInstanceOf(Error)
     })
 
     it('should support onConflict().ignore() for duplicate inserts', async () => {
@@ -148,7 +147,7 @@ describe(
       await db('pictures').insert(row)
       await db('pictures').insert(row).onConflict('path').ignore()
       const result = await db('pictures').count<Array<{ count: number | string }>>('* as count')
-      expect(Number(result[0]?.count ?? -1)).to.equal(1)
+      expect(Number(result[0]?.count ?? -1)).toBe(1)
     })
 
     it('should support onConflict().merge() for upserts', async () => {
@@ -159,7 +158,7 @@ describe(
         .onConflict('path')
         .merge(['firstPicture'])
       const result = await db('folders').select<Array<{ firstPicture: string }>>('firstPicture').where({ path: '/' })
-      expect(result[0]?.firstPicture).to.equal('b.jpg')
+      expect(result[0]?.firstPicture).toBe('b.jpg')
     })
 
     it('should roll back the most recent migration without error', async () => {
@@ -167,7 +166,7 @@ describe(
       await db.migrate.down()
       const rows = await db('knex_migrations').select<Array<{ name: string }>>('name')
       const remaining = rows.map((r) => r.name)
-      expect(remaining).to.not.include('20260421130000_not-null-and-root-sentinel.ts')
+      expect(remaining).not.toContain('20260421130000_not-null-and-root-sentinel.ts')
     })
 
     it('should bulk-insert past the SQLITE_LIMIT_COMPOUND_SELECT cap (1000 rows)', async () => {
@@ -187,7 +186,7 @@ describe(
         execChunksSynchronously,
         getDataDir: () => '/data',
       })
-      expect(counts.files).to.equal(ROW_COUNT)
+      expect(counts.files).toBe(ROW_COUNT)
     })
   },
   INTEGRATION_TIMEOUT_MS,

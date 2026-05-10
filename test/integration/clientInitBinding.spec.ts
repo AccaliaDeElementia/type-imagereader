@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { renderFile } from 'pug'
 import Sinon from 'sinon'
@@ -56,7 +55,7 @@ describe('app.pug ↔ client init binding', () => {
       foldersInit()
     })
     it('populates Folders.folderCard from #FolderCard template', () => {
-      expect(Folders.folderCard).to.not.equal(null)
+      expect(Folders.folderCard).not.toBe(null)
     })
   })
 
@@ -68,13 +67,13 @@ describe('app.pug ↔ client init binding', () => {
       bookmarksInit()
     })
     it('populates Bookmarks.bookmarkCard from #BookmarkCard template', () => {
-      expect(Bookmarks.bookmarkCard).to.not.equal(undefined)
+      expect(Bookmarks.bookmarkCard).not.toBe(undefined)
     })
     it('populates Bookmarks.bookmarkFolder from #BookmarkFolder template', () => {
-      expect(Bookmarks.bookmarkFolder).to.not.equal(undefined)
+      expect(Bookmarks.bookmarkFolder).not.toBe(undefined)
     })
     it('populates Bookmarks.bookmarksTab from #tabBookmarks element', () => {
-      expect(Bookmarks.bookmarksTab).to.not.equal(null)
+      expect(Bookmarks.bookmarksTab).not.toBe(null)
     })
   })
 
@@ -86,13 +85,13 @@ describe('app.pug ↔ client init binding', () => {
       confirmInit()
     })
     it('populates Confirm.dialogElement from #confirmDialog', () => {
-      expect(Confirm.dialogElement).to.not.equal(null)
+      expect(Confirm.dialogElement).not.toBe(null)
     })
     it('populates Confirm.titleElement from #confirmDialog .title', () => {
-      expect(Confirm.titleElement).to.not.equal(null)
+      expect(Confirm.titleElement).not.toBe(null)
     })
     it('populates Confirm.messageElement from #confirmDialog .message', () => {
-      expect(Confirm.messageElement).to.not.equal(null)
+      expect(Confirm.messageElement).not.toBe(null)
     })
   })
 
@@ -103,10 +102,10 @@ describe('app.pug ↔ client init binding', () => {
       loadingInit()
     })
     it('populates Loading.overlay from #loadingScreen', () => {
-      expect(Loading.overlay).to.not.equal(null)
+      expect(Loading.overlay).not.toBe(null)
     })
     it('populates Loading.navbar from #navbar', () => {
-      expect(Loading.navbar).to.not.equal(null)
+      expect(Loading.navbar).not.toBe(null)
     })
   })
 
@@ -129,10 +128,10 @@ describe('app.pug ↔ client init binding', () => {
       sandbox.restore()
     })
     it('populates Pictures.mainImage from #bigImage img', () => {
-      expect(Pictures.mainImage).to.not.equal(null)
+      expect(Pictures.mainImage).not.toBe(null)
     })
     it('populates Pictures.imageCard from #ImageCard template', () => {
-      expect(Pictures.imageCard).to.not.equal(null)
+      expect(Pictures.imageCard).not.toBe(null)
     })
   })
 })
