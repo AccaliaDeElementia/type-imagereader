@@ -3,7 +3,7 @@
 import type { Knex } from 'knex'
 import { createHash } from 'node:crypto'
 import posix from 'node:path'
-import { isPostgres } from '../sync/syncItemsDialect.ts'
+import { isPostgres } from '#sync/syncItemsDialect.js'
 
 const PAD_LENGTH = 20
 const TRAILING_SLASH_OFFSET = -1
