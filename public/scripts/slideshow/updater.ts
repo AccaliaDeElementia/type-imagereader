@@ -4,10 +4,6 @@ type UpdateFn = () => Promise<void>
 
 async function defaultUpdateFn(): Promise<void> {
   const err = new Error('CyclicUpdater fired before an updateFn was provided to the constructor')
-  // The post-suspension resume after a rejecting `await` doesn't execute, so
-  // tooling reports the line as partially uncovered. Ignored — the rejection
-  // path is the only behaviour worth verifying here, which we test elsewhere.
-  /* istanbul ignore next */
   await Promise.reject(err)
 }
 
