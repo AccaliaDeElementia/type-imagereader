@@ -149,7 +149,9 @@ export default [
     },
     rules: {
       '@typescript-eslint/strict-void-return': 'off', // Chai assertions and Sinon spies idiomatically return values in void contexts
-      '@typescript-eslint/no-magic-numbers': 'off', //TODO: Sort this rule out eventually
+      // Typescript tests typically use magic numbers as they are often more readable than hundreds or thousands of constants created
+      // for the many test cases that tests use
+      '@typescript-eslint/no-magic-numbers': 'off',
       // Mocha-style tests consume callback levels for describe/forEach/it before any
       // user logic runs. The project default of 3 leaves zero room for an async test
       // body inside a parameterized forEach. Bump to 5 for spec files only.
