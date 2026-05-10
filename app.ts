@@ -104,6 +104,8 @@ const parseSyncInterval = (): number | undefined => {
   return parsed
 }
 
+export const Internals = { runSyncWithLock, validateDataDir }
+
 export const ImageReader = {
   startServer: start,
   synchronize: _synchronize,
@@ -200,5 +202,3 @@ if (invokedAs !== undefined && [entryFile, entryDir].includes(resolve(invokedAs)
     process.exitCode = EXIT_FAILURE
   })
 }
-
-export const Internals = { runSyncWithLock, validateDataDir }

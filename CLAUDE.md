@@ -67,6 +67,12 @@ A few singletons hold both state and intentionally-coupled methods (`ModCount`, 
 - Prefer `export function name(…)` over `export const name = (…) => …` for declarations.
 - Cross-module imports always use named imports: `import { foo } from './bar.js'`. Avoid `import * as`.
 
+## Lint rule exceptions
+
+Leave ESLint rules in place when practical. Override them inline (with a `--` reason) only when the rule hides the intent of the code rather than improving it.
+
+- **`no-await-in-loop`** — override when the loop is _deliberately serialized_ (e.g., polling for an HTTP endpoint to come up, processing items where iteration N depends on iteration N-1, avoiding a race condition that parallelism would introduce). Use a block-scoped disable with a reason: `/* eslint-disable no-await-in-loop -- polling is intentionally serial */` … `/* eslint-enable no-await-in-loop */`. Don't refactor to recursion just to dodge the rule — that hides the polling/serial semantics behind a less obvious control flow.
+
 ## Testing conventions
 
 - One `Sinon.createSandbox()` per `describe` block; restore in `afterEach`.
