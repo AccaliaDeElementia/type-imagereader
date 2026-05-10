@@ -60,7 +60,12 @@ describe('public/slideshow/sockets handleKeys()', () => {
   })
   it('should store location.assign bound for later use', () => {
     connect()
-    //TODO: find a better way to assert this... this seems fragile
+    // Function.prototype.bind is spec'd (ECMA-262 §19.2.3.2) to set .name to
+    // 'bound <target>', so this assertion is stable across spec-conformant
+    // runtimes. Direct behavioural testing (stub window.location.assign,
+    // invoke locationAssign, assert call) is not viable — JSDOM marks
+    // Location.prototype.assign as non-configurable/non-writable, blocking
+    // both sinon.stub and Object.defineProperty.
     expect(WebSockets.locationAssign.name).to.equal('bound assign')
   })
   it('should store location.reload as a function for later use', () => {
@@ -69,7 +74,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
   })
   it('should store location.reload bound for later use', () => {
     connect()
-    //TODO: find a better way to assert this... this seems fragile
+    // See locationAssign's .name assertion above for rationale.
     expect(WebSockets.locationReload.name).to.equal('bound reload')
   })
   it('should construct socket.io client', () => {
