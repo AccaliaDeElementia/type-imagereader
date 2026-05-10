@@ -1,0 +1,138 @@
+'use sanity'
+
+import { expect } from 'chai'
+import { JSDOM } from 'jsdom'
+import { renderFile } from 'pug'
+import Sinon from 'sinon'
+import { mountDom, unmountDom } from '#testutils/dom.js'
+import { resetPubSub } from '#testutils/pubsub.js'
+
+import { Folders, init as foldersInit } from '#public/scripts/app/folders.js'
+import { Bookmarks, init as bookmarksInit } from '#public/scripts/app/bookmarks.js'
+import { Confirm, init as confirmInit } from '#public/scripts/app/confirm.js'
+import { Loading, init as loadingInit } from '#public/scripts/app/loading.js'
+import { Pictures, Imports as PicturesImports } from '#public/scripts/app/pictures/state.js'
+
+// Match the private constant inside bookmarks.ts; if that source value ever changes,
+// this baseline reset will need to follow.
+const INITIAL_LOAD_TOKEN = 0
+
+describe('app.pug ↔ client init binding', () => {
+  beforeAll(() => {
+    const html = renderFile('views/app.pug', {})
+    const dom = new JSDOM(html, { url: 'http://127.0.0.1:2999/' })
+    mountDom(dom)
+  })
+
+  afterAll(() => {
+    // Reset every state singleton this spec touches back to declared baselines,
+    // so test files that run later see the same module state as they would on
+    // a fresh import. PubSub subscribers and the DOM globals also get cleared.
+    Folders.folderCard = null
+    Bookmarks.bookmarkCard = undefined
+    Bookmarks.bookmarkFolder = undefined
+    Bookmarks.bookmarksTab = null
+    Bookmarks.bookmarkFolders = []
+    Bookmarks.loadToken = INITIAL_LOAD_TOKEN
+    Confirm.dialogElement = null
+    Confirm.titleElement = null
+    Confirm.messageElement = null
+    Confirm.resolve = undefined
+    Loading.overlay = null
+    Loading.navbar = null
+    Pictures.mainImage = null
+    Pictures.imageCard = null
+    resetPubSub()
+    unmountDom()
+  })
+
+  beforeEach(() => {
+    resetPubSub()
+  })
+
+  describe('folders init', () => {
+    beforeEach(() => {
+      Folders.folderCard = null
+      foldersInit()
+    })
+    it('populates Folders.folderCard from #FolderCard template', () => {
+      expect(Folders.folderCard).to.not.equal(null)
+    })
+  })
+
+  describe('bookmarks init', () => {
+    beforeEach(() => {
+      Bookmarks.bookmarkCard = undefined
+      Bookmarks.bookmarkFolder = undefined
+      Bookmarks.bookmarksTab = null
+      bookmarksInit()
+    })
+    it('populates Bookmarks.bookmarkCard from #BookmarkCard template', () => {
+      expect(Bookmarks.bookmarkCard).to.not.equal(undefined)
+    })
+    it('populates Bookmarks.bookmarkFolder from #BookmarkFolder template', () => {
+      expect(Bookmarks.bookmarkFolder).to.not.equal(undefined)
+    })
+    it('populates Bookmarks.bookmarksTab from #tabBookmarks element', () => {
+      expect(Bookmarks.bookmarksTab).to.not.equal(null)
+    })
+  })
+
+  describe('confirm init', () => {
+    beforeEach(() => {
+      Confirm.dialogElement = null
+      Confirm.titleElement = null
+      Confirm.messageElement = null
+      confirmInit()
+    })
+    it('populates Confirm.dialogElement from #confirmDialog', () => {
+      expect(Confirm.dialogElement).to.not.equal(null)
+    })
+    it('populates Confirm.titleElement from #confirmDialog .title', () => {
+      expect(Confirm.titleElement).to.not.equal(null)
+    })
+    it('populates Confirm.messageElement from #confirmDialog .message', () => {
+      expect(Confirm.messageElement).to.not.equal(null)
+    })
+  })
+
+  describe('loading init', () => {
+    beforeEach(() => {
+      Loading.overlay = null
+      Loading.navbar = null
+      loadingInit()
+    })
+    it('populates Loading.overlay from #loadingScreen', () => {
+      expect(Loading.overlay).to.not.equal(null)
+    })
+    it('populates Loading.navbar from #navbar', () => {
+      expect(Loading.navbar).to.not.equal(null)
+    })
+  })
+
+  describe('pictures init', () => {
+    const sandbox = Sinon.createSandbox()
+    beforeEach(() => {
+      // Stub the transitive init chain so this spec stays focused on state.ts's
+      // own DOM bindings (#bigImage img, #ImageCard) rather than what the
+      // grid/viewer/inputs/unreadFilter modules' inits do.
+      sandbox.stub(PicturesImports, 'gridResetMarkup')
+      sandbox.stub(PicturesImports, 'viewerResetMarkup')
+      sandbox.stub(PicturesImports, 'initActions')
+      sandbox.stub(PicturesImports, 'initMouse')
+      sandbox.stub(PicturesImports, 'initUnreadSelectorSlider')
+      Pictures.mainImage = null
+      Pictures.imageCard = null
+      Pictures.init()
+    })
+    afterEach(() => {
+      sandbox.restore()
+    })
+    it('populates Pictures.mainImage from #bigImage img', () => {
+      expect(Pictures.mainImage).to.not.equal(null)
+    })
+    it('populates Pictures.imageCard from #ImageCard template', () => {
+      expect(Pictures.imageCard).to.not.equal(null)
+    })
+  })
+})

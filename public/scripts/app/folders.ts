@@ -83,7 +83,7 @@ function buildFolders(data: Listing): void {
 }
 
 export function init(): void {
-  Folders.folderCard = document.querySelector<HTMLTemplateElement>('#folderCard')?.content ?? null
+  Folders.folderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
   subscribe('Navigate:Data', async (data) => {
     if (isListing(data)) Internals.buildFolders(data)
     await Promise.resolve()

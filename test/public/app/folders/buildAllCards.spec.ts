@@ -25,7 +25,7 @@ html
       div#tabLink
         a(href="#tabFolders") Folders
       div#tabFolders
-    template#folderCard
+    template#FolderCard
       div.card
         div.card-top
           i.material-icons folder
@@ -46,7 +46,7 @@ describe('public/app/folders buildAllCards()', () => {
 
     tabFolders = dom.window.document.querySelector('#tabFolders')
     Folders.folderCard = null
-    const template = document.querySelector<HTMLTemplateElement>('#folderCard')
+    const template = document.querySelector<HTMLTemplateElement>('#FolderCard')
     assert(template !== null)
     folderCard = template.content
     Folders.folderCard = folderCard

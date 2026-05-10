@@ -25,7 +25,7 @@ html
       div#tabLink
         a(href="#tabFolders") Folders
       div#tabFolders
-    template#folderCard
+    template#FolderCard
       div.card
         div.card-top
           i.material-icons folder
@@ -79,7 +79,7 @@ describe('public/app/folders init()', () => {
     expect(Folders.folderCard).to.not.equal(null)
   })
   it('should set null for missing folder card for use when building markup', () => {
-    document.querySelector('#folderCard')?.remove()
+    document.querySelector('#FolderCard')?.remove()
     init()
     expect(Folders.folderCard).to.equal(null)
   })
