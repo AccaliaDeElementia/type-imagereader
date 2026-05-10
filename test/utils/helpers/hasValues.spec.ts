@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { hasValues } from '#utils/helpers.js'
 import { cast } from '#testutils/typeGuards.js'
 
@@ -16,7 +15,7 @@ describe('utils/helpers hasValues()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${String(expected)} for ${title}`, () => {
-      expect(hasValues(cast<Parameters<typeof hasValues>[0]>(input))).to.equal(expected)
+      expect(hasValues(cast<Parameters<typeof hasValues>[0]>(input))).toBe(expected)
     })
   })
 })

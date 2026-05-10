@@ -1,11 +1,10 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isConnectionValid } from '#utils/persistance.js'
 
 describe('utils/persistance isConnectionValid()', () => {
   it('should reject missing connection element', () => {
-    expect(isConnectionValid({})).to.equal(false)
+    expect(isConnectionValid({})).toBe(false)
   })
   const tests: Array<[string, unknown, boolean]> = [
     [
@@ -66,7 +65,7 @@ describe('utils/persistance isConnectionValid()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(isConnectionValid({ connection: input })).to.equal(expected)
+      expect(isConnectionValid({ connection: input })).toBe(expected)
     })
   })
 })

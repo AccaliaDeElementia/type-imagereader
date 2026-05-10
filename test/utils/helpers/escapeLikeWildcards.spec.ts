@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { escapeLikeWildcards } from '#utils/helpers.js'
 
 describe('utils/helpers escapeLikeWildcards()', () => {
@@ -17,7 +16,7 @@ describe('utils/helpers escapeLikeWildcards()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should escape ${title}`, () => {
-      expect(escapeLikeWildcards(input)).to.equal(expected)
+      expect(escapeLikeWildcards(input)).toBe(expected)
     })
   })
 })

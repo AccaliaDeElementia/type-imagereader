@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { hasSetValues } from '#utils/helpers.js'
 import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
@@ -23,7 +22,7 @@ describe('utils/helpers hasSetValues()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${String(expected)} for ${title}`, () => {
-      expect(hasSetValues(cast<Parameters<typeof hasSetValues>[0]>(input))).to.equal(expected)
+      expect(hasSetValues(cast<Parameters<typeof hasSetValues>[0]>(input))).toBe(expected)
     })
   })
 })

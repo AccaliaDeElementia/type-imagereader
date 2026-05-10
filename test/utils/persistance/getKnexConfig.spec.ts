@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { getKnexConfig, Internals } from '#utils/persistance.js'
 import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
@@ -46,61 +45,61 @@ describe('utils/persistance getKnexConfig()', () => {
   it('should reject when readConfig rejects', async () => {
     readConfigurationBlockStub.rejects(new Error('FOO I FAIL'))
     const err = await eventuallyRejects(getKnexConfig())
-    expect(err.message).to.equal('FOO I FAIL')
+    expect(err.message).toBe('FOO I FAIL')
   })
   it('should not alter host when env is not set', async () => {
     configBlock.connection.host = 'one two three four'
     const conn = await getKnexConfig()
-    expect(conn.connection.host).to.equal('one two three four')
+    expect(conn.connection.host).toBe('one two three four')
   })
   it('should alter host when env is set', async () => {
     configBlock.connection.host = 'one two three four'
     process.env.DB_HOST = 'foobar'
     const conn = await getKnexConfig()
-    expect(conn.connection.host).to.equal('foobar')
+    expect(conn.connection.host).toBe('foobar')
   })
   it('should not alter database when env is not set', async () => {
     configBlock.connection.database = 'one two three four'
     const conn = await getKnexConfig()
-    expect(conn.connection.database).to.equal('one two three four')
+    expect(conn.connection.database).toBe('one two three four')
   })
   it('should alter database when env is set', async () => {
     configBlock.connection.database = 'one two three four'
     process.env.DB_DATABASE = 'foobar'
     const conn = await getKnexConfig()
-    expect(conn.connection.database).to.equal('foobar')
+    expect(conn.connection.database).toBe('foobar')
   })
   it('should not alter user when env is not set', async () => {
     configBlock.connection.user = 'one two three four'
     const conn = await getKnexConfig()
-    expect(conn.connection.user).to.equal('one two three four')
+    expect(conn.connection.user).toBe('one two three four')
   })
   it('should alter user when env is set', async () => {
     configBlock.connection.user = 'one two three four'
     process.env.DB_USER = 'foobar'
     const conn = await getKnexConfig()
-    expect(conn.connection.user).to.equal('foobar')
+    expect(conn.connection.user).toBe('foobar')
   })
   it('should not alter password when env is not set', async () => {
     configBlock.connection.password = 'one two three four'
     const conn = await getKnexConfig()
-    expect(conn.connection.password).to.equal('one two three four')
+    expect(conn.connection.password).toBe('one two three four')
   })
   it('should alter password when env is set', async () => {
     configBlock.connection.password = 'one two three four'
     process.env.DB_PASSWORD = 'foobar'
     const conn = await getKnexConfig()
-    expect(conn.connection.password).to.equal('foobar')
+    expect(conn.connection.password).toBe('foobar')
   })
   it('should not alter filename when env is not set', async () => {
     configBlock.connection.filename = 'one two three four'
     const conn = await getKnexConfig()
-    expect(conn.connection.filename).to.equal('one two three four')
+    expect(conn.connection.filename).toBe('one two three four')
   })
   it('should alter filename when env is set', async () => {
     configBlock.connection.filename = 'one two three four'
     process.env.DB_FILENAME = 'foobar'
     const conn = await getKnexConfig()
-    expect(conn.connection.filename).to.equal('foobar')
+    expect(conn.connection.filename).toBe('foobar')
   })
 })

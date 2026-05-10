@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { getFirst } from '#utils/helpers.js'
 import { cast } from '#testutils/typeGuards.js'
 
@@ -17,7 +16,7 @@ describe('utils/helpers getFirst()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${JSON.stringify(expected)} for ${title}`, () => {
-      expect(getFirst(cast<Parameters<typeof getFirst>[0]>(input))).to.equal(expected)
+      expect(getFirst(cast<Parameters<typeof getFirst>[0]>(input))).toBe(expected)
     })
   })
 })

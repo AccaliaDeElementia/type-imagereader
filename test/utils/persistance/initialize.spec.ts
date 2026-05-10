@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { initialize, Internals, Imports, Persistance, type KnexOptions } from '#utils/persistance.js'
 import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
@@ -52,58 +51,58 @@ describe('utils/persistance initialize()', () => {
   it('should return stored initializer when one is already created', async () => {
     const promise = Promise.resolve(stubToKnex(stubKnexInstance))
     Persistance.initializer = promise
-    expect(await initialize()).to.equal(stubKnexInstance)
+    expect(await initialize()).toBe(stubKnexInstance)
   })
   it('should not call knex when an initializer is already stored', async () => {
     const promise = Promise.resolve(stubToKnex(stubKnexInstance))
     Persistance.initializer = promise
     await initialize()
-    expect(stubKnex.called).to.equal(false)
+    expect(stubKnex.called).toBe(false)
   })
   it('should set stored Initializer when empty', async () => {
     initialize().catch(() => null)
-    expect(await Persistance.initializer).to.equal(stubKnexInstance)
+    expect(await Persistance.initializer).toBe(stubKnexInstance)
   })
   it('should resolve to knex instance', async () => {
     const knex = await initialize()
-    expect(knex).to.equal(stubKnexInstance)
+    expect(knex).toBe(stubKnexInstance)
   })
   it('should pass config to knex initializer', async () => {
     await initialize()
-    expect(stubKnex.calledWith(fakeEnvironment)).to.equal(true)
+    expect(stubKnex.calledWith(fakeEnvironment)).toBe(true)
   })
   it('should run knex migrations', async () => {
     await initialize()
-    expect(stubKnexInstance.migrate.latest.called).to.equal(true)
+    expect(stubKnexInstance.migrate.latest.called).toBe(true)
   })
   it('should reject when reading config fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubEnvironment.rejects(err)
     const result = await eventuallyRejects(initialize())
-    expect(result).to.equal(err)
+    expect(result).toBe(err)
   })
   it('should reject when reading config throws', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubEnvironment.throws(err)
     const result = await eventuallyRejects(initialize())
-    expect(result).to.equal(err)
+    expect(result).toBe(err)
   })
   it('should reject when creating Knex  fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnex.throws(err)
     const result = await eventuallyRejects(initialize())
-    expect(result).to.equal(err)
+    expect(result).toBe(err)
   })
   it('should reject when migrating to latest fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnexInstance.migrate.latest.rejects(err)
     const result = await eventuallyRejects(initialize())
-    expect(result).to.equal(err)
+    expect(result).toBe(err)
   })
   it('should reject when migrating to latest throws', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnexInstance.migrate.latest.throws(err)
     const result = await eventuallyRejects(initialize())
-    expect(result).to.equal(err)
+    expect(result).toBe(err)
   })
 })

@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { stringIsNullOrEmpty } from '#utils/helpers.js'
 
 describe('utils/helpers stringIsNullOrEmpty()', () => {
@@ -14,7 +13,7 @@ describe('utils/helpers stringIsNullOrEmpty()', () => {
   ]
   tests.forEach(([title, value, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(stringIsNullOrEmpty(value)).to.equal(expected)
+      expect(stringIsNullOrEmpty(value)).toBe(expected)
     })
   })
 })

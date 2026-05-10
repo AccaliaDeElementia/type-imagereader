@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { hasValue } from '#utils/helpers.js'
 
 describe('utils/helpers hasValue()', () => {
@@ -16,7 +15,7 @@ describe('utils/helpers hasValue()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should return ${String(expected)} for ${title}`, () => {
-      expect(hasValue(input)).to.equal(expected)
+      expect(hasValue(input)).toBe(expected)
     })
   })
 })

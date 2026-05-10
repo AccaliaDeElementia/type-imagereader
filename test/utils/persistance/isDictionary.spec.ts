@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isDictionary } from '#utils/persistance.js'
 
 describe('utils/persistance isDictionary()', () => {
@@ -14,7 +13,7 @@ describe('utils/persistance isDictionary()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(isDictionary(input)).to.equal(expected)
+      expect(isDictionary(input)).toBe(expected)
     })
   })
 })

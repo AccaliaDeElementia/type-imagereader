@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { getDataDir } from '#utils/helpers.js'
 
 describe('utils/helpers getDataDir()', () => {
@@ -18,31 +17,31 @@ describe('utils/helpers getDataDir()', () => {
   })
 
   it('should return /data when DATA_DIR is unset', () => {
-    expect(getDataDir()).to.equal('/data')
+    expect(getDataDir()).toBe('/data')
   })
 
   it('should return /data when DATA_DIR is empty string', () => {
     process.env.DATA_DIR = ''
-    expect(getDataDir()).to.equal('/data')
+    expect(getDataDir()).toBe('/data')
   })
 
   it('should return DATA_DIR value when set', () => {
     process.env.DATA_DIR = '/custom/path'
-    expect(getDataDir()).to.equal('/custom/path')
+    expect(getDataDir()).toBe('/custom/path')
   })
 
   it('should strip a single trailing slash', () => {
     process.env.DATA_DIR = '/custom/path/'
-    expect(getDataDir()).to.equal('/custom/path')
+    expect(getDataDir()).toBe('/custom/path')
   })
 
   it('should strip multiple trailing slashes', () => {
     process.env.DATA_DIR = '/custom/path///'
-    expect(getDataDir()).to.equal('/custom/path')
+    expect(getDataDir()).toBe('/custom/path')
   })
 
   it('should preserve a bare root slash', () => {
     process.env.DATA_DIR = '/'
-    expect(getDataDir()).to.equal('/')
+    expect(getDataDir()).toBe('/')
   })
 })

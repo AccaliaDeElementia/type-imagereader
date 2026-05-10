@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import type { NextFunction, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
@@ -36,37 +35,37 @@ describe('utils/Express handleErrors', () => {
     const action = sandbox.stub().resolves()
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(action.callCount).to.equal(1)
+    expect(action.callCount).toBe(1)
   })
   it('should pass request as first argument to action', async () => {
     const action = sandbox.stub().resolves()
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(action.firstCall.args[0]).to.equal(requestFake)
+    expect(action.firstCall.args[0]).toBe(requestFake)
   })
   it('should pass response as second argument to action', async () => {
     const action = sandbox.stub().resolves()
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(action.firstCall.args[1]).to.equal(responseFake)
+    expect(action.firstCall.args[1]).toBe(responseFake)
   })
   it('should not call logger when action succeeds', async () => {
     const action = sandbox.stub().resolves()
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.callCount).to.equal(0)
+    expect(loggerStub.callCount).toBe(0)
   })
   it('should call response status with INTERNAL_SERVER_ERROR on error', async () => {
     const action = sandbox.stub().rejects(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.INTERNAL_SERVER_ERROR])
+    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
   })
   it('should set E_INTERNAL_ERROR json payload on error', async () => {
     const action = sandbox.stub().rejects(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(responseStub.json.firstCall.args).to.deep.equal([
+    expect(responseStub.json.firstCall.args).toEqual([
       { error: { code: 'E_INTERNAL_ERROR', message: 'Internal Server Error' } },
     ])
   })
@@ -74,14 +73,14 @@ describe('utils/Express handleErrors', () => {
     const action = sandbox.stub().rejects(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.firstCall.args).to.have.lengthOf(2)
+    expect(loggerStub.firstCall.args).toHaveLength(2)
   })
   it('should log rendered url as first log argument on error', async () => {
     requestStub.originalUrl = '/test-path'
     const action = sandbox.stub().rejects(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.firstCall.args[0]).to.equal('Error rendering: /test-path')
+    expect(loggerStub.firstCall.args[0]).toBe('Error rendering: /test-path')
   })
   it('should log request body as second log argument on error', async () => {
     const bodyData = { Body: Math.random() }
@@ -89,26 +88,26 @@ describe('utils/Express handleErrors', () => {
     const action = sandbox.stub().rejects(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.firstCall.args[1]).to.equal(bodyData)
+    expect(loggerStub.firstCall.args[1]).toBe(bodyData)
   })
   it('should log error object as last log argument on error', async () => {
     const err = new Error('test error')
     const action = sandbox.stub().rejects(err)
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.lastCall.args[0]).to.equal(err)
+    expect(loggerStub.lastCall.args[0]).toBe(err)
   })
   it('should call logger twice on error', async () => {
     const action = sandbox.stub().rejects(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.callCount).to.equal(2)
+    expect(loggerStub.callCount).toBe(2)
   })
   it('should handle synchronous throws from action', async () => {
     const err = new Error('sync error')
     const action = sandbox.stub().throws(err)
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(responseStub.status.firstCall.args).to.deep.equal([StatusCodes.INTERNAL_SERVER_ERROR])
+    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
   })
 })

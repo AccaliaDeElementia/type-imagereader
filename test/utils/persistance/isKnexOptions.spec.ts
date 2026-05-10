@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isKnexOptions, Internals } from '#utils/persistance.js'
 import Sinon from 'sinon'
 
@@ -39,19 +38,19 @@ describe('utils/persistance isKnexOptions()', () => {
   ]
   tests.forEach(([title, input, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${title}`, () => {
-      expect(isKnexOptions(input)).to.equal(expected)
+      expect(isKnexOptions(input)).toBe(expected)
     })
   })
   it('should reject when isMigrationsValidStub fails', () => {
     isMigrationsValidStub.returns(false)
-    expect(isKnexOptions({ client: 'sqlite' })).to.equal(false)
+    expect(isKnexOptions({ client: 'sqlite' })).toBe(false)
   })
   it('should reject when isConnectionValid fails', () => {
     isConnectionValid.returns(false)
-    expect(isKnexOptions({ client: 'sqlite' })).to.equal(false)
+    expect(isKnexOptions({ client: 'sqlite' })).toBe(false)
   })
   it('should reject when isPoolValid fails', () => {
     isPoolValid.returns(false)
-    expect(isKnexOptions({ client: 'sqlite' })).to.equal(false)
+    expect(isKnexOptions({ client: 'sqlite' })).toBe(false)
   })
 })
