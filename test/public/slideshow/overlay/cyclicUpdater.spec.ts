@@ -2,7 +2,6 @@
 
 import Sinon from 'sinon'
 import { overlayUpdater as Updater, Internals } from '#public/scripts/slideshow/overlay.js'
-import { expect } from 'chai'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -34,25 +33,25 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     unmountDom()
   })
   it('should be a CyclicUpdater', () => {
-    expect(Updater).to.be.an.instanceOf(CyclicUpdater)
+    expect(Updater).toBeInstanceOf(CyclicUpdater)
   })
   it('should update every 1/10th of a second', () => {
-    expect(Updater.period).to.equal(100)
+    expect(Updater.period).toBe(100)
   })
   it('should not call showHideKiosk when overlay missing', async () => {
     const overlay = dom.window.document.querySelector('.overlay')
     overlay?.remove()
     await Updater.updateFn()
-    expect(fakeShowHide?.callCount).to.equal(0)
+    expect(fakeShowHide?.callCount).toBe(0)
   })
   it('should call showHideKiosk to show/hide kiosk overlay', async () => {
     await Updater.updateFn()
-    expect(fakeShowHide?.callCount).to.equal(1)
+    expect(fakeShowHide?.callCount).toBe(1)
   })
   it('should pass overlay to showHideKiosk call', async () => {
     const overlay = dom.window.document.querySelector('.overlay')
     await Updater.updateFn()
-    expect(fakeShowHide?.firstCall.args[0]).to.equal(overlay)
+    expect(fakeShowHide?.firstCall.args[0]).toBe(overlay)
   })
   const kioskCases: Array<[string, boolean]> = [
     ['kiosk', true],
@@ -71,28 +70,28 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     it(`${expected ? 'should' : 'should not'} enable kiosk mode for search '${search}'`, async () => {
       dom.reconfigure({ url: `http://not.a.kiosk.example.com:29999?${search}` })
       await Updater.updateFn()
-      expect(fakeShowHide?.firstCall.args[1]).to.equal(expected)
+      expect(fakeShowHide?.firstCall.args[1]).toBe(expected)
     })
   })
   it('should call calculateDarknessMs to get timer offset', async () => {
     await Updater.updateFn()
-    expect(fakeCalculateDarknessMs?.callCount).to.equal(1)
+    expect(fakeCalculateDarknessMs?.callCount).toBe(1)
   })
   it('should call getOpacity to turn offset into opacity valie', async () => {
     await Updater.updateFn()
-    expect(fakeGetOpacity?.callCount).to.equal(1)
+    expect(fakeGetOpacity?.callCount).toBe(1)
   })
   it('should call getOpacity with offset valueto turn offset into opacity valie', async () => {
     const value = Math.random()
     fakeCalculateDarknessMs?.returns(value)
     await Updater.updateFn()
-    expect(fakeGetOpacity?.firstCall.args).to.deep.equal([value])
+    expect(fakeGetOpacity?.firstCall.args).toEqual([value])
   })
   it('should set opacity on the overlay element', async () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('.overlay')
     overlay?.style.setProperty('opacity', '1')
     fakeGetOpacity?.returns(0.5)
     await Updater.updateFn()
-    expect(overlay?.style.getPropertyValue('opacity')).to.equal('0.5')
+    expect(overlay?.style.getPropertyValue('opacity')).toBe('0.5')
   })
 })

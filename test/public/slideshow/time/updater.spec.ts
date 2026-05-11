@@ -4,7 +4,6 @@ import { timeUpdater as Updater, Internals } from '#public/scripts/slideshow/tim
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
 import assert from 'node:assert'
@@ -38,24 +37,24 @@ describe('public/slideshow/time Updater()', () => {
     unmountDom()
   })
   it('should expose a CyclicUpdater', () => {
-    expect(Updater).to.be.an.instanceOf(CyclicUpdater)
+    expect(Updater).toBeInstanceOf(CyclicUpdater)
   })
   it('should have a period of 100ms', () => {
-    expect(Updater.period).to.equal(100)
+    expect(Updater.period).toBe(100)
   })
   it('should format time for display', async () => {
     await Updater.updateFn()
-    expect(fakeFormatTime?.callCount).to.equal(1)
+    expect(fakeFormatTime?.callCount).toBe(1)
   })
   it('should format now as time for display', async () => {
     await Updater.updateFn()
-    expect(fakeFormatTime?.firstCall.args).to.deep.equal([now])
+    expect(fakeFormatTime?.firstCall.args).toEqual([now])
   })
   it('should place formated data into .time', async () => {
     fakeFormatTime?.returns('I am time')
     await Updater.updateFn()
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
-    expect(elem?.innerHTML).to.equal('I am time')
+    expect(elem?.innerHTML).toBe('I am time')
   })
   it('should tolerate a missing .time target node', async () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
@@ -67,21 +66,21 @@ describe('public/slideshow/time Updater()', () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
     elem?.remove()
     await Updater.updateFn()
-    expect(fakeFormatTime?.callCount).to.equal(0)
+    expect(fakeFormatTime?.callCount).toBe(0)
   })
   it('should format date for display', async () => {
     await Updater.updateFn()
-    expect(fakeFormatDate?.callCount).to.equal(1)
+    expect(fakeFormatDate?.callCount).toBe(1)
   })
   it('should format now as date for display', async () => {
     await Updater.updateFn()
-    expect(fakeFormatDate?.firstCall.args).to.deep.equal([now])
+    expect(fakeFormatDate?.firstCall.args).toEqual([now])
   })
   it('should place formated data into .date', async () => {
     fakeFormatDate?.returns('I am date')
     await Updater.updateFn()
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
-    expect(elem?.innerHTML).to.equal('I am date')
+    expect(elem?.innerHTML).toBe('I am date')
   })
   it('should tolerate a missing .date target node', async () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
@@ -93,6 +92,6 @@ describe('public/slideshow/time Updater()', () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
     elem?.remove()
     await Updater.updateFn()
-    expect(fakeFormatDate?.callCount).to.equal(0)
+    expect(fakeFormatDate?.callCount).toBe(0)
   })
 })

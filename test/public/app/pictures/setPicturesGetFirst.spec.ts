@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -52,7 +51,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(Pictures.modCount).to.equal(-65535)
+    expect(Pictures.modCount).toBe(-65535)
   })
   it('should return null for null mainImage', () => {
     Pictures.mainImage = null
@@ -62,7 +61,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should hide mainImage when listing has null pictures', () => {
     Internals.setPicturesGetFirst({
@@ -71,7 +70,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(Pictures.mainImage?.classList.contains('hidden')).to.equal(true)
+    expect(Pictures.mainImage?.classList.contains('hidden')).toBe(true)
   })
   it('should hide image tab link when listing has null pictures', () => {
     Internals.setPicturesGetFirst({
@@ -80,7 +79,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(element?.classList.contains('hidden')).to.equal(true)
+    expect(element?.classList.contains('hidden')).toBe(true)
   })
   it('should publish MenuShow when listing has null pictures', () => {
     Internals.setPicturesGetFirst({
@@ -89,7 +88,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(menuShow.callCount).to.equal(1)
+    expect(menuShow.callCount).toBe(1)
   })
   it('should hide mainImage when listing has null pictures', () => {
     const result = Internals.setPicturesGetFirst({
@@ -98,7 +97,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should ignore incoming modCount when listing has null pictures', () => {
     Internals.setPicturesGetFirst({
@@ -107,7 +106,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(Pictures.modCount).to.equal(-65535)
+    expect(Pictures.modCount).toBe(-65535)
   })
   it('should hide mainImage when listing has empty pictures', () => {
     Internals.setPicturesGetFirst({
@@ -117,7 +116,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(Pictures.mainImage?.classList.contains('hidden')).to.equal(true)
+    expect(Pictures.mainImage?.classList.contains('hidden')).toBe(true)
   })
   it('should hide image tab link when listing has empty pictures', () => {
     Internals.setPicturesGetFirst({
@@ -127,7 +126,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(element?.classList.contains('hidden')).to.equal(true)
+    expect(element?.classList.contains('hidden')).toBe(true)
   })
   it('should publish MenuShow when listing has empty pictures', () => {
     Internals.setPicturesGetFirst({
@@ -137,7 +136,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(menuShow.callCount).to.equal(1)
+    expect(menuShow.callCount).toBe(1)
   })
   it('should hide mainImage when listing has empty pictures', () => {
     const result = Internals.setPicturesGetFirst({
@@ -147,7 +146,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should ignore incoming modCount when listing has empty pictures', () => {
     Internals.setPicturesGetFirst({
@@ -157,7 +156,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(Pictures.modCount).to.equal(-65535)
+    expect(Pictures.modCount).toBe(-65535)
   })
   it('should unhide mainImage when listing has pictures', () => {
     Pictures.mainImage?.classList.add('hidden')
@@ -174,7 +173,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       ],
       modCount: 42,
     })
-    expect(Pictures.mainImage?.classList.contains('hidden')).to.equal(false)
+    expect(Pictures.mainImage?.classList.contains('hidden')).toBe(false)
   })
   it('should unhide images tab link when listing has pictures', () => {
     element?.classList.add('hidden')
@@ -191,7 +190,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       ],
       modCount: 42,
     })
-    expect(element?.classList.contains('hidden')).to.equal(false)
+    expect(element?.classList.contains('hidden')).toBe(false)
   })
   it('should save pictures when listing has pictures', () => {
     const pics = Array.from({ length: 17 }).map((_, i) => ({
@@ -207,7 +206,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: pics,
       modCount: 42,
     })
-    expect(Pictures.pictures).to.equal(pics)
+    expect(Pictures.pictures).toBe(pics)
   })
   it('should set index for all pictures when listing has pictures', () => {
     const pics: Picture[] = Array.from({ length: 17 }).map((_, i) => ({
@@ -224,7 +223,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       modCount: 42,
     })
     pics.forEach((pic, idx) => {
-      expect(pic.index).to.equal(idx)
+      expect(pic.index).toBe(idx)
     })
   })
   it('should set saved modCount when listing has pictures', () => {
@@ -241,7 +240,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: pics,
       modCount: 42,
     })
-    expect(Pictures.modCount).to.equal(42)
+    expect(Pictures.modCount).toBe(42)
   })
   it('should set default modCount when listing has missing modCount', () => {
     const pics = Array.from({ length: 17 }).map((_, i) => ({
@@ -256,7 +255,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       pictures: pics,
     })
-    expect(Pictures.modCount).to.equal(-1)
+    expect(Pictures.modCount).toBe(-1)
   })
   it('should return first pciture when listing has pictures', () => {
     const pics = Array.from({ length: 17 }).map((_, i) => ({
@@ -272,6 +271,6 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: pics,
       modCount: 42,
     })
-    expect(res).to.equal(pics[0])
+    expect(res).toBe(pics[0])
   })
 })

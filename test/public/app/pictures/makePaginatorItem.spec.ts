@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -31,30 +30,30 @@ describe('public/app/pictures makePaginatorItem()', () => {
   })
   it('returns an List Item Element', () => {
     const result = Internals.makePaginatorItem('foobar', () => 0)
-    expect(result).to.be.an.instanceOf(dom.window.HTMLLIElement)
+    expect(result).toBeInstanceOf(dom.window.HTMLLIElement)
   })
   it('should replace span contents as label', () => {
     const result = Internals.makePaginatorItem('frobitz', () => 0)
     const label = result?.querySelector('span')?.innerHTML
-    expect(label).to.equal('frobitz')
+    expect(label).toBe('frobitz')
   })
   it('should add click handler that calls provided selector to determine page to navigate to', () => {
     const spy = sandbox.stub().returns(71)
     const result = Internals.makePaginatorItem('frobitz', spy)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
-    expect(spy.callCount).to.equal(1)
+    expect(spy.callCount).toBe(1)
   })
   it('should add click handler that calls selectPage', () => {
     const result = Internals.makePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
-    expect(selectPageSpy.callCount).to.equal(1)
+    expect(selectPageSpy.callCount).toBe(1)
   })
   it('should add click handler that passes selector result to selectPage', () => {
     const result = Internals.makePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
-    expect(selectPageSpy.firstCall.args).to.deep.equal([99])
+    expect(selectPageSpy.firstCall.args).toEqual([99])
   })
 })

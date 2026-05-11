@@ -1,7 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/pictures/unreadFilter.js'
@@ -33,27 +31,27 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     elem?.parentElement?.removeChild(elem)
     expect(() => {
       Internals.updateUnreadSelectorSlider()
-    }).to.not.throw()
+    }).not.toThrow()
   })
   it('should remove unread class from slider when value is false', () => {
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     elem.classList.add('unread')
     Internals.updateUnreadSelectorSlider()
-    expect(elem.classList.contains('unread')).to.equal(false)
+    expect(elem.classList.contains('unread')).toBe(false)
   })
   it('should add all class from slider when value is false', () => {
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     Internals.updateUnreadSelectorSlider()
-    expect(elem.classList.contains('all')).to.equal(true)
+    expect(elem.classList.contains('all')).toBe(true)
   })
   it('should add unread class from slider when value is true', () => {
     getShowUnreadOnlySpy.returns(true)
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     Internals.updateUnreadSelectorSlider()
-    expect(elem.classList.contains('unread')).to.equal(true)
+    expect(elem.classList.contains('unread')).toBe(true)
   })
   it('should remove all class from slider when value is true', () => {
     getShowUnreadOnlySpy.returns(true)
@@ -61,6 +59,6 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     assert(elem !== null)
     elem.classList.add('all')
     Internals.updateUnreadSelectorSlider()
-    expect(elem.classList.contains('all')).to.equal(false)
+    expect(elem.classList.contains('all')).toBe(false)
   })
 })

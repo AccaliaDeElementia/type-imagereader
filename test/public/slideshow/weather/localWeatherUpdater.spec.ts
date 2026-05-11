@@ -1,7 +1,6 @@
 'use sanity'
 
 import { Internals, localWeatherUpdater } from '#public/scripts/slideshow/weather.js'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -43,43 +42,43 @@ describe('public/slideshow/weather localWeatherUpdater', () => {
   })
 
   it('should be an CyclicUpdater', () => {
-    expect(localWeatherUpdater).to.be.an.instanceOf(CyclicUpdater)
+    expect(localWeatherUpdater).toBeInstanceOf(CyclicUpdater)
   })
 
   it('should have expected interval', () => {
-    expect(localWeatherUpdater.period).to.equal(1000)
+    expect(localWeatherUpdater.period).toBe(1000)
   })
 
   it('should fetch weather once when triggered', async () => {
     await localWeatherUpdater.updateFn()
-    expect(fetchWeatherStub.callCount).to.equal(1)
+    expect(fetchWeatherStub.callCount).toBe(1)
   })
 
   it('should fetch weather from expected url when triggered', async () => {
     await localWeatherUpdater.updateFn()
-    expect(fetchWeatherStub.firstCall.args).to.deep.equal(['https://localhost:8443/'])
+    expect(fetchWeatherStub.firstCall.args).toEqual(['https://localhost:8443/'])
   })
 
   it('should show fetched data once after retrieval', async () => {
     await localWeatherUpdater.updateFn()
-    expect(showWeatherStub.callCount).to.equal(1)
+    expect(showWeatherStub.callCount).toBe(1)
   })
 
   it('should show fetched data after fetch when triggered', async () => {
     await localWeatherUpdater.updateFn()
-    expect(showWeatherStub.calledAfter(fetchWeatherStub)).to.equal(true)
+    expect(showWeatherStub.calledAfter(fetchWeatherStub)).toBe(true)
   })
 
   it('should show weather with expected element as base', async () => {
     const base = dom.window.document.querySelector<HTMLElement>('.localweather')
     await localWeatherUpdater.updateFn()
-    expect(showWeatherStub.firstCall.args[0]).to.equal(base)
+    expect(showWeatherStub.firstCall.args[0]).toBe(base)
   })
 
   it('should show weather with retrieved weather', async () => {
     const data = { FOO: Math.random() }
     fetchWeatherStub.resolves(data)
     await localWeatherUpdater.updateFn()
-    expect(showWeatherStub.firstCall.args[1]).to.equal(data)
+    expect(showWeatherStub.firstCall.args[1]).toBe(data)
   })
 })

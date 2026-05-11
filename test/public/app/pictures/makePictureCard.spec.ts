@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -45,7 +44,7 @@ describe('public/app/pictures makePictureCard()', () => {
       path: '/foo/bar/baz.jpg',
       seen: false,
     })
-    expect(card).to.equal(undefined)
+    expect(card).toBe(undefined)
   })
   it('should return an HTMLElement on success', () => {
     const card = Internals.makePictureCard({
@@ -53,7 +52,7 @@ describe('public/app/pictures makePictureCard()', () => {
       path: '/foo/bar/baz.jpg',
       seen: false,
     })
-    expect(card).to.be.instanceOf(dom.window.HTMLElement)
+    expect(card).toBeInstanceOf(dom.window.HTMLElement)
   })
   it('should set background image data attribute on success', () => {
     const card = Internals.makePictureCard({
@@ -61,7 +60,7 @@ describe('public/app/pictures makePictureCard()', () => {
       path: '/foo/bar/baz.jpg',
       seen: false,
     })
-    expect(card?.getAttribute('data-backgroundImage')).to.equal('url("/images/preview/foo/bar/baz.jpg-image.webp")')
+    expect(card?.getAttribute('data-backgroundImage')).toBe('url("/images/preview/foo/bar/baz.jpg-image.webp")')
   })
   it('should add seen class when input is seen', () => {
     const card = Internals.makePictureCard({
@@ -69,7 +68,7 @@ describe('public/app/pictures makePictureCard()', () => {
       path: '/foo/bar/baz.jpg',
       seen: true,
     })
-    expect(card?.classList.contains('seen')).to.equal(true)
+    expect(card?.classList.contains('seen')).toBe(true)
   })
   it('should not add seen class when input is unseen', () => {
     const card = Internals.makePictureCard({
@@ -77,7 +76,7 @@ describe('public/app/pictures makePictureCard()', () => {
       path: '/foo/bar/baz.jpg',
       seen: false,
     })
-    expect(card?.classList.contains('seen')).to.equal(false)
+    expect(card?.classList.contains('seen')).toBe(false)
   })
   it('should set image title', () => {
     const card = Internals.makePictureCard({
@@ -85,7 +84,7 @@ describe('public/app/pictures makePictureCard()', () => {
       path: '/foo/bar/baz.jpg',
       seen: false,
     })
-    expect(card?.querySelector('h5')?.innerHTML).to.equal('Foobar 9001')
+    expect(card?.querySelector('h5')?.innerHTML).toBe('Foobar 9001')
   })
   it('should register click handler', () => {
     const card = Internals.makePictureCard({
@@ -95,19 +94,19 @@ describe('public/app/pictures makePictureCard()', () => {
     })
     const evt = new dom.window.MouseEvent('click')
     card?.dispatchEvent(evt)
-    expect(changePictureSpy.called).to.equal(true)
+    expect(changePictureSpy.called).toBe(true)
   })
   it('should publish Pictures:Change once on click event', () => {
     const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
     const card = Internals.makePictureCard(pic)
     card?.dispatchEvent(new dom.window.MouseEvent('click'))
-    expect(changePictureSpy.callCount).to.equal(1)
+    expect(changePictureSpy.callCount).toBe(1)
   })
   it('should pass the picture as Pictures:Change data on click event', () => {
     const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
     const card = Internals.makePictureCard(pic)
     card?.dispatchEvent(new dom.window.MouseEvent('click'))
-    expect(changePictureSpy.firstCall.args[0]).to.equal(pic)
+    expect(changePictureSpy.firstCall.args[0]).toBe(pic)
   })
   it('should hide menu on click event', () => {
     const pic = {
@@ -118,6 +117,6 @@ describe('public/app/pictures makePictureCard()', () => {
     const card = Internals.makePictureCard(pic)
     const evt = new dom.window.MouseEvent('click')
     card?.dispatchEvent(evt)
-    expect(menuHideSpy.callCount).to.equal(1)
+    expect(menuHideSpy.callCount).toBe(1)
   })
 })

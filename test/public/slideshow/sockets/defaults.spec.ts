@@ -1,7 +1,6 @@
 'use sanity'
 
 import { Internals } from '#public/scripts/slideshow/sockets.js'
-import { expect } from 'chai'
 import { definitelyThrows } from '#testutils/errors.js'
 
 describe('public/slideshow/sockets uninitialized sentinels', () => {
@@ -14,7 +13,7 @@ describe('public/slideshow/sockets uninitialized sentinels', () => {
     const err = definitelyThrows(() => {
       Internals.uninitializedLocationAssign('')
     })
-    expect(err.message).to.equal('locationAssign called before connect()')
+    expect(err.message).toBe('locationAssign called before connect()')
   })
   it('should definitely throw for Internals.uninitializedLocationReload()', () => {
     definitelyThrows(() => {
@@ -25,6 +24,6 @@ describe('public/slideshow/sockets uninitialized sentinels', () => {
     const err = definitelyThrows(() => {
       Internals.uninitializedLocationReload()
     })
-    expect(err.message).to.equal('locationReload called before connect()')
+    expect(err.message).toBe('locationReload called before connect()')
   })
 })

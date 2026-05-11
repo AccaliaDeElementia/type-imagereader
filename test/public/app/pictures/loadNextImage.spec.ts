@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -54,119 +53,119 @@ describe('public/app/pictures loadNextImage()', () => {
   it('should call getPicture once when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)
     await Internals.loadNextImage()
-    expect(getPictureStub.callCount).to.equal(1)
+    expect(getPictureStub.callCount).toBe(1)
   })
   it('should call getPicture with one argument when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)
     await Internals.loadNextImage()
-    expect(getPictureStub.firstCall.args).to.have.lengthOf(1)
+    expect(getPictureStub.firstCall.args).toHaveLength(1)
   })
   it('should call getPicture with Next navigation when ShowUnreadOnly is unset', async () => {
     getShowUnreadOnlyStub.returns(false)
     await Internals.loadNextImage()
-    expect(getPictureStub.firstCall.args[0]).to.equal(NavigateTo.Next)
+    expect(getPictureStub.firstCall.args[0]).toBe(NavigateTo.Next)
   })
   it('should call getPicture once when ShowUnreadOnly is set', async () => {
     getShowUnreadOnlyStub.returns(true)
     await Internals.loadNextImage()
-    expect(getPictureStub.callCount).to.equal(1)
+    expect(getPictureStub.callCount).toBe(1)
   })
   it('should call getPicture with one argument when ShowUnreadOnly is set', async () => {
     getShowUnreadOnlyStub.returns(true)
     await Internals.loadNextImage()
-    expect(getPictureStub.firstCall.args).to.have.lengthOf(1)
+    expect(getPictureStub.firstCall.args).toHaveLength(1)
   })
   it('should call getPicture with NextUnread navigation when ShowUnreadOnly is set', async () => {
     getShowUnreadOnlyStub.returns(true)
     await Internals.loadNextImage()
-    expect(getPictureStub.firstCall.args[0]).to.equal(NavigateTo.NextUnread)
+    expect(getPictureStub.firstCall.args[0]).toBe(NavigateTo.NextUnread)
   })
   it('should set nextLoader', async () => {
     const sentinal = Promise.resolve()
     Pictures.nextLoader = sentinal
     await Internals.loadNextImage()
-    expect(Pictures.nextLoader).to.not.equal(sentinal)
+    expect(Pictures.nextLoader).not.toBe(sentinal)
   })
   it('should set nextPending on exec', async () => {
     Pictures.nextPending = false
     const promise = Internals.loadNextImage()
-    expect(Pictures.nextPending).to.equal(true)
+    expect(Pictures.nextPending).toBe(true)
     await promise
   })
   it('should clear nextPending on no next image', async () => {
     Pictures.nextPending = true
     getPictureStub.returns(undefined)
     const promise = Internals.loadNextImage()
-    expect(Pictures.nextPending).to.equal(false)
+    expect(Pictures.nextPending).toBe(false)
     await promise
   })
   it('should set nextPending during fetch resolve', async () => {
     fetchStub.resolves()
     const promise = Internals.loadNextImage()
-    expect(Pictures.nextPending).to.equal(true)
+    expect(Pictures.nextPending).toBe(true)
     await promise
   })
   it('should clear nextPending on fetch resolve', async () => {
     fetchStub.resolves()
     await Internals.loadNextImage()
-    expect(Pictures.nextPending).to.equal(false)
+    expect(Pictures.nextPending).toBe(false)
   })
   it('should set nextPending during fetch reject', async () => {
     fetchStub.rejects('BOO')
     const promise = Internals.loadNextImage()
-    expect(Pictures.nextPending).to.equal(true)
+    expect(Pictures.nextPending).toBe(true)
     await promise
   })
   it('should clear nextPending on fetch reject', async () => {
     fetchStub.rejects('BOO')
     await Internals.loadNextImage()
-    expect(Pictures.nextPending).to.equal(false)
+    expect(Pictures.nextPending).toBe(false)
   })
   it('should not fetch on no next image', async () => {
     getPictureStub.returns(undefined)
     await Internals.loadNextImage()
-    expect(fetchStub.callCount).to.equal(0)
+    expect(fetchStub.callCount).toBe(0)
   })
   it('should fetch once for next image', async () => {
     await Internals.loadNextImage()
-    expect(fetchStub.callCount).to.equal(1)
+    expect(fetchStub.callCount).toBe(1)
   })
   it('should fetch with one argument for next image', async () => {
     await Internals.loadNextImage()
-    expect(fetchStub.firstCall.args).to.have.lengthOf(1)
+    expect(fetchStub.firstCall.args).toHaveLength(1)
   })
   it('should fetch expected url for next image', async () => {
     await Internals.loadNextImage()
-    expect(fetchStub.firstCall.args[0]).to.equal('/images/scaled/1024/768/foobar.png-image.webp')
+    expect(fetchStub.firstCall.args[0]).toBe('/images/scaled/1024/768/foobar.png-image.webp')
   })
   it('should fetch once with main image width set', async () => {
     mainImage.width = 65535
     await Internals.loadNextImage()
-    expect(fetchStub.callCount).to.equal(1)
+    expect(fetchStub.callCount).toBe(1)
   })
   it('should fetch with one argument with main image width set', async () => {
     mainImage.width = 65535
     await Internals.loadNextImage()
-    expect(fetchStub.firstCall.args).to.have.lengthOf(1)
+    expect(fetchStub.firstCall.args).toHaveLength(1)
   })
   it('should fetch expected url with main image width set', async () => {
     mainImage.width = 65535
     await Internals.loadNextImage()
-    expect(fetchStub.firstCall.args[0]).to.contain('scaled/65535/768/')
+    expect(fetchStub.firstCall.args[0]).toContain('scaled/65535/768/')
   })
   it('should fetch once with main image height set', async () => {
     mainImage.height = 65535
     await Internals.loadNextImage()
-    expect(fetchStub.callCount).to.equal(1)
+    expect(fetchStub.callCount).toBe(1)
   })
   it('should fetch with one argument with main image height set', async () => {
     mainImage.height = 65535
     await Internals.loadNextImage()
-    expect(fetchStub.firstCall.args).to.have.lengthOf(1)
+    expect(fetchStub.firstCall.args).toHaveLength(1)
   })
   it('should fetch expected url with main image height set', async () => {
     mainImage.height = 65535
     await Internals.loadNextImage()
-    expect(fetchStub.firstCall.args[0]).to.contain('scaled/1024/65535/')
+    expect(fetchStub.firstCall.args[0]).toContain('scaled/1024/65535/')
   })
 })

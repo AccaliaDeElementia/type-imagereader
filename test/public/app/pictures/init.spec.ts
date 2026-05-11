@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -78,46 +77,46 @@ describe('public/app/pictures init()', () => {
   it('should clear pictures array', () => {
     Pictures.pictures = cast<Picture[]>(null)
     Pictures.init()
-    expect(Pictures.pictures).to.deep.equal([])
+    expect(Pictures.pictures).toEqual([])
   })
   it('should clear current picture', () => {
     Pictures.current = cast<Picture>(false)
     Pictures.init()
-    expect(Pictures.current).to.equal(null)
+    expect(Pictures.current).toBe(null)
   })
   it('should reset nextLoader promise', () => {
     Pictures.nextLoader = cast<Promise<void>>(null)
     Pictures.init()
-    expect(Pictures.nextLoader).to.be.an.instanceOf(Promise)
+    expect(Pictures.nextLoader).toBeInstanceOf(Promise)
   })
   it('should reset nextPending status', () => {
     Pictures.nextPending = false
     Pictures.init()
-    expect(Pictures.nextPending).to.equal(true)
+    expect(Pictures.nextPending).toBe(true)
   })
   it('should reset markup on init', () => {
-    expect(resetMarkupSpy.called).to.equal(false)
+    expect(resetMarkupSpy.called).toBe(false)
     Pictures.init()
-    expect(resetMarkupSpy.called).to.equal(true)
+    expect(resetMarkupSpy.called).toBe(true)
   })
   it('should init actions on main init', () => {
-    expect(initActionsSpy.called).to.equal(false)
+    expect(initActionsSpy.called).toBe(false)
     Pictures.init()
-    expect(initActionsSpy.called).to.equal(true)
+    expect(initActionsSpy.called).toBe(true)
   })
   it('should init mouse on main init', () => {
-    expect(initMouseSpy.called).to.equal(false)
+    expect(initMouseSpy.called).toBe(false)
     Pictures.init()
-    expect(initMouseSpy.called).to.equal(true)
+    expect(initMouseSpy.called).toBe(true)
   })
   it('should init unread slider on main init', () => {
-    expect(initUnreadSliderSpy.called).to.equal(false)
+    expect(initUnreadSliderSpy.called).toBe(false)
     Pictures.init()
-    expect(initUnreadSliderSpy.called).to.equal(true)
+    expect(initUnreadSliderSpy.called).toBe(true)
   })
   it('should register subscribers for Navigate:Data and Pictures:Change', () => {
     Pictures.init()
-    expect(PubSub.subscribers).to.have.all.keys('NAVIGATE:DATA', 'PICTURES:CHANGE')
+    expect(Object.keys(PubSub.subscribers).sort()).toEqual(['NAVIGATE:DATA', 'PICTURES:CHANGE'].sort())
   })
   const testCases: Array<[string, boolean, unknown]> = [
     ['listing', true, { path: '', parent: '', name: '' }],
@@ -132,7 +131,7 @@ describe('public/app/pictures init()', () => {
       Pictures.init()
       const handler = getSubscriber('NAVIGATE:DATA')
       await handler(data)
-      expect(loadDataSpy.called).to.equal(expected)
+      expect(loadDataSpy.called).toBe(expected)
     })
   })
   const pictureChangeCases: Array<[string, boolean, unknown]> = [
@@ -148,7 +147,7 @@ describe('public/app/pictures init()', () => {
       Pictures.init()
       const handler = getSubscriber('PICTURES:CHANGE')
       await handler(data)
-      expect(changePictureSpy.called).to.equal(expected)
+      expect(changePictureSpy.called).toBe(expected)
     })
   })
 })

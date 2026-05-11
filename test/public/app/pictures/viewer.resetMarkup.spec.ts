@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -67,7 +66,7 @@ describe('public/app/pictures resetMarkup()', () => {
       assert(node !== null)
       node.innerHTML = '<span>FOO</span>'
       resetMarkup()
-      expect(node.innerHTML).to.equal('')
+      expect(node.innerHTML).toBe('')
     })
   })
   it('should clear src of mainImage', () => {
@@ -75,16 +74,16 @@ describe('public/app/pictures resetMarkup()', () => {
     assert(img !== null)
     img.src = 'https://127.0.0.1:42069/blaze.gif'
     resetMarkup()
-    expect(img.src).to.equal('http://127.0.0.1:2999/') // not blank due to how jsdom handles URIs
+    expect(img.src).toBe('http://127.0.0.1:2999/') // not blank due to how jsdom handles URIs
   })
   it('should publish Loading:Hide on mainImage load event', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
     const evt = new dom.window.Event('load')
     resetMarkup()
-    expect(loadingHideSpy.called).to.equal(false)
+    expect(loadingHideSpy.called).toBe(false)
     img.dispatchEvent(evt)
-    expect(loadingHideSpy.called).to.equal(true)
+    expect(loadingHideSpy.called).toBe(true)
   })
   it('should publish Loading:Error on mainImage error event with src set', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -92,9 +91,9 @@ describe('public/app/pictures resetMarkup()', () => {
     const evt = new dom.window.ErrorEvent('error')
     resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
-    expect(loadingErrorSpy.called).to.equal(false)
+    expect(loadingErrorSpy.called).toBe(false)
     img.dispatchEvent(evt)
-    expect(loadingErrorSpy.called).to.equal(true)
+    expect(loadingErrorSpy.called).toBe(true)
   })
   it('should not publish Loading:Error on mainImage error event with src empty', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -103,7 +102,7 @@ describe('public/app/pictures resetMarkup()', () => {
     resetMarkup()
     img.setAttribute('src', '')
     img.dispatchEvent(evt)
-    expect(loadingErrorSpy.called).to.equal(false)
+    expect(loadingErrorSpy.called).toBe(false)
   })
   it('should publish expected error message when load fails and no current image', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -113,7 +112,7 @@ describe('public/app/pictures resetMarkup()', () => {
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = null
     img.dispatchEvent(evt)
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal('Main Image Failed to Load: undefined')
+    expect(loadingErrorSpy.firstCall.args[0]).toBe('Main Image Failed to Load: undefined')
   })
   it('should publish expected error message when load fails and invalid current image', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -123,7 +122,7 @@ describe('public/app/pictures resetMarkup()', () => {
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = { name: cast<string>(null), path: '', seen: false }
     img.dispatchEvent(evt)
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal('Main Image Failed to Load: null')
+    expect(loadingErrorSpy.firstCall.args[0]).toBe('Main Image Failed to Load: null')
   })
   it('should publish expected error message when load fails', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -133,6 +132,6 @@ describe('public/app/pictures resetMarkup()', () => {
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = { name: 'blaze.gif', path: '', seen: false }
     img.dispatchEvent(evt)
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal('Main Image Failed to Load: blaze.gif')
+    expect(loadingErrorSpy.firstCall.args[0]).toBe('Main Image Failed to Load: blaze.gif')
   })
 })

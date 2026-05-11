@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -36,11 +35,11 @@ describe('public/app/pictures makePicturesPage()', () => {
   })
   it('should return div element', () => {
     const page = Internals.makePicturesPage(666, [])
-    expect(page).to.be.an.instanceOf(dom.window.HTMLDivElement)
+    expect(page).toBeInstanceOf(dom.window.HTMLDivElement)
   })
   it('should return page classed element', () => {
     const page = Internals.makePicturesPage(666, [])
-    expect(page.classList.contains('page')).to.equal(true)
+    expect(page.classList.contains('page')).toBe(true)
   })
   it('should set page number on input pictures', () => {
     const pic: Picture = {
@@ -49,34 +48,34 @@ describe('public/app/pictures makePicturesPage()', () => {
       seen: false,
     }
     Internals.makePicturesPage(69, [pic])
-    expect(pic.page).to.equal(69)
+    expect(pic.page).toBe(69)
   })
   it('should call makePictureCard once per picture', () => {
     Internals.makePicturesPage(69, [{ name: '', path: '', seen: false }])
-    expect(makePictureCardSpy.callCount).to.equal(1)
+    expect(makePictureCardSpy.callCount).toBe(1)
   })
   it('should call makePictureCard with 1 argument', () => {
     Internals.makePicturesPage(69, [{ name: '', path: '', seen: false }])
-    expect(makePictureCardSpy.firstCall.args).to.have.lengthOf(1)
+    expect(makePictureCardSpy.firstCall.args).toHaveLength(1)
   })
   it('should pass the picture to makePictureCard', () => {
     const pic: Picture = { name: '', path: '', seen: false }
     Internals.makePicturesPage(69, [pic])
-    expect(makePictureCardSpy.firstCall.args[0]).to.equal(pic)
+    expect(makePictureCardSpy.firstCall.args[0]).toBe(pic)
   })
   it('should save card element to picture on success', () => {
     const picture: Picture = { name: 'foo', path: '/foo/bar/baz.jpg', seen: false }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
     Internals.makePicturesPage(69, [picture])
-    expect(picture).to.have.any.keys('element')
+    expect(Object.keys(picture)).toContain('element')
   })
   it('should save the returned card as the picture element', () => {
     const picture: Picture = { name: 'foo', path: '/foo/bar/baz.jpg', seen: false }
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
     Internals.makePicturesPage(69, [picture])
-    expect(picture.element).to.equal(card)
+    expect(picture.element).toBe(card)
   })
   it('should not set page number when card creation fails', () => {
     const pic: Picture = {
@@ -86,7 +85,7 @@ describe('public/app/pictures makePicturesPage()', () => {
     }
     makePictureCardSpy.returns(undefined)
     Internals.makePicturesPage(69, [pic])
-    expect(pic.page).to.equal(undefined)
+    expect(pic.page).toBe(undefined)
   })
   it('should add all cards to built page', () => {
     const pics = Array.from({ length: 50 }).map(
@@ -97,7 +96,7 @@ describe('public/app/pictures makePicturesPage()', () => {
       }),
     )
     const page = Internals.makePicturesPage(1, pics)
-    expect(page.children).to.have.lengthOf(50)
+    expect(page.children).toHaveLength(50)
   })
   it('should add card to built page', () => {
     const pic: Picture = {
@@ -108,6 +107,6 @@ describe('public/app/pictures makePicturesPage()', () => {
     const card = dom.window.document.createElement('div')
     makePictureCardSpy.returns(card)
     const page = Internals.makePicturesPage(69, [pic])
-    expect(page.firstChild).to.equal(card)
+    expect(page.firstChild).toBe(card)
   })
 })

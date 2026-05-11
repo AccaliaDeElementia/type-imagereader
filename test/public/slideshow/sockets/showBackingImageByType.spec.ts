@@ -4,8 +4,6 @@ import { Internals } from '#public/scripts/slideshow/sockets.js'
 import { render } from 'pug'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import { expect } from 'chai'
-
 const markup = `
 html
   body
@@ -54,32 +52,32 @@ describe('public/slideshow/sockets showBackingImageByType()', () => {
     it(`should unhide .topImage for image: ${img}`, () => {
       topImage?.classList.add('hide')
       Internals.showBackingImageByType(img)
-      expect(topImage?.classList.contains('hide')).to.equal(false)
+      expect(topImage?.classList.contains('hide')).toBe(false)
     })
     it(`should set source .topImage for image: ${img}`, () => {
       topImage?.setAttribute('src', 'Invalid!')
       Internals.showBackingImageByType(img)
-      expect(topImage?.getAttribute('src')).to.equal(`/images/kiosk${img}-image.webp`)
+      expect(topImage?.getAttribute('src')).toBe(`/images/kiosk${img}-image.webp`)
     })
     it(`should unhide .bottomImage for image: ${img}`, () => {
       bottomImage?.classList.add('hide')
       Internals.showBackingImageByType(img)
-      expect(bottomImage?.classList.contains('hide')).to.equal(false)
+      expect(bottomImage?.classList.contains('hide')).toBe(false)
     })
     it(`should set source .bottomImage for image: ${img}`, () => {
       bottomImage?.setAttribute('src', 'Invalid!')
       Internals.showBackingImageByType(img)
-      expect(bottomImage?.getAttribute('src')).to.equal(`/images/kiosk${img}-image.webp`)
+      expect(bottomImage?.getAttribute('src')).toBe(`/images/kiosk${img}-image.webp`)
     })
     it(`should unhide .bottomImage.blur for image: ${img}`, () => {
       bottomBlurImage?.classList.add('hide')
       Internals.showBackingImageByType(img)
-      expect(bottomBlurImage?.classList.contains('hide')).to.equal(false)
+      expect(bottomBlurImage?.classList.contains('hide')).toBe(false)
     })
     it(`should set source .bottomImage.blur for image: ${img}`, () => {
       bottomBlurImage?.setAttribute('src', 'Invalid!')
       Internals.showBackingImageByType(img)
-      expect(bottomBlurImage?.getAttribute('src')).to.equal(`/images/kiosk${img}-image.webp`)
+      expect(bottomBlurImage?.getAttribute('src')).toBe(`/images/kiosk${img}-image.webp`)
     })
   })
   const animatedImages: string[] = ['/some/image.gif', '/some/image.GIF', '/some/image.GiF', '/some/image.gIf']
@@ -87,32 +85,32 @@ describe('public/slideshow/sockets showBackingImageByType()', () => {
     it(`should unhide .topImage for image: ${img}`, () => {
       topImage?.classList.add('hide')
       Internals.showBackingImageByType(img)
-      expect(topImage?.classList.contains('hide')).to.equal(false)
+      expect(topImage?.classList.contains('hide')).toBe(false)
     })
     it(`should set source .topImage for image: ${img}`, () => {
       topImage?.setAttribute('src', 'Invalid!')
       Internals.showBackingImageByType(img)
-      expect(topImage?.getAttribute('src')).to.equal(`/images/kiosk${img}-image.webp`)
+      expect(topImage?.getAttribute('src')).toBe(`/images/kiosk${img}-image.webp`)
     })
     it(`should hide .bottomImage for image: ${img}`, () => {
       bottomImage?.classList.add('hide')
       Internals.showBackingImageByType(img)
-      expect(bottomImage?.classList.contains('hide')).to.equal(true)
+      expect(bottomImage?.classList.contains('hide')).toBe(true)
     })
     it(`should clear source .bottomImage for image: ${img}`, () => {
       bottomImage?.setAttribute('src', 'Invalid!')
       Internals.showBackingImageByType(img)
-      expect(bottomImage?.getAttribute('src')).to.equal(null)
+      expect(bottomImage?.getAttribute('src')).toBe(null)
     })
     it(`should hide .bottomImage.blur for image: ${img}`, () => {
       bottomBlurImage?.classList.add('hide')
       Internals.showBackingImageByType(img)
-      expect(bottomBlurImage?.classList.contains('hide')).to.equal(true)
+      expect(bottomBlurImage?.classList.contains('hide')).toBe(true)
     })
     it(`should clear source .bottomImage.blur for image: ${img}`, () => {
       bottomBlurImage?.setAttribute('src', 'Invalid!')
       Internals.showBackingImageByType(img)
-      expect(bottomBlurImage?.getAttribute('src')).to.equal(null)
+      expect(bottomBlurImage?.getAttribute('src')).toBe(null)
     })
   })
 })

@@ -1,7 +1,6 @@
 'use sanity'
 
 import { Internals } from '#public/scripts/slideshow/weather.js'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -45,37 +44,37 @@ describe('public/slideshow/weather showWeather()', () => {
 
   it('should return input weather when null base provided', () => {
     const result = Internals.showWeather(null, weather)
-    expect(result).to.equal(weather)
+    expect(result).toBe(weather)
   })
 
   it('should return input weather when undefined base provided', () => {
     const result = Internals.showWeather(undefined, weather)
-    expect(result).to.equal(weather)
+    expect(result).toBe(weather)
   })
 
   it('should return input weather when valid base provided', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     const result = Internals.showWeather(base, weather)
-    expect(result).to.equal(weather)
+    expect(result).toBe(weather)
   })
 
   it('should call showData() twice when valid base provided', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     Internals.showWeather(base, weather)
-    expect(showDataStub.callCount).to.equal(2)
+    expect(showDataStub.callCount).toBe(2)
   })
 
   it('should call showIcon() once when valid base provided', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     Internals.showWeather(base, weather)
-    expect(showIconStub.callCount).to.equal(1)
+    expect(showIconStub.callCount).toBe(1)
   })
 
   it('should show temp with expected base element', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[0]).to.equal(base)
+    expect(callArgs[0]).toBe(base)
   })
 
   it('should show temp with expected target element', () => {
@@ -83,14 +82,14 @@ describe('public/slideshow/weather showWeather()', () => {
     const expected = base?.querySelector<HTMLElement>('.temp')
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[1]).to.equal(expected)
+    expect(callArgs[1]).toBe(expected)
   })
 
   it('should show temp with null text for missing data', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[2]).to.equal(null)
+    expect(callArgs[2]).toBe(null)
   })
 
   it('should show temp with null text for undefined data', () => {
@@ -98,7 +97,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.temp = undefined
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[2]).to.equal(null)
+    expect(callArgs[2]).toBe(null)
   })
 
   it('should show temp with rounded text for excessive decimal data', () => {
@@ -106,7 +105,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.temp = 98.9972
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[2]).to.equal('99.0°C')
+    expect(callArgs[2]).toBe('99.0°C')
   })
 
   it('should show temp with null text for NaN data', () => {
@@ -114,7 +113,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.temp = NaN
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[2]).to.equal(null)
+    expect(callArgs[2]).toBe(null)
   })
 
   it('should show temp with null text for Infinity data', () => {
@@ -122,7 +121,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.temp = Infinity
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[2]).to.equal(null)
+    expect(callArgs[2]).toBe(null)
   })
 
   it('should show temp with null text for negative Infinity data', () => {
@@ -130,7 +129,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.temp = -Infinity
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[2]).to.equal(null)
+    expect(callArgs[2]).toBe(null)
   })
 
   it('should show temp with formatted text for zero degrees', () => {
@@ -138,7 +137,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.temp = 0
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.firstCall.args
-    expect(callArgs[2]).to.equal('0.0°C')
+    expect(callArgs[2]).toBe('0.0°C')
   })
 
   it('should show description with expected base element', () => {
@@ -146,7 +145,7 @@ describe('public/slideshow/weather showWeather()', () => {
     const expected = base?.querySelector<HTMLElement>('.desc')
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.secondCall.args
-    expect(callArgs[0]).to.equal(expected)
+    expect(callArgs[0]).toBe(expected)
   })
 
   it('should show description with expected target element', () => {
@@ -154,14 +153,14 @@ describe('public/slideshow/weather showWeather()', () => {
     const expected = base?.querySelector<HTMLElement>('.desc .desctext')
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.secondCall.args
-    expect(callArgs[1]).to.equal(expected)
+    expect(callArgs[1]).toBe(expected)
   })
 
   it('should show description with undefined text for missing data', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.secondCall.args
-    expect(callArgs[2]).to.equal(undefined)
+    expect(callArgs[2]).toBe(undefined)
   })
 
   it('should show description with undefined text for undefined data', () => {
@@ -169,7 +168,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.description = undefined
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.secondCall.args
-    expect(callArgs[2]).to.equal(undefined)
+    expect(callArgs[2]).toBe(undefined)
   })
 
   it('should show description with provided data', () => {
@@ -177,7 +176,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.description = 'what a great value'
     Internals.showWeather(base, weather)
     const callArgs = showDataStub.secondCall.args
-    expect(callArgs[2]).to.equal('what a great value')
+    expect(callArgs[2]).toBe('what a great value')
   })
 
   it('should show icon with expected base element', () => {
@@ -185,14 +184,14 @@ describe('public/slideshow/weather showWeather()', () => {
     const expected = base?.querySelector<HTMLElement>('.icon')
     Internals.showWeather(base, weather)
     const callArgs = showIconStub.firstCall.args
-    expect(callArgs[0]).to.equal(expected)
+    expect(callArgs[0]).toBe(expected)
   })
 
   it('should show icon with undefined src for missing data', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     Internals.showWeather(base, weather)
     const callArgs = showIconStub.firstCall.args
-    expect(callArgs[1]).to.equal(undefined)
+    expect(callArgs[1]).toBe(undefined)
   })
 
   it('should show icon with undefined src for undefined icon data', () => {
@@ -200,7 +199,7 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.icon = undefined
     Internals.showWeather(base, weather)
     const callArgs = showIconStub.firstCall.args
-    expect(callArgs[1]).to.equal(undefined)
+    expect(callArgs[1]).toBe(undefined)
   })
 
   it('should show icon with provided icon data', () => {
@@ -208,6 +207,6 @@ describe('public/slideshow/weather showWeather()', () => {
     weather.icon = 'what a great value'
     Internals.showWeather(base, weather)
     const callArgs = showIconStub.firstCall.args
-    expect(callArgs[1]).to.equal('what a great value')
+    expect(callArgs[1]).toBe('what a great value')
   })
 })

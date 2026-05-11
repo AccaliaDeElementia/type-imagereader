@@ -6,8 +6,6 @@ import { cast } from '#testutils/typeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import assert from 'node:assert'
-import { expect } from 'chai'
-
 const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/sockets handleKeys()', () => {
@@ -41,7 +39,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
     it(`should not emit when key is '${key}'`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
       Internals.handleKeys(evt, fakeSocket)
-      expect(fakeEmit.callCount).to.equal(0)
+      expect(fakeEmit.callCount).toBe(0)
     })
   })
   const triggerKeys: Array<[string, string]> = [
@@ -58,12 +56,12 @@ describe('public/slideshow/sockets handleKeys()', () => {
     it(`should emit only once for key: ${key}`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
       Internals.handleKeys(evt, fakeSocket)
-      expect(fakeEmit.callCount).to.equal(1)
+      expect(fakeEmit.callCount).toBe(1)
     })
     it(`should emit '${expected}' for key: ${key}`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
       Internals.handleKeys(evt, fakeSocket)
-      expect(fakeEmit.firstCall.args).to.deep.equal([expected])
+      expect(fakeEmit.firstCall.args).toEqual([expected])
     })
   })
 })

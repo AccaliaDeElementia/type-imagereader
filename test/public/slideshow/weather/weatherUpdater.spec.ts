@@ -1,7 +1,6 @@
 'use sanity'
 
 import { Internals, weatherUpdater } from '#public/scripts/slideshow/weather.js'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -47,66 +46,66 @@ describe('public/slideshow/weather weatherUpdater', () => {
   })
 
   it('should be an CyclicUpdater', () => {
-    expect(weatherUpdater).to.be.an.instanceOf(CyclicUpdater)
+    expect(weatherUpdater).toBeInstanceOf(CyclicUpdater)
   })
 
   it('should have expected interval', () => {
-    expect(weatherUpdater.period).to.equal(60000)
+    expect(weatherUpdater.period).toBe(60000)
   })
 
   it('should fetch weather once when triggered', async () => {
     await weatherUpdater.updateFn()
-    expect(fetchWeatherStub.callCount).to.equal(1)
+    expect(fetchWeatherStub.callCount).toBe(1)
   })
 
   it('should fetch weather from expected url when triggered', async () => {
     await weatherUpdater.updateFn()
-    expect(fetchWeatherStub.firstCall.args).to.deep.equal(['/weather'])
+    expect(fetchWeatherStub.firstCall.args).toEqual(['/weather'])
   })
 
   it('should show fetched data once after retrieval', async () => {
     await weatherUpdater.updateFn()
-    expect(showWeatherStub.callCount).to.equal(1)
+    expect(showWeatherStub.callCount).toBe(1)
   })
 
   it('should show fetched data after fetch when triggered', async () => {
     await weatherUpdater.updateFn()
-    expect(showWeatherStub.calledAfter(fetchWeatherStub)).to.equal(true)
+    expect(showWeatherStub.calledAfter(fetchWeatherStub)).toBe(true)
   })
 
   it('should show weather with expected element as base', async () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     await weatherUpdater.updateFn()
-    expect(showWeatherStub.firstCall.args[0]).to.equal(base)
+    expect(showWeatherStub.firstCall.args[0]).toBe(base)
   })
 
   it('should show weather with retrieved weather', async () => {
     const data = { FOO: Math.random() }
     fetchWeatherStub.resolves(data)
     await weatherUpdater.updateFn()
-    expect(showWeatherStub.firstCall.args[1]).to.equal(data)
+    expect(showWeatherStub.firstCall.args[1]).toBe(data)
   })
 
   it('should set almanac data once after showing data', async () => {
     await weatherUpdater.updateFn()
-    expect(setAlmanacStub.callCount).to.equal(1)
+    expect(setAlmanacStub.callCount).toBe(1)
   })
 
   it('should set almanac data after showing data', async () => {
     await weatherUpdater.updateFn()
-    expect(setAlmanacStub.calledAfter(showWeatherStub)).to.equal(true)
+    expect(setAlmanacStub.calledAfter(showWeatherStub)).toBe(true)
   })
 
   it('should set almanac data with one argument', async () => {
     const data = { BAR: Math.random() }
     showWeatherStub.returns(data)
     await weatherUpdater.updateFn()
-    expect(setAlmanacStub.firstCall.args).to.have.length(1)
+    expect(setAlmanacStub.firstCall.args).toHaveLength(1)
   })
   it('should set almanac data with weather data', async () => {
     const data = { BAR: Math.random() }
     showWeatherStub.returns(data)
     await weatherUpdater.updateFn()
-    expect(setAlmanacStub.firstCall.args[0]).to.equal(data)
+    expect(setAlmanacStub.firstCall.args[0]).toBe(data)
   })
 })

@@ -3,8 +3,6 @@
 import { Internals } from '#public/scripts/slideshow/sockets.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import { expect } from 'chai'
-
 describe('public/slideshow/sockets parseRoomName()', () => {
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
@@ -27,7 +25,7 @@ describe('public/slideshow/sockets parseRoomName()', () => {
       dom.reconfigure({
         url: `https://localhost:2999${path}`,
       })
-      expect(Internals.parseRoomName()).to.equal(result)
+      expect(Internals.parseRoomName()).toBe(result)
     })
   })
 })

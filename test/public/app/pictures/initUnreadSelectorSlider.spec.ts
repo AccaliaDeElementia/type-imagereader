@@ -1,7 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { initUnreadSelectorSlider, Internals } from '#public/scripts/app/pictures/unreadFilter.js'
@@ -34,7 +32,7 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
   })
   it('should update current status on init', () => {
     initUnreadSelectorSlider()
-    expect(updateUnreadSelectorSliderSpy.callCount).to.equal(1)
+    expect(updateUnreadSelectorSliderSpy.callCount).toBe(1)
   })
   it('should update slider on click event from child element', () => {
     initUnreadSelectorSlider()
@@ -43,7 +41,7 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     assert(element !== null)
     const evt = new dom.window.MouseEvent('click', { bubbles: true })
     element.dispatchEvent(evt)
-    expect(updateUnreadSelectorSliderSpy.callCount).to.equal(1)
+    expect(updateUnreadSelectorSliderSpy.callCount).toBe(1)
   })
   it('should update slider on click event from slider element', () => {
     initUnreadSelectorSlider()
@@ -52,7 +50,7 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     assert(element !== null)
     const evt = new dom.window.MouseEvent('click', { bubbles: true })
     element.dispatchEvent(evt)
-    expect(updateUnreadSelectorSliderSpy.callCount).to.equal(1)
+    expect(updateUnreadSelectorSliderSpy.callCount).toBe(1)
   })
   it('should call setShowUnreadOnly once when currently set', () => {
     initUnreadSelectorSlider()
@@ -60,7 +58,7 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)
     element.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }))
-    expect(setShowUnreadOnlySpy.callCount).to.deep.equal(1)
+    expect(setShowUnreadOnlySpy.callCount).toEqual(1)
   })
   it('should call setShowUnreadOnly with false when currently set', () => {
     initUnreadSelectorSlider()
@@ -68,7 +66,7 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)
     element.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }))
-    expect(setShowUnreadOnlySpy.firstCall.args).to.deep.equal([false])
+    expect(setShowUnreadOnlySpy.firstCall.args).toEqual([false])
   })
   it('should call setShowUnreadOnly once when currently unset', () => {
     initUnreadSelectorSlider()
@@ -76,7 +74,7 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)
     element.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }))
-    expect(setShowUnreadOnlySpy.callCount).to.deep.equal(1)
+    expect(setShowUnreadOnlySpy.callCount).toEqual(1)
   })
   it('should call setShowUnreadOnly with true when currently unset', () => {
     initUnreadSelectorSlider()
@@ -84,6 +82,6 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     const element = dom.window.document.querySelector('.selectUnreadAll')
     assert(element !== null)
     element.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }))
-    expect(setShowUnreadOnlySpy.firstCall.args).to.deep.equal([true])
+    expect(setShowUnreadOnlySpy.firstCall.args).toEqual([true])
   })
 })

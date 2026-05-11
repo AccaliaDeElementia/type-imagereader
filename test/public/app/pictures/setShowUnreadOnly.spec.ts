@@ -1,7 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/pictures/unreadFilter.js'
@@ -19,10 +17,10 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
   })
   it('should store true when enabling function', () => {
     Internals.setShowUnreadOnly(true)
-    expect(dom.window.localStorage.getItem('ShowUnreadOnly')).to.equal('true')
+    expect(dom.window.localStorage.getItem('ShowUnreadOnly')).toBe('true')
   })
   it('should store true when disabling function', () => {
     Internals.setShowUnreadOnly(false)
-    expect(dom.window.localStorage.getItem('ShowUnreadOnly')).to.equal('false')
+    expect(dom.window.localStorage.getItem('ShowUnreadOnly')).toBe('false')
   })
 })

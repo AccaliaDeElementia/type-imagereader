@@ -3,8 +3,6 @@
 import Sinon from 'sinon'
 import { Internals } from '#public/scripts/slideshow/overlay.js'
 import { getAlmanac } from '#public/scripts/slideshow/weather.js'
-import { expect } from 'chai'
-
 const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/overlay calculateDarknessMs()', () => {
@@ -35,7 +33,7 @@ describe('public/slideshow/overlay calculateDarknessMs()', () => {
       sandbox.useFakeTimers({
         now: new Date(timeNow).getTime(),
       })
-      expect(Internals.calculateDarknessMs()).to.equal(expected)
+      expect(Internals.calculateDarknessMs()).toBe(expected)
     })
   })
 })

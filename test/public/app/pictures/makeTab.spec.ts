@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -58,63 +57,63 @@ describe('public/app/pictures makeTab()', () => {
   })
   it('should call makePicturesPage with page 1', () => {
     makeTab()
-    expect(makePicturesPageSpy.calledWith(1)).to.equal(true)
+    expect(makePicturesPageSpy.calledWith(1)).toBe(true)
   })
   it('should add provided page to pictures tab', () => {
     makeTab()
-    expect(tab?.querySelector('.page')).to.be.an.instanceOf(dom.window.HTMLElement)
+    expect(tab?.querySelector('.page')).toBeInstanceOf(dom.window.HTMLElement)
   })
   it('should call makePicturesPage once per page', () => {
     Pictures.pageSize = 2
     makeTab()
-    expect(makePicturesPageSpy.callCount).to.equal(16)
+    expect(makePicturesPageSpy.callCount).toBe(16)
   })
   it('should make pages according to pageSize', () => {
     Pictures.pageSize = 2
     makeTab()
-    expect(tab?.querySelectorAll('.page')).to.have.length(16)
+    expect(tab?.querySelectorAll('.page')).toHaveLength(16)
   })
   it('should call makePicturesPage for calculated page count', () => {
     Pictures.pageSize = 10
     makeTab()
-    expect(makePicturesPageSpy.callCount).to.equal(4)
+    expect(makePicturesPageSpy.callCount).toBe(4)
   })
   it('should make pages with image subsets for each page', () => {
     Pictures.pageSize = 10
     makeTab()
     for (let i = 0; i < 4; i += 1) {
       const call = makePicturesPageSpy.getCall(i)
-      expect(call.args).to.have.lengthOf(2)
-      expect(call.args[0]).to.equal(i + 1)
-      expect(call.args[1]).to.deep.equal(Pictures.pictures.slice(i * 10, (i + 1) * 10))
+      expect(call.args).toHaveLength(2)
+      expect(call.args[0]).toBe(i + 1)
+      expect(call.args[1]).toEqual(Pictures.pictures.slice(i * 10, (i + 1) * 10))
     }
   })
   it('should call makePaginator once', () => {
     makeTab()
-    expect(makePaginatorSpy.callCount).to.equal(1)
+    expect(makePaginatorSpy.callCount).toBe(1)
   })
   it('should make paginator', () => {
     makeTab()
-    expect(tab?.querySelector('.paginator')).to.be.an.instanceOf(dom.window.HTMLElement)
+    expect(tab?.querySelector('.paginator')).toBeInstanceOf(dom.window.HTMLElement)
   })
   it('should make paginator for calculated page count', () => {
     Pictures.pageSize = 4
     makeTab()
-    expect(makePaginatorSpy.firstCall.args).to.deep.equal([8])
+    expect(makePaginatorSpy.firstCall.args).toEqual([8])
   })
   it('should add paginator to tab for calculated page count', () => {
     Pictures.pageSize = 4
     makeTab()
-    expect(tab?.querySelector('.paginator')).to.be.an.instanceOf(dom.window.HTMLElement)
+    expect(tab?.querySelector('.paginator')).toBeInstanceOf(dom.window.HTMLElement)
   })
   it('should still call makePaginator when it returns null', () => {
     makePaginatorSpy.returns(null)
     makeTab()
-    expect(makePaginatorSpy.callCount).to.equal(1)
+    expect(makePaginatorSpy.callCount).toBe(1)
   })
   it('should omit paginator when makePaginator returns null', () => {
     makePaginatorSpy.returns(null)
     makeTab()
-    expect(tab?.querySelector('.paginator')).to.equal(null)
+    expect(tab?.querySelector('.paginator')).toBe(null)
   })
 })

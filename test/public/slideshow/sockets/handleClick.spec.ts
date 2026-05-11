@@ -6,8 +6,6 @@ import { cast } from '#testutils/typeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import assert from 'node:assert'
-import { expect } from 'chai'
-
 const sandbox = Sinon.createSandbox()
 
 describe('public/slideshow/sockets handleKeys()', () => {
@@ -97,11 +95,11 @@ describe('public/slideshow/sockets handleKeys()', () => {
     }
     it(`should emit once when click is at ${xPercent} with search "${search}"`, () => {
       doClick()
-      expect(fakeEmit.callCount).to.equal(1)
+      expect(fakeEmit.callCount).toBe(1)
     })
     it(`should emit ${expected} when click is at ${xPercent} with search "${search}"`, () => {
       doClick()
-      expect(fakeEmit.firstCall.args[0]).to.deep.equal(expected)
+      expect(fakeEmit.firstCall.args[0]).toEqual(expected)
     })
     it(`should not ignore click at ${xPercent}:${yPercent} when zoomed in`, () => {
       const event = new global.window.MouseEvent('click', {
@@ -109,7 +107,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
         clientY: global.window.innerHeight * yPercent,
       })
       Internals.handleClick(event, fakeSocket, 1.001)
-      expect(fakeEmit.callCount).to.equal(1)
+      expect(fakeEmit.callCount).toBe(1)
     })
     it(`should ignore click at ${xPercent}:${yPercent} when zoomed out`, () => {
       const event = new global.window.MouseEvent('click', {
@@ -117,7 +115,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
         clientY: global.window.innerHeight * yPercent,
       })
       Internals.handleClick(event, fakeSocket, 0.999)
-      expect(fakeEmit.callCount).to.equal(0)
+      expect(fakeEmit.callCount).toBe(0)
     })
   })
   describe('when center-clicked for goto-image event', () => {
@@ -129,10 +127,10 @@ describe('public/slideshow/sockets handleKeys()', () => {
       Internals.handleClick(event, fakeSocket, 1)
     })
     it('should emit second parameter for goto-image event', () => {
-      expect(fakeEmit.firstCall.args).to.have.lengthOf(2)
+      expect(fakeEmit.firstCall.args).toHaveLength(2)
     })
     it('should provide callback function for goto-image event', () => {
-      expect(fakeEmit.firstCall.args[1]).to.be.an.instanceOf(Function)
+      expect(fakeEmit.firstCall.args[1]).toBeInstanceOf(Function)
     })
   })
   describe('when visualViewport is null', () => {
@@ -148,7 +146,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
         clientY: global.window.innerHeight / 2,
       })
       Internals.handleClick(event, fakeSocket, 1)
-      expect(fakeEmit.callCount).to.equal(1)
+      expect(fakeEmit.callCount).toBe(1)
     })
     it('should emit next-image for right click when visualViewport is null', () => {
       const event = new global.window.MouseEvent('click', {
@@ -156,7 +154,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
         clientY: global.window.innerHeight / 2,
       })
       Internals.handleClick(event, fakeSocket, 1)
-      expect(fakeEmit.firstCall.args[0]).to.equal('next-image')
+      expect(fakeEmit.firstCall.args[0]).toBe('next-image')
     })
   })
   describe('when goto-image callback is invoked with null', () => {
@@ -170,7 +168,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
       fn(null)
     })
     it('should not call location.assign from goto-image callback when folder is null', () => {
-      expect(fakeAssign.callCount).to.equal(0)
+      expect(fakeAssign.callCount).toBe(0)
     })
   })
   describe('when goto-image callback is invoked', () => {
@@ -184,10 +182,10 @@ describe('public/slideshow/sockets handleKeys()', () => {
       fn('/foo/bar/baz')
     })
     it('should call location.assign from goto-image callback', () => {
-      expect(fakeAssign.callCount).to.equal(1)
+      expect(fakeAssign.callCount).toBe(1)
     })
     it('should assign expected uri from goto-image callback', () => {
-      expect(fakeAssign.firstCall.args).to.deep.equal(['/show/foo/bar/baz?noMenu'])
+      expect(fakeAssign.firstCall.args).toEqual(['/show/foo/bar/baz?noMenu'])
     })
   })
 })

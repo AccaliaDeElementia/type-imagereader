@@ -1,7 +1,6 @@
 'use sanity'
 
 import { Internals } from '#public/scripts/slideshow/weather.js'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -52,13 +51,13 @@ describe('public/slideshow/weather showIcon()', () => {
       const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
       element?.style.setProperty('display', 'FOO')
       Internals.showIcon(element, icon)
-      expect(element?.style.display).to.equal(expected)
+      expect(element?.style.display).toBe(expected)
     })
   })
 
   it('should set src attribute on valid icon', () => {
     const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
     Internals.showIcon(element, '8472')
-    expect(element?.src).to.equal('https://openweathermap.org/img/w/8472.png')
+    expect(element?.src).toBe('https://openweathermap.org/img/w/8472.png')
   })
 })

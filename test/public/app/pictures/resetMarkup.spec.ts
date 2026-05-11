@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -43,33 +42,33 @@ describe('public/app/pictures resetMarkup()', () => {
   })
   it('should set mainImage node', () => {
     Pictures.resetMarkup()
-    expect(Pictures.mainImage).to.not.equal(null)
+    expect(Pictures.mainImage).not.toBe(null)
   })
   it('should set imageCard node', () => {
     Pictures.resetMarkup()
-    expect(Pictures.imageCard).to.not.equal(null)
+    expect(Pictures.imageCard).not.toBe(null)
   })
   it('should tolerate missing mainImage node', () => {
     const node = dom.window.document.querySelector('#bigImage')
     assert(node !== null)
     node.parentElement?.removeChild(node)
     Pictures.resetMarkup()
-    expect(Pictures.mainImage).to.equal(null)
+    expect(Pictures.mainImage).toBe(null)
   })
   it('should tolerate missing imageCard node', () => {
     const node = dom.window.document.querySelector('#ImageCard')
     assert(node !== null)
     node.parentElement?.removeChild(node)
     Pictures.resetMarkup()
-    expect(Pictures.imageCard).to.equal(null)
+    expect(Pictures.imageCard).toBe(null)
   })
   it('should call Grid.resetMarkup once', () => {
     Pictures.resetMarkup()
-    expect(gridResetSpy.callCount).to.equal(1)
+    expect(gridResetSpy.callCount).toBe(1)
   })
   it('should call Viewer.resetMarkup once', () => {
     Pictures.resetMarkup()
-    expect(viewerResetSpy.callCount).to.equal(1)
+    expect(viewerResetSpy.callCount).toBe(1)
   })
   it('should set mainImage ref before calling Viewer.resetMarkup', () => {
     let mainImageWhenViewerCalled: HTMLImageElement | null = null
@@ -77,6 +76,6 @@ describe('public/app/pictures resetMarkup()', () => {
       mainImageWhenViewerCalled = Pictures.mainImage
     })
     Pictures.resetMarkup()
-    expect(mainImageWhenViewerCalled).to.not.equal(null)
+    expect(mainImageWhenViewerCalled).not.toBe(null)
   })
 })

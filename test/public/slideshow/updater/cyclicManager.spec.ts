@@ -3,7 +3,6 @@
 import { add, CyclicManager, CyclicUpdater, Internals, start, stop } from '#public/scripts/slideshow/updater.js'
 import { cast } from '#testutils/typeGuards.js'
 import Sinon from 'sinon'
-import { expect } from 'chai'
 import { assert } from 'node:console'
 
 const sandbox = Sinon.createSandbox()
@@ -31,14 +30,14 @@ describe('public/slideshow/updater CyclicManager', () => {
       const spy = sandbox.stub(updater, 'trigger').resolves()
       CyclicManager.__updaters = [updater]
       await Internals.triggerUpdaters(10)
-      expect(spy.callCount).to.equal(1)
+      expect(spy.callCount).toBe(1)
     })
     it('should trigger many updaters', async () => {
       const updater = new CyclicUpdater()
       const spy = sandbox.stub(updater, 'trigger').resolves()
       CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
-      expect(spy.callCount).to.equal(10)
+      expect(spy.callCount).toBe(10)
     })
     it('should trigger with provided interval', async () => {
       const interval = Math.round(Math.random() * 1e9)
@@ -46,7 +45,7 @@ describe('public/slideshow/updater CyclicManager', () => {
       const spy = sandbox.stub(updater, 'trigger').resolves()
       CyclicManager.__updaters = [updater]
       await Internals.triggerUpdaters(interval)
-      expect(spy.firstCall.args).to.deep.equal([interval])
+      expect(spy.firstCall.args).toEqual([interval])
     })
     it('should tolerate updater rejecting', async () => {
       const updater = new CyclicUpdater()
@@ -54,7 +53,7 @@ describe('public/slideshow/updater CyclicManager', () => {
       spy.onThirdCall().rejects(new Error('This is a rejection error!'))
       CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
-      expect(spy.callCount).to.equal(10)
+      expect(spy.callCount).toBe(10)
     })
     it('should tolerate updater throwing', async () => {
       const updater = new CyclicUpdater()
@@ -62,53 +61,53 @@ describe('public/slideshow/updater CyclicManager', () => {
       spy.onThirdCall().throws(new Error('This is a rejection error!'))
       CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
-      expect(spy.callCount).to.equal(10)
+      expect(spy.callCount).toBe(10)
     })
   })
   describe('add()', () => {
     const makeUpdater = (): CyclicUpdater => new CyclicUpdater()
     it('should increase list length to 1 when adding a single updater', () => {
       add(new CyclicUpdater())
-      expect(CyclicManager.__updaters).to.have.length(1)
+      expect(CyclicManager.__updaters).toHaveLength(1)
     })
     it('should store the added updater at index 0', () => {
       const updater = new CyclicUpdater()
       add(updater)
-      expect(CyclicManager.__updaters[0]).to.equal(updater)
+      expect(CyclicManager.__updaters[0]).toBe(updater)
     })
     it('should increase list length to 2 when appending a single updater', () => {
       CyclicManager.__updaters.push(new CyclicUpdater())
       add(new CyclicUpdater())
-      expect(CyclicManager.__updaters).to.have.length(2)
+      expect(CyclicManager.__updaters).toHaveLength(2)
     })
     it('should store the appended updater at index 1', () => {
       CyclicManager.__updaters.push(new CyclicUpdater())
       const updater = new CyclicUpdater()
       add(updater)
-      expect(CyclicManager.__updaters[1]).to.equal(updater)
+      expect(CyclicManager.__updaters[1]).toBe(updater)
     })
     it('should set list length to 5 when adding 5 spread updaters', () => {
       add(...Array.from({ length: 5 }).map(makeUpdater))
-      expect(CyclicManager.__updaters).to.have.length(5)
+      expect(CyclicManager.__updaters).toHaveLength(5)
     })
     it('should store each of 5 spread updaters at its respective index', () => {
       const updaters = Array.from({ length: 5 }).map(makeUpdater)
       add(...updaters)
       for (let i = 0; i < updaters.length; i += 1) {
-        expect(CyclicManager.__updaters[i]).to.equal(updaters[i])
+        expect(CyclicManager.__updaters[i]).toBe(updaters[i])
       }
     })
     it('should set list length to 10 when appending 5 spread updaters to existing 5', () => {
       CyclicManager.__updaters = Array.from({ length: 5 }).map(makeUpdater)
       add(...Array.from({ length: 5 }).map(makeUpdater))
-      expect(CyclicManager.__updaters).to.have.length(10)
+      expect(CyclicManager.__updaters).toHaveLength(10)
     })
     it('should store each of the 5 appended updaters at indices 5-9', () => {
       CyclicManager.__updaters = Array.from({ length: 5 }).map(makeUpdater)
       const updaters = Array.from({ length: 5 }).map(makeUpdater)
       add(...updaters)
       for (let i = 0; i < updaters.length; i += 1) {
-        expect(CyclicManager.__updaters[i + 5]).to.equal(updaters[i])
+        expect(CyclicManager.__updaters[i + 5]).toBe(updaters[i])
       }
     })
   })
@@ -121,34 +120,34 @@ describe('public/slideshow/updater CyclicManager', () => {
       sandbox.restore()
     })
     it('should set interval on call', () => {
-      expect(fakeSetInterval?.callCount).to.equal(0)
+      expect(fakeSetInterval?.callCount).toBe(0)
       start(1000)
-      expect(fakeSetInterval?.callCount).to.equal(1)
+      expect(fakeSetInterval?.callCount).toBe(1)
     })
     it('should set interval with provided interval', () => {
       const ival = Math.round(Math.random() * 1e9)
       start(ival)
-      expect(fakeSetInterval?.firstCall.args[1]).to.equal(ival)
+      expect(fakeSetInterval?.firstCall.args[1]).toBe(ival)
     })
     it('should save interval value from setInterval', () => {
       const timer = Math.round(Math.random() * 1e9)
       fakeSetInterval?.returns(timer)
       start(1000)
-      expect(CyclicManager.__timer).to.equal(timer)
+      expect(CyclicManager.__timer).toBe(timer)
     })
     it('should trigger updaters when interval fires', () => {
       start(1000)
       const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
-      expect(fakeTrigger?.callCount).to.equal(0)
+      expect(fakeTrigger?.callCount).toBe(0)
       fn()
-      expect(fakeTrigger?.callCount).to.equal(1)
+      expect(fakeTrigger?.callCount).toBe(1)
     })
     it('should trigger updaters with provided interval', () => {
       const ival = Math.round(Math.random() * 1e9)
       start(ival)
       const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
       fn()
-      expect(fakeTrigger?.firstCall.args).to.deep.equal([ival])
+      expect(fakeTrigger?.firstCall.args).toEqual([ival])
     })
     it('should tolerate trigger rejecting', async () => {
       let a = Promise.resolve()
@@ -165,41 +164,41 @@ describe('public/slideshow/updater CyclicManager', () => {
     it('should not call setInterval when a timer is already running', () => {
       CyclicManager.__timer = 42
       start(1000)
-      expect(fakeSetInterval?.callCount).to.equal(0)
+      expect(fakeSetInterval?.callCount).toBe(0)
     })
     it('should preserve the existing timer when start is called again', () => {
       CyclicManager.__timer = 42
       start(1000)
-      expect(CyclicManager.__timer).to.equal(42)
+      expect(CyclicManager.__timer).toBe(42)
     })
     it('should not call clearInterval when start is called again', () => {
       CyclicManager.__timer = 42
       start(1000)
-      expect(fakeClearInterval?.callCount).to.equal(0)
+      expect(fakeClearInterval?.callCount).toBe(0)
     })
   })
   describe('stop()', () => {
     it('should not clear interval without starting', () => {
       CyclicManager.__timer = undefined
       stop()
-      expect(fakeClearInterval?.callCount).to.equal(0)
+      expect(fakeClearInterval?.callCount).toBe(0)
     })
     it('should clear interval when timer set', () => {
       CyclicManager.__timer = 1
       stop()
-      expect(fakeClearInterval?.callCount).to.equal(1)
+      expect(fakeClearInterval?.callCount).toBe(1)
     })
     it('should clear saved timer when stopping', () => {
       const timer = Math.round(Math.random() * 1e9)
       CyclicManager.__timer = timer
       stop()
-      expect(fakeClearInterval?.firstCall.args).to.deep.equal([timer])
+      expect(fakeClearInterval?.firstCall.args).toEqual([timer])
     })
     it('should erase saved timer when stopping', () => {
       const timer = Math.round(Math.random() * 1e9)
       CyclicManager.__timer = timer
       stop()
-      expect(CyclicManager.__timer).to.equal(undefined)
+      expect(CyclicManager.__timer).toBe(undefined)
     })
   })
 })

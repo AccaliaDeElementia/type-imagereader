@@ -1,7 +1,6 @@
 'use sanity'
 
 import { Internals } from '#public/scripts/slideshow/weather.js'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -63,7 +62,7 @@ describe('public/slideshow/weather showData()', () => {
       const base = dom.window.document.querySelector<HTMLElement>('.weather')
       base?.style.removeProperty('display')
       Internals.showData(base, element, 'FOO')
-      expect(base?.style.getPropertyValue('display')).to.equal('')
+      expect(base?.style.getPropertyValue('display')).toBe('')
     })
   })
 
@@ -78,7 +77,7 @@ describe('public/slideshow/weather showData()', () => {
       base?.style.setProperty('display', 'Foo!')
       const element = base?.querySelector<HTMLElement>('.desctext')
       Internals.showData(base, element, input)
-      expect(base?.style.getPropertyValue('display')).to.equal('none')
+      expect(base?.style.getPropertyValue('display')).toBe('none')
     })
   })
 
@@ -87,7 +86,7 @@ describe('public/slideshow/weather showData()', () => {
     const element = base?.querySelector<HTMLElement>('.desctext')
     if (element !== null && element !== undefined) element.innerHTML = 'existing content'
     Internals.showData(base, element, '')
-    expect(element?.innerHTML).to.equal('existing content')
+    expect(element?.innerHTML).toBe('existing content')
   })
 
   it('should set display:flex style with stringy input', () => {
@@ -95,7 +94,7 @@ describe('public/slideshow/weather showData()', () => {
     base?.style.setProperty('display', 'Foo!')
     const element = base?.querySelector<HTMLElement>('.desctext')
     Internals.showData(base, element, 'foo!')
-    expect(base?.style.getPropertyValue('display')).to.equal('flex')
+    expect(base?.style.getPropertyValue('display')).toBe('flex')
   })
 
   it('should place the text node with stringy input', () => {
@@ -103,6 +102,6 @@ describe('public/slideshow/weather showData()', () => {
     const element = base?.querySelector<HTMLElement>('.desctext')
     const value = `Foo Data ${Math.random()}`
     Internals.showData(base, element, value)
-    expect(element?.innerHTML).to.equal(value)
+    expect(element?.innerHTML).toBe(value)
   })
 })

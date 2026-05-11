@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -38,7 +37,7 @@ describe('public/app/pictures loadCurrentPageImages()', () => {
   it('should gracefully handle no tabs existing', () => {
     expect(() => {
       loadCurrentPageImages()
-    }).to.not.throw()
+    }).not.toThrow()
   })
   it('should not throw when only hidden tab exists', () => {
     const container = dom.window.document.createElement('div')
@@ -54,7 +53,7 @@ describe('public/app/pictures loadCurrentPageImages()', () => {
     dom.window.document.body.appendChild(container)
     expect(() => {
       loadCurrentPageImages()
-    }).to.not.throw()
+    }).not.toThrow()
   })
   it('should not modify backgroundImage when only hidden tab exists', () => {
     const container = dom.window.document.createElement('div')
@@ -69,7 +68,7 @@ describe('public/app/pictures loadCurrentPageImages()', () => {
     page.appendChild(card)
     dom.window.document.body.appendChild(container)
     loadCurrentPageImages()
-    expect(card.style.backgroundImage).to.equal('')
+    expect(card.style.backgroundImage).toBe('')
   })
   it('should not throw when card is missing data-backgroundImage attribute', () => {
     const container = dom.window.document.createElement('div')
@@ -83,7 +82,7 @@ describe('public/app/pictures loadCurrentPageImages()', () => {
     dom.window.document.body.appendChild(container)
     expect(() => {
       loadCurrentPageImages()
-    }).to.not.throw()
+    }).not.toThrow()
   })
   it('should not modify backgroundImage when card is missing data-backgroundImage attribute', () => {
     const container = dom.window.document.createElement('div')
@@ -96,7 +95,7 @@ describe('public/app/pictures loadCurrentPageImages()', () => {
     page.appendChild(card)
     dom.window.document.body.appendChild(container)
     loadCurrentPageImages()
-    expect(card.style.backgroundImage).to.equal('')
+    expect(card.style.backgroundImage).toBe('')
   })
   it('should set backgroundImage style for non hidden page', () => {
     const container = dom.window.document.createElement('div')
@@ -110,8 +109,8 @@ describe('public/app/pictures loadCurrentPageImages()', () => {
     card.setAttribute('data-backgroundImage', 'url("/images/preview.webp")')
     page.appendChild(card)
 
-    expect(card.style.backgroundImage).to.equal('')
+    expect(card.style.backgroundImage).toBe('')
     loadCurrentPageImages()
-    expect(card.style.backgroundImage).to.equal('url("/images/preview.webp")')
+    expect(card.style.backgroundImage).toBe('url("/images/preview.webp")')
   })
 })

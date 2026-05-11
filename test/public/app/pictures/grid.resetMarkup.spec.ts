@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -39,7 +38,7 @@ describe('public/app/pictures resetMarkup()', () => {
       tab.appendChild(node)
     }
     resetMarkup()
-    expect(tab.children).to.have.lengthOf(0)
+    expect(tab.children).toHaveLength(0)
   })
   it('should remove existing .page nodes from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
@@ -50,7 +49,7 @@ describe('public/app/pictures resetMarkup()', () => {
       tab.appendChild(node)
     }
     resetMarkup()
-    expect(tab.children).to.have.lengthOf(0)
+    expect(tab.children).toHaveLength(0)
   })
   it('should preserve existing non .page nodes from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
@@ -61,6 +60,6 @@ describe('public/app/pictures resetMarkup()', () => {
       tab.appendChild(node)
     }
     resetMarkup()
-    expect(tab.children).to.have.lengthOf(15)
+    expect(tab.children).toHaveLength(15)
   })
 })

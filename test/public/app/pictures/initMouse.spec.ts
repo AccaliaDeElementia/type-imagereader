@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -80,13 +79,13 @@ describe('public/app/pictures initMouse()', () => {
   it('should store initial scale from visual viewport', () => {
     visualViewport.scale = 972
     initMouse()
-    expect(Pictures.initialScale).to.equal(972)
+    expect(Pictures.initialScale).toBe(972)
   })
   it('should store default initial scale when visual viewport is nullish', () => {
     // @ts-expect-error Ignore that visualviewport is read-only
     dom.window.visualViewport = null
     initMouse()
-    expect(Pictures.initialScale).to.equal(-1)
+    expect(Pictures.initialScale).toBe(-1)
   })
   it('should navigate to previous from left area click', () => {
     visualViewport.scale = 2
@@ -96,7 +95,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(1)
+    expect(executePreviousSpy.callCount).toBe(1)
   })
   it('should process click when current scale is zoomed out from initial', () => {
     visualViewport.scale = 2
@@ -107,7 +106,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(1)
+    expect(executePreviousSpy.callCount).toBe(1)
   })
   it('should not navigate when current scale is zoomed in from initial', () => {
     visualViewport.scale = 2
@@ -118,7 +117,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(0)
+    expect(executePreviousSpy.callCount).toBe(0)
   })
   it('should ignore click when current scale is zoomed in from initial', () => {
     visualViewport.scale = 2
@@ -129,7 +128,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(ignoreClickSpy.callCount).to.equal(1)
+    expect(ignoreClickSpy.callCount).toBe(1)
   })
   it('should not navigate when mainImage bounding rect invalid', () => {
     visualViewport.scale = 2
@@ -141,7 +140,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     tgt?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(0)
+    expect(executePreviousSpy.callCount).toBe(0)
   })
   it('should ignore click when mainImage bounding rect invalid', () => {
     visualViewport.scale = 2
@@ -153,7 +152,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     tgt?.dispatchEvent(evt)
-    expect(ignoreClickSpy.callCount).to.equal(1)
+    expect(ignoreClickSpy.callCount).toBe(1)
   })
   it('should not navigate when click target width is zero', () => {
     visualViewport.scale = 2
@@ -164,7 +163,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executePreviousSpy.callCount).to.equal(0)
+    expect(executePreviousSpy.callCount).toBe(0)
   })
   it('should ignore click when click target width is zero', () => {
     visualViewport.scale = 2
@@ -175,7 +174,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(ignoreClickSpy.callCount).to.equal(1)
+    expect(ignoreClickSpy.callCount).toBe(1)
   })
   it('should show menu from middle area click', () => {
     visualViewport.scale = 2
@@ -185,7 +184,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executeMenuSpy.callCount).to.equal(1)
+    expect(executeMenuSpy.callCount).toBe(1)
   })
   it('should navigate to next from right area click', () => {
     visualViewport.scale = 2
@@ -195,6 +194,6 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(executeNextSpy.callCount).to.equal(1)
+    expect(executeNextSpy.callCount).toBe(1)
   })
 })

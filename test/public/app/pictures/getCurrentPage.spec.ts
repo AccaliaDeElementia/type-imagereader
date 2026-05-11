@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -40,21 +39,21 @@ describe('public/app/pictures getCurrentPage()', () => {
   }
   it('should return -1 for no pages', () => {
     makePages(0)
-    expect(Internals.getCurrentPage()).to.equal(-1)
+    expect(Internals.getCurrentPage()).toBe(-1)
   })
   it('should return -1 for no active pages', () => {
     makePages(20)
-    expect(Internals.getCurrentPage()).to.equal(-1)
+    expect(Internals.getCurrentPage()).toBe(-1)
   })
   it('should return number for active page', () => {
     const pages = makePages(20)
     pages[10]?.classList.add('active')
-    expect(Internals.getCurrentPage()).to.equal(10)
+    expect(Internals.getCurrentPage()).toBe(10)
   })
   it('should return number for first active page', () => {
     const pages = makePages(20)
     pages[10]?.classList.add('active')
     pages[15]?.classList.add('active')
-    expect(Internals.getCurrentPage()).to.equal(10)
+    expect(Internals.getCurrentPage()).toBe(10)
   })
 })
