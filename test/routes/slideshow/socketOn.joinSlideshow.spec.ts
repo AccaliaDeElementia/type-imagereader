@@ -23,7 +23,7 @@ describe('routes/slideshow socket join-slideshow()', () => {
     socketStub = { on: sandbox.stub(), join: sandbox.stub().resolves(), emit: sandbox.stub() }
     socketFake = cast<Socket>(socketStub)
     socketState = handleSocket(knexFake, serverFake, socketFake)
-    socketState.roomName = 'NO_ROOM' // assign sentical value to test against later
+    socketState.roomName = 'NO_ROOM' // assign sentinel value to test against later
     roomData = {
       uriSafeImage: '/foo/quux.png',
     }
@@ -33,166 +33,67 @@ describe('routes/slideshow socket join-slideshow()', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  const tests: Array<[string, string | null | undefined, () => void]> = [
-    [
-      'not join missing room name',
-      undefined,
-      () => {
-        expect(socketStub.join.callCount).toBe(0)
-      },
-    ],
-    [
-      'not join null room name',
-      null,
-      () => {
-        expect(socketStub.join.callCount).toBe(0)
-      },
-    ],
-    [
-      'not join emtpy room name',
-      '',
-      () => {
-        expect(socketStub.join.callCount).toBe(0)
-      },
-    ],
-    [
-      'join socket',
-      '/foo',
-      () => {
-        expect(socketStub.join.callCount).toBe(1)
-      },
-    ],
-    [
-      'join socket with room name',
-      '/foo',
-      () => {
-        expect(socketStub.join.firstCall.args).toEqual(['/foo'])
-      },
-    ],
-    [
-      'not save missing room name to state',
-      undefined,
-      () => {
-        expect(socketState.roomName).toBe('NO_ROOM')
-      },
-    ],
-    [
-      'not save null room name to state',
-      null,
-      () => {
-        expect(socketState.roomName).toBe('NO_ROOM')
-      },
-    ],
-    [
-      'not save empty room name to state',
-      '',
-      () => {
-        expect(socketState.roomName).toBe('NO_ROOM')
-      },
-    ],
-    [
-      'save room name to state',
-      '/foo',
-      () => {
-        expect(socketState.roomName).toBe('/foo')
-      },
-    ],
-    [
-      'not get room for missing room name',
-      undefined,
-      () => {
-        expect(getRoomStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'not get room for null room name',
-      null,
-      () => {
-        expect(getRoomStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'not get room for empty room name',
-      '',
-      () => {
-        expect(getRoomStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'get room for room name',
-      '/foo',
-      () => {
-        expect(getRoomStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'get room with knex',
-      '/foo',
-      () => {
-        expect(getRoomStub.firstCall.args[0]).toBe(knexFake)
-      },
-    ],
-    [
-      'get room with room name',
-      '/foo',
-      () => {
-        expect(getRoomStub.firstCall.args[1]).toBe('/foo')
-      },
-    ],
-    [
-      'get room without increment',
-      '/foo',
-      () => {
-        expect(getRoomStub.firstCall.args).toHaveLength(2)
-      },
-    ],
-    [
-      'not emit message for missing room name',
-      undefined,
-      () => {
-        expect(socketStub.emit.callCount).toBe(0)
-      },
-    ],
-    [
-      'not emit message for null room name',
-      null,
-      () => {
-        expect(socketStub.emit.callCount).toBe(0)
-      },
-    ],
-    [
-      'not emit message for empty room name',
-      '',
-      () => {
-        expect(socketStub.emit.callCount).toBe(0)
-      },
-    ],
-    [
-      'not emit message for valid room name',
-      '/foo',
-      () => {
-        expect(socketStub.emit.callCount).toBe(1)
-      },
-    ],
-    [
-      "emit 'image-changed' message",
-      '/foo',
-      () => {
-        expect(socketStub.emit.firstCall.args[0]).toBe('image-changed')
-      },
-    ],
-    [
-      'emit message with image path',
-      '/foo',
-      () => {
-        expect(socketStub.emit.firstCall.args[1]).toBe('/foo/quux.png')
-      },
-    ],
-  ]
-  tests.forEach(([title, room, validationFn]) => {
-    it(`should ${title}`, async () => {
-      await joinSlideshow(room, socketState, socketFake, knexFake)
-      validationFn()
+
+  describe('with no-room value', () => {
+    const noRoomCases: Array<[string, string | null | undefined]> = [
+      ['undefined', undefined],
+      ['null', null],
+      ['empty string', ''],
+    ]
+    noRoomCases.forEach(([label, room]) => {
+      describe(label, () => {
+        beforeEach(async () => {
+          await joinSlideshow(room, socketState, socketFake, knexFake)
+        })
+        it('should not join socket', () => {
+          expect(socketStub.join.callCount).toBe(0)
+        })
+        it('should not save room name to state', () => {
+          expect(socketState.roomName).toBe('NO_ROOM')
+        })
+        it('should not get room', () => {
+          expect(getRoomStub.callCount).toBe(0)
+        })
+        it('should not emit message', () => {
+          expect(socketStub.emit.callCount).toBe(0)
+        })
+      })
+    })
+  })
+
+  describe('with valid room "/foo"', () => {
+    beforeEach(async () => {
+      await joinSlideshow('/foo', socketState, socketFake, knexFake)
+    })
+    it('should join socket', () => {
+      expect(socketStub.join.callCount).toBe(1)
+    })
+    it('should join socket with room name', () => {
+      expect(socketStub.join.firstCall.args).toEqual(['/foo'])
+    })
+    it('should save room name to state', () => {
+      expect(socketState.roomName).toBe('/foo')
+    })
+    it('should get room', () => {
+      expect(getRoomStub.callCount).toBe(1)
+    })
+    it('should get room with knex', () => {
+      expect(getRoomStub.firstCall.args[0]).toBe(knexFake)
+    })
+    it('should get room with room name', () => {
+      expect(getRoomStub.firstCall.args[1]).toBe('/foo')
+    })
+    it('should get room without increment', () => {
+      expect(getRoomStub.firstCall.args).toHaveLength(2)
+    })
+    it('should emit message once', () => {
+      expect(socketStub.emit.callCount).toBe(1)
+    })
+    it("should emit 'image-changed' message", () => {
+      expect(socketStub.emit.firstCall.args[0]).toBe('image-changed')
+    })
+    it('should emit message with image path', () => {
+      expect(socketStub.emit.firstCall.args[1]).toBe('/foo/quux.png')
     })
   })
 
