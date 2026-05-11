@@ -16,7 +16,7 @@ import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/sockets handleKeys()', () => {
+describe('public/slideshow/sockets connect()', () => {
   const fakeEmit = sandbox.stub()
   const fakeOn = sandbox.stub()
   const fakeSocket = cast<WebSocket>({ emit: fakeEmit, on: fakeOn, disconnect: Sinon.spy() })
@@ -61,7 +61,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
     connect()
     // Function.prototype.bind is spec'd (ECMA-262 §19.2.3.2) to set .name to
     // 'bound <target>', so this assertion is stable across spec-conformant
-    // runtimes. Direct behavioural testing (stub window.location.assign,
+    // runtimes. Direct behavioral testing (stub window.location.assign,
     // invoke locationAssign, assert call) is not viable — JSDOM marks
     // Location.prototype.assign as non-configurable/non-writable, blocking
     // both sinon.stub and Object.defineProperty.

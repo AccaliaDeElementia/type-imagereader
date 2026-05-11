@@ -8,7 +8,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import assert from 'node:assert'
 const sandbox = Sinon.createSandbox()
 
-describe('public/slideshow/sockets handleKeys()', () => {
+describe('public/slideshow/sockets handleClick()', () => {
   const fakeEmit = sandbox.stub()
   const fakeSocket = cast<WebSocket>({ emit: fakeEmit })
   let fakeAssign = sandbox.stub()

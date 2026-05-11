@@ -22,12 +22,12 @@ describe('sync/synchronize synchronize()', () => {
   let updateFolderPictureCountsStub = sandbox.stub()
   let pruneEmptyFoldersStub = sandbox.stub()
   let emitSqliteSizeWarningStub = sandbox.stub()
-  let persistenceIntitializerStub = sandbox.stub()
+  let persistenceInitializerStub = sandbox.stub()
   let knexFnStub = sandbox.stub().returnsThis()
   beforeEach(() => {
     knexFnStub = sandbox.stub().returnsThis()
     ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
-    persistenceIntitializerStub = sandbox.stub(Imports, 'initialize').resolves(stubToKnex(knexFnStub))
+    persistenceInitializerStub = sandbox.stub(Imports, 'initialize').resolves(stubToKnex(knexFnStub))
     findSyncItemsStub = sandbox.stub(Imports, 'findSyncItems').resolves(1)
     syncAllPicturesStub = sandbox.stub(Imports, 'syncAllPictures').resolves()
     syncAllFoldersStub = sandbox.stub(Imports, 'syncAllFolders').resolves()
@@ -56,11 +56,11 @@ describe('sync/synchronize synchronize()', () => {
   })
   it('should call initialize once', async () => {
     await synchronize()
-    expect(persistenceIntitializerStub.callCount).toBe(1)
+    expect(persistenceInitializerStub.callCount).toBe(1)
   })
   it('should initialize the persistence layer with no arguments', async () => {
     await synchronize()
-    expect(persistenceIntitializerStub.firstCall.args).toEqual([])
+    expect(persistenceInitializerStub.firstCall.args).toEqual([])
   })
   it('should call findSyncItems once', async () => {
     await synchronize()

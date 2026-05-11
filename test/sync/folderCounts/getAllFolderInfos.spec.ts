@@ -59,12 +59,12 @@ describe('sync/folderCounts getAllFolderInfos()', () => {
       const results = await getAllFolderInfos(knexFnFake)
       expect(results[row.path]?.sortKey).toBe(row.sortKey)
     })
-    it(`should initialise totalCount to 0 for ${row.path}`, async () => {
+    it(`should initialize totalCount to 0 for ${row.path}`, async () => {
       knexInstanceStub.select.resolves(folderRows)
       const results = await getAllFolderInfos(knexFnFake)
       expect(results[row.path]?.totalCount).toBe(0)
     })
-    it(`should initialise seenCount to 0 for ${row.path}`, async () => {
+    it(`should initialize seenCount to 0 for ${row.path}`, async () => {
       knexInstanceStub.select.resolves(folderRows)
       const results = await getAllFolderInfos(knexFnFake)
       expect(results[row.path]?.seenCount).toBe(0)

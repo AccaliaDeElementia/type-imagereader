@@ -134,7 +134,7 @@ describe('/app.ts tests', (): void => {
     })
   })
 
-  it('should run Synchronization again after syncInterval miliseconds', async () => {
+  it('should run Synchronization again after syncInterval milliseconds', async () => {
     process.env.SYNC_INTERVAL = '100'
     await ImageReader.run()
     SynchronizeStub?.resetHistory()

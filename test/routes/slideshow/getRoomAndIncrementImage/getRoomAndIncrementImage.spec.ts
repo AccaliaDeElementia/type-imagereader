@@ -550,7 +550,7 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         expect(room.index).toBe(0)
       })
     })
-    describe('countdown reset behaviour', () => {
+    describe('countdown reset behavior', () => {
       let room = cast<SlideshowRoom>({})
       beforeEach(() => {
         room = cast<SlideshowRoom>({

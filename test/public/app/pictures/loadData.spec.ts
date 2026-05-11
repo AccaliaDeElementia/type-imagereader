@@ -121,7 +121,7 @@ describe('public/app/pictures loadData()', () => {
       parent: '',
       path: '',
       pictures: Pictures.pictures,
-      cover: '/non/existant/path.png',
+      cover: '/non/existent/path.png',
     })
     expect(Pictures.current).toBe(Pictures.pictures[0])
   })

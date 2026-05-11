@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import { releaseLock, WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
-describe('public/app/WakeLock takeLock()', () => {
+describe('public/app/WakeLock releaseLock()', () => {
   let clock: sinon.SinonFakeTimers | undefined = undefined
   let sentinelRelease: sinon.SinonStub = sandbox.stub().resolves()
   let sentinel: WakeLockSentinel = {
