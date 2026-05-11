@@ -105,52 +105,33 @@ describe('/app.ts tests', (): void => {
     })
   })
 
-  it('should run Synchronization if SKIP_SYNC is not set', async () => {
-    delete process.env.SKIP_SYNC
-    await ImageReader.run()
-    expect(SynchronizeStub?.called).toBe(true)
+  const skipFlagCases: Array<[string, string | undefined, boolean]> = [
+    ['is not set', undefined, true],
+    ['is blank', '', true],
+    ['is true', 'true', false],
+    ['is 1', '1', false],
+  ]
+  skipFlagCases.forEach(([cond, value, shouldRun]) => {
+    describe(`when SKIP_SYNC ${cond}`, () => {
+      beforeEach(async () => {
+        if (value !== undefined) process.env.SKIP_SYNC = value
+        await ImageReader.run()
+      })
+      it(`should ${shouldRun ? '' : 'not '}run Synchronization`, () => {
+        expect(SynchronizeStub?.called).toBe(shouldRun)
+      })
+    })
   })
-
-  it('should run Synchronization if SKIP_SYNC is blank', async () => {
-    process.env.SKIP_SYNC = ''
-    await ImageReader.run()
-    expect(SynchronizeStub?.called).toBe(true)
-  })
-
-  it('should not run Synchronization if SKIP_SYNC is true', async () => {
-    process.env.SKIP_SYNC = 'true'
-    await ImageReader.run()
-    expect(SynchronizeStub?.called).toBe(false)
-  })
-
-  it('should not run Synchronization if SKIP_SYNC is 1', async () => {
-    process.env.SKIP_SYNC = '1'
-    await ImageReader.run()
-    expect(SynchronizeStub?.called).toBe(false)
-  })
-
-  it('should run server if SKIP_SERVE is not set', async () => {
-    delete process.env.SKIP_SERVE
-    await ImageReader.run()
-    expect(StartServerStub?.called).toBe(true)
-  })
-
-  it('should run server if SKIP_SERVE is blank', async () => {
-    process.env.SKIP_SERVE = ''
-    await ImageReader.run()
-    expect(StartServerStub?.called).toBe(true)
-  })
-
-  it('should not run server if SKIP_SERVE is true', async () => {
-    process.env.SKIP_SERVE = 'true'
-    await ImageReader.run()
-    expect(StartServerStub?.called).toBe(false)
-  })
-
-  it('should not run server if SKIP_SERVE is 1', async () => {
-    process.env.SKIP_SERVE = '1'
-    await ImageReader.run()
-    expect(StartServerStub?.called).toBe(false)
+  skipFlagCases.forEach(([cond, value, shouldRun]) => {
+    describe(`when SKIP_SERVE ${cond}`, () => {
+      beforeEach(async () => {
+        if (value !== undefined) process.env.SKIP_SERVE = value
+        await ImageReader.run()
+      })
+      it(`should ${shouldRun ? '' : 'not '}run server`, () => {
+        expect(StartServerStub?.called).toBe(shouldRun)
+      })
+    })
   })
 
   it('should run Synchronization again after syncInterval miliseconds', async () => {
