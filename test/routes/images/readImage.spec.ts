@@ -32,6 +32,7 @@ describe('routes/images readImage()', () => {
       stub.returns(result)
     }
   }
+
   const rejectors: Array<[string, string, string, number, string, Promise<unknown> | Error]> = [
     [
       'non image path',
@@ -74,45 +75,39 @@ describe('routes/images readImage()', () => {
       Promise.resolve(),
     ],
   ]
-  rejectors.forEach(([title, path, errorCode, statusCode, message, readFileResult]) => {
-    it(`should reject ${title} with error ImageData`, async () => {
-      configureReadFile(readFileStub, readFileResult)
+  rejectors.forEach(([scenarioTitle, path, errorCode, statusCode, message, readFileResult]) => {
+    describe(scenarioTitle, () => {
       const img = { img: Math.random() }
-      fromErrorStub.returns(img)
-      const result = await readImage(path)
-      expect(result).toBe(img)
-    })
-    it(`should call ImageData.fromError once for ${title}`, async () => {
-      configureReadFile(readFileStub, readFileResult)
-      await readImage(path)
-      expect(fromErrorStub.callCount).toBe(1)
-    })
-    it(`should call ImageData.fromError with 4 arguments for ${title}`, async () => {
-      configureReadFile(readFileStub, readFileResult)
-      await readImage(path)
-      expect(fromErrorStub.firstCall.args).toHaveLength(4)
-    })
-    it(`should reject ${title} with with expected error code`, async () => {
-      configureReadFile(readFileStub, readFileResult)
-      await readImage(path)
-      expect(fromErrorStub.firstCall.args[0]).toBe(errorCode)
-    })
-    it(`should reject ${title} with with expected statuscode`, async () => {
-      configureReadFile(readFileStub, readFileResult)
-      await readImage(path)
-      expect(fromErrorStub.firstCall.args[1]).toBe(statusCode)
-    })
-    it(`should reject ${title} with with expected error message`, async () => {
-      configureReadFile(readFileStub, readFileResult)
-      await readImage(path)
-      expect(fromErrorStub.firstCall.args[2]).toBe(message)
-    })
-    it(`should reject ${title} with with expected path`, async () => {
-      configureReadFile(readFileStub, readFileResult)
-      await readImage(path)
-      expect(fromErrorStub.firstCall.args[3]).toBe(path)
+      let result: ImageData = cast<ImageData>({})
+      beforeEach(async () => {
+        configureReadFile(readFileStub, readFileResult)
+        fromErrorStub.returns(img)
+        result = await readImage(path)
+      })
+      it('should reject with error ImageData', () => {
+        expect(result).toBe(img)
+      })
+      it('should call ImageData.fromError once', () => {
+        expect(fromErrorStub.callCount).toBe(1)
+      })
+      it('should call ImageData.fromError with 4 arguments', () => {
+        expect(fromErrorStub.firstCall.args).toHaveLength(4)
+      })
+      it('should reject with expected error code', () => {
+        expect(fromErrorStub.firstCall.args[0]).toBe(errorCode)
+      })
+      it('should reject with expected status code', () => {
+        expect(fromErrorStub.firstCall.args[1]).toBe(statusCode)
+      })
+      it('should reject with expected error message', () => {
+        expect(fromErrorStub.firstCall.args[2]).toBe(message)
+      })
+      it('should reject with expected path', () => {
+        expect(fromErrorStub.firstCall.args[3]).toBe(path)
+      })
     })
   })
+
   it('should call isPathTraversal with the path', async () => {
     await readImage('/foo/bar/image.png')
     expect(isPathTraversalStub.firstCall.args).toEqual(['/foo/bar/image.png'])
@@ -136,60 +131,39 @@ describe('routes/images readImage()', () => {
     await readImage('/foo/bar/image.png')
     expect(readFileStub.callCount).toBe(0)
   })
-  const validImagetests: Array<[string, (i: ImageData, d: ImageData, buff: Buffer) => void]> = [
-    [
-      'read file',
-      () => {
-        expect(readFileStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'read file with expected path',
-      () => {
-        expect(readFileStub.firstCall.args).toEqual(['/data/foo/bar/image.gif'])
-      },
-    ],
-    [
-      'resolve to  parsed ImageData',
-      (expected, result) => {
-        expect(result).toBe(expected)
-      },
-    ],
-    [
-      'construct ImageData result using ImageData.fromImage',
-      () => {
-        expect(fromImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'call fromImage with expected buffered data',
-      (_, __, data) => {
-        expect(fromImageStub.firstCall.args[0]).toBe(data)
-      },
-    ],
-    [
-      'call fromImage with expected extension',
-      () => {
-        expect(fromImageStub.firstCall.args[1]).toBe('gif')
-      },
-    ],
-    [
-      'call fromImage with expected path',
-      () => {
-        expect(fromImageStub.firstCall.args[2]).toBe('/foo/bar/image.gif')
-      },
-    ],
-  ]
-  validImagetests.forEach(([title, validatefn]) => {
-    it(`should ${title} for valid image`, async () => {
-      const img = cast<ImageData>({ img: Math.random() })
-      const data = Buffer.from('SOME DATA HERE')
+
+  describe('with valid image (.gif)', () => {
+    const img = cast<ImageData>({ img: Math.random() })
+    const data = Buffer.from('SOME DATA HERE')
+    let result: ImageData = cast<ImageData>({})
+    beforeEach(async () => {
       fromImageStub.returns(img)
       readFileStub.resolves(data)
-      const result = await readImage('/foo/bar/image.gif')
-      validatefn(img, result, data)
+      result = await readImage('/foo/bar/image.gif')
+    })
+    it('should read file', () => {
+      expect(readFileStub.callCount).toBe(1)
+    })
+    it('should read file with expected path', () => {
+      expect(readFileStub.firstCall.args).toEqual(['/data/foo/bar/image.gif'])
+    })
+    it('should resolve to parsed ImageData', () => {
+      expect(result).toBe(img)
+    })
+    it('should construct ImageData result using ImageData.fromImage', () => {
+      expect(fromImageStub.callCount).toBe(1)
+    })
+    it('should call fromImage with expected buffered data', () => {
+      expect(fromImageStub.firstCall.args[0]).toBe(data)
+    })
+    it('should call fromImage with expected extension', () => {
+      expect(fromImageStub.firstCall.args[1]).toBe('gif')
+    })
+    it('should call fromImage with expected path', () => {
+      expect(fromImageStub.firstCall.args[2]).toBe('/foo/bar/image.gif')
     })
   })
+
   const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'tif', 'tiff', 'bmp', 'jfif', 'jpe']
   allowedExtensions.forEach((ext) => {
     it(`should allow .${ext}`, async () => {

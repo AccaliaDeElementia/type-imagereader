@@ -20,50 +20,31 @@ describe('routes/slideshow getImageCount()', () => {
         fake: knexFake,
       } = createKnexChainFake(['count'] as const, ['where'] as const))
     })
-    const queryTests: Array<[string, () => void]> = [
-      [
-        'query knex once',
-        () => {
-          expect(knexStub.callCount).toBe(1)
-        },
-      ],
-      [
-        'query pictures folder',
-        () => {
-          expect(knexStub.firstCall.args).toEqual(['pictures'])
-        },
-      ],
-      [
-        'count result rows',
-        () => {
-          expect(knexInstanceStub.count.callCount).toBe(1)
-        },
-      ],
-      [
-        'count results by path column',
-        () => {
-          expect(knexInstanceStub.count.firstCall.args).toEqual([{ count: 'path' }])
-        },
-      ],
-      [
-        'filter results with where clause',
-        () => {
-          expect(knexInstanceStub.where.callCount).toBe(1)
-        },
-      ],
-      [
-        'filter results on paths prefixed with parameter',
-        () => {
-          expect(knexInstanceStub.where.firstCall.args).toEqual(['path', 'like', '/slideshow/path%'])
-        },
-      ],
-    ]
-    queryTests.forEach(([title, validationFn]) => {
-      it(`should ${title}`, async () => {
+
+    describe('query shape', () => {
+      beforeEach(async () => {
         await getImageCount(knexFake, '/slideshow/path')
-        validationFn()
+      })
+      it('should query knex once', () => {
+        expect(knexStub.callCount).toBe(1)
+      })
+      it('should query pictures folder', () => {
+        expect(knexStub.firstCall.args).toEqual(['pictures'])
+      })
+      it('should count result rows', () => {
+        expect(knexInstanceStub.count.callCount).toBe(1)
+      })
+      it('should count results by path column', () => {
+        expect(knexInstanceStub.count.firstCall.args).toEqual([{ count: 'path' }])
+      })
+      it('should filter results with where clause', () => {
+        expect(knexInstanceStub.where.callCount).toBe(1)
+      })
+      it('should filter results on paths prefixed with parameter', () => {
+        expect(knexInstanceStub.where.firstCall.args).toEqual(['path', 'like', '/slideshow/path%'])
       })
     })
+
     const resultsTests: Array<[string, unknown, number]> = [
       ['default value for no results', [], 0],
       ['default value for undefined results', undefined, 0],
@@ -90,6 +71,7 @@ describe('routes/slideshow getImageCount()', () => {
       expect(knexInstanceStub.where.firstCall.args).toEqual(['path', 'like', '/foo\\%bar/%'])
     })
   })
+
   describe("with filter = 'all'", () => {
     let {
       instance: knexInstanceStub,
@@ -117,6 +99,7 @@ describe('routes/slideshow getImageCount()', () => {
       expect(actual).toBe(12)
     })
   })
+
   describe("with filter = 'unread'", () => {
     let {
       instance: knexInstanceStub,
@@ -130,62 +113,37 @@ describe('routes/slideshow getImageCount()', () => {
         fake: knexFake,
       } = createKnexChainFake(['count', 'where'] as const, ['andWhere'] as const))
     })
-    const queryTests: Array<[string, () => void]> = [
-      [
-        'query knex once',
-        () => {
-          expect(knexStub.callCount).toBe(1)
-        },
-      ],
-      [
-        'query pictures folder',
-        () => {
-          expect(knexStub.firstCall.args).toEqual(['pictures'])
-        },
-      ],
-      [
-        'count result rows',
-        () => {
-          expect(knexInstanceStub.count.callCount).toBe(1)
-        },
-      ],
-      [
-        'count results by path column',
-        () => {
-          expect(knexInstanceStub.count.firstCall.args).toEqual([{ count: 'path' }])
-        },
-      ],
-      [
-        'filter results with where clause',
-        () => {
-          expect(knexInstanceStub.where.callCount).toBe(1)
-        },
-      ],
-      [
-        'filter results on paths prefixed with parameter',
-        () => {
-          expect(knexInstanceStub.where.firstCall.args).toEqual(['path', 'like', '/slideshow/path%'])
-        },
-      ],
-      [
-        'additionally filter results with andWhere()',
-        () => {
-          expect(knexInstanceStub.andWhere.callCount).toBe(1)
-        },
-      ],
-      [
-        'filter results on only unseen',
-        () => {
-          expect(knexInstanceStub.andWhere.firstCall.args).toEqual(['seen', '=', false])
-        },
-      ],
-    ]
-    queryTests.forEach(([title, validationFn]) => {
-      it(`should ${title}`, async () => {
+
+    describe('query shape', () => {
+      beforeEach(async () => {
         await getImageCount(knexFake, '/slideshow/path', 'unread')
-        validationFn()
+      })
+      it('should query knex once', () => {
+        expect(knexStub.callCount).toBe(1)
+      })
+      it('should query pictures folder', () => {
+        expect(knexStub.firstCall.args).toEqual(['pictures'])
+      })
+      it('should count result rows', () => {
+        expect(knexInstanceStub.count.callCount).toBe(1)
+      })
+      it('should count results by path column', () => {
+        expect(knexInstanceStub.count.firstCall.args).toEqual([{ count: 'path' }])
+      })
+      it('should filter results with where clause', () => {
+        expect(knexInstanceStub.where.callCount).toBe(1)
+      })
+      it('should filter results on paths prefixed with parameter', () => {
+        expect(knexInstanceStub.where.firstCall.args).toEqual(['path', 'like', '/slideshow/path%'])
+      })
+      it('should additionally filter results with andWhere()', () => {
+        expect(knexInstanceStub.andWhere.callCount).toBe(1)
+      })
+      it('should filter results on only unseen', () => {
+        expect(knexInstanceStub.andWhere.firstCall.args).toEqual(['seen', '=', false])
       })
     })
+
     const resultsTests: Array<[string, unknown, number]> = [
       ['default value for no results', [], 0],
       ['default value for undefined results', undefined, 0],
@@ -212,6 +170,7 @@ describe('routes/slideshow getImageCount()', () => {
       expect(knexInstanceStub.where.firstCall.args).toEqual(['path', 'like', '/foo\\%bar/%'])
     })
   })
+
   describe('when the query rejects', () => {
     let {
       instance: knexInstanceStub,
