@@ -1,12 +1,14 @@
 'use sanity'
 
+import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-import { Bookmarks, init } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, Imports, init } from '#public/scripts/app/bookmarks.js'
+
+const sandbox = Sinon.createSandbox()
 
 const markup = `
 html
@@ -28,6 +30,7 @@ html
 describe('public/app/bookmarks init()', () => {
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
+  let subscribeStub = sandbox.stub()
 
   beforeEach(() => {
     document = global.document
@@ -38,12 +41,14 @@ describe('public/app/bookmarks init()', () => {
     mountDom(dom)
 
     resetPubSub()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
   })
   afterEach(() => {
+    sandbox.restore()
     unmountDom()
   })
   it('should locate bookmarkCard template on init', () => {
@@ -63,18 +68,18 @@ describe('public/app/bookmarks init()', () => {
   })
   it('should subscribe to Navigate:Data', () => {
     init()
-    expect(Object.keys(PubSub.subscribers)).toContain('NAVIGATE:DATA')
+    expect(subscribeStub.calledWith('Navigate:Data')).toBe(true)
   })
   it('should subscribe to Bookmarks:Load', () => {
     init()
-    expect(Object.keys(PubSub.subscribers)).toContain('BOOKMARKS:LOAD')
+    expect(subscribeStub.calledWith('Bookmarks:Load')).toBe(true)
   })
   it('should subscribe to Bookmarks:Add', () => {
     init()
-    expect(Object.keys(PubSub.subscribers)).toContain('BOOKMARKS:ADD')
+    expect(subscribeStub.calledWith('Bookmarks:Add')).toBe(true)
   })
   it('should subscribe to Bookmarks:Remove', () => {
     init()
-    expect(Object.keys(PubSub.subscribers)).toContain('BOOKMARKS:REMOVE')
+    expect(subscribeStub.calledWith('Bookmarks:Remove')).toBe(true)
   })
 })

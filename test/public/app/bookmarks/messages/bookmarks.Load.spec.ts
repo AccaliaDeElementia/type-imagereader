@@ -8,8 +8,7 @@ import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 import type { Listing } from '#contracts/listing.js'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, init, Internals } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
@@ -38,7 +37,8 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
 
   let BuildBookmarksSpy = sandbox.stub()
   let getJSONSpy = sandbox.stub()
-  let loadingErrorSpy = sandbox.stub()
+  let publishStub = sandbox.stub()
+  let subscribeStub = sandbox.stub()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -46,11 +46,8 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     })
     mountDom(dom)
 
-    loadingErrorSpy = sandbox.stub().resolves()
     resetPubSub()
-    PubSub.subscribers = {
-      'LOADING:ERROR': [loadingErrorSpy],
-    }
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
@@ -59,18 +56,19 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     BuildBookmarksSpy = sandbox.stub(Internals, 'buildBookmarks')
     getJSONSpy = sandbox.stub(Imports, 'getJSON').resolves()
     init()
+    publishStub = sandbox.stub(Imports, 'publish')
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
   })
   it('should use Net.getJSON to load bookmarks', async () => {
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
     expect(getJSONSpy.callCount).toBe(1)
   })
   it('should request expected API endpoint to load bookmarks', async () => {
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
     expect(getJSONSpy.firstCall.args[0]).toBe('/api/bookmarks')
   })
@@ -87,7 +85,7 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
   ]
   bookmarkTestCases.forEach(([title, obj, expected]) => {
     it(`should${expected ? '' : ' not'} accept ${title} data`, async () => {
-      const fn = getSubscriber('BOOKMARKS:LOAD')
+      const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
       await fn(undefined)
       const acceptor = getJSONSpy.firstCall.args[1] as unknown
       assert(acceptor !== undefined)
@@ -98,56 +96,56 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
   it('should call BuildBookmarks once when getJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
     expect(BuildBookmarksSpy.callCount).toBe(1)
   })
   it('should pass empty name to BuildBookmarks when getJSON resolves', async () => {
     getJSONSpy.resolves([])
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
     expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).name).toBe('')
   })
   it('should pass empty path to BuildBookmarks when getJSON resolves', async () => {
     getJSONSpy.resolves([])
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
     expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).path).toBe('')
   })
   it('should pass resolved data as bookmarks to BuildBookmarks', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
     expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).toBe(data)
   })
   it('should not publish Loading:Error when getJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(loadingErrorSpy.callCount).toBe(0)
+    expect(publishStub.callCount).toBe(0)
   })
   it('should not build bookmarks when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
     expect(BuildBookmarksSpy.callCount).toBe(0)
   })
   it('should publish Loading:Error when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(loadingErrorSpy.callCount).toBe(1)
+    expect(publishStub.calledWith('Loading:Error')).toBe(true)
   })
   it('should publish received error to Loading:Error when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(loadingErrorSpy.firstCall.args[0]).toBe(data)
+    expect(publishStub.firstCall.args[1]).toBe(data)
   })
 
   const runStaleResponseScenario = async (): Promise<{ secondData: unknown }> => {
@@ -155,7 +153,7 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
     const secondData = [{ name: 'second', path: '/second', bookmarks: [] }]
     getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     const a = fn(undefined)
     const b = fn(undefined)
     resolveSecond(secondData)
@@ -177,13 +175,13 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     const { promise: firstPromise, reject: rejectFirst } = Promise.withResolvers<unknown>()
     const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
     getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
-    const fn = getSubscriber('BOOKMARKS:LOAD')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     const a = fn(undefined)
     const b = fn(undefined)
     resolveSecond([{ name: 'second', path: '/second', bookmarks: [] }])
     await b
     rejectFirst(new Error('stale'))
     await a
-    expect(loadingErrorSpy.callCount).toBe(0)
+    expect(publishStub.callCount).toBe(0)
   })
 })

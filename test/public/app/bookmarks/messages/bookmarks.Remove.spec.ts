@@ -7,8 +7,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, init } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
@@ -36,9 +35,8 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
   let dom: JSDOM = new JSDOM('', {})
 
   let postJSONSpy = sandbox.stub()
-  let bookmarksLoadSpy = sandbox.stub()
-  let loadingErrorSpy = sandbox.stub()
-  let loadingSuccessSpy = sandbox.stub()
+  let publishStub = sandbox.stub()
+  let subscribeStub = sandbox.stub()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -46,15 +44,8 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
     })
     mountDom(dom)
 
-    bookmarksLoadSpy = sandbox.stub().resolves()
-    loadingErrorSpy = sandbox.stub().resolves()
-    loadingSuccessSpy = sandbox.stub().resolves()
     resetPubSub()
-    PubSub.subscribers = {
-      'BOOKMARKS:LOAD': [bookmarksLoadSpy],
-      'LOADING:ERROR': [loadingErrorSpy],
-      'LOADING:SUCCESS': [loadingSuccessSpy],
-    }
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
@@ -62,6 +53,7 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
 
     postJSONSpy = sandbox.stub(Imports, 'postJSON').resolves()
     init()
+    publishStub = sandbox.stub(Imports, 'publish')
   })
   afterEach(() => {
     sandbox.restore()
@@ -79,12 +71,12 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
   ]
   postDataCases.forEach(([title, data, expected]) => {
     it(`should${expected ? '' : ' not'} post ${title} data`, async () => {
-      const fn = getSubscriber('BOOKMARKS:REMOVE')
+      const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
       await fn(data)
       expect(postJSONSpy.called).toBe(expected)
     })
     it(`should accept ${title} data from network`, async () => {
-      const fn = getSubscriber('BOOKMARKS:REMOVE')
+      const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
       await fn('FOO!')
       const acceptor = postJSONSpy.firstCall.args[2] as unknown
       assert(acceptor !== undefined)
@@ -93,87 +85,87 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
     })
   })
   it('should post to expected URL', async () => {
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('FOO!')
     expect(postJSONSpy.firstCall.args[0]).toBe('/api/bookmarks/remove')
   })
   it('should post expected data object', async () => {
     const path = `THIS IS MY PATH${Math.random()}`
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn(path)
     expect(postJSONSpy.firstCall.args[1]).toEqual({ path })
   })
   it('should publish Bookmarks:Load on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(bookmarksLoadSpy.called).toBe(true)
+    expect(publishStub.calledWith('Bookmarks:Load')).toBe(true)
   })
   it('should publish Loading:Success on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(loadingSuccessSpy.called).toBe(true)
+    expect(publishStub.calledWith('Loading:Success')).toBe(true)
   })
   it('should not publish Loading:Error on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(loadingErrorSpy.called).toBe(false)
+    expect(publishStub.calledWith('Loading:Error')).toBe(false)
   })
   it('should publish Bookmarks:Load on empty response', async () => {
     postJSONSpy.resolves(null)
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(bookmarksLoadSpy.called).toBe(true)
+    expect(publishStub.calledWith('Bookmarks:Load')).toBe(true)
   })
   it('should publish Loading:Success on empty response', async () => {
     postJSONSpy.resolves(null)
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(loadingSuccessSpy.called).toBe(true)
+    expect(publishStub.calledWith('Loading:Success')).toBe(true)
   })
   it('should not publish Loading:Error on empty response', async () => {
     postJSONSpy.resolves(null)
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(loadingErrorSpy.called).toBe(false)
+    expect(publishStub.calledWith('Loading:Error')).toBe(false)
   })
   it('should not publish Bookmarks:Load on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(bookmarksLoadSpy.called).toBe(false)
+    expect(publishStub.calledWith('Bookmarks:Load')).toBe(false)
   })
   it('should not publish Loading:Success on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(loadingSuccessSpy.called).toBe(false)
+    expect(publishStub.calledWith('Loading:Success')).toBe(false)
   })
   it('should publish Loading:Error on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(loadingErrorSpy.called).toBe(true)
+    expect(publishStub.calledWith('Loading:Error')).toBe(true)
   })
   it('should publish Loading:Error with error on rejection', async () => {
     const err = new Error('FOO!')
     postJSONSpy.rejects(err)
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(loadingErrorSpy.firstCall.args[0]).toBe(err)
+    expect(publishStub.firstCall.args[1]).toBe(err)
   })
   it('should publish a generic Error on rejection with non-error', async () => {
     postJSONSpy.rejects({})
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(loadingErrorSpy.firstCall.args[0]).toBeInstanceOf(Error)
+    expect(publishStub.firstCall.args[1]).toBeInstanceOf(Error)
   })
   it('should set message on generic error on rejection with non-error', async () => {
     postJSONSpy.rejects({})
-    const fn = getSubscriber('BOOKMARKS:REMOVE')
+    const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(cast<Error>(loadingErrorSpy.firstCall.args[0]).message).toBe('Non Error rejection!')
+    expect(cast<Error>(publishStub.firstCall.args[1]).message).toBe('Non Error rejection!')
   })
 })

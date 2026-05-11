@@ -6,8 +6,8 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
-import { Bookmarks, init, Internals } from '#public/scripts/app/bookmarks.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { Bookmarks, Imports, init, Internals } from '#public/scripts/app/bookmarks.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -32,6 +32,7 @@ describe('public/app/bookmarks init Navigate:Data', () => {
   let dom: JSDOM = new JSDOM('', {})
 
   let BuildBookmarksSpy = sandbox.stub()
+  let subscribeStub = sandbox.stub()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -40,6 +41,7 @@ describe('public/app/bookmarks init Navigate:Data', () => {
     mountDom(dom)
 
     resetPubSub()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
@@ -63,7 +65,7 @@ describe('public/app/bookmarks init Navigate:Data', () => {
   ]
   testCases.forEach(([title, data, expected]) => {
     it(`should${expected ? '' : ' not'} build bookmarks when Navigate:Load loads ${title}`, async () => {
-      const fn = getSubscriber('NAVIGATE:DATA')
+      const fn = capturedSubscriber(subscribeStub, 'Navigate:Data')
       await fn(data)
       expect(BuildBookmarksSpy.called).toBe(expected)
     })

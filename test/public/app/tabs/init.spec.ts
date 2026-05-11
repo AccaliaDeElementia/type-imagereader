@@ -5,9 +5,8 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
-import { init, Internals, Tabs } from '#public/scripts/app/tabs.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { Imports, init, Internals, Tabs } from '#public/scripts/app/tabs.js'
 import assert from 'node:assert'
 import { hasValue } from '#utils/helpers.js'
 
@@ -37,12 +36,14 @@ html
 describe('public/app/tabs init()', () => {
   let dom = new JSDOM('<html></html>', {})
   let selectTabSpy = sandbox.stub()
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'https://127.1.1.1:5050/',
     })
     mountDom(dom)
     selectTabSpy = sandbox.stub(Internals, 'selectTab')
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     resetPubSub()
     Tabs.tabs = []
     Tabs.tabNames = []
@@ -64,26 +65,26 @@ describe('public/app/tabs init()', () => {
   })
   it('should subscribe to Tab:Select event', () => {
     init()
-    expect(Object.keys(PubSub.subscribers)).toContain('TAB:SELECT')
+    expect(subscribeStub.calledWith('Tab:Select')).toBe(true)
   })
   it('should call selectTab once for Tab:Select event', async () => {
     init()
     selectTabSpy.resetHistory()
-    const fn = getSubscriber('TAB:SELECT')
+    const fn = capturedSubscriber(subscribeStub, 'Tab:Select')
     await fn('FOOBAR')
     expect(selectTabSpy.callCount).toBe(1)
   })
   it('should select provided tab for Tab:Select event', async () => {
     init()
     selectTabSpy.resetHistory()
-    const fn = getSubscriber('TAB:SELECT')
+    const fn = capturedSubscriber(subscribeStub, 'Tab:Select')
     await fn('FOOBAR')
     expect(selectTabSpy.firstCall.args).toEqual(['FOOBAR'])
   })
   it('should ignore non string value for Tab:Select event', async () => {
     init()
     selectTabSpy.resetHistory()
-    const fn = getSubscriber('TAB:SELECT')
+    const fn = capturedSubscriber(subscribeStub, 'Tab:Select')
     await fn(null)
     expect(selectTabSpy.callCount).toBe(0)
   })
