@@ -168,6 +168,13 @@ export default [
       // user logic runs. The project default of 3 leaves zero room for an async test
       // body inside a parameterized forEach. Bump to 5 for spec files only.
       'max-nested-callbacks': ['error', 5],
+      // Test files have a different scaling law than production code: describe-block
+      // structure, parametric tables, and one-file-per-SUT all push line counts up
+      // without indicating bloat. The 450 limit forces artificial splits where the
+      // same SUT ends up tested across multiple sibling files (a worse outcome than
+      // one larger file). Bump to 1000 for spec files; production code stays at 450.
+      // Spec files going over 1000 are still a real signal worth investigating.
+      'max-lines': ['error', { max: 1000, skipBlankLines: true, skipComments: true }],
       // Spec files legitimately import Internals (within-module stub seam) and Imports
       // (cross-module stub seam) of the module under test.
       'no-restricted-imports': 'off',
