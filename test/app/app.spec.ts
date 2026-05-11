@@ -57,112 +57,52 @@ describe('/app.ts tests', (): void => {
     expect(err.message).toBe('FOO')
   })
 
-  it('should call startServer when PORT is not defined', async () => {
-    delete process.env.PORT
-    await ImageReader.run()
-    expect(StartServerStub?.called).toBe(true)
+  const portSuccesses: Array<[string, string | undefined, number]> = [
+    ['is not defined', undefined, 3030],
+    ['is blank', '', 3030],
+    ['is at lower boundary', '0', 0],
+    ['is valid', '5555', 5555],
+    ['is at upper boundary', '65535', 65535],
+  ]
+  portSuccesses.forEach(([cond, value, expectedPort]) => {
+    describe(`when PORT ${cond}`, () => {
+      beforeEach(async () => {
+        if (value !== undefined) process.env.PORT = value
+        await ImageReader.run()
+      })
+      it('should call startServer', () => {
+        expect(StartServerStub?.called).toBe(true)
+      })
+      it('should pass expected port to startServer', () => {
+        expect(StartServerStub?.firstCall.args[0]).toBe(expectedPort)
+      })
+    })
   })
 
-  it('should pass default port 3030 to startServer when PORT is not defined', async () => {
-    delete process.env.PORT
-    await ImageReader.run()
-    expect(StartServerStub?.firstCall.args[0]).toBe(3030)
-  })
-
-  it('should call startServer when PORT is blank', async () => {
-    process.env.PORT = ''
-    await ImageReader.run()
-    expect(StartServerStub?.called).toBe(true)
-  })
-
-  it('should pass default port 3030 to startServer when PORT is blank', async () => {
-    process.env.PORT = ''
-    await ImageReader.run()
-    expect(StartServerStub?.firstCall.args[0]).toBe(3030)
-  })
-
-  it('should call startServer when PORT is valid', async () => {
-    process.env.PORT = '5555'
-    await ImageReader.run()
-    expect(StartServerStub?.called).toBe(true)
-  })
-
-  it('should pass specified port to startServer when PORT is valid', async () => {
-    process.env.PORT = '5555'
-    await ImageReader.run()
-    expect(StartServerStub?.firstCall.args[0]).toBe(5555)
-  })
-
-  it('should not call startServer when PORT fails to parse', async () => {
-    process.env.PORT = 'FOO'
-    await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).toBe(false)
-  })
-
-  it('should not call synchronize when PORT fails to parse', async () => {
-    process.env.PORT = 'FOO'
-    await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).toBe(false)
-  })
-
-  it('should reject with descriptive message when PORT fails to parse', async () => {
-    process.env.PORT = 'FOO'
-    const e = await eventuallyRejects(ImageReader.run())
-    expect(e.message).toBe('Port NaN (from env: FOO) is not a number. Valid ports must be a number.')
-  })
-
-  it('should not call startServer when PORT is too small', async () => {
-    process.env.PORT = '-1'
-    await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).toBe(false)
-  })
-
-  it('should not call synchronize when PORT is too small', async () => {
-    process.env.PORT = '-1'
-    await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).toBe(false)
-  })
-
-  it('should reject with descriptive message when PORT is too small', async () => {
-    process.env.PORT = '-1'
-    const e = await eventuallyRejects(ImageReader.run())
-    expect(e.message).toBe('Port -1 is out of range. Valid ports must be between 0 and 65535.')
-  })
-
-  it('should not call startServer when PORT is too big', async () => {
-    process.env.PORT = '131072'
-    await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).toBe(false)
-  })
-
-  it('should not call synchronize when PORT is too big', async () => {
-    process.env.PORT = '131072'
-    await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).toBe(false)
-  })
-
-  it('should reject with descriptive message when PORT is too big', async () => {
-    process.env.PORT = '131072'
-    const e = await eventuallyRejects(ImageReader.run())
-    expect(e.message).toBe('Port 131072 is out of range. Valid ports must be between 0 and 65535.')
-  })
-
-  it('should not call startServer when PORT is not integer', async () => {
-    process.env.PORT = '3.1415926'
-    await eventuallyRejects(ImageReader.run())
-    expect(StartServerStub?.called).toBe(false)
-  })
-
-  it('should not call synchronize when PORT is not integer', async () => {
-    process.env.PORT = '3.1415926'
-    await eventuallyRejects(ImageReader.run())
-    expect(SynchronizeStub?.called).toBe(false)
-  })
-
-  it('should reject with descriptive message when PORT is not integer', async () => {
-    process.env.PORT = '3.1415926'
-    const e = await eventuallyRejects(ImageReader.run())
-    expect(e.message).toBe('Port 3.1415926 is not integer. Valid ports must be integer between 0 and 65535.')
+  const portRejections: Array<[string, string, string]> = [
+    ['fails to parse', 'FOO', 'Port NaN (from env: FOO) is not a number. Valid ports must be a number.'],
+    ['is too small', '-1', 'Port -1 is out of range. Valid ports must be between 0 and 65535.'],
+    ['is too big', '65536', 'Port 65536 is out of range. Valid ports must be between 0 and 65535.'],
+    ['is far too big', '131072', 'Port 131072 is out of range. Valid ports must be between 0 and 65535.'],
+    ['is not integer', '3.1415926', 'Port 3.1415926 is not integer. Valid ports must be integer between 0 and 65535.'],
+  ]
+  portRejections.forEach(([cond, port, expectedMessage]) => {
+    describe(`when PORT ${cond}`, () => {
+      let err = cast<Error>({})
+      beforeEach(async () => {
+        process.env.PORT = port
+        err = await eventuallyRejects(ImageReader.run())
+      })
+      it('should not call startServer', () => {
+        expect(StartServerStub?.called).toBe(false)
+      })
+      it('should not call synchronize', () => {
+        expect(SynchronizeStub?.called).toBe(false)
+      })
+      it('should reject with descriptive message', () => {
+        expect(err.message).toBe(expectedMessage)
+      })
+    })
   })
 
   it('should run Synchronization if SKIP_SYNC is not set', async () => {
