@@ -55,166 +55,107 @@ describe('routes/slideshow rootRoute', () => {
     message: getRoomError,
   }
   const getArgs = (stub: Sinon.SinonStub): unknown[] => stub.firstCall.args as unknown[]
-  it('should return FORBIDDEN when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
-    await rootRoute(knexFake, requestFake, responseFake)
-    expect(getArgs(resStub.status)[0]).toBe(403)
+
+  describe('when isPathTraversal returns true', () => {
+    beforeEach(async () => {
+      isPathTraversalStub.returns(true)
+      await rootRoute(knexFake, requestFake, responseFake)
+    })
+    it('should return FORBIDDEN status', () => {
+      expect(getArgs(resStub.status)[0]).toBe(403)
+    })
+    it('should render error template', () => {
+      expect(getArgs(resStub.render)[0]).toBe('error')
+    })
+    it('should render E_NO_TRAVERSE error data', () => {
+      expect(getArgs(resStub.render)[1]).toEqual(eTraverse)
+    })
+    it('should not get room', () => {
+      expect(getRoomStub.callCount).toBe(0)
+    })
   })
-  it('should render error template when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
-    await rootRoute(knexFake, requestFake, responseFake)
-    expect(getArgs(resStub.render)[0]).toBe('error')
+
+  describe('with undefined path', () => {
+    beforeEach(async () => {
+      roomData.images = fullImages
+      getRoomStub.resolves(roomData)
+      await rootRoute(knexFake, requestFake, responseFake)
+    })
+    it('should get room', () => {
+      expect(getRoomStub.callCount).toBe(1)
+    })
   })
-  it('should render E_NO_TRAVERSE error data when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
-    await rootRoute(knexFake, requestFake, responseFake)
-    expect(getArgs(resStub.render)[1]).toEqual(eTraverse)
-  })
-  it('should not get room when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
-    await rootRoute(knexFake, requestFake, responseFake)
-    expect(getRoomStub.callCount).toBe(0)
-  })
-  const tests: Array<[string, string | undefined, string[] | null, (data: unknown) => void]> = [
-    [
-      'get room',
-      undefined,
-      fullImages,
-      () => {
-        expect(getRoomStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'get room',
-      'foo',
-      fullImages,
-      () => {
-        expect(getRoomStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'set not found status',
-      'foo',
-      noImages,
-      () => {
-        expect(resStub.status.callCount).toBe(1)
-      },
-    ],
-    [
-      'set not found status code',
-      'foo',
-      noImages,
-      () => {
-        expect(getArgs(resStub.status)[0]).toBe(404)
-      },
-    ],
-    [
-      'render not found error',
-      'foo',
-      noImages,
-      () => {
-        expect(getArgs(resStub.render)[0]).toEqual('error')
-      },
-    ],
-    [
-      'render not found data',
-      'foo',
-      noImages,
-      () => {
-        expect(getArgs(resStub.render)[1]).toEqual(eNotFound)
-      },
-    ],
-    [
-      'not set success status',
-      'foo',
-      fullImages,
-      () => {
-        expect(resStub.status.callCount).toBe(0)
-      },
-    ],
-    [
-      'render success',
-      'foo',
-      fullImages,
-      () => {
-        expect(resStub.render.callCount).toBe(1)
-      },
-    ],
-    [
-      'render success tmpl',
-      'foo',
-      fullImages,
-      () => {
-        expect(getArgs(resStub.render)[0]).toBe('slideshow')
-      },
-    ],
-    [
-      'render success data',
-      'foo',
-      fullImages,
-      (data) => {
-        expect(getArgs(resStub.render)[1]).toEqual(data)
-      },
-    ],
-    [
-      'set server error status',
-      'foo',
-      null,
-      () => {
-        expect(resStub.status.callCount).toBe(1)
-      },
-    ],
-    [
-      'set server error status code',
-      'foo',
-      null,
-      () => {
-        expect(getArgs(resStub.status)[0]).toBe(500)
-      },
-    ],
-    [
-      'render server error',
-      'foo',
-      null,
-      () => {
-        expect(resStub.render.callCount).toBe(1)
-      },
-    ],
-    [
-      'render server error template',
-      'foo',
-      null,
-      () => {
-        expect(getArgs(resStub.render)[0]).toBe('error')
-      },
-    ],
-    [
-      'render server error data',
-      'foo',
-      null,
-      () => {
-        expect(getArgs(resStub.render)[1]).toEqual(eGeneric)
-      },
-    ],
-  ]
-  tests.forEach(([title, path, images, validationFn]) => {
-    it(`should ${title} for '/${path}'`, async () => {
-      if (images === null) {
-        getRoomStub.rejects(getRoomError)
-      } else {
-        roomData.images = images
-        getRoomStub.resolves(roomData)
-      }
-      if (path !== undefined) {
-        reqStub.params.path = path
-      }
+
+  describe('with valid path and full images', () => {
+    beforeEach(async () => {
+      reqStub.params.path = 'foo'
+      roomData.images = fullImages
+      getRoomStub.resolves(roomData)
+      await rootRoute(knexFake, requestFake, responseFake)
+    })
+    it('should get room', () => {
+      expect(getRoomStub.callCount).toBe(1)
+    })
+    it('should not set success status', () => {
+      expect(resStub.status.callCount).toBe(0)
+    })
+    it('should render', () => {
+      expect(resStub.render.callCount).toBe(1)
+    })
+    it('should render slideshow template', () => {
+      expect(getArgs(resStub.render)[0]).toBe('slideshow')
+    })
+    it('should render slideshow data', () => {
       const successData = {
-        title: `/${path}`,
-        folder: `/${path}`,
+        title: '/foo',
+        folder: '/foo',
         image: roomData.uriSafeImage,
       }
+      expect(getArgs(resStub.render)[1]).toEqual(successData)
+    })
+  })
+
+  describe('with valid path and empty images', () => {
+    beforeEach(async () => {
+      reqStub.params.path = 'foo'
+      roomData.images = noImages
+      getRoomStub.resolves(roomData)
       await rootRoute(knexFake, requestFake, responseFake)
-      validationFn(successData)
+    })
+    it('should set not-found status', () => {
+      expect(resStub.status.callCount).toBe(1)
+    })
+    it('should set 404 status code', () => {
+      expect(getArgs(resStub.status)[0]).toBe(404)
+    })
+    it('should render error template', () => {
+      expect(getArgs(resStub.render)[0]).toEqual('error')
+    })
+    it('should render not-found error data', () => {
+      expect(getArgs(resStub.render)[1]).toEqual(eNotFound)
+    })
+  })
+
+  describe('when getRoom rejects', () => {
+    beforeEach(async () => {
+      reqStub.params.path = 'foo'
+      getRoomStub.rejects(getRoomError)
+      await rootRoute(knexFake, requestFake, responseFake)
+    })
+    it('should set server error status', () => {
+      expect(resStub.status.callCount).toBe(1)
+    })
+    it('should set 500 status code', () => {
+      expect(getArgs(resStub.status)[0]).toBe(500)
+    })
+    it('should render', () => {
+      expect(resStub.render.callCount).toBe(1)
+    })
+    it('should render error template', () => {
+      expect(getArgs(resStub.render)[0]).toBe('error')
+    })
+    it('should render server-error data', () => {
+      expect(getArgs(resStub.render)[1]).toEqual(eGeneric)
     })
   })
 

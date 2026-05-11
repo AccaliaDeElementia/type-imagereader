@@ -36,145 +36,94 @@ describe('routes/slideshow socket goto-image', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  const tests: Array<[string, string | null, number, (_: Sinon.SinonStub) => void]> = [
-    [
-      'not get room for null room',
-      null,
-      0,
-      () => {
-        expect(getRoomStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'get room for bad index',
-      '/foo',
-      -1,
-      () => {
-        expect(getRoomStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'get room with knex for bad index',
-      '/foo',
-      -1,
-      () => {
-        expect(getRoomStub.firstCall.args[0]).toBe(knexFake)
-      },
-    ],
-    [
-      'get room with room for bad index',
-      '/foo',
-      -1,
-      () => {
-        expect(getRoomStub.firstCall.args[1]).toBe('/foo')
-      },
-    ],
-    [
-      'get room with no increment for bad index',
-      '/foo',
-      -1,
-      () => {
-        expect(getRoomStub.firstCall.args).toHaveLength(2)
-      },
-    ],
-    [
-      'get room with knex for good index',
-      '/foo',
-      0,
-      () => {
-        expect(getRoomStub.firstCall.args[0]).toBe(knexFake)
-      },
-    ],
-    [
-      'get room with room for good index',
-      '/foo',
-      0,
-      () => {
-        expect(getRoomStub.firstCall.args[1]).toBe('/foo')
-      },
-    ],
-    [
-      'get room with no increment for good index',
-      '/foo',
-      0,
-      () => {
-        expect(getRoomStub.firstCall.args).toHaveLength(2)
-      },
-    ],
-    [
-      'not provide callback path for null room',
-      null,
-      0,
-      (spy) => {
-        expect(spy.firstCall.args).toEqual([null])
-      },
-    ],
-    [
-      'not provide callback path for bad index',
-      '/foo',
-      -1,
-      (spy) => {
-        expect(spy.firstCall.args).toEqual([null])
-      },
-    ],
-    [
-      'send callback path when valid',
-      '/foo',
-      0,
-      (spy) => {
-        expect(spy.firstCall.args[0]).toBe(picturePath)
-      },
-    ],
-    [
-      'not set latest for null room',
-      null,
-      0,
-      () => {
-        expect(setLatestStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'not set latest for invalid index',
-      '/foo',
-      12,
-      () => {
-        expect(setLatestStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'set latest when valid',
-      '/foo',
-      0,
-      () => {
-        expect(setLatestStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'set latest with knex when valid',
-      '/foo',
-      0,
-      () => {
-        expect(setLatestStub.firstCall.args[0]).toBe(knexFake)
-      },
-    ],
-    [
-      'set latest with folder object when valid',
-      '/foo',
-      0,
-      () => {
-        expect(setLatestStub.firstCall.args[1]).toBe(folder)
-      },
-    ],
-  ]
-  tests.forEach(([title, room, index, validationFn]) => {
-    it(`should ${title}`, async () => {
-      socketState.roomName = room
-      roomData.index = index
-      const spy = sandbox.stub()
+
+  describe('with null room', () => {
+    let spy = sandbox.stub()
+    beforeEach(async () => {
+      spy = sandbox.stub()
+      socketState.roomName = null
+      roomData.index = 0
       await gotoImage(spy, socketState, knexFake)
-      validationFn(spy)
+    })
+    it('should not get room', () => {
+      expect(getRoomStub.callCount).toBe(0)
+    })
+    it('should not provide callback path', () => {
+      expect(spy.firstCall.args).toEqual([null])
+    })
+    it('should not set latest', () => {
+      expect(setLatestStub.callCount).toBe(0)
     })
   })
+
+  describe('with valid room and bad index (-1)', () => {
+    let spy = sandbox.stub()
+    beforeEach(async () => {
+      spy = sandbox.stub()
+      socketState.roomName = '/foo'
+      roomData.index = -1
+      await gotoImage(spy, socketState, knexFake)
+    })
+    it('should get room', () => {
+      expect(getRoomStub.callCount).toBe(1)
+    })
+    it('should get room with knex', () => {
+      expect(getRoomStub.firstCall.args[0]).toBe(knexFake)
+    })
+    it('should get room with room name', () => {
+      expect(getRoomStub.firstCall.args[1]).toBe('/foo')
+    })
+    it('should get room without increment', () => {
+      expect(getRoomStub.firstCall.args).toHaveLength(2)
+    })
+    it('should not provide callback path', () => {
+      expect(spy.firstCall.args).toEqual([null])
+    })
+  })
+
+  describe('with valid room and good index (0)', () => {
+    let spy = sandbox.stub()
+    beforeEach(async () => {
+      spy = sandbox.stub()
+      socketState.roomName = '/foo'
+      roomData.index = 0
+      await gotoImage(spy, socketState, knexFake)
+    })
+    it('should get room with knex', () => {
+      expect(getRoomStub.firstCall.args[0]).toBe(knexFake)
+    })
+    it('should get room with room name', () => {
+      expect(getRoomStub.firstCall.args[1]).toBe('/foo')
+    })
+    it('should get room without increment', () => {
+      expect(getRoomStub.firstCall.args).toHaveLength(2)
+    })
+    it('should send callback path', () => {
+      expect(spy.firstCall.args[0]).toBe(picturePath)
+    })
+    it('should set latest', () => {
+      expect(setLatestStub.callCount).toBe(1)
+    })
+    it('should set latest with knex', () => {
+      expect(setLatestStub.firstCall.args[0]).toBe(knexFake)
+    })
+    it('should set latest with folder object', () => {
+      expect(setLatestStub.firstCall.args[1]).toBe(folder)
+    })
+  })
+
+  describe('with valid room and out-of-range index (12)', () => {
+    beforeEach(async () => {
+      const spy = sandbox.stub()
+      socketState.roomName = '/foo'
+      roomData.index = 12
+      await gotoImage(spy, socketState, knexFake)
+    })
+    it('should not set latest', () => {
+      expect(setLatestStub.callCount).toBe(0)
+    })
+  })
+
   it('should send null callback path when setLatest returns null', async () => {
     setLatestStub.resolves(null)
     socketState.roomName = '/foo'
