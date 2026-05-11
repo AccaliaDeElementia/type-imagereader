@@ -19,7 +19,7 @@ import {
   findSyncItemsViaCopy as _findSyncItemsViaCopy,
   findSyncItemsViaInsert as _findSyncItemsViaInsert,
 } from './syncItemsDialect.js'
-import { getDataDir as _getDataDir } from '../utils/helpers.js'
+import { getDataDir as _getDataDir } from '#utils/helpers.js'
 
 export const LOG_PREFIX = 'type-imagereader:sync:findItems'
 

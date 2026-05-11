@@ -12,7 +12,7 @@ import { fsWalker as _fsWalker } from './fswalker.js'
 import { addFolderAndAncestors, chunk, execChunksSynchronously, toSortKey } from './helpers.js'
 import { syncFolderFirstImages as _syncFolderFirstImages } from './folders.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
-import { escapeLikeWildcards } from '../utils/helpers.js'
+import { escapeLikeWildcards } from '#utils/helpers.js'
 
 const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1

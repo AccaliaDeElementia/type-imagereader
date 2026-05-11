@@ -8,13 +8,13 @@ import { stat } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { synchronize as _synchronize } from './sync/synchronize.js'
-import { incrementalSync as _incrementalSync } from './sync/incrementalsync.js'
-import { start as startWatcher } from './sync/filewatcher.js'
-import type { Changeset, WatcherSubscription } from './sync/filewatcher.js'
-import { initialize as _initialize } from './utils/persistence.js'
-import { start } from './server.js'
-import { stringIsNullOrEmpty, getDataDir } from './utils/helpers.js'
+import { synchronize as _synchronize } from '#sync/synchronize.js'
+import { incrementalSync as _incrementalSync } from '#sync/incrementalsync.js'
+import { start as startWatcher } from '#sync/filewatcher.js'
+import type { Changeset, WatcherSubscription } from '#sync/filewatcher.js'
+import { initialize as _initialize } from '#utils/persistence.js'
+import { start } from '#server.js'
+import { stringIsNullOrEmpty, getDataDir } from '#utils/helpers.js'
 
 const IncrementalSyncFunctions = { incrementalSync: _incrementalSync }
 
