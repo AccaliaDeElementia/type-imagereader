@@ -5,8 +5,7 @@ import { render } from 'pug'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Folders, Internals } from '#public/scripts/app/folders.js'
+import { Folders, Imports, Internals } from '#public/scripts/app/folders.js'
 import assert from 'node:assert'
 import Sinon from 'sinon'
 
@@ -259,10 +258,9 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 101,
     })
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['NAVIGATE:LOAD'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     assert(result !== null, 'result is required for valid test')
     result.dispatchEvent(evt)
-    expect(spy.calledWith('/path/foo')).toBe(true)
+    expect(publishStub.calledWith('Navigate:Load', '/path/foo')).toBe(true)
   })
 })

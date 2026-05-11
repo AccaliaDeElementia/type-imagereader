@@ -6,10 +6,9 @@ import { cast } from '#testutils/typeGuards.js'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
-import { Internals } from '#public/scripts/app/folders.js'
+import { Imports, Internals } from '#public/scripts/app/folders.js'
 import Sinon from 'sinon'
 import type { Listing } from '#contracts/listing.js'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -27,15 +26,14 @@ describe('public/app/folders buildFolders()', () => {
   let hideTabStub = sandbox.stub()
   let unhideTabStub = sandbox.stub()
   let buildAllCardsStub = sandbox.stub()
-  let tabSelectStub = sandbox.stub()
+  let publishStub = sandbox.stub()
   beforeEach(() => {
     dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
     tabFolders = dom.window.document.querySelector('#tabFolders')
     hideTabStub = sandbox.stub(Internals, 'hideTab')
     unhideTabStub = sandbox.stub(Internals, 'unhideTab')
     buildAllCardsStub = sandbox.stub(Internals, 'buildAllCards')
-    tabSelectStub = sandbox.stub().resolves()
-    PubSub.subscribers['TAB:SELECT'] = [tabSelectStub]
+    publishStub = sandbox.stub(Imports, 'publish')
   })
   afterEach(() => {
     sandbox.restore()
@@ -105,43 +103,43 @@ describe('public/app/folders buildFolders()', () => {
   })
   it('should not publish tab select when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(tabSelectStub.called).toBe(false)
+    expect(publishStub.called).toBe(false)
   })
   it('should not publish tab select when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(tabSelectStub.called).toBe(false)
+    expect(publishStub.called).toBe(false)
   })
   it('should not publish tab select when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(tabSelectStub.called).toBe(false)
+    expect(publishStub.called).toBe(false)
   })
   it('should not publish tab select when data has children and pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [{}] }))
-    expect(tabSelectStub.called).toBe(false)
+    expect(publishStub.called).toBe(false)
   })
   it('should publish tab select once when data has children and empty pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [] }))
-    expect(tabSelectStub.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish tab select with expected args when data has children and empty pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [] }))
-    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).toBe(true)
+    expect(publishStub.calledWithExactly('Tab:Select', 'Folders')).toBe(true)
   })
   it('should publish tab select once when data has children and undefined pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: undefined }))
-    expect(tabSelectStub.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish tab select with expected args when data has children and undefined pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: undefined }))
-    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).toBe(true)
+    expect(publishStub.calledWithExactly('Tab:Select', 'Folders')).toBe(true)
   })
   it('should publish tab select once when data has children and missing pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(tabSelectStub.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish tab select with expected args when data has children and missing pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).toBe(true)
+    expect(publishStub.calledWithExactly('Tab:Select', 'Folders')).toBe(true)
   })
   it('should not hide folder tab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))

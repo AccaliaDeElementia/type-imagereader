@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
+import { subscribe } from '#public/scripts/app/pubsub.js'
 import { init, Internals, Imports, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
 
@@ -80,7 +80,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
   describe('Action:Execute:Fullscreen Message Handler', () => {
     const requestFullscreenStub = sandbox.stub()
     const exitFullscreenStub = sandbox.stub()
-    const errorSpy = sandbox.stub()
+    let publishStub = sandbox.stub()
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
@@ -92,11 +92,9 @@ describe('public/app/navigation/messageHandlers init()', () => {
       dom.window.document.exitFullscreen = exitFullscreenStub
       const h = getSubscriber('ACTION:EXECUTE:FULLSCREEN')
       handler = h
-      errorSpy.resolves()
-      PubSub.subscribers['LOADING:ERROR'] = [errorSpy]
+      publishStub = sandbox.stub(Imports, 'publish')
     })
     afterEach(() => {
-      errorSpy.reset()
       requestFullscreenStub.reset()
       exitFullscreenStub.reset()
     })
@@ -119,18 +117,18 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should not publish Loading:Error when requestFullscreen resolves', async () => {
       requestFullscreenStub.resolves()
       await handler()
-      expect(errorSpy.called).toBe(false)
+      expect(publishStub.called).toBe(false)
     })
     it('should publish Loading:Error when requestFullscreen rejects', async () => {
       requestFullscreenStub.rejects('FOO')
       await handler()
-      expect(errorSpy.called).toBe(true)
+      expect(publishStub.called).toBe(true)
     })
     it('should pass exception to Loading:Error when requestFullscreen rejects', async () => {
       const err = new Error('FOO')
       requestFullscreenStub.rejects(err)
       await handler()
-      expect(errorSpy.firstCall.args[0]).toBe(err)
+      expect(publishStub.firstCall.args[1]).toBe(err)
     })
     it('should not call requestFullscreen when fullscreen element exists', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -155,7 +153,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       })
       exitFullscreenStub.resolves()
       await handler()
-      expect(errorSpy.called).toBe(false)
+      expect(publishStub.called).toBe(false)
     })
     it('should publish Loading:Error when exitFullscreen rejects', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -164,7 +162,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       })
       exitFullscreenStub.rejects('FOO')
       await handler()
-      expect(errorSpy.called).toBe(true)
+      expect(publishStub.called).toBe(true)
     })
     it('should pass exception to Loading:Error when exitFullscreen rejects', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -174,7 +172,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       const err = new Error('FOO')
       exitFullscreenStub.rejects(err)
       await handler()
-      expect(errorSpy.firstCall.args[0]).toBe(err)
+      expect(publishStub.firstCall.args[1]).toBe(err)
     })
   })
   describe('Message Forwarding Configuration', () => {

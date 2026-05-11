@@ -5,7 +5,6 @@ import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/typeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
@@ -42,7 +41,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
   })
   describe('Action:Execute:MarkAllSeen Message Handler', () => {
     let postJSONSpy = sandbox.stub().resolves(undefined as unknown)
-    let errorSpy = sandbox.stub().resolves()
+    let publishStub = sandbox.stub()
     let confirmShowStub = sandbox.stub().resolves(true)
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
@@ -52,10 +51,9 @@ describe('public/app/navigation/messageHandlers init()', () => {
       confirmShowStub = sandbox.stub(Imports, 'show').resolves(true)
       init()
       loadDataStub.resetHistory()
-      errorSpy = sandbox.stub().resolves()
-      PubSub.subscribers['LOADING:ERROR'] = [errorSpy]
       const h = getSubscriber('ACTION:EXECUTE:MARKALLSEEN')
       handler = h
+      publishStub = sandbox.stub(Imports, 'publish')
     })
     afterEach(() => {
       sandbox.restore()
@@ -115,18 +113,18 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should not publish LoadingError when postJSON resolves', async () => {
       postJSONSpy.resolves()
       await handler()
-      expect(errorSpy.callCount).toBe(0)
+      expect(publishStub.callCount).toBe(0)
     })
     it('should publish LoadingError when postJSON rejects', async () => {
       postJSONSpy.rejects('FOO')
       await handler()
-      expect(errorSpy.callCount).toBe(1)
+      expect(publishStub.calledWith('Loading:Error')).toBe(true)
     })
     it('should publish LoadingError with exception when postJSON rejects', async () => {
       const err = new Error('FOO')
       postJSONSpy.rejects(err)
       await handler()
-      expect(errorSpy.firstCall.args[0]).toBe(err)
+      expect(publishStub.firstCall.args[1]).toBe(err)
     })
     it('should not call loadData if postJSON rejects', async () => {
       postJSONSpy.rejects('FOO')

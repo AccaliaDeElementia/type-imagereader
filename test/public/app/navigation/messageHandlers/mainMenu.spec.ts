@@ -5,8 +5,8 @@ import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
-import { init, Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { subscribe } from '#public/scripts/app/pubsub.js'
+import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
 
@@ -133,14 +133,13 @@ describe('public/app/navigation/messageHandlers init()', () => {
           seen: false,
         },
       ]
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers['MENU:HIDE'] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       const target = dom.window.document.querySelector('.innerTarget')
       assert(target !== null, 'target must exist')
       Navigation.current.pictures = [{ name: '', path: '', seen: false }]
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).toBe(0)
+      expect(publishStub.callCount).toBe(0)
     })
     it('should ignore click event node outside of #mainMenu', () => {
       init()
@@ -151,35 +150,32 @@ describe('public/app/navigation/messageHandlers init()', () => {
           seen: false,
         },
       ]
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers['MENU:HIDE'] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       const target = dom.window.document.querySelector('.navbar-brand')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).toBe(0)
+      expect(publishStub.callCount).toBe(0)
     })
     it('should ignore click event will missing pictures list', () => {
       init()
       Navigation.current.pictures = undefined
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers['MENU:HIDE'] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).toBe(0)
+      expect(publishStub.callCount).toBe(0)
     })
     it('should ignore click event will empty pictures list', () => {
       init()
       Navigation.current.pictures = []
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers['MENU:HIDE'] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).toBe(0)
+      expect(publishStub.callCount).toBe(0)
     })
     it('should publish hide menu event for click event with pictures', () => {
       init()
@@ -190,26 +186,24 @@ describe('public/app/navigation/messageHandlers init()', () => {
           seen: true,
         },
       ]
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers['MENU:HIDE'] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).toBe(1)
+      expect(publishStub.callCount).toBe(1)
     })
   })
   describe('.menuButton click handler', () => {
     it('should publish Menu:show', () => {
       init()
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers['MENU:SHOW'] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       const target = dom.window.document.querySelector('.menuButton')
       assert(target !== null, 'target must exist')
       Navigation.current.pictures = [{ name: '', path: '', seen: true }]
       const event = new dom.window.MouseEvent('click')
       target.dispatchEvent(event)
-      expect(spy.callCount).toBe(1)
+      expect(publishStub.callCount).toBe(1)
     })
   })
 })

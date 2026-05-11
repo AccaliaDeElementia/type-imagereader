@@ -2,8 +2,7 @@
 
 import Sinon from 'sinon'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Internals } from '#public/scripts/app/actions.js'
+import { Imports, Internals } from '#public/scripts/app/actions.js'
 
 import { resetPubSub } from '#testutils/pubsub.js'
 import { JSDOM } from 'jsdom'
@@ -102,11 +101,7 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [
-      async () => {
-        await Promise.resolve()
-      },
-    ]
+    sandbox.stub(Imports, 'publish')
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     const spy = sandbox.stub(event, 'preventDefault')
@@ -120,12 +115,11 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['ACTION:EXECUTE:BUTTON'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     button?.dispatchEvent(event)
-    expect(spy.called).toBe(true)
+    expect(publishStub.calledWith('Action:Execute:Button')).toBe(true)
   })
   it('should collapse spaces from button name when publishing Action:Execute', () => {
     const container = Internals.createButtons([
@@ -134,11 +128,10 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['ACTION:EXECUTE:THISISNOTABUTTON'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     button?.dispatchEvent(event)
-    expect(spy.called).toBe(true)
+    expect(publishStub.calledWith('Action:Execute:ThisIsNotAButton')).toBe(true)
   })
 })

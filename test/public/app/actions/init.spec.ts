@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Actions, init, Internals } from '#public/scripts/app/actions.js'
+import { Actions, Imports, init, Internals } from '#public/scripts/app/actions.js'
 
 import { cast } from '#testutils/typeGuards.js'
 import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
@@ -156,19 +156,18 @@ describe('public/app/actions init()', () => {
     const doNavigate = async (): Promise<Sinon.SinonStub> => {
       init()
       const handler = getSubscriber('NAVIGATE:DATA')
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers['TAB:SELECT'] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       await handler(listing)
-      return spy
+      return publishStub
     }
     it(`should ${expected ? '' : 'not '}publish Tab:Select for ${title} listing on navigate`, async () => {
-      const spy = await doNavigate()
-      expect(spy.called).toBe(expected)
+      const publishStub = await doNavigate()
+      expect(publishStub.calledWith('Tab:Select')).toBe(expected)
     })
     if (expected) {
       it(`should publish Tab:Select with expected args for ${title} listing on navigate`, async () => {
-        const spy = await doNavigate()
-        expect(spy.firstCall.args).toEqual(['Actions', 'TAB:SELECT'])
+        const publishStub = await doNavigate()
+        expect(publishStub.firstCall.args).toEqual(['Tab:Select', 'Actions'])
       })
     }
   })
@@ -203,8 +202,7 @@ describe('public/app/actions init()', () => {
   keyUpTestCases.forEach(([event, expected]) => {
     const doKeypress = (): Sinon.SinonStub => {
       const documentSpy = sandbox.stub(document, 'addEventListener')
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers['ACTION:KEYPRESS'] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       let handler: (o: unknown) => void = (_) => {
         expect.fail('Base Function should not be called!')
       }
@@ -217,13 +215,13 @@ describe('public/app/actions init()', () => {
       } finally {
         documentSpy.restore()
       }
-      return spy
+      return publishStub
     }
     it(`should publish ${expected} keypress event once`, () => {
       expect(doKeypress().callCount).toBe(1)
     })
     it(`should publish ${expected} keypress event with expected args`, () => {
-      expect(doKeypress().firstCall.args).toEqual([expected, `ACTION:KEYPRESS:${expected}`])
+      expect(doKeypress().firstCall.args).toEqual([`Action:Keypress:${expected}`, expected])
     })
   })
 

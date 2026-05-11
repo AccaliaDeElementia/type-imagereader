@@ -5,10 +5,9 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import assert from 'node:assert'
-import { init, Internals, Tabs } from '#public/scripts/app/tabs.js'
+import { Imports, init, Internals, Tabs } from '#public/scripts/app/tabs.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -39,7 +38,7 @@ describe('public/app/tabs selectTab()', () => {
   const foldersScroll = sandbox.stub()
   const imagesScroll = sandbox.stub()
   const bookmarksScroll = sandbox.stub()
-  const tabSelectedSpy = sandbox.stub()
+  let publishStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {})
     mountDom(dom)
@@ -56,17 +55,16 @@ describe('public/app/tabs selectTab()', () => {
     const bookmarks = dom.window.document.getElementById('tabBookmarks')
     assert(bookmarks !== null)
     bookmarks.scroll = bookmarksScroll
-    tabSelectedSpy.resolves()
     resetPubSub()
-    PubSub.subscribers['TAB:SELECTED'] = [tabSelectedSpy]
     Tabs.tabs = []
     Tabs.tabNames = []
-    const spy = sandbox.stub(Internals, 'selectTab')
+    const selectTabStub = sandbox.stub(Internals, 'selectTab')
     try {
       init()
     } finally {
-      spy.restore()
+      selectTabStub.restore()
     }
+    publishStub = sandbox.stub(Imports, 'publish')
   })
   afterEach(() => {
     sandbox.restore()
@@ -74,7 +72,6 @@ describe('public/app/tabs selectTab()', () => {
     foldersScroll.reset()
     imagesScroll.reset()
     bookmarksScroll.reset()
-    tabSelectedSpy.reset()
     unmountDom()
   })
   it('should gracefully handle zero tabs', () => {
@@ -91,55 +88,55 @@ describe('public/app/tabs selectTab()', () => {
   })
   it('should publish once when selecting null tab', () => {
     Internals.selectTab()
-    expect(tabSelectedSpy.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish first tab when selecting null tab', () => {
     Internals.selectTab()
-    expect(tabSelectedSpy.firstCall.args).toEqual(['#tabActions', 'TAB:SELECTED'])
+    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabActions'])
   })
   it('should publish once when selecting unknown tab', () => {
     Internals.selectTab('#tabDoesNotExist')
-    expect(tabSelectedSpy.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish first tab when selecting unknown tab', () => {
     Internals.selectTab('#tabDoesNotExist')
-    expect(tabSelectedSpy.firstCall.args).toEqual(['#tabActions', 'TAB:SELECTED'])
+    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabActions'])
   })
   it('should publish once when selecting nonprefixed tab', () => {
     Internals.selectTab('Bookmarks')
-    expect(tabSelectedSpy.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish selected tab when selecting nonprefixed tab', () => {
     Internals.selectTab('Bookmarks')
-    expect(tabSelectedSpy.firstCall.args).toEqual(['#tabBookmarks', 'TAB:SELECTED'])
+    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabBookmarks'])
   })
   it('should publish once when selecting full tab', () => {
     Internals.selectTab('#tabImages')
-    expect(tabSelectedSpy.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish selected tab when selecting full tab', () => {
     Internals.selectTab('#tabImages')
-    expect(tabSelectedSpy.firstCall.args).toEqual(['#tabImages', 'TAB:SELECTED'])
+    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabImages'])
   })
   it('should publish once even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
     Internals.selectTab('#tabImages')
-    expect(tabSelectedSpy.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish selected tab even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
     Internals.selectTab('#tabImages')
-    expect(tabSelectedSpy.firstCall.args).toEqual(['#tabImages', 'TAB:SELECTED'])
+    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabImages'])
   })
   it('should publish once when selecting tab case insensitively', () => {
     Internals.selectTab('#TABFOLDERS')
-    expect(tabSelectedSpy.callCount).toBe(1)
+    expect(publishStub.callCount).toBe(1)
   })
   it('should publish selected tab when selecting tab case insensitively', () => {
     Internals.selectTab('#TABFOLDERS')
-    expect(tabSelectedSpy.firstCall.args).toEqual(['#tabFolders', 'TAB:SELECTED'])
+    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabFolders'])
   })
   it('should add active css class to selected tab', () => {
     expect(Tabs.tabs[1]?.parentElement?.classList.contains('active')).toBe(false)

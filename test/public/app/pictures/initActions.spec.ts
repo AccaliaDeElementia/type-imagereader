@@ -87,51 +87,44 @@ describe('public/app/pictures initActions()', () => {
       initActions()
       const fn = getSubscriber(action.toUpperCase())
       isMenuActiveSpy.returns(false)
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers[`Action:Execute:${expected}`.toUpperCase()] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       await fn(undefined)
-      expect(spy.callCount).toBe(1)
+      expect(publishStub.callCount).toBe(1)
     })
     it(`should publish Action:Execute:${expected} for ${action} when menu is not active`, async () => {
       initActions()
-      const subscriberName = `Action:Execute:${expected}`.toUpperCase()
       const fn = getSubscriber(action.toUpperCase())
       isMenuActiveSpy.returns(false)
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers[`Action:Execute:${expected}`.toUpperCase()] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       await fn(undefined)
-      expect(spy.firstCall.args).toEqual([undefined, subscriberName])
+      expect(publishStub.firstCall.args).toEqual([`Action:Execute:${expected}`])
     })
     it(`should call Action:Execute:HideMenu once for ${action} when menu is active`, async () => {
       initActions()
       Pictures.pictures = [cast<Picture>({})]
       const fn = getSubscriber(action.toUpperCase())
       isMenuActiveSpy.returns(true)
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers[`Action:Execute:HideMenu`.toUpperCase()] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       await fn(undefined)
-      expect(spy.callCount).toBe(1)
+      expect(publishStub.callCount).toBe(1)
     })
     it(`should publish Action:Execute:HideMenu for ${action} when menu is active`, async () => {
       initActions()
       Pictures.pictures = [cast<Picture>({})]
-      const subscriberName = `Action:Execute:HideMenu`.toUpperCase()
       const fn = getSubscriber(action.toUpperCase())
       isMenuActiveSpy.returns(true)
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers[`Action:Execute:HideMenu`.toUpperCase()] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       await fn(undefined)
-      expect(spy.firstCall.args).toEqual([undefined, subscriberName])
+      expect(publishStub.firstCall.args).toEqual(['Action:Execute:HideMenu'])
     })
     it(`should ignore ${action} when menu is active and no pictures`, async () => {
       initActions()
       Pictures.pictures = []
       const fn = getSubscriber(action.toUpperCase())
       isMenuActiveSpy.returns(true)
-      const spy = sandbox.stub().resolves()
-      PubSub.subscribers[`Action:Execute:`.toUpperCase()] = [spy]
+      const publishStub = sandbox.stub(Imports, 'publish')
       await fn(undefined)
-      expect(spy.callCount).toBe(0)
+      expect(publishStub.callCount).toBe(0)
     })
   })
   changeToSubscribers.forEach(([action, direction]) => {
@@ -169,38 +162,34 @@ describe('public/app/pictures initActions()', () => {
   it('should translate Action:Execute:Previous as PreviousUnseen when ShowUnreadOnly is set', async () => {
     initActions()
     const fn = getSubscriber('ACTION:EXECUTE:PREVIOUS')
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['ACTION:EXECUTE:PREVIOUSUNSEEN'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     getShowUnreadOnly.returns(true)
     await fn(undefined)
-    expect(spy.callCount).toBe(1)
+    expect(publishStub.calledWith('Action:Execute:PreviousUnseen')).toBe(true)
   })
   it('should translate Action:Execute:Previous as PreviousImage when ShowUnreadOnly is unset', async () => {
     initActions()
     const fn = getSubscriber('ACTION:EXECUTE:PREVIOUS')
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['ACTION:EXECUTE:PREVIOUSIMAGE'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     getShowUnreadOnly.returns(false)
     await fn(undefined)
-    expect(spy.callCount).toBe(1)
+    expect(publishStub.calledWith('Action:Execute:PreviousImage')).toBe(true)
   })
   it('should translate Action:Execute:Next as NextUnseen when ShowUnreadOnly is set', async () => {
     initActions()
     const fn = getSubscriber('ACTION:EXECUTE:NEXT')
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['ACTION:EXECUTE:NEXTUNSEEN'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     getShowUnreadOnly.returns(true)
     await fn(undefined)
-    expect(spy.callCount).toBe(1)
+    expect(publishStub.calledWith('Action:Execute:NextUnseen')).toBe(true)
   })
   it('should translate Action:Execute:Next as NextImage when ShowUnreadOnly is unset', async () => {
     initActions()
     const fn = getSubscriber('ACTION:EXECUTE:NEXT')
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['ACTION:EXECUTE:NEXTIMAGE'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     getShowUnreadOnly.returns(false)
     await fn(undefined)
-    expect(spy.callCount).toBe(1)
+    expect(publishStub.calledWith('Action:Execute:NextImage')).toBe(true)
   })
   it('should call window.open once when Action:Execute:ViewFullSize', async () => {
     initActions()
@@ -227,28 +216,25 @@ describe('public/app/pictures initActions()', () => {
     initActions()
     const fn = getSubscriber('ACTION:EXECUTE:BOOKMARK')
     Pictures.current = { path: '/this/is/my/foo', name: 'foo', seen: false }
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['BOOKMARKS:ADD'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     await fn(undefined)
-    expect(spy.callCount).toBe(1)
+    expect(publishStub.calledWith('Bookmarks:Add')).toBe(true)
   })
   it('should add current image as bookmark for Action:Execute:Bookmark', async () => {
     initActions()
     const fn = getSubscriber('ACTION:EXECUTE:BOOKMARK')
     Pictures.current = { path: '/this/is/my/foo', name: 'foo', seen: false }
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['BOOKMARKS:ADD'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     await fn(undefined)
-    expect(spy.firstCall.args).toEqual(['/this/is/my/foo', 'BOOKMARKS:ADD'])
+    expect(publishStub.firstCall.args).toEqual(['Bookmarks:Add', '/this/is/my/foo'])
   })
   it('should ignore Action:Execute:Bookmark when no current image', async () => {
     initActions()
     const fn = getSubscriber('ACTION:EXECUTE:BOOKMARK')
     Pictures.current = null
-    const spy = sandbox.stub().resolves()
-    PubSub.subscribers['BOOKMARKS:ADD'] = [spy]
+    const publishStub = sandbox.stub(Imports, 'publish')
     await fn(undefined)
-    expect(spy.callCount).toBe(0)
+    expect(publishStub.callCount).toBe(0)
   })
   it('should use same handler for Action:Execute:Bookmark and Action:Gamepad:B', () => {
     initActions()
