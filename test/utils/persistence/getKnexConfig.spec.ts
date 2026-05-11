@@ -1,12 +1,12 @@
 'use sanity'
 
-import { getKnexConfig, Internals } from '#utils/persistance.js'
+import { getKnexConfig, Internals } from '#utils/persistence.js'
 import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance getKnexConfig()', () => {
+describe('utils/persistence getKnexConfig()', () => {
   let configBlock = {
     client: '',
     connection: {

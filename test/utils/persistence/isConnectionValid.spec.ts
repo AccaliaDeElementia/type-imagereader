@@ -1,8 +1,8 @@
 'use sanity'
 
-import { isConnectionValid } from '#utils/persistance.js'
+import { isConnectionValid } from '#utils/persistence.js'
 
-describe('utils/persistance isConnectionValid()', () => {
+describe('utils/persistence isConnectionValid()', () => {
   it('should reject missing connection element', () => {
     expect(isConnectionValid({})).toBe(false)
   })

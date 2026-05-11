@@ -51,10 +51,10 @@ Use `Internals` only for functions that other functions in the same module call 
 ### State singleton — module-natural cognate name
 
 ```ts
-export const Persistance = { initializer: undefined as Promise<Knex> | undefined }
+export const Persistence = { initializer: undefined as Promise<Knex> | undefined }
 ```
 
-Hold mutable module state here. Field names are `camelCase`. Container name is `PascalCase`, typically the module's name capitalized (`Persistance`, `Filewatcher`, `Helpers`, `Weather`, `Config`, `CacheStorage`).
+Hold mutable module state here. Field names are `camelCase`. Container name is `PascalCase`, typically the module's name capitalized (`Persistence`, `Filewatcher`, `Helpers`, `Weather`, `Config`, `CacheStorage`).
 
 ### Compound state-singleton-with-methods (exception)
 

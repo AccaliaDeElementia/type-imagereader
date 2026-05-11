@@ -1,8 +1,8 @@
 'use sanity'
 
-import { getEnvironmentName } from '#utils/persistance.js'
+import { getEnvironmentName } from '#utils/persistence.js'
 
-describe('utils/persistance getEnvironmentName()', () => {
+describe('utils/persistence getEnvironmentName()', () => {
   let envValue: string | undefined = undefined
   beforeAll(() => {
     envValue = process.env.DB_CLIENT

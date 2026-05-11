@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { normalize } from 'node:path'
 
-import { initialize as _initialize } from '#utils/persistance.js'
+import { initialize as _initialize } from '#utils/persistence.js'
 
 import {
   addBookmark as _addBookmark,

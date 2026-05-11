@@ -1,8 +1,8 @@
 'use sanity'
 
-import { isDictionary } from '#utils/persistance.js'
+import { isDictionary } from '#utils/persistence.js'
 
-describe('utils/persistance isDictionary()', () => {
+describe('utils/persistence isDictionary()', () => {
   const tests: Array<[string, unknown, boolean]> = [
     ['valid dictionary', { min: 2, max: 6 }, true],
     ['null dictionary', null, false],

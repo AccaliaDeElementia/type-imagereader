@@ -9,7 +9,7 @@ import debug from 'debug'
 
 import { isPathTraversal as _isPathTraversal, getParentFolders as _getParentFolders } from '#utils/path.js'
 
-import { initialize as _initialize } from '#utils/persistance.js'
+import { initialize as _initialize } from '#utils/persistence.js'
 import { UriSafePath, setLatestPicture as _setLatestPicture } from './apiFunctions.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 

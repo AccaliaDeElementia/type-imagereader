@@ -1,8 +1,8 @@
 'use sanity'
 
-import { isPoolValid } from '#utils/persistance.js'
+import { isPoolValid } from '#utils/persistence.js'
 
-describe('utils/persistance isPoolValid()', () => {
+describe('utils/persistence isPoolValid()', () => {
   it('should accept missing pool element', () => {
     expect(isPoolValid({})).toBe(true)
   })

@@ -1,11 +1,11 @@
 'use sanity'
 
-import { isKnexOptions, Internals } from '#utils/persistance.js'
+import { isKnexOptions, Internals } from '#utils/persistence.js'
 import Sinon from 'sinon'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance isKnexOptions()', () => {
+describe('utils/persistence isKnexOptions()', () => {
   let isMigrationsValidStub = sandbox.stub()
   let isConnectionValid = sandbox.stub()
   let isPoolValid = sandbox.stub()

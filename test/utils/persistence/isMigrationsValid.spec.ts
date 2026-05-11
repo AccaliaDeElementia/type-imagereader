@@ -1,8 +1,8 @@
 'use sanity'
 
-import { isMigrationsValid } from '#utils/persistance.js'
+import { isMigrationsValid } from '#utils/persistence.js'
 
-describe('utils/persistance isMigrationsValid()', () => {
+describe('utils/persistence isMigrationsValid()', () => {
   it('should reject missing migrations element', () => {
     expect(isMigrationsValid({})).toBe(false)
   })

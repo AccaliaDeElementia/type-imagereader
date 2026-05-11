@@ -1,12 +1,12 @@
 'use sanity'
 
-import { readConfigurationBlock, Internals, Imports } from '#utils/persistance.js'
+import { readConfigurationBlock, Internals, Imports } from '#utils/persistence.js'
 import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance readConfigurationBlock()', () => {
+describe('utils/persistence readConfigurationBlock()', () => {
   let configContent = {
     testtest: {
       client: 'foo' as string | null,

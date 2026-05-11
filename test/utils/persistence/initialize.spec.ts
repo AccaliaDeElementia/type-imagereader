@@ -1,13 +1,13 @@
 'use sanity'
 
-import { initialize, Internals, Imports, Persistance, type KnexOptions } from '#utils/persistance.js'
+import { initialize, Internals, Imports, Persistence, type KnexOptions } from '#utils/persistence.js'
 import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
-describe('utils/persistance initialize()', () => {
+describe('utils/persistence initialize()', () => {
   let fakeEnvironment: KnexOptions = {
     client: 'fakeClient',
     connection: {
@@ -26,7 +26,7 @@ describe('utils/persistance initialize()', () => {
   }
 
   beforeEach(() => {
-    Persistance.initializer = undefined
+    Persistence.initializer = undefined
     fakeEnvironment = {
       client: 'fakeClient',
       connection: {
@@ -50,18 +50,18 @@ describe('utils/persistance initialize()', () => {
   })
   it('should return stored initializer when one is already created', async () => {
     const promise = Promise.resolve(stubToKnex(stubKnexInstance))
-    Persistance.initializer = promise
+    Persistence.initializer = promise
     expect(await initialize()).toBe(stubKnexInstance)
   })
   it('should not call knex when an initializer is already stored', async () => {
     const promise = Promise.resolve(stubToKnex(stubKnexInstance))
-    Persistance.initializer = promise
+    Persistence.initializer = promise
     await initialize()
     expect(stubKnex.called).toBe(false)
   })
   it('should set stored Initializer when empty', async () => {
     initialize().catch(() => null)
-    expect(await Persistance.initializer).toBe(stubKnexInstance)
+    expect(await Persistence.initializer).toBe(stubKnexInstance)
   })
   it('should resolve to knex instance', async () => {
     const knex = await initialize()

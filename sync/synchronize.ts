@@ -2,7 +2,7 @@
 
 import _debug from 'debug'
 
-import { initialize as _initialize } from '../utils/persistance.js'
+import { initialize as _initialize } from '../utils/persistence.js'
 import { findSyncItems as _findSyncItems } from './findItems.js'
 import { syncAllPictures as _syncAllPictures } from './pictures.js'
 import { syncAllFolders as _syncAllFolders } from './folders.js'

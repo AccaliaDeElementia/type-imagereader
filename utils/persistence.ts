@@ -109,8 +109,8 @@ export async function getKnexConfig(): Promise<KnexOptions> {
 }
 
 export async function initialize(): Promise<Knex> {
-  Persistance.initializer ??= doInitialize()
-  return await Persistance.initializer
+  Persistence.initializer ??= doInitialize()
+  return await Persistence.initializer
 }
 
 async function doInitialize(): Promise<Knex> {
@@ -120,7 +120,7 @@ async function doInitialize(): Promise<Knex> {
   return knexInstance
 }
 
-export const Persistance = { initializer: undefined as Promise<Knex> | undefined }
+export const Persistence = { initializer: undefined as Promise<Knex> | undefined }
 
 export const Imports = { knex, readFile }
 
