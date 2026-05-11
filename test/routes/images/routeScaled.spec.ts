@@ -162,57 +162,6 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     ['negative height', { path: '', height: '-100', width: '10' }, eHeightBad],
     ['explicit positive height', { path: '', height: '+100', width: '10' }, eHeightBad],
   ]
-  const validationTests: Array<[string, (msg: string) => void]> = [
-    [
-      'not fetch image',
-      () => {
-        expect(fetchImageStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'not send image',
-      () => {
-        expect(sendImageStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'not log message',
-      () => {
-        expect(loggerStub.callCount).toBe(0)
-      },
-    ],
-    [
-      'send response status',
-      () => {
-        expect(responseStub.status.callCount).toBe(1)
-      },
-    ],
-    [
-      'send BAD_REQUEST status code',
-      () => {
-        expect(responseStub.status.firstCall.args).toEqual([400])
-      },
-    ],
-    [
-      'send json response data',
-      () => {
-        expect(responseStub.json.callCount).toBe(1)
-      },
-    ],
-    [
-      'send error message in json response',
-      (msg) => {
-        expect(responseStub.json.firstCall.args).toEqual([
-          {
-            error: {
-              code: 'E_BAD_REQUEST',
-              message: msg,
-            },
-          },
-        ])
-      },
-    ],
-  ]
   validationErrors.forEach(([conditionTitle, params, message]) => {
     describe(`when ${conditionTitle}`, () => {
       beforeEach(async () => {
@@ -222,10 +171,26 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
         requestStub.body = 'REQUEST BODY'
         await router(requestFake, responseFake)
       })
-      validationTests.forEach(([title, validationFn]) => {
-        it(`should ${title}`, () => {
-          validationFn(message)
-        })
+      it('should not fetch image', () => {
+        expect(fetchImageStub.callCount).toBe(0)
+      })
+      it('should not send image', () => {
+        expect(sendImageStub.callCount).toBe(0)
+      })
+      it('should not log message', () => {
+        expect(loggerStub.callCount).toBe(0)
+      })
+      it('should set response status', () => {
+        expect(responseStub.status.callCount).toBe(1)
+      })
+      it('should send BAD_REQUEST status code', () => {
+        expect(responseStub.status.firstCall.args).toEqual([400])
+      })
+      it('should send json response', () => {
+        expect(responseStub.json.callCount).toBe(1)
+      })
+      it('should send error message in json response', () => {
+        expect(responseStub.json.firstCall.args).toEqual([{ error: { code: 'E_BAD_REQUEST', message } }])
       })
     })
   })
