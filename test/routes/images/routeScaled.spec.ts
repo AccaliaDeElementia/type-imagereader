@@ -83,101 +83,59 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     CacheStorage.kioskCache = defaultKioskCache
     CacheStorage.scaledCache = defaultScaledCache
   })
-  const successTests: Array<[string, (data: ImageData) => void]> = [
-    [
-      'not set response status',
-      () => {
-        expect(responseStub.status.callCount).toBe(0)
-      },
-    ],
-    [
-      'not send json data response',
-      () => {
-        expect(responseStub.json.callCount).toBe(0)
-      },
-    ],
-    [
-      'log invocation once',
-      () => {
-        expect(loggerStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'log invocation with GET-format',
-      () => {
-        expect(loggerStub.firstCall.args[0]).toBe('GET /images/scaled %dx%d %s')
-      },
-    ],
-    [
-      'log invocation with width arg',
-      () => {
-        expect(loggerStub.firstCall.args[1]).toBe(123)
-      },
-    ],
-    [
-      'log invocation with height arg',
-      () => {
-        expect(loggerStub.firstCall.args[2]).toBe(456)
-      },
-    ],
-    [
-      'log invocation with filename arg',
-      () => {
-        expect(loggerStub.firstCall.args[3]).toBe('/full/image/test.png')
-      },
-    ],
-    [
-      'fetch image from cache',
-      () => {
-        expect(fetchImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'fetch image from cache',
-      () => {
-        expect(fetchImageStub.firstCall.args[0]).toBe('/full/image/test.png')
-      },
-    ],
-    [
-      'fetch image from cache',
-      () => {
-        expect(fetchImageStub.firstCall.args[1]).toBe(123)
-      },
-    ],
-    [
-      'fetch image from cache',
-      () => {
-        expect(fetchImageStub.firstCall.args[2]).toBe(456)
-      },
-    ],
-    [
-      'send image with sendImage()',
-      () => {
-        expect(sendImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'send image data with sendImage()',
-      (data) => {
-        expect(sendImageStub.firstCall.args[0]).toBe(data)
-      },
-    ],
-    [
-      'send to response with sendImage()',
-      () => {
-        expect(sendImageStub.firstCall.args[1]).toBe(responseFake)
-      },
-    ],
-  ]
-  successTests.forEach(([title, validationFn]) => {
-    it(`should ${title} on success`, async () => {
-      const img = new ImageData()
+
+  describe('on successful response', () => {
+    let img: ImageData = new ImageData()
+    beforeEach(async () => {
+      img = new ImageData()
       fetchImageStub.resolves(img)
       requestStub.params = { path: 'full/image/test.png', width: '123', height: '456' }
       await router(requestFake, responseFake)
-      validationFn(img)
+    })
+    it('should not set response status', () => {
+      expect(responseStub.status.callCount).toBe(0)
+    })
+    it('should not send json data response', () => {
+      expect(responseStub.json.callCount).toBe(0)
+    })
+    it('should log invocation once', () => {
+      expect(loggerStub.callCount).toBe(1)
+    })
+    it('should log invocation with GET-format', () => {
+      expect(loggerStub.firstCall.args[0]).toBe('GET /images/scaled %dx%d %s')
+    })
+    it('should log invocation with width arg', () => {
+      expect(loggerStub.firstCall.args[1]).toBe(123)
+    })
+    it('should log invocation with height arg', () => {
+      expect(loggerStub.firstCall.args[2]).toBe(456)
+    })
+    it('should log invocation with filename arg', () => {
+      expect(loggerStub.firstCall.args[3]).toBe('/full/image/test.png')
+    })
+    it('should call fetch on the cache', () => {
+      expect(fetchImageStub.callCount).toBe(1)
+    })
+    it('should fetch with expected path', () => {
+      expect(fetchImageStub.firstCall.args[0]).toBe('/full/image/test.png')
+    })
+    it('should fetch with expected width', () => {
+      expect(fetchImageStub.firstCall.args[1]).toBe(123)
+    })
+    it('should fetch with expected height', () => {
+      expect(fetchImageStub.firstCall.args[2]).toBe(456)
+    })
+    it('should send image with sendImage()', () => {
+      expect(sendImageStub.callCount).toBe(1)
+    })
+    it('should send image data with sendImage()', () => {
+      expect(sendImageStub.firstCall.args[0]).toBe(img)
+    })
+    it('should send to response with sendImage()', () => {
+      expect(sendImageStub.firstCall.args[1]).toBe(responseFake)
     })
   })
+
   const eWidthMissing = 'width parameter must be provided'
   const eWidthBad = 'width parameter must be positive integer'
   const eHeightMissing = 'height parameter must be provided'
@@ -242,7 +200,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
       },
     ],
     [
-      'send json response data',
+      'send error message in json response',
       (msg) => {
         expect(responseStub.json.firstCall.args).toEqual([
           {
@@ -255,24 +213,20 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
       },
     ],
   ]
-  const executeValidationTest = (
-    title: string,
-    params: ReqParams,
-    message: string,
-    validationFn: (msg: string) => void,
-  ): void => {
-    it(title, async () => {
-      requestStub.params = params
-      requestStub.params.path = 'foo/bar/baz.txt'
-      requestStub.originalUrl = '/full/image.png'
-      requestStub.body = 'REQUEST BODY'
-      await router(requestFake, responseFake)
-      validationFn(message)
+  validationErrors.forEach(([conditionTitle, params, message]) => {
+    describe(`when ${conditionTitle}`, () => {
+      beforeEach(async () => {
+        requestStub.params = params
+        requestStub.params.path = 'foo/bar/baz.txt'
+        requestStub.originalUrl = '/full/image.png'
+        requestStub.body = 'REQUEST BODY'
+        await router(requestFake, responseFake)
+      })
+      validationTests.forEach(([title, validationFn]) => {
+        it(`should ${title}`, () => {
+          validationFn(message)
+        })
+      })
     })
-  }
-  for (const [conditionTitle, params, message] of validationErrors) {
-    for (const [validationTitle, validationFn] of validationTests) {
-      executeValidationTest(`should ${validationTitle} for ${conditionTitle}`, params, message, validationFn)
-    }
-  }
+  })
 })

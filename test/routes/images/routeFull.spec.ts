@@ -67,79 +67,44 @@ describe('routes/images route /full/*', () => {
     CacheStorage.kioskCache = defaultKioskCache
     CacheStorage.scaledCache = defaultScaledCache
   })
+
   const testPaths = ['', 'foo/bar.png']
-  const successTests: Array<[string, (path: string, image: ImageData) => void]> = [
-    [
-      'not generate error status call',
-      () => {
+  testPaths.forEach((path) => {
+    describe(`for path '${path}'`, () => {
+      let img: ImageData = new ImageData()
+      beforeEach(async () => {
+        requestStub.params.path = path
+        img = new ImageData()
+        readImageStub.resolves(img)
+        await router(requestFake, responseFake)
+      })
+      it('should not generate error status call', () => {
         expect(responseStub.status.callCount).toBe(0)
-      },
-    ],
-    [
-      'not generate error json call',
-      () => {
+      })
+      it('should not generate error json call', () => {
         expect(responseStub.json.callCount).toBe(0)
-      },
-    ],
-    [
-      'log invocation once',
-      () => {
+      })
+      it('should log invocation once', () => {
         expect(loggerStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'log invocation with GET-format',
-      () => {
+      })
+      it('should log invocation with GET-format', () => {
         expect(loggerStub.firstCall.args[0]).toBe('GET /images/full %s')
-      },
-    ],
-    [
-      'log invocation with filename',
-      (path) => {
+      })
+      it('should log invocation with filename', () => {
         expect(loggerStub.firstCall.args[1]).toBe(`/${path}`)
-      },
-    ],
-    [
-      'read image using readImage()',
-      () => {
+      })
+      it('should read image using readImage()', () => {
         expect(readImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'read image with filename',
-      (path) => {
+      })
+      it('should read image with filename', () => {
         expect(readImageStub.firstCall.args).toEqual([`/${path}`])
-      },
-    ],
-    [
-      'send retrieved image with sendImage()',
-      () => {
+      })
+      it('should send retrieved image with sendImage()', () => {
         expect(sendImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'send retrieved imageData',
-      (_, data) => {
-        expect(sendImageStub.firstCall.args).toEqual([data, responseFake])
-      },
-    ],
-  ]
-  const successTestRunner = (
-    path: string,
-    title: string,
-    validation: (path: string, data: ImageData) => void,
-  ): void => {
-    it(`should ${title} for path '${path}' on success`, async () => {
-      requestStub.params.path = path
-      const img = new ImageData()
-      readImageStub.resolves(img)
-      await router(requestFake, responseFake)
-      validation(path, img)
+      })
+      it('should send retrieved imageData', () => {
+        expect(sendImageStub.firstCall.args).toEqual([img, responseFake])
+      })
     })
-  }
-  for (const path of testPaths) {
-    for (const [title, validation] of successTests) {
-      successTestRunner(path, title, validation)
-    }
-  }
+  })
 })

@@ -30,12 +30,7 @@ describe('routes/images rescaleImage()', () => {
       toBuffer: sandbox.stub().resolves(),
     }
   })
-  it('should abort when error already detected', async () => {
-    const img = new ImageData()
-    img.code = 'FOO'
-    await rescaleImage(img, 1280, 720)
-    expect(sharpStub.callCount).toBe(0)
-  })
+
   interface SharpResizeArgs {
     width: unknown
     height: unknown
@@ -43,150 +38,90 @@ describe('routes/images rescaleImage()', () => {
     withoutEnlargement: unknown
   }
   const getSharpArgs = (): SharpResizeArgs => cast<SharpResizeArgs>(sharpInstanceStub.resize.firstCall.args[0])
-  const successTests: Array<[string, boolean, (data: Buffer, img: ImageData) => void]> = [
-    [
-      'parse Sharp data',
-      true,
-      () => {
-        expect(sharpStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'call Sharp with expected arg count',
-      true,
-      () => {
-        expect(sharpStub.firstCall.args).toHaveLength(2)
-      },
-    ],
-    [
-      'provide buffered data to Sharp ',
-      true,
-      (data) => {
-        expect(sharpStub.firstCall.args[0]).toBe(data)
-      },
-    ],
-    [
-      'provide a set animated flag when animated resize requested',
-      true,
-      () => {
-        expect(sharpStub.firstCall.args[1]).toEqual({ animated: true })
-      },
-    ],
-    [
-      'provide a unset animated flag when animated resize not requested',
-      false,
-      () => {
-        expect(sharpStub.firstCall.args[1]).toEqual({ animated: false })
-      },
-    ],
-    [
-      'rotate image to canonical orientation',
-      true,
-      () => {
-        expect(sharpInstanceStub.rotate.callCount).toBe(1)
-      },
-    ],
-    [
-      'provide no argumnets to rotate request',
-      true,
-      () => {
-        expect(sharpInstanceStub.rotate.firstCall.args).toEqual([])
-      },
-    ],
-    [
-      'resize image',
-      true,
-      () => {
-        expect(sharpInstanceStub.resize.callCount).toBe(1)
-      },
-    ],
-    [
-      'call resize image with config flags',
-      true,
-      () => {
-        expect(sharpInstanceStub.resize.firstCall.args).toHaveLength(1)
-      },
-    ],
-    [
-      'call resize image with expected set config flags',
-      true,
-      () => {
-        expect(Object.keys(getSharpArgs()).sort()).toEqual(['width', 'height', 'fit', 'withoutEnlargement'].sort())
-      },
-    ],
-    [
-      'call resize image with width flag',
-      true,
-      () => {
-        expect(getSharpArgs().width).toBe(1280)
-      },
-    ],
-    [
-      'call resize image with height flag',
-      true,
-      () => {
-        expect(getSharpArgs().height).toBe(720)
-      },
-    ],
-    [
-      'call resize image with fit flag',
-      true,
-      () => {
-        expect(getSharpArgs().fit).toBe(Sharp.fit.inside)
-      },
-    ],
-    [
-      'call resize image with withoutEnlargement flag',
-      true,
-      () => {
-        expect(getSharpArgs().withoutEnlargement).toBe(true)
-      },
-    ],
-    [
-      'convert image to webp',
-      true,
-      () => {
-        expect(sharpInstanceStub.webp.callCount).toBe(1)
-      },
-    ],
-    [
-      'convert image to webp',
-      true,
-      (_, img) => {
-        expect(img.extension).toBe('webp')
-      },
-    ],
-    [
-      'convert to webp with defaults',
-      true,
-      () => {
-        expect(sharpInstanceStub.webp.firstCall.args).toEqual([])
-      },
-    ],
-    [
-      'convert resilt to Buffer',
-      true,
-      () => {
-        expect(sharpInstanceStub.toBuffer.callCount).toBe(1)
-      },
-    ],
-    [
-      'convert o buffer with defaults',
-      true,
-      () => {
-        expect(sharpInstanceStub.toBuffer.firstCall.args).toEqual([])
-      },
-    ],
-  ]
-  successTests.forEach(([title, animated, validation]) => {
-    it(`should ${title}`, async () => {
-      const data = Buffer.from(`{ image: ${Math.random()} }`)
-      const img = new ImageData()
+
+  it('should abort when error already detected', async () => {
+    const img = new ImageData()
+    img.code = 'FOO'
+    await rescaleImage(img, 1280, 720)
+    expect(sharpStub.callCount).toBe(0)
+  })
+
+  describe('on successful rescale (animated=true)', () => {
+    let img: ImageData = new ImageData()
+    let data: Buffer = Buffer.from('')
+    beforeEach(async () => {
+      data = Buffer.from(`{ image: ${Math.random()} }`)
+      img = new ImageData()
       img.data = data
-      await rescaleImage(img, 1280, 720, animated)
-      validation(data, img)
+      await rescaleImage(img, 1280, 720, true)
+    })
+    it('should parse Sharp data', () => {
+      expect(sharpStub.callCount).toBe(1)
+    })
+    it('should call Sharp with expected arg count', () => {
+      expect(sharpStub.firstCall.args).toHaveLength(2)
+    })
+    it('should provide buffered data to Sharp', () => {
+      expect(sharpStub.firstCall.args[0]).toBe(data)
+    })
+    it('should provide a set animated flag when animated resize requested', () => {
+      expect(sharpStub.firstCall.args[1]).toEqual({ animated: true })
+    })
+    it('should rotate image to canonical orientation', () => {
+      expect(sharpInstanceStub.rotate.callCount).toBe(1)
+    })
+    it('should provide no arguments to rotate request', () => {
+      expect(sharpInstanceStub.rotate.firstCall.args).toEqual([])
+    })
+    it('should resize image', () => {
+      expect(sharpInstanceStub.resize.callCount).toBe(1)
+    })
+    it('should call resize image with config flags', () => {
+      expect(sharpInstanceStub.resize.firstCall.args).toHaveLength(1)
+    })
+    it('should call resize image with expected set config flags', () => {
+      expect(Object.keys(getSharpArgs()).sort()).toEqual(['width', 'height', 'fit', 'withoutEnlargement'].sort())
+    })
+    it('should call resize image with width flag', () => {
+      expect(getSharpArgs().width).toBe(1280)
+    })
+    it('should call resize image with height flag', () => {
+      expect(getSharpArgs().height).toBe(720)
+    })
+    it('should call resize image with fit flag', () => {
+      expect(getSharpArgs().fit).toBe(Sharp.fit.inside)
+    })
+    it('should call resize image with withoutEnlargement flag', () => {
+      expect(getSharpArgs().withoutEnlargement).toBe(true)
+    })
+    it('should convert image to webp via sharp', () => {
+      expect(sharpInstanceStub.webp.callCount).toBe(1)
+    })
+    it('should set image extension to webp', () => {
+      expect(img.extension).toBe('webp')
+    })
+    it('should convert to webp with defaults', () => {
+      expect(sharpInstanceStub.webp.firstCall.args).toEqual([])
+    })
+    it('should convert result to Buffer', () => {
+      expect(sharpInstanceStub.toBuffer.callCount).toBe(1)
+    })
+    it('should convert to buffer with defaults', () => {
+      expect(sharpInstanceStub.toBuffer.firstCall.args).toEqual([])
     })
   })
+
+  describe('on successful rescale (animated=false)', () => {
+    beforeEach(async () => {
+      const img = new ImageData()
+      img.data = Buffer.from(`{ image: ${Math.random()} }`)
+      await rescaleImage(img, 1280, 720, false)
+    })
+    it('should provide an unset animated flag when animated resize not requested', () => {
+      expect(sharpStub.firstCall.args[1]).toEqual({ animated: false })
+    })
+  })
+
   it('should output as buffer', async () => {
     const img = new ImageData()
     const data = Buffer.from(`{ image: ${Math.random()} }`)
@@ -194,6 +129,7 @@ describe('routes/images rescaleImage()', () => {
     await rescaleImage(img, 1280, 720)
     expect(img.data).toBe(data)
   })
+
   const failureModes: Array<[string, () => void]> = [
     ['sharp throws', () => sharpStub.throws(new Error('OOPS'))],
     ['sharp rejects', () => sharpInstanceStub.toBuffer.rejects(new Error('OOPS'))],

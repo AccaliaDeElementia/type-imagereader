@@ -69,112 +69,65 @@ describe('routes/images route /preview/*-image.webp', () => {
     CacheStorage.kioskCache = defaultKioskCache
     CacheStorage.scaledCache = defaultScaledCache
   })
-  const successTests: Array<[string, (data: ImageData) => void]> = [
-    [
-      'not set response status',
-      () => {
-        expect(responseStub.status.callCount).toBe(0)
-      },
-    ],
-    [
-      'not send json data response',
-      () => {
-        expect(responseStub.json.callCount).toBe(0)
-      },
-    ],
-    [
-      'log invocation once',
-      () => {
-        expect(loggerStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'log invocation with GET-format',
-      () => {
-        expect(loggerStub.firstCall.args[0]).toBe('GET /images/preview %s')
-      },
-    ],
-    [
-      'log invocation with filename',
-      () => {
-        expect(loggerStub.firstCall.args[1]).toBe('/foo/bar.png')
-      },
-    ],
-    [
-      'read image',
-      () => {
-        expect(readImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'read image withprovided filename',
-      () => {
-        expect(readImageStub.firstCall.args).toEqual(['/foo/bar.png'])
-      },
-    ],
-    [
-      'rescale image',
-      () => {
-        expect(rescaleImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'rescale read ImageData',
-      (img) => {
-        expect(rescaleImageStub.firstCall.args[0]).toBe(img)
-      },
-    ],
-    [
-      'rescale image to preview width',
-      () => {
-        expect(rescaleImageStub.firstCall.args[1]).toBe(240)
-      },
-    ],
-    [
-      'rescale image to preview height',
-      () => {
-        expect(rescaleImageStub.firstCall.args[2]).toBe(320)
-      },
-    ],
-    [
-      'rescale image without animation',
-      () => {
-        expect(rescaleImageStub.firstCall.args[3]).toBe(false)
-      },
-    ],
-    [
-      'send image with sendImage()',
-      () => {
-        expect(sendImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'send image data with sendImage()',
-      (img) => {
-        expect(sendImageStub.firstCall.args[0]).toBe(img)
-      },
-    ],
-    [
-      'send to response with sendImage()',
-      () => {
-        expect(sendImageStub.firstCall.args[1]).toBe(responseFake)
-      },
-    ],
+
+  const pathVariants: Array<[string, string | string[]]> = [
+    ['by string', 'foo/bar.png'],
+    ['by string array', ['foo', 'bar.png']],
   ]
-  successTests.forEach(([title, validationFn]) => {
-    it(`should ${title} for success by string`, async () => {
-      const img = new ImageData()
-      readImageStub.resolves(img)
-      requestStub.params.path = 'foo/bar.png'
-      await router(requestFake, responseFake)
-      validationFn(img)
-    })
-    it(`should ${title} for success by string array`, async () => {
-      const img = new ImageData()
-      readImageStub.resolves(img)
-      requestStub.params.path = ['foo', 'bar.png']
-      await router(requestFake, responseFake)
-      validationFn(img)
+  pathVariants.forEach(([label, pathValue]) => {
+    describe(`when path is provided ${label}`, () => {
+      let img: ImageData = new ImageData()
+      beforeEach(async () => {
+        img = new ImageData()
+        readImageStub.resolves(img)
+        requestStub.params.path = pathValue
+        await router(requestFake, responseFake)
+      })
+      it('should not set response status', () => {
+        expect(responseStub.status.callCount).toBe(0)
+      })
+      it('should not send json data response', () => {
+        expect(responseStub.json.callCount).toBe(0)
+      })
+      it('should log invocation once', () => {
+        expect(loggerStub.callCount).toBe(1)
+      })
+      it('should log invocation with GET-format', () => {
+        expect(loggerStub.firstCall.args[0]).toBe('GET /images/preview %s')
+      })
+      it('should log invocation with filename', () => {
+        expect(loggerStub.firstCall.args[1]).toBe('/foo/bar.png')
+      })
+      it('should read image', () => {
+        expect(readImageStub.callCount).toBe(1)
+      })
+      it('should read image with provided filename', () => {
+        expect(readImageStub.firstCall.args).toEqual(['/foo/bar.png'])
+      })
+      it('should rescale image', () => {
+        expect(rescaleImageStub.callCount).toBe(1)
+      })
+      it('should rescale read ImageData', () => {
+        expect(rescaleImageStub.firstCall.args[0]).toBe(img)
+      })
+      it('should rescale image to preview width', () => {
+        expect(rescaleImageStub.firstCall.args[1]).toBe(240)
+      })
+      it('should rescale image to preview height', () => {
+        expect(rescaleImageStub.firstCall.args[2]).toBe(320)
+      })
+      it('should rescale image without animation', () => {
+        expect(rescaleImageStub.firstCall.args[3]).toBe(false)
+      })
+      it('should send image with sendImage()', () => {
+        expect(sendImageStub.callCount).toBe(1)
+      })
+      it('should send image data with sendImage()', () => {
+        expect(sendImageStub.firstCall.args[0]).toBe(img)
+      })
+      it('should send to response with sendImage()', () => {
+        expect(sendImageStub.firstCall.args[1]).toBe(responseFake)
+      })
     })
   })
 })

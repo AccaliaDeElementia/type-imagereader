@@ -67,94 +67,56 @@ describe('routes/images route /kiosk/*-image.webp', () => {
     CacheStorage.kioskCache = defaultKioskCache
     CacheStorage.scaledCache = defaultScaledCache
   })
-  const successTests: Array<[string, (data: ImageData) => void]> = [
-    [
-      'not set response status',
-      () => {
-        expect(responseStub.status.callCount).toBe(0)
-      },
-    ],
-    [
-      'not send json data response',
-      () => {
-        expect(responseStub.json.callCount).toBe(0)
-      },
-    ],
-    [
-      'log invocation once',
-      () => {
-        expect(loggerStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'log invocation with GET-format',
-      () => {
-        expect(loggerStub.firstCall.args[0]).toBe('GET /images/kiosk %s')
-      },
-    ],
-    [
-      'log invocation with filename',
-      () => {
-        expect(loggerStub.firstCall.args[1]).toBe('/kiosk/image.png')
-      },
-    ],
-    [
-      'fetch image from cache',
-      () => {
-        expect(fetchImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'fetch image filename from cache',
-      () => {
-        expect(fetchImageStub.firstCall.args[0]).toBe('/kiosk/image.png')
-      },
-    ],
-    [
-      'rescale image to preview width',
-      () => {
-        expect(fetchImageStub.firstCall.args[1]).toBe(1280)
-      },
-    ],
-    [
-      'rescale image to preview height',
-      () => {
-        expect(fetchImageStub.firstCall.args[2]).toBe(800)
-      },
-    ],
-    [
-      'send image with sendImage()',
-      () => {
-        expect(sendImageStub.callCount).toBe(1)
-      },
-    ],
-    [
-      'send image data with sendImage()',
-      (img) => {
-        expect(sendImageStub.firstCall.args[0]).toBe(img)
-      },
-    ],
-    [
-      'send to response with sendImage()',
-      () => {
-        expect(sendImageStub.firstCall.args[1]).toBe(responseFake)
-      },
-    ],
+
+  const pathVariants: Array<[string, string | string[]]> = [
+    ['by string', 'kiosk/image.png'],
+    ['by string array', ['kiosk', 'image.png']],
   ]
-  successTests.forEach(([title, validationFn]) => {
-    it(`should ${title} for success by string`, async () => {
-      const img = new ImageData()
-      fetchImageStub.resolves(img)
-      requestStub.params.path = 'kiosk/image.png'
-      await router(requestFake, responseFake)
-      validationFn(img)
-    })
-    it(`should ${title} for success by string array`, async () => {
-      const img = new ImageData()
-      fetchImageStub.resolves(img)
-      requestStub.params.path = ['kiosk', 'image.png']
-      await router(requestFake, responseFake)
-      validationFn(img)
+  pathVariants.forEach(([label, pathValue]) => {
+    describe(`when path is provided ${label}`, () => {
+      let img: ImageData = new ImageData()
+      beforeEach(async () => {
+        img = new ImageData()
+        fetchImageStub.resolves(img)
+        requestStub.params.path = pathValue
+        await router(requestFake, responseFake)
+      })
+      it('should not set response status', () => {
+        expect(responseStub.status.callCount).toBe(0)
+      })
+      it('should not send json data response', () => {
+        expect(responseStub.json.callCount).toBe(0)
+      })
+      it('should log invocation once', () => {
+        expect(loggerStub.callCount).toBe(1)
+      })
+      it('should log invocation with GET-format', () => {
+        expect(loggerStub.firstCall.args[0]).toBe('GET /images/kiosk %s')
+      })
+      it('should log invocation with filename', () => {
+        expect(loggerStub.firstCall.args[1]).toBe('/kiosk/image.png')
+      })
+      it('should fetch image from cache', () => {
+        expect(fetchImageStub.callCount).toBe(1)
+      })
+      it('should fetch image filename from cache', () => {
+        expect(fetchImageStub.firstCall.args[0]).toBe('/kiosk/image.png')
+      })
+      it('should rescale image to preview width', () => {
+        expect(fetchImageStub.firstCall.args[1]).toBe(1280)
+      })
+      it('should rescale image to preview height', () => {
+        expect(fetchImageStub.firstCall.args[2]).toBe(800)
+      })
+      it('should send image with sendImage()', () => {
+        expect(sendImageStub.callCount).toBe(1)
+      })
+      it('should send image data with sendImage()', () => {
+        expect(sendImageStub.firstCall.args[0]).toBe(img)
+      })
+      it('should send to response with sendImage()', () => {
+        expect(sendImageStub.firstCall.args[1]).toBe(responseFake)
+      })
     })
   })
 })
