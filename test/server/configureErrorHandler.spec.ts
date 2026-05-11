@@ -1,6 +1,5 @@
 'use sanity'
 
-import { assert } from 'chai'
 import type { Express, Response } from 'express'
 import Sinon from 'sinon'
 import { StatusCodes } from 'http-status-codes'
@@ -29,7 +28,7 @@ describe('Server configureErrorHandler', () => {
   it('should register a function as the error handler', () => {
     configureErrorHandler(appFake)
     const fn = appStub.use.firstCall.args[0] as unknown
-    assert.isFunction(fn)
+    expect(fn).toBeTypeOf('function')
   })
   const errorHandlerTests: Array<[string, () => void]> = [
     [

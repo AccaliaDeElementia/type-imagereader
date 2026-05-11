@@ -1,6 +1,5 @@
 'use sanity'
 
-import { assert } from 'chai'
 import type { Application, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
@@ -35,7 +34,7 @@ describe('routes/root getRouter()', () => {
     it(`should register handler function for endpoint '${endpoint}`, async () => {
       await getRouter(applicationFake, serverFake, socketsFake)
       const fn = routerStub.get.getCalls().find((call) => call.args[0] === endpoint)?.args[1] as unknown
-      assert.isFunction(fn)
+      expect(fn).toBeTypeOf('function')
     })
   })
 })

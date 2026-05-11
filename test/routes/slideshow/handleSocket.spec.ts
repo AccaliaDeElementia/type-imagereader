@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { assert } from 'chai'
+import assert from 'node:assert'
 import { handleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
@@ -50,7 +50,7 @@ describe('routes/slideshow handleSocket()', () => {
     })
     it(`should register a callback for '${endpoint}'`, () => {
       handleSocket(knexFake, serverFake, socketFake)
-      assert.isFunction(getCallback(endpoint))
+      expect(getCallback(endpoint)).toBeTypeOf('function')
     })
     it(`should forward call for ${endpoint}`, () => {
       handleSocket(knexFake, serverFake, socketFake)
@@ -94,7 +94,7 @@ describe('routes/slideshow handleSocket()', () => {
   })
   it('should return an object for state storage', () => {
     const state = handleSocket(knexFake, serverFake, socketFake)
-    assert.isObject(state)
+    expect(state).toBeTypeOf('object')
   })
   it('should return state object', () => {
     const state = handleSocket(knexFake, serverFake, socketFake)

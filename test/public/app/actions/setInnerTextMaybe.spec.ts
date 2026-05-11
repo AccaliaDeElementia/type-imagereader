@@ -1,6 +1,6 @@
 'use sanity'
 
-import { assert } from 'chai'
+import assert from 'node:assert'
 import { Internals } from '#public/scripts/app/actions.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'

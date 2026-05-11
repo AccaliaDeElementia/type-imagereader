@@ -193,6 +193,6 @@ export default [
     },
   },
   {
-    ignores: ['coverage/**', 'coverage-vitest/**', 'eslint.config.mjs', 'dist/**', 'deploy/**', 'tools/**'],
+    ignores: ['coverage/**', 'coverage-vitest/**', 'eslint.config.mjs', 'dist/**', 'deploy/**'],
   },
 ]

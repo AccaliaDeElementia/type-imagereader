@@ -1,6 +1,5 @@
 'use sanity'
 
-import { assert } from 'chai'
 import { Internals, Weather, getRouter, Imports } from '#routes/weather.js'
 import Sinon from 'sinon'
 
@@ -60,7 +59,7 @@ describe('routes/weather getRouter()', () => {
   })
   it('should register callback for interval', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    assert.isFunction(setIntervalStub.firstCall.args[0])
+    expect(setIntervalStub.firstCall.args[0]).toBeTypeOf('function')
   })
   it('should call updateWeather when callback fires', async () => {
     await getRouter(applicationFake, serverFake, socketFake)

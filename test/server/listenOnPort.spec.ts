@@ -1,6 +1,5 @@
 'use sanity'
 
-import { assert } from 'chai'
 import type { Server } from 'node:http'
 import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
@@ -31,7 +30,7 @@ describe('Server listenOnPort', () => {
   it('should provide a listen callback to the server', () => {
     listenOnPort(serverFake, 1)
     const fn = listenStub.firstCall.args[1] as unknown
-    assert.isFunction(fn)
+    expect(fn).toBeTypeOf('function')
   })
   it('should not log when the callback is invoked without an error parameter', () => {
     listenOnPort(serverFake, 1)

@@ -5,7 +5,6 @@ import type { Request, Response, Application, Router } from 'express'
 import type { Socket, Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { assert } from 'chai'
 import { Config, Internals, getRouter, Imports } from '#routes/slideshow.js'
 
 const sandbox = Sinon.createSandbox()
@@ -195,7 +194,7 @@ describe('routes/slideshow getRouter', () => {
   it('should set interval function for periodic processing', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
     const callback = setIntervalStub.firstCall.args[0] as unknown
-    assert.isFunction(callback)
+    expect(callback).toBeTypeOf('function')
   })
   it('should process tickCountdown in set interval function', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)
