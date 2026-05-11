@@ -1,11 +1,16 @@
 'use sanity'
 
-import { subscribe, publish, addInterval, removeInterval } from './pubsub.js'
+import { subscribe as _subscribe, publish as _publish, addInterval, removeInterval } from './pubsub.js'
 import { cloneNode } from './utils.js'
 import { isHTMLElement } from '#contracts/markup.js'
 
 import { isListing } from '#contracts/listing.js'
 import { hasValue, hasValues } from '#utils/helpers.js'
+
+export const Imports = {
+  subscribe: _subscribe,
+  publish: _publish,
+}
 
 interface ButtonDefinition {
   name: string
@@ -273,7 +278,7 @@ function createButtons(buttons: ButtonDefinition[]): HTMLElement {
     Internals.setInnerTextMaybe(button, 'i', image)
     Internals.setInnerTextMaybe(button, 'h5', name)
     button.addEventListener('click', (event) => {
-      publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
+      Imports.publish(`Action:Execute:${name.replace(/\s+/gv, '')}`)
       event.preventDefault()
     })
     result.appendChild(button)
@@ -305,7 +310,7 @@ function readGamepad(): void {
   if (!Actions.gamepads.pressingNow && hasValues(Actions.gamepads.pressedButtons)) {
     const buttons = Actions.gamepads.pressedButtons.join('')
     Actions.gamepads.reset()
-    publish(`Action:Gamepad:${buttons}`)
+    Imports.publish(`Action:Gamepad:${buttons}`)
   }
 }
 
@@ -313,9 +318,9 @@ export function init(): void {
   Internals.buildActions()
   Actions.gamepads.reset()
 
-  subscribe('Navigate:Data', async (data) => {
+  Imports.subscribe('Navigate:Data', async (data) => {
     if (isListing(data) && !hasValues(data.pictures) && !hasValues(data.children)) {
-      publish('Tab:Select', 'Actions')
+      Imports.publish('Tab:Select', 'Actions')
     }
     await Promise.resolve()
   })
@@ -326,7 +331,7 @@ export function init(): void {
       (event.altKey ? '<ALT>' : '') +
       (event.shiftKey ? '<SHIFT>' : '') +
       event.key.toUpperCase()
-    publish(`Action:Keypress:${key}`, key)
+    Imports.publish(`Action:Keypress:${key}`, key)
   })
   window.addEventListener('gamepadconnected', () => {
     addInterval(

@@ -1,7 +1,12 @@
 'use sanity'
 
 import { hasValue } from '#utils/helpers.js'
-import { subscribe, publish, defer } from './pubsub.js'
+import { subscribe as _subscribe, publish as _publish, defer } from './pubsub.js'
+
+export const Imports = {
+  subscribe: _subscribe,
+  publish: _publish,
+}
 
 const ANIMATION_RESET_DELAY = 100
 const DISPLAY_VISIBLE = 'block'
@@ -16,7 +21,7 @@ export function init(): void {
   Loading.overlay = document.querySelector<HTMLElement>('#loadingScreen')
   Loading.navbar = document.querySelector<HTMLElement>('#navbar')
 
-  subscribe('Loading:Error', async (message) => {
+  Imports.subscribe('Loading:Error', async (message) => {
     if (hasValue(message) && message !== '') {
       window.console.error(message)
     }
@@ -27,9 +32,9 @@ export function init(): void {
       Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
       Loading.navbar?.style.removeProperty('background-color')
     }, ANIMATION_RESET_DELAY)
-    publish('Loading:Hide')
+    Imports.publish('Loading:Hide')
   })
-  subscribe('Loading:Success', async () => {
+  Imports.subscribe('Loading:Success', async () => {
     Loading.navbar?.style.removeProperty('transition')
     Loading.navbar?.style.setProperty('background-color', '#00AA00')
     await Promise.resolve()
@@ -38,11 +43,11 @@ export function init(): void {
       Loading.navbar?.style.removeProperty('background-color')
     }, ANIMATION_RESET_DELAY)
   })
-  subscribe('Loading:Hide', async () => {
+  Imports.subscribe('Loading:Hide', async () => {
     Loading.overlay?.style.setProperty('display', DISPLAY_HIDDEN)
     await Promise.resolve()
   })
-  subscribe('Loading:show', async () => {
+  Imports.subscribe('Loading:show', async () => {
     Loading.overlay?.style.setProperty('display', DISPLAY_VISIBLE)
     await Promise.resolve()
   })

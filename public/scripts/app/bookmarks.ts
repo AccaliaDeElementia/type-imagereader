@@ -1,6 +1,6 @@
 'use sanity'
 
-import { publish, subscribe } from './pubsub.js'
+import { publish as _publish, subscribe as _subscribe } from './pubsub.js'
 import { getJSON as _getJSON, postJSON as _postJSON, acceptAnyResponse } from './net.js'
 import { cloneNode } from './utils.js'
 import { isHTMLElement } from '#contracts/markup.js'
@@ -16,6 +16,8 @@ import {
 export const Imports = {
   getJSON: _getJSON,
   postJSON: _postJSON,
+  subscribe: _subscribe,
+  publish: _publish,
 }
 
 interface WebBookmarkFolder {
@@ -78,7 +80,7 @@ function buildBookmark(bookmark: Bookmark): HTMLElement | null {
   card.style.backgroundImage = `url("/images/preview${bookmark.path}-image.webp")`
   const button = card.querySelector('button')
   button?.addEventListener('click', (event) => {
-    publish('Bookmarks:Remove', bookmark.path)
+    Imports.publish('Bookmarks:Remove', bookmark.path)
     event.stopPropagation()
   })
   card.addEventListener('click', (event) => {
@@ -91,7 +93,7 @@ function buildBookmark(bookmark: Bookmark): HTMLElement | null {
       acceptAnyResponse,
     ).then(
       () => {
-        publish('Navigate:Load', {
+        Imports.publish('Navigate:Load', {
           path: bookmark.folder,
           name: '',
           parent: '',
@@ -151,12 +153,12 @@ export function init(): void {
   Bookmarks.bookmarkFolder = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
   Bookmarks.bookmarksTab = document.querySelector<HTMLElement>('#tabBookmarks')
 
-  subscribe('Navigate:Data', async (data) => {
+  Imports.subscribe('Navigate:Data', async (data) => {
     if (isListing(data)) Internals.buildBookmarks(data)
     await Promise.resolve()
   })
 
-  subscribe('Bookmarks:Load', async () => {
+  Imports.subscribe('Bookmarks:Load', async () => {
     Bookmarks.loadToken += TOKEN_STEP
     const token = Bookmarks.loadToken
     await Imports.getJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder)).then(
@@ -166,7 +168,7 @@ export function init(): void {
       },
       (err: unknown) => {
         if (token !== Bookmarks.loadToken) return
-        publish('Loading:Error', err)
+        Imports.publish('Loading:Error', err)
       },
     )
   })
@@ -175,19 +177,19 @@ export function init(): void {
     if (typeof path !== 'string') return
     await Imports.postJSON(apiPath, { path }, acceptAnyResponse).then(
       () => {
-        publish('Bookmarks:Load')
-        publish('Loading:Success')
+        Imports.publish('Bookmarks:Load')
+        Imports.publish('Loading:Success')
       },
       (err: unknown) => {
-        publish('Loading:Error', err instanceof Error ? err : new Error('Non Error rejection!'))
+        Imports.publish('Loading:Error', err instanceof Error ? err : new Error('Non Error rejection!'))
       },
     )
   }
 
-  subscribe('Bookmarks:Add', async (path) => {
+  Imports.subscribe('Bookmarks:Add', async (path) => {
     await bookmarkAction('/api/bookmarks/add', path)
   })
-  subscribe('Bookmarks:Remove', async (path) => {
+  Imports.subscribe('Bookmarks:Remove', async (path) => {
     await bookmarkAction('/api/bookmarks/remove', path)
   })
 }

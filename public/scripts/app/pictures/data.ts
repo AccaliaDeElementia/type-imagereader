@@ -5,13 +5,14 @@ import { Pictures } from './state.js'
 import { makeTab as _makeTab } from './grid.js'
 import { loadImage as _loadImage } from './viewer.js'
 import { getFirst } from '#utils/helpers.js'
-import { publish } from '../pubsub.js'
+import { publish as _publish } from '../pubsub.js'
 
 const DEFAULT_MOD_COUNT = -1
 
 export const Imports = {
   makeTab: _makeTab,
   loadImage: _loadImage,
+  publish: _publish,
 }
 
 function setPictureIndices(): void {
@@ -25,7 +26,7 @@ function setPicturesGetFirst(data: Listing): Picture | null {
   const firstPic = getFirst(data.pictures)
   if (data.pictures === undefined || firstPic === undefined) {
     Pictures.mainImage.classList.add('hidden')
-    publish('Menu:show')
+    Imports.publish('Menu:show')
     document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.add('hidden')
     return null
   }
@@ -54,11 +55,11 @@ export async function loadData(data: Listing): Promise<void> {
     Pictures.current = selected
   }
   Imports.makeTab()
-  publish('Tab:Select', 'Images')
+  Imports.publish('Tab:Select', 'Images')
   if (Pictures.pictures.every((img) => img.seen) && (data.noMenu === undefined || !data.noMenu)) {
-    publish('Menu:show')
+    Imports.publish('Menu:show')
   } else {
-    publish('Menu:Hide')
+    Imports.publish('Menu:Hide')
   }
   await Imports.loadImage().catch(() => null)
 }

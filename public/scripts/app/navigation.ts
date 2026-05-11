@@ -2,7 +2,7 @@
 
 import { getShowUnreadOnly as _getShowUnreadOnly } from './pictures/unreadFilter.js'
 import { getJSON as _getJSON, postJSON as _postJSON, acceptAnyResponse } from './net.js'
-import { publish, subscribe, forward as _forward } from './pubsub.js'
+import { publish as _publish, subscribe as _subscribe, forward as _forward } from './pubsub.js'
 import { isListing, type Listing } from '#contracts/listing.js'
 import { hasValue, hasValues, stringishHasValue } from '#utils/helpers.js'
 import { show as _show } from './confirm.js'
@@ -13,6 +13,8 @@ export const Imports = {
   getJSON: _getJSON,
   postJSON: _postJSON,
   forward: _forward,
+  subscribe: _subscribe,
+  publish: _publish,
 }
 
 const INITIAL_LOAD_TOKEN = 0
@@ -51,7 +53,7 @@ function isSuppressMenu(): boolean {
 
 async function navigateTo(path: string | undefined, action: string): Promise<void> {
   if (!stringishHasValue(path)) {
-    publish('Loading:Error', `Action ${action} has no target`)
+    Imports.publish('Loading:Error', `Action ${action} has no target`)
     return
   }
   Navigation.current = { path, name: '', parent: '' }
@@ -62,7 +64,7 @@ async function loadData(noHistory = false, suppressMenu = false): Promise<void> 
   Navigation.loadToken += TOKEN_STEP
   const token = Navigation.loadToken
   try {
-    publish('Loading:show')
+    Imports.publish('Loading:show')
     const { path } = Navigation.current
     const data = await Imports.getJSON<Listing>(`/api/listing${path}`, isListing)
     if (token !== Navigation.loadToken) return
@@ -78,11 +80,11 @@ async function loadData(noHistory = false, suppressMenu = false): Promise<void> 
     if (!noHistory) {
       window.history.pushState({}, '', Internals.getBaseUrl() + Navigation.current.path)
     }
-    publish('Loading:Hide')
-    publish('Navigate:Data', Navigation.current)
+    Imports.publish('Loading:Hide')
+    Imports.publish('Navigate:Data', Navigation.current)
   } catch (err: unknown) {
     if (token !== Navigation.loadToken) return
-    publish('Loading:Error', err)
+    Imports.publish('Loading:Error', err)
   }
 }
 
@@ -90,7 +92,7 @@ export function init(): void {
   Navigation.locationAssign = window.location.assign.bind(window.location)
   Navigation.current.path = Internals.getFolderPath()
   Internals.loadData().catch(() => null)
-  subscribe('Navigate:Load', async (path) => {
+  Imports.subscribe('Navigate:Load', async (path) => {
     let suppressMenu = false
     if (typeof path === 'string') {
       Navigation.current = { path, name: '', parent: '' }
@@ -102,7 +104,7 @@ export function init(): void {
     }
     await Internals.loadData(false, suppressMenu).catch(() => null)
   })
-  subscribe('Navigate:Reload', async () => {
+  Imports.subscribe('Navigate:Reload', async () => {
     await Internals.loadData().catch(() => null)
   })
   window.addEventListener('popstate', () => {
@@ -113,47 +115,47 @@ export function init(): void {
     }
     Internals.loadData(true).catch(() => null)
   })
-  subscribe('Navigate:Data', async (data: unknown) => {
+  Imports.subscribe('Navigate:Data', async (data: unknown) => {
     if (hasValue(data) && data !== '') {
       window.console.log(data)
     }
     await Promise.resolve()
   })
   const mainMenu = document.querySelector('#mainMenu')
-  subscribe('Menu:show', async () => {
+  Imports.subscribe('Menu:show', async () => {
     mainMenu?.classList.remove('hidden')
     await Promise.resolve()
   })
-  subscribe('Menu:Hide', async () => {
+  Imports.subscribe('Menu:Hide', async () => {
     mainMenu?.classList.add('hidden')
     await Promise.resolve()
   })
   mainMenu?.addEventListener('click', (event) => {
     if (event.target === mainMenu && hasValues(Navigation.current.pictures)) {
-      publish('Menu:Hide')
+      Imports.publish('Menu:Hide')
     }
   })
   document.querySelector('.menuButton')?.addEventListener('click', () => {
-    publish('Menu:show')
+    Imports.publish('Menu:show')
   })
-  subscribe('Action:Execute:PreviousFolder', async () => {
+  Imports.subscribe('Action:Execute:PreviousFolder', async () => {
     const prev = Imports.getShowUnreadOnly() ? Navigation.current.prevUnread : Navigation.current.prev
     await Internals.navigateTo(prev?.path, 'PreviousFolder')
   })
-  subscribe('Action:Execute:NextFolder', async () => {
+  Imports.subscribe('Action:Execute:NextFolder', async () => {
     const next = Imports.getShowUnreadOnly() ? Navigation.current.nextUnread : Navigation.current.next
     await Internals.navigateTo(next?.path, 'NextFolder')
   })
-  subscribe('Action:Execute:ParentFolder', async () => {
+  Imports.subscribe('Action:Execute:ParentFolder', async () => {
     await Internals.navigateTo(Navigation.current.parent, 'ParentFolder')
   })
-  subscribe('Action:Execute:FirstUnfinished', async () => {
+  Imports.subscribe('Action:Execute:FirstUnfinished', async () => {
     const target = Navigation.current.children?.find((child) => child.seenCount < child.totalCount)
     await Internals.navigateTo(target?.path, 'FirstUnfinished')
   })
   Imports.forward('Action:Execute:ShowMenu', 'Menu:show')
   Imports.forward('Action:Execute:HideMenu', 'Menu:Hide')
-  subscribe('Action:Execute:MarkAllSeen', async () => {
+  Imports.subscribe('Action:Execute:MarkAllSeen', async () => {
     if (!(await Imports.show('Mark all images in this folder as seen?', 'Mark All Seen'))) return
     await Imports.postJSON('/api/mark/read', { path: Navigation.current.path }, acceptAnyResponse)
       .then(
@@ -161,12 +163,12 @@ export function init(): void {
           await Internals.loadData(true)
         },
         (err: unknown) => {
-          publish('Loading:Error', err)
+          Imports.publish('Loading:Error', err)
         },
       )
       .catch(() => null)
   })
-  subscribe('Action:Execute:MarkAllUnseen', async () => {
+  Imports.subscribe('Action:Execute:MarkAllUnseen', async () => {
     if (!(await Imports.show('Mark all images in this folder as unseen?', 'Mark All Unseen'))) return
     await Imports.postJSON('/api/mark/unread', { path: Navigation.current.path }, acceptAnyResponse)
       .then(
@@ -174,23 +176,23 @@ export function init(): void {
           await Internals.loadData(true)
         },
         (err: unknown) => {
-          publish('Loading:Error', err)
+          Imports.publish('Loading:Error', err)
         },
       )
       .catch(() => null)
   })
-  subscribe('Action:Execute:Slideshow', async () => {
+  Imports.subscribe('Action:Execute:Slideshow', async () => {
     Navigation.locationAssign?.call(window.location, `/slideshow${Navigation.current.path}`)
     await Promise.resolve()
   })
-  subscribe('Action:Execute:FullScreen', async () => {
+  Imports.subscribe('Action:Execute:FullScreen', async () => {
     if (hasValue(document.fullscreenElement)) {
       await document.exitFullscreen().catch((err: unknown) => {
-        publish('Loading:Error', err)
+        Imports.publish('Loading:Error', err)
       })
     } else {
       await document.body.requestFullscreen({ navigationUI: 'hide' }).catch((err: unknown) => {
-        publish('Loading:Error', err)
+        Imports.publish('Loading:Error', err)
       })
     }
   })

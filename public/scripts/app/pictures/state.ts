@@ -7,7 +7,7 @@ import { changePicture as _changePicture, resetMarkup as _viewerResetMarkup } fr
 import { loadData as _loadData } from './data.js'
 import { initActions as _initActions, initMouse as _initMouse } from './inputs.js'
 import { initUnreadSelectorSlider as _initUnreadSelectorSlider } from './unreadFilter.js'
-import { subscribe } from '../pubsub.js'
+import { subscribe as _subscribe } from '../pubsub.js'
 
 export const Imports = {
   loadData: _loadData,
@@ -17,6 +17,7 @@ export const Imports = {
   initActions: _initActions,
   initMouse: _initMouse,
   initUnreadSelectorSlider: _initUnreadSelectorSlider,
+  subscribe: _subscribe,
 }
 
 const UNINITIALIZED_MOD_COUNT = -1
@@ -68,10 +69,10 @@ function resetMarkup(): void {
 function init(): void {
   Object.assign(Pictures, defaultState())
   Pictures.resetMarkup()
-  subscribe('Navigate:Data', async (data) => {
+  Imports.subscribe('Navigate:Data', async (data) => {
     if (isListing(data)) await Imports.loadData(data)
   })
-  subscribe('Pictures:Change', async (data) => {
+  Imports.subscribe('Pictures:Change', async (data) => {
     if (isPicture(data)) await Imports.changePicture(data)
   })
   Imports.initActions()

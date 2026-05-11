@@ -3,9 +3,13 @@
 import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './state.js'
 import { hasValues } from '#utils/helpers.js'
-import { publish } from '../pubsub.js'
+import { publish as _publish } from '../pubsub.js'
 import { cloneNode } from '../utils.js'
 import { isHTMLElement } from '#contracts/markup.js'
+
+export const Imports = {
+  publish: _publish,
+}
 
 const INDEX_TO_PAGE_OFFSET = 1
 const MINIMUM_PAGE_COUNT = 2
@@ -32,8 +36,8 @@ function makePictureCard(picture: Picture): HTMLElement | undefined {
   }
   card?.querySelector('h5')?.replaceChildren(picture.name)
   card?.addEventListener('click', () => {
-    publish('Pictures:Change', picture)
-    publish('Menu:Hide')
+    Imports.publish('Pictures:Change', picture)
+    Imports.publish('Menu:Hide')
   })
   return card
 }
@@ -109,10 +113,10 @@ function getCurrentPage(): number {
 export function selectPage(index: number): void {
   const links = document.querySelectorAll('.pagination .page-item')
   if (!hasValues(links)) {
-    publish('Pictures:selectPage', 'Default Page Selected')
+    Imports.publish('Pictures:selectPage', 'Default Page Selected')
     return
   } else if (index <= MINIMUM_INDEX || index >= links.length - LAST_LINK_OFFSET) {
-    publish('Loading:Error', 'Invalid Page Index Selected')
+    Imports.publish('Loading:Error', 'Invalid Page Index Selected')
     return
   }
   links.forEach((element: Element, i: number) => {
@@ -130,7 +134,7 @@ export function selectPage(index: number): void {
       element.classList.add('hidden')
     }
   })
-  publish('Pictures:selectPage', `New Page ${index} Selected`)
+  Imports.publish('Pictures:selectPage', `New Page ${index} Selected`)
 }
 
 export function loadCurrentPageImages(): void {

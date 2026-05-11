@@ -1,11 +1,16 @@
 'use sanity'
 
-import { publish, subscribe } from './pubsub.js'
+import { publish as _publish, subscribe as _subscribe } from './pubsub.js'
 
 import { cloneNode } from './utils.js'
 import { isHTMLElement } from '#contracts/markup.js'
 import { type FolderWithCounts, isListing, type Listing } from '#contracts/listing.js'
 import { hasValue, hasValues, stringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
+
+export const Imports = {
+  subscribe: _subscribe,
+  publish: _publish,
+}
 
 const PERCENT_MULT = 100
 const FIXED_DECIMAL_PLACES = 2
@@ -47,7 +52,7 @@ function buildCard(folder: FolderWithCounts): HTMLElement | null {
   const slider = card.querySelector<HTMLDivElement>('div.slider')
   if (slider !== null) slider.style.width = `${percentSeen.toFixed(FIXED_DECIMAL_PLACES)}%`
   card.addEventListener('click', () => {
-    publish('Navigate:Load', folder.path)
+    Imports.publish('Navigate:Load', folder.path)
   })
   return card
 }
@@ -74,7 +79,7 @@ function buildFolders(data: Listing): void {
   if (hasChildren) {
     Internals.unhideTab('a[href="#tabFolders"]')
     if (!hasPictures) {
-      publish('Tab:Select', 'Folders')
+      Imports.publish('Tab:Select', 'Folders')
     }
   } else {
     Internals.hideTab('a[href="#tabFolders"]')
@@ -84,7 +89,7 @@ function buildFolders(data: Listing): void {
 
 export function init(): void {
   Folders.folderCard = document.querySelector<HTMLTemplateElement>('#FolderCard')?.content ?? null
-  subscribe('Navigate:Data', async (data) => {
+  Imports.subscribe('Navigate:Data', async (data) => {
     if (isListing(data)) Internals.buildFolders(data)
     await Promise.resolve()
   })

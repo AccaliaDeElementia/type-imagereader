@@ -7,13 +7,14 @@ import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { hasValues, indexPercentToText, indexToText, stringishHasValue } from '#utils/helpers.js'
 import { isLoading as _isLoading } from '../loading.js'
 import { postJSON as _postJSON } from '../net.js'
-import { publish } from '../pubsub.js'
+import { publish as _publish } from '../pubsub.js'
 
 export const Imports = {
   getShowUnreadOnly: _getShowUnreadOnly,
   selectPage: _selectPage,
   isLoading: _isLoading,
   postJSON: _postJSON,
+  publish: _publish,
 }
 
 export enum NavigateTo {
@@ -53,12 +54,12 @@ export function resetMarkup(): void {
   }
   Pictures.mainImage?.setAttribute('src', '')
   Pictures.mainImage?.addEventListener('load', () => {
-    publish('Loading:Hide')
+    Imports.publish('Loading:Hide')
   })
   Pictures.mainImage?.addEventListener('error', () => {
     const src = Pictures.mainImage?.getAttribute('src')
     if (stringishHasValue(src)) {
-      publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
+      Imports.publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
     }
   })
 }
@@ -68,19 +69,19 @@ export async function changePicture(pic: Picture | undefined): Promise<void> {
     return
   }
   if (pic === undefined) {
-    publish('Loading:Error', 'Change Picture called with No Picture to change to')
+    Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
   Pictures.current = pic
   await Internals.loadImage().catch(() => null)
-  publish('Menu:Hide')
+  Imports.publish('Menu:Hide')
 }
 
 export async function loadImage(): Promise<void> {
   if (Pictures.current === null) return
   if (Pictures.current.path === '') return
   if (Pictures.nextPending) {
-    publish('Loading:show')
+    Imports.publish('Loading:show')
   }
   try {
     Pictures.current.seen = true
@@ -92,7 +93,7 @@ export async function loadImage(): Promise<void> {
       (o): o is number | undefined => (typeof o === 'number' && Number.isFinite(o)) || o === undefined,
     )
     if (!isUsableModCount(newModCount)) {
-      publish('Navigate:Reload')
+      Imports.publish('Navigate:Reload')
       return
     }
     // eslint-disable-next-line require-atomic-updates -- modCount is intentionally updated with the server response
@@ -111,9 +112,9 @@ export async function loadImage(): Promise<void> {
     setTextContent('.statusBar.bottom .right', `(${displayPercent}%)`)
     Imports.selectPage(Pictures.current.page ?? DEFAULT_PAGE)
     void Internals.loadNextImage().catch(() => undefined)
-    publish('Picture:LoadNew')
+    Imports.publish('Picture:LoadNew')
   } catch (err) {
-    publish('Loading:Error', err)
+    Imports.publish('Loading:Error', err)
   }
 }
 
