@@ -2,7 +2,7 @@
 
 import { getShowUnreadOnly as _getShowUnreadOnly } from './pictures/unreadFilter.js'
 import { getJSON as _getJSON, postJSON as _postJSON, acceptAnyResponse } from './net.js'
-import { publish, subscribe } from './pubsub.js'
+import { publish, subscribe, forward as _forward } from './pubsub.js'
 import { isListing, type Listing } from '#contracts/listing.js'
 import { hasValue, hasValues, stringishHasValue } from '#utils/helpers.js'
 import { show as _show } from './confirm.js'
@@ -12,6 +12,7 @@ export const Imports = {
   show: _show,
   getJSON: _getJSON,
   postJSON: _postJSON,
+  forward: _forward,
 }
 
 const INITIAL_LOAD_TOKEN = 0
@@ -150,14 +151,8 @@ export function init(): void {
     const target = Navigation.current.children?.find((child) => child.seenCount < child.totalCount)
     await Internals.navigateTo(target?.path, 'FirstUnfinished')
   })
-  subscribe('Action:Execute:ShowMenu', async () => {
-    publish('Menu:show')
-    await Promise.resolve()
-  })
-  subscribe('Action:Execute:HideMenu', async () => {
-    publish('Menu:Hide')
-    await Promise.resolve()
-  })
+  Imports.forward('Action:Execute:ShowMenu', 'Menu:show')
+  Imports.forward('Action:Execute:HideMenu', 'Menu:Hide')
   subscribe('Action:Execute:MarkAllSeen', async () => {
     if (!(await Imports.show('Mark all images in this folder as seen?', 'Mark All Seen'))) return
     await Imports.postJSON('/api/mark/read', { path: Navigation.current.path }, acceptAnyResponse)
@@ -199,38 +194,14 @@ export function init(): void {
       })
     }
   })
-  subscribe('Action:Keypress:<Ctrl>ArrowUp', async () => {
-    publish('Action:Execute:ParentFolder')
-    await Promise.resolve()
-  })
-  subscribe('Action:Keypress:<Ctrl>ArrowDown', async () => {
-    publish('Action:Execute:FirstUnfinished')
-    await Promise.resolve()
-  })
-  subscribe('Action:Keypress:<Ctrl>ArrowLeft', async () => {
-    publish('Action:Execute:PreviousFolder')
-    await Promise.resolve()
-  })
-  subscribe('Action:Keypress:<Ctrl>ArrowRight', async () => {
-    publish('Action:Execute:NextFolder')
-    await Promise.resolve()
-  })
-  subscribe('Action:Gamepad:Down', async () => {
-    publish('Action:Execute:PreviousFolder')
-    await Promise.resolve()
-  })
-  subscribe('Action:Gamepad:Up', async () => {
-    publish('Action:Execute:NextFolder')
-    await Promise.resolve()
-  })
-  subscribe('Action:Gamepad:Y', async () => {
-    publish('Action:Execute:ParentFolder')
-    await Promise.resolve()
-  })
-  subscribe('Action:Gamepad:A', async () => {
-    publish('Action:Execute:FirstUnfinished')
-    await Promise.resolve()
-  })
+  Imports.forward('Action:Keypress:<Ctrl>ArrowUp', 'Action:Execute:ParentFolder')
+  Imports.forward('Action:Keypress:<Ctrl>ArrowDown', 'Action:Execute:FirstUnfinished')
+  Imports.forward('Action:Keypress:<Ctrl>ArrowLeft', 'Action:Execute:PreviousFolder')
+  Imports.forward('Action:Keypress:<Ctrl>ArrowRight', 'Action:Execute:NextFolder')
+  Imports.forward('Action:Gamepad:Down', 'Action:Execute:PreviousFolder')
+  Imports.forward('Action:Gamepad:Up', 'Action:Execute:NextFolder')
+  Imports.forward('Action:Gamepad:Y', 'Action:Execute:ParentFolder')
+  Imports.forward('Action:Gamepad:A', 'Action:Execute:FirstUnfinished')
 }
 
 export const Internals = {

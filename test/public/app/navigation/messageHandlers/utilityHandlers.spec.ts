@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
-import { init, Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { init, Internals, Imports, Navigation } from '#public/scripts/app/navigation.js'
 import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -177,8 +177,10 @@ describe('public/app/navigation/messageHandlers init()', () => {
       expect(errorSpy.firstCall.args[0]).toBe(err)
     })
   })
-  describe('Message Forwarding Message Handlers', () => {
+  describe('Message Forwarding Configuration', () => {
+    let forwardStub = sandbox.stub()
     beforeEach(() => {
+      forwardStub = sandbox.stub(Imports, 'forward')
       init()
     })
     const mappers: Array<[string, string]> = [
@@ -194,12 +196,8 @@ describe('public/app/navigation/messageHandlers init()', () => {
       ['Action:Gamepad:A', 'Action:Execute:FirstUnfinished'],
     ]
     mappers.forEach(([from, to]) => {
-      it(`should map event ${from} to ${to}`, async () => {
-        const spy = sandbox.stub().resolves()
-        PubSub.subscribers[to.toUpperCase()] = [spy]
-        const handler = getSubscriber(from.toUpperCase())
-        await handler(undefined)
-        expect(spy.callCount).toBe(1)
+      it(`should register forward from ${from} to ${to}`, () => {
+        expect(forwardStub.calledWith(from, to)).toBe(true)
       })
     })
   })

@@ -42,6 +42,13 @@ export function publish(topic: string, data?: unknown): void {
   void Internals.publishAsync(topic, data)
 }
 
+export function forward(fromTopic: string, toTopic: string): void {
+  subscribe(fromTopic, async () => {
+    publish(toTopic)
+    await Promise.resolve()
+  })
+}
+
 async function publishAsync(topic: string, data?: unknown): Promise<void> {
   const searchTopic = topic.toUpperCase()
   const matchingTopics = Object.keys(PubSub.subscribers)
