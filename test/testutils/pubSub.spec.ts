@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, getSubscriber, resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -84,5 +84,46 @@ describe('testutils/PubSub getSubscriber()', () => {
   it('should throw when the topic is registered with an empty subscriber list', () => {
     PubSub.subscribers['TEST:EMPTY'] = []
     expect(() => getSubscriber('TEST:EMPTY')).toThrow(/TEST:EMPTY/v)
+  })
+})
+
+describe('testutils/PubSub capturedSubscriber()', () => {
+  let subscribeStub = sandbox.stub()
+  beforeEach(() => {
+    subscribeStub = sandbox.stub()
+  })
+  afterEach(() => {
+    sandbox.restore()
+  })
+  it('should return the handler function from the matching subscribe call', () => {
+    const handler = sandbox.stub().resolves()
+    subscribeStub('Test:Topic', handler)
+    expect(capturedSubscriber(subscribeStub, 'Test:Topic')).toBe(handler)
+  })
+  it('should match the topic case-insensitively', () => {
+    const handler = sandbox.stub().resolves()
+    subscribeStub('Test:Topic', handler)
+    expect(capturedSubscriber(subscribeStub, 'test:topic')).toBe(handler)
+  })
+  it('should return the most-recently-registered handler when multiple calls match', () => {
+    const earlier = sandbox.stub().resolves()
+    const latest = sandbox.stub().resolves()
+    subscribeStub('Test:Topic', earlier)
+    subscribeStub('Test:Topic', latest)
+    expect(capturedSubscriber(subscribeStub, 'Test:Topic')).toBe(latest)
+  })
+  it('should ignore calls for non-matching topics', () => {
+    const matching = sandbox.stub().resolves()
+    const other = sandbox.stub().resolves()
+    subscribeStub('Other:Topic', other)
+    subscribeStub('Test:Topic', matching)
+    expect(capturedSubscriber(subscribeStub, 'Test:Topic')).toBe(matching)
+  })
+  it('should throw when the stub has no matching subscribe call', () => {
+    subscribeStub('Other:Topic', sandbox.stub().resolves())
+    expect(() => capturedSubscriber(subscribeStub, 'Test:Missing')).toThrow(/Test:Missing/v)
+  })
+  it('should throw when the stub has no calls at all', () => {
+    expect(() => capturedSubscriber(subscribeStub, 'Test:Missing')).toThrow(/Test:Missing/v)
   })
 })

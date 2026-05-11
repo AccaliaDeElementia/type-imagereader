@@ -5,9 +5,9 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import assert from 'node:assert'
-import { init, Internals, WakeLock } from '#public/scripts/app/wakelock.js'
+import { init, Imports, Internals, WakeLock } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -15,11 +15,13 @@ describe('public/app/WakeLock init()', () => {
   let dom = new JSDOM('<html></html>', {})
   let takeLockSpy = sandbox.stub()
   let releaseLockSpy = sandbox.stub()
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
     mountDom(dom)
     takeLockSpy = sandbox.stub(Internals, 'takeLock').resolves()
     releaseLockSpy = sandbox.stub(Internals, 'releaseLock').resolves()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     resetPubSub()
     WakeLock.initialized = false
   })
@@ -29,20 +31,18 @@ describe('public/app/WakeLock init()', () => {
   })
   it('should subscribe to Picture:LoadNew', () => {
     init()
-    expect(Object.keys(PubSub.subscribers)).toContain('PICTURE:LOADNEW')
+    expect(subscribeStub.calledWith('Picture:LoadNew')).toBe(true)
   })
   it('should execute takeLock on receiving Picture:LoadNew notification', async () => {
     init()
-    const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
-    assert(fn !== undefined)
+    const fn = capturedSubscriber(subscribeStub, 'Picture:LoadNew')
     await fn(undefined)
     expect(takeLockSpy.callCount).toBe(1)
   })
   it('should tolerate takeLock rejecting on receiving Picture:LoadNew notification', async () => {
     init()
     takeLockSpy.rejects('FOO')
-    const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
-    assert(fn !== undefined)
+    const fn = capturedSubscriber(subscribeStub, 'Picture:LoadNew')
     await fn(undefined)
     expect(takeLockSpy.callCount).toBe(1)
   })
@@ -75,13 +75,12 @@ describe('public/app/WakeLock init()', () => {
   it('should only register one Picture:LoadNew subscriber when init is called twice', () => {
     init()
     init()
-    expect(PubSub.subscribers['PICTURE:LOADNEW']).toHaveLength(1)
+    expect(subscribeStub.callCount).toBe(1)
   })
   it('should only call takeLock once per Picture:LoadNew when init is called twice', async () => {
     init()
     init()
-    const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
-    assert(fn !== undefined)
+    const fn = capturedSubscriber(subscribeStub, 'Picture:LoadNew')
     await fn(undefined)
     expect(takeLockSpy.callCount).toBe(1)
   })
