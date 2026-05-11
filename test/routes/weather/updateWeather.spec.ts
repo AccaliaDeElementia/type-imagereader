@@ -46,221 +46,180 @@ describe('routes/weather updateWeather', () => {
   afterEach(() => {
     sandbox.restore()
   })
-  it('should reject when getEarliestSunset throws', async () => {
-    const err = new Error('FOO!')
-    getEarliestSunsetStub.throws(err)
-    const result = await eventuallyRejects(updateWeather())
-    expect(result).toBe(err)
-  })
-  it('should reject when getLatestSunrise throws', async () => {
-    const err = new Error('FOO!')
-    getLatestSunriseStub.throws(err)
-    const result = await eventuallyRejects(updateWeather())
-    expect(result).toBe(err)
-  })
-  it('should return Weather', async () => {
-    const result = await updateWeather()
-    expect(result).toBe(Weather)
-  })
-  const errorTests: Array<[string, (data: WeatherResults) => void]> = [
-    [
-      'return Weather',
-      (result) => {
-        expect(result).toBe(Weather)
-      },
-    ],
-    [
-      'set default temp',
-      (weather) => {
-        expect(weather.temp).toBe(undefined)
-      },
-    ],
-    [
-      'set default pressure',
-      (weather) => {
-        expect(weather.pressure).toBe(undefined)
-      },
-    ],
-    [
-      'set default humidity',
-      (weather) => {
-        expect(weather.humidity).toBe(undefined)
-      },
-    ],
-    [
-      'set default description',
-      (weather) => {
-        expect(weather.description).toBe(undefined)
-      },
-    ],
-    [
-      'set default icon',
-      (weather) => {
-        expect(weather.icon).toBe(undefined)
-      },
-    ],
-    [
-      'set default sunrise',
-      (weather) => {
-        expect(weather.sunrise).toBe(123000)
-      },
-    ],
-    [
-      'set default sunset',
-      (weather) => {
-        expect(weather.sunset).toBe(456000)
-      },
-    ],
-  ]
-  errorTests.forEach(([title, validationFn]) => {
-    it(`should ${title} when fetch rejects`, async () => {
-      getWeatherStub.rejects(new Error('foo!'))
-      const result = await updateWeather()
-      validationFn(result)
+
+  describe('when sun-time helpers throw', () => {
+    it('should reject when getEarliestSunset throws', async () => {
+      const err = new Error('FOO!')
+      getEarliestSunsetStub.throws(err)
+      const result = await eventuallyRejects(updateWeather())
+      expect(result).toBe(err)
     })
-    it(`should ${title} when fetch throws`, async () => {
-      getWeatherStub.throws(new Error('foo!'))
-      const result = await updateWeather()
-      validationFn(result)
+    it('should reject when getLatestSunrise throws', async () => {
+      const err = new Error('FOO!')
+      getLatestSunriseStub.throws(err)
+      const result = await eventuallyRejects(updateWeather())
+      expect(result).toBe(err)
     })
   })
-  const successTests: Array<[string, () => void, (data: WeatherResults) => void]> = [
-    [
-      'set temp from kelvin',
-      () => (weatherData.main = { temp: 291.15, pressure: 0, humidity: 0 }),
-      (data) => {
-        expect(data.temp).toBe(18)
-      },
-    ],
-    [
-      'set pressure',
-      () => (weatherData.main = { temp: 0, pressure: 1024.4, humidity: 0 }),
-      (data) => {
-        expect(data.pressure).toBe(1024.4)
-      },
-    ],
-    [
-      'set humidity',
-      () => (weatherData.main = { temp: 0, pressure: 0, humidity: 21.7 }),
-      (data) => {
-        expect(data.humidity).toBe(21.7)
-      },
-    ],
-    [
-      'retain temp missing main',
-      () => (weatherData.main = undefined),
-      (data) => {
-        expect(data.temp).toBe(-4.1)
-      },
-    ],
-    [
-      'retain pressure missing main',
-      () => (weatherData.main = undefined),
-      (d) => {
-        expect(d.pressure).toBe(1000)
-      },
-    ],
-    [
-      'retain humidity missing main',
-      () => (weatherData.main = undefined),
-      (d) => {
-        expect(d.humidity).toBe(72.1)
-      },
-    ],
-    [
-      'set description from first forecast',
-      () =>
-        (weatherData.weather = [
+
+  describe('when getWeather resolves', () => {
+    it('should return Weather', async () => {
+      const result = await updateWeather()
+      expect(result).toBe(Weather)
+    })
+
+    describe('with main present', () => {
+      it('should convert temp from kelvin to celsius', async () => {
+        weatherData.main = { temp: 291.15, pressure: 0, humidity: 0 }
+        const result = await updateWeather()
+        expect(result.temp).toBe(18)
+      })
+      it('should pass pressure through unchanged', async () => {
+        weatherData.main = { temp: 0, pressure: 1024.4, humidity: 0 }
+        const result = await updateWeather()
+        expect(result.pressure).toBe(1024.4)
+      })
+      it('should pass humidity through unchanged', async () => {
+        weatherData.main = { temp: 0, pressure: 0, humidity: 21.7 }
+        const result = await updateWeather()
+        expect(result.humidity).toBe(21.7)
+      })
+    })
+
+    describe('with main having zero values', () => {
+      let result: WeatherResults = Weather
+      beforeEach(async () => {
+        weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
+        result = await updateWeather()
+      })
+      it('should set pressure to zero', () => {
+        expect(result.pressure).toBe(0)
+      })
+      it('should set humidity to zero', () => {
+        expect(result.humidity).toBe(0)
+      })
+      it('should convert zero kelvin to -273.15 celsius for temp', () => {
+        expect(result.temp).toBe(-273.15)
+      })
+    })
+
+    describe('with main = undefined', () => {
+      let result: WeatherResults = Weather
+      beforeEach(async () => {
+        weatherData.main = undefined
+        result = await updateWeather()
+      })
+      it('should retain default temp', () => {
+        expect(result.temp).toBe(-4.1)
+      })
+      it('should retain default pressure', () => {
+        expect(result.pressure).toBe(1000)
+      })
+      it('should retain default humidity', () => {
+        expect(result.humidity).toBe(72.1)
+      })
+    })
+
+    describe('with weather forecast list', () => {
+      it('should set description from first forecast', async () => {
+        weatherData.weather = [
           { main: 'Sunny in Philly', icon: 'Icon' },
           { main: 'Bad Description', icon: 'Bad Icon' },
-        ]),
-      (data) => {
-        expect(data.description).toBe('Sunny in Philly')
-      },
-    ],
-    [
-      'set empty description from missing forecast',
-      () => (weatherData.weather = []),
-      (data) => {
-        expect(data.description).toBe(undefined)
-      },
-    ],
-    [
-      'set icon from first forecast',
-      () =>
-        (weatherData.weather = [
+        ]
+        const result = await updateWeather()
+        expect(result.description).toBe('Sunny in Philly')
+      })
+      it('should set icon from first forecast', async () => {
+        weatherData.weather = [
           { main: 'Bad Description', icon: 'Sunny in Philly' },
           { main: 'Bad Description', icon: 'Bad Icon' },
-        ]),
-      (data) => {
-        expect(data.icon).toBe('Sunny in Philly')
-      },
-    ],
-    [
-      'set empty icon from missing forecast',
-      () => (weatherData.weather = []),
-      (data) => {
-        expect(data.icon).toBe(undefined)
-      },
-    ],
-    [
-      'convert sunrise to milliseconds',
-      () => (weatherData.sys.sunrise = 120.7),
-      (d) => {
-        expect(d.sunrise).toBe(120700)
-      },
-    ],
-    [
-      'set sunrise',
-      () => (weatherData.sys.sunrise = 12.7),
-      (d) => {
-        expect(d.sunrise).toBe(12700)
-      },
-    ],
-    [
-      'override sunrise too late',
-      () => (weatherData.sys.sunrise = 128.7),
-      (d) => {
-        expect(d.sunrise).toBe(123000)
-      },
-    ],
-    [
-      'override sunset too early',
-      () => (weatherData.sys.sunset = 420.7),
-      (d) => {
-        expect(d.sunset).toBe(456000)
-      },
-    ],
-    [
-      'set sunset',
-      () => (weatherData.sys.sunset = 501.2),
-      (d) => {
-        expect(d.sunset).toBe(501200)
-      },
-    ],
-  ]
-  successTests.forEach(([title, setupFn, validationFn]) => {
-    it(`should ${title} when fetch resolves`, async () => {
-      setupFn()
-      const result = await updateWeather()
-      validationFn(result)
+        ]
+        const result = await updateWeather()
+        expect(result.icon).toBe('Sunny in Philly')
+      })
+    })
+
+    describe('with empty weather forecast list', () => {
+      let result: WeatherResults = Weather
+      beforeEach(async () => {
+        weatherData.weather = []
+        result = await updateWeather()
+      })
+      it('should set description to undefined', () => {
+        expect(result.description).toBe(undefined)
+      })
+      it('should set icon to undefined', () => {
+        expect(result.icon).toBe(undefined)
+      })
+    })
+
+    describe('sun times', () => {
+      it('should convert sunrise to milliseconds', async () => {
+        weatherData.sys.sunrise = 120.7
+        const result = await updateWeather()
+        expect(result.sunrise).toBe(120700)
+      })
+      it('should set sunrise', async () => {
+        weatherData.sys.sunrise = 12.7
+        const result = await updateWeather()
+        expect(result.sunrise).toBe(12700)
+      })
+      it('should override sunrise too late with baseline (123000)', async () => {
+        weatherData.sys.sunrise = 128.7
+        const result = await updateWeather()
+        expect(result.sunrise).toBe(123000)
+      })
+      it('should override sunset too early with baseline (456000)', async () => {
+        weatherData.sys.sunset = 420.7
+        const result = await updateWeather()
+        expect(result.sunset).toBe(456000)
+      })
+      it('should set sunset', async () => {
+        weatherData.sys.sunset = 501.2
+        const result = await updateWeather()
+        expect(result.sunset).toBe(501200)
+      })
     })
   })
-  it('should set pressure to zero when API returns zero pressure', async () => {
-    weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
-    const result = await updateWeather()
-    expect(result.pressure).toBe(0)
+
+  const failureModes: Array<[string, () => void]> = [
+    ['rejects', () => getWeatherStub.rejects(new Error('foo!'))],
+    ['throws', () => getWeatherStub.throws(new Error('foo!'))],
+  ]
+  failureModes.forEach(([mode, induceFailure]) => {
+    describe(`when getWeather ${mode}`, () => {
+      let result: WeatherResults = Weather
+      beforeEach(async () => {
+        induceFailure()
+        result = await updateWeather()
+      })
+      it('should return Weather', () => {
+        expect(result).toBe(Weather)
+      })
+      it('should set temp to undefined', () => {
+        expect(result.temp).toBe(undefined)
+      })
+      it('should set pressure to undefined', () => {
+        expect(result.pressure).toBe(undefined)
+      })
+      it('should set humidity to undefined', () => {
+        expect(result.humidity).toBe(undefined)
+      })
+      it('should set description to undefined', () => {
+        expect(result.description).toBe(undefined)
+      })
+      it('should set icon to undefined', () => {
+        expect(result.icon).toBe(undefined)
+      })
+      it('should set sunrise to baseline (123000)', () => {
+        expect(result.sunrise).toBe(123000)
+      })
+      it('should set sunset to baseline (456000)', () => {
+        expect(result.sunset).toBe(456000)
+      })
+    })
   })
-  it('should set humidity to zero when API returns zero humidity', async () => {
-    weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
-    const result = await updateWeather()
-    expect(result.humidity).toBe(0)
-  })
-  it('should set temp from zero kelvin when API returns zero temp', async () => {
-    weatherData.main = { temp: 0, pressure: 0, humidity: 0 }
-    const result = await updateWeather()
-    expect(result.temp).toBe(-273.15)
-  })
+
   describe('logging when getWeather rejects', () => {
     let loggerStub = sandbox.stub()
     beforeEach(() => {
