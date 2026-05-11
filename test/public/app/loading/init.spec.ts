@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -33,21 +32,21 @@ describe('public/app/loading init()', () => {
     unmountDom()
   })
   it('should subscribe to Loading:Error', () => {
-    expect(PubSub.subscribers['LOADING:ERROR']).to.have.length(1)
+    expect(PubSub.subscribers['LOADING:ERROR']).toHaveLength(1)
   })
   it('should subscribe to Loading:Success', () => {
-    expect(PubSub.subscribers['LOADING:SUCCESS']).to.have.length(1)
+    expect(PubSub.subscribers['LOADING:SUCCESS']).toHaveLength(1)
   })
   it('should subscribe to Loading:Hide', () => {
-    expect(PubSub.subscribers['LOADING:HIDE']).to.have.length(1)
+    expect(PubSub.subscribers['LOADING:HIDE']).toHaveLength(1)
   })
   it('should subscribe to Loading:show', () => {
-    expect(PubSub.subscribers['LOADING:SHOW']).to.have.length(1)
+    expect(PubSub.subscribers['LOADING:SHOW']).toHaveLength(1)
   })
   it('should select overlay for disabling input', () => {
-    expect(Loading.overlay).to.not.equal(null)
+    expect(Loading.overlay).not.toBe(null)
   })
   it('should select navbar for feedback', () => {
-    expect(Loading.navbar).to.not.equal(null)
+    expect(Loading.navbar).not.toBe(null)
   })
 })

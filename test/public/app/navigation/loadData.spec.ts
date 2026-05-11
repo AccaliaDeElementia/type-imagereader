@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
@@ -83,28 +82,28 @@ describe('public/app/navigation loadData()', () => {
   })
   it('should publish Loading:show at start of processing', async () => {
     await Internals.loadData()
-    expect(loadingShowSpy.called).to.equal(true)
+    expect(loadingShowSpy.called).toBe(true)
   })
   it('should call getJSON', async () => {
     await Internals.loadData()
-    expect(getJSONSpy.called).to.equal(true)
+    expect(getJSONSpy.called).toBe(true)
   })
   it('should call getJSON with 2 arguments', async () => {
     await Internals.loadData()
-    expect(getJSONSpy.firstCall.args).to.have.lengthOf(2)
+    expect(getJSONSpy.firstCall.args).toHaveLength(2)
   })
   it('should call getJSON after Loading:show has been published', async () => {
     await Internals.loadData()
-    expect(getJSONSpy.calledAfter(loadingShowSpy)).to.equal(true)
+    expect(getJSONSpy.calledAfter(loadingShowSpy)).toBe(true)
   })
   it('should request data from expected listing path', async () => {
     Navigation.current.path = '/foo/bar/baz/99382111'
     await Internals.loadData()
-    expect(getJSONSpy.firstCall.args[0]).to.equal('/api/listing/foo/bar/baz/99382111')
+    expect(getJSONSpy.firstCall.args[0]).toBe('/api/listing/foo/bar/baz/99382111')
   })
   it('should use isListing contract assertion method to validate getJSON results', async () => {
     await Internals.loadData()
-    expect(getJSONSpy.firstCall.args[1]).to.equal(isListing)
+    expect(getJSONSpy.firstCall.args[1]).toBe(isListing)
   })
   it('should update Navigation.current with results from getJSON call', async () => {
     const data = {
@@ -114,37 +113,37 @@ describe('public/app/navigation loadData()', () => {
     }
     getJSONSpy.resolves(data)
     await Internals.loadData()
-    expect(Navigation.current).to.equal(data)
+    expect(Navigation.current).toBe(data)
   })
   it('should set noMenu as false when menu is not suppressed', async () => {
     suppressMenuSpy.returns(false)
     await Internals.loadData()
-    expect(Navigation.current.noMenu).to.equal(false)
+    expect(Navigation.current.noMenu).toBe(false)
   })
   it('should set noMenu as true when menu is suppressed', async () => {
     suppressMenuSpy.returns(true)
     await Internals.loadData()
-    expect(Navigation.current.noMenu).to.equal(true)
+    expect(Navigation.current.noMenu).toBe(true)
   })
   it('should set noMenu as true when suppressMenu argument is true', async () => {
     suppressMenuSpy.returns(false)
     await Internals.loadData(false, true)
-    expect(Navigation.current.noMenu).to.equal(true)
+    expect(Navigation.current.noMenu).toBe(true)
   })
   it('should set noMenu as true when suppressMenu argument is true and isSuppressMenu is true', async () => {
     suppressMenuSpy.returns(true)
     await Internals.loadData(false, true)
-    expect(Navigation.current.noMenu).to.equal(true)
+    expect(Navigation.current.noMenu).toBe(true)
   })
   it('should set noMenu as false when suppressMenu argument is false and isSuppressMenu is false', async () => {
     suppressMenuSpy.returns(false)
     await Internals.loadData(false, false)
-    expect(Navigation.current.noMenu).to.equal(false)
+    expect(Navigation.current.noMenu).toBe(false)
   })
   it('should set noMenu as true when suppressMenu argument is false and isSuppressMenu is true', async () => {
     suppressMenuSpy.returns(true)
     await Internals.loadData(false, false)
-    expect(Navigation.current.noMenu).to.equal(true)
+    expect(Navigation.current.noMenu).toBe(true)
   })
   it('should not inherit noMenu from prior Navigation.current state when suppressMenu argument is omitted', async () => {
     suppressMenuSpy.returns(false)
@@ -155,27 +154,27 @@ describe('public/app/navigation loadData()', () => {
       noMenu: true,
     }
     await Internals.loadData()
-    expect(Navigation.current.noMenu).to.equal(false)
+    expect(Navigation.current.noMenu).toBe(false)
   })
   it('should set title element content as retrieved name', async () => {
     getJSONSpy.resolves({ name: 'Nude in Bar', path: '/N/Nude in Bar' })
     await Internals.loadData()
-    expect(titleElement?.innerHTML).to.equal('Nude in Bar')
+    expect(titleElement?.innerHTML).toBe('Nude in Bar')
   })
   it('should set title element content as retrieved path when name is empty', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
     await Internals.loadData()
-    expect(titleElement?.innerHTML).to.equal('/N/Nude in Bar')
+    expect(titleElement?.innerHTML).toBe('/N/Nude in Bar')
   })
   it('should set brand element content as retrieved name', async () => {
     getJSONSpy.resolves({ name: 'Nude in Bar', path: '/N/Nude in Bar' })
     await Internals.loadData()
-    expect(brandElement?.innerHTML).to.equal('Nude in Bar')
+    expect(brandElement?.innerHTML).toBe('Nude in Bar')
   })
   it('should set brand element content as retrieved path when name is empty', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
     await Internals.loadData()
-    expect(brandElement?.innerHTML).to.equal('/N/Nude in Bar')
+    expect(brandElement?.innerHTML).toBe('/N/Nude in Bar')
   })
   it('should tolerate missing title element', async () => {
     titleElement?.parentElement?.removeChild(titleElement)
@@ -187,39 +186,39 @@ describe('public/app/navigation loadData()', () => {
   })
   it('should not push state when loading data with no history flag set true', async () => {
     await Internals.loadData(true)
-    expect(historySpy.called).to.equal(false)
+    expect(historySpy.called).toBe(false)
   })
   it('should not push state when loading data with no history flag set false', async () => {
     await Internals.loadData(false)
-    expect(historySpy.called).to.equal(true)
+    expect(historySpy.called).toBe(true)
   })
   it('should not push state when loading data with no history flag unset', async () => {
     await Internals.loadData()
-    expect(historySpy.called).to.equal(true)
+    expect(historySpy.called).toBe(true)
   })
   it('should push history with 3 arguments', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
     await Internals.loadData()
-    expect(historySpy.firstCall.args).to.have.lengthOf(3)
+    expect(historySpy.firstCall.args).toHaveLength(3)
   })
   it('should push history with empty state object', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
     await Internals.loadData()
-    expect(historySpy.firstCall.args[0]).to.deep.equal({})
+    expect(historySpy.firstCall.args[0]).toEqual({})
   })
   it('should push history with empty title', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
     await Internals.loadData()
-    expect(historySpy.firstCall.args[1]).to.equal('')
+    expect(historySpy.firstCall.args[1]).toBe('')
   })
   it('should push history with URL derived from resolved path', async () => {
     getJSONSpy.resolves({ name: '', path: '/N/Nude in Bar' })
     await Internals.loadData()
-    expect(historySpy.firstCall.args[2]).to.equal('http://127.0.0.1:2999//N/Nude in Bar')
+    expect(historySpy.firstCall.args[2]).toBe('http://127.0.0.1:2999//N/Nude in Bar')
   })
   it('should push history after retrieving data', async () => {
     await Internals.loadData()
-    expect(historySpy.calledAfter(getJSONSpy)).to.equal(true)
+    expect(historySpy.calledAfter(getJSONSpy)).toBe(true)
   })
   it('should publish Loading:Hide after pushing history', async () => {
     await Internals.loadData()
@@ -231,31 +230,31 @@ describe('public/app/navigation loadData()', () => {
   })
   it('should publish Navigate:Data after hiding loading screen', async () => {
     await Internals.loadData()
-    expect(navigateDataSpy.calledAfter(loadingHideSpy)).to.equal(true)
+    expect(navigateDataSpy.calledAfter(loadingHideSpy)).toBe(true)
   })
   it('should publish retrieved data as Navigate:Data payload', async () => {
     await Internals.loadData()
-    expect(navigateDataSpy.firstCall.args[0]).to.equal(Navigation.current)
+    expect(navigateDataSpy.firstCall.args[0]).toBe(Navigation.current)
   })
   it('should not publish Loading:Error when no error occurs', async () => {
     await Internals.loadData()
-    expect(loadingErrorSpy.called).to.equal(false)
+    expect(loadingErrorSpy.called).toBe(false)
   })
   it('should publish Loading:Error when GetJson rejects', async () => {
     getJSONSpy.rejects('FOO')
     await Internals.loadData()
-    expect(loadingErrorSpy.called).to.equal(true)
+    expect(loadingErrorSpy.called).toBe(true)
   })
   it('should publish Loading:Error when push history throws', async () => {
     historySpy.throws('FOO')
     await Internals.loadData()
-    expect(loadingErrorSpy.called).to.equal(true)
+    expect(loadingErrorSpy.called).toBe(true)
   })
   it('should publish recieved error when GetJson rejects', async () => {
     const err = new Error('FOO')
     getJSONSpy.rejects(err)
     await Internals.loadData()
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal(err)
+    expect(loadingErrorSpy.firstCall.args[0]).toBe(err)
   })
 
   const runStaleResponseScenario = async (): Promise<{
@@ -276,17 +275,17 @@ describe('public/app/navigation loadData()', () => {
 
   it('should not overwrite Navigation.current with a stale response', async () => {
     const { secondData } = await runStaleResponseScenario()
-    expect(Navigation.current).to.equal(secondData)
+    expect(Navigation.current).toBe(secondData)
   })
 
   it('should push history exactly once when a stale response arrives after a newer one', async () => {
     await runStaleResponseScenario()
-    expect(historySpy.callCount).to.equal(1)
+    expect(historySpy.callCount).toBe(1)
   })
 
   it('should publish Navigate:Data exactly once when a stale response arrives after a newer one', async () => {
     await runStaleResponseScenario()
-    expect(navigateDataSpy.callCount).to.equal(1)
+    expect(navigateDataSpy.callCount).toBe(1)
   })
 
   it('should not publish Loading:Error for a stale rejection', async () => {
@@ -299,6 +298,6 @@ describe('public/app/navigation loadData()', () => {
     await b
     rejectFirst(new Error('stale'))
     await a
-    expect(loadingErrorSpy.called).to.equal(false)
+    expect(loadingErrorSpy.called).toBe(false)
   })
 })

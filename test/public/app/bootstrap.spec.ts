@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { Imports, bootstrap } from '#public/scripts/app/bootstrap.js'
@@ -35,33 +34,33 @@ describe('public/app/bootstrap', () => {
     sandbox.restore()
   })
   it('should call Loading.init()', () => {
-    expect(loadingInitSpy.called).to.equal(true)
+    expect(loadingInitSpy.called).toBe(true)
   })
   it('should call Confirm.init()', () => {
-    expect(confirmInitSpy.called).to.equal(true)
+    expect(confirmInitSpy.called).toBe(true)
   })
   it('should call Actions.init()', () => {
-    expect(actionsInitSpy.called).to.equal(true)
+    expect(actionsInitSpy.called).toBe(true)
   })
   it('should call Tabs.init()', () => {
-    expect(tabsInitSpy.called).to.equal(true)
+    expect(tabsInitSpy.called).toBe(true)
   })
   it('should call Folders.init()', () => {
-    expect(foldersInitSpy.called).to.equal(true)
+    expect(foldersInitSpy.called).toBe(true)
   })
   it('should call Pictures.init()', () => {
-    expect(picturesInitSpy.called).to.equal(true)
+    expect(picturesInitSpy.called).toBe(true)
   })
   it('should call Bookmarks.init()', () => {
-    expect(bookmarksInitSpy.called).to.equal(true)
+    expect(bookmarksInitSpy.called).toBe(true)
   })
   it('should call Navigation.init()', () => {
-    expect(navigationInitSpy.called).to.equal(true)
+    expect(navigationInitSpy.called).toBe(true)
   })
   it('should call PubSub.startDeferred()', () => {
-    expect(pubsubDeferredSpy.called).to.equal(true)
+    expect(pubsubDeferredSpy.called).toBe(true)
   })
   it('should call WakeLock.init()', () => {
-    expect(wakeLockInitSpy.called).to.equal(true)
+    expect(wakeLockInitSpy.called).toBe(true)
   })
 })

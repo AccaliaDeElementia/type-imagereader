@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -60,7 +59,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       },
       '',
     )
-    expect(getFolderSpy.called).to.equal(false)
+    expect(getFolderSpy.called).toBe(false)
   })
   it('should not retrieve folder when bookmarks are empty', () => {
     Internals.buildBookmarkNodes(
@@ -72,27 +71,27 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       },
       '',
     )
-    expect(getFolderSpy.called).to.equal(false)
+    expect(getFolderSpy.called).toBe(false)
   })
   it('should call getOrCreateFolderElement once', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
-    expect(getFolderSpy.callCount).to.equal(1)
+    expect(getFolderSpy.callCount).toBe(1)
   })
   it('should call getOrCreateFolderElement with 2 arguments', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
-    expect(getFolderSpy.firstCall.args).to.have.lengthOf(2)
+    expect(getFolderSpy.firstCall.args).toHaveLength(2)
   })
   it('should pass parent path as first argument to getOrCreateFolderElement', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
-    expect(getFolderSpy.firstCall.args[0]).to.equal('/FOO/BAR!')
+    expect(getFolderSpy.firstCall.args[0]).toBe('/FOO/BAR!')
   })
   it('should pass bookmark folder as second argument to getOrCreateFolderElement', () => {
     const folder = { name: 'Quux', path: '/path/to/Quux', bookmarks: [] }
     Internals.buildBookmarkNodes({ name: '', path: '', parent: '', bookmarks: [folder] }, '/FOO/BAR!')
-    expect(getFolderSpy.firstCall.args[1]).to.equal(folder)
+    expect(getFolderSpy.firstCall.args[1]).toBe(folder)
   })
   it('should not build bookmarks when folder retrieve fails', () => {
     getFolderSpy.returns(null)
@@ -111,7 +110,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       },
       '',
     )
-    expect(buildBookmarkSpy.callCount).to.equal(0)
+    expect(buildBookmarkSpy.callCount).toBe(0)
   })
   it('should not build bookmarks when folder is empty', () => {
     Internals.buildBookmarkNodes(
@@ -129,7 +128,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       },
       '',
     )
-    expect(buildBookmarkSpy.callCount).to.equal(0)
+    expect(buildBookmarkSpy.callCount).toBe(0)
   })
   it('should call buildBookmark once per bookmark', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
@@ -137,7 +136,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
       '',
     )
-    expect(buildBookmarkSpy.callCount).to.equal(1)
+    expect(buildBookmarkSpy.callCount).toBe(1)
   })
   it('should call buildBookmark with 1 argument', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
@@ -145,7 +144,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
       '',
     )
-    expect(buildBookmarkSpy.firstCall.args).to.have.lengthOf(1)
+    expect(buildBookmarkSpy.firstCall.args).toHaveLength(1)
   })
   it('should pass the bookmark to buildBookmark', () => {
     const mark = { name: 'FOO', path: 'BAR', folder: 'BAZ' }
@@ -153,7 +152,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       { name: '', path: '', parent: '', bookmarks: [{ name: 'Quux', path: '/path/to/Quux', bookmarks: [mark] }] },
       '',
     )
-    expect(buildBookmarkSpy.firstCall.args[0]).to.equal(mark)
+    expect(buildBookmarkSpy.firstCall.args[0]).toBe(mark)
   })
   it('should increase folder child count by 1 when appending bookmark card', () => {
     const folder = dom.window.document.createElement('div')
@@ -171,7 +170,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       },
       '',
     )
-    expect(folder.children).to.have.lengthOf(11)
+    expect(folder.children).toHaveLength(11)
   })
   it('should append the bookmark card as the last child of the folder node', () => {
     const folder = dom.window.document.createElement('div')
@@ -190,7 +189,7 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       },
       '',
     )
-    expect(folder.children[10]).to.equal(card)
+    expect(folder.children[10]).toBe(card)
   })
   it('should not append node to folder node when bookmark card creation fails', () => {
     const folder = dom.window.document.createElement('div')
@@ -214,6 +213,6 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
       },
       '',
     )
-    expect(folder.children).to.have.lengthOf(10)
+    expect(folder.children).toHaveLength(10)
   })
 })

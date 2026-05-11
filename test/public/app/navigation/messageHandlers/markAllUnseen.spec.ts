@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
@@ -63,13 +62,13 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should post to mark unread API endpoint', async () => {
       await handler()
-      expect(postJSONSpy.firstCall.args[0]).to.equal('/api/mark/unread')
+      expect(postJSONSpy.firstCall.args[0]).toBe('/api/mark/unread')
     })
     it('should post expected payload to mark unread API endpoint', async () => {
       const path = `/foo/bar/${Math.random()}`
       Navigation.current.path = path
       await handler()
-      expect(postJSONSpy.firstCall.args[1]).to.deep.equal({ path })
+      expect(postJSONSpy.firstCall.args[1]).toEqual({ path })
     })
     const payloadTests: Array<[string, unknown]> = [
       ['null', null],
@@ -89,50 +88,50 @@ describe('public/app/navigation/messageHandlers init()', () => {
       it(`should provide a function as validator for ${name} result from postJSON`, async () => {
         await handler()
         const fn = cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
-        expect(fn).to.be.a('function')
+        expect(fn).toBeTypeOf('function')
       })
       it(`should accept ${name} as result from postJSON`, async () => {
         await handler()
         const fn = cast<(o: unknown) => boolean>(postJSONSpy.firstCall.args[2])
-        expect(fn(data)).to.equal(true)
+        expect(fn(data)).toBe(true)
       })
     })
     it('should call loadData once after postJSON resolves', async () => {
       await handler()
-      expect(loadDataStub.callCount).to.equal(1)
+      expect(loadDataStub.callCount).toBe(1)
     })
     it('should call loadData after (not before) postJSON resolves', async () => {
       await handler()
-      expect(loadDataStub.calledAfter(postJSONSpy)).to.equal(true)
+      expect(loadDataStub.calledAfter(postJSONSpy)).toBe(true)
     })
     it('should call loadData with one argument in no history mode', async () => {
       await handler()
-      expect(loadDataStub.firstCall.args).to.have.lengthOf(1)
+      expect(loadDataStub.firstCall.args).toHaveLength(1)
     })
     it('should call loadData with true in no history mode', async () => {
       await handler()
-      expect(loadDataStub.firstCall.args[0]).to.equal(true)
+      expect(loadDataStub.firstCall.args[0]).toBe(true)
     })
     it('should not publish LoadingError when postJSON resolves', async () => {
       postJSONSpy.resolves()
       await handler()
-      expect(errorSpy.callCount).to.equal(0)
+      expect(errorSpy.callCount).toBe(0)
     })
     it('should publish LoadingError when postJSON rejects', async () => {
       postJSONSpy.rejects('FOO')
       await handler()
-      expect(errorSpy.callCount).to.equal(1)
+      expect(errorSpy.callCount).toBe(1)
     })
     it('should publish LoadingError with exception when postJSON rejects', async () => {
       const err = new Error('FOO')
       postJSONSpy.rejects(err)
       await handler()
-      expect(errorSpy.firstCall.args[0]).to.equal(err)
+      expect(errorSpy.firstCall.args[0]).toBe(err)
     })
     it('should not call loadData if postJSON rejects', async () => {
       postJSONSpy.rejects('FOO')
       await handler()
-      expect(loadDataStub.called).to.equal(false)
+      expect(loadDataStub.called).toBe(false)
     })
     it('should swallow exception when loadData rejects', async () => {
       loadDataStub.rejects('FOO')
@@ -140,26 +139,28 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should call Confirm.show once', async () => {
       await handler()
-      expect(confirmShowStub.callCount).to.equal(1)
+      expect(confirmShowStub.callCount).toBe(1)
     })
     it('should call Confirm.show with a non-empty string message', async () => {
       await handler()
-      expect(confirmShowStub.firstCall.args[0]).to.be.a('string').with.length.greaterThan(0)
+      expect(confirmShowStub.firstCall.args[0]).toSatisfy(
+        (v: unknown): v is string => typeof v === 'string' && v.length > 0,
+      )
     })
     it('should not call postJSON when Confirm.show resolves false', async () => {
       confirmShowStub.resolves(false)
       await handler()
-      expect(postJSONSpy.callCount).to.equal(0)
+      expect(postJSONSpy.callCount).toBe(0)
     })
     it('should not call loadData when Confirm.show resolves false', async () => {
       confirmShowStub.resolves(false)
       await handler()
-      expect(loadDataStub.callCount).to.equal(0)
+      expect(loadDataStub.callCount).toBe(0)
     })
     it('should call postJSON when Confirm.show resolves true', async () => {
       confirmShowStub.resolves(true)
       await handler()
-      expect(postJSONSpy.callCount).to.equal(1)
+      expect(postJSONSpy.callCount).toBe(1)
     })
   })
 })

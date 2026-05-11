@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -38,19 +37,19 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
   it('should log message to web console', () => {
     const message = `error message! ${Math.random()}`
     publish('Loading:Error', message)
-    expect(consoleError.calledOnceWithExactly(message)).to.equal(true)
+    expect(consoleError.calledOnceWithExactly(message)).toBe(true)
   })
   it('should not log null message to web console', () => {
     publish('Loading:Error', null)
-    expect(consoleError.called).to.equal(false)
+    expect(consoleError.called).toBe(false)
   })
   it('should not log undefined message to web console', () => {
     publish('Loading:Error', undefined)
-    expect(consoleError.called).to.equal(false)
+    expect(consoleError.called).toBe(false)
   })
   it('should not log empty string message to web console', () => {
     publish('Loading:Error', '')
-    expect(consoleError.called).to.equal(false)
+    expect(consoleError.called).toBe(false)
   })
   it('should hide loading overlay', async () => {
     let hidden = false
@@ -65,7 +64,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
         await sub(undefined, 'LOADING:ERROR')
       }),
     )
-    expect(hidden).to.equal(true)
+    expect(hidden).toBe(true)
   })
   it('should remove css transition style on navbar', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
@@ -77,7 +76,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
         await sub(undefined, 'LOADING:ERROR')
       }),
     )
-    expect(navbar?.style.getPropertyValue('transition')).to.equal('')
+    expect(navbar?.style.getPropertyValue('transition')).toBe('')
   })
   it('should set scary red background navbar', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
@@ -89,10 +88,10 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
         await sub(undefined, 'LOADING:ERROR')
       }),
     )
-    expect(navbar?.style.getPropertyValue('background-color')).to.equal('rgb(255, 0, 0)')
+    expect(navbar?.style.getPropertyValue('background-color')).toBe('rgb(255, 0, 0)')
   })
   it('should set a deferred function', async () => {
-    expect(PubSub.deferred).to.have.length(0)
+    expect(PubSub.deferred).toHaveLength(0)
     const subs = PubSub.subscribers['LOADING:ERROR']
     assert(subs !== undefined)
     await Promise.all(
@@ -100,7 +99,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
         await sub(undefined, 'LOADING:ERROR')
       }),
     )
-    expect(PubSub.deferred).to.have.length(1)
+    expect(PubSub.deferred).toHaveLength(1)
   })
   it('should defer transition definition', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
@@ -115,7 +114,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
-    expect(navbar?.style.getPropertyValue('transition')).to.equal('background-color 2s ease-in-out')
+    expect(navbar?.style.getPropertyValue('transition')).toBe('background-color 2s ease-in-out')
   })
   it('should defer background-color change', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
@@ -130,6 +129,6 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
-    expect(navbar?.style.getPropertyValue('background-color')).to.equal('')
+    expect(navbar?.style.getPropertyValue('background-color')).toBe('')
   })
 })

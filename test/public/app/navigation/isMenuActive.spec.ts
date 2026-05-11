@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -32,14 +31,14 @@ describe('public/app/navigation isMenuActive()', () => {
   })
   it('should return true for missing menu!', () => {
     menuNode?.parentElement?.removeChild(menuNode)
-    expect(isMenuActive()).to.equal(true)
+    expect(isMenuActive()).toBe(true)
   })
   it('should return true for non hidden menu', () => {
     menuNode?.classList.remove('hidden')
-    expect(isMenuActive()).to.equal(true)
+    expect(isMenuActive()).toBe(true)
   })
   it('should return false for hidden menu', () => {
     menuNode?.classList.add('hidden')
-    expect(isMenuActive()).to.equal(false)
+    expect(isMenuActive()).toBe(false)
   })
 })

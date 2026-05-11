@@ -1,8 +1,6 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { expect } from 'chai'
-
 import { PubSub, removeInterval } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
 import { cast } from '#testutils/typeGuards.js'
@@ -30,31 +28,31 @@ describe('public/app/pubsub removeInterval()', () => {
   })
   it('should remove existing interval', () => {
     removeInterval('FOOBAR')
-    expect(PubSub.intervals).to.not.have.any.keys('FOOBAR')
+    expect(Object.keys(PubSub.intervals)).not.toContain('FOOBAR')
   })
   it('should gracefully "remove" non-existing interval', () => {
     expect(() => {
       removeInterval('ASDFMovie')
-    }).to.not.throw()
+    }).not.toThrow()
   })
   it('should regenerate interval map', () => {
     const ivals = PubSub.intervals
     removeInterval('FOOBAR')
-    expect(PubSub.intervals).to.not.equal(ivals)
+    expect(PubSub.intervals).not.toBe(ivals)
   })
   it('should not remove BAZ interval', () => {
     removeInterval('FOOBAR')
-    expect(PubSub.intervals).to.have.any.keys('BAZ')
+    expect(Object.keys(PubSub.intervals)).toContain('BAZ')
   })
   it('should not remove QUUX interval', () => {
     removeInterval('FOOBAR')
-    expect(PubSub.intervals).to.have.any.keys('QUUX')
+    expect(Object.keys(PubSub.intervals)).toContain('QUUX')
   })
   it('should not call method on removing interval even if the interval is expired', () => {
     assert(PubSub.intervals.FOOBAR !== undefined)
     PubSub.intervals.FOOBAR.delayCycles = -1
     const spy = cast<Sinon.SinonSpy>(PubSub.intervals.FOOBAR.method)
     removeInterval('FOOBAR')
-    expect(spy.callCount).to.equal(0)
+    expect(spy.callCount).toBe(0)
   })
 })

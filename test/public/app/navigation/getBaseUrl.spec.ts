@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/navigation.js'
@@ -26,7 +25,7 @@ describe('public/app/navigation getBaseUrl()', () => {
   testCases.forEach(([url, expected]) => {
     it(`should return expected output for url: ${url}`, () => {
       dom.reconfigure({ url })
-      expect(Internals.getBaseUrl()).to.equal(expected)
+      expect(Internals.getBaseUrl()).toBe(expected)
     })
   })
 })

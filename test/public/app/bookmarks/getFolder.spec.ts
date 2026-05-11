@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -50,24 +49,24 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       path: '/foo/',
       bookmarks: [],
     })
-    expect(result).to.be.an.instanceOf(dom.window.HTMLElement)
+    expect(result).toBeInstanceOf(dom.window.HTMLElement)
   })
   it('should add exactly one folder to the list on creation', () => {
-    expect(Bookmarks.bookmarkFolders).to.have.length(0)
+    expect(Bookmarks.bookmarkFolders).toHaveLength(0)
     Internals.getOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
-    expect(Bookmarks.bookmarkFolders).to.have.length(1)
+    expect(Bookmarks.bookmarkFolders).toHaveLength(1)
   })
   it('should store the folder path on creation', () => {
     Internals.getOrCreateFolderElement('', { name: '/foo', path: '/foo/', bookmarks: [] })
     const folder = Bookmarks.bookmarkFolders.pop()
     assert(folder !== undefined, 'Folder should exist')
-    expect(folder.path).to.equal('/foo/')
+    expect(folder.path).toBe('/foo/')
   })
   it('should store the folder element on creation', () => {
     const result = Internals.getOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
     const folder = Bookmarks.bookmarkFolders.pop()
     assert(folder !== undefined, 'Folder should exist')
-    expect(result).to.equal(folder.element)
+    expect(result).toBe(folder.element)
   })
   it('should return existing folder element for matching path', () => {
     const element = dom.window.document.createElement('div')
@@ -80,7 +79,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       path: '/foo/bar/baz/',
       bookmarks: [],
     })
-    expect(result).to.equal(element)
+    expect(result).toBe(element)
   })
   it('should return null for folder when template is missing', () => {
     Bookmarks.bookmarkFolder = undefined
@@ -90,7 +89,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       path: '/foo/bar/baz/quux.png',
       bookmarks: [],
     })
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should set data attribute for folderPath', () => {
     const result = Internals.getOrCreateFolderElement('', {
@@ -99,7 +98,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       bookmarks: [],
     })
     const value = result?.getAttribute('data-folderPath')
-    expect(value).to.equal('/foo/bar/baz/')
+    expect(value).toBe('/foo/bar/baz/')
   })
   it('should set title', () => {
     const result = Internals.getOrCreateFolderElement('', {
@@ -108,7 +107,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       bookmarks: [],
     })
     const title = result?.querySelector<HTMLElement>('.title')
-    expect(title?.innerText).to.equal('/foo/bar/baz')
+    expect(title?.innerText).toBe('/foo/bar/baz')
   })
   it('should uridecode title', () => {
     const result = Internals.getOrCreateFolderElement('', {
@@ -117,7 +116,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       bookmarks: [],
     })
     const title = result?.querySelector<HTMLElement>('.title')
-    expect(title?.innerText).to.equal('|')
+    expect(title?.innerText).toBe('|')
   })
   it('should not create title if element is missing from template', () => {
     Bookmarks.bookmarkFolder?.querySelector('.title')?.remove()
@@ -127,7 +126,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       bookmarks: [],
     })
     const title = result?.querySelector<HTMLElement>('.title')
-    expect(title).to.equal(null)
+    expect(title).toBe(null)
   })
   it('should not add the closed class with matching path', () => {
     const result = Internals.getOrCreateFolderElement('/bar', {
@@ -135,7 +134,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       path: '/bar/baz.png',
       bookmarks: [],
     })
-    expect(result?.classList.contains('clsoed')).to.equal(false)
+    expect(result?.classList.contains('clsoed')).toBe(false)
   })
   it('should add the closed class with non matching path', () => {
     const result = Internals.getOrCreateFolderElement('/foo', {
@@ -143,7 +142,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       path: '/bar/baz.png',
       bookmarks: [],
     })
-    expect(result?.classList.contains('closed')).to.equal(true)
+    expect(result?.classList.contains('closed')).toBe(true)
   })
   it('should have on click handler to open self', () => {
     const result = Internals.getOrCreateFolderElement('/foo', {
@@ -157,7 +156,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
     assert(title !== null && title !== undefined, 'must get a result to issue event to')
     const evt = new dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
-    expect(folder.element.classList.contains('closed')).to.equal(false)
+    expect(folder.element.classList.contains('closed')).toBe(false)
   })
   it('should have on click handler to close others', () => {
     for (let i = 1; i <= 50; i += 1) {
@@ -174,7 +173,7 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
     const evt = new dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
     for (let i = 0; i < Bookmarks.bookmarkFolders.length; i += 1) {
-      expect(Bookmarks.bookmarkFolders[i]?.element.classList.contains('closed')).to.equal(i !== 25)
+      expect(Bookmarks.bookmarkFolders[i]?.element.classList.contains('closed')).toBe(i !== 25)
     }
   })
 })

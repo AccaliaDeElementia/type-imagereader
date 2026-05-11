@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -51,7 +50,7 @@ describe('public/app/folders init()', () => {
   })
   it('should subscribe to Navigate:Data', () => {
     init()
-    expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
+    expect(PubSub.subscribers['NAVIGATE:DATA']).toHaveLength(1)
   })
   it('should build folders on Navigate:Data with valid listing', async () => {
     init()
@@ -63,7 +62,7 @@ describe('public/app/folders init()', () => {
       children: [],
     }
     await subscriberfn(data)
-    expect(buildFoldersSpy.calledWith(data)).to.equal(true)
+    expect(buildFoldersSpy.calledWith(data)).toBe(true)
   })
   it('should not build folders on Navigate:Data with invalid data', async () => {
     init()
@@ -72,15 +71,15 @@ describe('public/app/folders init()', () => {
       invalid: 'OBJECT',
     }
     await subscriberfn(data)
-    expect(buildFoldersSpy.called).to.equal(false)
+    expect(buildFoldersSpy.called).toBe(false)
   })
   it('should locate and save the folder card for use when building markup', () => {
     init()
-    expect(Folders.folderCard).to.not.equal(null)
+    expect(Folders.folderCard).not.toBe(null)
   })
   it('should set null for missing folder card for use when building markup', () => {
     document.querySelector('#FolderCard')?.remove()
     init()
-    expect(Folders.folderCard).to.equal(null)
+    expect(Folders.folderCard).toBe(null)
   })
 })

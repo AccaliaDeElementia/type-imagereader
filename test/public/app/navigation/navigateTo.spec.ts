@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Internals, Navigation } from '#public/scripts/app/navigation.js'
@@ -30,35 +29,35 @@ describe('public/app/navigation navigateTo()', () => {
   invalidPaths.forEach(([title, path]) => {
     it(`should publish error when path is ${title}`, async () => {
       await Internals.navigateTo(path, 'FOO')
-      expect(errorSpy.called).to.equal(true)
+      expect(errorSpy.called).toBe(true)
     })
   })
   it('should publish error message when path is invalid', async () => {
     await Internals.navigateTo('', 'FOO')
-    expect(errorSpy.firstCall.args[0]).to.equal('Action FOO has no target')
+    expect(errorSpy.firstCall.args[0]).toBe('Action FOO has no target')
   })
   it('should not alter current location when path is invalid', async () => {
     const data = { path: '/FOO', name: 'foo', parent: '/' }
     Navigation.current = data
     await Internals.navigateTo('', 'FOO')
-    expect(Navigation.current).to.equal(data)
+    expect(Navigation.current).toBe(data)
   })
   it('should not load data when path is invalid', async () => {
     await Internals.navigateTo('', 'FOO')
-    expect(loadDataSpy.called).to.equal(false)
+    expect(loadDataSpy.called).toBe(false)
   })
   it('should alter current location when path is valid', async () => {
     Navigation.current = { path: '/FOO', name: 'foo', parent: '/' }
     await Internals.navigateTo('/bar/121', 'FOO')
-    expect(Navigation.current).to.deep.equal({ path: '/bar/121', name: '', parent: '' })
+    expect(Navigation.current).toEqual({ path: '/bar/121', name: '', parent: '' })
   })
   it('should load data when path is valid', async () => {
     await Internals.navigateTo('/foo', 'FOO')
-    expect(loadDataSpy.called).to.equal(true)
+    expect(loadDataSpy.called).toBe(true)
   })
   it('should load data in default mode when path is valid', async () => {
     await Internals.navigateTo('/foo', 'FOO')
-    expect(loadDataSpy.firstCall.args).to.have.lengthOf(0)
+    expect(loadDataSpy.firstCall.args).toHaveLength(0)
   })
   it('should swallow error when loadData rejects', async () => {
     loadDataSpy.rejects('FOO')

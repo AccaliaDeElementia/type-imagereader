@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -82,7 +81,7 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
     it(`should${expected ? '' : ' not'} post ${title} data`, async () => {
       const fn = getSubscriber('BOOKMARKS:REMOVE')
       await fn(data)
-      expect(postJSONSpy.called).to.equal(expected)
+      expect(postJSONSpy.called).toBe(expected)
     })
     it(`should accept ${title} data from network`, async () => {
       const fn = getSubscriber('BOOKMARKS:REMOVE')
@@ -90,91 +89,91 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
       const acceptor = postJSONSpy.firstCall.args[2] as unknown
       assert(acceptor !== undefined)
       const result = cast<(o: unknown) => boolean>(acceptor)(data)
-      expect(result).to.equal(true)
+      expect(result).toBe(true)
     })
   })
   it('should post to expected URL', async () => {
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('FOO!')
-    expect(postJSONSpy.firstCall.args[0]).to.equal('/api/bookmarks/remove')
+    expect(postJSONSpy.firstCall.args[0]).toBe('/api/bookmarks/remove')
   })
   it('should post expected data object', async () => {
     const path = `THIS IS MY PATH${Math.random()}`
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn(path)
-    expect(postJSONSpy.firstCall.args[1]).to.deep.equal({ path })
+    expect(postJSONSpy.firstCall.args[1]).toEqual({ path })
   })
   it('should publish Bookmarks:Load on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(bookmarksLoadSpy.called).to.equal(true)
+    expect(bookmarksLoadSpy.called).toBe(true)
   })
   it('should publish Loading:Success on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(loadingSuccessSpy.called).to.equal(true)
+    expect(loadingSuccessSpy.called).toBe(true)
   })
   it('should not publish Loading:Error on success with data', async () => {
     postJSONSpy.resolves({ foo: 'BAR!' })
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(loadingErrorSpy.called).to.equal(false)
+    expect(loadingErrorSpy.called).toBe(false)
   })
   it('should publish Bookmarks:Load on empty response', async () => {
     postJSONSpy.resolves(null)
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(bookmarksLoadSpy.called).to.equal(true)
+    expect(bookmarksLoadSpy.called).toBe(true)
   })
   it('should publish Loading:Success on empty response', async () => {
     postJSONSpy.resolves(null)
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(loadingSuccessSpy.called).to.equal(true)
+    expect(loadingSuccessSpy.called).toBe(true)
   })
   it('should not publish Loading:Error on empty response', async () => {
     postJSONSpy.resolves(null)
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(loadingErrorSpy.called).to.equal(false)
+    expect(loadingErrorSpy.called).toBe(false)
   })
   it('should not publish Bookmarks:Load on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(bookmarksLoadSpy.called).to.equal(false)
+    expect(bookmarksLoadSpy.called).toBe(false)
   })
   it('should not publish Loading:Success on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(loadingSuccessSpy.called).to.equal(false)
+    expect(loadingSuccessSpy.called).toBe(false)
   })
   it('should publish Loading:Error on rejection', async () => {
     postJSONSpy.rejects(new Error('FOO!'))
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(loadingErrorSpy.called).to.equal(true)
+    expect(loadingErrorSpy.called).toBe(true)
   })
   it('should publish Loading:Error with error on rejection', async () => {
     const err = new Error('FOO!')
     postJSONSpy.rejects(err)
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal(err)
+    expect(loadingErrorSpy.firstCall.args[0]).toBe(err)
   })
   it('should publish a generic Error on rejection with non-error', async () => {
     postJSONSpy.rejects({})
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(loadingErrorSpy.firstCall.args[0]).to.be.an.instanceOf(Error)
+    expect(loadingErrorSpy.firstCall.args[0]).toBeInstanceOf(Error)
   })
   it('should set message on generic error on rejection with non-error', async () => {
     postJSONSpy.rejects({})
     const fn = getSubscriber('BOOKMARKS:REMOVE')
     await fn('foo!')
-    expect(cast<Error>(loadingErrorSpy.firstCall.args[0]).message).to.equal('Non Error rejection!')
+    expect(cast<Error>(loadingErrorSpy.firstCall.args[0]).message).toBe('Non Error rejection!')
   })
 })

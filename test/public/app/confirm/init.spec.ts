@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -34,26 +33,26 @@ describe('public/app/confirm init()', () => {
   })
 
   it('should set dialogElement to #confirmDialog', () => {
-    expect(Confirm.dialogElement).to.not.equal(null)
+    expect(Confirm.dialogElement).not.toBe(null)
   })
 
   it('should set messageElement to .message within #confirmDialog', () => {
-    expect(Confirm.messageElement).to.not.equal(null)
+    expect(Confirm.messageElement).not.toBe(null)
   })
 
   it('should set titleElement to .title within #confirmDialog', () => {
-    expect(Confirm.titleElement).to.not.equal(null)
+    expect(Confirm.titleElement).not.toBe(null)
   })
 
   it('should resolve true when confirm button is clicked', async () => {
     const result = show('test', 'Test Title')
     document.querySelector<HTMLElement>('#confirmDialog .confirm')?.click()
-    expect(await result).to.equal(true)
+    expect(await result).toBe(true)
   })
 
   it('should resolve false when cancel button is clicked', async () => {
     const result = show('test', 'Test Title')
     document.querySelector<HTMLElement>('#confirmDialog .cancel')?.click()
-    expect(await result).to.equal(false)
+    expect(await result).toBe(false)
   })
 })

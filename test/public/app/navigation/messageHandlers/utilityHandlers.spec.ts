@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -65,17 +64,17 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should alter location via locationAssign when invoked', async () => {
       await handler()
-      expect(locationAssignSpy.callCount).to.equal(1)
+      expect(locationAssignSpy.callCount).toBe(1)
     })
     it('should alter location to expected path when invoked', async () => {
       const path = `/foo/${Math.random()}`
       Navigation.current.path = path
       await handler()
-      expect(locationAssignSpy.firstCall.args[0]).to.equal(`/slideshow${path}`)
+      expect(locationAssignSpy.firstCall.args[0]).toBe(`/slideshow${path}`)
     })
     it('should pass expected this value when invoked', async () => {
       await handler()
-      expect(locationAssignSpy.firstCall.thisValue).to.equal(dom.window.location)
+      expect(locationAssignSpy.firstCall.thisValue).toBe(dom.window.location)
     })
   })
   describe('Action:Execute:Fullscreen Message Handler', () => {
@@ -103,35 +102,35 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should call requestFullscreen once when no fullscreen element exists', async () => {
       await handler()
-      expect(requestFullscreenStub.callCount).to.equal(1)
+      expect(requestFullscreenStub.callCount).toBe(1)
     })
     it('should not call exitFullscreen when no fullscreen element exists', async () => {
       await handler()
-      expect(exitFullscreenStub.callCount).to.equal(0)
+      expect(exitFullscreenStub.callCount).toBe(0)
     })
     it('should request fullscreen with one argument', async () => {
       await handler()
-      expect(requestFullscreenStub.firstCall.args).to.have.lengthOf(1)
+      expect(requestFullscreenStub.firstCall.args).toHaveLength(1)
     })
     it('should request fullscreen without navigationUI', async () => {
       await handler()
-      expect(requestFullscreenStub.firstCall.args[0]).to.deep.equal({ navigationUI: 'hide' })
+      expect(requestFullscreenStub.firstCall.args[0]).toEqual({ navigationUI: 'hide' })
     })
     it('should not publish Loading:Error when requestFullscreen resolves', async () => {
       requestFullscreenStub.resolves()
       await handler()
-      expect(errorSpy.called).to.equal(false)
+      expect(errorSpy.called).toBe(false)
     })
     it('should publish Loading:Error when requestFullscreen rejects', async () => {
       requestFullscreenStub.rejects('FOO')
       await handler()
-      expect(errorSpy.called).to.equal(true)
+      expect(errorSpy.called).toBe(true)
     })
     it('should pass exception to Loading:Error when requestFullscreen rejects', async () => {
       const err = new Error('FOO')
       requestFullscreenStub.rejects(err)
       await handler()
-      expect(errorSpy.firstCall.args[0]).to.equal(err)
+      expect(errorSpy.firstCall.args[0]).toBe(err)
     })
     it('should not call requestFullscreen when fullscreen element exists', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -139,7 +138,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
         value: dom.window.document.body,
       })
       await handler()
-      expect(requestFullscreenStub.callCount).to.equal(0)
+      expect(requestFullscreenStub.callCount).toBe(0)
     })
     it('should call exitFullscreen once when fullscreen element exists', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -147,7 +146,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
         value: dom.window.document.body,
       })
       await handler()
-      expect(exitFullscreenStub.callCount).to.equal(1)
+      expect(exitFullscreenStub.callCount).toBe(1)
     })
     it('should not publish Loading:Error when exitFullscreen resolves', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -156,7 +155,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       })
       exitFullscreenStub.resolves()
       await handler()
-      expect(errorSpy.called).to.equal(false)
+      expect(errorSpy.called).toBe(false)
     })
     it('should publish Loading:Error when exitFullscreen rejects', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -165,7 +164,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       })
       exitFullscreenStub.rejects('FOO')
       await handler()
-      expect(errorSpy.called).to.equal(true)
+      expect(errorSpy.called).toBe(true)
     })
     it('should pass exception to Loading:Error when exitFullscreen rejects', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -175,7 +174,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       const err = new Error('FOO')
       exitFullscreenStub.rejects(err)
       await handler()
-      expect(errorSpy.firstCall.args[0]).to.equal(err)
+      expect(errorSpy.firstCall.args[0]).toBe(err)
     })
   })
   describe('Message Forwarding Message Handlers', () => {
@@ -200,7 +199,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
         PubSub.subscribers[to.toUpperCase()] = [spy]
         const handler = getSubscriber(from.toUpperCase())
         await handler(undefined)
-        expect(spy.callCount).to.equal(1)
+        expect(spy.callCount).toBe(1)
       })
     })
   })

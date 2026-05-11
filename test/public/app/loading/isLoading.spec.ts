@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -60,7 +59,7 @@ describe('public/app/loading isLoading()', () => {
     it(`should ${expected ? '' : 'not '}consider ${style} as isLoading`, () => {
       const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
       overlay?.style.setProperty('display', style)
-      expect(isLoading()).to.equal(expected)
+      expect(isLoading()).toBe(expected)
     })
   })
 })

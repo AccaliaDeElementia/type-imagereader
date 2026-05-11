@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -73,7 +72,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: 'foo',
       folder: 'bar',
     })
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should return HTMLElement if card template exists', () => {
     const result = Internals.buildBookmark({
@@ -81,7 +80,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: 'foo',
       folder: 'bar',
     })
-    expect(result).to.be.instanceOf(dom.window.HTMLElement)
+    expect(result).toBeInstanceOf(dom.window.HTMLElement)
   })
   it('should set title in result card', () => {
     const result = Internals.buildBookmark({
@@ -90,7 +89,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       folder: 'bar',
     })
     const elem = result?.querySelector('.title')
-    expect(elem?.innerHTML).to.equal('foo')
+    expect(elem?.innerHTML).toBe('foo')
   })
   it('should set background image to bookmark in result card', () => {
     const result = Internals.buildBookmark({
@@ -99,7 +98,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       folder: 'bar',
     })
     const style = result?.style.backgroundImage
-    expect(style).to.equal('url("/images/preview/foo/bar.png-image.webp")')
+    expect(style).toBe('url("/images/preview/foo/bar.png-image.webp")')
   })
   it('should strip leading folder path from title in result card', () => {
     const result = Internals.buildBookmark({
@@ -108,7 +107,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       folder: 'bar',
     })
     const elem = result?.querySelector('.title')
-    expect(elem?.innerHTML).to.equal('foo')
+    expect(elem?.innerHTML).toBe('foo')
   })
   const ClickRemoveAndWait = async (data: Bookmark): Promise<HTMLElement> => {
     const result = Internals.buildBookmark(data)
@@ -130,7 +129,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(bookmarksRemoveSpy.called).to.equal(true)
+    expect(bookmarksRemoveSpy.called).toBe(true)
   })
   it('should publish selected path to Bookmarks:Remove on button click', async () => {
     await ClickRemoveAndWait({
@@ -138,7 +137,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(bookmarksRemoveSpy.calledWith('/path/to/foo/folder/foo')).to.equal(true)
+    expect(bookmarksRemoveSpy.calledWith('/path/to/foo/folder/foo')).toBe(true)
   })
   it('should stop propagation of event after handling button click', async () => {
     const result = Internals.buildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
@@ -150,7 +149,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
     })
     result.querySelector('button')?.dispatchEvent(evt)
     await Promise.resolve()
-    expect(stopPropagationCalled).to.equal(true)
+    expect(stopPropagationCalled).toBe(true)
   })
   const ClickBookmarkAndWait = async (data: Bookmark): Promise<HTMLElement> => {
     const result = Internals.buildBookmark(data)
@@ -172,7 +171,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(postJSONSpy.callCount).to.equal(1)
+    expect(postJSONSpy.callCount).toBe(1)
   })
   it('should post JSON to navigate latest on bookmark click', async () => {
     await ClickBookmarkAndWait({
@@ -180,7 +179,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(postJSONSpy.firstCall.args[0]).to.equal('/api/navigate/latest')
+    expect(postJSONSpy.firstCall.args[0]).toBe('/api/navigate/latest')
   })
   it('should post JSON with expected data on bookmark click', async () => {
     await ClickBookmarkAndWait({
@@ -188,7 +187,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(postJSONSpy.firstCall.args[1]).to.deep.equal({
+    expect(postJSONSpy.firstCall.args[1]).toEqual({
       path: '/path/to/foo/folder/foo',
       modCount: -1,
     })
@@ -214,7 +213,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       const acceptor = postJSONSpy.firstCall.args[2] as unknown
       assert(acceptor !== undefined)
       const result = cast<(o: unknown) => boolean>(acceptor)(obj)
-      expect(result).to.equal(true)
+      expect(result).toBe(true)
     })
   })
   it('should publish Navigate:Load when postJSON resolves', async () => {
@@ -223,7 +222,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(navigateLoadSpy.callCount).to.equal(1)
+    expect(navigateLoadSpy.callCount).toBe(1)
   })
   it('should publish Navigate:Load with expected payload when postJSON resolves', async () => {
     await ClickBookmarkAndWait({
@@ -231,7 +230,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: '/path/to/foo/folder',
     })
-    expect(navigateLoadSpy.firstCall.args[0]).to.deep.equal({
+    expect(navigateLoadSpy.firstCall.args[0]).toEqual({
       path: '/path/to/foo/folder',
       name: '',
       parent: '',
@@ -245,7 +244,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: '/path/to/foo/folder',
     })
-    expect(isListing(navigateLoadSpy.firstCall.args[0])).to.equal(true)
+    expect(isListing(navigateLoadSpy.firstCall.args[0])).toBe(true)
   })
   it('should not publish Navigate:Load when postJSON rejects', async () => {
     postJSONSpy.rejects('FOO')
@@ -254,6 +253,6 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(navigateLoadSpy.callCount).to.equal(0)
+    expect(navigateLoadSpy.callCount).toBe(0)
   })
 })

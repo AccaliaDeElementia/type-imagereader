@@ -1,7 +1,6 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 
@@ -32,26 +31,26 @@ describe('public/app/pubsub startDeferred()', () => {
   })
   it('should set interval with Window.SetInterval()', () => {
     startDeferred()
-    expect(setIntervalSpy.callCount).to.equal(1)
+    expect(setIntervalSpy.callCount).toBe(1)
   })
   it('should call executeInterval with interval fn', () => {
     startDeferred()
     const fn = setIntervalSpy.firstCall.args[0] as unknown
     assert(hasValue(fn))
     cast<() => void>(fn)()
-    expect(executeIntervalSpy.callCount).to.equal(1)
+    expect(executeIntervalSpy.callCount).toBe(1)
   })
   it('should call setInterval with 2 arguments', () => {
     startDeferred()
-    expect(setIntervalSpy.firstCall.args).to.have.lengthOf(2)
+    expect(setIntervalSpy.firstCall.args).toHaveLength(2)
   })
   it('should set interval with configured interval period', () => {
     startDeferred()
-    expect(setIntervalSpy.firstCall.args[1]).to.equal(17)
+    expect(setIntervalSpy.firstCall.args[1]).toBe(17)
   })
   it('should save timer id for later deactivation', () => {
     setIntervalSpy.returns(6413287)
     startDeferred()
-    expect(PubSub.timer).to.equal(6413287)
+    expect(PubSub.timer).toBe(6413287)
   })
 })

@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -55,21 +54,21 @@ describe('public/app/navigation init()', () => {
       url: 'http://type-imagereader.example.com/show/foo/bar/baz',
     })
     init()
-    expect(Navigation.current.path).to.equal('/foo/bar/baz')
+    expect(Navigation.current.path).toBe('/foo/bar/baz')
   })
   it('should execute loadData once with defaults', () => {
     init()
-    expect(loadDataStub.callCount).to.equal(1)
+    expect(loadDataStub.callCount).toBe(1)
   })
   it('should execute loadData with no arguments', () => {
     init()
-    expect(loadDataStub.firstCall.args).to.deep.equal([])
+    expect(loadDataStub.firstCall.args).toEqual([])
   })
   it('should tolerate loadData rejecting', async () => {
     loadDataStub.rejects('FOO!')
     init()
     await Promise.resolve()
-    expect(loadDataStub.callCount).to.equal(1)
+    expect(loadDataStub.callCount).toBe(1)
   })
   const subscribers = [
     'Navigate:Data',
@@ -103,10 +102,10 @@ describe('public/app/navigation init()', () => {
       init()
     })
     it('should contain all expected subscribers', () => {
-      expect(PubSub.subscribers).to.have.all.keys(subs)
+      expect(Object.keys(PubSub.subscribers).sort()).toEqual([...subs].sort())
     })
     it('should contain no unexpected subscribers', () => {
-      expect(Object.keys(PubSub.subscribers)).to.have.lengthOf(subs.length)
+      expect(Object.keys(PubSub.subscribers)).toHaveLength(subs.length)
     })
   })
   subscribers.forEach((subscriber) => {
@@ -115,11 +114,11 @@ describe('public/app/navigation init()', () => {
     }
     it(`should subscribe to ${subscriber}`, () => {
       doInit()
-      expect(PubSub.subscribers).to.have.any.keys(subscriber.toUpperCase())
+      expect(Object.keys(PubSub.subscribers)).toContain(subscriber.toUpperCase())
     })
     it(`should subscribe to ${subscriber} exactly once`, () => {
       doInit()
-      expect(PubSub.subscribers[subscriber.toUpperCase()]).to.have.lengthOf(1)
+      expect(PubSub.subscribers[subscriber.toUpperCase()]).toHaveLength(1)
     })
   })
 })

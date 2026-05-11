@@ -1,7 +1,6 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 
@@ -30,14 +29,14 @@ describe('public/app/WakeLock init()', () => {
   })
   it('should subscribe to Picture:LoadNew', () => {
     init()
-    expect(PubSub.subscribers).to.have.any.keys('PICTURE:LOADNEW')
+    expect(Object.keys(PubSub.subscribers)).toContain('PICTURE:LOADNEW')
   })
   it('should execute takeLock on receiving Picture:LoadNew notification', async () => {
     init()
     const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
     assert(fn !== undefined)
     await fn(undefined)
-    expect(takeLockSpy.callCount).to.equal(1)
+    expect(takeLockSpy.callCount).toBe(1)
   })
   it('should tolerate takeLock rejecting on receiving Picture:LoadNew notification', async () => {
     init()
@@ -45,24 +44,24 @@ describe('public/app/WakeLock init()', () => {
     const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
     assert(fn !== undefined)
     await fn(undefined)
-    expect(takeLockSpy.callCount).to.equal(1)
+    expect(takeLockSpy.callCount).toBe(1)
   })
   it('should add interval for WakeLock:Release', () => {
     init()
-    expect(PubSub.intervals).to.have.any.keys('WakeLock:Release')
+    expect(Object.keys(PubSub.intervals)).toContain('WakeLock:Release')
   })
   it('it should use an interval of 30 seconds for wakelock.Release()', () => {
     init()
     const interval = PubSub.intervals['WakeLock:Release']
     assert(interval !== undefined)
-    expect(interval.intervalCycles).to.equal(3000)
+    expect(interval.intervalCycles).toBe(3000)
   })
   it('should invoke WakeLock.release() when release timer expires', () => {
     init()
     const interval = PubSub.intervals['WakeLock:Release']
     assert(interval !== undefined)
     interval.method()
-    expect(releaseLockSpy.callCount).to.equal(1)
+    expect(releaseLockSpy.callCount).toBe(1)
   })
   it('should tolerate WakeLock.release() rejecting when release timer expires', async () => {
     init()
@@ -71,12 +70,12 @@ describe('public/app/WakeLock init()', () => {
     assert(interval !== undefined)
     interval.method()
     await Promise.resolve()
-    expect(releaseLockSpy.callCount).to.equal(1)
+    expect(releaseLockSpy.callCount).toBe(1)
   })
   it('should only register one Picture:LoadNew subscriber when init is called twice', () => {
     init()
     init()
-    expect(PubSub.subscribers['PICTURE:LOADNEW']).to.have.lengthOf(1)
+    expect(PubSub.subscribers['PICTURE:LOADNEW']).toHaveLength(1)
   })
   it('should only call takeLock once per Picture:LoadNew when init is called twice', async () => {
     init()
@@ -84,6 +83,6 @@ describe('public/app/WakeLock init()', () => {
     const [fn] = PubSub.subscribers['PICTURE:LOADNEW'] ?? []
     assert(fn !== undefined)
     await fn(undefined)
-    expect(takeLockSpy.callCount).to.equal(1)
+    expect(takeLockSpy.callCount).toBe(1)
   })
 })

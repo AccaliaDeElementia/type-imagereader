@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { isError } from '#public/scripts/app/net.js'
 
 describe('public/app/net isError()', () => {
@@ -19,7 +18,7 @@ describe('public/app/net isError()', () => {
   ]
   testCases.forEach(([name, data, expected]) => {
     it(`should${expected ? '' : ' not'} consider ${name} to be an error`, () => {
-      expect(isError(data)).to.equal(expected)
+      expect(isError(data)).toBe(expected)
     })
   })
 })

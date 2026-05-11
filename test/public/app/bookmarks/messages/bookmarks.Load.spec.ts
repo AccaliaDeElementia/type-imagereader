@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -68,12 +67,12 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
   it('should use Net.getJSON to load bookmarks', async () => {
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(getJSONSpy.callCount).to.equal(1)
+    expect(getJSONSpy.callCount).toBe(1)
   })
   it('should request expected API endpoint to load bookmarks', async () => {
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(getJSONSpy.firstCall.args[0]).to.equal('/api/bookmarks')
+    expect(getJSONSpy.firstCall.args[0]).toBe('/api/bookmarks')
   })
   const bookmarkTestCases: Array<[string, unknown, boolean]> = [
     ['null', null, false],
@@ -93,7 +92,7 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
       const acceptor = getJSONSpy.firstCall.args[1] as unknown
       assert(acceptor !== undefined)
       const result = cast<(o: unknown) => boolean>(acceptor)
-      expect(result(obj)).to.equal(expected)
+      expect(result(obj)).toBe(expected)
     })
   })
   it('should call BuildBookmarks once when getJSON resolves', async () => {
@@ -101,54 +100,54 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     getJSONSpy.resolves(data)
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(BuildBookmarksSpy.callCount).to.equal(1)
+    expect(BuildBookmarksSpy.callCount).toBe(1)
   })
   it('should pass empty name to BuildBookmarks when getJSON resolves', async () => {
     getJSONSpy.resolves([])
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).name).to.equal('')
+    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).name).toBe('')
   })
   it('should pass empty path to BuildBookmarks when getJSON resolves', async () => {
     getJSONSpy.resolves([])
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).path).to.equal('')
+    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).path).toBe('')
   })
   it('should pass resolved data as bookmarks to BuildBookmarks', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(data)
+    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).toBe(data)
   })
   it('should not publish Loading:Error when getJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.resolves(data)
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(loadingErrorSpy.callCount).to.equal(0)
+    expect(loadingErrorSpy.callCount).toBe(0)
   })
   it('should not build bookmarks when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(BuildBookmarksSpy.callCount).to.equal(0)
+    expect(BuildBookmarksSpy.callCount).toBe(0)
   })
   it('should publish Loading:Error when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(loadingErrorSpy.callCount).to.equal(1)
+    expect(loadingErrorSpy.callCount).toBe(1)
   })
   it('should publish received error to Loading:Error when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
     getJSONSpy.rejects(data)
     const fn = getSubscriber('BOOKMARKS:LOAD')
     await fn(undefined)
-    expect(loadingErrorSpy.firstCall.args[0]).to.equal(data)
+    expect(loadingErrorSpy.firstCall.args[0]).toBe(data)
   })
 
   const runStaleResponseScenario = async (): Promise<{ secondData: unknown }> => {
@@ -168,11 +167,11 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
 
   it('should call buildBookmarks exactly once when a stale response arrives after a newer one', async () => {
     await runStaleResponseScenario()
-    expect(BuildBookmarksSpy.callCount).to.equal(1)
+    expect(BuildBookmarksSpy.callCount).toBe(1)
   })
   it('should pass the newer response to buildBookmarks when a stale response arrives later', async () => {
     const { secondData } = await runStaleResponseScenario()
-    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).to.equal(secondData)
+    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).toBe(secondData)
   })
   it('should not publish Loading:Error for a stale rejection', async () => {
     const { promise: firstPromise, reject: rejectFirst } = Promise.withResolvers<unknown>()
@@ -185,6 +184,6 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     await b
     rejectFirst(new Error('stale'))
     await a
-    expect(loadingErrorSpy.callCount).to.equal(0)
+    expect(loadingErrorSpy.callCount).toBe(0)
   })
 })

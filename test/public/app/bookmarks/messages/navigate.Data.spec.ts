@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
@@ -66,7 +65,7 @@ describe('public/app/bookmarks init Navigate:Data', () => {
     it(`should${expected ? '' : ' not'} build bookmarks when Navigate:Load loads ${title}`, async () => {
       const fn = getSubscriber('NAVIGATE:DATA')
       await fn(data)
-      expect(BuildBookmarksSpy.called).to.equal(expected)
+      expect(BuildBookmarksSpy.called).toBe(expected)
     })
   })
 })

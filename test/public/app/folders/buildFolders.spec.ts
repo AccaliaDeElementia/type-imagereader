@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
@@ -49,111 +48,111 @@ describe('public/app/folders buildFolders()', () => {
       e.classList.add('folders')
       tabFolders?.appendChild(e)
     }
-    expect(tabFolders?.children).to.have.lengthOf(20)
+    expect(tabFolders?.children).toHaveLength(20)
     Internals.buildFolders(cast<Listing>({}))
-    expect(tabFolders?.children).to.have.lengthOf(0)
+    expect(tabFolders?.children).toHaveLength(0)
   })
   it('should call buildAllCards once', () => {
     const data = { a: 42 }
     Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.callCount).to.equal(1)
+    expect(buildAllCardsStub.callCount).toBe(1)
   })
   it('should call buildAllCards with one argument', () => {
     const data = { a: 42 }
     Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.firstCall.args).to.have.lengthOf(1)
+    expect(buildAllCardsStub.firstCall.args).toHaveLength(1)
   })
   it('should pass data to BuilAllCards', () => {
     const data = { a: 42 }
     Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.firstCall.args[0]).to.equal(data)
+    expect(buildAllCardsStub.firstCall.args[0]).toBe(data)
   })
   it('should call hideTab when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(hideTabStub.called).to.equal(true)
+    expect(hideTabStub.called).toBe(true)
   })
   it('should hide folder tab when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).to.equal(true)
+    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).toBe(true)
   })
   it('should call hideTab when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(hideTabStub.called).to.equal(true)
+    expect(hideTabStub.called).toBe(true)
   })
   it('should hide folder tab when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).to.equal(true)
+    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).toBe(true)
   })
   it('should call hideTab when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(hideTabStub.called).to.equal(true)
+    expect(hideTabStub.called).toBe(true)
   })
   it('should hide folder tab when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).to.equal(true)
+    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).toBe(true)
   })
   it('should not unhide folder tab when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(unhideTabStub.called).to.equal(false)
+    expect(unhideTabStub.called).toBe(false)
   })
   it('should not unhide folder tab when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(unhideTabStub.called).to.equal(false)
+    expect(unhideTabStub.called).toBe(false)
   })
   it('should not unhide folder tab when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(unhideTabStub.called).to.equal(false)
+    expect(unhideTabStub.called).toBe(false)
   })
   it('should not publish tab select when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(tabSelectStub.called).to.equal(false)
+    expect(tabSelectStub.called).toBe(false)
   })
   it('should not publish tab select when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(tabSelectStub.called).to.equal(false)
+    expect(tabSelectStub.called).toBe(false)
   })
   it('should not publish tab select when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(tabSelectStub.called).to.equal(false)
+    expect(tabSelectStub.called).toBe(false)
   })
   it('should not publish tab select when data has children and pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [{}] }))
-    expect(tabSelectStub.called).to.equal(false)
+    expect(tabSelectStub.called).toBe(false)
   })
   it('should publish tab select once when data has children and empty pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [] }))
-    expect(tabSelectStub.callCount).to.equal(1)
+    expect(tabSelectStub.callCount).toBe(1)
   })
   it('should publish tab select with expected args when data has children and empty pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [] }))
-    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).to.equal(true)
+    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).toBe(true)
   })
   it('should publish tab select once when data has children and undefined pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: undefined }))
-    expect(tabSelectStub.callCount).to.equal(1)
+    expect(tabSelectStub.callCount).toBe(1)
   })
   it('should publish tab select with expected args when data has children and undefined pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: undefined }))
-    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).to.equal(true)
+    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).toBe(true)
   })
   it('should publish tab select once when data has children and missing pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(tabSelectStub.callCount).to.equal(1)
+    expect(tabSelectStub.callCount).toBe(1)
   })
   it('should publish tab select with expected args when data has children and missing pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).to.equal(true)
+    expect(tabSelectStub.calledWithExactly('Folders', 'TAB:SELECT')).toBe(true)
   })
   it('should not hide folder tab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(hideTabStub.called).to.equal(false)
+    expect(hideTabStub.called).toBe(false)
   })
   it('should call unhideTab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(unhideTabStub.called).to.equal(true)
+    expect(unhideTabStub.called).toBe(true)
   })
   it('should unhide folder tab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(unhideTabStub.calledWithExactly('a[href="#tabFolders"]')).to.equal(true)
+    expect(unhideTabStub.calledWithExactly('a[href="#tabFolders"]')).toBe(true)
   })
 })

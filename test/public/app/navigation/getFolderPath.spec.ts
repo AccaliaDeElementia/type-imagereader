@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/navigation.js'
@@ -29,7 +28,7 @@ describe('public/app/navigation getFolderPath()', () => {
   testCases.forEach(([url, expected]) => {
     it(`should return expected path for url: ${url}`, () => {
       dom.reconfigure({ url })
-      expect(Internals.getFolderPath()).to.equal(expected)
+      expect(Internals.getFolderPath()).toBe(expected)
     })
   })
 })

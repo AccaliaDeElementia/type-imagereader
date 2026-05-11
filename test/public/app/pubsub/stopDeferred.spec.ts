@@ -1,7 +1,6 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 
@@ -28,21 +27,21 @@ describe('public/app/pubsub stopDeferred()', () => {
   })
   it('should clear interval with Window.clearInterval()', () => {
     stopDeferred()
-    expect(clearIntervalSpy.callCount).to.equal(1)
+    expect(clearIntervalSpy.callCount).toBe(1)
   })
   it('should pass saved timer id to clearInterval()', () => {
     PubSub.timer = 6413287
     stopDeferred()
-    expect(clearIntervalSpy.firstCall.args).to.deep.equal([6413287])
+    expect(clearIntervalSpy.firstCall.args).toEqual([6413287])
   })
   it('should clear saved timer id', () => {
     PubSub.timer = 6413287
     stopDeferred()
-    expect(PubSub.timer).to.equal(undefined)
+    expect(PubSub.timer).toBe(undefined)
   })
   it('should not clear interval if timer is not set', () => {
     PubSub.timer = undefined
     stopDeferred()
-    expect(clearIntervalSpy.callCount).to.equal(0)
+    expect(clearIntervalSpy.callCount).toBe(0)
   })
 })

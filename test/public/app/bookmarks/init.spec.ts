@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -50,32 +49,32 @@ describe('public/app/bookmarks init()', () => {
   it('should locate bookmarkCard template on init', () => {
     const content = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     init()
-    expect(Bookmarks.bookmarkCard).to.equal(content)
+    expect(Bookmarks.bookmarkCard).toBe(content)
   })
   it('should locate bookmarkFolder template on init', () => {
     const content = document.querySelector<HTMLTemplateElement>('#BookmarkFolder')?.content
     init()
-    expect(Bookmarks.bookmarkFolder).to.equal(content)
+    expect(Bookmarks.bookmarkFolder).toBe(content)
   })
   it('should locate bookmarksTab template on init', () => {
     const content = document.querySelector<HTMLElement>('#tabBookmarks')
     init()
-    expect(Bookmarks.bookmarksTab).to.equal(content)
+    expect(Bookmarks.bookmarksTab).toBe(content)
   })
   it('should subscribe to Navigate:Data', () => {
     init()
-    expect(PubSub.subscribers).to.have.any.keys('NAVIGATE:DATA')
+    expect(Object.keys(PubSub.subscribers)).toContain('NAVIGATE:DATA')
   })
   it('should subscribe to Bookmarks:Load', () => {
     init()
-    expect(PubSub.subscribers).to.have.any.keys('BOOKMARKS:LOAD')
+    expect(Object.keys(PubSub.subscribers)).toContain('BOOKMARKS:LOAD')
   })
   it('should subscribe to Bookmarks:Add', () => {
     init()
-    expect(PubSub.subscribers).to.have.any.keys('BOOKMARKS:ADD')
+    expect(Object.keys(PubSub.subscribers)).toContain('BOOKMARKS:ADD')
   })
   it('should subscribe to Bookmarks:Remove', () => {
     init()
-    expect(PubSub.subscribers).to.have.any.keys('BOOKMARKS:REMOVE')
+    expect(Object.keys(PubSub.subscribers)).toContain('BOOKMARKS:REMOVE')
   })
 })

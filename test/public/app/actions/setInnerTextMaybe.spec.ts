@@ -1,6 +1,6 @@
 'use sanity'
 
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import { Internals } from '#public/scripts/app/actions.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -31,10 +31,10 @@ describe('public/app/actions setInnerTextMaybe', () => {
   })
   it('should set inner text for matching node by node name', () => {
     Internals.setInnerTextMaybe(divNode, 'span', 'foo')
-    expect(spanNode.innerText).to.equal('foo')
+    expect(spanNode.innerText).toBe('foo')
   })
   it('should set inner text for matching node by class', () => {
     Internals.setInnerTextMaybe(divNode, '.foo', 'foo')
-    expect(spanNode.innerText).to.equal('foo')
+    expect(spanNode.innerText).toBe('foo')
   })
 })

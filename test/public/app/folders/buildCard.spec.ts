@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -62,7 +61,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 0,
     })
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should return null when template is empty', () => {
     for (const child of folderCard?.children ?? []) {
@@ -75,7 +74,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 0,
     })
-    expect(result).to.equal(null)
+    expect(result).toBe(null)
   })
   it('should not remove emoji icon when cover image is null', () => {
     const result = Internals.buildCard({
@@ -85,7 +84,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 0,
     })
-    expect(result?.querySelector('i.material-icons') ?? null).to.not.equal(null)
+    expect(result?.querySelector('i.material-icons') ?? null).not.toBe(null)
   })
   it('should preserve emoji icon content when cover image is null', () => {
     const result = Internals.buildCard({
@@ -95,7 +94,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 0,
     })
-    expect(result?.querySelector('i.material-icons')?.innerHTML).to.equal('folder')
+    expect(result?.querySelector('i.material-icons')?.innerHTML).toBe('folder')
   })
   it('should not remove emoji icon when cover image is empty', () => {
     const result = Internals.buildCard({
@@ -105,7 +104,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 0,
     })
-    expect(result?.querySelector('i.material-icons') ?? null).to.not.equal(null)
+    expect(result?.querySelector('i.material-icons') ?? null).not.toBe(null)
   })
   it('should preserve emoji icon content when cover image is empty', () => {
     const result = Internals.buildCard({
@@ -115,7 +114,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 0,
     })
-    expect(result?.querySelector('i.material-icons')?.innerHTML).to.equal('folder')
+    expect(result?.querySelector('i.material-icons')?.innerHTML).toBe('folder')
   })
   it('should remove emoji cover when cover image is set', () => {
     const result = Internals.buildCard({
@@ -126,7 +125,7 @@ describe('public/app/folders buildCard()', () => {
       seenCount: 0,
     })
     const icon = result?.querySelector('i.material-icons') ?? null
-    expect(icon).to.equal(null)
+    expect(icon).toBe(null)
   })
   it('should set card backgroundImage when cover image is set', () => {
     const result = Internals.buildCard({
@@ -136,7 +135,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 0,
     })
-    expect(result?.style.backgroundImage).to.equal('url("/images/preview/path/foo/cover.png-image.webp")')
+    expect(result?.style.backgroundImage).toBe('url("/images/preview/path/foo/cover.png-image.webp")')
   })
   it('should not set seen flag when read count iz zero', () => {
     const result = Internals.buildCard({
@@ -146,7 +145,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 0,
     })
-    expect(result?.classList.contains('seen')).to.equal(false)
+    expect(result?.classList.contains('seen')).toBe(false)
   })
   it('should not set seen flag when read count less than total count', () => {
     const result = Internals.buildCard({
@@ -156,7 +155,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 50,
     })
-    expect(result?.classList.contains('seen')).to.equal(false)
+    expect(result?.classList.contains('seen')).toBe(false)
   })
   it('should set seen flag when read count equals total count', () => {
     const result = Internals.buildCard({
@@ -166,7 +165,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 100,
     })
-    expect(result?.classList.contains('seen')).to.equal(true)
+    expect(result?.classList.contains('seen')).toBe(true)
   })
   it('should set seen flag when read count exceeds total count', () => {
     const result = Internals.buildCard({
@@ -176,7 +175,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 101,
     })
-    expect(result?.classList.contains('seen')).to.equal(true)
+    expect(result?.classList.contains('seen')).toBe(true)
   })
   it('should set folder name header', () => {
     const result = Internals.buildCard({
@@ -186,7 +185,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 101,
     })
-    expect(result?.querySelector('h5')?.innerText).to.equal('foo')
+    expect(result?.querySelector('h5')?.innerText).toBe('foo')
   })
   it('should gracefully decline to set folder name header when missing', () => {
     folderCard?.querySelector('h5')?.remove()
@@ -197,7 +196,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 10,
     })
-    expect(result?.querySelector('h5')).to.equal(null)
+    expect(result?.querySelector('h5')).toBe(null)
   })
   it('should set folder progress text', () => {
     const result = Internals.buildCard({
@@ -207,7 +206,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 42,
     })
-    expect(result?.querySelector<HTMLDivElement>('div.text')?.innerText).to.equal('42/100')
+    expect(result?.querySelector<HTMLDivElement>('div.text')?.innerText).toBe('42/100')
   })
   it('should gracefully decline to set folder progress text when missing', () => {
     folderCard?.querySelector('div.text')?.remove()
@@ -218,7 +217,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 101,
     })
-    expect(result?.querySelector('div.text')).to.equal(null)
+    expect(result?.querySelector('div.text')).toBe(null)
   })
   it('should set folder slider width', () => {
     const result = Internals.buildCard({
@@ -228,7 +227,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 10000,
       seenCount: 666,
     })
-    expect(result?.querySelector<HTMLDivElement>('div.slider')?.style.width).to.equal('6.66%')
+    expect(result?.querySelector<HTMLDivElement>('div.slider')?.style.width).toBe('6.66%')
   })
   it('should set folder slider width to 100% when total count is zero', () => {
     const result = Internals.buildCard({
@@ -238,7 +237,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 0,
       seenCount: 0,
     })
-    expect(result?.querySelector<HTMLDivElement>('div.slider')?.style.width).to.equal('100%')
+    expect(result?.querySelector<HTMLDivElement>('div.slider')?.style.width).toBe('100%')
   })
   it('should gracefully decline to set folder slider width when missing', () => {
     folderCard?.querySelector('div.slider')?.remove()
@@ -249,7 +248,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 101,
     })
-    expect(result?.querySelector('div.slider')).to.equal(null)
+    expect(result?.querySelector('div.slider')).toBe(null)
   })
   it('should navigate on click', () => {
     const evt = new dom.window.MouseEvent('click')
@@ -264,6 +263,6 @@ describe('public/app/folders buildCard()', () => {
     PubSub.subscribers['NAVIGATE:LOAD'] = [spy]
     assert(result !== null, 'result is required for valid test')
     result.dispatchEvent(evt)
-    expect(spy.calledWith('/path/foo')).to.equal(true)
+    expect(spy.calledWith('/path/foo')).toBe(true)
   })
 })

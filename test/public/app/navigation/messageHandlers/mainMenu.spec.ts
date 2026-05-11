@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
@@ -55,7 +54,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     let menuNode: HTMLDivElement | null = null
     beforeEach(() => {
       menuNode = dom.window.document.querySelector('#mainMenu')
-      expect(menuNode).to.not.equal(null)
+      expect(menuNode).not.toBe(null)
     })
     afterEach(() => {
       menuNode = null
@@ -64,9 +63,9 @@ describe('public/app/navigation/messageHandlers init()', () => {
       init()
       const handler = getSubscriber('MENU:SHOW')
       menuNode?.classList.add('hidden')
-      expect(menuNode?.classList.contains('hidden')).to.equal(true)
+      expect(menuNode?.classList.contains('hidden')).toBe(true)
       await handler(undefined)
-      expect(menuNode?.classList.contains('hidden')).to.equal(false)
+      expect(menuNode?.classList.contains('hidden')).toBe(false)
     })
     it('should remove hidden class while preserving other classes on main menu node', async () => {
       init()
@@ -76,14 +75,14 @@ describe('public/app/navigation/messageHandlers init()', () => {
       menuNode?.classList.add('hidden')
       menuNode?.classList.add('baz')
       await handler(undefined)
-      expect(menuNode?.classList.contains('hidden')).to.equal(false)
+      expect(menuNode?.classList.contains('hidden')).toBe(false)
     })
     it('should tolerate already removed hidden class on main menu node', async () => {
       init()
       const handler = getSubscriber('MENU:SHOW')
-      expect(menuNode?.classList.contains('hidden')).to.equal(false)
+      expect(menuNode?.classList.contains('hidden')).toBe(false)
       await handler(undefined)
-      expect(menuNode?.classList.contains('hidden')).to.equal(false)
+      expect(menuNode?.classList.contains('hidden')).toBe(false)
     })
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentNode?.removeChild(menuNode)
@@ -97,7 +96,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     let menuNode: HTMLDivElement | null = null
     beforeEach(() => {
       menuNode = dom.window.document.querySelector('#mainMenu')
-      expect(menuNode).to.not.equal(null)
+      expect(menuNode).not.toBe(null)
     })
     afterEach(() => {
       menuNode = null
@@ -105,17 +104,17 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should add hidden class from main menu node', async () => {
       init()
       const handler = getSubscriber('MENU:HIDE')
-      expect(menuNode?.classList.contains('hidden')).to.equal(false)
+      expect(menuNode?.classList.contains('hidden')).toBe(false)
       await handler(undefined)
-      expect(menuNode?.classList.contains('hidden')).to.equal(true)
+      expect(menuNode?.classList.contains('hidden')).toBe(true)
     })
     it('should preserve hidden class on hidden main menu node', async () => {
       init()
       const handler = getSubscriber('MENU:HIDE')
       menuNode?.classList.add('hidden')
-      expect(menuNode?.classList.contains('hidden')).to.equal(true)
+      expect(menuNode?.classList.contains('hidden')).toBe(true)
       await handler(undefined)
-      expect(menuNode?.classList.contains('hidden')).to.equal(true)
+      expect(menuNode?.classList.contains('hidden')).toBe(true)
     })
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentElement?.removeChild(menuNode)
@@ -141,7 +140,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       Navigation.current.pictures = [{ name: '', path: '', seen: false }]
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).to.equal(0)
+      expect(spy.callCount).toBe(0)
     })
     it('should ignore click event node outside of #mainMenu', () => {
       init()
@@ -158,7 +157,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).to.equal(0)
+      expect(spy.callCount).toBe(0)
     })
     it('should ignore click event will missing pictures list', () => {
       init()
@@ -169,7 +168,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).to.equal(0)
+      expect(spy.callCount).toBe(0)
     })
     it('should ignore click event will empty pictures list', () => {
       init()
@@ -180,7 +179,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).to.equal(0)
+      expect(spy.callCount).toBe(0)
     })
     it('should publish hide menu event for click event with pictures', () => {
       init()
@@ -197,7 +196,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(spy.callCount).to.equal(1)
+      expect(spy.callCount).toBe(1)
     })
   })
   describe('.menuButton click handler', () => {
@@ -210,7 +209,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       Navigation.current.pictures = [{ name: '', path: '', seen: true }]
       const event = new dom.window.MouseEvent('click')
       target.dispatchEvent(event)
-      expect(spy.callCount).to.equal(1)
+      expect(spy.callCount).toBe(1)
     })
   })
 })

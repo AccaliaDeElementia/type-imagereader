@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 
 import { PubSub } from '#public/scripts/app/pubsub.js'
@@ -32,15 +31,15 @@ describe('public/app/actions init()', () => {
   })
   it('should build actions on init', () => {
     init()
-    expect(BuildActionsSpy.called).to.equal(true)
+    expect(BuildActionsSpy.called).toBe(true)
   })
   it('should reset gamepads on init', () => {
     init()
-    expect(GamepadResetSpy.called).to.equal(true)
+    expect(GamepadResetSpy.called).toBe(true)
   })
   it('should subscribe to Navigate:Data', () => {
     init()
-    expect(PubSub.subscribers['NAVIGATE:DATA']).to.have.length(1)
+    expect(PubSub.subscribers['NAVIGATE:DATA']).toHaveLength(1)
   })
   const navigateDataTestCases: Array<[string, Listing, boolean]> = [
     ['null', cast<Listing>(null), false],
@@ -164,12 +163,12 @@ describe('public/app/actions init()', () => {
     }
     it(`should ${expected ? '' : 'not '}publish Tab:Select for ${title} listing on navigate`, async () => {
       const spy = await doNavigate()
-      expect(spy.called).to.equal(expected)
+      expect(spy.called).toBe(expected)
     })
     if (expected) {
       it(`should publish Tab:Select with expected args for ${title} listing on navigate`, async () => {
         const spy = await doNavigate()
-        expect(spy.firstCall.args).to.deep.equal(['Actions', 'TAB:SELECT'])
+        expect(spy.firstCall.args).toEqual(['Actions', 'TAB:SELECT'])
       })
     }
   })
@@ -177,7 +176,7 @@ describe('public/app/actions init()', () => {
     const spy = sandbox.stub(document, 'addEventListener')
     try {
       init()
-      expect(spy.callCount).to.equal(1)
+      expect(spy.callCount).toBe(1)
     } finally {
       spy.restore()
     }
@@ -186,7 +185,7 @@ describe('public/app/actions init()', () => {
     const spy = sandbox.stub(document, 'addEventListener')
     try {
       init()
-      expect(spy.firstCall.calledWith('keyup')).to.equal(true)
+      expect(spy.firstCall.calledWith('keyup')).toBe(true)
     } finally {
       spy.restore()
     }
@@ -221,10 +220,10 @@ describe('public/app/actions init()', () => {
       return spy
     }
     it(`should publish ${expected} keypress event once`, () => {
-      expect(doKeypress().callCount).to.equal(1)
+      expect(doKeypress().callCount).toBe(1)
     })
     it(`should publish ${expected} keypress event with expected args`, () => {
-      expect(doKeypress().firstCall.args).to.deep.equal([expected, `ACTION:KEYPRESS:${expected}`])
+      expect(doKeypress().firstCall.args).toEqual([expected, `ACTION:KEYPRESS:${expected}`])
     })
   })
 
@@ -232,7 +231,7 @@ describe('public/app/actions init()', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
       init()
-      expect(spy.callCount).to.equal(2)
+      expect(spy.callCount).toBe(2)
     } finally {
       spy.restore()
     }
@@ -241,7 +240,7 @@ describe('public/app/actions init()', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
       init()
-      expect(spy.firstCall.calledWith('gamepadconnected')).to.equal(true)
+      expect(spy.firstCall.calledWith('gamepadconnected')).toBe(true)
     } finally {
       spy.restore()
     }
@@ -252,7 +251,7 @@ describe('public/app/actions init()', () => {
     try {
       init()
       cast<() => void>(spy.firstCall.args[1])()
-      expect(PubSub.intervals.readGamepad).to.not.equal(undefined)
+      expect(PubSub.intervals.readGamepad).not.toBe(undefined)
     } finally {
       spy.restore()
     }
@@ -266,7 +265,7 @@ describe('public/app/actions init()', () => {
       cast<() => void>(spy.firstCall.args[1])()
       assert(PubSub.intervals.readGamepad !== undefined)
       PubSub.intervals.readGamepad.method()
-      expect(readspy.called).to.equal(true)
+      expect(readspy.called).toBe(true)
     } finally {
       readspy.restore()
       spy.restore()
@@ -276,7 +275,7 @@ describe('public/app/actions init()', () => {
     const spy = sandbox.stub(window, 'addEventListener')
     try {
       init()
-      expect(spy.secondCall.calledWith('gamepaddisconnected')).to.equal(true)
+      expect(spy.secondCall.calledWith('gamepaddisconnected')).toBe(true)
     } finally {
       spy.restore()
     }
@@ -294,7 +293,7 @@ describe('public/app/actions init()', () => {
       cast<() => void>(addSpy.firstCall.args[1])()
       assert(PubSub.intervals.readGamepad !== undefined)
       cast<() => void>(addSpy.secondCall.args[1])()
-      expect(PubSub.intervals.readGamepad).to.equal(undefined)
+      expect(PubSub.intervals.readGamepad).toBe(undefined)
     } finally {
       Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
       addSpy.restore()
@@ -314,7 +313,7 @@ describe('public/app/actions init()', () => {
       cast<() => void>(addSpy.firstCall.args[1])()
       assert(PubSub.intervals.readGamepad !== undefined)
       cast<() => void>(addSpy.secondCall.args[1])()
-      expect(PubSub.intervals.readGamepad).to.not.equal(undefined)
+      expect(PubSub.intervals.readGamepad).not.toBe(undefined)
     } finally {
       Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
       addSpy.restore()

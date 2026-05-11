@@ -1,8 +1,6 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { expect } from 'chai'
-
 import { PubSub, addInterval } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
@@ -14,12 +12,12 @@ describe('public/app/pubsub addInterval()', () => {
   it('should add to intervals map', () => {
     const spy = Sinon.spy()
     addInterval('FOOBAR', spy, 0)
-    expect(PubSub.intervals).to.have.any.keys('FOOBAR')
+    expect(Object.keys(PubSub.intervals)).toContain('FOOBAR')
   })
   it('should store method to intervals map', () => {
     const spy = Sinon.spy()
     addInterval('FOOBAR', spy, 0)
-    expect(PubSub.intervals.FOOBAR?.method).to.equal(spy)
+    expect(PubSub.intervals.FOOBAR?.method).toBe(spy)
   })
   it('should replace interval method when adding already existing name', () => {
     const ival = {
@@ -29,12 +27,12 @@ describe('public/app/pubsub addInterval()', () => {
     }
     PubSub.intervals.FOOBAR = ival
     addInterval('FOOBAR', Sinon.spy(), 0)
-    expect(PubSub.intervals.FOOBAR).to.not.equal(ival)
+    expect(PubSub.intervals.FOOBAR).not.toBe(ival)
   })
   it('should add method with a zero delay cycles valuu', () => {
     const spy = Sinon.spy()
     addInterval('FOOBAR', spy, 65535)
-    expect(PubSub.intervals.FOOBAR?.delayCycles).to.equal(0)
+    expect(PubSub.intervals.FOOBAR?.delayCycles).toBe(0)
   })
   const delayMaps: Array<[number, number]> = [
     [-100, 1],
@@ -54,7 +52,7 @@ describe('public/app/pubsub addInterval()', () => {
   for (const [delay, mapped] of delayMaps) {
     it(`should convert an interval of ${delay}ms to ${mapped} interval cycles`, () => {
       addInterval('FOOBAR', Sinon.spy(), delay)
-      expect(PubSub.intervals.FOOBAR?.intervalCycles).to.equal(mapped)
+      expect(PubSub.intervals.FOOBAR?.intervalCycles).toBe(mapped)
     })
   }
 })

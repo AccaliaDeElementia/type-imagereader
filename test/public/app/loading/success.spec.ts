@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -43,7 +42,7 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
         await sub(undefined, 'LOADING:SUCCESS')
       }),
     )
-    expect(navbar?.style.getPropertyValue('transition')).to.equal('')
+    expect(navbar?.style.getPropertyValue('transition')).toBe('')
   })
   it('should set soothing green background navbar', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
@@ -55,10 +54,10 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
         await sub(undefined, 'LOADING:SUCCESS')
       }),
     )
-    expect(navbar?.style.getPropertyValue('background-color')).to.equal('rgb(0, 170, 0)')
+    expect(navbar?.style.getPropertyValue('background-color')).toBe('rgb(0, 170, 0)')
   })
   it('should set a deferred function', async () => {
-    expect(PubSub.deferred).to.have.length(0)
+    expect(PubSub.deferred).toHaveLength(0)
     const subs = PubSub.subscribers['LOADING:SUCCESS']
     assert(subs !== undefined)
     await Promise.all(
@@ -66,7 +65,7 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
         await sub(undefined, 'LOADING:SUCCESS')
       }),
     )
-    expect(PubSub.deferred).to.have.length(1)
+    expect(PubSub.deferred).toHaveLength(1)
   })
   it('should defer transition definition', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
@@ -81,7 +80,7 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
-    expect(navbar?.style.getPropertyValue('transition')).to.equal('background-color 2s ease-in-out')
+    expect(navbar?.style.getPropertyValue('transition')).toBe('background-color 2s ease-in-out')
   })
   it('should defer background-color change', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
@@ -96,6 +95,6 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     PubSub.deferred.forEach((fn) => {
       fn.method()
     })
-    expect(navbar?.style.getPropertyValue('background-color')).to.equal('')
+    expect(navbar?.style.getPropertyValue('background-color')).toBe('')
   })
 })

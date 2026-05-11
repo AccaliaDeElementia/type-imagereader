@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -36,24 +35,24 @@ describe('public/app/loading subscriber "Loading:show" and "Loading:Hide"', () =
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'none')
     publish('Loading:show')
-    expect(overlay?.style.getPropertyValue('display')).to.equal('block')
+    expect(overlay?.style.getPropertyValue('display')).toBe('block')
   })
   it('should hide the loading overlay for "Loading:Hide"', () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'block')
     publish('Loading:Hide')
-    expect(overlay?.style.getPropertyValue('display')).to.equal('none')
+    expect(overlay?.style.getPropertyValue('display')).toBe('none')
   })
   it('should tolerate missing overlay for "Loading:show"', () => {
     Loading.overlay = null
     expect(() => {
       publish('Loading:show')
-    }).to.not.throw()
+    }).not.toThrow()
   })
   it('should tolerate missing overlay for "Loading:Hide"', () => {
     Loading.overlay = null
     expect(() => {
       publish('Loading:Hide')
-    }).to.not.throw()
+    }).not.toThrow()
   })
 })

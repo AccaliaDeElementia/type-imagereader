@@ -1,7 +1,6 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -54,49 +53,49 @@ describe('public/app/tabs init()', () => {
   })
   const links = ['#tabActions', '#tabFolders', '#tabImages', '#tabBookmarks']
   it('should discover expected tab count', () => {
-    expect(Tabs.tabs).to.have.length(0)
+    expect(Tabs.tabs).toHaveLength(0)
     init()
-    expect(Tabs.tabs).to.have.length(links.length)
+    expect(Tabs.tabs).toHaveLength(links.length)
   })
   it('should discover expected tab name count', () => {
-    expect(Tabs.tabNames).to.have.length(0)
+    expect(Tabs.tabNames).toHaveLength(0)
     init()
-    expect(Tabs.tabNames).to.have.length(links.length)
+    expect(Tabs.tabNames).toHaveLength(links.length)
   })
   it('should subscribe to Tab:Select event', () => {
     init()
-    expect(PubSub.subscribers).to.have.any.keys('TAB:SELECT')
+    expect(Object.keys(PubSub.subscribers)).toContain('TAB:SELECT')
   })
   it('should call selectTab once for Tab:Select event', async () => {
     init()
     selectTabSpy.resetHistory()
     const fn = getSubscriber('TAB:SELECT')
     await fn('FOOBAR')
-    expect(selectTabSpy.callCount).to.equal(1)
+    expect(selectTabSpy.callCount).toBe(1)
   })
   it('should select provided tab for Tab:Select event', async () => {
     init()
     selectTabSpy.resetHistory()
     const fn = getSubscriber('TAB:SELECT')
     await fn('FOOBAR')
-    expect(selectTabSpy.firstCall.args).to.deep.equal(['FOOBAR'])
+    expect(selectTabSpy.firstCall.args).toEqual(['FOOBAR'])
   })
   it('should ignore non string value for Tab:Select event', async () => {
     init()
     selectTabSpy.resetHistory()
     const fn = getSubscriber('TAB:SELECT')
     await fn(null)
-    expect(selectTabSpy.callCount).to.equal(0)
+    expect(selectTabSpy.callCount).toBe(0)
   })
   links.forEach((link, idx) => {
     it(`should find a[href="${link}"] as tab selector`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
       init()
-      expect(Tabs.tabs[idx]).to.equal(elem)
+      expect(Tabs.tabs[idx]).toBe(elem)
     })
     it(`should find ${link} as tab name`, () => {
       init()
-      expect(Tabs.tabNames[idx]).to.equal(link)
+      expect(Tabs.tabNames[idx]).toBe(link)
     })
     it(`should call addEventListener once on tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
@@ -104,7 +103,7 @@ describe('public/app/tabs init()', () => {
       const spy = sandbox.stub(elem, 'addEventListener')
       try {
         init()
-        expect(spy.callCount).to.equal(1)
+        expect(spy.callCount).toBe(1)
       } finally {
         spy.restore()
       }
@@ -115,7 +114,7 @@ describe('public/app/tabs init()', () => {
       const spy = sandbox.stub(elem, 'addEventListener')
       try {
         init()
-        expect(spy.firstCall.args).to.have.lengthOf(2)
+        expect(spy.firstCall.args).toHaveLength(2)
       } finally {
         spy.restore()
       }
@@ -126,7 +125,7 @@ describe('public/app/tabs init()', () => {
       const spy = sandbox.stub(elem, 'addEventListener')
       try {
         init()
-        expect(spy.firstCall.args[0]).to.equal('click')
+        expect(spy.firstCall.args[0]).toBe('click')
       } finally {
         spy.restore()
       }
@@ -137,7 +136,7 @@ describe('public/app/tabs init()', () => {
       selectTabSpy.resetHistory()
       const evt = new dom.window.MouseEvent('click')
       elem?.parentElement?.dispatchEvent(evt)
-      expect(selectTabSpy.callCount).to.equal(1)
+      expect(selectTabSpy.callCount).toBe(1)
     })
     it(`should select expected tab for ${link} click handler`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
@@ -145,7 +144,7 @@ describe('public/app/tabs init()', () => {
       selectTabSpy.resetHistory()
       const evt = new dom.window.MouseEvent('click')
       elem?.parentElement?.dispatchEvent(evt)
-      expect(selectTabSpy.firstCall.args).to.deep.equal([link])
+      expect(selectTabSpy.firstCall.args).toEqual([link])
     })
     it(`should select default for ${link} with removed href`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
@@ -154,7 +153,7 @@ describe('public/app/tabs init()', () => {
       selectTabSpy.resetHistory()
       const evt = new dom.window.MouseEvent('click')
       elem?.parentElement?.dispatchEvent(evt)
-      expect(selectTabSpy.firstCall.args).to.deep.equal([''])
+      expect(selectTabSpy.firstCall.args).toEqual([''])
     })
   })
 })

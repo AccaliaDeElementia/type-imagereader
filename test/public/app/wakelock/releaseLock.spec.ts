@@ -1,8 +1,6 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { expect } from 'chai'
-
 import { releaseLock, WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
@@ -31,28 +29,28 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.timeout = 1154
     clock?.tick(9001)
     await releaseLock()
-    expect(WakeLock.timeout).to.equal(0)
+    expect(WakeLock.timeout).toBe(0)
   })
   it('should not reset timeout when sentinel is null and timeout has not expired', async () => {
     WakeLock.sentinel = null
     WakeLock.timeout = 9002
     clock?.tick(9001)
     await releaseLock()
-    expect(WakeLock.timeout).to.equal(9002)
+    expect(WakeLock.timeout).toBe(9002)
   })
   it('should not release lock when timeout is not expired', async () => {
     WakeLock.sentinel = sentinel
     WakeLock.timeout = 101
     clock?.tick(100)
     await releaseLock()
-    expect(WakeLock.sentinel).to.equal(sentinel)
+    expect(WakeLock.sentinel).toBe(sentinel)
   })
   it('should reset timeout when expired', async () => {
     WakeLock.sentinel = sentinel
     WakeLock.timeout = 99
     clock?.tick(100)
     await releaseLock()
-    expect(WakeLock.timeout).to.equal(0)
+    expect(WakeLock.timeout).toBe(0)
   })
   it('should reset active sentinel when expired', async () => {
     WakeLock.sentinel = sentinel
@@ -60,7 +58,7 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.timeout = 99
     clock?.tick(100)
     await releaseLock()
-    expect(WakeLock.sentinel).to.equal(null)
+    expect(WakeLock.sentinel).toBe(null)
   })
   it('should reset released sentinel when expired', async () => {
     WakeLock.sentinel = sentinel
@@ -68,7 +66,7 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.timeout = 99
     clock?.tick(100)
     await releaseLock()
-    expect(WakeLock.sentinel).to.equal(null)
+    expect(WakeLock.sentinel).toBe(null)
   })
   it('should release active sentinel when expired', async () => {
     WakeLock.sentinel = sentinel
@@ -76,7 +74,7 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.timeout = 99
     clock?.tick(100)
     await releaseLock()
-    expect(sentinelRelease.callCount).to.equal(1)
+    expect(sentinelRelease.callCount).toBe(1)
   })
   it('should not release released sentinel when expired', async () => {
     WakeLock.sentinel = sentinel
@@ -84,7 +82,7 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.timeout = 99
     clock?.tick(100)
     await releaseLock()
-    expect(sentinelRelease.callCount).to.equal(0)
+    expect(sentinelRelease.callCount).toBe(0)
   })
   it('should gracefully handle sentinel release throwing', async () => {
     WakeLock.sentinel = sentinel
@@ -93,7 +91,7 @@ describe('public/app/WakeLock takeLock()', () => {
     clock?.tick(100)
     sentinelRelease.throws('FOOL!')
     await releaseLock()
-    expect(WakeLock.sentinel).to.equal(null)
+    expect(WakeLock.sentinel).toBe(null)
   })
   it('should gracefully handle sentinel release rejecting', async () => {
     WakeLock.sentinel = sentinel
@@ -102,7 +100,7 @@ describe('public/app/WakeLock takeLock()', () => {
     clock?.tick(100)
     sentinelRelease.rejects('FOOL!')
     await releaseLock()
-    expect(WakeLock.sentinel).to.equal(null)
+    expect(WakeLock.sentinel).toBe(null)
   })
   it('should gracefully handle sentinel release rejecting when sentinel is active', async () => {
     WakeLock.sentinel = sentinel
@@ -111,7 +109,7 @@ describe('public/app/WakeLock takeLock()', () => {
     clock?.tick(100)
     sentinelRelease.rejects(new Error('release failed'))
     await releaseLock()
-    expect(WakeLock.sentinel).to.equal(null)
+    expect(WakeLock.sentinel).toBe(null)
   })
   it('should gracefully handle sentinel release throwing when sentinel is active', async () => {
     WakeLock.sentinel = sentinel
@@ -120,7 +118,7 @@ describe('public/app/WakeLock takeLock()', () => {
     clock?.tick(100)
     sentinelRelease.throws(new Error('release failed'))
     await releaseLock()
-    expect(WakeLock.sentinel).to.equal(null)
+    expect(WakeLock.sentinel).toBe(null)
   })
   it('should preserve a sentinel installed during an in-flight release', async () => {
     const { promise: releasePromise, resolve: resolveRelease } = Promise.withResolvers<undefined>()
@@ -139,7 +137,7 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.sentinel = sentinelB
     resolveRelease(undefined)
     await releasing
-    expect(WakeLock.sentinel).to.equal(sentinelB)
+    expect(WakeLock.sentinel).toBe(sentinelB)
   })
 
   it('should reset timeout when timeout equals current time with no sentinel', async () => {
@@ -147,7 +145,7 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.timeout = 100
     clock?.tick(100)
     await releaseLock()
-    expect(WakeLock.timeout).to.equal(0)
+    expect(WakeLock.timeout).toBe(0)
   })
   it('should release sentinel when timeout equals current time', async () => {
     WakeLock.sentinel = sentinel
@@ -155,7 +153,7 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.timeout = 100
     clock?.tick(100)
     await releaseLock()
-    expect(WakeLock.sentinel).to.equal(null)
+    expect(WakeLock.sentinel).toBe(null)
   })
   it('should call sentinel release when timeout equals current time', async () => {
     WakeLock.sentinel = sentinel
@@ -163,6 +161,6 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.timeout = 100
     clock?.tick(100)
     await releaseLock()
-    expect(sentinelRelease.callCount).to.equal(1)
+    expect(sentinelRelease.callCount).toBe(1)
   })
 })

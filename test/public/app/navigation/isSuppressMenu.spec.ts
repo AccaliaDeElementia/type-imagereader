@@ -1,6 +1,5 @@
 'use sanity'
 
-import { expect } from 'chai'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals, Navigation } from '#public/scripts/app/navigation.js'
@@ -34,7 +33,7 @@ describe('public/app/navigation isSuppressMenu()', () => {
   testCases.forEach(([url, expected]) => {
     it(`should be${expected ? '' : ' not'} suppress menu for url: ${url}`, () => {
       dom.reconfigure({ url })
-      expect(Internals.isSuppressMenu()).to.equal(expected)
+      expect(Internals.isSuppressMenu()).toBe(expected)
     })
   })
 })
