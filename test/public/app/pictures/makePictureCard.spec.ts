@@ -4,8 +4,7 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import { Pictures } from '#public/scripts/app/pictures/state.js'
-import { Imports, Internals } from '#public/scripts/app/pictures/grid.js'
+import { Grid, Imports, Internals } from '#public/scripts/app/pictures/grid.js'
 import { cast } from '#testutils/typeGuards.js'
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 
@@ -24,14 +23,14 @@ describe('public/app/pictures makePictureCard()', () => {
     const template = dom.window.document.createElement('div')
     template.innerHTML =
       '<template id="ImageCard><div class="card"><div class="card-body"><h5>placeholder</h5></div></div></template>'
-    Pictures.imageCard = cast<HTMLTemplateElement>(template.firstChild)
+    Grid.imageCard = cast<HTMLTemplateElement>(template.firstChild)
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
   })
   it('should return an HTMLElement on failure', () => {
-    Pictures.imageCard = null
+    Grid.imageCard = null
     const card = Internals.makePictureCard({
       name: 'foo',
       path: '/foo/bar/baz.jpg',

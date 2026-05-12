@@ -29,7 +29,6 @@ describe('public/app/pictures initActions()', () => {
     mountDom(dom)
     resetPubSub()
     Pictures.mainImage = null
-    Pictures.imageCard = null
     isMenuActiveSpy = sandbox.stub(Imports, 'isMenuActive').returns(false)
     getShowUnreadOnly = sandbox.stub(Imports, 'getShowUnreadOnly').returns(false)
     getPictureFake = { number: Math.random() }

@@ -15,10 +15,6 @@ html
   body
     div#bigImage
       img.hidden
-    template#ImageCard
-      div.card
-        div.card-body
-          h5 placeholder
 `
 
 describe('public/app/pictures resetMarkup()', () => {
@@ -32,7 +28,6 @@ describe('public/app/pictures resetMarkup()', () => {
     mountDom(dom)
     resetPubSub()
     Pictures.mainImage = null
-    Pictures.imageCard = null
     gridResetSpy = sandbox.stub(Imports, 'gridResetMarkup')
     viewerResetSpy = sandbox.stub(Imports, 'viewerResetMarkup')
   })
@@ -44,23 +39,12 @@ describe('public/app/pictures resetMarkup()', () => {
     Pictures.resetMarkup()
     expect(Pictures.mainImage).not.toBe(null)
   })
-  it('should set imageCard node', () => {
-    Pictures.resetMarkup()
-    expect(Pictures.imageCard).not.toBe(null)
-  })
   it('should tolerate missing mainImage node', () => {
     const node = dom.window.document.querySelector('#bigImage')
     assert(node !== null)
     node.parentElement?.removeChild(node)
     Pictures.resetMarkup()
     expect(Pictures.mainImage).toBe(null)
-  })
-  it('should tolerate missing imageCard node', () => {
-    const node = dom.window.document.querySelector('#ImageCard')
-    assert(node !== null)
-    node.parentElement?.removeChild(node)
-    Pictures.resetMarkup()
-    expect(Pictures.imageCard).toBe(null)
   })
   it('should call Grid.resetMarkup once', () => {
     Pictures.resetMarkup()

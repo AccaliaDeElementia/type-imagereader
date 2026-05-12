@@ -18,7 +18,6 @@ describe('public/app/pictures getCurrentPage()', () => {
     mountDom(dom)
     resetPubSub()
     Pictures.mainImage = null
-    Pictures.imageCard = null
   })
   afterEach(() => {
     sandbox.restore()

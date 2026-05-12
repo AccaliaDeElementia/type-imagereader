@@ -29,7 +29,6 @@ interface StateFields {
   pictures: Picture[]
   current: Picture | null
   mainImage: HTMLImageElement | null
-  imageCard: HTMLTemplateElement | null
 }
 
 function defaultState(): StateFields {
@@ -37,13 +36,11 @@ function defaultState(): StateFields {
     pictures: [],
     current: null,
     mainImage: null,
-    imageCard: null,
   }
 }
 
 function resetMarkup(): void {
   Pictures.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
-  Pictures.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
   Imports.gridResetMarkup()
   Imports.viewerResetMarkup()
 }

@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import Sinon from 'sinon'
-import { resetMarkup } from '#public/scripts/app/pictures/grid.js'
+import { Grid, resetMarkup } from '#public/scripts/app/pictures/grid.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/pubsub.js'
 
@@ -14,6 +14,10 @@ const markup = `
 html
   body
     div#tabImages
+    template#ImageCard
+      div.card
+        div.card-body
+          h5 placeholder
 `
 
 describe('public/app/pictures resetMarkup()', () => {
@@ -24,6 +28,7 @@ describe('public/app/pictures resetMarkup()', () => {
     })
     mountDom(dom)
     resetPubSub()
+    Grid.imageCard = null
   })
   afterEach(() => {
     sandbox.restore()
@@ -61,5 +66,16 @@ describe('public/app/pictures resetMarkup()', () => {
     }
     resetMarkup()
     expect(tab.children).toHaveLength(15)
+  })
+  it('should set imageCard node', () => {
+    resetMarkup()
+    expect(Grid.imageCard).not.toBe(null)
+  })
+  it('should tolerate missing imageCard node', () => {
+    const node = dom.window.document.querySelector('#ImageCard')
+    assert(node !== null)
+    node.parentElement?.removeChild(node)
+    resetMarkup()
+    expect(Grid.imageCard).toBe(null)
   })
 })

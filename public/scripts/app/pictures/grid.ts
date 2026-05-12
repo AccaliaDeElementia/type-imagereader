@@ -11,6 +11,10 @@ export const Imports = {
   publish: _publish,
 }
 
+export const Grid = {
+  imageCard: null as HTMLTemplateElement | null,
+}
+
 export const PICTURES_PER_PAGE = 32
 
 const INDEX_TO_PAGE_OFFSET = 1
@@ -25,13 +29,14 @@ const MINIMUM_INDEX = 0
 type PageSelector = () => number
 
 export function resetMarkup(): void {
+  Grid.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
   for (const existing of document.querySelectorAll('#tabImages .pages, #tabImages .page')) {
     existing.parentElement?.removeChild(existing)
   }
 }
 
 function makePictureCard(picture: Picture): HTMLElement | undefined {
-  const card = cloneNode(Pictures.imageCard, isHTMLElement)
+  const card = cloneNode(Grid.imageCard, isHTMLElement)
   card?.setAttribute('data-backgroundImage', `url("/images/preview${picture.path}-image.webp")`)
   if (picture.seen) {
     card?.classList.add('seen')

@@ -20,7 +20,6 @@ describe('public/app/pictures selectPage()', () => {
     resetPubSub()
     publishStub = sandbox.stub(Imports, 'publish')
     Pictures.mainImage = null
-    Pictures.imageCard = null
   })
   afterEach(() => {
     sandbox.restore()
