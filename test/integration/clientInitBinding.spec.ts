@@ -10,8 +10,8 @@ import { Folders, init as foldersInit } from '#public/scripts/app/folders.js'
 import { Bookmarks, init as bookmarksInit } from '#public/scripts/app/bookmarks.js'
 import { Confirm, init as confirmInit } from '#public/scripts/app/confirm.js'
 import { Loading, init as loadingInit } from '#public/scripts/app/loading.js'
-import { Pictures, Imports as PicturesImports } from '#public/scripts/app/pictures/state.js'
-import { Grid } from '#public/scripts/app/pictures/grid.js'
+import { Pictures, Imports as PicturesImports } from '#public/scripts/app/pictureState.js'
+import { Grid } from '#public/scripts/app/pictureGrid.js'
 
 // Match the private constant inside bookmarks.ts; if that source value ever changes,
 // this baseline reset will need to follow.
@@ -113,9 +113,9 @@ describe('app.pug ↔ client init binding', () => {
   describe('pictures init', () => {
     const sandbox = Sinon.createSandbox()
     beforeEach(() => {
-      // Stub the transitive init chain so this spec stays focused on state.ts's
+      // Stub the transitive init chain so this spec stays focused on pictureState.ts's
       // own DOM bindings (#bigImage img) rather than what the
-      // grid/viewer/inputs/unreadFilter modules' inits do.
+      // pictureGrid/pictureViewer/pictureInput/unreadFilter modules' inits do.
       sandbox.stub(PicturesImports, 'gridResetMarkup')
       sandbox.stub(PicturesImports, 'viewerResetMarkup')
       sandbox.stub(PicturesImports, 'initActions')

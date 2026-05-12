@@ -1,6 +1,6 @@
 'use sanity'
 
-import { getShowUnreadOnly as _getShowUnreadOnly } from './pictures/unreadFilter.js'
+import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { getJSON as _getJSON, postJSON as _postJSON, acceptAnyResponse } from './net.js'
 import { publish as _publish, subscribe as _subscribe, forward as _forward } from './pubsub.js'
 import { isListing, type Listing } from '#contracts/listing.js'
