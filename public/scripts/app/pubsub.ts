@@ -26,9 +26,11 @@ export const PubSub = {
   intervals: ((): Record<string, DeferredMethod & IntervalMethod> => ({}))(),
   timer: undefined as NodeJS.Timeout | string | number | undefined,
   cycleTime: PUBLISH_CYCLE_TIME,
+  guardCallback: undefined as ((op: string) => void) | undefined,
 }
 
 export function subscribe(topic: string, subscriber: SubscriberFunction): void {
+  PubSub.guardCallback?.(`subscribe to '${topic}'`)
   const target = topic.toUpperCase()
   const subs = PubSub.subscribers[target]
   if (subs === undefined) {
@@ -39,10 +41,12 @@ export function subscribe(topic: string, subscriber: SubscriberFunction): void {
 }
 
 export function publish(topic: string, data?: unknown): void {
+  PubSub.guardCallback?.(`publish '${topic}'`)
   void Internals.publishAsync(topic, data)
 }
 
 export function forward(fromTopic: string, toTopic: string): void {
+  PubSub.guardCallback?.(`forward '${fromTopic}' -> '${toTopic}'`)
   subscribe(fromTopic, async () => {
     publish(toTopic)
     await Promise.resolve()

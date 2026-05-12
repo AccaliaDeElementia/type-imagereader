@@ -30,6 +30,29 @@ describe('public/app/pubsub publish()', () => {
     publish(topic, data)
     expect(publishAsyncSpy.firstCall.args).toEqual([topic, data])
   })
+  it('should invoke guardCallback with the operation when set', () => {
+    const guard = sandbox.stub()
+    PubSub.guardCallback = guard
+    try {
+      publish('Foobar:Baz')
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+    expect(guard.firstCall.args[0]).toBe("publish 'Foobar:Baz'")
+  })
+  it('should propagate the throw from guardCallback before scheduling publishAsync', () => {
+    PubSub.guardCallback = () => {
+      throw new Error('guard tripped')
+    }
+    try {
+      expect(() => {
+        publish('Foobar:Baz')
+      }).toThrow(/guard tripped/v)
+      expect(publishAsyncSpy.callCount).toBe(0)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+  })
 })
 
 describe('public/app/pubsub publishAsync()', () => {

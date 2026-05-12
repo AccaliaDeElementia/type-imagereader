@@ -45,4 +45,27 @@ describe('public/app/pubsub forward()', () => {
     forward('Foo:Bar', 'Baz:Qux')
     expect(PubSub.subscribers['FOO:BAR']).toHaveLength(2)
   })
+  it('should invoke guardCallback with the operation when set', () => {
+    const guard = sandbox.stub()
+    PubSub.guardCallback = guard
+    try {
+      forward('Foo:Bar', 'Baz:Qux')
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+    expect(guard.firstCall.args[0]).toBe("forward 'Foo:Bar' -> 'Baz:Qux'")
+  })
+  it('should propagate the throw from guardCallback before registering the inner subscriber', () => {
+    PubSub.guardCallback = () => {
+      throw new Error('guard tripped')
+    }
+    try {
+      expect(() => {
+        forward('Foo:Bar', 'Baz:Qux')
+      }).toThrow(/guard tripped/v)
+      expect(PubSub.subscribers['FOO:BAR']).toBe(undefined)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+  })
 })

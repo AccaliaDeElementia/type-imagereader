@@ -43,4 +43,27 @@ describe('public/app/pubsub subscribe()', () => {
     subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ'][10]).toBe(subscriber)
   })
+  it('should invoke guardCallback with the operation when set', () => {
+    const guard = sandbox.stub()
+    PubSub.guardCallback = guard
+    try {
+      subscribe('Foobar:Baz', subscriber)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+    expect(guard.firstCall.args[0]).toBe("subscribe to 'Foobar:Baz'")
+  })
+  it('should propagate the throw from guardCallback before registering the subscriber', () => {
+    PubSub.guardCallback = () => {
+      throw new Error('guard tripped')
+    }
+    try {
+      expect(() => {
+        subscribe('Foobar:Baz', subscriber)
+      }).toThrow(/guard tripped/v)
+      expect(PubSub.subscribers['FOOBAR:BAZ']).toBe(undefined)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+  })
 })

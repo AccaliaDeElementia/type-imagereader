@@ -18,6 +18,22 @@ export function resetPubSub(): void {
   PubSub.timer = undefined
 }
 
+// Install a guardCallback on the real PubSub that throws if bare
+// subscribe/publish/forward are invoked. Used to catch tests that let real
+// pubsub primitives leak — those calls should go through `Imports.*` stubs.
+// Pair with `unmountPubSub()` in afterEach to restore.
+export function mountPubSub(): void {
+  PubSub.guardCallback = (op) => {
+    throw new Error(
+      `Bare pubsub ${op} called during test — SUT should go through Imports.* (call site likely missing a stub)`,
+    )
+  }
+}
+
+export function unmountPubSub(): void {
+  PubSub.guardCallback = undefined
+}
+
 // Return the handler function from the most-recent call on `subscribeStub`
 // matching `topic` (case-insensitive). Used by specs that stub `Imports.subscribe`
 // to capture and invoke the SUT-registered handler. Asserts loudly if no

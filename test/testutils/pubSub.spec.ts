@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { capturedSubscriber, publishedData, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, mountPubSub, publishedData, resetPubSub, unmountPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -124,5 +124,30 @@ describe('testutils/PubSub publishedData()', () => {
   })
   it('should throw when the stub has no calls at all', () => {
     expect(() => publishedData(publishStub, 'Test:Missing')).toThrow(/Test:Missing/v)
+  })
+})
+
+describe('testutils/PubSub mountPubSub() / unmountPubSub()', () => {
+  afterEach(() => {
+    unmountPubSub()
+    sandbox.restore()
+  })
+  it('should set PubSub.guardCallback when mounted', () => {
+    expect(PubSub.guardCallback).toBe(undefined)
+    mountPubSub()
+    expect(PubSub.guardCallback).toBeTypeOf('function')
+  })
+  it('should clear PubSub.guardCallback when unmounted', () => {
+    mountPubSub()
+    unmountPubSub()
+    expect(PubSub.guardCallback).toBe(undefined)
+  })
+  it('should install a guardCallback that throws an informative error mentioning the operation', () => {
+    mountPubSub()
+    expect(() => PubSub.guardCallback?.("subscribe to 'X'")).toThrow(/subscribe to 'X'/v)
+  })
+  it('should install a guardCallback whose message hints at the Imports stub seam', () => {
+    mountPubSub()
+    expect(() => PubSub.guardCallback?.("publish 'Y'")).toThrow(/Imports/v)
   })
 })
