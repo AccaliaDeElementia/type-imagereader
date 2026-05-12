@@ -66,4 +66,27 @@ describe('public/app/pubsub defer()', () => {
       expect(PubSub.deferred.pop()?.delayCycles).toBe(mapped)
     })
   }
+  it('should invoke guardCallback with the operation when set', () => {
+    const guard = Sinon.spy()
+    PubSub.guardCallback = guard
+    try {
+      defer(Sinon.spy(), 0)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+    expect(guard.firstCall.args[0]).toBe('defer')
+  })
+  it('should propagate the throw from guardCallback before queueing the deferred', () => {
+    PubSub.guardCallback = () => {
+      throw new Error('guard tripped')
+    }
+    try {
+      expect(() => {
+        defer(Sinon.spy(), 0)
+      }).toThrow(/guard tripped/v)
+      expect(PubSub.deferred).toHaveLength(0)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+  })
 })

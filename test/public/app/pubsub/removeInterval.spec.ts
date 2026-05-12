@@ -55,4 +55,28 @@ describe('public/app/pubsub removeInterval()', () => {
     removeInterval('FOOBAR')
     expect(spy.callCount).toBe(0)
   })
+  it('should invoke guardCallback with the operation when set', () => {
+    const guard = Sinon.spy()
+    PubSub.guardCallback = guard
+    try {
+      removeInterval('FOOBAR')
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+    expect(guard.firstCall.args[0]).toBe("removeInterval 'FOOBAR'")
+  })
+  it('should propagate the throw from guardCallback before regenerating the interval map', () => {
+    const ivals = PubSub.intervals
+    PubSub.guardCallback = () => {
+      throw new Error('guard tripped')
+    }
+    try {
+      expect(() => {
+        removeInterval('FOOBAR')
+      }).toThrow(/guard tripped/v)
+      expect(PubSub.intervals).toBe(ivals)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+  })
 })

@@ -88,6 +88,7 @@ async function publishAsync(topic: string, data?: unknown): Promise<void> {
 }
 
 export function defer(method: VoidMethod, delayMs: number): void {
+  PubSub.guardCallback?.('defer')
   PubSub.deferred.push({
     method,
     delayCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), MINIMUM_CYCLE_COUNT),
@@ -95,6 +96,7 @@ export function defer(method: VoidMethod, delayMs: number): void {
 }
 
 export function addInterval(name: string, method: VoidMethod, delayMs: number): void {
+  PubSub.guardCallback?.(`addInterval '${name}'`)
   PubSub.intervals[name] = {
     method,
     intervalCycles: Math.max(Math.ceil(delayMs / PubSub.cycleTime), MINIMUM_CYCLE_COUNT),
@@ -103,6 +105,7 @@ export function addInterval(name: string, method: VoidMethod, delayMs: number): 
 }
 
 export function removeInterval(name: string): void {
+  PubSub.guardCallback?.(`removeInterval '${name}'`)
   const ivals: Record<string, DeferredMethod & IntervalMethod> = {}
   for (const [k, v] of Object.entries(PubSub.intervals)) {
     if (k === name) continue

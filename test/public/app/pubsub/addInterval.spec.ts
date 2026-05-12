@@ -55,4 +55,27 @@ describe('public/app/pubsub addInterval()', () => {
       expect(PubSub.intervals.FOOBAR?.intervalCycles).toBe(mapped)
     })
   }
+  it('should invoke guardCallback with the operation when set', () => {
+    const guard = Sinon.spy()
+    PubSub.guardCallback = guard
+    try {
+      addInterval('FOOBAR', Sinon.spy(), 100)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+    expect(guard.firstCall.args[0]).toBe("addInterval 'FOOBAR'")
+  })
+  it('should propagate the throw from guardCallback before registering the interval', () => {
+    PubSub.guardCallback = () => {
+      throw new Error('guard tripped')
+    }
+    try {
+      expect(() => {
+        addInterval('FOOBAR', Sinon.spy(), 100)
+      }).toThrow(/guard tripped/v)
+      expect(PubSub.intervals.FOOBAR).toBe(undefined)
+    } finally {
+      PubSub.guardCallback = undefined
+    }
+  })
 })
