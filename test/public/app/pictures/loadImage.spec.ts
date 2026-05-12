@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictures/state.js'
-import { Imports, Internals, loadImage } from '#public/scripts/app/pictures/viewer.js'
+import { Imports, Internals, Viewer, loadImage } from '#public/scripts/app/pictures/viewer.js'
 import { cast } from '#testutils/typeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
@@ -84,14 +84,14 @@ describe('public/app/pictures loadImage()', () => {
   })
   it('should be noop when current image is null', async () => {
     Pictures.current = null
-    Pictures.nextPending = true
+    Viewer.nextPending = true
     await loadImage()
     expect(publishStub.withArgs('Loading:show').called).toBe(false)
   })
   it('should be noop when current image path is empty', async () => {
     assert(Pictures.current !== null)
     Pictures.current.path = ''
-    Pictures.nextPending = true
+    Viewer.nextPending = true
     await loadImage()
     expect(publishStub.withArgs('Loading:show').called).toBe(false)
   })
@@ -114,19 +114,19 @@ describe('public/app/pictures loadImage()', () => {
     expect(publishStub.withArgs('Picture:LoadNew').callCount).toBe(0)
   })
   it('should show loading when next is pending', async () => {
-    Pictures.nextPending = true
+    Viewer.nextPending = true
     await loadImage()
     expect(publishStub.withArgs('Loading:show').called).toBe(true)
   })
   it('should not show loading when next is not pending', async () => {
-    Pictures.nextPending = false
+    Viewer.nextPending = false
     await loadImage()
     expect(publishStub.withArgs('Loading:show').called).toBe(false)
   })
   it('should not await next loader when image is null', async () => {
     Pictures.current = null
     let awaited = false
-    Pictures.nextLoader = delay(10).then(() => {
+    Viewer.nextLoader = delay(10).then(() => {
       awaited = true
     })
     await loadImage()
@@ -134,7 +134,7 @@ describe('public/app/pictures loadImage()', () => {
   })
   it('should await next loader when image is valid', async () => {
     let awaited = false
-    Pictures.nextLoader = delay(10).then(() => {
+    Viewer.nextLoader = delay(10).then(() => {
       awaited = true
     })
     await loadImage()
@@ -151,17 +151,17 @@ describe('public/app/pictures loadImage()', () => {
     expect(element?.classList.contains('seen')).toBe(true)
   })
   it('should call postJSON once for navigate latest', async () => {
-    Pictures.modCount = 50
+    Viewer.modCount = 50
     await loadImage()
     expect(postJSONSpy.callCount).toBe(1)
   })
   it('should call postJSON with expected url for navigate latest', async () => {
-    Pictures.modCount = 50
+    Viewer.modCount = 50
     await loadImage()
     expect(postJSONSpy.calledWith('/api/navigate/latest')).toBe(true)
   })
   it('should call postJSON with expected body for navigate latest', async () => {
-    Pictures.modCount = 50
+    Viewer.modCount = 50
     await loadImage()
     expect(postJSONSpy.firstCall.args[1]).toEqual({
       path: '/some/path/1250.png',
@@ -182,71 +182,71 @@ describe('public/app/pictures loadImage()', () => {
   ]
   modcountTests.forEach(([title, input, result]) => {
     it(`should ${result ? '' : 'not '}accept ${title} as modcount from postJSON`, async () => {
-      Pictures.modCount = 99
+      Viewer.modCount = 99
       await loadImage()
       const fn = cast<(_: unknown) => unknown>(postJSONSpy.firstCall.args[2])
       expect(fn(input)).toBe(result)
     })
   })
   it('should trigger reload when new modcount is undefined', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(undefined)
     await loadImage()
     expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(1)
   })
   it('should not update image src when new modcount is undefined', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(undefined)
     await loadImage()
     expect(Pictures.mainImage?.src).toBe('')
   })
   it('should trigger reload when new modcount is NaN', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(NaN)
     await loadImage()
     expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(1)
   })
   it('should not update image src when new modcount is NaN', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(NaN)
     await loadImage()
     expect(Pictures.mainImage?.src).toBe('')
   })
   it('should trigger reload when new modcount is negative', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(-1)
     await loadImage()
     expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(1)
   })
   it('should not update image src when new modcount is negative', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(-1)
     await loadImage()
     expect(Pictures.mainImage?.src).toBe('')
   })
   it('should not initiate reload when new modcount is zero', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(0)
     await loadImage()
     expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(0)
   })
   it('should update modcount to zero on successful post', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(0)
     await loadImage()
-    expect(Pictures.modCount).toBe(0)
+    expect(Viewer.modCount).toBe(0)
   })
   it('should not reload when modcount is valid', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(76)
     await loadImage()
     expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(0)
   })
   it('should update modcount on successful post', async () => {
-    Pictures.modCount = 99
+    Viewer.modCount = 99
     postJSONSpy.resolves(76)
     await loadImage()
-    expect(Pictures.modCount).toBe(76)
+    expect(Viewer.modCount).toBe(76)
   })
   it('should set src on image', async () => {
     await loadImage()

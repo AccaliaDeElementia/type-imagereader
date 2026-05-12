@@ -26,6 +26,24 @@ export enum NavigateTo {
   Last,
 }
 
+const UNINITIALIZED_MOD_COUNT = -1
+
+export const Viewer = {
+  modCount: UNINITIALIZED_MOD_COUNT,
+  nextLoader: Promise.resolve() as Promise<unknown>,
+  nextPending: true,
+}
+
+export function resetViewerState(): void {
+  Viewer.modCount = UNINITIALIZED_MOD_COUNT
+  Viewer.nextLoader = Promise.resolve()
+  Viewer.nextPending = true
+}
+
+export function setModCount(modCount: number): void {
+  Viewer.modCount = modCount
+}
+
 function makeURI(width: number | undefined, height: number | undefined, img: Picture): string {
   return `/images/scaled/${width}/${height}${img.path}-image.webp`
 }
@@ -80,13 +98,13 @@ export async function changePicture(pic: Picture | undefined): Promise<void> {
 export async function loadImage(): Promise<void> {
   if (Pictures.current === null) return
   if (Pictures.current.path === '') return
-  if (Pictures.nextPending) {
+  if (Viewer.nextPending) {
     Imports.publish('Loading:show')
   }
   try {
     Pictures.current.seen = true
     Pictures.current.element?.classList.add('seen')
-    const { modCount } = Pictures
+    const { modCount } = Viewer
     const newModCount = await Imports.postJSON<number | undefined>(
       '/api/navigate/latest',
       { path: Pictures.current.path, modCount },
@@ -97,8 +115,8 @@ export async function loadImage(): Promise<void> {
       return
     }
     // eslint-disable-next-line require-atomic-updates -- modCount is intentionally updated with the server response
-    Pictures.modCount = newModCount
-    await Pictures.nextLoader
+    Viewer.modCount = newModCount
+    await Viewer.nextLoader
     Pictures.mainImage?.setAttribute(
       'src',
       Internals.makeURI(Pictures.mainImage.width, Pictures.mainImage.height, Pictures.current),
@@ -121,17 +139,17 @@ export async function loadImage(): Promise<void> {
 async function loadNextImage(): Promise<void> {
   const next = Internals.getPicture(Imports.getShowUnreadOnly() ? NavigateTo.NextUnread : NavigateTo.Next)
   if (next === undefined) {
-    Pictures.nextPending = false
-    Pictures.nextLoader = Promise.resolve()
+    Viewer.nextPending = false
+    Viewer.nextLoader = Promise.resolve()
   } else {
     const uri = Internals.makeURI(Pictures.mainImage?.width, Pictures.mainImage?.height, next)
-    Pictures.nextPending = true
+    Viewer.nextPending = true
     const clearPending = (): void => {
-      Pictures.nextPending = false
+      Viewer.nextPending = false
     }
-    Pictures.nextLoader = window.fetch(uri).then(clearPending, clearPending)
+    Viewer.nextLoader = window.fetch(uri).then(clearPending, clearPending)
   }
-  await Pictures.nextLoader
+  await Viewer.nextLoader
 }
 
 export function getPicture(navi: NavigateTo): Picture | undefined {

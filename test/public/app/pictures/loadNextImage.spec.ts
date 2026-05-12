@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictures/state.js'
-import { Imports, Internals, NavigateTo } from '#public/scripts/app/pictures/viewer.js'
+import { Imports, Internals, NavigateTo, Viewer } from '#public/scripts/app/pictures/viewer.js'
 import { cast } from '#testutils/typeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
@@ -82,44 +82,44 @@ describe('public/app/pictures loadNextImage()', () => {
   })
   it('should set nextLoader', async () => {
     const sentinal = Promise.resolve()
-    Pictures.nextLoader = sentinal
+    Viewer.nextLoader = sentinal
     await Internals.loadNextImage()
-    expect(Pictures.nextLoader).not.toBe(sentinal)
+    expect(Viewer.nextLoader).not.toBe(sentinal)
   })
   it('should set nextPending on exec', async () => {
-    Pictures.nextPending = false
+    Viewer.nextPending = false
     const promise = Internals.loadNextImage()
-    expect(Pictures.nextPending).toBe(true)
+    expect(Viewer.nextPending).toBe(true)
     await promise
   })
   it('should clear nextPending on no next image', async () => {
-    Pictures.nextPending = true
+    Viewer.nextPending = true
     getPictureStub.returns(undefined)
     const promise = Internals.loadNextImage()
-    expect(Pictures.nextPending).toBe(false)
+    expect(Viewer.nextPending).toBe(false)
     await promise
   })
   it('should set nextPending during fetch resolve', async () => {
     fetchStub.resolves()
     const promise = Internals.loadNextImage()
-    expect(Pictures.nextPending).toBe(true)
+    expect(Viewer.nextPending).toBe(true)
     await promise
   })
   it('should clear nextPending on fetch resolve', async () => {
     fetchStub.resolves()
     await Internals.loadNextImage()
-    expect(Pictures.nextPending).toBe(false)
+    expect(Viewer.nextPending).toBe(false)
   })
   it('should set nextPending during fetch reject', async () => {
     fetchStub.rejects('BOO')
     const promise = Internals.loadNextImage()
-    expect(Pictures.nextPending).toBe(true)
+    expect(Viewer.nextPending).toBe(true)
     await promise
   })
   it('should clear nextPending on fetch reject', async () => {
     fetchStub.rejects('BOO')
     await Internals.loadNextImage()
-    expect(Pictures.nextPending).toBe(false)
+    expect(Viewer.nextPending).toBe(false)
   })
   it('should not fetch on no next image', async () => {
     getPictureStub.returns(undefined)

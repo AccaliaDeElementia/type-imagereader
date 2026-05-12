@@ -25,15 +25,16 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
 
   let element: HTMLElement | null = null
   let publishStub = sandbox.stub()
+  let setModCountStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
     resetPubSub()
     publishStub = sandbox.stub(Imports, 'publish')
+    setModCountStub = sandbox.stub(Imports, 'setModCount')
     Pictures.mainImage = dom.window.document.createElement('img')
     element = dom.window.document.querySelector('div#ImageLink')
     Pictures.pictures = []
-    Pictures.modCount = -65535
   })
   afterEach(() => {
     sandbox.restore()
@@ -47,7 +48,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(Pictures.modCount).toBe(-65535)
+    expect(setModCountStub.called).toBe(false)
   })
   it('should return null for null mainImage', () => {
     Pictures.mainImage = null
@@ -102,7 +103,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(Pictures.modCount).toBe(-65535)
+    expect(setModCountStub.called).toBe(false)
   })
   it('should hide mainImage when listing has empty pictures', () => {
     Internals.setPicturesGetFirst({
@@ -152,7 +153,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(Pictures.modCount).toBe(-65535)
+    expect(setModCountStub.called).toBe(false)
   })
   it('should unhide mainImage when listing has pictures', () => {
     Pictures.mainImage?.classList.add('hidden')
@@ -236,7 +237,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: pics,
       modCount: 42,
     })
-    expect(Pictures.modCount).toBe(42)
+    expect(setModCountStub.calledWith(42)).toBe(true)
   })
   it('should set default modCount when listing has missing modCount', () => {
     const pics = Array.from({ length: 17 }).map((_, i) => ({
@@ -251,7 +252,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       pictures: pics,
     })
-    expect(Pictures.modCount).toBe(-1)
+    expect(setModCountStub.calledWith(-1)).toBe(true)
   })
   it('should return first pciture when listing has pictures', () => {
     const pics = Array.from({ length: 17 }).map((_, i) => ({

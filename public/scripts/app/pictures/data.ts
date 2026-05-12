@@ -3,7 +3,7 @@
 import type { Listing, Picture } from '#contracts/listing.js'
 import { Pictures } from './state.js'
 import { makeTab as _makeTab } from './grid.js'
-import { loadImage as _loadImage } from './viewer.js'
+import { loadImage as _loadImage, setModCount as _setModCount } from './viewer.js'
 import { getFirst } from '#utils/helpers.js'
 import { publish as _publish } from '../pubsub.js'
 
@@ -12,6 +12,7 @@ const DEFAULT_MOD_COUNT = -1
 export const Imports = {
   makeTab: _makeTab,
   loadImage: _loadImage,
+  setModCount: _setModCount,
   publish: _publish,
 }
 
@@ -33,7 +34,7 @@ function setPicturesGetFirst(data: Listing): Picture | null {
   Pictures.mainImage.classList.remove('hidden')
   document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
   Pictures.pictures = data.pictures
-  Pictures.modCount = data.modCount ?? DEFAULT_MOD_COUNT
+  Imports.setModCount(data.modCount ?? DEFAULT_MOD_COUNT)
   Internals.setPictureIndices()
   return firstPic
 }

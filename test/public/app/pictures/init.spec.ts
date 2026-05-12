@@ -57,6 +57,7 @@ describe('public/app/pictures init()', () => {
   let loadDataSpy = sandbox.stub()
   let changePictureSpy = sandbox.stub()
   let subscribeStub = sandbox.stub()
+  let resetViewerStateStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -70,6 +71,7 @@ describe('public/app/pictures init()', () => {
     loadDataSpy = sandbox.stub(Imports, 'loadData')
     changePictureSpy = sandbox.stub(Imports, 'changePicture')
     subscribeStub = sandbox.stub(Imports, 'subscribe')
+    resetViewerStateStub = sandbox.stub(Imports, 'resetViewerState')
   })
   afterEach(() => {
     sandbox.restore()
@@ -85,15 +87,10 @@ describe('public/app/pictures init()', () => {
     Pictures.init()
     expect(Pictures.current).toBe(null)
   })
-  it('should reset nextLoader promise', () => {
-    Pictures.nextLoader = cast<Promise<void>>(null)
+  it('should reset viewer state on init', () => {
+    expect(resetViewerStateStub.called).toBe(false)
     Pictures.init()
-    expect(Pictures.nextLoader).toBeInstanceOf(Promise)
-  })
-  it('should reset nextPending status', () => {
-    Pictures.nextPending = false
-    Pictures.init()
-    expect(Pictures.nextPending).toBe(true)
+    expect(resetViewerStateStub.called).toBe(true)
   })
   it('should reset markup on init', () => {
     expect(resetMarkupSpy.called).toBe(false)

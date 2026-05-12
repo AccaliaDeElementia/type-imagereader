@@ -3,7 +3,11 @@
 import type { Picture } from '#contracts/listing.js'
 import { isListing, isPicture } from '#contracts/listing.js'
 import { resetMarkup as _gridResetMarkup } from './grid.js'
-import { changePicture as _changePicture, resetMarkup as _viewerResetMarkup } from './viewer.js'
+import {
+  changePicture as _changePicture,
+  resetMarkup as _viewerResetMarkup,
+  resetViewerState as _resetViewerState,
+} from './viewer.js'
 import { loadData as _loadData } from './data.js'
 import { initActions as _initActions, initMouse as _initMouse } from './inputs.js'
 import { initUnreadSelectorSlider as _initUnreadSelectorSlider } from './unreadFilter.js'
@@ -13,6 +17,7 @@ export const Imports = {
   loadData: _loadData,
   gridResetMarkup: _gridResetMarkup,
   viewerResetMarkup: _viewerResetMarkup,
+  resetViewerState: _resetViewerState,
   changePicture: _changePicture,
   initActions: _initActions,
   initMouse: _initMouse,
@@ -20,12 +25,7 @@ export const Imports = {
   subscribe: _subscribe,
 }
 
-const UNINITIALIZED_MOD_COUNT = -1
-
 interface StateFields {
-  modCount: number
-  nextLoader: Promise<unknown>
-  nextPending: boolean
   pictures: Picture[]
   current: Picture | null
   mainImage: HTMLImageElement | null
@@ -34,9 +34,6 @@ interface StateFields {
 
 function defaultState(): StateFields {
   return {
-    modCount: UNINITIALIZED_MOD_COUNT,
-    nextLoader: Promise.resolve(),
-    nextPending: true,
     pictures: [],
     current: null,
     mainImage: null,
@@ -53,6 +50,7 @@ function resetMarkup(): void {
 
 function init(): void {
   Object.assign(Pictures, defaultState())
+  Imports.resetViewerState()
   Pictures.resetMarkup()
   Imports.subscribe('Navigate:Data', async (data) => {
     if (isListing(data)) await Imports.loadData(data)
