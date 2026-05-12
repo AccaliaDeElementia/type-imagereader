@@ -1,11 +1,12 @@
 'use sanity'
 
 import { hasValue } from '#utils/helpers.js'
-import { subscribe as _subscribe, publish as _publish, defer } from './pubsub.js'
+import { subscribe as _subscribe, publish as _publish, defer as _defer } from './pubsub.js'
 
 export const Imports = {
   subscribe: _subscribe,
   publish: _publish,
+  defer: _defer,
 }
 
 const ANIMATION_RESET_DELAY = 100
@@ -28,7 +29,7 @@ export function init(): void {
     Loading.navbar?.style.removeProperty('transition')
     Loading.navbar?.style.setProperty('background-color', '#FF0000')
     await Promise.resolve()
-    defer(() => {
+    Imports.defer(() => {
       Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
       Loading.navbar?.style.removeProperty('background-color')
     }, ANIMATION_RESET_DELAY)
@@ -38,7 +39,7 @@ export function init(): void {
     Loading.navbar?.style.removeProperty('transition')
     Loading.navbar?.style.setProperty('background-color', '#00AA00')
     await Promise.resolve()
-    defer(() => {
+    Imports.defer(() => {
       Loading.navbar?.style.setProperty('transition', 'background-color 2s ease-in-out')
       Loading.navbar?.style.removeProperty('background-color')
     }, ANIMATION_RESET_DELAY)

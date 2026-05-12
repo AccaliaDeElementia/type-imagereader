@@ -1,9 +1,10 @@
 'use sanity'
 
-import { subscribe as _subscribe, addInterval } from './pubsub.js'
+import { subscribe as _subscribe, addInterval as _addInterval } from './pubsub.js'
 
 export const Imports = {
   subscribe: _subscribe,
+  addInterval: _addInterval,
 }
 
 export interface WakeLockSentinel {
@@ -29,7 +30,7 @@ export function init(): void {
   Imports.subscribe('Picture:LoadNew', async () => {
     await Internals.takeLock().catch(() => null)
   })
-  addInterval(
+  Imports.addInterval(
     'WakeLock:Release',
     () => {
       Internals.releaseLock().catch(() => null)

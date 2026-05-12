@@ -1,6 +1,11 @@
 'use sanity'
 
-import { subscribe as _subscribe, publish as _publish, addInterval, removeInterval } from './pubsub.js'
+import {
+  subscribe as _subscribe,
+  publish as _publish,
+  addInterval as _addInterval,
+  removeInterval as _removeInterval,
+} from './pubsub.js'
 import { cloneNode } from './utils.js'
 import { isHTMLElement } from '#contracts/markup.js'
 
@@ -10,6 +15,8 @@ import { hasValue, hasValues } from '#utils/helpers.js'
 export const Imports = {
   subscribe: _subscribe,
   publish: _publish,
+  addInterval: _addInterval,
+  removeInterval: _removeInterval,
 }
 
 interface ButtonDefinition {
@@ -334,7 +341,7 @@ export function init(): void {
     Imports.publish(`Action:Keypress:${key}`, key)
   })
   window.addEventListener('gamepadconnected', () => {
-    addInterval(
+    Imports.addInterval(
       'readGamepad',
       () => {
         Internals.readGamepad()
@@ -345,7 +352,7 @@ export function init(): void {
   window.addEventListener('gamepaddisconnected', () => {
     const remaining = navigator.getGamepads().filter((p) => p !== null)
     if (remaining.length === ZERO_REMAINING_PADS) {
-      removeInterval('readGamepad')
+      Imports.removeInterval('readGamepad')
     }
   })
 }
