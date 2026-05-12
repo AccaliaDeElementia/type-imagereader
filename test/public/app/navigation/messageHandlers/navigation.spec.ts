@@ -4,7 +4,6 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { subscribe } from '#public/scripts/app/pubsub.js'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import type { Listing } from '#contracts/listing.js'
@@ -24,7 +23,6 @@ html
 `
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
-  const tabSelectedSpy = sandbox.stub()
   let loadDataStub = sandbox.stub()
   let subscribeStub = sandbox.stub()
   beforeEach(() => {
@@ -34,8 +32,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
     mountDom(dom)
 
     resetPubSub()
-    tabSelectedSpy.resolves()
-    subscribe('Tab:Selected', tabSelectedSpy)
     loadDataStub = sandbox.stub(Internals, 'loadData').resolves()
     subscribeStub = sandbox.stub(Imports, 'subscribe')
     Navigation.current = {
@@ -46,7 +42,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    tabSelectedSpy.reset()
   })
   afterAll(() => {
     unmountDom()

@@ -5,7 +5,6 @@ import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { subscribe } from '#public/scripts/app/pubsub.js'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/typeGuards.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
@@ -26,7 +25,6 @@ html
 `
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
-  const tabSelectedSpy = sandbox.stub()
   let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -35,8 +33,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
     mountDom(dom)
 
     resetPubSub()
-    tabSelectedSpy.resolves()
-    subscribe('Tab:Selected', tabSelectedSpy)
     sandbox.stub(Internals, 'loadData').resolves()
     subscribeStub = sandbox.stub(Imports, 'subscribe')
     Navigation.current = {
@@ -47,7 +43,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    tabSelectedSpy.reset()
   })
   afterAll(() => {
     unmountDom()

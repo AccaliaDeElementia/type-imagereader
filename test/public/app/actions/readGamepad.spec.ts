@@ -2,8 +2,7 @@
 
 import Sinon from 'sinon'
 
-import { subscribe } from '#public/scripts/app/pubsub.js'
-import { Actions, Internals } from '#public/scripts/app/actions.js'
+import { Actions, Imports, Internals } from '#public/scripts/app/actions.js'
 
 import { resetPubSub } from '#testutils/pubsub.js'
 import { JSDOM } from 'jsdom'
@@ -25,7 +24,7 @@ describe('public/app/actions readGamepad()', () => {
   }
 
   let getTestGamepads = sandbox.stub()
-  let actionGamepadListener = sandbox.stub()
+  let publishStub = sandbox.stub()
   let documentHidden = false
 
   let gamepadsReadStub = sandbox.stub()
@@ -50,8 +49,7 @@ describe('public/app/actions readGamepad()', () => {
     })
     getTestGamepads.returns([testGamePad])
     gamepadsReadStub = sandbox.stub(Actions.gamepads, 'read').returns(false)
-    actionGamepadListener = sandbox.stub().resolves()
-    subscribe('Action:Gamepad', actionGamepadListener)
+    publishStub = sandbox.stub(Imports, 'publish')
   })
   afterEach(() => {
     sandbox.restore()
@@ -78,7 +76,7 @@ describe('public/app/actions readGamepad()', () => {
   })
   it('should accept a valid gamepad', () => {
     Internals.readGamepad()
-    expect(actionGamepadListener.called).toBe(false)
+    expect(publishStub.called).toBe(false)
   })
   it('should not read when hidden', () => {
     documentHidden = true
@@ -99,7 +97,7 @@ describe('public/app/actions readGamepad()', () => {
     Actions.gamepads.pressedButtons.push('Q')
     Actions.gamepads.pressedButtons.push('Z')
     Internals.readGamepad()
-    expect(actionGamepadListener.called).toBe(false)
+    expect(publishStub.called).toBe(false)
   })
   it('should use the GamepadButtons to read the gamepads', () => {
     Internals.readGamepad()
@@ -123,17 +121,17 @@ describe('public/app/actions readGamepad()', () => {
     Actions.gamepads.pressedButtons.push('Q')
     Actions.gamepads.pressedButtons.push('Z')
     Internals.readGamepad()
-    expect(actionGamepadListener.called).toBe(true)
+    expect(publishStub.called).toBe(true)
   })
   it('should publish concatenated button names when read detects no buttons', () => {
     Actions.gamepads.pressedButtons.push('A')
     Actions.gamepads.pressedButtons.push('Q')
     Actions.gamepads.pressedButtons.push('Z')
     Internals.readGamepad()
-    expect(actionGamepadListener.calledWithExactly(undefined, 'ACTION:GAMEPAD:AQZ')).toBe(true)
+    expect(publishStub.calledWithExactly('Action:Gamepad:AQZ')).toBe(true)
   })
   it('should not publish publish any buttons when read detects no buttons with no history', () => {
     Internals.readGamepad()
-    expect(actionGamepadListener.called).toBe(false)
+    expect(publishStub.called).toBe(false)
   })
 })
