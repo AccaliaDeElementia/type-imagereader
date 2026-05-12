@@ -4,6 +4,11 @@ import tseslint from 'typescript-eslint'
 import love from 'eslint-config-love'
 import eslintConfigPrettier from 'eslint-config-prettier'
 
+const INTERNALS_IMPORTS_MESSAGE =
+  "`Internals` and `Imports` are stub seams scoped to their defining module. Production code should import the named function directly; if you need a stub seam in this file, add it to this file's own `Imports` object."
+const PUBSUB_MESSAGE =
+  'Direct `PubSub` access leaks pubsub internals. Use `Imports.subscribe`/`publish`/`forward`/`defer`/`addInterval`/`removeInterval` on the SUT module and the pubsub testutils (resetPubSub, mountPubSub, capturedSubscriber, publishedData, capturedInterval, capturedDeferred) for state inspection. Keep the allowlist in sync with `GUARD_EXCLUDED_PATHS` in `testutils/pubsub.ts`.'
+
 const describeLikeNames = new Set(['describe', 'context'])
 const isDescribeCallback = (fn) => {
   const parent = fn.parent
@@ -142,8 +147,12 @@ export default [
             {
               group: ['**'],
               importNames: ['Internals', 'Imports'],
-              message:
-                "`Internals` and `Imports` are stub seams scoped to their defining module. Production code should import the named function directly; if you need a stub seam in this file, add it to this file's own `Imports` object.",
+              message: INTERNALS_IMPORTS_MESSAGE,
+            },
+            {
+              group: ['**'],
+              importNames: ['PubSub'],
+              message: PUBSUB_MESSAGE,
             },
           ],
         },
@@ -176,8 +185,23 @@ export default [
       // Spec files going over 1000 are still a real signal worth investigating.
       'max-lines': ['error', { max: 1000, skipBlankLines: true, skipComments: true }],
       // Spec files legitimately import Internals (within-module stub seam) and Imports
-      // (cross-module stub seam) of the module under test.
-      'no-restricted-imports': 'off',
+      // (cross-module stub seam) of the module under test. PubSub access remains blocked —
+      // specs should go through Imports.* on the SUT and the pubsub testutils. A narrower
+      // override below opens PubSub access for the small set of specs that legitimately
+      // touch pubsub state directly (the pubsub primitive specs, the pubsub testutil
+      // spec, and the client-init integration spec).
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**'],
+              importNames: ['PubSub'],
+              message: PUBSUB_MESSAGE,
+            },
+          ],
+        },
+      ],
       'no-restricted-syntax': [
         'error',
         {
@@ -197,6 +221,23 @@ export default [
         },
       ],
       'local/no-method-stub-outside-hook': 'error',
+    },
+  },
+  {
+    // Files allowed to import `PubSub` directly. Keep in sync with
+    // `GUARD_EXCLUDED_PATHS` in `testutils/pubsub.ts` (the runtime mountPubSub
+    // guard exclusions). The two lists differ: runtime applies only to test
+    // execution and uses substring matching on filesystem paths; this list
+    // uses ESLint globs and also includes the source-side `testutils/pubsub.ts`
+    // which the runtime guard never sees.
+    files: [
+      'testutils/pubsub.ts',
+      'test/public/app/pubsub/**',
+      'test/testutils/pubSub.spec.ts',
+      'test/integration/clientInitBinding.spec.ts',
+    ],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
   {
