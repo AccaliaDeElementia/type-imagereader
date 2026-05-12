@@ -80,6 +80,15 @@ Leave ESLint rules in place when practical. Override them inline (with a `--` re
 - Single assertion per `it()` block.
 - Each spec file should target one module: at most one `Imports`/`Internals` import path per spec.
 
+### Two-pronged stub strategy
+
+Tests isolate the SUT from its dependencies in one of two ways depending on what the dependency is:
+
+- **Cross-module / npm / node deps → `Imports`.** Anything the module imports (other project modules, npm packages, node builtins) goes through the module's `Imports` container so tests can swap it via `sandbox.stub(Imports, 'foo')`. This is the dominant pattern.
+- **Runtime globals → patch the global directly.** Browser/DOM/node globals (`window.fetch`, `window.setInterval`, `globalThis.crypto`, etc.) are not imports and don't fit in `Imports`. Patch them via `sandbox.stub(global, 'fetch')` or by assigning onto the test's `dom.window` instance. Don't try to wrap globals in `Imports` to dodge the pattern — the global IS the seam.
+
+The `PubSub` primitives (`subscribe`/`publish`/`forward`/`defer`/`addInterval`/`removeInterval`) follow rule 1: import them through your module's `Imports` and stub there. Direct `PubSub` access from production or test code is blocked by `no-restricted-imports`; a small allowlist (the pubsub primitive specs, the pubsub testutil spec, the client-init integration spec, and `testutils/pubsub.ts` itself) is the only place that touches `PubSub` directly. Spec state inspection goes through the pubsub testutils (`resetPubSub`, `mountPubSub`, `capturedSubscriber`, `publishedData`, `capturedInterval`, `capturedDeferred`). The runtime `mountPubSub` guard enforces this at test execution time — the ESLint allowlist (`eslint.config.mjs`) and the runtime guard's `GUARD_EXCLUDED_PATHS` (`testutils/pubsub.ts`) must be kept in sync.
+
 ## Operational notes
 
 - `npm test` runs prettier + lint + typecheck + vitest. Redirect to `run.log` when iterating: `npm test 2>&1 | tee run.log`.
