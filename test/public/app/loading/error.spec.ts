@@ -4,9 +4,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Imports, init, Loading } from '#public/scripts/app/loading.js'
-import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedDeferred, capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 const markup = `
@@ -19,6 +18,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
   let consoleError = sandbox.stub()
   let publishStub = sandbox.stub()
   let subscribeStub = sandbox.stub()
+  let deferStub = sandbox.stub()
   let dom: JSDOM = new JSDOM('', {})
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -29,6 +29,7 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     resetPubSub()
     subscribeStub = sandbox.stub(Imports, 'subscribe')
     publishStub = sandbox.stub(Imports, 'publish')
+    deferStub = sandbox.stub(Imports, 'defer')
     Loading.overlay = null
     Loading.navbar = null
     init()
@@ -78,18 +79,18 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     expect(navbar?.style.getPropertyValue('background-color')).toBe('rgb(255, 0, 0)')
   })
   it('should set a deferred function', async () => {
-    expect(PubSub.deferred).toHaveLength(0)
+    expect(deferStub.callCount).toBe(0)
     const handler = capturedSubscriber(subscribeStub, 'Loading:Error')
     await handler(undefined)
-    expect(PubSub.deferred).toHaveLength(1)
+    expect(deferStub.callCount).toBe(1)
   })
   it('should defer transition definition', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')
     navbar?.style.removeProperty('transition')
     const handler = capturedSubscriber(subscribeStub, 'Loading:Error')
     await handler(undefined)
-    PubSub.deferred.forEach((fn) => {
-      fn.method()
+    capturedDeferred(deferStub).forEach((fn) => {
+      fn()
     })
     expect(navbar?.style.getPropertyValue('transition')).toBe('background-color 2s ease-in-out')
   })
@@ -98,8 +99,8 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     navbar?.style.setProperty('background-color', '#FFFFFF')
     const handler = capturedSubscriber(subscribeStub, 'Loading:Error')
     await handler(undefined)
-    PubSub.deferred.forEach((fn) => {
-      fn.method()
+    capturedDeferred(deferStub).forEach((fn) => {
+      fn()
     })
     expect(navbar?.style.getPropertyValue('background-color')).toBe('')
   })

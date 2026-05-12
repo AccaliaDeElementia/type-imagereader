@@ -2,15 +2,13 @@
 
 import Sinon from 'sinon'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Actions, Imports, init, Internals } from '#public/scripts/app/actions.js'
 
 import { cast } from '#testutils/typeGuards.js'
-import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedInterval, capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import type { Listing } from '#contracts/listing.js'
-import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()
 
@@ -19,6 +17,8 @@ describe('public/app/actions init()', () => {
   let BuildActionsSpy = sandbox.stub()
   let GamepadResetSpy = sandbox.stub()
   let subscribeStub = sandbox.stub()
+  let addIntervalStub = sandbox.stub()
+  let removeIntervalStub = sandbox.stub()
 
   beforeEach(() => {
     mountDom(dom)
@@ -26,6 +26,8 @@ describe('public/app/actions init()', () => {
     BuildActionsSpy = sandbox.stub(Internals, 'buildActions')
     GamepadResetSpy = sandbox.stub(Actions.gamepads, 'reset')
     subscribeStub = sandbox.stub(Imports, 'subscribe')
+    addIntervalStub = sandbox.stub(Imports, 'addInterval')
+    removeIntervalStub = sandbox.stub(Imports, 'removeInterval')
   })
   afterEach(() => {
     sandbox.restore()
@@ -251,7 +253,7 @@ describe('public/app/actions init()', () => {
     try {
       init()
       cast<() => void>(spy.firstCall.args[1])()
-      expect(PubSub.intervals.readGamepad).not.toBe(undefined)
+      expect(addIntervalStub.calledWith('readGamepad')).toBe(true)
     } finally {
       spy.restore()
     }
@@ -263,8 +265,7 @@ describe('public/app/actions init()', () => {
     try {
       init()
       cast<() => void>(spy.firstCall.args[1])()
-      assert(PubSub.intervals.readGamepad !== undefined)
-      PubSub.intervals.readGamepad.method()
+      capturedInterval(addIntervalStub, 'readGamepad')()
       expect(readspy.called).toBe(true)
     } finally {
       readspy.restore()
@@ -291,9 +292,8 @@ describe('public/app/actions init()', () => {
     try {
       init()
       cast<() => void>(addSpy.firstCall.args[1])()
-      assert(PubSub.intervals.readGamepad !== undefined)
       cast<() => void>(addSpy.secondCall.args[1])()
-      expect(PubSub.intervals.readGamepad).toBe(undefined)
+      expect(removeIntervalStub.calledWith('readGamepad')).toBe(true)
     } finally {
       Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
       addSpy.restore()
@@ -311,9 +311,8 @@ describe('public/app/actions init()', () => {
     try {
       init()
       cast<() => void>(addSpy.firstCall.args[1])()
-      assert(PubSub.intervals.readGamepad !== undefined)
       cast<() => void>(addSpy.secondCall.args[1])()
-      expect(PubSub.intervals.readGamepad).not.toBe(undefined)
+      expect(removeIntervalStub.called).toBe(false)
     } finally {
       Object.defineProperty(global, 'navigator', { configurable: true, get: () => existingNavigator })
       addSpy.restore()

@@ -4,9 +4,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
-import assert from 'node:assert'
+import { capturedInterval, capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { init, Imports, Internals, WakeLock } from '#public/scripts/app/wakelock.js'
 
 const sandbox = Sinon.createSandbox()
@@ -16,12 +14,14 @@ describe('public/app/WakeLock init()', () => {
   let takeLockSpy = sandbox.stub()
   let releaseLockSpy = sandbox.stub()
   let subscribeStub = sandbox.stub()
+  let addIntervalStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
     mountDom(dom)
     takeLockSpy = sandbox.stub(Internals, 'takeLock').resolves()
     releaseLockSpy = sandbox.stub(Internals, 'releaseLock').resolves()
     subscribeStub = sandbox.stub(Imports, 'subscribe')
+    addIntervalStub = sandbox.stub(Imports, 'addInterval')
     resetPubSub()
     WakeLock.initialized = false
   })
@@ -48,27 +48,21 @@ describe('public/app/WakeLock init()', () => {
   })
   it('should add interval for WakeLock:Release', () => {
     init()
-    expect(Object.keys(PubSub.intervals)).toContain('WakeLock:Release')
+    expect(addIntervalStub.calledWith('WakeLock:Release')).toBe(true)
   })
   it('it should use an interval of 30 seconds for wakelock.Release()', () => {
     init()
-    const interval = PubSub.intervals['WakeLock:Release']
-    assert(interval !== undefined)
-    expect(interval.intervalCycles).toBe(3000)
+    expect(addIntervalStub.firstCall.args[2]).toBe(30_000)
   })
   it('should invoke WakeLock.release() when release timer expires', () => {
     init()
-    const interval = PubSub.intervals['WakeLock:Release']
-    assert(interval !== undefined)
-    interval.method()
+    capturedInterval(addIntervalStub, 'WakeLock:Release')()
     expect(releaseLockSpy.callCount).toBe(1)
   })
   it('should tolerate WakeLock.release() rejecting when release timer expires', async () => {
     init()
     releaseLockSpy.rejects('FOO')
-    const interval = PubSub.intervals['WakeLock:Release']
-    assert(interval !== undefined)
-    interval.method()
+    capturedInterval(addIntervalStub, 'WakeLock:Release')()
     await Promise.resolve()
     expect(releaseLockSpy.callCount).toBe(1)
   })
