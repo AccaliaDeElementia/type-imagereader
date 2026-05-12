@@ -2,7 +2,7 @@ html
   head
     meta(name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=8.0,width=device-width,user-scalable=yes")
     title= title
-    link(rel='stylesheet', href='/stylesheets/slideshow.css')
+    link(rel='stylesheet', href=asset('/stylesheets/slideshow.css'))
   body
     img.mainImage.topImage(src=`/images/kiosk${image}-image.webp`)
     img.mainImage.bottomImage.blur(src=`/images/kiosk${image}-image.webp`)
@@ -25,4 +25,4 @@ html
     div.pixel.top-right.hide
     div.pixel.bottom-left.hide
     div.pixel.bottom-right.hide
-    script(src='/scripts/slideshow.js')
+    script(src=asset('/scripts/slideshow.js'))

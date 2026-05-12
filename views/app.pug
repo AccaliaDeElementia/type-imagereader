@@ -5,7 +5,7 @@ html
     title Comic Reader
     link(rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png")
     link(rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png")
-    link(rel='stylesheet', href='/stylesheets/bundle.css')
+    link(rel='stylesheet', href=asset('/stylesheets/bundle.css'))
   body
     nav#navbar
       h1
@@ -132,4 +132,4 @@ html
       li.page-item
         a.page-link(href='#')
           span(aria-hidden='true')
-    script(src='/scripts/app.js' type='text/javascript' defer='defer')
+    script(src=asset('/scripts/app.js') type='text/javascript' defer='defer')

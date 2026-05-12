@@ -19,7 +19,7 @@ const INITIAL_LOAD_TOKEN = 0
 
 describe('app.pug ↔ client init binding', () => {
   beforeAll(() => {
-    const html = renderFile('views/app.pug', {})
+    const html = renderFile('views/app.pug', { asset: (p: string) => p })
     const dom = new JSDOM(html, { url: 'http://127.0.0.1:2999/' })
     mountDom(dom)
   })

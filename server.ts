@@ -19,6 +19,8 @@ import { getRouter as getRootRouter } from '#routes/root.js'
 import { getRouter as getSlideshowRouter } from '#routes/slideshow.js'
 import { getRouter as getWeatherRouter } from '#routes/weather.js'
 
+import { assetUrl, buildAssetVersions } from '#utils/assetVersions.js'
+
 import debug from 'debug'
 
 const moduleDir = dirname(fileURLToPath(import.meta.url))
@@ -33,6 +35,8 @@ export const Imports = {
   morgan,
   helmet,
   WebSocketServer,
+  buildAssetVersions,
+  assetUrl,
 }
 
 export const Routers = {
@@ -122,7 +126,12 @@ export function registerViewsAndMiddleware(app: Express): void {
   app.set('views', join(moduleDir, 'views'))
   app.set('view engine', 'pug')
 
-  app.use(express.static(join(moduleDir, 'dist')))
+  const distDir = join(moduleDir, 'dist')
+  const versions = Imports.buildAssetVersions(distDir)
+  // eslint-disable-next-line no-param-reassign -- app.locals.X assignment is the idiomatic Express pattern for exposing helpers to templates
+  app.locals.asset = (urlPath: string): string => Imports.assetUrl(versions, urlPath)
+
+  app.use(express.static(distDir))
 }
 
 export async function start(port: number): Promise<{ app: Express; server: HttpServer }> {
