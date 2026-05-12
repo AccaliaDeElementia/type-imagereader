@@ -23,6 +23,7 @@ html
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
   let subscribeStub = sandbox.stub()
+  let forwardStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -32,6 +33,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     resetPubSub()
     sandbox.stub(Internals, 'loadData').resolves()
     subscribeStub = sandbox.stub(Imports, 'subscribe')
+    forwardStub = sandbox.stub(Imports, 'forward')
     Navigation.current = {
       path: '/',
       name: '',
@@ -171,9 +173,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
   })
   describe('Message Forwarding Configuration', () => {
-    let forwardStub = sandbox.stub()
     beforeEach(() => {
-      forwardStub = sandbox.stub(Imports, 'forward')
       init()
     })
     const mappers: Array<[string, string]> = [

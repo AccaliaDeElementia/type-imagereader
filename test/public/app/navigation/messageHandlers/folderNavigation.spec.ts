@@ -35,6 +35,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     resetPubSub()
     sandbox.stub(Internals, 'loadData').resolves()
     subscribeStub = sandbox.stub(Imports, 'subscribe')
+    sandbox.stub(Imports, 'forward')
     Navigation.current = {
       path: '/',
       name: '',

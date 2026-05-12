@@ -51,6 +51,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       postJSONSpy = sandbox.stub(Imports, 'postJSON').resolves()
       confirmShowStub = sandbox.stub(Imports, 'show').resolves(true)
       subscribeStub = sandbox.stub(Imports, 'subscribe')
+      sandbox.stub(Imports, 'forward')
       init()
       loadDataStub.resetHistory()
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:MarkAllUnseen')
