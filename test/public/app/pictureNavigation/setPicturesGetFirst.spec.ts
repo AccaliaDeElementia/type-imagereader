@@ -5,12 +5,14 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
-import { Imports, Internals } from '#public/scripts/app/pictureData.js'
+import { Imports, Internals, Viewer } from '#public/scripts/app/pictureNavigation.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
+
+const SENTINEL_MOD_COUNT = -65535
 
 const markup = `
 html
@@ -25,16 +27,15 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
 
   let element: HTMLElement | null = null
   let publishStub = sandbox.stub()
-  let setModCountStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
     resetPubSub()
     publishStub = sandbox.stub(Imports, 'publish')
-    setModCountStub = sandbox.stub(Imports, 'setModCount')
     Pictures.mainImage = dom.window.document.createElement('img')
     element = dom.window.document.querySelector('div#ImageLink')
     Pictures.pictures = []
+    Viewer.modCount = SENTINEL_MOD_COUNT
   })
   afterEach(() => {
     sandbox.restore()
@@ -48,7 +49,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(setModCountStub.called).toBe(false)
+    expect(Viewer.modCount).toBe(SENTINEL_MOD_COUNT)
   })
   it('should return null for null mainImage', () => {
     Pictures.mainImage = null
@@ -103,7 +104,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(setModCountStub.called).toBe(false)
+    expect(Viewer.modCount).toBe(SENTINEL_MOD_COUNT)
   })
   it('should hide mainImage when listing has empty pictures', () => {
     Internals.setPicturesGetFirst({
@@ -153,7 +154,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(setModCountStub.called).toBe(false)
+    expect(Viewer.modCount).toBe(SENTINEL_MOD_COUNT)
   })
   it('should unhide mainImage when listing has pictures', () => {
     Pictures.mainImage?.classList.add('hidden')
@@ -237,7 +238,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: pics,
       modCount: 42,
     })
-    expect(setModCountStub.calledWith(42)).toBe(true)
+    expect(Viewer.modCount).toBe(42)
   })
   it('should set default modCount when listing has missing modCount', () => {
     const pics = Array.from({ length: 17 }).map((_, i) => ({
@@ -252,7 +253,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       pictures: pics,
     })
-    expect(setModCountStub.calledWith(-1)).toBe(true)
+    expect(Viewer.modCount).toBe(-1)
   })
   it('should return first pciture when listing has pictures', () => {
     const pics = Array.from({ length: 17 }).map((_, i) => ({

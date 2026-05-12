@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictureState.js'
-import { changePicture, Imports, Internals } from '#public/scripts/app/pictureViewer.js'
+import { changePicture, Imports, Internals } from '#public/scripts/app/pictureNavigation.js'
 import { publishedData } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()

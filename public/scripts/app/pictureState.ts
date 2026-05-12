@@ -2,21 +2,19 @@
 
 import type { Picture } from '#contracts/listing.js'
 import { isListing, isPicture } from '#contracts/listing.js'
-import { resetMarkup as _gridResetMarkup } from './pictureGrid.js'
+import { resetMarkup as _resetMarkup } from './pictureMarkup.js'
 import {
   changePicture as _changePicture,
-  resetMarkup as _viewerResetMarkup,
+  loadData as _loadData,
   resetViewerState as _resetViewerState,
-} from './pictureViewer.js'
-import { loadData as _loadData } from './pictureData.js'
+} from './pictureNavigation.js'
 import { initActions as _initActions, initMouse as _initMouse } from './pictureInput.js'
 import { initUnreadSelectorSlider as _initUnreadSelectorSlider } from './unreadFilter.js'
 import { subscribe as _subscribe } from './pubsub.js'
 
 export const Imports = {
   loadData: _loadData,
-  gridResetMarkup: _gridResetMarkup,
-  viewerResetMarkup: _viewerResetMarkup,
+  resetMarkup: _resetMarkup,
   resetViewerState: _resetViewerState,
   changePicture: _changePicture,
   initActions: _initActions,
@@ -39,16 +37,10 @@ function defaultState(): StateFields {
   }
 }
 
-function resetMarkup(): void {
-  Pictures.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
-  Imports.gridResetMarkup()
-  Imports.viewerResetMarkup()
-}
-
 function init(): void {
   Object.assign(Pictures, defaultState())
   Imports.resetViewerState()
-  Pictures.resetMarkup()
+  Imports.resetMarkup()
   Imports.subscribe('Navigate:Data', async (data) => {
     if (isListing(data)) await Imports.loadData(data)
   })
@@ -63,5 +55,4 @@ function init(): void {
 export const Pictures = {
   ...defaultState(),
   init,
-  resetMarkup,
 }

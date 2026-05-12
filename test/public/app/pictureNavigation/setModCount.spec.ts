@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Viewer, setModCount } from '#public/scripts/app/pictureViewer.js'
+import { Viewer, setModCount } from '#public/scripts/app/pictureNavigation.js'
 
 describe('public/app/pictures setModCount()', () => {
   it('should set Viewer modCount to the passed value', () => {

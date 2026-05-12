@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Pictures } from '#public/scripts/app/pictureState.js'
-import { Internals } from '#public/scripts/app/pictureData.js'
+import { Internals } from '#public/scripts/app/pictureNavigation.js'
 import type { Picture } from '#contracts/listing.js'
 
 const makePicture = (name: string, overrides: Partial<Picture> = {}): Picture => ({

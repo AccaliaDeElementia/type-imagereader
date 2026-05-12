@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictureState.js'
-import { getPicture, Internals, NavigateTo } from '#public/scripts/app/pictureViewer.js'
+import { getPicture, Internals, NavigateTo } from '#public/scripts/app/pictureNavigation.js'
 import assert from 'node:assert'
 
 const sandbox = Sinon.createSandbox()

@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
-import { Imports, selectPage } from '#public/scripts/app/pictureGrid.js'
+import { Imports, selectPage } from '#public/scripts/app/pictureMarkup.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()

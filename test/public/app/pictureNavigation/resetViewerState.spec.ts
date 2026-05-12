@@ -1,6 +1,6 @@
 'use sanity'
 
-import { Viewer, resetViewerState } from '#public/scripts/app/pictureViewer.js'
+import { Viewer, resetViewerState } from '#public/scripts/app/pictureNavigation.js'
 
 describe('public/app/pictures resetViewerState()', () => {
   it('should reset modCount to the uninitialized sentinel', () => {

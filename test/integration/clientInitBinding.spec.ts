@@ -11,7 +11,7 @@ import { Bookmarks, init as bookmarksInit } from '#public/scripts/app/bookmarks.
 import { Confirm, init as confirmInit } from '#public/scripts/app/confirm.js'
 import { Loading, init as loadingInit } from '#public/scripts/app/loading.js'
 import { Pictures, Imports as PicturesImports } from '#public/scripts/app/pictureState.js'
-import { Grid } from '#public/scripts/app/pictureGrid.js'
+import { Grid } from '#public/scripts/app/pictureMarkup.js'
 
 // Match the private constant inside bookmarks.ts; if that source value ever changes,
 // this baseline reset will need to follow.
@@ -113,15 +113,14 @@ describe('app.pug ↔ client init binding', () => {
   describe('pictures init', () => {
     const sandbox = Sinon.createSandbox()
     beforeEach(() => {
-      // Stub the transitive init chain so this spec stays focused on pictureState.ts's
-      // own DOM bindings (#bigImage img) rather than what the
-      // pictureGrid/pictureViewer/pictureInput/unreadFilter modules' inits do.
-      sandbox.stub(PicturesImports, 'gridResetMarkup')
-      sandbox.stub(PicturesImports, 'viewerResetMarkup')
+      // Let resetMarkup run for real so both DOM handles get populated; stub
+      // the rest of the transitive chain since this spec is about wiring, not
+      // what the pictureInput/unreadFilter modules do at init.
       sandbox.stub(PicturesImports, 'initActions')
       sandbox.stub(PicturesImports, 'initMouse')
       sandbox.stub(PicturesImports, 'initUnreadSelectorSlider')
       Pictures.mainImage = null
+      Grid.imageCard = null
       Pictures.init()
     })
     afterEach(() => {
@@ -129,22 +128,6 @@ describe('app.pug ↔ client init binding', () => {
     })
     it('populates Pictures.mainImage from #bigImage img', () => {
       expect(Pictures.mainImage).not.toBe(null)
-    })
-  })
-
-  describe('grid init via Pictures.init()', () => {
-    const sandbox = Sinon.createSandbox()
-    beforeEach(() => {
-      // Let gridResetMarkup run for real; stub the rest of the transitive chain.
-      sandbox.stub(PicturesImports, 'viewerResetMarkup')
-      sandbox.stub(PicturesImports, 'initActions')
-      sandbox.stub(PicturesImports, 'initMouse')
-      sandbox.stub(PicturesImports, 'initUnreadSelectorSlider')
-      Grid.imageCard = null
-      Pictures.init()
-    })
-    afterEach(() => {
-      sandbox.restore()
     })
     it('populates Grid.imageCard from #ImageCard template', () => {
       expect(Grid.imageCard).not.toBe(null)

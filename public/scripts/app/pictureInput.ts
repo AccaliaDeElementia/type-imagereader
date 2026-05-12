@@ -3,8 +3,8 @@
 import { hasValue, hasValues, ZERO_LENGTH } from '#utils/helpers.js'
 import { isMenuActive as _isMenuActive } from './navigation.js'
 import { Pictures } from './pictureState.js'
-import { changePicture as _changePicture, getPicture as _getPicture, NavigateTo } from './pictureViewer.js'
-import { loadCurrentPageImages as _loadCurrentPageImages } from './pictureGrid.js'
+import { changePicture as _changePicture, getPicture as _getPicture, NavigateTo } from './pictureNavigation.js'
+import { loadCurrentPageImages as _loadCurrentPageImages } from './pictureMarkup.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { publish as _publish, subscribe as _subscribe } from './pubsub.js'
 

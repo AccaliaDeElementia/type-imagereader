@@ -2,7 +2,7 @@
 
 import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './pictureState.js'
-import { hasValues } from '#utils/helpers.js'
+import { hasValues, stringishHasValue } from '#utils/helpers.js'
 import { publish as _publish } from './pubsub.js'
 import { cloneNode } from './utils.js'
 import { isHTMLElement } from '#contracts/markup.js'
@@ -10,6 +10,9 @@ import { isHTMLElement } from '#contracts/markup.js'
 export const Imports = {
   publish: _publish,
 }
+
+const STATUS_BARS = ['top', 'bottom']
+const STATUS_POSITIONS = ['left', 'center', 'right']
 
 export const Grid = {
   imageCard: null as HTMLTemplateElement | null,
@@ -29,10 +32,26 @@ const MINIMUM_INDEX = 0
 type PageSelector = () => number
 
 export function resetMarkup(): void {
+  Pictures.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
   Grid.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
   for (const existing of document.querySelectorAll('#tabImages .pages, #tabImages .page')) {
     existing.parentElement?.removeChild(existing)
   }
+  for (const bar of STATUS_BARS) {
+    for (const position of STATUS_POSITIONS) {
+      document.querySelector(`.statusBar.${bar} .${position}`)?.replaceChildren('')
+    }
+  }
+  Pictures.mainImage?.setAttribute('src', '')
+  Pictures.mainImage?.addEventListener('load', () => {
+    Imports.publish('Loading:Hide')
+  })
+  Pictures.mainImage?.addEventListener('error', () => {
+    const src = Pictures.mainImage?.getAttribute('src')
+    if (stringishHasValue(src)) {
+      Imports.publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
+    }
+  })
 }
 
 function makePictureCard(picture: Picture): HTMLElement | undefined {

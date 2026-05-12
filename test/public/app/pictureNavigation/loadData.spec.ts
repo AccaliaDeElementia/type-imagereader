@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 
 import { Pictures } from '#public/scripts/app/pictureState.js'
-import { Imports, Internals, loadData } from '#public/scripts/app/pictureData.js'
+import { Imports, Internals, loadData } from '#public/scripts/app/pictureNavigation.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
@@ -26,10 +26,10 @@ describe('public/app/pictures loadData()', () => {
       index: -1,
     }))
     Pictures.current = null
-    resetMarkupSpy = sandbox.stub(Pictures, 'resetMarkup')
+    resetMarkupSpy = sandbox.stub(Imports, 'resetMarkup')
     setPicturesSpy = sandbox.stub(Internals, 'setPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
     makeTabSpy = sandbox.stub(Imports, 'makeTab')
-    loadImageSpy = sandbox.stub(Imports, 'loadImage').resolves()
+    loadImageSpy = sandbox.stub(Internals, 'loadImage').resolves()
   })
   afterEach(() => {
     sandbox.restore()

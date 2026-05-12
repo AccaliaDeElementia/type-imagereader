@@ -64,7 +64,7 @@ describe('public/app/pictures init()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    resetMarkupSpy = sandbox.stub(Pictures, 'resetMarkup')
+    resetMarkupSpy = sandbox.stub(Imports, 'resetMarkup')
     initActionsSpy = sandbox.stub(Imports, 'initActions')
     initMouseSpy = sandbox.stub(Imports, 'initMouse')
     initUnreadSliderSpy = sandbox.stub(Imports, 'initUnreadSelectorSlider')

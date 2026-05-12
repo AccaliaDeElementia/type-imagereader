@@ -6,7 +6,7 @@ import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictureState.js'
-import { Imports, resetMarkup } from '#public/scripts/app/pictureViewer.js'
+import { Grid, Imports, resetMarkup } from '#public/scripts/app/pictureMarkup.js'
 import assert from 'node:assert'
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 
@@ -17,6 +17,11 @@ html
   body
     div#bigImage
       img.hidden
+    div#tabImages
+    template#ImageCard
+      div.card
+        div.card-body
+          h5 placeholder
     div#screenText
       div.statusBar.top
         div.left
@@ -28,7 +33,7 @@ html
         div.right
 `
 
-describe('public/app/pictures resetMarkup()', () => {
+describe('public/app/pictureMarkup resetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
   let publishStub = sandbox.stub()
   beforeEach(() => {
@@ -38,12 +43,69 @@ describe('public/app/pictures resetMarkup()', () => {
     mountDom(dom)
     resetPubSub()
     publishStub = sandbox.stub(Imports, 'publish')
-    Pictures.mainImage = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
+    Pictures.mainImage = null
     Pictures.current = null
+    Grid.imageCard = null
   })
   afterEach(() => {
     sandbox.restore()
     unmountDom()
+  })
+
+  it('should set mainImage node', () => {
+    resetMarkup()
+    expect(Pictures.mainImage).not.toBe(null)
+  })
+  it('should tolerate missing mainImage node', () => {
+    const node = dom.window.document.querySelector('#bigImage')
+    assert(node !== null)
+    node.parentElement?.removeChild(node)
+    resetMarkup()
+    expect(Pictures.mainImage).toBe(null)
+  })
+  it('should set imageCard node', () => {
+    resetMarkup()
+    expect(Grid.imageCard).not.toBe(null)
+  })
+  it('should tolerate missing imageCard node', () => {
+    const node = dom.window.document.querySelector('#ImageCard')
+    assert(node !== null)
+    node.parentElement?.removeChild(node)
+    resetMarkup()
+    expect(Grid.imageCard).toBe(null)
+  })
+  it('should remove existing .pages from #tabImages', () => {
+    const tab = dom.window.document.querySelector('#tabImages')
+    assert(tab !== null)
+    for (let i = 0; i < 15; i += 1) {
+      const node = dom.window.document.createElement('div')
+      node.classList.add('pages')
+      tab.appendChild(node)
+    }
+    resetMarkup()
+    expect(tab.children).toHaveLength(0)
+  })
+  it('should remove existing .page nodes from #tabImages', () => {
+    const tab = dom.window.document.querySelector('#tabImages')
+    assert(tab !== null)
+    for (let i = 0; i < 15; i += 1) {
+      const node = dom.window.document.createElement('div')
+      node.classList.add('page')
+      tab.appendChild(node)
+    }
+    resetMarkup()
+    expect(tab.children).toHaveLength(0)
+  })
+  it('should preserve existing non .page nodes from #tabImages', () => {
+    const tab = dom.window.document.querySelector('#tabImages')
+    assert(tab !== null)
+    for (let i = 0; i < 15; i += 1) {
+      const node = dom.window.document.createElement('div')
+      node.classList.add('foo')
+      tab.appendChild(node)
+    }
+    resetMarkup()
+    expect(tab.children).toHaveLength(15)
   })
   const positions: Array<[string, string]> = [
     ['top', 'left'],

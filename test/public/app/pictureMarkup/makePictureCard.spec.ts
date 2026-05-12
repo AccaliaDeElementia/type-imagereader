@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import { Grid, Imports, Internals } from '#public/scripts/app/pictureGrid.js'
+import { Grid, Imports, Internals } from '#public/scripts/app/pictureMarkup.js'
 import { cast } from '#testutils/typeGuards.js'
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 

@@ -1,16 +1,18 @@
 'use sanity'
 
-import type { Picture } from '#contracts/listing.js'
+import type { Listing, Picture } from '#contracts/listing.js'
 import { Pictures } from './pictureState.js'
-import { selectPage as _selectPage } from './pictureGrid.js'
+import { makeTab as _makeTab, resetMarkup as _resetMarkup, selectPage as _selectPage } from './pictureMarkup.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
-import { hasValues, indexPercentToText, indexToText, stringishHasValue } from '#utils/helpers.js'
+import { getFirst, hasValues, indexPercentToText, indexToText } from '#utils/helpers.js'
 import { isLoading as _isLoading } from './loading.js'
 import { postJSON as _postJSON } from './net.js'
 import { publish as _publish } from './pubsub.js'
 
 export const Imports = {
   getShowUnreadOnly: _getShowUnreadOnly,
+  makeTab: _makeTab,
+  resetMarkup: _resetMarkup,
   selectPage: _selectPage,
   isLoading: _isLoading,
   postJSON: _postJSON,
@@ -62,24 +64,6 @@ const isUsableModCount = (n: number | undefined): n is number => n !== undefined
 
 function setTextContent(selector: string, content: string): void {
   document.querySelector(selector)?.replaceChildren(document.createTextNode(content))
-}
-
-export function resetMarkup(): void {
-  for (const bar of ['top', 'bottom']) {
-    for (const position of ['left', 'center', 'right']) {
-      document.querySelector(`.statusBar.${bar} .${position}`)?.replaceChildren('')
-    }
-  }
-  Pictures.mainImage?.setAttribute('src', '')
-  Pictures.mainImage?.addEventListener('load', () => {
-    Imports.publish('Loading:Hide')
-  })
-  Pictures.mainImage?.addEventListener('error', () => {
-    const src = Pictures.mainImage?.getAttribute('src')
-    if (stringishHasValue(src)) {
-      Imports.publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
-    }
-  })
 }
 
 export async function changePicture(pic: Picture | undefined): Promise<void> {
@@ -183,10 +167,58 @@ function choosePictureIndex(navi: NavigateTo, current: number, unreads: Picture[
   }
 }
 
+const DEFAULT_MOD_COUNT = -1
+
+function setPictureIndices(): void {
+  for (const [pic, i] of Pictures.pictures.map((pic, i): [Picture, number] => [pic, i])) {
+    pic.index = i
+  }
+}
+
+function setPicturesGetFirst(data: Listing): Picture | null {
+  if (Pictures.mainImage === null) return null
+  const firstPic = getFirst(data.pictures)
+  if (data.pictures === undefined || firstPic === undefined) {
+    Pictures.mainImage.classList.add('hidden')
+    Imports.publish('Menu:show')
+    document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.add('hidden')
+    return null
+  }
+  Pictures.mainImage.classList.remove('hidden')
+  document.querySelector('a[href="#tabImages"]')?.parentElement?.classList.remove('hidden')
+  Pictures.pictures = data.pictures
+  setModCount(data.modCount ?? DEFAULT_MOD_COUNT)
+  Internals.setPictureIndices()
+  return firstPic
+}
+
+export async function loadData(data: Listing): Promise<void> {
+  Imports.resetMarkup()
+  const firstPic = Internals.setPicturesGetFirst(data)
+  if (firstPic === null) return
+
+  const selected = Pictures.pictures.find((picture) => picture.path === data.cover)
+  if (selected === undefined) {
+    Pictures.current = firstPic
+  } else {
+    Pictures.current = selected
+  }
+  Imports.makeTab()
+  Imports.publish('Tab:Select', 'Images')
+  if (Pictures.pictures.every((img) => img.seen) && (data.noMenu === undefined || !data.noMenu)) {
+    Imports.publish('Menu:show')
+  } else {
+    Imports.publish('Menu:Hide')
+  }
+  await Internals.loadImage().catch(() => null)
+}
+
 export const Internals = {
   loadImage,
   loadNextImage,
   getPicture,
   choosePictureIndex,
   makeURI,
+  setPicturesGetFirst,
+  setPictureIndices,
 }
