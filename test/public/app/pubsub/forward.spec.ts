@@ -1,8 +1,9 @@
 'use sanity'
 
 import Sinon from 'sinon'
+import assert from 'node:assert'
 import { PubSub, forward } from '#public/scripts/app/pubsub.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -27,7 +28,8 @@ describe('public/app/pubsub forward()', () => {
     forward('Foo:Bar', 'Baz:Qux')
     const targetSpy = sandbox.stub().resolves()
     PubSub.subscribers['BAZ:QUX'] = [targetSpy]
-    const handler = getSubscriber('FOO:BAR')
+    const handler = PubSub.subscribers['FOO:BAR']?.[0]
+    assert(handler !== undefined)
     await handler(undefined)
     expect(targetSpy.callCount).toBe(1)
   })

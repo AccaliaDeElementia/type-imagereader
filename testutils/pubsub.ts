@@ -18,19 +18,6 @@ export function resetPubSub(): void {
   PubSub.timer = undefined
 }
 
-// Return the most-recently-registered subscriber for `topic` so a test can
-// invoke it directly (e.g. to verify how the registered handler reacts to
-// crafted input). Asserts that at least one subscriber exists — fails the
-// test loudly with the topic name in the message when the SUT didn't
-// register what was expected. Non-destructive: the registry is unchanged
-// after retrieval.
-export function getSubscriber(topic: string): SubscriberFunction {
-  const list = PubSub.subscribers[topic.toUpperCase()] ?? []
-  const last = list.at(LAST_ELEMENT_INDEX)
-  assert(last !== undefined, `No subscriber registered for topic '${topic}'`)
-  return last
-}
-
 // Return the handler function from the most-recent call on `subscribeStub`
 // matching `topic` (case-insensitive). Used by specs that stub `Imports.subscribe`
 // to capture and invoke the SUT-registered handler. Asserts loudly if no
