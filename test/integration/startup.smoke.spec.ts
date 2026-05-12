@@ -12,6 +12,7 @@ import { setTimeout as sleep } from 'node:timers/promises'
 const STARTUP_TIMEOUT_MS = 15_000
 const HEALTHCHECK_DEADLINE_MS = 12_000
 const HEALTHCHECK_POLL_INTERVAL_MS = 100
+const SHUTDOWN_GRACE_MS = 2_000
 
 async function pickFreePort(): Promise<number> {
   const srv = createServer()
@@ -55,9 +56,28 @@ describe(
     beforeAll(async () => {
       dataDir = mkdtempSync(join(tmpdir(), 'imagereader-smoke-'))
       const port = await pickFreePort()
+      // `detached: true` puts the child into its own process group so a single
+      // signal sent with `process.kill(-child.pid, …)` reaches every descendant
+      // (npx → tsx → node), not just the immediate shell wrapper. Without that,
+      // SIGKILL on the wrapper would orphan the real app process — historically
+      // accumulating zombies that held the postgres pool open.
+      //
+      // `DB_CLIENT=sqlite` + `DB_FILENAME=:memory:` route the child off postgres
+      // entirely. The healthcheck endpoint never queries the DB, so the only DB
+      // activity is the migration run during init() — single-connection,
+      // self-contained, no need for a real server (or even a file).
       child = spawn('npx', ['tsx', '.'], {
-        env: { ...process.env, SKIP_SYNC: '1', DATA_DIR: dataDir, PORT: String(port), DEBUG: '' },
+        env: {
+          ...process.env,
+          SKIP_SYNC: '1',
+          DATA_DIR: dataDir,
+          PORT: String(port),
+          DEBUG: '',
+          DB_CLIENT: 'sqlite',
+          DB_FILENAME: ':memory:',
+        },
         stdio: ['ignore', 'pipe', 'pipe'],
+        detached: true,
       })
       child.stderr?.on('data', (c: Buffer) => {
         stderr += c.toString('utf8')
@@ -68,9 +88,28 @@ describe(
     })
 
     afterAll(async () => {
-      if (child?.exitCode === null) {
-        child.kill('SIGKILL')
-        await once(child, 'exit')
+      if (child?.exitCode === null && child.pid !== undefined) {
+        const groupPid = -child.pid
+        const exitPromise = once(child, 'exit')
+        // SIGTERM first — gives express/knex a moment to close cleanly so we
+        // don't leak orphaned postgres-style connection state on the way out.
+        try {
+          process.kill(groupPid, 'SIGTERM')
+        } catch {
+          // Group might already be gone.
+        }
+        const winner = await Promise.race([
+          exitPromise.then(() => 'exited' as const),
+          sleep(SHUTDOWN_GRACE_MS).then(() => 'timeout' as const),
+        ])
+        if (winner === 'timeout') {
+          try {
+            process.kill(groupPid, 'SIGKILL')
+          } catch {
+            // Already dead.
+          }
+          await exitPromise
+        }
       }
       if (dataDir !== '') rmSync(dataDir, { recursive: true, force: true })
     })
