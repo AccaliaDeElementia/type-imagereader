@@ -3,6 +3,8 @@
 import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import {
+  capturedDeferred,
+  capturedInterval,
   capturedSubscriber,
   mountPubSub,
   publishedData,
@@ -156,6 +158,67 @@ describe('testutils/PubSub mountPubSub() / unmountPubSub()', () => {
   it('should install a guardCallback whose message hints at the Imports stub seam', () => {
     mountPubSub()
     expect(() => PubSub.guardCallback?.("publish 'Y'")).toThrow(/Imports/v)
+  })
+})
+
+describe('testutils/PubSub capturedInterval()', () => {
+  let addIntervalStub = sandbox.stub()
+  beforeEach(() => {
+    addIntervalStub = sandbox.stub()
+  })
+  afterEach(() => {
+    sandbox.restore()
+  })
+  it('should return the method arg from the matching addInterval call', () => {
+    const method = sandbox.stub()
+    addIntervalStub('TestInterval', method, 100)
+    expect(capturedInterval(addIntervalStub, 'TestInterval')).toBe(method)
+  })
+  it('should match the name case-sensitively', () => {
+    const method = sandbox.stub()
+    addIntervalStub('TestInterval', method, 100)
+    expect(() => capturedInterval(addIntervalStub, 'testinterval')).toThrow(/testinterval/v)
+  })
+  it('should return the most-recently-registered method when multiple calls match', () => {
+    const earlier = sandbox.stub()
+    const latest = sandbox.stub()
+    addIntervalStub('TestInterval', earlier, 100)
+    addIntervalStub('TestInterval', latest, 200)
+    expect(capturedInterval(addIntervalStub, 'TestInterval')).toBe(latest)
+  })
+  it('should ignore calls for non-matching names', () => {
+    const matching = sandbox.stub()
+    const other = sandbox.stub()
+    addIntervalStub('Other', other, 100)
+    addIntervalStub('TestInterval', matching, 200)
+    expect(capturedInterval(addIntervalStub, 'TestInterval')).toBe(matching)
+  })
+  it('should throw when the stub has no matching addInterval call', () => {
+    addIntervalStub('Other', sandbox.stub(), 100)
+    expect(() => capturedInterval(addIntervalStub, 'Missing')).toThrow(/Missing/v)
+  })
+  it('should throw when the stub has no calls at all', () => {
+    expect(() => capturedInterval(addIntervalStub, 'Missing')).toThrow(/Missing/v)
+  })
+})
+
+describe('testutils/PubSub capturedDeferred()', () => {
+  let deferStub = sandbox.stub()
+  beforeEach(() => {
+    deferStub = sandbox.stub()
+  })
+  afterEach(() => {
+    sandbox.restore()
+  })
+  it('should return all method args from defer calls in registration order', () => {
+    const first = sandbox.stub()
+    const second = sandbox.stub()
+    deferStub(first, 100)
+    deferStub(second, 200)
+    expect(capturedDeferred(deferStub)).toEqual([first, second])
+  })
+  it('should return an empty array when the stub has no calls', () => {
+    expect(capturedDeferred(deferStub)).toEqual([])
   })
 })
 
