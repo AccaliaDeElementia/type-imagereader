@@ -31,3 +31,15 @@ export function capturedSubscriber(subscribeStub: Sinon.SinonStub, topic: string
   assert(match !== undefined, `No subscribe call captured for topic '${topic}'`)
   return cast<SubscriberFunction>(match.args[HANDLER_ARG_INDEX])
 }
+
+// Return the data arg of the first call on `publishStub` matching `topic`
+// (case-insensitive). Used by specs that stub `Imports.publish` to assert
+// the payload of a specific publish. Asserts loudly if no matching call exists.
+export function publishedData(publishStub: Sinon.SinonStub, topic: string): unknown {
+  const target = topic.toUpperCase()
+  const match = publishStub
+    .getCalls()
+    .find((c) => typeof c.args[TOPIC_ARG_INDEX] === 'string' && c.args[TOPIC_ARG_INDEX].toUpperCase() === target)
+  assert(match !== undefined, `No publish call captured for topic '${topic}'`)
+  return match.args[HANDLER_ARG_INDEX]
+}

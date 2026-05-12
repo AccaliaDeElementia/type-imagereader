@@ -2,7 +2,7 @@
 
 import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, publishedData, resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -89,5 +89,40 @@ describe('testutils/PubSub capturedSubscriber()', () => {
   })
   it('should throw when the stub has no calls at all', () => {
     expect(() => capturedSubscriber(subscribeStub, 'Test:Missing')).toThrow(/Test:Missing/v)
+  })
+})
+
+describe('testutils/PubSub publishedData()', () => {
+  let publishStub = sandbox.stub()
+  beforeEach(() => {
+    publishStub = sandbox.stub()
+  })
+  afterEach(() => {
+    sandbox.restore()
+  })
+  it('should return the data arg of the matching publish call', () => {
+    publishStub('Test:Topic', 'payload')
+    expect(publishedData(publishStub, 'Test:Topic')).toBe('payload')
+  })
+  it('should match the topic case-insensitively', () => {
+    publishStub('Test:Topic', 'payload')
+    expect(publishedData(publishStub, 'test:topic')).toBe('payload')
+  })
+  it('should return the data of the first matching call when multiple match', () => {
+    publishStub('Test:Topic', 'first')
+    publishStub('Test:Topic', 'second')
+    expect(publishedData(publishStub, 'Test:Topic')).toBe('first')
+  })
+  it('should ignore calls for non-matching topics', () => {
+    publishStub('Other:Topic', 'noise')
+    publishStub('Test:Topic', 'signal')
+    expect(publishedData(publishStub, 'Test:Topic')).toBe('signal')
+  })
+  it('should throw when the stub has no matching publish call', () => {
+    publishStub('Other:Topic', 'data')
+    expect(() => publishedData(publishStub, 'Test:Missing')).toThrow(/Test:Missing/v)
+  })
+  it('should throw when the stub has no calls at all', () => {
+    expect(() => publishedData(publishStub, 'Test:Missing')).toThrow(/Test:Missing/v)
   })
 })

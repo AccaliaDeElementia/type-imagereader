@@ -7,7 +7,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 
-import { resetPubSub } from '#testutils/pubsub.js'
+import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, Internals } from '#public/scripts/app/bookmarks.js'
 import assert from 'node:assert'
 import type { Bookmark } from '#contracts/listing.js'
@@ -223,7 +223,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: '/path/to/foo/folder',
     })
-    expect(publishStub.withArgs('Navigate:Load').firstCall.args[1]).toEqual({
+    expect(publishedData(publishStub, 'Navigate:Load')).toEqual({
       path: '/path/to/foo/folder',
       name: '',
       parent: '',
@@ -237,7 +237,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: '/path/to/foo/folder',
     })
-    expect(isListing(publishStub.withArgs('Navigate:Load').firstCall.args[1])).toBe(true)
+    expect(isListing(publishedData(publishStub, 'Navigate:Load'))).toBe(true)
   })
   it('should not publish Navigate:Load when postJSON rejects', async () => {
     postJSONSpy.rejects('FOO')

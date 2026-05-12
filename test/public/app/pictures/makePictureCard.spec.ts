@@ -7,7 +7,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { Imports, Internals } from '#public/scripts/app/pictures/grid.js'
 import { cast } from '#testutils/typeGuards.js'
-import { resetPubSub } from '#testutils/pubsub.js'
+import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -99,7 +99,7 @@ describe('public/app/pictures makePictureCard()', () => {
     const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
     const card = Internals.makePictureCard(pic)
     card?.dispatchEvent(new dom.window.MouseEvent('click'))
-    expect(publishStub.withArgs('Pictures:Change').firstCall.args[1]).toBe(pic)
+    expect(publishedData(publishStub, 'Pictures:Change')).toBe(pic)
   })
   it('should hide menu on click event', () => {
     const pic = {

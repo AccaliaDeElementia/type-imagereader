@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, Internals, Navigation } from '#public/scripts/app/navigation.js'
-import { resetPubSub } from '#testutils/pubsub.js'
+import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 import { isListing } from '#contracts/listing.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
 
@@ -217,7 +217,7 @@ describe('public/app/navigation loadData()', () => {
   })
   it('should publish retrieved data as Navigate:Data payload', async () => {
     await Internals.loadData()
-    expect(publishStub.withArgs('Navigate:Data').firstCall.args[1]).toBe(Navigation.current)
+    expect(publishedData(publishStub, 'Navigate:Data')).toBe(Navigation.current)
   })
   it('should not publish Loading:Error when no error occurs', async () => {
     await Internals.loadData()
@@ -237,7 +237,7 @@ describe('public/app/navigation loadData()', () => {
     const err = new Error('FOO')
     getJSONSpy.rejects(err)
     await Internals.loadData()
-    expect(publishStub.withArgs('Loading:Error').firstCall.args[1]).toBe(err)
+    expect(publishedData(publishStub, 'Loading:Error')).toBe(err)
   })
 
   const runStaleResponseScenario = async (): Promise<{

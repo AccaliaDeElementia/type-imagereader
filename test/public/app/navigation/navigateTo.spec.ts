@@ -4,6 +4,7 @@ import Sinon from 'sinon'
 import { Imports, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/typeGuards.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
+import { publishedData } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/navigation navigateTo()', () => {
@@ -29,7 +30,7 @@ describe('public/app/navigation navigateTo()', () => {
   })
   it('should publish error message when path is invalid', async () => {
     await Internals.navigateTo('', 'FOO')
-    expect(publishStub.withArgs('Loading:Error').firstCall.args[1]).toBe('Action FOO has no target')
+    expect(publishedData(publishStub, 'Loading:Error')).toBe('Action FOO has no target')
   })
   it('should not alter current location when path is invalid', async () => {
     const data = { path: '/FOO', name: 'foo', parent: '/' }

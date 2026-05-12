@@ -8,7 +8,7 @@ import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { Imports, resetMarkup } from '#public/scripts/app/pictures/viewer.js'
 import assert from 'node:assert'
-import { resetPubSub } from '#testutils/pubsub.js'
+import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -105,7 +105,7 @@ describe('public/app/pictures resetMarkup()', () => {
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = null
     img.dispatchEvent(evt)
-    expect(publishStub.withArgs('Loading:Error').firstCall.args[1]).toBe('Main Image Failed to Load: undefined')
+    expect(publishedData(publishStub, 'Loading:Error')).toBe('Main Image Failed to Load: undefined')
   })
   it('should publish expected error message when load fails and invalid current image', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -115,7 +115,7 @@ describe('public/app/pictures resetMarkup()', () => {
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = { name: cast<string>(null), path: '', seen: false }
     img.dispatchEvent(evt)
-    expect(publishStub.withArgs('Loading:Error').firstCall.args[1]).toBe('Main Image Failed to Load: null')
+    expect(publishedData(publishStub, 'Loading:Error')).toBe('Main Image Failed to Load: null')
   })
   it('should publish expected error message when load fails', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -125,6 +125,6 @@ describe('public/app/pictures resetMarkup()', () => {
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
     Pictures.current = { name: 'blaze.gif', path: '', seen: false }
     img.dispatchEvent(evt)
-    expect(publishStub.withArgs('Loading:Error').firstCall.args[1]).toBe('Main Image Failed to Load: blaze.gif')
+    expect(publishedData(publishStub, 'Loading:Error')).toBe('Main Image Failed to Load: blaze.gif')
   })
 })

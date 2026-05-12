@@ -3,6 +3,7 @@
 import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { changePicture, Imports, Internals } from '#public/scripts/app/pictures/viewer.js'
+import { publishedData } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -59,9 +60,7 @@ describe('public/app/pictures changePicture()', () => {
   })
   it('should publish specific error message when changing to empty picture', async () => {
     await changePicture(undefined)
-    expect(publishStub.withArgs('Loading:Error').firstCall.args[1]).toBe(
-      'Change Picture called with No Picture to change to',
-    )
+    expect(publishedData(publishStub, 'Loading:Error')).toBe('Change Picture called with No Picture to change to')
   })
   it('should set current image when changing to valid picture', async () => {
     const pic = { name: '', path: '', seen: true }
