@@ -59,16 +59,19 @@ describe('public/app/pictures initMouse()', () => {
     sandbox.restore()
     unmountDom()
   })
-  it('should store initial scale from visual viewport', () => {
-    visualViewport.scale = 972
-    initMouse()
-    expect(Pictures.initialScale).toBe(972)
-  })
-  it('should store default initial scale when visual viewport is nullish', () => {
+  it('should ignore clicks when visual viewport was null at init time and any scale is present at click time', () => {
     // @ts-expect-error Ignore that visualviewport is read-only
     dom.window.visualViewport = null
     initMouse()
-    expect(Pictures.initialScale).toBe(-1)
+    // @ts-expect-error Ignore that visualviewport is read-only
+    dom.window.visualViewport = visualViewport
+    visualViewport.scale = 1
+    const evt = new dom.window.MouseEvent('click', {
+      clientX: boundingRect.width / 4,
+      clientY: boundingRect.height / 2,
+    })
+    Pictures.mainImage?.parentElement?.dispatchEvent(evt)
+    expect(publishStub.withArgs('Ignored Mouse Click').callCount).toBe(1)
   })
   it('should navigate to previous from left area click', () => {
     visualViewport.scale = 2

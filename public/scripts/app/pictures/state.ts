@@ -21,27 +21,15 @@ export const Imports = {
 }
 
 const UNINITIALIZED_MOD_COUNT = -1
-export const UNINITIALIZED_SCALE = -1
-const PICTURES_PER_PAGE = 32
-const CACHE_SIZE = 10
-
-interface PictureCache {
-  size: number
-  next: Picture[]
-  prev: Picture[]
-}
 
 interface StateFields {
   modCount: number
   nextLoader: Promise<unknown>
   nextPending: boolean
-  initialScale: number
   pictures: Picture[]
   current: Picture | null
   mainImage: HTMLImageElement | null
   imageCard: HTMLTemplateElement | null
-  pageSize: number
-  cache: PictureCache
 }
 
 function defaultState(): StateFields {
@@ -49,13 +37,10 @@ function defaultState(): StateFields {
     modCount: UNINITIALIZED_MOD_COUNT,
     nextLoader: Promise.resolve(),
     nextPending: true,
-    initialScale: UNINITIALIZED_SCALE,
     pictures: [],
     current: null,
     mainImage: null,
     imageCard: null,
-    pageSize: PICTURES_PER_PAGE,
-    cache: { size: CACHE_SIZE, next: [], prev: [] },
   }
 }
 

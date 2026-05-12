@@ -11,6 +11,8 @@ export const Imports = {
   publish: _publish,
 }
 
+export const PICTURES_PER_PAGE = 32
+
 const INDEX_TO_PAGE_OFFSET = 1
 const MINIMUM_PAGE_COUNT = 2
 const FIRST_PAGE_NUMBER = 1
@@ -87,13 +89,13 @@ function makePaginator(pageCount: number): HTMLElement | null {
 }
 
 export function makeTab(): void {
-  const pageCount = Math.ceil(Pictures.pictures.length / Pictures.pageSize)
+  const pageCount = Math.ceil(Pictures.pictures.length / PICTURES_PER_PAGE)
   const tab = document.querySelector<HTMLElement>('#tabImages')
   const pages: HTMLElement[] = Array.from({ length: pageCount }).map((_, i) => {
     const offsetPage = i + INDEX_TO_PAGE_OFFSET
     return Internals.makePicturesPage(
       offsetPage,
-      Pictures.pictures.slice(i * Pictures.pageSize, offsetPage * Pictures.pageSize),
+      Pictures.pictures.slice(i * PICTURES_PER_PAGE, offsetPage * PICTURES_PER_PAGE),
     )
   })
   const pagninator = Internals.makePaginator(pageCount)

@@ -2,11 +2,13 @@
 
 import { hasValue, hasValues, ZERO_LENGTH } from '#utils/helpers.js'
 import { isMenuActive as _isMenuActive } from '../navigation.js'
-import { UNINITIALIZED_SCALE, Pictures } from './state.js'
+import { Pictures } from './state.js'
 import { changePicture as _changePicture, getPicture as _getPicture, NavigateTo } from './viewer.js'
 import { loadCurrentPageImages as _loadCurrentPageImages } from './grid.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { publish as _publish, subscribe as _subscribe } from '../pubsub.js'
+
+const UNINITIALIZED_SCALE = -1
 
 export const Imports = {
   getShowUnreadOnly: _getShowUnreadOnly,
@@ -94,9 +96,9 @@ export function initActions(): void {
 }
 
 export function initMouse(): void {
-  Pictures.initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
+  const initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
   Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
-    if (hasValue(window.visualViewport) && Pictures.initialScale < window.visualViewport.scale) {
+    if (hasValue(window.visualViewport) && initialScale < window.visualViewport.scale) {
       Imports.publish('Ignored Mouse Click', evt)
       return
     }
