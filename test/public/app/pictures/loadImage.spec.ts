@@ -9,7 +9,6 @@ import { Imports, Internals, loadImage } from '#public/scripts/app/pictures/view
 import { cast } from '#testutils/typeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import { delay } from '#testutils/utils.js'
 import assert from 'node:assert'
@@ -41,10 +40,7 @@ describe('public/app/pictures loadImage()', () => {
   let postJSONSpy = sandbox.stub()
   let selectPageSpy = sandbox.stub()
   let loadNextImageSpy = sandbox.stub()
-  const loadingShowSpy = sandbox.stub().resolves()
-  const loadingErrorSpy = sandbox.stub().resolves()
-  const loadNewSpy = sandbox.stub().resolves()
-  const reloadSpy = sandbox.stub().resolves()
+  let publishStub = sandbox.stub()
   let bottomLeftText: HTMLElement | null = null
   let bottomCenterText: HTMLElement | null = null
   let bottomRightText: HTMLElement | null = null
@@ -76,12 +72,7 @@ describe('public/app/pictures loadImage()', () => {
     sandbox.stub(Internals, 'getPicture').returns(undefined)
     selectPageSpy = sandbox.stub(Imports, 'selectPage')
     loadNextImageSpy = sandbox.stub(Internals, 'loadNextImage').resolves()
-    PubSub.subscribers = {
-      'LOADING:SHOW': [loadingShowSpy],
-      'LOADING:ERROR': [loadingErrorSpy],
-      'PICTURE:LOADNEW': [loadNewSpy],
-      'NAVIGATE:RELOAD': [reloadSpy],
-    }
+    publishStub = sandbox.stub(Imports, 'publish')
 
     bottomCenterText = dom.window.document.querySelector('.statusBar.bottom .center')
     bottomLeftText = dom.window.document.querySelector('.statusBar.bottom .left')
@@ -89,25 +80,20 @@ describe('public/app/pictures loadImage()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-
-    loadingShowSpy.resetHistory()
-    loadingErrorSpy.resetHistory()
-    loadNewSpy.resetHistory()
-    reloadSpy.resetHistory()
     unmountDom()
   })
   it('should be noop when current image is null', async () => {
     Pictures.current = null
     Pictures.nextPending = true
     await loadImage()
-    expect(loadingShowSpy.called).toBe(false)
+    expect(publishStub.withArgs('Loading:show').called).toBe(false)
   })
   it('should be noop when current image path is empty', async () => {
     assert(Pictures.current !== null)
     Pictures.current.path = ''
     Pictures.nextPending = true
     await loadImage()
-    expect(loadingShowSpy.called).toBe(false)
+    expect(publishStub.withArgs('Loading:show').called).toBe(false)
   })
   it('should not call postJSON when current image path is empty', async () => {
     assert(Pictures.current !== null)
@@ -125,17 +111,17 @@ describe('public/app/pictures loadImage()', () => {
     assert(Pictures.current !== null)
     Pictures.current.path = ''
     await loadImage()
-    expect(loadNewSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Picture:LoadNew').callCount).toBe(0)
   })
   it('should show loading when next is pending', async () => {
     Pictures.nextPending = true
     await loadImage()
-    expect(loadingShowSpy.called).toBe(true)
+    expect(publishStub.withArgs('Loading:show').called).toBe(true)
   })
   it('should not show loading when next is not pending', async () => {
     Pictures.nextPending = false
     await loadImage()
-    expect(loadingShowSpy.called).toBe(false)
+    expect(publishStub.withArgs('Loading:show').called).toBe(false)
   })
   it('should not await next loader when image is null', async () => {
     Pictures.current = null
@@ -206,7 +192,7 @@ describe('public/app/pictures loadImage()', () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(undefined)
     await loadImage()
-    expect(reloadSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(1)
   })
   it('should not update image src when new modcount is undefined', async () => {
     Pictures.modCount = 99
@@ -218,7 +204,7 @@ describe('public/app/pictures loadImage()', () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(NaN)
     await loadImage()
-    expect(reloadSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(1)
   })
   it('should not update image src when new modcount is NaN', async () => {
     Pictures.modCount = 99
@@ -230,7 +216,7 @@ describe('public/app/pictures loadImage()', () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(-1)
     await loadImage()
-    expect(reloadSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(1)
   })
   it('should not update image src when new modcount is negative', async () => {
     Pictures.modCount = 99
@@ -242,7 +228,7 @@ describe('public/app/pictures loadImage()', () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(0)
     await loadImage()
-    expect(reloadSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(0)
   })
   it('should update modcount to zero on successful post', async () => {
     Pictures.modCount = 99
@@ -254,7 +240,7 @@ describe('public/app/pictures loadImage()', () => {
     Pictures.modCount = 99
     postJSONSpy.resolves(76)
     await loadImage()
-    expect(reloadSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Navigate:Reload').callCount).toBe(0)
   })
   it('should update modcount on successful post', async () => {
     Pictures.modCount = 99
@@ -320,26 +306,26 @@ describe('public/app/pictures loadImage()', () => {
   })
   it('should publish LoadNew message on successful load', async () => {
     await loadImage()
-    expect(loadNewSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Picture:LoadNew').callCount).toBe(1)
   })
   it('should not publish LoadingError on successful load', async () => {
     await loadImage()
-    expect(loadingErrorSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Loading:Error').callCount).toBe(0)
   })
   it('should publish LoadNew message even if loadNextImage rejects', async () => {
     loadNextImageSpy.rejects('ERROR!')
     await loadImage()
-    expect(loadNewSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Picture:LoadNew').callCount).toBe(1)
   })
   it('should not publish LoadingError even if loadNextImage rejects', async () => {
     loadNextImageSpy.rejects('ERROR!')
     await loadImage()
-    expect(loadingErrorSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Loading:Error').callCount).toBe(0)
   })
   it('should publish error when postJSON throws error', async () => {
     const expectedErr = new Error('IGGY WIGGY, LETS GET JIGGY')
     postJSONSpy.rejects(expectedErr)
     await loadImage()
-    expect(loadingErrorSpy.calledWith(expectedErr)).toBe(true)
+    expect(publishStub.calledWith('Loading:Error', expectedErr)).toBe(true)
   })
 })

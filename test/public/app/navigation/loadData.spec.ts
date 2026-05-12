@@ -5,7 +5,6 @@ import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Imports, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import { isListing } from '#contracts/listing.js'
@@ -26,10 +25,7 @@ html
 `
 describe('public/app/navigation loadData()', () => {
   let dom = new JSDOM('', {})
-  const loadingShowSpy = sandbox.stub()
-  const loadingHideSpy = sandbox.stub()
-  const loadingErrorSpy = sandbox.stub()
-  const navigateDataSpy = sandbox.stub()
+  let publishStub = sandbox.stub()
   let titleElement: HTMLTitleElement | null = null
   let brandElement: HTMLAnchorElement | null = null
   let getJSONSpy = sandbox.stub()
@@ -46,17 +42,8 @@ describe('public/app/navigation loadData()', () => {
     assert(brandElement !== null)
     historySpy = sandbox.stub(dom.window.history, 'pushState')
 
-    loadingErrorSpy.resolves()
-    loadingHideSpy.resolves()
-    loadingShowSpy.resolves()
-    navigateDataSpy.resolves()
     resetPubSub()
-    PubSub.subscribers = {
-      'NAVIGATE:DATA': [navigateDataSpy],
-      'LOADING:SHOW': [loadingShowSpy],
-      'LOADING:HIDE': [loadingHideSpy],
-      'LOADING:ERROR': [loadingErrorSpy],
-    }
+    publishStub = sandbox.stub(Imports, 'publish')
     Navigation.current = {
       path: '/',
       name: '',
@@ -71,10 +58,6 @@ describe('public/app/navigation loadData()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    loadingErrorSpy.reset()
-    loadingHideSpy.reset()
-    loadingShowSpy.reset()
-    navigateDataSpy.reset()
   })
   afterAll(() => {
     unmountDom()
@@ -82,7 +65,7 @@ describe('public/app/navigation loadData()', () => {
   })
   it('should publish Loading:show at start of processing', async () => {
     await Internals.loadData()
-    expect(loadingShowSpy.called).toBe(true)
+    expect(publishStub.withArgs('Loading:show').called).toBe(true)
   })
   it('should call getJSON', async () => {
     await Internals.loadData()
@@ -94,7 +77,7 @@ describe('public/app/navigation loadData()', () => {
   })
   it('should call getJSON after Loading:show has been published', async () => {
     await Internals.loadData()
-    expect(getJSONSpy.calledAfter(loadingShowSpy)).toBe(true)
+    expect(getJSONSpy.calledAfter(publishStub.withArgs('Loading:show'))).toBe(true)
   })
   it('should request data from expected listing path', async () => {
     Navigation.current.path = '/foo/bar/baz/99382111'
@@ -222,39 +205,39 @@ describe('public/app/navigation loadData()', () => {
   })
   it('should publish Loading:Hide after pushing history', async () => {
     await Internals.loadData()
-    expect(loadingHideSpy.calledAfter(historySpy))
+    expect(publishStub.withArgs('Loading:Hide').calledAfter(historySpy))
   })
   it('should publish Loading:Hide after retrieving data when not saving history', async () => {
     await Internals.loadData(true)
-    expect(loadingHideSpy.calledAfter(getJSONSpy))
+    expect(publishStub.withArgs('Loading:Hide').calledAfter(getJSONSpy))
   })
   it('should publish Navigate:Data after hiding loading screen', async () => {
     await Internals.loadData()
-    expect(navigateDataSpy.calledAfter(loadingHideSpy)).toBe(true)
+    expect(publishStub.withArgs('Navigate:Data').calledAfter(publishStub.withArgs('Loading:Hide'))).toBe(true)
   })
   it('should publish retrieved data as Navigate:Data payload', async () => {
     await Internals.loadData()
-    expect(navigateDataSpy.firstCall.args[0]).toBe(Navigation.current)
+    expect(publishStub.withArgs('Navigate:Data').firstCall.args[1]).toBe(Navigation.current)
   })
   it('should not publish Loading:Error when no error occurs', async () => {
     await Internals.loadData()
-    expect(loadingErrorSpy.called).toBe(false)
+    expect(publishStub.withArgs('Loading:Error').called).toBe(false)
   })
   it('should publish Loading:Error when GetJson rejects', async () => {
     getJSONSpy.rejects('FOO')
     await Internals.loadData()
-    expect(loadingErrorSpy.called).toBe(true)
+    expect(publishStub.withArgs('Loading:Error').called).toBe(true)
   })
   it('should publish Loading:Error when push history throws', async () => {
     historySpy.throws('FOO')
     await Internals.loadData()
-    expect(loadingErrorSpy.called).toBe(true)
+    expect(publishStub.withArgs('Loading:Error').called).toBe(true)
   })
   it('should publish recieved error when GetJson rejects', async () => {
     const err = new Error('FOO')
     getJSONSpy.rejects(err)
     await Internals.loadData()
-    expect(loadingErrorSpy.firstCall.args[0]).toBe(err)
+    expect(publishStub.withArgs('Loading:Error').firstCall.args[1]).toBe(err)
   })
 
   const runStaleResponseScenario = async (): Promise<{
@@ -285,7 +268,7 @@ describe('public/app/navigation loadData()', () => {
 
   it('should publish Navigate:Data exactly once when a stale response arrives after a newer one', async () => {
     await runStaleResponseScenario()
-    expect(navigateDataSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Navigate:Data').callCount).toBe(1)
   })
 
   it('should not publish Loading:Error for a stale rejection', async () => {
@@ -298,6 +281,6 @@ describe('public/app/navigation loadData()', () => {
     await b
     rejectFirst(new Error('stale'))
     await a
-    expect(loadingErrorSpy.called).toBe(false)
+    expect(publishStub.withArgs('Loading:Error').called).toBe(false)
   })
 })

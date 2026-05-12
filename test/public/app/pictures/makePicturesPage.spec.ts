@@ -5,7 +5,6 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/pictures/grid.js'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
 
@@ -13,18 +12,13 @@ const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures makePicturesPage()', () => {
   let dom = new JSDOM('<html></html>', {})
-  const menuHideSpy = sandbox.stub().resolves()
   let makePictureCardSpy = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
-    menuHideSpy.resetHistory()
     resetPubSub()
-    PubSub.subscribers = {
-      'MENU:HIDE': [menuHideSpy],
-    }
     makePictureCardSpy = sandbox
       .stub(Internals, 'makePictureCard')
       .callsFake(() => dom.window.document.createElement('div'))

@@ -4,7 +4,6 @@ import Sinon from 'sinon'
 
 import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { Imports, Internals, loadData } from '#public/scripts/app/pictures/data.js'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
@@ -16,16 +15,10 @@ describe('public/app/pictures loadData()', () => {
   let setPicturesSpy = sandbox.stub()
   let makeTabSpy = sandbox.stub()
   let loadImageSpy = sandbox.stub()
-  const tabSelectSpy = sandbox.stub().resolves()
-  const menuShowSpy = sandbox.stub().resolves()
-  const menuHideSpy = sandbox.stub().resolves()
+  let publishStub = sandbox.stub()
   beforeEach(() => {
     resetPubSub()
-    PubSub.subscribers = {
-      'MENU:SHOW': [menuShowSpy],
-      'MENU:HIDE': [menuHideSpy],
-      'TAB:SELECT': [tabSelectSpy],
-    }
+    publishStub = sandbox.stub(Imports, 'publish')
     Pictures.pictures = Array.from({ length: 64 }).map((_, i) => ({
       path: `/some/path/${i}.png`,
       name: `${i}.png`,
@@ -40,9 +33,6 @@ describe('public/app/pictures loadData()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    menuHideSpy.resetHistory()
-    menuShowSpy.resetHistory()
-    tabSelectSpy.resetHistory()
   })
   it('should reset markup on load', async () => {
     await loadData({
@@ -85,7 +75,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(tabSelectSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Tab:Select').callCount).toBe(1)
   })
   it('should select image tab when first picture exists', async () => {
     await loadData({
@@ -94,7 +84,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(tabSelectSpy.firstCall.args).toEqual(['Images', 'TAB:SELECT'])
+    expect(publishStub.withArgs('Tab:Select').firstCall.args).toEqual(['Tab:Select', 'Images'])
   })
   it('should select first image as current when cover is missing', async () => {
     await loadData({
@@ -145,7 +135,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(menuHideSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
   })
   it('should not show menu when no images are read', async () => {
     for (const pic of Pictures.pictures) {
@@ -157,7 +147,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(menuShowSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Menu:show').callCount).toBe(0)
   })
   it('should hide menu when some images are read', async () => {
     for (const [pic, idx] of Pictures.pictures.map((pic, idx): [Picture, number] => [pic, idx])) {
@@ -169,7 +159,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(menuHideSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
   })
   it('should not show menu when some images are read', async () => {
     for (const [pic, idx] of Pictures.pictures.map((pic, idx): [Picture, number] => [pic, idx])) {
@@ -181,7 +171,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(menuShowSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Menu:show').callCount).toBe(0)
   })
   it('should hide menu when most images are read', async () => {
     for (const pic of Pictures.pictures) {
@@ -196,7 +186,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(menuHideSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
   })
   it('should not show menu when most images are read', async () => {
     for (const pic of Pictures.pictures) {
@@ -211,7 +201,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(menuShowSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Menu:show').callCount).toBe(0)
   })
   it('should not hide menu when all images are read', async () => {
     for (const pic of Pictures.pictures) {
@@ -223,7 +213,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(menuHideSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(0)
   })
   it('should show menu when all images are read', async () => {
     for (const pic of Pictures.pictures) {
@@ -235,7 +225,7 @@ describe('public/app/pictures loadData()', () => {
       path: '',
       pictures: Pictures.pictures,
     })
-    expect(menuShowSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Menu:show').callCount).toBe(1)
   })
   it('should not hide menu when all images are read and noMenu option is not selected', async () => {
     for (const pic of Pictures.pictures) {
@@ -248,7 +238,7 @@ describe('public/app/pictures loadData()', () => {
       pictures: Pictures.pictures,
       noMenu: false,
     })
-    expect(menuHideSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(0)
   })
   it('should show menu when all images are read and noMenu option is not selected', async () => {
     for (const pic of Pictures.pictures) {
@@ -261,7 +251,7 @@ describe('public/app/pictures loadData()', () => {
       pictures: Pictures.pictures,
       noMenu: false,
     })
-    expect(menuShowSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Menu:show').callCount).toBe(1)
   })
   it('should hide menu when noMenu option is selected', async () => {
     for (const pic of Pictures.pictures) {
@@ -274,7 +264,7 @@ describe('public/app/pictures loadData()', () => {
       pictures: Pictures.pictures,
       noMenu: true,
     })
-    expect(menuHideSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
   })
   it('should not show menu when noMenu option is selected', async () => {
     for (const pic of Pictures.pictures) {
@@ -287,7 +277,7 @@ describe('public/app/pictures loadData()', () => {
       pictures: Pictures.pictures,
       noMenu: true,
     })
-    expect(menuShowSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Menu:show').callCount).toBe(0)
   })
   it('should load image when pictures exists', async () => {
     await loadData({

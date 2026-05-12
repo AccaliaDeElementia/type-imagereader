@@ -6,27 +6,18 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictures/state.js'
 import { loadCurrentPageImages } from '#public/scripts/app/pictures/grid.js'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures loadCurrentPageImages()', () => {
   let dom = new JSDOM('<html></html>', {})
-  const selectPageSpy = sandbox.stub().resolves()
-  const loadingErrorSpy = sandbox.stub().resolves()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
-    selectPageSpy.resetHistory()
-    loadingErrorSpy.resetHistory()
     resetPubSub()
-    PubSub.subscribers = {
-      'PICTURES:SELECTPAGE': [selectPageSpy],
-      'LOADING:ERROR': [loadingErrorSpy],
-    }
     Pictures.mainImage = null
     Pictures.imageCard = null
   })

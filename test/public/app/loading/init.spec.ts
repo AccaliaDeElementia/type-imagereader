@@ -4,8 +4,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { init, Loading } from '#public/scripts/app/loading.js'
+import { Imports, init, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -17,6 +16,7 @@ html
 `
 describe('public/app/loading init()', () => {
   let dom: JSDOM = new JSDOM('', {})
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -25,6 +25,7 @@ describe('public/app/loading init()', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     init()
   })
   afterEach(() => {
@@ -32,16 +33,16 @@ describe('public/app/loading init()', () => {
     unmountDom()
   })
   it('should subscribe to Loading:Error', () => {
-    expect(PubSub.subscribers['LOADING:ERROR']).toHaveLength(1)
+    expect(subscribeStub.calledWith('Loading:Error')).toBe(true)
   })
   it('should subscribe to Loading:Success', () => {
-    expect(PubSub.subscribers['LOADING:SUCCESS']).toHaveLength(1)
+    expect(subscribeStub.calledWith('Loading:Success')).toBe(true)
   })
   it('should subscribe to Loading:Hide', () => {
-    expect(PubSub.subscribers['LOADING:HIDE']).toHaveLength(1)
+    expect(subscribeStub.calledWith('Loading:Hide')).toBe(true)
   })
   it('should subscribe to Loading:show', () => {
-    expect(PubSub.subscribers['LOADING:SHOW']).toHaveLength(1)
+    expect(subscribeStub.calledWith('Loading:show')).toBe(true)
   })
   it('should select overlay for disabling input', () => {
     expect(Loading.overlay).not.toBe(null)

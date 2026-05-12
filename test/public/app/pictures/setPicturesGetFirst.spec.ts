@@ -5,9 +5,8 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictures/state.js'
-import { Internals } from '#public/scripts/app/pictures/data.js'
+import { Imports, Internals } from '#public/scripts/app/pictures/data.js'
 import { render } from 'pug'
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
@@ -25,14 +24,12 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
   let dom = new JSDOM('<html></html>', {})
 
   let element: HTMLElement | null = null
-  const menuShow = sandbox.stub().resolves()
+  let publishStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
     resetPubSub()
-    PubSub.subscribers = {
-      'MENU:SHOW': [menuShow],
-    }
+    publishStub = sandbox.stub(Imports, 'publish')
     Pictures.mainImage = dom.window.document.createElement('img')
     element = dom.window.document.querySelector('div#ImageLink')
     Pictures.pictures = []
@@ -40,7 +37,6 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
   })
   afterEach(() => {
     sandbox.restore()
-    menuShow.resetHistory()
     unmountDom()
   })
   it('should abort gracefully for null mainImage', () => {
@@ -88,7 +84,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(menuShow.callCount).toBe(1)
+    expect(publishStub.withArgs('Menu:show').callCount).toBe(1)
   })
   it('should hide mainImage when listing has null pictures', () => {
     const result = Internals.setPicturesGetFirst({
@@ -136,7 +132,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(menuShow.callCount).toBe(1)
+    expect(publishStub.withArgs('Menu:show').callCount).toBe(1)
   })
   it('should hide mainImage when listing has empty pictures', () => {
     const result = Internals.setPicturesGetFirst({

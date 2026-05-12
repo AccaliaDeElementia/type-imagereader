@@ -4,9 +4,10 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
-import { init, Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { subscribe } from '#public/scripts/app/pubsub.js'
+import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { resetPubSub } from '#testutils/pubsub.js'
+import { cast } from '#testutils/typeGuards.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -25,6 +26,12 @@ describe('public/app/navigation init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
   let loadDataStub = sandbox.stub()
+  let subscribeStub = sandbox.stub()
+  let forwardStub = sandbox.stub()
+  const allRegisteredTopics = (): string[] => [
+    ...subscribeStub.getCalls().map((c) => cast<string>(c.args[0])),
+    ...forwardStub.getCalls().map((c) => cast<string>(c.args[0])),
+  ]
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -35,6 +42,8 @@ describe('public/app/navigation init()', () => {
     tabSelectedSpy.resolves()
     subscribe('Tab:Selected', tabSelectedSpy)
     loadDataStub = sandbox.stub(Internals, 'loadData').resolves()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    forwardStub = sandbox.stub(Imports, 'forward')
     Navigation.current = {
       path: '/',
       name: '',
@@ -76,7 +85,6 @@ describe('public/app/navigation init()', () => {
     'Navigate:Reload',
     'Menu:show',
     'Menu:Hide',
-    'Tab:Selected',
     'Action:Execute:PreviousFolder',
     'Action:Execute:NextFolder',
     'Action:Execute:ParentFolder',
@@ -102,10 +110,14 @@ describe('public/app/navigation init()', () => {
       init()
     })
     it('should contain all expected subscribers', () => {
-      expect(Object.keys(PubSub.subscribers).sort()).toEqual([...subs].sort())
+      expect(
+        allRegisteredTopics()
+          .map((s) => s.toUpperCase())
+          .sort(),
+      ).toEqual([...subs].sort())
     })
     it('should contain no unexpected subscribers', () => {
-      expect(Object.keys(PubSub.subscribers)).toHaveLength(subs.length)
+      expect(allRegisteredTopics()).toHaveLength(subs.length)
     })
   })
   subscribers.forEach((subscriber) => {
@@ -114,11 +126,12 @@ describe('public/app/navigation init()', () => {
     }
     it(`should subscribe to ${subscriber}`, () => {
       doInit()
-      expect(Object.keys(PubSub.subscribers)).toContain(subscriber.toUpperCase())
+      expect(allRegisteredTopics().map((s) => s.toUpperCase())).toContain(subscriber.toUpperCase())
     })
     it(`should subscribe to ${subscriber} exactly once`, () => {
       doInit()
-      expect(PubSub.subscribers[subscriber.toUpperCase()]).toHaveLength(1)
+      const matches = allRegisteredTopics().filter((t) => t.toUpperCase() === subscriber.toUpperCase())
+      expect(matches).toHaveLength(1)
     })
   })
 })

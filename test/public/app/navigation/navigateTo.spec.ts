@@ -1,25 +1,20 @@
 'use sanity'
 
 import Sinon from 'sinon'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { Imports, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/typeGuards.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
 describe('public/app/navigation navigateTo()', () => {
-  const errorSpy = sandbox.stub()
+  let publishStub = sandbox.stub()
   let loadDataSpy = sandbox.stub()
   beforeEach(() => {
-    errorSpy.resolves()
-    PubSub.subscribers = {
-      'LOADING:ERROR': [errorSpy],
-    }
+    publishStub = sandbox.stub(Imports, 'publish')
     loadDataSpy = sandbox.stub(Internals, 'loadData').resolves()
   })
   afterEach(() => {
     sandbox.restore()
-    errorSpy.reset()
   })
   const invalidPaths: Array<[string, string | undefined]> = [
     ['empty', ''],
@@ -29,12 +24,12 @@ describe('public/app/navigation navigateTo()', () => {
   invalidPaths.forEach(([title, path]) => {
     it(`should publish error when path is ${title}`, async () => {
       await Internals.navigateTo(path, 'FOO')
-      expect(errorSpy.called).toBe(true)
+      expect(publishStub.calledWith('Loading:Error')).toBe(true)
     })
   })
   it('should publish error message when path is invalid', async () => {
     await Internals.navigateTo('', 'FOO')
-    expect(errorSpy.firstCall.args[0]).toBe('Action FOO has no target')
+    expect(publishStub.withArgs('Loading:Error').firstCall.args[1]).toBe('Action FOO has no target')
   })
   it('should not alter current location when path is invalid', async () => {
     const data = { path: '/FOO', name: 'foo', parent: '/' }

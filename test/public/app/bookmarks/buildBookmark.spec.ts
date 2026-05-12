@@ -7,7 +7,6 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, Internals } from '#public/scripts/app/bookmarks.js'
 import assert from 'node:assert'
@@ -36,8 +35,7 @@ html
 describe('public/app/bookmarks buildBookmark()', () => {
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let bookmarksRemoveSpy = sandbox.stub()
-  let navigateLoadSpy = sandbox.stub()
+  let publishStub = sandbox.stub()
   let postJSONSpy = sandbox.stub()
 
   beforeEach(() => {
@@ -48,13 +46,8 @@ describe('public/app/bookmarks buildBookmark()', () => {
     document = dom.window.document
     mountDom(dom)
 
-    navigateLoadSpy = sandbox.stub().resolves()
-    bookmarksRemoveSpy = sandbox.stub().resolves()
     resetPubSub()
-    PubSub.subscribers = {
-      'NAVIGATE:LOAD': [navigateLoadSpy],
-      'BOOKMARKS:REMOVE': [bookmarksRemoveSpy],
-    }
+    publishStub = sandbox.stub(Imports, 'publish')
 
     Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     Bookmarks.bookmarkFolder = undefined
@@ -129,7 +122,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(bookmarksRemoveSpy.called).toBe(true)
+    expect(publishStub.calledWith('Bookmarks:Remove')).toBe(true)
   })
   it('should publish selected path to Bookmarks:Remove on button click', async () => {
     await ClickRemoveAndWait({
@@ -137,7 +130,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(bookmarksRemoveSpy.calledWith('/path/to/foo/folder/foo')).toBe(true)
+    expect(publishStub.calledWith('Bookmarks:Remove', '/path/to/foo/folder/foo')).toBe(true)
   })
   it('should stop propagation of event after handling button click', async () => {
     const result = Internals.buildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
@@ -222,7 +215,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(navigateLoadSpy.callCount).toBe(1)
+    expect(publishStub.withArgs('Navigate:Load').callCount).toBe(1)
   })
   it('should publish Navigate:Load with expected payload when postJSON resolves', async () => {
     await ClickBookmarkAndWait({
@@ -230,7 +223,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: '/path/to/foo/folder',
     })
-    expect(navigateLoadSpy.firstCall.args[0]).toEqual({
+    expect(publishStub.withArgs('Navigate:Load').firstCall.args[1]).toEqual({
       path: '/path/to/foo/folder',
       name: '',
       parent: '',
@@ -244,7 +237,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: '/path/to/foo/folder',
     })
-    expect(isListing(navigateLoadSpy.firstCall.args[0])).toBe(true)
+    expect(isListing(publishStub.withArgs('Navigate:Load').firstCall.args[1])).toBe(true)
   })
   it('should not publish Navigate:Load when postJSON rejects', async () => {
     postJSONSpy.rejects('FOO')
@@ -253,6 +246,6 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(navigateLoadSpy.callCount).toBe(0)
+    expect(publishStub.withArgs('Navigate:Load').callCount).toBe(0)
   })
 })
