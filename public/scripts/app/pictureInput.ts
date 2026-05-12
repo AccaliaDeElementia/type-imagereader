@@ -3,7 +3,13 @@
 import { hasValue, hasValues, ZERO_LENGTH } from '#utils/helpers.js'
 import { isMenuActive as _isMenuActive } from './navigation.js'
 import { Pictures } from './pictureState.js'
-import { changePicture as _changePicture, getPicture as _getPicture, NavigateTo } from './pictureNavigation.js'
+import {
+  changePicture as _changePicture,
+  getPicture as _getPicture,
+  navigateUnreadBack as _navigateUnreadBack,
+  navigateUnreadForward as _navigateUnreadForward,
+  NavigateTo,
+} from './pictureNavigation.js'
 import { loadCurrentPageImages as _loadCurrentPageImages } from './pictureMarkup.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { publish as _publish, subscribe as _subscribe } from './pubsub.js'
@@ -15,6 +21,8 @@ export const Imports = {
   loadCurrentPageImages: _loadCurrentPageImages,
   changePicture: _changePicture,
   getPicture: _getPicture,
+  navigateUnreadBack: _navigateUnreadBack,
+  navigateUnreadForward: _navigateUnreadForward,
   isMenuActive: _isMenuActive,
   subscribe: _subscribe,
   publish: _publish,
@@ -64,13 +72,13 @@ export function initActions(): void {
     await changeTo(NavigateTo.Previous)
   })
   Imports.subscribe('Action:Execute:PreviousUnseen', async () => {
-    await changeTo(NavigateTo.PreviousUnread)
+    await Imports.navigateUnreadBack()
   })
   Imports.subscribe('Action:Execute:NextImage', async () => {
     await changeTo(NavigateTo.Next)
   })
   Imports.subscribe('Action:Execute:NextUnseen', async () => {
-    await changeTo(NavigateTo.NextUnread)
+    await Imports.navigateUnreadForward()
   })
   Imports.subscribe('Action:Execute:Last', async () => {
     await changeTo(NavigateTo.Last)

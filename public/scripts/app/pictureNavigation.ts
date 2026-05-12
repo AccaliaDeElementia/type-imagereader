@@ -29,17 +29,52 @@ export enum NavigateTo {
 }
 
 const UNINITIALIZED_MOD_COUNT = -1
+const HISTORY_SIZE = 10
 
 export const Viewer = {
   modCount: UNINITIALIZED_MOD_COUNT,
   nextLoader: Promise.resolve() as Promise<unknown>,
   nextPending: true,
+  history: { prev: [] as Picture[], next: [] as Picture[] },
+}
+
+function clearViewerHistory(): void {
+  Viewer.history = { prev: [], next: [] }
+}
+
+function pushToPrevHistory(): void {
+  if (Pictures.current !== null) {
+    Viewer.history.prev.push(Pictures.current)
+    if (Viewer.history.prev.length > HISTORY_SIZE) {
+      Viewer.history.prev.shift()
+    }
+  }
+}
+
+function pushToNextHistory(): void {
+  if (Pictures.current !== null) {
+    Viewer.history.next.push(Pictures.current)
+    if (Viewer.history.next.length > HISTORY_SIZE) {
+      Viewer.history.next.shift()
+    }
+  }
+}
+
+// Append the currently-displayed picture to the back-history stack and discard
+// any pending forward-redo entries. Called from changePicture for every fresh
+// view (grid click, First/Last/Previous/Next, listing cover-selection). Walks
+// driven by navigateUnreadBack/Forward bypass this — they move existing entries
+// between the two stacks instead of appending.
+function recordFreshView(): void {
+  pushToPrevHistory()
+  Viewer.history.next = []
 }
 
 export function resetViewerState(): void {
   Viewer.modCount = UNINITIALIZED_MOD_COUNT
   Viewer.nextLoader = Promise.resolve()
   Viewer.nextPending = true
+  clearViewerHistory()
 }
 
 export function setModCount(modCount: number): void {
@@ -74,7 +109,45 @@ export async function changePicture(pic: Picture | undefined): Promise<void> {
     Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
+  recordFreshView()
   Pictures.current = pic
+  await Internals.loadImage().catch(() => null)
+  Imports.publish('Menu:Hide')
+}
+
+// In Show-Unread-Only mode, a just-viewed picture is `seen=true` and would be
+// invisible to the index-based PreviousUnread search. navigateUnreadBack first
+// walks the history.prev stack so the user can return to recently-viewed
+// pictures. When history is empty it falls back to the existing index search
+// but treats that fall-through as a continuation of the back-walk — pushes
+// current to history.next so the redo chain is preserved, NOT as a fresh view.
+// (Treating it as a fresh view would truncate history.next, breaking the
+// "press forward to return to the just-seen image" expectation.)
+export async function navigateUnreadBack(): Promise<void> {
+  if (Imports.isLoading()) return
+  const target = Viewer.history.prev.pop() ?? Internals.getPicture(NavigateTo.PreviousUnread)
+  if (target === undefined) {
+    Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
+    return
+  }
+  pushToNextHistory()
+  Pictures.current = target
+  await Internals.loadImage().catch(() => null)
+  Imports.publish('Menu:Hide')
+}
+
+// Symmetric counterpart: redo through history.next first, then fall back to the
+// next-unread index search, treating the fall-through as a continuation of the
+// forward-walk (push current to history.prev).
+export async function navigateUnreadForward(): Promise<void> {
+  if (Imports.isLoading()) return
+  const target = Viewer.history.next.pop() ?? Internals.getPicture(NavigateTo.NextUnread)
+  if (target === undefined) {
+    Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
+    return
+  }
+  pushToPrevHistory()
+  Pictures.current = target
   await Internals.loadImage().catch(() => null)
   Imports.publish('Menu:Hide')
 }
@@ -194,6 +267,7 @@ function setPicturesGetFirst(data: Listing): Picture | null {
 
 export async function loadData(data: Listing): Promise<void> {
   Imports.resetMarkup()
+  clearViewerHistory()
   const firstPic = Internals.setPicturesGetFirst(data)
   if (firstPic === null) return
 

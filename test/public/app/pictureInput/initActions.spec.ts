@@ -19,6 +19,8 @@ describe('public/app/pictures initActions()', () => {
   let getPictureFake = { number: Math.random() }
   let getPictureSpy = sandbox.stub()
   let changePictureSpy = sandbox.stub()
+  let navigateUnreadBackSpy = sandbox.stub()
+  let navigateUnreadForwardSpy = sandbox.stub()
   let loadCurrentPageSpy = sandbox.stub()
   let windowOpenSpy = sandbox.stub()
   let subscribeStub = sandbox.stub()
@@ -34,6 +36,8 @@ describe('public/app/pictures initActions()', () => {
     getPictureFake = { number: Math.random() }
     getPictureSpy = sandbox.stub(Imports, 'getPicture').returns(cast<Picture>(getPictureFake))
     changePictureSpy = sandbox.stub(Imports, 'changePicture')
+    navigateUnreadBackSpy = sandbox.stub(Imports, 'navigateUnreadBack').resolves()
+    navigateUnreadForwardSpy = sandbox.stub(Imports, 'navigateUnreadForward').resolves()
     loadCurrentPageSpy = sandbox.stub(Imports, 'loadCurrentPageImages')
     windowOpenSpy = sandbox.stub(global.window, 'open')
     subscribeStub = sandbox.stub(Imports, 'subscribe')
@@ -57,14 +61,14 @@ describe('public/app/pictures initActions()', () => {
   const changeToSubscribers: Array<[string, NavigateTo]> = [
     ['Action:Execute:First', NavigateTo.First],
     ['Action:Execute:PreviousImage', NavigateTo.Previous],
-    ['Action:Execute:PreviousUnseen', NavigateTo.PreviousUnread],
     ['Action:Execute:NextImage', NavigateTo.Next],
-    ['Action:Execute:NextUnseen', NavigateTo.NextUnread],
     ['Action:Execute:Last', NavigateTo.Last],
   ]
   const subscribers = [
     ...noMenuSubscribers.map((v) => v[0]),
     ...changeToSubscribers.map((v) => v[0]),
+    'Action:Execute:PreviousUnseen',
+    'Action:Execute:NextUnseen',
     'Action:Execute:Previous',
     'Action:Execute:Next',
     'Action:Execute:ViewFullSize',
@@ -159,6 +163,54 @@ describe('public/app/pictures initActions()', () => {
       await fn(undefined)
       expect(changePictureSpy.firstCall.args[0]).toBe(getPictureFake)
     })
+  })
+  it('should call navigateUnreadBack once for Action:Execute:PreviousUnseen', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousUnseen')
+    await fn(undefined)
+    expect(navigateUnreadBackSpy.callCount).toBe(1)
+  })
+  it('should call navigateUnreadBack with no args for Action:Execute:PreviousUnseen', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousUnseen')
+    await fn(undefined)
+    expect(navigateUnreadBackSpy.firstCall.args).toHaveLength(0)
+  })
+  it('should not call changePicture for Action:Execute:PreviousUnseen', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousUnseen')
+    await fn(undefined)
+    expect(changePictureSpy.callCount).toBe(0)
+  })
+  it('should not call getPicture for Action:Execute:PreviousUnseen', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousUnseen')
+    await fn(undefined)
+    expect(getPictureSpy.callCount).toBe(0)
+  })
+  it('should call navigateUnreadForward once for Action:Execute:NextUnseen', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextUnseen')
+    await fn(undefined)
+    expect(navigateUnreadForwardSpy.callCount).toBe(1)
+  })
+  it('should call navigateUnreadForward with no args for Action:Execute:NextUnseen', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextUnseen')
+    await fn(undefined)
+    expect(navigateUnreadForwardSpy.firstCall.args).toHaveLength(0)
+  })
+  it('should not call changePicture for Action:Execute:NextUnseen', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextUnseen')
+    await fn(undefined)
+    expect(changePictureSpy.callCount).toBe(0)
+  })
+  it('should not call getPicture for Action:Execute:NextUnseen', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextUnseen')
+    await fn(undefined)
+    expect(getPictureSpy.callCount).toBe(0)
   })
   it('should translate Action:Execute:Previous as PreviousUnseen when ShowUnreadOnly is set', async () => {
     initActions()

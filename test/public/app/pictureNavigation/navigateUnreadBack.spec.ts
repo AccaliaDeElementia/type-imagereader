@@ -1,0 +1,182 @@
+'use sanity'
+
+import Sinon from 'sinon'
+import type { Picture } from '#contracts/listing.js'
+import { Pictures } from '#public/scripts/app/pictureState.js'
+import { Imports, Internals, NavigateTo, Viewer, navigateUnreadBack } from '#public/scripts/app/pictureNavigation.js'
+import { resetPubSub } from '#testutils/pubsub.js'
+
+const sandbox = Sinon.createSandbox()
+
+const currentPic: Picture = { name: 'current', path: '/current', seen: false }
+const historyPic: Picture = { name: 'history', path: '/history', seen: true }
+const freshPic: Picture = { name: 'fresh', path: '/fresh', seen: false }
+
+const HISTORY_SIZE = 10
+const filler = (i: number): Picture => ({ name: `f${i}`, path: `/f${i}`, seen: true })
+
+describe('public/app/pictureNavigation navigateUnreadBack()', () => {
+  let isLoadingSpy = sandbox.stub()
+  let loadImageSpy = sandbox.stub()
+  let publishStub = sandbox.stub()
+  let getPictureSpy = sandbox.stub()
+  beforeEach(() => {
+    resetPubSub()
+    Pictures.current = { ...currentPic }
+    Viewer.history = { prev: [], next: [] }
+    isLoadingSpy = sandbox.stub(Imports, 'isLoading').returns(false)
+    loadImageSpy = sandbox.stub(Internals, 'loadImage').resolves()
+    publishStub = sandbox.stub(Imports, 'publish')
+    getPictureSpy = sandbox.stub(Internals, 'getPicture')
+  })
+  afterEach(() => {
+    sandbox.restore()
+  })
+
+  describe('isLoading guard', () => {
+    beforeEach(() => {
+      isLoadingSpy.returns(true)
+      Viewer.history.prev = [{ ...historyPic }]
+    })
+    it('should not pop from history.prev', async () => {
+      await navigateUnreadBack()
+      expect(Viewer.history.prev).toHaveLength(1)
+    })
+    it('should not call loadImage', async () => {
+      await navigateUnreadBack()
+      expect(loadImageSpy.callCount).toBe(0)
+    })
+    it('should not call getPicture', async () => {
+      await navigateUnreadBack()
+      expect(getPictureSpy.callCount).toBe(0)
+    })
+    it('should not publish anything', async () => {
+      await navigateUnreadBack()
+      expect(publishStub.callCount).toBe(0)
+    })
+  })
+
+  describe('with non-empty history.prev', () => {
+    let popped: Picture = { ...historyPic }
+    beforeEach(() => {
+      popped = { ...historyPic }
+      Viewer.history.prev = [popped]
+    })
+    it('should pop the newest entry off history.prev', async () => {
+      await navigateUnreadBack()
+      expect(Viewer.history.prev).toHaveLength(0)
+    })
+    it('should push prior current onto history.next', async () => {
+      const prior = Pictures.current
+      await navigateUnreadBack()
+      expect(Viewer.history.next).toEqual([prior])
+    })
+    it('should not push to history.next when prior current is null', async () => {
+      Pictures.current = null
+      await navigateUnreadBack()
+      expect(Viewer.history.next).toEqual([])
+    })
+    it('should set Pictures.current to the popped picture', async () => {
+      await navigateUnreadBack()
+      expect(Pictures.current).toBe(popped)
+    })
+    it('should call loadImage once', async () => {
+      await navigateUnreadBack()
+      expect(loadImageSpy.callCount).toBe(1)
+    })
+    it('should publish Menu:Hide', async () => {
+      await navigateUnreadBack()
+      expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
+    })
+    it('should tolerate loadImage rejecting', async () => {
+      loadImageSpy.rejects('FOO')
+      await navigateUnreadBack()
+      expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
+    })
+    it('should not call getPicture', async () => {
+      await navigateUnreadBack()
+      expect(getPictureSpy.callCount).toBe(0)
+    })
+  })
+
+  describe('with empty history.prev and an unread fall-through target', () => {
+    beforeEach(() => {
+      getPictureSpy.returns(freshPic)
+    })
+    it('should call getPicture with PreviousUnread', async () => {
+      await navigateUnreadBack()
+      expect(getPictureSpy.firstCall.args).toEqual([NavigateTo.PreviousUnread])
+    })
+    it('should set Pictures.current to the fall-through picture', async () => {
+      await navigateUnreadBack()
+      expect(Pictures.current).toBe(freshPic)
+    })
+    it('should push prior current onto history.next', async () => {
+      const prior = Pictures.current
+      await navigateUnreadBack()
+      expect(Viewer.history.next).toEqual([prior])
+    })
+    it('should not push to history.next when prior current is null', async () => {
+      Pictures.current = null
+      await navigateUnreadBack()
+      expect(Viewer.history.next).toEqual([])
+    })
+    it('should preserve pre-existing history.next entries below the prior current', async () => {
+      const preserved: Picture = { name: 'preserved', path: '/preserved', seen: true }
+      Viewer.history.next = [preserved]
+      const prior = Pictures.current
+      await navigateUnreadBack()
+      expect(Viewer.history.next).toEqual([preserved, prior])
+    })
+    it('should call loadImage once', async () => {
+      await navigateUnreadBack()
+      expect(loadImageSpy.callCount).toBe(1)
+    })
+    it('should publish Menu:Hide', async () => {
+      await navigateUnreadBack()
+      expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
+    })
+    it('should tolerate loadImage rejecting', async () => {
+      loadImageSpy.rejects('FOO')
+      await navigateUnreadBack()
+      expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
+    })
+    it('should cap history.next at HISTORY_SIZE by dropping the oldest entry', async () => {
+      Viewer.history.next = Array.from({ length: HISTORY_SIZE }, (_, i) => filler(i))
+      await navigateUnreadBack()
+      expect(Viewer.history.next).toHaveLength(HISTORY_SIZE)
+    })
+    it('should drop the oldest history.next entry first when fall-through push overflows', async () => {
+      Viewer.history.next = Array.from({ length: HISTORY_SIZE }, (_, i) => filler(i))
+      await navigateUnreadBack()
+      expect(Viewer.history.next[0]?.name).toBe('f1')
+    })
+  })
+
+  describe('with empty history.prev and no fall-through target', () => {
+    beforeEach(() => {
+      getPictureSpy.returns(undefined)
+    })
+    it('should not set Pictures.current', async () => {
+      const prior = Pictures.current
+      await navigateUnreadBack()
+      expect(Pictures.current).toBe(prior)
+    })
+    it('should not push to history.next', async () => {
+      await navigateUnreadBack()
+      expect(Viewer.history.next).toEqual([])
+    })
+    it('should not call loadImage', async () => {
+      await navigateUnreadBack()
+      expect(loadImageSpy.callCount).toBe(0)
+    })
+    it('should not publish Menu:Hide', async () => {
+      await navigateUnreadBack()
+      expect(publishStub.withArgs('Menu:Hide').callCount).toBe(0)
+    })
+    it('should publish Loading:Error', async () => {
+      await navigateUnreadBack()
+      expect(publishStub.withArgs('Loading:Error').callCount).toBe(1)
+    })
+  })
+})

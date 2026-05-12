@@ -1,5 +1,6 @@
 'use sanity'
 
+import type { Picture } from '#contracts/listing.js'
 import { Viewer, resetViewerState } from '#public/scripts/app/pictureNavigation.js'
 
 describe('public/app/pictures resetViewerState()', () => {
@@ -18,5 +19,17 @@ describe('public/app/pictures resetViewerState()', () => {
     Viewer.nextPending = false
     resetViewerState()
     expect(Viewer.nextPending).toBe(true)
+  })
+  it('should clear history.prev', () => {
+    const pic: Picture = { name: 'x', path: '/x', seen: true }
+    Viewer.history.prev = [pic]
+    resetViewerState()
+    expect(Viewer.history.prev).toEqual([])
+  })
+  it('should clear history.next', () => {
+    const pic: Picture = { name: 'y', path: '/y', seen: true }
+    Viewer.history.next = [pic]
+    resetViewerState()
+    expect(Viewer.history.next).toEqual([])
   })
 })

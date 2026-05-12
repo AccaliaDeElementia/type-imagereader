@@ -3,7 +3,7 @@
 import Sinon from 'sinon'
 
 import { Pictures } from '#public/scripts/app/pictureState.js'
-import { Imports, Internals, loadData } from '#public/scripts/app/pictureNavigation.js'
+import { Imports, Internals, Viewer, loadData } from '#public/scripts/app/pictureNavigation.js'
 import assert from 'node:assert'
 import { resetPubSub } from '#testutils/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
@@ -26,6 +26,7 @@ describe('public/app/pictures loadData()', () => {
       index: -1,
     }))
     Pictures.current = null
+    Viewer.history = { prev: [], next: [] }
     resetMarkupSpy = sandbox.stub(Imports, 'resetMarkup')
     setPicturesSpy = sandbox.stub(Internals, 'setPicturesGetFirst').callsFake((data) => data.pictures?.[0] ?? null)
     makeTabSpy = sandbox.stub(Imports, 'makeTab')
@@ -297,5 +298,25 @@ describe('public/app/pictures loadData()', () => {
       pictures: Pictures.pictures,
     })
     expect(loadImageSpy.callCount, 'Call should not propagate rejection out of method').toBe(1)
+  })
+  it('should clear history.prev when new listing arrives', async () => {
+    Viewer.history.prev = [{ name: 'stale', path: '/stale', seen: true }]
+    await loadData({
+      name: '',
+      parent: '',
+      path: '',
+      pictures: Pictures.pictures,
+    })
+    expect(Viewer.history.prev).toEqual([])
+  })
+  it('should clear history.next when new listing arrives', async () => {
+    Viewer.history.next = [{ name: 'stale', path: '/stale', seen: true }]
+    await loadData({
+      name: '',
+      parent: '',
+      path: '',
+      pictures: Pictures.pictures,
+    })
+    expect(Viewer.history.next).toEqual([])
   })
 })
