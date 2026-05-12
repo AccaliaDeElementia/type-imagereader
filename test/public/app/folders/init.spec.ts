@@ -3,10 +3,9 @@
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { Folders, init, Internals } from '#public/scripts/app/folders.js'
+import { Folders, Imports, init, Internals } from '#public/scripts/app/folders.js'
 import Sinon from 'sinon'
 import type { Listing } from '#contracts/listing.js'
 
@@ -37,10 +36,12 @@ html
 
 describe('public/app/folders init()', () => {
   let buildFoldersSpy: Sinon.SinonStub = sandbox.stub()
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
 
     resetPubSub()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     Folders.folderCard = null
     buildFoldersSpy = sandbox.stub(Internals, 'buildFolders')
   })
@@ -50,11 +51,11 @@ describe('public/app/folders init()', () => {
   })
   it('should subscribe to Navigate:Data', () => {
     init()
-    expect(PubSub.subscribers['NAVIGATE:DATA']).toHaveLength(1)
+    expect(subscribeStub.calledWith('Navigate:Data')).toBe(true)
   })
   it('should build folders on Navigate:Data with valid listing', async () => {
     init()
-    const subscriberfn = getSubscriber('NAVIGATE:DATA')
+    const subscriberfn = capturedSubscriber(subscribeStub, 'Navigate:Data')
     const data: Listing = {
       name: 'FOO',
       path: 'BAR',
@@ -66,7 +67,7 @@ describe('public/app/folders init()', () => {
   })
   it('should not build folders on Navigate:Data with invalid data', async () => {
     init()
-    const subscriberfn = getSubscriber('NAVIGATE:DATA')
+    const subscriberfn = capturedSubscriber(subscribeStub, 'Navigate:Data')
     const data = {
       invalid: 'OBJECT',
     }

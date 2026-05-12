@@ -6,7 +6,7 @@ import { PubSub } from '#public/scripts/app/pubsub.js'
 import { Actions, Imports, init, Internals } from '#public/scripts/app/actions.js'
 
 import { cast } from '#testutils/typeGuards.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import type { Listing } from '#contracts/listing.js'
@@ -18,12 +18,14 @@ describe('public/app/actions init()', () => {
   const dom: JSDOM = new JSDOM('', {})
   let BuildActionsSpy = sandbox.stub()
   let GamepadResetSpy = sandbox.stub()
+  let subscribeStub = sandbox.stub()
 
   beforeEach(() => {
     mountDom(dom)
     resetPubSub()
     BuildActionsSpy = sandbox.stub(Internals, 'buildActions')
     GamepadResetSpy = sandbox.stub(Actions.gamepads, 'reset')
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
   })
   afterEach(() => {
     sandbox.restore()
@@ -39,7 +41,7 @@ describe('public/app/actions init()', () => {
   })
   it('should subscribe to Navigate:Data', () => {
     init()
-    expect(PubSub.subscribers['NAVIGATE:DATA']).toHaveLength(1)
+    expect(subscribeStub.calledWith('Navigate:Data')).toBe(true)
   })
   const navigateDataTestCases: Array<[string, Listing, boolean]> = [
     ['null', cast<Listing>(null), false],
@@ -155,7 +157,7 @@ describe('public/app/actions init()', () => {
   navigateDataTestCases.forEach(([title, listing, expected]) => {
     const doNavigate = async (): Promise<Sinon.SinonStub> => {
       init()
-      const handler = getSubscriber('NAVIGATE:DATA')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
       const publishStub = sandbox.stub(Imports, 'publish')
       await handler(listing)
       return publishStub

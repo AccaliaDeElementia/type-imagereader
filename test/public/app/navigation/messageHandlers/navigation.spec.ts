@@ -5,8 +5,8 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { subscribe } from '#public/scripts/app/pubsub.js'
-import { init, Internals, Navigation } from '#public/scripts/app/navigation.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import type { Listing } from '#contracts/listing.js'
 
 const sandbox = Sinon.createSandbox()
@@ -26,6 +26,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
   let loadDataStub = sandbox.stub()
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -36,6 +37,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     tabSelectedSpy.resolves()
     subscribe('Tab:Selected', tabSelectedSpy)
     loadDataStub = sandbox.stub(Internals, 'loadData').resolves()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     Navigation.current = {
       path: '/',
       name: '',
@@ -53,7 +55,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
   describe('Navigate:Load Handler', () => {
     it('should set current location when passed string', async () => {
       init()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler('a string')
       expect(Navigation.current).toEqual({
         path: 'a string',
@@ -68,20 +70,20 @@ describe('public/app/navigation/messageHandlers init()', () => {
         parent: '/foo/bar',
       }
       init()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler(data)
       expect(Navigation.current).toBe(data)
     })
     it('should retain current location when passed invalid data', async () => {
       init()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       Navigation.current.path = '/foo/bar/bax/42'
       await handler(null)
       expect(Navigation.current.path).toBe('/foo/bar/bax/42')
     })
     it('should not load data when passed invalid data', async () => {
       init()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       loadDataStub.resetHistory()
       await handler(null)
       expect(loadDataStub.callCount).toBe(0)
@@ -90,28 +92,28 @@ describe('public/app/navigation/messageHandlers init()', () => {
       init()
       loadDataStub.resetHistory()
       loadDataStub.rejects(new Event('FOO!'))
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       const catcher = (): never => expect.fail('Handler should not reject!')
       await handler('a string').catch(catcher)
     })
     it('should call loadData() once with defaults', async () => {
       init()
       loadDataStub.resetHistory()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler('a string')
       expect(loadDataStub.callCount).toBe(1)
     })
     it('should call loadData() with noHistory=false for string path', async () => {
       init()
       loadDataStub.resetHistory()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler('a string')
       expect(loadDataStub.firstCall.args[0]).toBe(false)
     })
     it('should call loadData() with suppressMenu=false for string path', async () => {
       init()
       loadDataStub.resetHistory()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler('a string')
       expect(loadDataStub.firstCall.args[1]).toBe(false)
     })
@@ -124,7 +126,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       }
       init()
       loadDataStub.resetHistory()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler(data)
       expect(loadDataStub.firstCall.args[1]).toBe(true)
     })
@@ -137,7 +139,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       }
       init()
       loadDataStub.resetHistory()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler(data)
       expect(loadDataStub.firstCall.args[1]).toBe(false)
     })
@@ -149,7 +151,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       }
       init()
       loadDataStub.resetHistory()
-      const handler = getSubscriber('NAVIGATE:LOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler(data)
       expect(loadDataStub.firstCall.args[1]).toBe(false)
     })
@@ -158,14 +160,14 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should call loadData() once', async () => {
       init()
       loadDataStub.resetHistory()
-      const handler = getSubscriber('NAVIGATE:RELOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Reload')
       await handler('a string')
       expect(loadDataStub.callCount).toBe(1)
     })
     it('should call loadData() with no arguments', async () => {
       init()
       loadDataStub.resetHistory()
-      const handler = getSubscriber('NAVIGATE:RELOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Reload')
       await handler('a string')
       expect(loadDataStub.firstCall.args).toEqual([])
     })
@@ -173,7 +175,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       init()
       loadDataStub.resetHistory()
       loadDataStub.rejects(new Event('FOO!'))
-      const handler = getSubscriber('NAVIGATE:RELOAD')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Reload')
       const catcher = (): never => expect.fail('Handler should not reject!')
       await handler('a string').catch(catcher)
     })
@@ -251,7 +253,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       it(`should${expected ? '' : ' not'} log data when passed ${name}`, async () => {
         init()
         loadDataStub.resetHistory()
-        const handler = getSubscriber('NAVIGATE:DATA')
+        const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
         await handler(data)
         expect(consoleLogSpy.called).toBe(expected)
       })
@@ -262,14 +264,14 @@ describe('public/app/navigation/messageHandlers init()', () => {
         it(`should log data with one argument when passed ${name}`, async () => {
           init()
           loadDataStub.resetHistory()
-          const handler = getSubscriber('NAVIGATE:DATA')
+          const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
           await handler(data)
           expect(consoleLogSpy.firstCall.args).toHaveLength(1)
         })
         it(`should log data value when passed ${name}`, async () => {
           init()
           loadDataStub.resetHistory()
-          const handler = getSubscriber('NAVIGATE:DATA')
+          const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
           await handler(data)
           expect(consoleLogSpy.firstCall.args[0]).toBe(data)
         })

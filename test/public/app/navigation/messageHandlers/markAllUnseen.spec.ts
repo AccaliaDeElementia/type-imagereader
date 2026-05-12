@@ -7,7 +7,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/typeGuards.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
@@ -42,6 +42,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
   describe('Action:Execute:MarkAllUnseen Message Handler', () => {
     let postJSONSpy = sandbox.stub().resolves(undefined as unknown)
     let publishStub = sandbox.stub()
+    let subscribeStub = sandbox.stub()
     let confirmShowStub = sandbox.stub().resolves(true)
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
@@ -49,10 +50,10 @@ describe('public/app/navigation/messageHandlers init()', () => {
     beforeEach(() => {
       postJSONSpy = sandbox.stub(Imports, 'postJSON').resolves()
       confirmShowStub = sandbox.stub(Imports, 'show').resolves(true)
+      subscribeStub = sandbox.stub(Imports, 'subscribe')
       init()
       loadDataStub.resetHistory()
-      const h = getSubscriber('ACTION:EXECUTE:MARKALLUNSEEN')
-      handler = h
+      handler = capturedSubscriber(subscribeStub, 'Action:Execute:MarkAllUnseen')
       publishStub = sandbox.stub(Imports, 'publish')
     })
     afterEach(() => {

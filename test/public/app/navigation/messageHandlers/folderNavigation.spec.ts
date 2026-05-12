@@ -8,7 +8,7 @@ import { render } from 'pug'
 import { subscribe } from '#public/scripts/app/pubsub.js'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/typeGuards.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { eventuallyRejects } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
@@ -27,6 +27,7 @@ html
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -37,6 +38,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     tabSelectedSpy.resolves()
     subscribe('Tab:Selected', tabSelectedSpy)
     sandbox.stub(Internals, 'loadData').resolves()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     Navigation.current = {
       path: '/',
       name: '',
@@ -83,8 +85,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       }
       Navigation.current.prev = previousFolder
       Navigation.current.prevUnread = previousUnreadFolder
-      const h = getSubscriber('ACTION:EXECUTE:PREVIOUSFOLDER')
-      handler = h
+      handler = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousFolder')
     })
     afterEach(() => {
       sandbox.restore()
@@ -167,8 +168,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       }
       Navigation.current.next = nextFolder
       Navigation.current.nextUnread = nextUnreadFolder
-      const h = getSubscriber('ACTION:EXECUTE:NEXTFOLDER')
-      handler = h
+      handler = capturedSubscriber(subscribeStub, 'Action:Execute:NextFolder')
     })
     afterEach(() => {
       sandbox.restore()
@@ -230,8 +230,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       init()
       parentFolder = `/Foo ${Math.random()}`
       Navigation.current.parent = parentFolder
-      const h = getSubscriber('ACTION:EXECUTE:PARENTFOLDER')
-      handler = h
+      handler = capturedSubscriber(subscribeStub, 'Action:Execute:ParentFolder')
     })
     afterEach(() => {
       sandbox.restore()
@@ -279,8 +278,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
           totalCount: i,
         }))
       Navigation.current.children = children
-      const h = getSubscriber('ACTION:EXECUTE:FIRSTUNFINISHED')
-      handler = h
+      handler = capturedSubscriber(subscribeStub, 'Action:Execute:FirstUnfinished')
     })
     afterEach(() => {
       sandbox.restore()

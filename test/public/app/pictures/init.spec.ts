@@ -7,8 +7,7 @@ import { cast } from '#testutils/typeGuards.js'
 import Sinon from 'sinon'
 import { Pictures, Imports } from '#public/scripts/app/pictures/state.js'
 import type { Picture } from '#contracts/listing.js'
-import { PubSub } from '#public/scripts/app/pubsub.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -57,6 +56,7 @@ describe('public/app/pictures init()', () => {
   let initUnreadSliderSpy = sandbox.stub()
   let loadDataSpy = sandbox.stub()
   let changePictureSpy = sandbox.stub()
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -69,6 +69,7 @@ describe('public/app/pictures init()', () => {
     initUnreadSliderSpy = sandbox.stub(Imports, 'initUnreadSelectorSlider')
     loadDataSpy = sandbox.stub(Imports, 'loadData')
     changePictureSpy = sandbox.stub(Imports, 'changePicture')
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
   })
   afterEach(() => {
     sandbox.restore()
@@ -116,7 +117,8 @@ describe('public/app/pictures init()', () => {
   })
   it('should register subscribers for Navigate:Data and Pictures:Change', () => {
     Pictures.init()
-    expect(Object.keys(PubSub.subscribers).sort()).toEqual(['NAVIGATE:DATA', 'PICTURES:CHANGE'].sort())
+    const subscribedTopics = subscribeStub.getCalls().map((c) => cast<string>(c.args[0]).toUpperCase())
+    expect(subscribedTopics.sort()).toEqual(['NAVIGATE:DATA', 'PICTURES:CHANGE'].sort())
   })
   const testCases: Array<[string, boolean, unknown]> = [
     ['listing', true, { path: '', parent: '', name: '' }],
@@ -129,7 +131,7 @@ describe('public/app/pictures init()', () => {
   testCases.forEach(([name, expected, data]) => {
     it(`should ${expected ? 'load data' : 'ignore'} ${name} in Navigate:Load handler`, async () => {
       Pictures.init()
-      const handler = getSubscriber('NAVIGATE:DATA')
+      const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
       await handler(data)
       expect(loadDataSpy.called).toBe(expected)
     })
@@ -145,7 +147,7 @@ describe('public/app/pictures init()', () => {
   pictureChangeCases.forEach(([name, expected, data]) => {
     it(`should ${expected ? 'change picture' : 'ignore'} ${name} in Pictures:Change handler`, async () => {
       Pictures.init()
-      const handler = getSubscriber('PICTURES:CHANGE')
+      const handler = capturedSubscriber(subscribeStub, 'Pictures:Change')
       await handler(data)
       expect(changePictureSpy.called).toBe(expected)
     })

@@ -7,7 +7,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { subscribe } from '#public/scripts/app/pubsub.js'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
@@ -26,6 +26,7 @@ html
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -36,6 +37,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     tabSelectedSpy.resolves()
     subscribe('Tab:Selected', tabSelectedSpy)
     sandbox.stub(Internals, 'loadData').resolves()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     Navigation.current = {
       path: '/',
       name: '',
@@ -61,7 +63,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should remove hidden class from main menu node', async () => {
       init()
-      const handler = getSubscriber('MENU:SHOW')
+      const handler = capturedSubscriber(subscribeStub, 'Menu:show')
       menuNode?.classList.add('hidden')
       expect(menuNode?.classList.contains('hidden')).toBe(true)
       await handler(undefined)
@@ -69,7 +71,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should remove hidden class while preserving other classes on main menu node', async () => {
       init()
-      const handler = getSubscriber('MENU:SHOW')
+      const handler = capturedSubscriber(subscribeStub, 'Menu:show')
       menuNode?.classList.add('foo')
       menuNode?.classList.add('bar')
       menuNode?.classList.add('hidden')
@@ -79,7 +81,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should tolerate already removed hidden class on main menu node', async () => {
       init()
-      const handler = getSubscriber('MENU:SHOW')
+      const handler = capturedSubscriber(subscribeStub, 'Menu:show')
       expect(menuNode?.classList.contains('hidden')).toBe(false)
       await handler(undefined)
       expect(menuNode?.classList.contains('hidden')).toBe(false)
@@ -87,7 +89,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentNode?.removeChild(menuNode)
       init()
-      const handler = getSubscriber('MENU:SHOW')
+      const handler = capturedSubscriber(subscribeStub, 'Menu:show')
       menuNode?.classList.add('hidden')
       await eventuallyFulfills(handler(undefined))
     })
@@ -103,14 +105,14 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should add hidden class from main menu node', async () => {
       init()
-      const handler = getSubscriber('MENU:HIDE')
+      const handler = capturedSubscriber(subscribeStub, 'Menu:Hide')
       expect(menuNode?.classList.contains('hidden')).toBe(false)
       await handler(undefined)
       expect(menuNode?.classList.contains('hidden')).toBe(true)
     })
     it('should preserve hidden class on hidden main menu node', async () => {
       init()
-      const handler = getSubscriber('MENU:HIDE')
+      const handler = capturedSubscriber(subscribeStub, 'Menu:Hide')
       menuNode?.classList.add('hidden')
       expect(menuNode?.classList.contains('hidden')).toBe(true)
       await handler(undefined)
@@ -119,7 +121,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should tolerate missing main menu node', async () => {
       menuNode?.parentElement?.removeChild(menuNode)
       init()
-      const handler = getSubscriber('MENU:HIDE')
+      const handler = capturedSubscriber(subscribeStub, 'Menu:Hide')
       await eventuallyFulfills(handler(undefined))
     })
   })

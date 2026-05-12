@@ -6,7 +6,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { subscribe } from '#public/scripts/app/pubsub.js'
 import { init, Internals, Imports, Navigation } from '#public/scripts/app/navigation.js'
-import { getSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -24,6 +24,7 @@ html
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
   const tabSelectedSpy = sandbox.stub()
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -34,6 +35,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     tabSelectedSpy.resolves()
     subscribe('Tab:Selected', tabSelectedSpy)
     sandbox.stub(Internals, 'loadData').resolves()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     Navigation.current = {
       path: '/',
       name: '',
@@ -56,8 +58,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     beforeEach(() => {
       init()
       locationAssignSpy = sandbox.stub(Navigation, 'locationAssign')
-      const h = getSubscriber('ACTION:EXECUTE:SLIDESHOW')
-      handler = h
+      handler = capturedSubscriber(subscribeStub, 'Action:Execute:Slideshow')
     })
     afterEach(() => {
       sandbox.restore()
@@ -90,8 +91,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       exitFullscreenStub.resolves()
       dom.window.document.body.requestFullscreen = requestFullscreenStub
       dom.window.document.exitFullscreen = exitFullscreenStub
-      const h = getSubscriber('ACTION:EXECUTE:FULLSCREEN')
-      handler = h
+      handler = capturedSubscriber(subscribeStub, 'Action:Execute:FullScreen')
       publishStub = sandbox.stub(Imports, 'publish')
     })
     afterEach(() => {
