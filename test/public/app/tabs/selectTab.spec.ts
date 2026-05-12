@@ -56,6 +56,10 @@ describe('public/app/tabs selectTab()', () => {
     assert(bookmarks !== null)
     bookmarks.scroll = bookmarksScroll
     resetPubSub()
+    // init() registers a Tab:Select subscriber as a side effect of populating
+    // Tabs.tabs/tabNames — not part of selectTab's behavior surface. Stubbed
+    // here to absorb the registration; captured and asserted in init.spec.ts.
+    sandbox.stub(Imports, 'subscribe')
     Tabs.tabs = []
     Tabs.tabNames = []
     const selectTabStub = sandbox.stub(Internals, 'selectTab')

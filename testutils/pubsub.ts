@@ -34,6 +34,22 @@ export function unmountPubSub(): void {
   PubSub.guardCallback = undefined
 }
 
+// Paths whose specs have a legitimate reason to call the bare pubsub
+// primitives. Pubsub specs test the real primitives directly; the pubsub
+// testutil spec tests these very helpers. Anything else is treated as a
+// non-pubsub spec and is guarded by the auto-mount setup file.
+const GUARD_EXCLUDED_PATHS = [
+  '/test/public/app/pubsub/',
+  '/test/testutils/pubSub.spec.ts',
+  // Integration spec that legitimately exercises real init() of multiple modules
+  // and verifies pug-template ↔ JS binding via the live pubsub mechanism.
+  '/test/integration/clientInitBinding.spec.ts',
+]
+
+export function shouldGuard(testPath: string): boolean {
+  return !GUARD_EXCLUDED_PATHS.some((excluded) => testPath.includes(excluded))
+}
+
 // Return the handler function from the most-recent call on `subscribeStub`
 // matching `topic` (case-insensitive). Used by specs that stub `Imports.subscribe`
 // to capture and invoke the SUT-registered handler. Asserts loudly if no

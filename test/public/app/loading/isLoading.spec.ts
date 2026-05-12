@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { init, isLoading, Loading } from '#public/scripts/app/loading.js'
+import { Imports, init, isLoading, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
@@ -22,6 +22,11 @@ describe('public/app/loading isLoading()', () => {
     })
     mountDom(dom)
     resetPubSub()
+    // init() registers four Loading:* subscribers as a side effect of populating
+    // Loading.overlay/navbar — not part of isLoading's behavior surface. Stubbed
+    // here to absorb the registrations; captured and asserted in init.spec.ts
+    // (registration) and the per-handler specs (error, success, showHide).
+    sandbox.stub(Imports, 'subscribe')
     Loading.overlay = null
     Loading.navbar = null
     init()

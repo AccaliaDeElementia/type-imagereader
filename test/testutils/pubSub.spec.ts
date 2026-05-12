@@ -2,7 +2,14 @@
 
 import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
-import { capturedSubscriber, mountPubSub, publishedData, resetPubSub, unmountPubSub } from '#testutils/pubsub.js'
+import {
+  capturedSubscriber,
+  mountPubSub,
+  publishedData,
+  resetPubSub,
+  shouldGuard,
+  unmountPubSub,
+} from '#testutils/pubsub.js'
 
 const sandbox = Sinon.createSandbox()
 
@@ -149,5 +156,20 @@ describe('testutils/PubSub mountPubSub() / unmountPubSub()', () => {
   it('should install a guardCallback whose message hints at the Imports stub seam', () => {
     mountPubSub()
     expect(() => PubSub.guardCallback?.("publish 'Y'")).toThrow(/Imports/v)
+  })
+})
+
+describe('testutils/PubSub shouldGuard()', () => {
+  it('should guard ordinary app specs under test/public/app/', () => {
+    expect(shouldGuard('/work/test/public/app/folders/init.spec.ts')).toBe(true)
+  })
+  it('should not guard pubsub specs under test/public/app/pubsub/', () => {
+    expect(shouldGuard('/work/test/public/app/pubsub/subscribe.spec.ts')).toBe(false)
+  })
+  it('should not guard the pubsub testutil spec', () => {
+    expect(shouldGuard('/work/test/testutils/pubSub.spec.ts')).toBe(false)
+  })
+  it('should guard server-side specs by default (no exclusion match)', () => {
+    expect(shouldGuard('/work/test/sync/findItems/findSyncItems.spec.ts')).toBe(true)
   })
 })

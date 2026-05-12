@@ -4,9 +4,9 @@ import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { publish } from '#public/scripts/app/pubsub.js'
-import { init, Loading } from '#public/scripts/app/loading.js'
-import { resetPubSub } from '#testutils/pubsub.js'
+import { Imports, init, Loading } from '#public/scripts/app/loading.js'
+import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import { eventuallyFulfills } from '#testutils/errors.js'
 
 const sandbox = Sinon.createSandbox()
 const markup = `
@@ -17,12 +17,14 @@ html
 `
 describe('public/app/loading subscriber "Loading:show" and "Loading:Hide"', () => {
   let dom: JSDOM = new JSDOM('', {})
+  let subscribeStub = sandbox.stub()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
     resetPubSub()
+    subscribeStub = sandbox.stub(Imports, 'subscribe')
     Loading.overlay = null
     Loading.navbar = null
     init()
@@ -31,28 +33,24 @@ describe('public/app/loading subscriber "Loading:show" and "Loading:Hide"', () =
     sandbox.restore()
     unmountDom()
   })
-  it('should show the loading overlay for "Loading:show"', () => {
+  it('should show the loading overlay for "Loading:show"', async () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'none')
-    publish('Loading:show')
+    await capturedSubscriber(subscribeStub, 'Loading:show')(undefined)
     expect(overlay?.style.getPropertyValue('display')).toBe('block')
   })
-  it('should hide the loading overlay for "Loading:Hide"', () => {
+  it('should hide the loading overlay for "Loading:Hide"', async () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('#loadingScreen')
     overlay?.style.setProperty('display', 'block')
-    publish('Loading:Hide')
+    await capturedSubscriber(subscribeStub, 'Loading:Hide')(undefined)
     expect(overlay?.style.getPropertyValue('display')).toBe('none')
   })
-  it('should tolerate missing overlay for "Loading:show"', () => {
+  it('should tolerate missing overlay for "Loading:show"', async () => {
     Loading.overlay = null
-    expect(() => {
-      publish('Loading:show')
-    }).not.toThrow()
+    await eventuallyFulfills(capturedSubscriber(subscribeStub, 'Loading:show')(undefined))
   })
-  it('should tolerate missing overlay for "Loading:Hide"', () => {
+  it('should tolerate missing overlay for "Loading:Hide"', async () => {
     Loading.overlay = null
-    expect(() => {
-      publish('Loading:Hide')
-    }).not.toThrow()
+    await eventuallyFulfills(capturedSubscriber(subscribeStub, 'Loading:Hide')(undefined))
   })
 })
