@@ -91,17 +91,16 @@ function buildBookmark(bookmark: Bookmark): HTMLElement | null {
         modCount: UNINITIALIZED_MOD_COUNT,
       },
       acceptAnyResponse,
-    ).then(
-      () => {
+    )
+      .then(() => {
         Imports.publish('Navigate:Load', {
           path: bookmark.folder,
           name: '',
           parent: '',
           noMenu: true,
         })
-      },
-      () => null,
-    )
+      })
+      .catch(() => null)
     event.stopPropagation()
   })
   return card
@@ -161,29 +160,27 @@ export function init(): void {
   Imports.subscribe('Bookmarks:Load', async () => {
     Bookmarks.loadToken += TOKEN_STEP
     const token = Bookmarks.loadToken
-    await Imports.getJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder)).then(
-      (bookmarks) => {
+    await Imports.getJSON<BookmarkFolder[]>('/api/bookmarks', (o: unknown) => isArray(o, isBookmarkFolder))
+      .then((bookmarks) => {
         if (token !== Bookmarks.loadToken) return
         Internals.buildBookmarks({ name: '', parent: '', path: '', bookmarks })
-      },
-      (err: unknown) => {
+      })
+      .catch((err: unknown) => {
         if (token !== Bookmarks.loadToken) return
         Imports.publish('Loading:Error', err)
-      },
-    )
+      })
   })
 
   const bookmarkAction = async (apiPath: string, path: unknown): Promise<void> => {
     if (typeof path !== 'string') return
-    await Imports.postJSON(apiPath, { path }, acceptAnyResponse).then(
-      () => {
+    await Imports.postJSON(apiPath, { path }, acceptAnyResponse)
+      .then(() => {
         Imports.publish('Bookmarks:Load')
         Imports.publish('Loading:Success')
-      },
-      (err: unknown) => {
+      })
+      .catch((err: unknown) => {
         Imports.publish('Loading:Error', err instanceof Error ? err : new Error('Non Error rejection!'))
-      },
-    )
+      })
   }
 
   Imports.subscribe('Bookmarks:Add', async (path) => {

@@ -204,7 +204,7 @@ async function loadNextImage(): Promise<void> {
     const clearPending = (): void => {
       Viewer.nextPending = false
     }
-    Viewer.nextLoader = window.fetch(uri).then(clearPending, clearPending)
+    Viewer.nextLoader = window.fetch(uri).then(clearPending).catch(clearPending)
   }
   await Viewer.nextLoader
 }

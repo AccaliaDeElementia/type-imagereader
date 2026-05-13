@@ -158,28 +158,30 @@ export function init(): void {
   Imports.subscribe('Action:Execute:MarkAllSeen', async () => {
     if (!(await Imports.show('Mark all images in this folder as seen?', 'Mark All Seen'))) return
     await Imports.postJSON('/api/mark/read', { path: Navigation.current.path }, acceptAnyResponse)
-      .then(
-        async () => {
+      .then(async () => {
+        try {
           await Internals.loadData(true)
-        },
-        (err: unknown) => {
-          Imports.publish('Loading:Error', err)
-        },
-      )
-      .catch(() => null)
+        } catch {
+          // intentionally swallow: loadData failures are non-fatal here
+        }
+      })
+      .catch((err: unknown) => {
+        Imports.publish('Loading:Error', err)
+      })
   })
   Imports.subscribe('Action:Execute:MarkAllUnseen', async () => {
     if (!(await Imports.show('Mark all images in this folder as unseen?', 'Mark All Unseen'))) return
     await Imports.postJSON('/api/mark/unread', { path: Navigation.current.path }, acceptAnyResponse)
-      .then(
-        async () => {
+      .then(async () => {
+        try {
           await Internals.loadData(true)
-        },
-        (err: unknown) => {
-          Imports.publish('Loading:Error', err)
-        },
-      )
-      .catch(() => null)
+        } catch {
+          // intentionally swallow: loadData failures are non-fatal here
+        }
+      })
+      .catch((err: unknown) => {
+        Imports.publish('Loading:Error', err)
+      })
   })
   Imports.subscribe('Action:Execute:Slideshow', async () => {
     Navigation.locationAssign?.call(window.location, `/slideshow${Navigation.current.path}`)

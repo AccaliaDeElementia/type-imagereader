@@ -40,7 +40,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     Sinon.restore()
   })
   describe('Action:Execute:MarkAllUnseen Message Handler', () => {
-    let postJSONSpy = sandbox.stub().resolves(undefined as unknown)
+    let postJSONSpy = sandbox.stub().resolves(undefined)
     let publishStub = sandbox.stub()
     let subscribeStub = sandbox.stub()
     let confirmShowStub = sandbox.stub().resolves(true)

@@ -344,8 +344,8 @@ export async function rootRoute(knex: Knex, req: Request, res: Response): Promis
     })
     return
   }
-  await Internals.getRoomAndIncrementImage(knex, folder).then(
-    (room) => {
+  await Internals.getRoomAndIncrementImage(knex, folder)
+    .then((room) => {
       if (!hasValues(room.images)) {
         Imports.logger('slideshow folder empty: %s', folder)
         res.status(StatusCodes.NOT_FOUND).render('error', {
@@ -360,16 +360,15 @@ export async function rootRoute(knex: Knex, req: Request, res: Response): Promis
         folder,
         image: room.uriSafeImage,
       })
-    },
-    (err: unknown) => {
+    })
+    .catch((err: unknown) => {
       Imports.logger('slideshow render error: %s', err instanceof Error ? err.message : String(err))
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).render('error', {
         title: 'ERROR',
         code: 'INTERNAL_SERVER_ERROR',
         message: err,
       })
-    },
-  )
+    })
 }
 
 export async function getRouter(_: Application, __: Server, io: WebSocketServer): Promise<Router> {

@@ -28,11 +28,11 @@ describe('utils/persistence getKnexConfig()', () => {
     configBlock = {
       client: '',
       connection: {
-        host: '' as string | undefined,
-        database: '' as string | undefined,
-        user: '' as string | undefined,
-        password: '' as string | undefined,
-        filename: '' as string | undefined,
+        host: '',
+        database: '',
+        user: '',
+        password: '',
+        filename: '',
       },
       migrations: { tableName: '' },
     }

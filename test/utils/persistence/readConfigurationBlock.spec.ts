@@ -21,7 +21,7 @@ describe('utils/persistence readConfigurationBlock()', () => {
   beforeEach(() => {
     configContent = {
       testtest: {
-        client: 'foo' as string | null,
+        client: 'foo',
         connection: {},
         migrations: {
           tableName: 'baz',

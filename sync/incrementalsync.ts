@@ -166,6 +166,7 @@ export async function incrementalUpdateFolders(
     await execChunksSynchronously(chunk(folderList, Imports.getDbChunkSize(knex)), async (chunk: string[]) => {
       const orLike = chunk.map(() => 'folder LIKE ?').join(' OR ')
       const bindings = chunk.map((af) => `${af}%`)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- knex aggregation result shape isn't inferred from chained count/sum
       const rows = (await knex('pictures')
         .select('folder')
         .count({ totalCount: '*' })

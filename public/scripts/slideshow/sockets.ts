@@ -88,8 +88,8 @@ function uninitializedLocationReload(): void {
 export const WebSockets = {
   socket: undefined as WebSocket | undefined,
   launchId: undefined as unknown,
-  locationAssign: uninitializedLocationAssign as (url: string | URL) => void,
-  locationReload: uninitializedLocationReload as () => void,
+  locationAssign: uninitializedLocationAssign,
+  locationReload: uninitializedLocationReload,
 }
 
 export function connect(): void {

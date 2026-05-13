@@ -32,7 +32,7 @@ export async function getAllFolderInfos(knex: Knex): Promise<Record<string, Fold
     folder: string
     sortKey: string
   }
-  const rawFolders = (await knex('folders').select('path', 'folder', 'sortKey')) as Row[]
+  const rawFolders = await knex<Row>('folders').select('path', 'folder', 'sortKey')
   const folders: Record<string, FolderInfo> = {}
   for (const f of rawFolders) {
     folders[f.path] = { path: f.path, folder: f.folder, sortKey: f.sortKey, totalCount: ZERO, seenCount: ZERO }
