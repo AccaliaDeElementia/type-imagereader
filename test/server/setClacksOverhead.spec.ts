@@ -1,42 +1,39 @@
 'use sanity'
 
 import type { Request, Response } from 'express'
-import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
 import { setClacksOverhead } from '#server.js'
 
-const sandbox = Sinon.createSandbox()
-
 describe('Server setClacksOverhead', () => {
-  let resStub = { set: sandbox.stub() }
+  let resStub = { set: vi.fn() }
   let resFake = cast<Response>(resStub)
-  let nextStub = sandbox.stub()
+  let nextStub = vi.fn()
   beforeEach(() => {
-    resStub = { set: sandbox.stub() }
+    resStub = { set: vi.fn() }
     resFake = cast<Response>(resStub)
-    nextStub = sandbox.stub()
+    nextStub = vi.fn()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should call res.set once', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(resStub.set.callCount).toBe(1)
+    expect(resStub.set.mock.calls.length).toBe(1)
   })
   it('should set the X-Clacks-Overhead header name', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(resStub.set.firstCall.args[0]).toBe('X-Clacks-Overhead')
+    expect(resStub.set.mock.calls[0]?.[0]).toBe('X-Clacks-Overhead')
   })
   it('should set the GNU Terry Pratchett header value', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(resStub.set.firstCall.args[1]).toBe('GNU Terry Pratchett')
+    expect(resStub.set.mock.calls[0]?.[1]).toBe('GNU Terry Pratchett')
   })
   it('should call next once', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(nextStub.callCount).toBe(1)
+    expect(nextStub.mock.calls.length).toBe(1)
   })
   it('should call next after setting the header', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
-    expect(nextStub.calledAfter(resStub.set)).toBe(true)
+    expect((nextStub.mock.invocationCallOrder[0] ?? 0) > (resStub.set.mock.invocationCallOrder[0] ?? 0)).toBe(true)
   })
 })

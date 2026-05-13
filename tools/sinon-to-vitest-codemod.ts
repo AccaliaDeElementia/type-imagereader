@@ -18,8 +18,22 @@ const SKIP_IMPORT_GUARD_FLAG = '--skip-import-guard'
 // Specs that import these symbols still receive sinon-typed objects from
 // helpers we haven't migrated. The codemod refuses to rewrite them until the
 // helper is migrated, otherwise it would break the sinon API access through
-// the helper's return value (e.g. responseStub.status.firstCall.args).
-const TESTUTIL_SINON_PRODUCERS = ['createResponseFake', 'createLoggerFake', 'createKnexChainFake']
+// the helper's return value (e.g. responseStub.status.firstCall.args) or the
+// helper's argument expectations (e.g. findStubCall expects a SinonStub and
+// internally calls .getCalls() — which vitest mocks don't have).
+const TESTUTIL_SINON_PRODUCERS = [
+  'createResponseFake',
+  'createLoggerFake',
+  'createKnexChainFake',
+  'createCopyStreamFake',
+  'findStubCall',
+  // pubsub testutils internally call `.getCalls()` on the stub passed in.
+  // Specs that use these helpers stay on sinon mocks until the testutil migrates.
+  'capturedSubscriber',
+  'publishedData',
+  'capturedInterval',
+  'capturedDeferred',
+]
 
 interface Transform {
   pattern: RegExp
@@ -217,6 +231,15 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
     result.applied.push(`${t.label} (${matches.length}x)`)
   }
 
+  // Post-pass: bare `vi.spyOn(obj, 'method')` (no chained mock) calls through to
+  // the original by default. sinon's `sandbox.stub(obj, 'method')` replaced with a
+  // no-op. To preserve the original test semantics, append `.mockImplementation(cast(() => undefined))`
+  // to any spyOn call not already followed by a `.mock*` chain. `cast()` (from
+  // #testutils/typeGuards) broadens the return type so this compiles regardless of
+  // the spied method's actual return signature. When a subsequent chain like
+  // `.mockReturnValue(v)` exists, it overrides the default impl.
+  out = out.replace(/(vi\.spyOn\([^)]+\))(?!\.\w)/g, '$1.mockImplementation(cast(() => undefined))')
+
   // Post-pass: optional-chain `.called` -> `.mock.calls.length > 0` produces a
   // `number | undefined > 0` type that tsconfig's strict mode rejects. Wrap with
   // `?? 0` to keep the comparison type-safe. Only fires on `<id>?.mock.calls.length > 0`
@@ -235,16 +258,21 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
   )
 
   // Post-pass: add the MockInstance type import if needed and not already present.
-  // Insert after the last existing `import ...` line so it joins the import block
-  // rather than floating up next to the 'use sanity' directive.
+  // Insert after the last existing `import ...` statement so it joins the import block
+  // rather than floating up next to the 'use sanity' directive. The matcher targets the
+  // END of an import (the line containing `from '...'`) so multi-line imports like
+  //   import {
+  //     a, b, c,
+  //   } from '...'
+  // don't get split by the inserted line.
   if (/\bMockInstance\b/.test(out) && !/from\s+['"]vitest['"]/.test(out)) {
     const lines = out.split('\n')
-    let lastImport = -1
+    let lastImportEnd = -1
     for (let i = 0; i < lines.length; i++) {
-      if (/^import\b/.test(lines[i] ?? '')) lastImport = i
+      if (/from\s+['"][^'"]+['"]\s*;?\s*$/.test(lines[i] ?? '')) lastImportEnd = i
     }
-    if (lastImport >= 0) {
-      lines.splice(lastImport + 1, 0, "import type { MockInstance } from 'vitest'")
+    if (lastImportEnd >= 0) {
+      lines.splice(lastImportEnd + 1, 0, "import type { MockInstance } from 'vitest'")
       out = lines.join('\n')
       result.applied.push("add: import type { MockInstance } from 'vitest'")
     }
@@ -253,6 +281,16 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
   // Detect unconverted patterns that need hand-review.
   const flagPatterns: Array<{ re: RegExp; reason: string }> = [
     { re: /\.calledWith\(/g, reason: '.calledWith(...) — rewrite as expect(stub).toHaveBeenCalledWith(...)' },
+    {
+      re: /\.calledWithExactly\(/g,
+      reason:
+        '.calledWithExactly(...) — rewrite as expect(stub).toHaveBeenCalledWith(...) (vitest already matches exactly)',
+    },
+    {
+      re: /\.calledOnceWith(?:Exactly)?\(/g,
+      reason:
+        '.calledOnceWith(...) / .calledOnceWithExactly(...) — rewrite as expect(stub).toHaveBeenCalledExactlyOnceWith(...) (vitest 1.x+)',
+    },
     {
       re: /vi\.spyOn\([^)]+\)\.value\(/g,
       reason:

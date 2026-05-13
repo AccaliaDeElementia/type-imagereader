@@ -1,19 +1,14 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { delay } from '#testutils/utils.js'
 
-const sandbox = Sinon.createSandbox()
-
 describe('testutils delay()', () => {
-  let clock: sinon.SinonFakeTimers | undefined = undefined
-
   beforeEach(() => {
-    clock = sandbox.useFakeTimers()
+    vi.useFakeTimers()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.useRealTimers()
+    vi.restoreAllMocks()
   })
 
   it('should not resolve before the specified delay elapses', async () => {
@@ -21,9 +16,9 @@ describe('testutils delay()', () => {
     const promise = delay(100).then(() => {
       resolved = true
     })
-    await clock?.tickAsync(99)
+    await vi.advanceTimersByTimeAsync(99)
     expect(resolved).toBe(false)
-    await clock?.tickAsync(1)
+    await vi.advanceTimersByTimeAsync(1)
     await promise
     expect(resolved).toBe(true)
   })
@@ -32,7 +27,7 @@ describe('testutils delay()', () => {
     const promise = delay(100).then(() => {
       resolved = true
     })
-    await clock?.tickAsync(100)
+    await vi.advanceTimersByTimeAsync(100)
     await promise
     expect(resolved).toBe(true)
   })

@@ -1,97 +1,95 @@
 'use sanity'
 
 import type { Express } from 'express'
-import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
 import { Imports, registerViewsAndMiddleware } from '#server.js'
 import express from 'express'
+import type { MockInstance } from 'vitest'
 
-const sandbox = Sinon.createSandbox()
-
-type MiddlewareFn = (req: unknown, res: unknown, next: Sinon.SinonStub) => void
+type MiddlewareFn = (req: unknown, res: unknown, next: MockInstance) => void
 type AppLocals = { asset?: (url: string) => string } & Record<string, unknown>
 interface AppStub {
-  use: Sinon.SinonStub
-  set: Sinon.SinonStub
+  use: MockInstance
+  set: MockInstance
   locals: AppLocals
 }
 
 describe('Server registerRouters', () => {
-  let staticStub = sandbox.stub()
-  let buildAssetVersionsStub = sandbox.stub()
-  let assetUrlStub = sandbox.stub()
+  let staticStub: MockInstance = vi.fn()
+  let buildAssetVersionsStub: MockInstance = vi.fn()
+  let assetUrlStub: MockInstance = vi.fn()
   let appStub: AppStub = {
-    use: sandbox.stub(),
-    set: sandbox.stub(),
+    use: vi.fn(),
+    set: vi.fn(),
     locals: {},
   }
   let appFake = cast<Express>(appStub)
   beforeEach(() => {
-    staticStub = sandbox.stub(express, 'static')
-    buildAssetVersionsStub = sandbox.stub(Imports, 'buildAssetVersions').returns({})
-    assetUrlStub = sandbox.stub(Imports, 'assetUrl').returns('/stubbed')
+    staticStub = vi.spyOn(express, 'static').mockImplementation(cast(() => undefined))
+    buildAssetVersionsStub = vi.spyOn(Imports, 'buildAssetVersions').mockReturnValue({})
+    assetUrlStub = vi.spyOn(Imports, 'assetUrl').mockReturnValue('/stubbed')
     appStub = {
-      use: sandbox.stub(),
-      set: sandbox.stub(),
+      use: vi.fn(),
+      set: vi.fn(),
       locals: {},
     }
     appFake = cast<Express>(appStub)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should app.set() all views options', () => {
     registerViewsAndMiddleware(appFake)
-    expect(appStub.use.callCount).toBe(1)
+    expect(appStub.use.mock.calls.length).toBe(1)
   })
   it('should set views flag', () => {
     registerViewsAndMiddleware(appFake)
-    const args = appStub.set.getCalls().find((c) => c.args[0] === 'views')?.args as unknown[] | undefined
+    const args = appStub.set.mock.calls.find((c) => c[0] === 'views') as unknown[] | undefined
     expect(args).toHaveLength(2)
   })
   it('should set views path', () => {
     registerViewsAndMiddleware(appFake)
-    const args = appStub.set.getCalls().find((c) => c.args[0] === 'views')?.args as unknown[] | undefined
+    const args = appStub.set.mock.calls.find((c) => c[0] === 'views') as unknown[] | undefined
     expect(args?.[1]).toBe(`${Imports.dirname}/views`)
   })
   it('should set view engine', () => {
     registerViewsAndMiddleware(appFake)
-    const args = appStub.set.getCalls().find((c) => c.args[0] === 'view engine')?.args as unknown[] | undefined
+    const args = appStub.set.mock.calls.find((c) => c[0] === 'view engine') as unknown[] | undefined
     expect(args).toHaveLength(2)
   })
   it('should set pug as the selected view engine', () => {
     registerViewsAndMiddleware(appFake)
-    const args = appStub.set.getCalls().find((c) => c.args[0] === 'view engine')?.args as unknown[] | undefined
+    const args = appStub.set.mock.calls.find((c) => c[0] === 'view engine') as unknown[] | undefined
     expect(args?.[1]).toBe('pug')
   })
   it('should app.use() all middleware configs', () => {
     registerViewsAndMiddleware(appFake)
-    expect(appStub.use.callCount).toBe(1)
+    expect(appStub.use.mock.calls.length).toBe(1)
   })
   describe('Serve static middleware', () => {
     it('should configure serve static middleware', () => {
       registerViewsAndMiddleware(appFake)
-      expect(staticStub.callCount).toBe(1)
+      expect(staticStub.mock.calls.length).toBe(1)
     })
     it('should configure serve static middleware with dist path', () => {
       registerViewsAndMiddleware(appFake)
-      expect(staticStub.firstCall.args).toEqual([`${Imports.dirname}/dist`])
+      expect(staticStub.mock.calls[0]).toEqual([`${Imports.dirname}/dist`])
     })
     it('should register serve static function as middleware', () => {
-      const fn = cast<MiddlewareFn>(sandbox.stub())
-      staticStub.returns(fn)
+      const fn = cast<MiddlewareFn>(vi.fn())
+      staticStub.mockReturnValue(fn)
       registerViewsAndMiddleware(appFake)
-      expect(appStub.use.firstCall.args[0]).toBe(fn)
+      expect(appStub.use.mock.calls[0]?.[0]).toBe(fn)
     })
   })
   describe('asset version helper', () => {
     it('should call buildAssetVersions once', () => {
       registerViewsAndMiddleware(appFake)
-      expect(buildAssetVersionsStub.callCount).toBe(1)
+      expect(buildAssetVersionsStub.mock.calls.length).toBe(1)
     })
     it('should call buildAssetVersions with the dist directory', () => {
       registerViewsAndMiddleware(appFake)
-      expect(buildAssetVersionsStub.firstCall.args[0]).toBe(`${Imports.dirname}/dist`)
+      expect(buildAssetVersionsStub.mock.calls[0]?.[0]).toBe(`${Imports.dirname}/dist`)
     })
     it('should set app.locals.asset to a function', () => {
       registerViewsAndMiddleware(appFake)
@@ -100,17 +98,17 @@ describe('Server registerRouters', () => {
     it('should route asset helper calls through Imports.assetUrl', () => {
       registerViewsAndMiddleware(appFake)
       appStub.locals.asset?.('/scripts/app.js')
-      expect(assetUrlStub.callCount).toBe(1)
+      expect(assetUrlStub.mock.calls.length).toBe(1)
     })
     it('should pass the versions map and urlPath to Imports.assetUrl', () => {
       const versions = { '/foo.js': 'deadbeef' }
-      buildAssetVersionsStub.returns(versions)
+      buildAssetVersionsStub.mockReturnValue(versions)
       registerViewsAndMiddleware(appFake)
       appStub.locals.asset?.('/foo.js')
-      expect(assetUrlStub.firstCall.args).toEqual([versions, '/foo.js'])
+      expect(assetUrlStub.mock.calls[0]).toEqual([versions, '/foo.js'])
     })
     it('should return the result of Imports.assetUrl from the helper', () => {
-      assetUrlStub.returns('/foo.js?v=deadbeef')
+      assetUrlStub.mockReturnValue('/foo.js?v=deadbeef')
       registerViewsAndMiddleware(appFake)
       expect(appStub.locals.asset?.('/foo.js')).toBe('/foo.js?v=deadbeef')
     })

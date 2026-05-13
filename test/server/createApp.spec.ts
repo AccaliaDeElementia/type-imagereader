@@ -3,51 +3,54 @@
 import type { Express } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
-import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
 import { createApp, Imports } from '#server.js'
-
-const sandbox = Sinon.createSandbox()
 
 describe('Server createApp', () => {
   let serverFake = cast<Server>({})
   let socketsFake = cast<WebSocketServer>({})
-  let socketsServerStub = sandbox.stub()
+  let socketsServerStub = vi.fn()
   let appFake = cast<Express>({})
-  let expressStub = sandbox.stub().returns(appFake)
-  let createServerStub = sandbox.stub().returns(serverFake)
+  let expressStub = vi.fn().mockReturnValue(appFake)
+  let createServerStub = vi.fn().mockReturnValue(serverFake)
   beforeEach(() => {
     serverFake = cast<Server>({})
     socketsFake = cast<WebSocketServer>({})
     appFake = cast<Express>({})
-    expressStub = sandbox.stub(Imports, 'express').returns(appFake)
-    createServerStub = sandbox.stub(Imports, 'createServer').returns(serverFake)
-    socketsServerStub = sandbox.stub(Imports, 'WebSocketServer').returns(socketsFake)
+    expressStub = vi.spyOn(Imports, 'express').mockReturnValue(appFake)
+    createServerStub = vi.spyOn(Imports, 'createServer').mockReturnValue(serverFake)
+    socketsServerStub = cast<typeof socketsServerStub>(
+      vi.spyOn(Imports, 'WebSocketServer').mockImplementation(
+        cast<typeof Imports.WebSocketServer>(function fakeWebSocketServer() {
+          return socketsFake
+        }),
+      ),
+    )
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should construct express app', () => {
     createApp()
-    expect(expressStub.callCount).toBe(1)
+    expect(expressStub.mock.calls.length).toBe(1)
   })
   it('should construct express app with default config', () => {
     createApp()
-    expect(expressStub.firstCall.args).toHaveLength(0)
+    expect(expressStub.mock.calls[0]).toHaveLength(0)
   })
   it('should create an http server wrapping the express app', () => {
     createApp()
-    expect(createServerStub.callCount).toBe(1)
+    expect(createServerStub.mock.calls.length).toBe(1)
   })
   it('should delegate incoming requests to the express app via the createServer listener', () => {
-    const appCallStub = sandbox.stub()
-    expressStub.returns(cast<Express>(appCallStub))
+    const appCallStub = vi.fn()
+    expressStub.mockReturnValue(cast<Express>(appCallStub))
     createApp()
-    const listener = cast<(req: unknown, res: unknown) => void>(createServerStub.firstCall.args[0])
+    const listener = cast<(req: unknown, res: unknown) => void>(createServerStub.mock.calls[0]?.[0])
     const reqFake = { req: true }
     const resFake = { res: true }
     listener(reqFake, resFake)
-    expect(appCallStub.firstCall.args).toEqual([reqFake, resFake])
+    expect(appCallStub.mock.calls[0]).toEqual([reqFake, resFake])
   })
   it('should not start listening from createApp', () => {
     createApp()
@@ -57,11 +60,11 @@ describe('Server createApp', () => {
   })
   it('should create websocket server', () => {
     createApp()
-    expect(socketsServerStub.callCount).toBe(1)
+    expect(socketsServerStub.mock.calls.length).toBe(1)
   })
   it('should create websocket server from the http server', () => {
     createApp()
-    expect(socketsServerStub.firstCall.args[0]).toBe(serverFake)
+    expect(socketsServerStub.mock.calls[0]?.[0]).toBe(serverFake)
   })
   it('should return tuple of [express app, http server, websocket server]', () => {
     const result = createApp()
