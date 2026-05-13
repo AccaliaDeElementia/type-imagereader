@@ -98,11 +98,16 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
       replace: 'vi.fn()',
       label: 'X.stub()/X.spy() -> vi.fn()',
     },
-    //    sandbox.stub(obj, 'method') -> vi.spyOn(obj, 'method')   (still inside an outer chain)
+    //    sandbox.stub(obj, 'method') / sandbox.spy(obj, 'method') -> vi.spyOn(obj, 'method')
+    //    (still inside an outer chain). Both sinon forms map to vi.spyOn — the difference
+    //    in sinon is "always-replace" (stub) vs "call-through" (spy). The bare-spyOn
+    //    post-pass below appends `.mockImplementation(cast(() => undefined))` to anything
+    //    not chained, which preserves stub's "no-op default" semantic. For sandbox.spy
+    //    use cases that *want* call-through, hand-revert by deleting the post-pass insertion.
     {
-      pattern: /\b(?:sandbox|Sinon|sinon)\s*\.\s*stub\(/g,
+      pattern: /\b(?:sandbox|Sinon|sinon)\s*\.\s*(?:stub|spy)\(/g,
       replace: 'vi.spyOn(',
-      label: 'X.stub(obj, "m") -> vi.spyOn(obj, "m")',
+      label: 'X.stub(obj, "m") / X.spy(obj, "m") -> vi.spyOn(obj, "m")',
     },
 
     // 4. sandbox.restore() -> vi.restoreAllMocks()
@@ -113,6 +118,49 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
     },
 
     // 5. Chain methods (run *after* the factory rename — we're chaining onto vi.spyOn(...) or vi.fn() now).
+    //
+    // .onFirstCall().X(v) / .onSecondCall().X(v) / .onThirdCall().X(v) / .onCall(N).X(v)
+    // -> .mockReturnValueOnce(v) / .mockResolvedValueOnce(v) / .mockRejectedValueOnce(v)
+    // CAVEAT: assumes sequential call setup (call 0 then 1 then 2…). If a spec configures
+    // call N without configuring 0..N-1, vitest queues N's value for the next unconsumed
+    // call (which may be earlier than N). MUST run BEFORE the generic `.returns(` rewrite
+    // otherwise the bare `.returns(` gets converted first, leaving `.onFirstCall().mockReturnValue(...)`.
+    {
+      pattern: /\.on(?:First|Second|Third|Fourth)Call\(\)\.returns\(/g,
+      replace: '.mockReturnValueOnce(',
+      label: '.onNthCall().returns(v) -> .mockReturnValueOnce(v)',
+    },
+    {
+      pattern: /\.on(?:First|Second|Third|Fourth)Call\(\)\.resolves\(/g,
+      replace: '.mockResolvedValueOnce(',
+      label: '.onNthCall().resolves(v) -> .mockResolvedValueOnce(v)',
+    },
+    {
+      pattern: /\.on(?:First|Second|Third|Fourth)Call\(\)\.rejects\(/g,
+      replace: '.mockRejectedValueOnce(',
+      label: '.onNthCall().rejects(v) -> .mockRejectedValueOnce(v)',
+    },
+    {
+      pattern: /\.onCall\(\d+\)\.returns\(/g,
+      replace: '.mockReturnValueOnce(',
+      label: '.onCall(N).returns(v) -> .mockReturnValueOnce(v)',
+    },
+    {
+      pattern: /\.onCall\(\d+\)\.resolves\(/g,
+      replace: '.mockResolvedValueOnce(',
+      label: '.onCall(N).resolves(v) -> .mockResolvedValueOnce(v)',
+    },
+    {
+      pattern: /\.onCall\(\d+\)\.rejects\(/g,
+      replace: '.mockRejectedValueOnce(',
+      label: '.onCall(N).rejects(v) -> .mockRejectedValueOnce(v)',
+    },
+    // .getCall(N).args -> .mock.calls[N]
+    {
+      pattern: /\.getCall\((\d+)\)\.args\b/g,
+      replace: '.mock.calls[$1]',
+      label: '.getCall(N).args -> .mock.calls[N]',
+    },
     // Specific no-arg forms must come BEFORE the general open-paren forms.
     {
       pattern: /\.resolves\(\s*\)/g,
@@ -136,6 +184,7 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
       replace: '.mockImplementation(function (this: object): unknown { return this })',
       label: '.returnsThis() -> .mockImplementation(function (this: object): unknown { return this })',
     },
+
     // .throws(<simple-identifier>) -> .mockImplementation(() => { throw <id> })
     // Only the simple form is auto-rewritten; complex throw arguments are flagged below.
     {
@@ -244,12 +293,13 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
 
   // Post-pass: bare `vi.spyOn(obj, 'method')` (no chained mock) calls through to
   // the original by default. sinon's `sandbox.stub(obj, 'method')` replaced with a
-  // no-op. To preserve the original test semantics, append `.mockImplementation(cast(() => undefined))`
-  // to any spyOn call not already followed by a `.mock*` chain. `cast()` (from
-  // #testutils/typeGuards) broadens the return type so this compiles regardless of
-  // the spied method's actual return signature. When a subsequent chain like
-  // `.mockReturnValue(v)` exists, it overrides the default impl.
-  out = out.replace(/(vi\.spyOn\([^)]+\))(?!\.\w)/g, '$1.mockImplementation(cast(() => undefined))')
+  // no-op. Append `.mockImplementation((..._args: unknown[]) => undefined)` to any
+  // spyOn call not already followed by a `.mock*` chain — the explicit signature
+  // (variadic unknown args, undefined return) is structurally assignable to most
+  // function types AND passes strict `no-unsafe-argument` lint that `cast(() => undefined)`
+  // sometimes tripped on Debugger-typed properties (any-parameter signatures).
+  // When a subsequent chain like `.mockReturnValue(v)` exists, it overrides the default impl.
+  out = out.replace(/(vi\.spyOn\([^)]+\))(?!\.\w)/g, '$1.mockImplementation((..._args: unknown[]) => undefined)')
 
   // Post-pass: optional-chain `.called` -> `.mock.calls.length > 0` produces a
   // `number | undefined > 0` type that tsconfig's strict mode rejects. Wrap with

@@ -2,59 +2,56 @@
 
 import { Imports, ModCount, type ModCountInternals } from '#routes/apiFunctions.js'
 import { cast } from '#testutils/typeGuards.js'
-import Sinon from 'sinon'
-
+import type { MockInstance } from 'vitest'
 const modCountInternals = cast<ModCountInternals>(ModCount)
 
-const sandbox = Sinon.createSandbox()
-
 describe('routes/apiFunctions ModCount functions', () => {
-  let mathFloorSpy = Sinon.spy()
-  let mathRandomSpy = Sinon.spy()
-  let loggerStub: Sinon.SinonStub = sandbox.stub()
+  let mathFloorSpy: MockInstance = vi.fn()
+  let mathRandomSpy: MockInstance = vi.fn()
+  let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
-    mathFloorSpy = sandbox.spy(Math, 'floor')
-    mathRandomSpy = sandbox.spy(Math, 'random')
+    mathFloorSpy = vi.spyOn(Math, 'floor')
+    mathRandomSpy = vi.spyOn(Math, 'random')
     modCountInternals.modCount = 5050
-    loggerStub = sandbox.stub(Imports, 'logger')
+    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation(cast(() => undefined))
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('reset() should call Math.random once', () => {
     modCountInternals.reset()
-    expect(mathRandomSpy.callCount).toBe(1)
+    expect(mathRandomSpy.mock.calls.length).toBe(1)
   })
   it('reset() should call Math.random with no args', () => {
     modCountInternals.reset()
-    expect(mathRandomSpy.firstCall.args).toHaveLength(0)
+    expect(mathRandomSpy.mock.calls[0]).toHaveLength(0)
   })
   it('reset() should call Math.floor once to extend start location to (0, 1e10]', () => {
     modCountInternals.reset()
-    expect(mathFloorSpy.callCount).toBe(1)
+    expect(mathFloorSpy.mock.calls.length).toBe(1)
   })
   it('reset() should call Math.floor with one argument', () => {
     modCountInternals.reset()
-    expect(mathFloorSpy.firstCall.args).toHaveLength(1)
+    expect(mathFloorSpy.mock.calls[0]).toHaveLength(1)
   })
   it('reset() should extend start location to (0, 1e10] using Math.floor', () => {
     modCountInternals.reset()
-    const value = 1e10 * mathRandomSpy.firstCall.returnValue
-    expect(mathFloorSpy.firstCall.args[0]).toBe(value)
+    const value = 1e10 * mathRandomSpy.mock.results[0]?.value
+    expect(mathFloorSpy.mock.calls[0]?.[0]).toBe(value)
   })
   it('reset() should return floored integer value', () => {
     const result = modCountInternals.reset()
-    const value = mathFloorSpy.firstCall.returnValue as unknown
+    const value = mathFloorSpy.mock.results[0]?.value as unknown
     expect(result).toBe(value)
   })
   it('reset() should store floored integer value in modCount', () => {
     modCountInternals.reset()
-    const value = mathFloorSpy.firstCall.returnValue as unknown
+    const value = mathFloorSpy.mock.results[0]?.value as unknown
     expect(modCountInternals.modCount).toBe(value)
   })
   it('reset() should log the new modcount value', () => {
     modCountInternals.reset()
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('ModCount reset'))
+    const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('ModCount reset'))
     expect(matched).toBe(true)
   })
   it('get() It should return modcount value', () => {

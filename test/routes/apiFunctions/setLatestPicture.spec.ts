@@ -2,90 +2,93 @@
 
 import { setLatestPicture, Imports } from '#routes/apiFunctions.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
-
+import type { MockInstance } from 'vitest'
 interface KnexStub {
-  select: Sinon.SinonStub
-  increment: Sinon.SinonStub
-  update: Sinon.SinonStub
-  whereIn: Sinon.SinonStub
-  orWhere: Sinon.SinonStub
-  where: Sinon.SinonStub
-  limit: Sinon.SinonStub
+  select: MockInstance
+  increment: MockInstance
+  update: MockInstance
+  whereIn: MockInstance
+  orWhere: MockInstance
+  where: MockInstance
+  limit: MockInstance
 }
 const makeKnexInstance = (): KnexStub => {
   // `where` defaults to chainable (returns the instance) but uses callsFake instead of
-  // returnsThis() so that per-test overrides like `.resolves(N)` can replace it cleanly.
+  // returnsThis() so that per-test overrides like `.mockResolvedValue(N)` can replace it cleanly.
   const inst: KnexStub = {
-    select: sandbox.stub().returnsThis(),
-    increment: sandbox.stub().returnsThis(),
-    update: sandbox.stub().returnsThis(),
-    whereIn: sandbox.stub().resolves([]),
-    orWhere: sandbox.stub().resolves([]),
-    limit: sandbox.stub().resolves([]),
-    where: sandbox.stub(),
+    select: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    increment: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    update: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    whereIn: vi.fn().mockResolvedValue([]),
+    orWhere: vi.fn().mockResolvedValue([]),
+    limit: vi.fn().mockResolvedValue([]),
+    where: vi.fn(),
   }
-  inst.where.callsFake(() => inst)
+  inst.where.mockImplementation(() => inst)
   return inst
 }
 describe('routes/apiFunctions setLatestPicture', () => {
-  let knexStub = sandbox.stub()
+  let knexStub: MockInstance = vi.fn()
   let knexFake = stubToKnex(knexStub)
-  let getParentFoldersStub = sandbox.stub()
-  let loggerStub: Sinon.SinonStub = sandbox.stub()
+  let getParentFoldersStub: MockInstance = vi.fn()
+  let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
-    knexStub = sandbox.stub().callsFake(() => stubToKnex(makeKnexInstance()))
+    knexStub = vi.fn().mockImplementation(() => stubToKnex(makeKnexInstance()))
     knexFake = stubToKnex(knexStub)
-    getParentFoldersStub = sandbox.stub(Imports, 'getParentFolders').returns([])
-    loggerStub = sandbox.stub(Imports, 'logger')
+    getParentFoldersStub = vi.spyOn(Imports, 'getParentFolders').mockReturnValue([])
+    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   // ---- Existence-check chain ----
 
   it('should call knex with the pictures table when checking existence', async () => {
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.firstCall.args).toEqual(['pictures'])
+    expect(knexStub.mock.calls[0]).toEqual(['pictures'])
   })
   it('should call select once when checking picture existence', async () => {
     const instance = makeKnexInstance()
-    knexStub.onFirstCall().returns(instance)
+    knexStub.mockReturnValueOnce(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.select.callCount).toBe(1)
+    expect(instance.select.mock.calls.length).toBe(1)
   })
   it('should select path column when checking picture existence', async () => {
     const instance = makeKnexInstance()
-    knexStub.onFirstCall().returns(instance)
+    knexStub.mockReturnValueOnce(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.select.firstCall.args).toEqual(['path'])
+    expect(instance.select.mock.calls[0]).toEqual(['path'])
   })
   it('should call where once when filtering existence-check by path', async () => {
     const instance = makeKnexInstance()
-    knexStub.onFirstCall().returns(instance)
+    knexStub.mockReturnValueOnce(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.where.callCount).toBe(1)
+    expect(instance.where.mock.calls.length).toBe(1)
   })
   it('should filter existence-check by provided path', async () => {
     const instance = makeKnexInstance()
-    knexStub.onFirstCall().returns(instance)
+    knexStub.mockReturnValueOnce(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.where.firstCall.args).toEqual([{ path: '/foo/bar/image.pdf' }])
+    expect(instance.where.mock.calls[0]).toEqual([{ path: '/foo/bar/image.pdf' }])
   })
   it('should call limit when checking picture existence', async () => {
     const instance = makeKnexInstance()
-    knexStub.onFirstCall().returns(instance)
+    knexStub.mockReturnValueOnce(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.limit.callCount).toBe(1)
+    expect(instance.limit.mock.calls.length).toBe(1)
   })
   it('should limit existence check to a single record', async () => {
     const instance = makeKnexInstance()
-    knexStub.onFirstCall().returns(instance)
+    knexStub.mockReturnValueOnce(instance)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(instance.limit.firstCall.args).toEqual([1])
+    expect(instance.limit.mock.calls[0]).toEqual([1])
   })
 
   // ---- Picture not found ----
@@ -96,11 +99,11 @@ describe('routes/apiFunctions setLatestPicture', () => {
   })
   it('should make no additional knex calls when picture not found', async () => {
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.callCount).toBe(1)
+    expect(knexStub.mock.calls.length).toBe(1)
   })
   it('should log when picture is not found', async () => {
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('setLatestPicture: picture not found'))
+    const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('setLatestPicture: picture not found'))
     expect(matched).toBe(true)
   })
 
@@ -108,36 +111,36 @@ describe('routes/apiFunctions setLatestPicture', () => {
 
   const setupExistingPicture = (): KnexStub => {
     const searcher = makeKnexInstance()
-    searcher.limit.resolves([{ path: '/foo/bar/image.pdf' }])
-    knexStub.onCall(0).returns(searcher)
+    searcher.limit.mockResolvedValue([{ path: '/foo/bar/image.pdf' }])
+    knexStub.mockReturnValueOnce(searcher)
     return searcher
   }
 
   it('should call knex with the pictures table for the conditional UPDATE', async () => {
     setupExistingPicture()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.getCall(1).args).toEqual(['pictures'])
+    expect(knexStub.mock.calls[1]).toEqual(['pictures'])
   })
   it('should call update once on the conditional UPDATE', async () => {
     setupExistingPicture()
     const cond = makeKnexInstance()
-    knexStub.onCall(1).returns(cond)
+    knexStub.mockReturnValueOnce(cond)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(cond.update.callCount).toBe(1)
+    expect(cond.update.mock.calls.length).toBe(1)
   })
   it('should set seen=true on the conditional UPDATE', async () => {
     setupExistingPicture()
     const cond = makeKnexInstance()
-    knexStub.onCall(1).returns(cond)
+    knexStub.mockReturnValueOnce(cond)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(cond.update.firstCall.args).toEqual([{ seen: true }])
+    expect(cond.update.mock.calls[0]).toEqual([{ seen: true }])
   })
   it('should atomically gate the conditional UPDATE on path AND seen=false', async () => {
     setupExistingPicture()
     const cond = makeKnexInstance()
-    knexStub.onCall(1).returns(cond)
+    knexStub.mockReturnValueOnce(cond)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(cond.where.firstCall.args).toEqual([{ path: '/foo/bar/image.pdf', seen: false }])
+    expect(cond.where.mock.calls[0]).toEqual([{ path: '/foo/bar/image.pdf', seen: false }])
   })
 
   // ---- Conditional update flips 0 rows (already seen / lost-the-race) ----
@@ -145,27 +148,27 @@ describe('routes/apiFunctions setLatestPicture', () => {
   const setupAlreadySeen = (): KnexStub => {
     setupExistingPicture()
     const cond = makeKnexInstance()
-    cond.where.resolves(0)
-    knexStub.onCall(1).returns(cond)
+    cond.where.mockResolvedValue(0)
+    knexStub.mockReturnValueOnce(cond)
     return cond
   }
 
   it('should not increment seenCount when conditional update flips zero rows', async () => {
     setupAlreadySeen()
     const folderInst = makeKnexInstance()
-    knexStub.onCall(2).returns(folderInst)
+    knexStub.mockReturnValueOnce(folderInst)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(folderInst.increment.callCount).toBe(0)
+    expect(folderInst.increment.mock.calls.length).toBe(0)
   })
   it('should call knex three times when conditional update flips zero rows', async () => {
     setupAlreadySeen()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.callCount).toBe(3)
+    expect(knexStub.mock.calls.length).toBe(3)
   })
   it('should query folders to update current cover when conditional update flips zero rows', async () => {
     setupAlreadySeen()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.getCall(2).args).toEqual(['folders'])
+    expect(knexStub.mock.calls[2]).toEqual(['folders'])
   })
 
   // ---- Conditional update flips 1 row (caller is the flipper) ----
@@ -173,60 +176,60 @@ describe('routes/apiFunctions setLatestPicture', () => {
   const setupSuccessfulFlip = (): KnexStub => {
     setupExistingPicture()
     const cond = makeKnexInstance()
-    cond.where.resolves(1)
-    knexStub.onCall(1).returns(cond)
+    cond.where.mockResolvedValue(1)
+    knexStub.mockReturnValueOnce(cond)
     return cond
   }
 
   it('should call knex four times when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.callCount).toBe(4)
+    expect(knexStub.mock.calls.length).toBe(4)
   })
   it('should query folders to increment seen count when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.getCall(2).args).toEqual(['folders'])
+    expect(knexStub.mock.calls[2]).toEqual(['folders'])
   })
   it('should call increment once when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     const incrementer = makeKnexInstance()
-    knexStub.onCall(2).returns(incrementer)
+    knexStub.mockReturnValueOnce(incrementer)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(incrementer.increment.callCount).toBe(1)
+    expect(incrementer.increment.mock.calls.length).toBe(1)
   })
   it('should increment seenCount by 1 when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     const incrementer = makeKnexInstance()
-    knexStub.onCall(2).returns(incrementer)
+    knexStub.mockReturnValueOnce(incrementer)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(incrementer.increment.firstCall.args).toEqual(['seenCount', 1])
+    expect(incrementer.increment.mock.calls[0]).toEqual(['seenCount', 1])
   })
   it('should call getParentFolders once when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(getParentFoldersStub.callCount).toBe(1)
+    expect(getParentFoldersStub.mock.calls.length).toBe(1)
   })
   it('should pass the picture path to getParentFolders when conditional update flips a row', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(getParentFoldersStub.firstCall.args).toEqual(['/foo/bar/image.pdf'])
+    expect(getParentFoldersStub.mock.calls[0]).toEqual(['/foo/bar/image.pdf'])
   })
   it('should call whereIn once when filtering ancestor folders for increment', async () => {
     setupSuccessfulFlip()
     const incrementer = makeKnexInstance()
-    knexStub.onCall(2).returns(incrementer)
-    getParentFoldersStub.returns('FOOBAR')
+    knexStub.mockReturnValueOnce(incrementer)
+    getParentFoldersStub.mockReturnValue('FOOBAR')
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(incrementer.whereIn.callCount).toBe(1)
+    expect(incrementer.whereIn.mock.calls.length).toBe(1)
   })
   it('should filter ancestor folders by path when incrementing seenCount', async () => {
     setupSuccessfulFlip()
     const incrementer = makeKnexInstance()
-    knexStub.onCall(2).returns(incrementer)
-    getParentFoldersStub.returns('FOOBAR')
+    knexStub.mockReturnValueOnce(incrementer)
+    getParentFoldersStub.mockReturnValue('FOOBAR')
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(incrementer.whereIn.firstCall.args).toEqual(['path', 'FOOBAR'])
+    expect(incrementer.whereIn.mock.calls[0]).toEqual(['path', 'FOOBAR'])
   })
 
   // ---- Final UPDATE folders.current (runs in both flip and no-flip paths) ----
@@ -234,34 +237,37 @@ describe('routes/apiFunctions setLatestPicture', () => {
   it('should query folders to update current cover after flipping', async () => {
     setupSuccessfulFlip()
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(knexStub.getCall(3).args).toEqual(['folders'])
+    expect(knexStub.mock.calls[3]).toEqual(['folders'])
   })
+  // setupSuccessfulFlip queues calls 0 and 1. Production also makes a call 2 (folders
+  // increment) before reaching call 3 (folders.current update). Pad with a default
+  // knex instance so the test's updater lands on call 3 like sinon's onCall(3) did.
   it('should call update once on folders.current after flipping', async () => {
     setupSuccessfulFlip()
     const updater = makeKnexInstance()
-    knexStub.onCall(3).returns(updater)
+    knexStub.mockReturnValueOnce(stubToKnex(makeKnexInstance())).mockReturnValueOnce(updater)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(updater.update.callCount).toBe(1)
+    expect(updater.update.mock.calls.length).toBe(1)
   })
   it('should set folders.current to the picture path after flipping', async () => {
     setupSuccessfulFlip()
     const updater = makeKnexInstance()
-    knexStub.onCall(3).returns(updater)
+    knexStub.mockReturnValueOnce(stubToKnex(makeKnexInstance())).mockReturnValueOnce(updater)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(updater.update.firstCall.args).toEqual([{ current: '/foo/bar/image.pdf' }])
+    expect(updater.update.mock.calls[0]).toEqual([{ current: '/foo/bar/image.pdf' }])
   })
   it('should filter folders.current update by parent folder path', async () => {
     setupSuccessfulFlip()
     const updater = makeKnexInstance()
-    knexStub.onCall(3).returns(updater)
+    knexStub.mockReturnValueOnce(stubToKnex(makeKnexInstance())).mockReturnValueOnce(updater)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(updater.where.firstCall.args).toEqual([{ path: '/foo/bar/' }])
+    expect(updater.where.mock.calls[0]).toEqual([{ path: '/foo/bar/' }])
   })
   it('should set folders.current even when conditional update flips zero rows', async () => {
     setupAlreadySeen()
     const updater = makeKnexInstance()
-    knexStub.onCall(2).returns(updater)
+    knexStub.mockReturnValueOnce(updater)
     await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-    expect(updater.update.firstCall.args).toEqual([{ current: '/foo/bar/image.pdf' }])
+    expect(updater.update.mock.calls[0]).toEqual([{ current: '/foo/bar/image.pdf' }])
   })
 })
