@@ -1,7 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { Imports, Internals } from '#public/scripts/app/actions.js'
 
 import { resetPubSub } from '#testutils/pubsub.js'
@@ -9,7 +7,6 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
-const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -35,7 +32,7 @@ describe('public/app/actions createButtons()', () => {
     resetPubSub()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return div element', () => {
@@ -101,12 +98,12 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    sandbox.stub(Imports, 'publish')
+    vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
-    const spy = sandbox.stub(event, 'preventDefault')
+    const spy = vi.spyOn(event, 'preventDefault').mockImplementation((..._args: unknown[]) => undefined)
     button?.dispatchEvent(event)
-    expect(spy.called).toBe(true)
+    expect(spy.mock.calls.length > 0).toBe(true)
   })
   it('it should publish Action:Execute event on click', () => {
     const container = Internals.createButtons([
@@ -115,11 +112,11 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    const publishStub = sandbox.stub(Imports, 'publish')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     button?.dispatchEvent(event)
-    expect(publishStub.calledWith('Action:Execute:Button')).toBe(true)
+    expect(publishStub).toHaveBeenCalledWith('Action:Execute:Button')
   })
   it('should collapse spaces from button name when publishing Action:Execute', () => {
     const container = Internals.createButtons([
@@ -128,10 +125,10 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    const publishStub = sandbox.stub(Imports, 'publish')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     button?.dispatchEvent(event)
-    expect(publishStub.calledWith('Action:Execute:ThisIsNotAButton')).toBe(true)
+    expect(publishStub).toHaveBeenCalledWith('Action:Execute:ThisIsNotAButton')
   })
 })

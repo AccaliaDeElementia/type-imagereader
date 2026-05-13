@@ -1,66 +1,63 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { Imports, bootstrap } from '#public/scripts/app/bootstrap.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('public/app/bootstrap', () => {
-  let loadingInitSpy: Sinon.SinonStub = sandbox.stub()
-  let confirmInitSpy: Sinon.SinonStub = sandbox.stub()
-  let actionsInitSpy: Sinon.SinonStub = sandbox.stub()
-  let tabsInitSpy: Sinon.SinonStub = sandbox.stub()
-  let foldersInitSpy: Sinon.SinonStub = sandbox.stub()
-  let picturesInitSpy: Sinon.SinonStub = sandbox.stub()
-  let bookmarksInitSpy: Sinon.SinonStub = sandbox.stub()
-  let navigationInitSpy: Sinon.SinonStub = sandbox.stub()
-  let pubsubDeferredSpy: Sinon.SinonStub = sandbox.stub()
-  let wakeLockInitSpy: Sinon.SinonStub = sandbox.stub()
+  let loadingInitSpy: MockInstance = vi.fn()
+  let confirmInitSpy: MockInstance = vi.fn()
+  let actionsInitSpy: MockInstance = vi.fn()
+  let tabsInitSpy: MockInstance = vi.fn()
+  let foldersInitSpy: MockInstance = vi.fn()
+  let picturesInitSpy: MockInstance = vi.fn()
+  let bookmarksInitSpy: MockInstance = vi.fn()
+  let navigationInitSpy: MockInstance = vi.fn()
+  let pubsubDeferredSpy: MockInstance = vi.fn()
+  let wakeLockInitSpy: MockInstance = vi.fn()
   beforeAll(() => {
-    loadingInitSpy = sandbox.stub(Imports, 'LoadingInit')
-    confirmInitSpy = sandbox.stub(Imports, 'ConfirmInit')
-    actionsInitSpy = sandbox.stub(Imports, 'ActionsInit')
-    tabsInitSpy = sandbox.stub(Imports, 'TabsInit')
-    foldersInitSpy = sandbox.stub(Imports, 'FoldersInit')
-    picturesInitSpy = sandbox.stub(Imports, 'PicturesInit')
-    bookmarksInitSpy = sandbox.stub(Imports, 'BookmarksInit')
-    navigationInitSpy = sandbox.stub(Imports, 'NavigationInit')
-    pubsubDeferredSpy = sandbox.stub(Imports, 'PubSubStartDeferred')
-    wakeLockInitSpy = sandbox.stub(Imports, 'WakeLockInit')
+    loadingInitSpy = vi.spyOn(Imports, 'LoadingInit').mockImplementation((..._args: unknown[]) => undefined)
+    confirmInitSpy = vi.spyOn(Imports, 'ConfirmInit').mockImplementation((..._args: unknown[]) => undefined)
+    actionsInitSpy = vi.spyOn(Imports, 'ActionsInit').mockImplementation((..._args: unknown[]) => undefined)
+    tabsInitSpy = vi.spyOn(Imports, 'TabsInit').mockImplementation((..._args: unknown[]) => undefined)
+    foldersInitSpy = vi.spyOn(Imports, 'FoldersInit').mockImplementation((..._args: unknown[]) => undefined)
+    picturesInitSpy = vi.spyOn(Imports, 'PicturesInit').mockImplementation((..._args: unknown[]) => undefined)
+    bookmarksInitSpy = vi.spyOn(Imports, 'BookmarksInit').mockImplementation((..._args: unknown[]) => undefined)
+    navigationInitSpy = vi.spyOn(Imports, 'NavigationInit').mockImplementation((..._args: unknown[]) => undefined)
+    pubsubDeferredSpy = vi.spyOn(Imports, 'PubSubStartDeferred').mockImplementation((..._args: unknown[]) => undefined)
+    wakeLockInitSpy = vi.spyOn(Imports, 'WakeLockInit').mockImplementation((..._args: unknown[]) => undefined)
     bootstrap()
   })
   afterAll(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should call Loading.init()', () => {
-    expect(loadingInitSpy.called).toBe(true)
+    expect(loadingInitSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call Confirm.init()', () => {
-    expect(confirmInitSpy.called).toBe(true)
+    expect(confirmInitSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call Actions.init()', () => {
-    expect(actionsInitSpy.called).toBe(true)
+    expect(actionsInitSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call Tabs.init()', () => {
-    expect(tabsInitSpy.called).toBe(true)
+    expect(tabsInitSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call Folders.init()', () => {
-    expect(foldersInitSpy.called).toBe(true)
+    expect(foldersInitSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call Pictures.init()', () => {
-    expect(picturesInitSpy.called).toBe(true)
+    expect(picturesInitSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call Bookmarks.init()', () => {
-    expect(bookmarksInitSpy.called).toBe(true)
+    expect(bookmarksInitSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call Navigation.init()', () => {
-    expect(navigationInitSpy.called).toBe(true)
+    expect(navigationInitSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call PubSub.startDeferred()', () => {
-    expect(pubsubDeferredSpy.called).toBe(true)
+    expect(pubsubDeferredSpy.mock.calls.length > 0).toBe(true)
   })
   it('should call WakeLock.init()', () => {
-    expect(wakeLockInitSpy.called).toBe(true)
+    expect(wakeLockInitSpy.mock.calls.length > 0).toBe(true)
   })
 })

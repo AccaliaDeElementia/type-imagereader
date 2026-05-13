@@ -1,19 +1,16 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-const sandbox = Sinon.createSandbox()
-
 describe('public/app/pubsub subscribe()', () => {
-  let subscriber = sandbox.stub().resolves()
+  let subscriber = vi.fn().mockResolvedValue(undefined)
   beforeEach(() => {
     resetPubSub()
     PubSub.cycleTime = 10
-    subscriber = sandbox.stub().resolves()
+    subscriber = vi.fn().mockResolvedValue(undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   const topics = ['foobar:baz', 'Foobar:Baz', 'fOoBaR:bAz', 'FoOBaR:BaZ', 'FOOBAR:BAZ', 'foobar:BAZ', 'FOOBAR:baz']
@@ -30,7 +27,7 @@ describe('public/app/pubsub subscribe()', () => {
   it('should grow subscriber list length to 11 when appending to 10 existing', () => {
     PubSub.subscribers['FOOBAR:BAZ'] = []
     for (let i = 0; i < 10; i += 1) {
-      PubSub.subscribers['FOOBAR:BAZ'].push(sandbox.stub().resolves())
+      PubSub.subscribers['FOOBAR:BAZ'].push(vi.fn().mockResolvedValue(undefined))
     }
     subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ']).toHaveLength(11)
@@ -38,20 +35,20 @@ describe('public/app/pubsub subscribe()', () => {
   it('should append subscriber as last element in subscriber list', () => {
     PubSub.subscribers['FOOBAR:BAZ'] = []
     for (let i = 0; i < 10; i += 1) {
-      PubSub.subscribers['FOOBAR:BAZ'].push(sandbox.stub().resolves())
+      PubSub.subscribers['FOOBAR:BAZ'].push(vi.fn().mockResolvedValue(undefined))
     }
     subscribe('Foobar:Baz', subscriber)
     expect(PubSub.subscribers['FOOBAR:BAZ'][10]).toBe(subscriber)
   })
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = sandbox.stub()
+    const guard = vi.fn()
     PubSub.guardCallback = guard
     try {
       subscribe('Foobar:Baz', subscriber)
     } finally {
       PubSub.guardCallback = undefined
     }
-    expect(guard.firstCall.args[0]).toBe("subscribe to 'Foobar:Baz'")
+    expect(guard.mock.calls[0]?.[0]).toBe("subscribe to 'Foobar:Baz'")
   })
   it('should propagate the throw from guardCallback before registering the subscriber', () => {
     PubSub.guardCallback = () => {

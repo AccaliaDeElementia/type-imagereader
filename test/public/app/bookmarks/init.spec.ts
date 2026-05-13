@@ -1,14 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
 import { resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, init } from '#public/scripts/app/bookmarks.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -30,7 +28,7 @@ html
 describe('public/app/bookmarks init()', () => {
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let subscribeStub = sandbox.stub()
+  let subscribeStub: MockInstance = vi.fn()
 
   beforeEach(() => {
     document = global.document
@@ -41,14 +39,14 @@ describe('public/app/bookmarks init()', () => {
     mountDom(dom)
 
     resetPubSub()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should locate bookmarkCard template on init', () => {
@@ -68,18 +66,18 @@ describe('public/app/bookmarks init()', () => {
   })
   it('should subscribe to Navigate:Data', () => {
     init()
-    expect(subscribeStub.calledWith('Navigate:Data')).toBe(true)
+    expect(subscribeStub).toHaveBeenCalledWith('Navigate:Data', expect.anything())
   })
   it('should subscribe to Bookmarks:Load', () => {
     init()
-    expect(subscribeStub.calledWith('Bookmarks:Load')).toBe(true)
+    expect(subscribeStub).toHaveBeenCalledWith('Bookmarks:Load', expect.anything())
   })
   it('should subscribe to Bookmarks:Add', () => {
     init()
-    expect(subscribeStub.calledWith('Bookmarks:Add')).toBe(true)
+    expect(subscribeStub).toHaveBeenCalledWith('Bookmarks:Add', expect.anything())
   })
   it('should subscribe to Bookmarks:Remove', () => {
     init()
-    expect(subscribeStub.calledWith('Bookmarks:Remove')).toBe(true)
+    expect(subscribeStub).toHaveBeenCalledWith('Bookmarks:Remove', expect.anything())
   })
 })

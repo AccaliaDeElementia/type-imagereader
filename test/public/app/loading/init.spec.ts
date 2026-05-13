@@ -1,13 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, init, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/pubsub.js'
+import type { MockInstance } from 'vitest'
 
-const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -16,7 +15,7 @@ html
 `
 describe('public/app/loading init()', () => {
   let dom: JSDOM = new JSDOM('', {})
-  let subscribeStub = sandbox.stub()
+  let subscribeStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -25,24 +24,24 @@ describe('public/app/loading init()', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
     init()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should subscribe to Loading:Error', () => {
-    expect(subscribeStub.calledWith('Loading:Error')).toBe(true)
+    expect(subscribeStub).toHaveBeenCalledWith('Loading:Error', expect.anything())
   })
   it('should subscribe to Loading:Success', () => {
-    expect(subscribeStub.calledWith('Loading:Success')).toBe(true)
+    expect(subscribeStub).toHaveBeenCalledWith('Loading:Success', expect.anything())
   })
   it('should subscribe to Loading:Hide', () => {
-    expect(subscribeStub.calledWith('Loading:Hide')).toBe(true)
+    expect(subscribeStub).toHaveBeenCalledWith('Loading:Hide', expect.anything())
   })
   it('should subscribe to Loading:show', () => {
-    expect(subscribeStub.calledWith('Loading:show')).toBe(true)
+    expect(subscribeStub).toHaveBeenCalledWith('Loading:show', expect.anything())
   })
   it('should select overlay for disabling input', () => {
     expect(Loading.overlay).not.toBe(null)

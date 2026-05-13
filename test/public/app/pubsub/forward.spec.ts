@@ -1,11 +1,8 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import assert from 'node:assert'
 import { PubSub, forward } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
 
 describe('public/app/pubsub forward()', () => {
   beforeEach(() => {
@@ -13,7 +10,7 @@ describe('public/app/pubsub forward()', () => {
     PubSub.cycleTime = 10
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   it('should register a subscriber under the source topic', () => {
@@ -26,34 +23,34 @@ describe('public/app/pubsub forward()', () => {
   })
   it('should publish to the target topic when the source-topic subscriber fires', async () => {
     forward('Foo:Bar', 'Baz:Qux')
-    const targetSpy = sandbox.stub().resolves()
+    const targetSpy = vi.fn().mockResolvedValue(undefined)
     PubSub.subscribers['BAZ:QUX'] = [targetSpy]
     const handler = PubSub.subscribers['FOO:BAR']?.[0]
     assert(handler !== undefined)
     await handler(undefined)
-    expect(targetSpy.callCount).toBe(1)
+    expect(targetSpy.mock.calls.length).toBe(1)
   })
   it('should not invoke the target subscriber before the source fires', () => {
-    const targetSpy = sandbox.stub().resolves()
+    const targetSpy = vi.fn().mockResolvedValue(undefined)
     PubSub.subscribers['BAZ:QUX'] = [targetSpy]
     forward('Foo:Bar', 'Baz:Qux')
-    expect(targetSpy.callCount).toBe(0)
+    expect(targetSpy.mock.calls.length).toBe(0)
   })
   it('should append rather than replace when a subscriber already exists on the source topic', () => {
-    const existing = sandbox.stub().resolves()
+    const existing = vi.fn().mockResolvedValue(undefined)
     PubSub.subscribers['FOO:BAR'] = [existing]
     forward('Foo:Bar', 'Baz:Qux')
     expect(PubSub.subscribers['FOO:BAR']).toHaveLength(2)
   })
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = sandbox.stub()
+    const guard = vi.fn()
     PubSub.guardCallback = guard
     try {
       forward('Foo:Bar', 'Baz:Qux')
     } finally {
       PubSub.guardCallback = undefined
     }
-    expect(guard.firstCall.args[0]).toBe("forward 'Foo:Bar' -> 'Baz:Qux'")
+    expect(guard.mock.calls[0]?.[0]).toBe("forward 'Foo:Bar' -> 'Baz:Qux'")
   })
   it('should propagate the throw from guardCallback before registering the inner subscriber', () => {
     PubSub.guardCallback = () => {

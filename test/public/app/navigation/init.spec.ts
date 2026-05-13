@@ -1,14 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import { cast } from '#testutils/typeGuards.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -23,12 +21,12 @@ html
 `
 describe('public/app/navigation init()', () => {
   let dom = new JSDOM('', {})
-  let loadDataStub = sandbox.stub()
-  let subscribeStub = sandbox.stub()
-  let forwardStub = sandbox.stub()
+  let loadDataStub: MockInstance = vi.fn()
+  let subscribeStub: MockInstance = vi.fn()
+  let forwardStub: MockInstance = vi.fn()
   const allRegisteredTopics = (): string[] => [
-    ...subscribeStub.getCalls().map((c) => cast<string>(c.args[0])),
-    ...forwardStub.getCalls().map((c) => cast<string>(c.args[0])),
+    ...subscribeStub.mock.calls.map((c) => cast<string>(c[0])),
+    ...forwardStub.mock.calls.map((c) => cast<string>(c[0])),
   ]
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -37,9 +35,9 @@ describe('public/app/navigation init()', () => {
     mountDom(dom)
 
     resetPubSub()
-    loadDataStub = sandbox.stub(Internals, 'loadData').resolves()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
-    forwardStub = sandbox.stub(Imports, 'forward')
+    loadDataStub = vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    forwardStub = vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
     Navigation.current = {
       path: '/',
       name: '',
@@ -47,11 +45,11 @@ describe('public/app/navigation init()', () => {
     }
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   afterAll(() => {
     unmountDom()
-    Sinon.restore()
+    vi.restoreAllMocks()
   })
   it('should set path of current data on init', () => {
     dom.reconfigure({
@@ -62,17 +60,17 @@ describe('public/app/navigation init()', () => {
   })
   it('should execute loadData once with defaults', () => {
     init()
-    expect(loadDataStub.callCount).toBe(1)
+    expect(loadDataStub.mock.calls.length).toBe(1)
   })
   it('should execute loadData with no arguments', () => {
     init()
-    expect(loadDataStub.firstCall.args).toEqual([])
+    expect(loadDataStub.mock.calls[0]).toEqual([])
   })
   it('should tolerate loadData rejecting', async () => {
-    loadDataStub.rejects('FOO!')
+    loadDataStub.mockRejectedValue('FOO!')
     init()
     await Promise.resolve()
-    expect(loadDataStub.callCount).toBe(1)
+    expect(loadDataStub.mock.calls.length).toBe(1)
   })
   const subscribers = [
     'Navigate:Data',

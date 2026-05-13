@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
@@ -8,8 +7,7 @@ import { Imports, initMouse } from '#public/scripts/app/pictureInput.js'
 import assert from 'node:assert'
 import { cast } from '#testutils/typeGuards.js'
 import { hasValue } from '#utils/helpers.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 interface TestVisualViewport {
   scale: number
@@ -17,7 +15,7 @@ interface TestVisualViewport {
 
 describe('public/app/pictures initMouse()', () => {
   let dom = new JSDOM('<html><body><div id="bigImage"><img class="hidden"/></div></body></html>', {})
-  let publishStub = sandbox.stub()
+  let publishStub: MockInstance = vi.fn()
   let visualViewport: TestVisualViewport = { scale: 1 }
   let boundingRect = {
     x: 0,
@@ -50,13 +48,13 @@ describe('public/app/pictures initMouse()', () => {
     }
     const tgt = Pictures.mainImage?.parentElement
     assert(hasValue(tgt))
-    sandbox.stub(tgt, 'getBoundingClientRect').callsFake(() => cast<DOMRect>(boundingRect))
-    publishStub = sandbox.stub(Imports, 'publish')
+    vi.spyOn(tgt, 'getBoundingClientRect').mockImplementation(() => cast<DOMRect>(boundingRect))
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
 
     assert(Pictures.mainImage !== null)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should ignore clicks when visual viewport was null at init time and any scale is present at click time', () => {
@@ -71,7 +69,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Ignored Mouse Click').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Ignored Mouse Click').length).toBe(1)
   })
   it('should navigate to previous from left area click', () => {
     visualViewport.scale = 2
@@ -81,7 +79,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Action:Execute:Previous').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Action:Execute:Previous').length).toBe(1)
   })
   it('should process click when current scale is zoomed out from initial', () => {
     visualViewport.scale = 2
@@ -92,7 +90,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Action:Execute:Previous').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Action:Execute:Previous').length).toBe(1)
   })
   it('should not navigate when current scale is zoomed in from initial', () => {
     visualViewport.scale = 2
@@ -103,7 +101,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Action:Execute:Previous').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Action:Execute:Previous').length).toBe(0)
   })
   it('should ignore click when current scale is zoomed in from initial', () => {
     visualViewport.scale = 2
@@ -114,7 +112,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Ignored Mouse Click').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Ignored Mouse Click').length).toBe(1)
   })
   it('should not navigate when mainImage bounding rect invalid', () => {
     visualViewport.scale = 2
@@ -126,7 +124,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     tgt?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Action:Execute:Previous').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Action:Execute:Previous').length).toBe(0)
   })
   it('should ignore click when mainImage bounding rect invalid', () => {
     visualViewport.scale = 2
@@ -138,7 +136,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     tgt?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Ignored Mouse Click').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Ignored Mouse Click').length).toBe(1)
   })
   it('should not navigate when click target width is zero', () => {
     visualViewport.scale = 2
@@ -149,7 +147,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Action:Execute:Previous').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Action:Execute:Previous').length).toBe(0)
   })
   it('should ignore click when click target width is zero', () => {
     visualViewport.scale = 2
@@ -160,7 +158,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Ignored Mouse Click').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Ignored Mouse Click').length).toBe(1)
   })
   it('should show menu from middle area click', () => {
     visualViewport.scale = 2
@@ -170,7 +168,7 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Action:Execute:ShowMenu').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Action:Execute:ShowMenu').length).toBe(1)
   })
   it('should navigate to next from right area click', () => {
     visualViewport.scale = 2
@@ -180,6 +178,6 @@ describe('public/app/pictures initMouse()', () => {
       clientY: boundingRect.height / 2,
     })
     Pictures.mainImage?.parentElement?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Action:Execute:Next').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Action:Execute:Next').length).toBe(1)
   })
 })

@@ -7,10 +7,6 @@ import { resetPubSub } from '#testutils/pubsub.js'
 
 import { Folders, Imports, Internals } from '#public/scripts/app/folders.js'
 import assert from 'node:assert'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
-
 const markup = `
 html
   head
@@ -48,7 +44,7 @@ describe('public/app/folders buildCard()', () => {
     Folders.folderCard = folderCard
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return null when template is missing', () => {
@@ -258,9 +254,9 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 101,
     })
-    const publishStub = sandbox.stub(Imports, 'publish')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     assert(result !== null, 'result is required for valid test')
     result.dispatchEvent(evt)
-    expect(publishStub.calledWith('Navigate:Load', '/path/foo')).toBe(true)
+    expect(publishStub).toHaveBeenCalledWith('Navigate:Load', '/path/foo')
   })
 })

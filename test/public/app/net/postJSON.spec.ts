@@ -2,10 +2,7 @@
 
 import { postJSON } from '#public/scripts/app/net.js'
 import { cast } from '#testutils/typeGuards.js'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
-
+import type { MockInstance } from 'vitest'
 interface TestRequest {
   method: string
   body: string
@@ -17,7 +14,7 @@ describe('public/app/net postJSON()', () => {
   let contentLengthFake = '2'
   let dataFake: Record<string, number> = {}
   const isUnknown = (_: unknown): _ is unknown => true
-  let fetchStub = sandbox.stub()
+  let fetchStub: MockInstance = vi.fn()
   beforeEach(() => {
     contentLengthFake = '2'
     dataFake = {}
@@ -30,24 +27,24 @@ describe('public/app/net postJSON()', () => {
       },
       json: async () => await Promise.resolve(dataFake),
     })
-    fetchStub = sandbox.stub(global, 'fetch').resolves(response)
+    fetchStub = vi.spyOn(global, 'fetch').mockResolvedValue(response)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should call fetch with provided path', async () => {
     const path = `/Some/Test/Path/${Math.random()}`
     await postJSON(path, {}, isUnknown)
-    expect(fetchStub.calledWith(path)).toBe(true)
+    expect(fetchStub).toHaveBeenCalledWith(path, expect.anything())
   })
   it('should use POST method', async () => {
     await postJSON('/foo', {}, isUnknown)
-    const req = cast<TestRequest>(fetchStub.firstCall.args[1])
+    const req = cast<TestRequest>(fetchStub.mock.calls[0]?.[1])
     expect(req.method).toBe('POST')
   })
   it('should set only expected headers', async () => {
     await postJSON('', {}, isUnknown)
-    const req = cast<TestRequest>(fetchStub.firstCall.args[1])
+    const req = cast<TestRequest>(fetchStub.mock.calls[0]?.[1])
     expect(Object.keys(req.headers).sort()).toEqual(['Content-Type', 'Accept-Encoding', 'Accept'].sort())
   })
   const headerTests: Array<[string, string, string]> = [
@@ -58,13 +55,13 @@ describe('public/app/net postJSON()', () => {
   headerTests.forEach(([title, header, expected]) => {
     it(`should set ${title} header`, async () => {
       await postJSON('/foo', {}, isUnknown)
-      const req = cast<TestRequest>(fetchStub.firstCall.args[1])
+      const req = cast<TestRequest>(fetchStub.mock.calls[0]?.[1])
       expect(req.headers[header]).toBe(expected)
     })
   })
   it('should set body in request', async () => {
     await postJSON('', { foo: 4, bar: false, baz: 'quux' }, isUnknown)
-    const req = cast<TestRequest>(fetchStub.firstCall.args[1])
+    const req = cast<TestRequest>(fetchStub.mock.calls[0]?.[1])
     expect(req.body).toBe('{"foo":4,"bar":false,"baz":"quux"}')
   })
   it('should resolve to expected object', async () => {

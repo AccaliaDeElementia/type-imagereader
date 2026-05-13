@@ -1,13 +1,10 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { Internals } from '#public/scripts/app/pictureMarkup.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures getCurrentPage()', () => {
   let dom = new JSDOM('<html></html>', {})
@@ -20,7 +17,7 @@ describe('public/app/pictures getCurrentPage()', () => {
     Pictures.mainImage = null
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   const makePages = (count: number): HTMLDivElement[] => {

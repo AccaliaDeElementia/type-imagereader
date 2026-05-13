@@ -7,10 +7,8 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
 import { Imports, Internals } from '#public/scripts/app/folders.js'
-import Sinon from 'sinon'
 import type { Listing } from '#contracts/listing.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -23,20 +21,20 @@ html
 describe('public/app/folders buildFolders()', () => {
   let dom: JSDOM = new JSDOM('', {})
   let tabFolders: HTMLDivElement | null = null
-  let hideTabStub = sandbox.stub()
-  let unhideTabStub = sandbox.stub()
-  let buildAllCardsStub = sandbox.stub()
-  let publishStub = sandbox.stub()
+  let hideTabStub: MockInstance = vi.fn()
+  let unhideTabStub: MockInstance = vi.fn()
+  let buildAllCardsStub: MockInstance = vi.fn()
+  let publishStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
     tabFolders = dom.window.document.querySelector('#tabFolders')
-    hideTabStub = sandbox.stub(Internals, 'hideTab')
-    unhideTabStub = sandbox.stub(Internals, 'unhideTab')
-    buildAllCardsStub = sandbox.stub(Internals, 'buildAllCards')
-    publishStub = sandbox.stub(Imports, 'publish')
+    hideTabStub = vi.spyOn(Internals, 'hideTab').mockImplementation((..._args: unknown[]) => undefined)
+    unhideTabStub = vi.spyOn(Internals, 'unhideTab').mockImplementation((..._args: unknown[]) => undefined)
+    buildAllCardsStub = vi.spyOn(Internals, 'buildAllCards').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     resetPubSub()
     unmountDom()
   })
@@ -53,104 +51,104 @@ describe('public/app/folders buildFolders()', () => {
   it('should call buildAllCards once', () => {
     const data = { a: 42 }
     Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.callCount).toBe(1)
+    expect(buildAllCardsStub.mock.calls.length).toBe(1)
   })
   it('should call buildAllCards with one argument', () => {
     const data = { a: 42 }
     Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.firstCall.args).toHaveLength(1)
+    expect(buildAllCardsStub.mock.calls[0]).toHaveLength(1)
   })
   it('should pass data to BuilAllCards', () => {
     const data = { a: 42 }
     Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.firstCall.args[0]).toBe(data)
+    expect(buildAllCardsStub.mock.calls[0]?.[0]).toBe(data)
   })
   it('should call hideTab when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(hideTabStub.called).toBe(true)
+    expect(hideTabStub.mock.calls.length > 0).toBe(true)
   })
   it('should hide folder tab when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).toBe(true)
+    expect(hideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
   })
   it('should call hideTab when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(hideTabStub.called).toBe(true)
+    expect(hideTabStub.mock.calls.length > 0).toBe(true)
   })
   it('should hide folder tab when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).toBe(true)
+    expect(hideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
   })
   it('should call hideTab when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(hideTabStub.called).toBe(true)
+    expect(hideTabStub.mock.calls.length > 0).toBe(true)
   })
   it('should hide folder tab when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(hideTabStub.calledWithExactly('a[href="#tabFolders"]')).toBe(true)
+    expect(hideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
   })
   it('should not unhide folder tab when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(unhideTabStub.called).toBe(false)
+    expect(unhideTabStub.mock.calls.length > 0).toBe(false)
   })
   it('should not unhide folder tab when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(unhideTabStub.called).toBe(false)
+    expect(unhideTabStub.mock.calls.length > 0).toBe(false)
   })
   it('should not unhide folder tab when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(unhideTabStub.called).toBe(false)
+    expect(unhideTabStub.mock.calls.length > 0).toBe(false)
   })
   it('should not publish tab select when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(publishStub.called).toBe(false)
+    expect(publishStub.mock.calls.length > 0).toBe(false)
   })
   it('should not publish tab select when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(publishStub.called).toBe(false)
+    expect(publishStub.mock.calls.length > 0).toBe(false)
   })
   it('should not publish tab select when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
-    expect(publishStub.called).toBe(false)
+    expect(publishStub.mock.calls.length > 0).toBe(false)
   })
   it('should not publish tab select when data has children and pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [{}] }))
-    expect(publishStub.called).toBe(false)
+    expect(publishStub.mock.calls.length > 0).toBe(false)
   })
   it('should publish tab select once when data has children and empty pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [] }))
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish tab select with expected args when data has children and empty pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [] }))
-    expect(publishStub.calledWithExactly('Tab:Select', 'Folders')).toBe(true)
+    expect(publishStub).toHaveBeenCalledWith('Tab:Select', 'Folders')
   })
   it('should publish tab select once when data has children and undefined pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: undefined }))
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish tab select with expected args when data has children and undefined pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: undefined }))
-    expect(publishStub.calledWithExactly('Tab:Select', 'Folders')).toBe(true)
+    expect(publishStub).toHaveBeenCalledWith('Tab:Select', 'Folders')
   })
   it('should publish tab select once when data has children and missing pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish tab select with expected args when data has children and missing pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(publishStub.calledWithExactly('Tab:Select', 'Folders')).toBe(true)
+    expect(publishStub).toHaveBeenCalledWith('Tab:Select', 'Folders')
   })
   it('should not hide folder tab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(hideTabStub.called).toBe(false)
+    expect(hideTabStub.mock.calls.length > 0).toBe(false)
   })
   it('should call unhideTab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(unhideTabStub.called).toBe(true)
+    expect(unhideTabStub.mock.calls.length > 0).toBe(true)
   })
   it('should unhide folder tab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(unhideTabStub.calledWithExactly('a[href="#tabFolders"]')).toBe(true)
+    expect(unhideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
   })
 })

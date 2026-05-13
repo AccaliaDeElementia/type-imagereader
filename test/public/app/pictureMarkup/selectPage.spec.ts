@@ -1,28 +1,26 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { Imports, selectPage } from '#public/scripts/app/pictureMarkup.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('public/app/pictures selectPage()', () => {
   let dom = new JSDOM('<html></html>', {})
-  let publishStub = sandbox.stub()
+  let publishStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
     resetPubSub()
-    publishStub = sandbox.stub(Imports, 'publish')
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     Pictures.mainImage = null
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   const makePageLinks = (count: number): HTMLDivElement[] => {
@@ -53,43 +51,43 @@ describe('public/app/pictures selectPage()', () => {
   }
   it('should publish default page select once when no pages', () => {
     selectPage(0)
-    expect(publishStub.withArgs('Pictures:selectPage').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Pictures:selectPage').length).toBe(1)
   })
   it('should publish default page select with expected args when no pages', () => {
     selectPage(0)
-    expect(publishStub.withArgs('Pictures:selectPage').firstCall.args).toEqual([
+    expect(publishStub.mock.calls.find((c) => c[0] === 'Pictures:selectPage')).toEqual([
       'Pictures:selectPage',
       'Default Page Selected',
     ])
   })
   it('should not publish loading error when publishing default page select', () => {
     selectPage(0)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(0)
   })
   it('should not publish error when no pages', () => {
     // test various cases, none should error
     selectPage(0)
     selectPage(-1)
     selectPage(1e9)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(0)
   })
   it('should not call selectPage when trying to select zero page', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(0)
-    expect(publishStub.withArgs('Pictures:selectPage').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Pictures:selectPage').length).toBe(0)
   })
   it('should publish error once when trying to select zero page', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(0)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(1)
   })
   it('should publish error with expected args when trying to select zero page', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(0)
-    expect(publishStub.withArgs('Loading:Error').firstCall.args).toEqual([
+    expect(publishStub.mock.calls.find((c) => c[0] === 'Loading:Error')).toEqual([
       'Loading:Error',
       'Invalid Page Index Selected',
     ])
@@ -98,19 +96,19 @@ describe('public/app/pictures selectPage()', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(-1)
-    expect(publishStub.withArgs('Pictures:selectPage').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Pictures:selectPage').length).toBe(0)
   })
   it('should publish error once when trying to select negative page', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(-1)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(1)
   })
   it('should publish error with expected args when trying to select negative page', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(-1)
-    expect(publishStub.withArgs('Loading:Error').firstCall.args).toEqual([
+    expect(publishStub.mock.calls.find((c) => c[0] === 'Loading:Error')).toEqual([
       'Loading:Error',
       'Invalid Page Index Selected',
     ])
@@ -119,19 +117,19 @@ describe('public/app/pictures selectPage()', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(11)
-    expect(publishStub.withArgs('Pictures:selectPage').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Pictures:selectPage').length).toBe(0)
   })
   it('should publish error once when trying to select out of range page', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(11)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(1)
   })
   it('should publish error with expected args when trying to select out of range page', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(11)
-    expect(publishStub.withArgs('Loading:Error').firstCall.args).toEqual([
+    expect(publishStub.mock.calls.find((c) => c[0] === 'Loading:Error')).toEqual([
       'Loading:Error',
       'Invalid Page Index Selected',
     ])
@@ -140,13 +138,13 @@ describe('public/app/pictures selectPage()', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(5)
-    expect(publishStub.withArgs('Pictures:selectPage').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Pictures:selectPage').length).toBe(1)
   })
   it('should not publish error when trying to select valid page', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(5)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(0)
   })
   it('should remove active class from current active page link when switching', () => {
     const links = makePageLinks(100)
@@ -184,13 +182,13 @@ describe('public/app/pictures selectPage()', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(5)
-    expect(publishStub.withArgs('Pictures:selectPage').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Pictures:selectPage').length).toBe(1)
   })
   it('should publish notification with expected args on successful page select', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(5)
-    expect(publishStub.withArgs('Pictures:selectPage').firstCall.args).toEqual([
+    expect(publishStub.mock.calls.find((c) => c[0] === 'Pictures:selectPage')).toEqual([
       'Pictures:selectPage',
       'New Page 5 Selected',
     ])
@@ -199,12 +197,12 @@ describe('public/app/pictures selectPage()', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(5)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(0)
   })
   it('should not publish notification on error page select', () => {
     makePageLinks(10)
     makePages(10)
     selectPage(50)
-    expect(publishStub.withArgs('Pictures:selectPage').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Pictures:selectPage').length).toBe(0)
   })
 })

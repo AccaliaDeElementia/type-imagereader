@@ -1,17 +1,17 @@
 'use sanity'
 
-import Sinon from 'sinon'
+import { cast } from '#testutils/typeGuards.js'
+
 import { PubSub, Internals } from '#public/scripts/app/pubsub.js'
 
-const sandbox = Sinon.createSandbox()
 describe('public/app/pubsub executeInterval()', () => {
   const testInterval = {
-    method: sandbox.stub(),
+    method: vi.fn(),
     delayCycles: 10,
     intervalCycles: 10,
   }
   const testDefer = {
-    method: sandbox.stub(),
+    method: vi.fn(),
     delayCycles: 10,
   }
   beforeEach(() => {
@@ -22,12 +22,12 @@ describe('public/app/pubsub executeInterval()', () => {
     PubSub.deferred = [testDefer]
     testInterval.delayCycles = 10
     testInterval.intervalCycles = 10
-    testInterval.method.reset()
+    testInterval.method.mockReset()
     testDefer.delayCycles = 10
-    testDefer.method.reset()
+    testDefer.method.mockReset()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should decrement delayCycle count once for pending defer', () => {
     Internals.executeInterval()
@@ -50,32 +50,32 @@ describe('public/app/pubsub executeInterval()', () => {
   it('should not execute defered task that has not expired', () => {
     testDefer.delayCycles = 10
     Internals.executeInterval()
-    expect(testDefer.method.callCount).toBe(0)
+    expect(testDefer.method.mock.calls.length).toBe(0)
   })
   it('should not execute interval task that has not expired', () => {
     testInterval.delayCycles = 10
     Internals.executeInterval()
-    expect(testInterval.method.callCount).toBe(0)
+    expect(testInterval.method.mock.calls.length).toBe(0)
   })
   it('should execute defered task that has expired', () => {
     testDefer.delayCycles = 0
     Internals.executeInterval()
-    expect(testDefer.method.callCount).toBe(1)
+    expect(testDefer.method.mock.calls.length).toBe(1)
   })
   it('should execute interval task that has expired', () => {
     testInterval.delayCycles = 0
     Internals.executeInterval()
-    expect(testInterval.method.callCount).toBe(1)
+    expect(testInterval.method.mock.calls.length).toBe(1)
   })
   it('should execute defered task that is overdue', () => {
     testDefer.delayCycles = -100
     Internals.executeInterval()
-    expect(testDefer.method.callCount).toBe(1)
+    expect(testDefer.method.mock.calls.length).toBe(1)
   })
   it('should execute interval task that is overdue', () => {
     testInterval.delayCycles = -1001
     Internals.executeInterval()
-    expect(testInterval.method.callCount).toBe(1)
+    expect(testInterval.method.mock.calls.length).toBe(1)
   })
   it('should remove expired delay method after executing', () => {
     testDefer.delayCycles = 0
@@ -90,14 +90,18 @@ describe('public/app/pubsub executeInterval()', () => {
   })
   it('should tolerate deferred method throwing', () => {
     testDefer.delayCycles = 0
-    testDefer.method.throws('BAD ERROR')
+    testDefer.method.mockImplementation(() => {
+      throw cast<Error>('BAD ERROR')
+    })
     expect(() => {
       Internals.executeInterval()
     }).not.toThrow()
   })
   it('should tolerate interval throwing', () => {
     testInterval.delayCycles = 0
-    testInterval.method.throws('BAD ERROR')
+    testInterval.method.mockImplementation(() => {
+      throw cast<Error>('BAD ERROR')
+    })
     expect(() => {
       Internals.executeInterval()
     }).not.toThrow()

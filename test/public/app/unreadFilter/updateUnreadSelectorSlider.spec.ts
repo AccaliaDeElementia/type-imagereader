@@ -4,10 +4,8 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/unreadFilter.js'
 import { render } from 'pug'
-import Sinon from 'sinon'
 import assert from 'node:assert'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `html
   body
@@ -16,14 +14,14 @@ const markup = `html
       `
 describe('public/app/pictures setShowUnreadOnly()', () => {
   let dom = new JSDOM('<html></html>')
-  let getShowUnreadOnlySpy = sandbox.stub()
+  let getShowUnreadOnlySpy: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
-    getShowUnreadOnlySpy = sandbox.stub(Internals, 'getShowUnreadOnly').returns(false)
+    getShowUnreadOnlySpy = vi.spyOn(Internals, 'getShowUnreadOnly').mockReturnValue(false)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should handle missing target element gracefully', () => {
@@ -47,14 +45,14 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     expect(elem.classList.contains('all')).toBe(true)
   })
   it('should add unread class from slider when value is true', () => {
-    getShowUnreadOnlySpy.returns(true)
+    getShowUnreadOnlySpy.mockReturnValue(true)
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     Internals.updateUnreadSelectorSlider()
     expect(elem.classList.contains('unread')).toBe(true)
   })
   it('should remove all class from slider when value is true', () => {
-    getShowUnreadOnlySpy.returns(true)
+    getShowUnreadOnlySpy.mockReturnValue(true)
     const elem = dom.window.document.querySelector('#slider4test')
     assert(elem !== null)
     elem.classList.add('all')

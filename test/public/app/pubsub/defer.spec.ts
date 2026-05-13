@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { PubSub, defer } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
@@ -10,38 +9,38 @@ describe('public/app/pubsub defer()', () => {
     PubSub.cycleTime = 10
   })
   it('should add exactly one item to deferred list', () => {
-    const spy = Sinon.spy()
+    const spy = vi.fn()
     defer(spy, 0)
     expect(PubSub.deferred).toHaveLength(1)
   })
   it('should store provided method in deferred list', () => {
-    const spy = Sinon.spy()
+    const spy = vi.fn()
     defer(spy, 0)
     expect(PubSub.deferred.pop()?.method).toBe(spy)
   })
   it('deferred method does not immediately fire', () => {
-    const spy = Sinon.spy()
+    const spy = vi.fn()
     defer(spy, 0)
-    expect(spy.callCount).toBe(0)
+    expect(spy.mock.calls.length).toBe(0)
   })
   it('should grow deferred list to 11 items when appending', () => {
     PubSub.deferred.push(
       ...Array.from({ length: 10 }).map(() => ({
-        method: Sinon.spy(),
+        method: vi.fn(),
         delayCycles: 1,
       })),
     )
-    defer(Sinon.spy(), 0)
+    defer(vi.fn(), 0)
     expect(PubSub.deferred).toHaveLength(11)
   })
   it('should append method as last deferred item', () => {
     PubSub.deferred.push(
       ...Array.from({ length: 10 }).map(() => ({
-        method: Sinon.spy(),
+        method: vi.fn(),
         delayCycles: 1,
       })),
     )
-    const spy = Sinon.spy()
+    const spy = vi.fn()
     defer(spy, 0)
     expect(PubSub.deferred.pop()?.method).toBe(spy)
   })
@@ -62,19 +61,19 @@ describe('public/app/pubsub defer()', () => {
   ]
   for (const [delay, mapped] of delayMaps) {
     it(`should convert a delay of ${delay}ms to ${mapped} delay cycles`, () => {
-      defer(Sinon.spy(), delay)
+      defer(vi.fn(), delay)
       expect(PubSub.deferred.pop()?.delayCycles).toBe(mapped)
     })
   }
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = Sinon.spy()
+    const guard = vi.fn()
     PubSub.guardCallback = guard
     try {
-      defer(Sinon.spy(), 0)
+      defer(vi.fn(), 0)
     } finally {
       PubSub.guardCallback = undefined
     }
-    expect(guard.firstCall.args[0]).toBe('defer')
+    expect(guard.mock.calls[0]?.[0]).toBe('defer')
   })
   it('should propagate the throw from guardCallback before queueing the deferred', () => {
     PubSub.guardCallback = () => {
@@ -82,7 +81,7 @@ describe('public/app/pubsub defer()', () => {
     }
     try {
       expect(() => {
-        defer(Sinon.spy(), 0)
+        defer(vi.fn(), 0)
       }).toThrow(/guard tripped/v)
       expect(PubSub.deferred).toHaveLength(0)
     } finally {

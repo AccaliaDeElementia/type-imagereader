@@ -1,7 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
@@ -9,8 +7,7 @@ import { Imports, Internals, Viewer } from '#public/scripts/app/pictureNavigatio
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const SENTINEL_MOD_COUNT = -65535
 
@@ -26,19 +23,19 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
   let dom = new JSDOM('<html></html>', {})
 
   let element: HTMLElement | null = null
-  let publishStub = sandbox.stub()
+  let publishStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
     resetPubSub()
-    publishStub = sandbox.stub(Imports, 'publish')
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     Pictures.mainImage = dom.window.document.createElement('img')
     element = dom.window.document.querySelector('div#ImageLink')
     Pictures.pictures = []
     Viewer.modCount = SENTINEL_MOD_COUNT
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should abort gracefully for null mainImage', () => {
@@ -86,7 +83,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       parent: '',
       modCount: 42,
     })
-    expect(publishStub.withArgs('Menu:show').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:show').length).toBe(1)
   })
   it('should hide mainImage when listing has null pictures', () => {
     const result = Internals.setPicturesGetFirst({
@@ -134,7 +131,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
       pictures: [],
       modCount: 42,
     })
-    expect(publishStub.withArgs('Menu:show').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:show').length).toBe(1)
   })
   it('should hide mainImage when listing has empty pictures', () => {
     const result = Internals.setPicturesGetFirst({

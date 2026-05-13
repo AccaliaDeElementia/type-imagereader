@@ -179,9 +179,16 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
       replace: '.mockRejectedValueOnce(',
       label: '.onCall(N).rejects(v) -> .mockRejectedValueOnce(v)',
     },
-    // .getCall(N).args -> .mock.calls[N]
+    // .getCall(<expr>).args[M] -> .mock.calls[<expr>]?.[M]
+    // .getCall(<expr>).args -> .mock.calls[<expr>]
+    // Matches identifier or numeric-literal index (not arbitrary expressions to keep regex tractable).
     {
-      pattern: /\.getCall\((\d+)\)\.args\b/g,
+      pattern: /\.getCall\((\w+)\)\.args\[(\d+)\]/g,
+      replace: '.mock.calls[$1]?.[$2]',
+      label: '.getCall(N).args[M] -> .mock.calls[N]?.[M]',
+    },
+    {
+      pattern: /\.getCall\((\w+)\)\.args\b/g,
       replace: '.mock.calls[$1]',
       label: '.getCall(N).args -> .mock.calls[N]',
     },
@@ -263,9 +270,9 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
       label: '.called -> .mock.calls.length > 0',
     },
 
-    // 7. Type references.
-    { pattern: /\bSinon\.SinonStub\b/g, replace: 'MockInstance', label: 'Sinon.SinonStub -> MockInstance' },
-    { pattern: /\bSinon\.SinonSpy\b/g, replace: 'MockInstance', label: 'Sinon.SinonSpy -> MockInstance' },
+    // 7. Type references. Match both uppercase (`Sinon.`) and lowercase (`sinon.`) namespace forms.
+    { pattern: /\b[Ss]inon\.SinonStub\b/g, replace: 'MockInstance', label: 'Sinon.SinonStub -> MockInstance' },
+    { pattern: /\b[Ss]inon\.SinonSpy\b/g, replace: 'MockInstance', label: 'Sinon.SinonSpy -> MockInstance' },
 
     // 7b. Fake-timer plumbing. The teardown side (vi.useRealTimers in afterEach) is
     // flagged below as a CODEMOD-TODO since structure-changing rewrites are out of scope.

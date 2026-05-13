@@ -1,38 +1,36 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 
 import { Internals, PubSub, stopDeferred } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('public/app/pubsub stopDeferred()', () => {
   let dom = new JSDOM('<html></html>', {})
-  let clearIntervalSpy = sandbox.stub()
+  let clearIntervalSpy: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
     mountDom(dom)
-    clearIntervalSpy = sandbox.stub(global.window, 'clearInterval')
+    clearIntervalSpy = vi.spyOn(global.window, 'clearInterval').mockImplementation((..._args: unknown[]) => undefined)
     PubSub.cycleTime = 17
     resetPubSub()
     PubSub.timer = 12
-    sandbox.stub(Internals, 'executeInterval')
+    vi.spyOn(Internals, 'executeInterval').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should clear interval with Window.clearInterval()', () => {
     stopDeferred()
-    expect(clearIntervalSpy.callCount).toBe(1)
+    expect(clearIntervalSpy.mock.calls.length).toBe(1)
   })
   it('should pass saved timer id to clearInterval()', () => {
     PubSub.timer = 6413287
     stopDeferred()
-    expect(clearIntervalSpy.firstCall.args).toEqual([6413287])
+    expect(clearIntervalSpy.mock.calls[0]).toEqual([6413287])
   })
   it('should clear saved timer id', () => {
     PubSub.timer = 6413287
@@ -42,6 +40,6 @@ describe('public/app/pubsub stopDeferred()', () => {
   it('should not clear interval if timer is not set', () => {
     PubSub.timer = undefined
     stopDeferred()
-    expect(clearIntervalSpy.callCount).toBe(0)
+    expect(clearIntervalSpy.mock.calls.length).toBe(0)
   })
 })

@@ -1,18 +1,15 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { Actions, Imports, Internals } from '#public/scripts/app/actions.js'
 
 import { resetPubSub } from '#testutils/pubsub.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('public/app/actions readGamepad()', () => {
   const dom: JSDOM = new JSDOM('', {})
-  let GamepadResetSpy = sandbox.stub()
+  let GamepadResetSpy: MockInstance = vi.fn()
 
   let existingNavigator: Navigator = global.navigator
   const testGamePad: {
@@ -23,36 +20,36 @@ describe('public/app/actions readGamepad()', () => {
     buttons: [],
   }
 
-  let getTestGamepads = sandbox.stub()
-  let publishStub = sandbox.stub()
+  let getTestGamepads = vi.fn()
+  let publishStub: MockInstance = vi.fn()
   let documentHidden = false
 
-  let gamepadsReadStub = sandbox.stub()
+  let gamepadsReadStub: MockInstance = vi.fn()
 
   beforeEach(() => {
     mountDom(dom)
     resetPubSub()
-    sandbox.stub(Internals, 'buildActions')
+    vi.spyOn(Internals, 'buildActions').mockImplementation((..._args: unknown[]) => undefined)
     Actions.gamepads.reset()
-    GamepadResetSpy = sandbox.stub(Actions.gamepads, 'reset')
+    GamepadResetSpy = vi.spyOn(Actions.gamepads, 'reset').mockImplementation((..._args: unknown[]) => undefined)
     documentHidden = false
     existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
       configurable: true,
       get: () => dom.window.navigator,
     })
-    getTestGamepads = sandbox.stub()
+    getTestGamepads = vi.fn()
     dom.window.navigator.getGamepads = getTestGamepads
     Object.defineProperty(dom.window.document, 'hidden', {
       configurable: true,
       get: () => documentHidden,
     })
-    getTestGamepads.returns([testGamePad])
-    gamepadsReadStub = sandbox.stub(Actions.gamepads, 'read').returns(false)
-    publishStub = sandbox.stub(Imports, 'publish')
+    getTestGamepads.mockReturnValue([testGamePad])
+    gamepadsReadStub = vi.spyOn(Actions.gamepads, 'read').mockReturnValue(false)
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     Actions.gamepads.reset()
     Object.defineProperty(global, 'navigator', {
       configurable: true,
@@ -67,8 +64,7 @@ describe('public/app/actions readGamepad()', () => {
   ]
   acceptTests.forEach(([title, gamepads]) => {
     it(`should accept ${title}`, () => {
-      getTestGamepads.resetBehavior()
-      getTestGamepads.returns(gamepads)
+      getTestGamepads.mockReturnValue(gamepads)
       expect(() => {
         Internals.readGamepad()
       }).not.toThrow()
@@ -76,12 +72,12 @@ describe('public/app/actions readGamepad()', () => {
   })
   it('should accept a valid gamepad', () => {
     Internals.readGamepad()
-    expect(publishStub.called).toBe(false)
+    expect(publishStub.mock.calls.length > 0).toBe(false)
   })
   it('should not read when hidden', () => {
     documentHidden = true
     Internals.readGamepad()
-    expect(gamepadsReadStub.called).toBe(false)
+    expect(gamepadsReadStub.mock.calls.length > 0).toBe(false)
   })
   it('should not reset when hidden', () => {
     documentHidden = true
@@ -89,7 +85,7 @@ describe('public/app/actions readGamepad()', () => {
     Actions.gamepads.pressedButtons.push('Q')
     Actions.gamepads.pressedButtons.push('Z')
     Internals.readGamepad()
-    expect(GamepadResetSpy.called).toBe(false)
+    expect(GamepadResetSpy.mock.calls.length > 0).toBe(false)
   })
   it('should not publish when hidden', () => {
     documentHidden = true
@@ -97,41 +93,41 @@ describe('public/app/actions readGamepad()', () => {
     Actions.gamepads.pressedButtons.push('Q')
     Actions.gamepads.pressedButtons.push('Z')
     Internals.readGamepad()
-    expect(publishStub.called).toBe(false)
+    expect(publishStub.mock.calls.length > 0).toBe(false)
   })
   it('should use the GamepadButtons to read the gamepads', () => {
     Internals.readGamepad()
-    expect(gamepadsReadStub.called).toBe(true)
+    expect(gamepadsReadStub.mock.calls.length > 0).toBe(true)
   })
   it('should pass the gamepad to GamepadButtons.read', () => {
     Internals.readGamepad()
-    expect(gamepadsReadStub.calledWithExactly(testGamePad)).toBe(true)
+    expect(gamepadsReadStub).toHaveBeenCalledWith(testGamePad)
   })
   it('should not reset the GamepadButtons when read detects no buttons having no history', () => {
     Internals.readGamepad()
-    expect(GamepadResetSpy.called).toBe(false)
+    expect(GamepadResetSpy.mock.calls.length > 0).toBe(false)
   })
   it('should reset the GamepadButtons when read detects no buttons', () => {
     Actions.gamepads.pressedButtons.push('A')
     Internals.readGamepad()
-    expect(GamepadResetSpy.called).toBe(true)
+    expect(GamepadResetSpy.mock.calls.length > 0).toBe(true)
   })
   it('should publish when read detects no buttons', () => {
     Actions.gamepads.pressedButtons.push('A')
     Actions.gamepads.pressedButtons.push('Q')
     Actions.gamepads.pressedButtons.push('Z')
     Internals.readGamepad()
-    expect(publishStub.called).toBe(true)
+    expect(publishStub.mock.calls.length > 0).toBe(true)
   })
   it('should publish concatenated button names when read detects no buttons', () => {
     Actions.gamepads.pressedButtons.push('A')
     Actions.gamepads.pressedButtons.push('Q')
     Actions.gamepads.pressedButtons.push('Z')
     Internals.readGamepad()
-    expect(publishStub.calledWithExactly('Action:Gamepad:AQZ')).toBe(true)
+    expect(publishStub).toHaveBeenCalledWith('Action:Gamepad:AQZ')
   })
   it('should not publish publish any buttons when read detects no buttons with no history', () => {
     Internals.readGamepad()
-    expect(publishStub.called).toBe(false)
+    expect(publishStub.mock.calls.length > 0).toBe(false)
   })
 })

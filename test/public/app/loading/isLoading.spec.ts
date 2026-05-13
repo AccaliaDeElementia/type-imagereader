@@ -1,13 +1,11 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, init, isLoading, Loading } from '#public/scripts/app/loading.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
-const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -26,13 +24,13 @@ describe('public/app/loading isLoading()', () => {
     // Loading.overlay/navbar — not part of isLoading's behavior surface. Stubbed
     // here to absorb the registrations; captured and asserted in init.spec.ts
     // (registration) and the per-handler specs (error, success, showHide).
-    sandbox.stub(Imports, 'subscribe')
+    vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
     Loading.overlay = null
     Loading.navbar = null
     init()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   const testCases: Array<[string, boolean]> = [

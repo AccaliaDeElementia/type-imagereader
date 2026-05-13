@@ -1,26 +1,26 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { PubSub, removeInterval } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
 import { cast } from '#testutils/typeGuards.js'
+import type { MockInstance } from 'vitest'
 
 describe('public/app/pubsub removeInterval()', () => {
   beforeEach(() => {
     PubSub.cycleTime = 10
     PubSub.intervals = {
       FOOBAR: {
-        method: Sinon.spy(),
+        method: vi.fn(),
         delayCycles: 0,
         intervalCycles: 10,
       },
       BAZ: {
-        method: Sinon.spy(),
+        method: vi.fn(),
         delayCycles: 0,
         intervalCycles: 10,
       },
       QUUX: {
-        method: Sinon.spy(),
+        method: vi.fn(),
         delayCycles: 0,
         intervalCycles: 10,
       },
@@ -51,19 +51,19 @@ describe('public/app/pubsub removeInterval()', () => {
   it('should not call method on removing interval even if the interval is expired', () => {
     assert(PubSub.intervals.FOOBAR !== undefined)
     PubSub.intervals.FOOBAR.delayCycles = -1
-    const spy = cast<Sinon.SinonSpy>(PubSub.intervals.FOOBAR.method)
+    const spy = cast<MockInstance>(PubSub.intervals.FOOBAR.method)
     removeInterval('FOOBAR')
-    expect(spy.callCount).toBe(0)
+    expect(spy.mock.calls.length).toBe(0)
   })
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = Sinon.spy()
+    const guard = vi.fn()
     PubSub.guardCallback = guard
     try {
       removeInterval('FOOBAR')
     } finally {
       PubSub.guardCallback = undefined
     }
-    expect(guard.firstCall.args[0]).toBe("removeInterval 'FOOBAR'")
+    expect(guard.mock.calls[0]?.[0]).toBe("removeInterval 'FOOBAR'")
   })
   it('should propagate the throw from guardCallback before regenerating the interval map', () => {
     const ivals = PubSub.intervals

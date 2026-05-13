@@ -6,10 +6,8 @@ import { render } from 'pug'
 
 import { resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Internals } from '#public/scripts/app/bookmarks.js'
-import Sinon from 'sinon'
 import assert from 'node:assert'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -30,8 +28,8 @@ html
 
 describe('public/app/bookmarks buildBookmarks()', () => {
   let dom: JSDOM = new JSDOM('', {})
-  let getFolderSpy = sandbox.stub()
-  let buildBookmarkSpy = sandbox.stub()
+  let getFolderSpy: MockInstance = vi.fn()
+  let buildBookmarkSpy: MockInstance = vi.fn()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -39,11 +37,10 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     })
     mountDom(dom)
 
-    getFolderSpy = sandbox.stub(Internals, 'getOrCreateFolderElement').returns(dom.window.document.createElement('div'))
-    buildBookmarkSpy = sandbox
-      .stub(Internals, 'buildBookmark')
-      .returns(dom.window.document.createElement('div'))
-      .returns(null)
+    getFolderSpy = vi
+      .spyOn(Internals, 'getOrCreateFolderElement')
+      .mockReturnValue(dom.window.document.createElement('div'))
+    buildBookmarkSpy = vi.spyOn(Internals, 'buildBookmark').mockReturnValue(null)
 
     resetPubSub()
 
@@ -53,7 +50,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Bookmarks.bookmarksTab = dom.window.document.querySelector<HTMLElement>('#tabBookmarks')
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should not call getOrCreateFolderElement when bookmarksTab is missing', () => {
@@ -65,7 +62,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     }
     Bookmarks.bookmarksTab = null
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.called).toBe(false)
+    expect(getFolderSpy.mock.calls.length > 0).toBe(false)
   })
   it('should not call buildBookmark when bookmarksTab is missing', () => {
     const data = {
@@ -76,7 +73,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     }
     Bookmarks.bookmarksTab = null
     Internals.buildBookmarks(data)
-    expect(buildBookmarkSpy.called).toBe(false)
+    expect(buildBookmarkSpy.mock.calls.length > 0).toBe(false)
   })
   it('should not call getOrCreateFolderElement when bookmarkCard is missing', () => {
     const data = {
@@ -87,7 +84,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     }
     Bookmarks.bookmarkCard = undefined
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.called).toBe(false)
+    expect(getFolderSpy.mock.calls.length > 0).toBe(false)
   })
   it('should not call buildBookmark when bookmarkCard is missing', () => {
     const data = {
@@ -98,7 +95,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     }
     Bookmarks.bookmarkCard = undefined
     Internals.buildBookmarks(data)
-    expect(buildBookmarkSpy.called).toBe(false)
+    expect(buildBookmarkSpy.mock.calls.length > 0).toBe(false)
   })
   it('should not call getOrCreateFolderElement when bookmarkFolder is missing', () => {
     const data = {
@@ -109,7 +106,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     }
     Bookmarks.bookmarkFolder = undefined
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.called).toBe(false)
+    expect(getFolderSpy.mock.calls.length > 0).toBe(false)
   })
   it('should not call buildBookmark when bookmarkFolder is missing', () => {
     const data = {
@@ -120,7 +117,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     }
     Bookmarks.bookmarkFolder = undefined
     Internals.buildBookmarks(data)
-    expect(buildBookmarkSpy.called).toBe(false)
+    expect(buildBookmarkSpy.mock.calls.length > 0).toBe(false)
   })
   it('should use the current path when no open details exist', () => {
     const data = {
@@ -142,7 +139,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       ],
     }
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.firstCall.args[0]).toBe('/FOO!/BAR!')
+    expect(getFolderSpy.mock.calls[0]?.[0]).toBe('/FOO!/BAR!')
   })
   it('should use the current path when open details with no path exists', () => {
     const data = {
@@ -167,7 +164,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     element.classList.add('folder')
     Bookmarks.bookmarksTab?.appendChild(element)
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.firstCall.args[0]).toBe('/QUUX!')
+    expect(getFolderSpy.mock.calls[0]?.[0]).toBe('/QUUX!')
   })
   it('should use the openPath fron open details when path exists', () => {
     const data = {
@@ -193,7 +190,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     element.setAttribute('data-folderPath', '/foo/bar/baz')
     Bookmarks.bookmarksTab?.appendChild(element)
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.firstCall.args[0]).toBe('/foo/bar/baz')
+    expect(getFolderSpy.mock.calls[0]?.[0]).toBe('/foo/bar/baz')
   })
   it('should remove existing details from bookmark tab', () => {
     const data = {
@@ -245,7 +242,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       ],
     }
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.firstCall.args[1]).toEqual(data.bookmarks[0])
+    expect(getFolderSpy.mock.calls[0]?.[1]).toEqual(data.bookmarks[0])
   })
   it('should pass bookmark folder as second arg to getOrCreateFolderElement when getOrCreateFolderElement fails', () => {
     const data = {
@@ -254,9 +251,9 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       path: '/',
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
-    getFolderSpy.returns(null)
+    getFolderSpy.mockReturnValue(null)
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.firstCall.args[1]).toEqual(data.bookmarks[0])
+    expect(getFolderSpy.mock.calls[0]?.[1]).toEqual(data.bookmarks[0])
   })
   it('should not call buildBookmark if getOrCreateFolderElement fails', () => {
     const data = {
@@ -265,9 +262,9 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       path: '/',
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
-    getFolderSpy.returns(null)
+    getFolderSpy.mockReturnValue(null)
     Internals.buildBookmarks(data)
-    expect(buildBookmarkSpy.called).toBe(false)
+    expect(buildBookmarkSpy.mock.calls.length > 0).toBe(false)
   })
   it('should pass bookmark folder as second arg to getOrCreateFolderElement when getOrCreateFolderElement succeeds', () => {
     const data = {
@@ -276,9 +273,9 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       path: '/',
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
-    getFolderSpy.returns(dom.window.document.createElement('div'))
+    getFolderSpy.mockReturnValue(dom.window.document.createElement('div'))
     Internals.buildBookmarks(data)
-    expect(getFolderSpy.firstCall.args[1]).toEqual(data.bookmarks[0])
+    expect(getFolderSpy.mock.calls[0]?.[1]).toEqual(data.bookmarks[0])
   })
   it('should call buildBookmark with the bookmark when getOrCreateFolderElement succeeds', () => {
     const data = {
@@ -287,9 +284,9 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       path: '/',
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     }
-    getFolderSpy.returns(dom.window.document.createElement('div'))
+    getFolderSpy.mockReturnValue(dom.window.document.createElement('div'))
     Internals.buildBookmarks(data)
-    expect(buildBookmarkSpy.calledWith(data.bookmarks[0]?.bookmarks[0])).toBe(true)
+    expect(buildBookmarkSpy).toHaveBeenCalledWith(data.bookmarks[0]?.bookmarks[0])
   })
   it('should not appendChild when buildBookmark fails', () => {
     const data = {
@@ -311,11 +308,11 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       ],
     }
     const folder = dom.window.document.createElement('details')
-    getFolderSpy.returns(folder)
-    const spy = sandbox.stub(folder, 'appendChild')
-    buildBookmarkSpy.returns(null)
+    getFolderSpy.mockReturnValue(folder)
+    const spy = vi.spyOn(folder, 'appendChild').mockImplementation((node: Node) => node)
+    buildBookmarkSpy.mockReturnValue(null)
     Internals.buildBookmarks(data)
-    expect(spy.called).toBe(false)
+    expect(spy.mock.calls.length > 0).toBe(false)
   })
   it('should appendChild when buildBookmark succeeds', () => {
     const data = {
@@ -337,15 +334,15 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       ],
     }
     const folder = dom.window.document.createElement('details')
-    getFolderSpy.returns(folder)
-    const spy = sandbox.stub(folder, 'appendChild')
+    getFolderSpy.mockReturnValue(folder)
+    const spy = vi.spyOn(folder, 'appendChild').mockImplementation((node: Node) => node)
     const card = dom.window.document.createElement('div')
-    buildBookmarkSpy.returns(card)
+    buildBookmarkSpy.mockReturnValue(card)
     Internals.buildBookmarks(data)
-    expect(spy.calledWith(Sinon.match.same(card))).toBe(true)
+    expect(spy).toHaveBeenCalledWith(card)
   })
   const buildBookmarksWithFolders = (dom: JSDOM): void => {
-    getFolderSpy.callsFake(() => {
+    getFolderSpy.mockImplementation(() => {
       Bookmarks.bookmarkFolders = [
         { path: 'Z', element: dom.window.document.createElement('details') },
         { path: 'M', element: dom.window.document.createElement('details') },
@@ -381,31 +378,31 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     expect(Bookmarks.bookmarkFolders[3]?.path).toBe('Z')
   })
   it('should call appendChild once for each BookmarkFolder', () => {
-    getFolderSpy.callsFake(() => {
+    getFolderSpy.mockImplementation(() => {
       Bookmarks.bookmarkFolders = []
       for (let i = 1; i <= 100; i += 1) {
         Bookmarks.bookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
       }
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
-    const appendChildSpy = sandbox.stub(Bookmarks.bookmarksTab, 'appendChild')
+    const appendChildSpy = vi.spyOn(Bookmarks.bookmarksTab, 'appendChild').mockImplementation((node: Node) => node)
     Internals.buildBookmarks({
       name: '',
       parent: '',
       path: '/',
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     })
-    expect(appendChildSpy.callCount).toBe(100)
+    expect(appendChildSpy.mock.calls.length).toBe(100)
   })
   it('should append each BookmarkFolder element to the tab', () => {
-    getFolderSpy.callsFake(() => {
+    getFolderSpy.mockImplementation(() => {
       Bookmarks.bookmarkFolders = []
       for (let i = 1; i <= 100; i += 1) {
         Bookmarks.bookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
       }
     })
     assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
-    const appendChildSpy = sandbox.stub(Bookmarks.bookmarksTab, 'appendChild')
+    const appendChildSpy = vi.spyOn(Bookmarks.bookmarksTab, 'appendChild').mockImplementation((node: Node) => node)
     Internals.buildBookmarks({
       name: '',
       parent: '',
@@ -413,7 +410,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
       bookmarks: [{ name: '', path: '/', bookmarks: [{ name: '', path: '/foo/bar.png', folder: '/foo' }] }],
     })
     for (const folder of Bookmarks.bookmarkFolders) {
-      expect(appendChildSpy.calledWith(Sinon.match.same(folder.element))).toBe(true)
+      expect(appendChildSpy).toHaveBeenCalledWith(folder.element)
     }
   })
 })

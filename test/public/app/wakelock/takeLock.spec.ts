@@ -1,33 +1,32 @@
 'use sanity'
 
-import Sinon from 'sinon'
+import { cast } from '#testutils/typeGuards.js'
+
 import { JSDOM } from 'jsdom'
 
 import { takeLock, WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
 
-const sandbox = Sinon.createSandbox()
 describe('public/app/WakeLock takeLock()', () => {
   const existingNavigator = global.navigator
-
-  let clock: sinon.SinonFakeTimers | undefined = undefined
-  let wakelockRequest = sandbox.stub()
+  let wakelockRequest = vi.fn()
   let sentinel: WakeLockSentinel = {
-    release: sandbox.stub().resolves(),
+    release: vi.fn().mockResolvedValue(undefined),
     released: false,
   }
   let dom = new JSDOM('<html></html>', {})
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
-    clock = sandbox.useFakeTimers()
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
     WakeLock.sentinel = null
     WakeLock.timeout = 0
     sentinel = {
-      release: sandbox.stub().resolves(),
+      release: vi.fn().mockResolvedValue(undefined),
       released: false,
     }
 
-    wakelockRequest = sandbox.stub()
-    wakelockRequest.resolves(sentinel)
+    wakelockRequest = vi.fn()
+    wakelockRequest.mockResolvedValue(sentinel)
     Object.defineProperty(global, 'navigator', {
       configurable: true,
       get: () => dom.window.navigator,
@@ -41,7 +40,7 @@ describe('public/app/WakeLock takeLock()', () => {
     })
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
       get: () => undefined,
@@ -53,11 +52,11 @@ describe('public/app/WakeLock takeLock()', () => {
   })
   it('should take lock if sentinel is null', async () => {
     await takeLock()
-    expect(wakelockRequest.callCount).toBe(1)
+    expect(wakelockRequest.mock.calls.length).toBe(1)
   })
   it('should request screen level wakelock', async () => {
     await takeLock()
-    expect(wakelockRequest.firstCall.args).toEqual(['screen'])
+    expect(wakelockRequest.mock.calls[0]).toEqual(['screen'])
   })
   it('should save sentinel when taking lock because sentinel is null', async () => {
     await takeLock()
@@ -65,15 +64,15 @@ describe('public/app/WakeLock takeLock()', () => {
   })
   it('should take lock when sentinal is already released', async () => {
     WakeLock.sentinel = {
-      release: sandbox.stub().resolves(),
+      release: vi.fn().mockResolvedValue(undefined),
       released: true,
     }
     await takeLock()
-    expect(wakelockRequest.callCount).toBe(1)
+    expect(wakelockRequest.mock.calls.length).toBe(1)
   })
   it('should save sentinel when taking lock because sentinel already released', async () => {
     WakeLock.sentinel = {
-      release: sandbox.stub().resolves(),
+      release: vi.fn().mockResolvedValue(undefined),
       released: true,
     }
     await takeLock()
@@ -83,11 +82,11 @@ describe('public/app/WakeLock takeLock()', () => {
     WakeLock.sentinel = sentinel
     sentinel.released = false
     await takeLock()
-    expect(wakelockRequest.callCount).toBe(0)
+    expect(wakelockRequest.mock.calls.length).toBe(0)
   })
   it('should not overwrite sentinel when lock already held', async () => {
     const sent = {
-      release: sandbox.stub().resolves(),
+      release: vi.fn().mockResolvedValue(undefined),
       released: false,
     }
     WakeLock.sentinel = sent
@@ -95,43 +94,47 @@ describe('public/app/WakeLock takeLock()', () => {
     expect(WakeLock.sentinel).toBe(sent)
   })
   it('should set timeout when taking lock initially', async () => {
-    clock?.tick(3141)
+    vi.advanceTimersByTime(3141)
     await takeLock()
     expect(WakeLock.timeout, 'Timeout should be 120 seconds in the future').toBe(123141)
   })
   it('should reset timeout when taking already held lock', async () => {
-    clock?.tick(6282)
+    vi.advanceTimersByTime(6282)
     WakeLock.sentinel = sentinel
     await takeLock()
     expect(WakeLock.timeout, 'Timeout should be 120 seconds in the future').toBe(126282)
   })
   it('should reset sentinal when lock request throws', async () => {
     WakeLock.sentinel = {
-      release: sandbox.stub().resolves(),
+      release: vi.fn().mockResolvedValue(undefined),
       released: true,
     }
-    wakelockRequest.throws('FOO')
+    wakelockRequest.mockImplementation(() => {
+      throw cast<Error>('FOO')
+    })
     await takeLock()
     expect(WakeLock.sentinel).toBe(null)
   })
   it('should reset timeout when lock request throws', async () => {
     WakeLock.timeout = 999999
-    wakelockRequest.throws('FOO')
+    wakelockRequest.mockImplementation(() => {
+      throw cast<Error>('FOO')
+    })
     await takeLock()
     expect(WakeLock.timeout).toBe(0)
   })
   it('should reset sentinal when lock request rejects', async () => {
     WakeLock.sentinel = {
-      release: sandbox.stub().resolves(),
+      release: vi.fn().mockResolvedValue(undefined),
       released: true,
     }
-    wakelockRequest.rejects('FOO')
+    wakelockRequest.mockRejectedValue('FOO')
     await takeLock()
     expect(WakeLock.sentinel).toBe(null)
   })
   it('should reset timeout when lock request rejects', async () => {
     WakeLock.timeout = 9999999
-    wakelockRequest.rejects('FOO')
+    wakelockRequest.mockRejectedValue('FOO')
     await takeLock()
     expect(WakeLock.timeout).toBe(0)
   })
@@ -162,12 +165,12 @@ describe('public/app/WakeLock takeLock()', () => {
   })
   it('should request the wake lock only once when takeLock is called concurrently', async () => {
     const { promise, resolve } = Promise.withResolvers<WakeLockSentinel>()
-    wakelockRequest.returns(promise)
+    wakelockRequest.mockReturnValue(promise)
     const a = takeLock()
     const b = takeLock()
     resolve(sentinel)
     await Promise.all([a, b])
-    expect(wakelockRequest.callCount).toBe(1)
+    expect(wakelockRequest.mock.calls.length).toBe(1)
   })
 
   it('should reset timeout when missing wakelock functionality', async () => {

@@ -1,23 +1,19 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/pictureMarkup.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
-const sandbox = Sinon.createSandbox()
-
 describe('public/app/pictures makePaginatorItem()', () => {
   let dom = new JSDOM('<html></html>', {})
-  let selectPageSpy = sandbox.stub().resolves()
+  let selectPageSpy = vi.fn().mockResolvedValue(undefined)
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
-    selectPageSpy = sandbox.stub(Internals, 'selectPage')
+    selectPageSpy = vi.spyOn(Internals, 'selectPage').mockImplementation((..._args: unknown[]) => undefined)
     resetPubSub()
     const holder = dom.window.document.createElement('div')
     holder.innerHTML =
@@ -25,7 +21,7 @@ describe('public/app/pictures makePaginatorItem()', () => {
     dom.window.document.body.appendChild(holder)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('returns an List Item Element', () => {
@@ -38,22 +34,22 @@ describe('public/app/pictures makePaginatorItem()', () => {
     expect(label).toBe('frobitz')
   })
   it('should add click handler that calls provided selector to determine page to navigate to', () => {
-    const spy = sandbox.stub().returns(71)
+    const spy = vi.fn().mockReturnValue(71)
     const result = Internals.makePaginatorItem('frobitz', spy)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
-    expect(spy.callCount).toBe(1)
+    expect(spy.mock.calls.length).toBe(1)
   })
   it('should add click handler that calls selectPage', () => {
     const result = Internals.makePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
-    expect(selectPageSpy.callCount).toBe(1)
+    expect(selectPageSpy.mock.calls.length).toBe(1)
   })
   it('should add click handler that passes selector result to selectPage', () => {
     const result = Internals.makePaginatorItem('frobitz', () => 99)
     const evt = new dom.window.MouseEvent('click')
     result?.dispatchEvent(evt)
-    expect(selectPageSpy.firstCall.args).toEqual([99])
+    expect(selectPageSpy.mock.calls[0]).toEqual([99])
   })
 })

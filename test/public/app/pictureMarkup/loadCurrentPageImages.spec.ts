@@ -1,14 +1,10 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { loadCurrentPageImages } from '#public/scripts/app/pictureMarkup.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
 
 describe('public/app/pictures loadCurrentPageImages()', () => {
   let dom = new JSDOM('<html></html>', {})
@@ -21,7 +17,7 @@ describe('public/app/pictures loadCurrentPageImages()', () => {
     Pictures.mainImage = null
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should gracefully handle no tabs existing', () => {

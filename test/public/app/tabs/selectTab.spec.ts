@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -8,8 +7,7 @@ import { render } from 'pug'
 import { resetPubSub } from '#testutils/pubsub.js'
 import assert from 'node:assert'
 import { Imports, init, Internals, Tabs } from '#public/scripts/app/tabs.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -34,15 +32,15 @@ html
 
 describe('public/app/tabs selectTab()', () => {
   let dom = new JSDOM('<html></html>', {})
-  const actionsScroll = sandbox.stub()
-  const foldersScroll = sandbox.stub()
-  const imagesScroll = sandbox.stub()
-  const bookmarksScroll = sandbox.stub()
-  let publishStub = sandbox.stub()
+  const actionsScroll = vi.fn()
+  const foldersScroll = vi.fn()
+  const imagesScroll = vi.fn()
+  const bookmarksScroll = vi.fn()
+  let publishStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {})
     mountDom(dom)
-    sandbox.stub(global.window.console, 'error')
+    vi.spyOn(global.window.console, 'error').mockImplementation((..._args: unknown[]) => undefined)
     const actions = dom.window.document.getElementById('tabActions')
     assert(actions !== null)
     actions.scroll = actionsScroll
@@ -59,23 +57,23 @@ describe('public/app/tabs selectTab()', () => {
     // init() registers a Tab:Select subscriber as a side effect of populating
     // Tabs.tabs/tabNames — not part of selectTab's behavior surface. Stubbed
     // here to absorb the registration; captured and asserted in init.spec.ts.
-    sandbox.stub(Imports, 'subscribe')
+    vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
     Tabs.tabs = []
     Tabs.tabNames = []
-    const selectTabStub = sandbox.stub(Internals, 'selectTab')
+    const selectTabStub = vi.spyOn(Internals, 'selectTab').mockImplementation((..._args: unknown[]) => undefined)
     try {
       init()
     } finally {
-      selectTabStub.restore()
+      selectTabStub.mockRestore()
     }
-    publishStub = sandbox.stub(Imports, 'publish')
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
-    actionsScroll.reset()
-    foldersScroll.reset()
-    imagesScroll.reset()
-    bookmarksScroll.reset()
+    vi.restoreAllMocks()
+    actionsScroll.mockReset()
+    foldersScroll.mockReset()
+    imagesScroll.mockReset()
+    bookmarksScroll.mockReset()
     unmountDom()
   })
   it('should gracefully handle zero tabs', () => {
@@ -92,55 +90,55 @@ describe('public/app/tabs selectTab()', () => {
   })
   it('should publish once when selecting null tab', () => {
     Internals.selectTab()
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish first tab when selecting null tab', () => {
     Internals.selectTab()
-    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabActions'])
+    expect(publishStub.mock.calls[0]).toEqual(['Tab:Selected', '#tabActions'])
   })
   it('should publish once when selecting unknown tab', () => {
     Internals.selectTab('#tabDoesNotExist')
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish first tab when selecting unknown tab', () => {
     Internals.selectTab('#tabDoesNotExist')
-    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabActions'])
+    expect(publishStub.mock.calls[0]).toEqual(['Tab:Selected', '#tabActions'])
   })
   it('should publish once when selecting nonprefixed tab', () => {
     Internals.selectTab('Bookmarks')
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish selected tab when selecting nonprefixed tab', () => {
     Internals.selectTab('Bookmarks')
-    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabBookmarks'])
+    expect(publishStub.mock.calls[0]).toEqual(['Tab:Selected', '#tabBookmarks'])
   })
   it('should publish once when selecting full tab', () => {
     Internals.selectTab('#tabImages')
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish selected tab when selecting full tab', () => {
     Internals.selectTab('#tabImages')
-    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabImages'])
+    expect(publishStub.mock.calls[0]).toEqual(['Tab:Selected', '#tabImages'])
   })
   it('should publish once even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
     Internals.selectTab('#tabImages')
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish selected tab even if href is removed', () => {
     const elem = dom.window.document.querySelector('a[href=tabImages]')
     elem?.removeAttribute('href')
     Internals.selectTab('#tabImages')
-    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabImages'])
+    expect(publishStub.mock.calls[0]).toEqual(['Tab:Selected', '#tabImages'])
   })
   it('should publish once when selecting tab case insensitively', () => {
     Internals.selectTab('#TABFOLDERS')
-    expect(publishStub.callCount).toBe(1)
+    expect(publishStub.mock.calls.length).toBe(1)
   })
   it('should publish selected tab when selecting tab case insensitively', () => {
     Internals.selectTab('#TABFOLDERS')
-    expect(publishStub.firstCall.args).toEqual(['Tab:Selected', '#tabFolders'])
+    expect(publishStub.mock.calls[0]).toEqual(['Tab:Selected', '#tabFolders'])
   })
   it('should add active css class to selected tab', () => {
     expect(Tabs.tabs[1]?.parentElement?.classList.contains('active')).toBe(false)
@@ -175,12 +173,12 @@ describe('public/app/tabs selectTab()', () => {
     expect(elem.style.getPropertyValue('display')).toBe('none')
   })
   it('should scroll to top of content on tab select', () => {
-    expect(imagesScroll.callCount).toBe(0)
+    expect(imagesScroll.mock.calls.length).toBe(0)
     Internals.selectTab('Images')
-    expect(imagesScroll.callCount).toBe(1)
+    expect(imagesScroll.mock.calls.length).toBe(1)
   })
   it('should scroll with expected options on tab select', () => {
     Internals.selectTab('Images')
-    expect(imagesScroll.firstCall.args).toEqual([{ top: 0, behavior: 'smooth' }])
+    expect(imagesScroll.mock.calls[0]).toEqual([{ top: 0, behavior: 'smooth' }])
   })
 })

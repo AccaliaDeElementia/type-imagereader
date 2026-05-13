@@ -7,10 +7,8 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 
 import { Folders, Internals } from '#public/scripts/app/folders.js'
 import assert from 'node:assert'
-import Sinon from 'sinon'
 import type { Listing } from '#contracts/listing.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -38,7 +36,7 @@ html
 describe('public/app/folders buildAllCards()', () => {
   let dom: JSDOM = new JSDOM('', {})
   let folderCard: DocumentFragment | null = null
-  let buildCardStub = sandbox.stub()
+  let buildCardStub: MockInstance = vi.fn()
   let tabFolders: HTMLDivElement | null = null
   beforeEach(() => {
     dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
@@ -49,10 +47,10 @@ describe('public/app/folders buildAllCards()', () => {
     assert(template !== null)
     folderCard = template.content
     Folders.folderCard = folderCard
-    buildCardStub = sandbox.stub(Internals, 'buildCard').returns(null)
+    buildCardStub = vi.spyOn(Internals, 'buildCard').mockReturnValue(null)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should handle undefined listing', () => {
@@ -82,46 +80,46 @@ describe('public/app/folders buildAllCards()', () => {
   it('should call buildCard for each folder found in the folder list', () => {
     const data = { children: [{ A: 1 }, { B: 2 }, { C: 3 }] }
     Internals.buildAllCards(cast<Listing>(data))
-    expect(buildCardStub.callCount).toBe(3)
+    expect(buildCardStub.mock.calls.length).toBe(3)
   })
   it('should call buildCard with first child', () => {
     const data = { children: [{ A: 1 }, { B: 2 }, { C: 3 }] }
     Internals.buildAllCards(cast<Listing>(data))
-    expect(buildCardStub.calledWithExactly(data.children[0])).toBe(true)
+    expect(buildCardStub).toHaveBeenCalledWith(data.children[0])
   })
   it('should call buildCard with second child', () => {
     const data = { children: [{ A: 1 }, { B: 2 }, { C: 3 }] }
     Internals.buildAllCards(cast<Listing>(data))
-    expect(buildCardStub.calledWithExactly(data.children[1])).toBe(true)
+    expect(buildCardStub).toHaveBeenCalledWith(data.children[1])
   })
   it('should call buildCard with third child', () => {
     const data = { children: [{ A: 1 }, { B: 2 }, { C: 3 }] }
     Internals.buildAllCards(cast<Listing>(data))
-    expect(buildCardStub.calledWithExactly(data.children[2])).toBe(true)
+    expect(buildCardStub).toHaveBeenCalledWith(data.children[2])
   })
   it('should not add folder card when buildCard returns undefined', () => {
     const data = { children: [{ A: 1 }] }
-    buildCardStub.returns(undefined)
+    buildCardStub.mockReturnValue(undefined)
     Internals.buildAllCards(cast<Listing>(data))
     expect(tabFolders?.lastElementChild?.children).toHaveLength(0)
   })
   it('should not add folder card when buildCard returns null', () => {
     const data = { children: [{ A: 1 }] }
-    buildCardStub.returns(null)
+    buildCardStub.mockReturnValue(null)
     Internals.buildAllCards(cast<Listing>(data))
     expect(tabFolders?.lastElementChild?.children).toHaveLength(0)
   })
   it('should add one folder card from buildCard', () => {
     const data = { children: [{ A: 1 }] }
     const e = dom.window.document.createElement('div')
-    buildCardStub.returns(e)
+    buildCardStub.mockReturnValue(e)
     Internals.buildAllCards(cast<Listing>(data))
     expect(tabFolders?.lastElementChild?.children).toHaveLength(1)
   })
   it('should add folder card from buildCard', () => {
     const data = { children: [{ A: 1 }] }
     const e = dom.window.document.createElement('div')
-    buildCardStub.returns(e)
+    buildCardStub.mockReturnValue(e)
     Internals.buildAllCards(cast<Listing>(data))
     expect(tabFolders?.lastElementChild?.firstElementChild).toBe(e)
   })
