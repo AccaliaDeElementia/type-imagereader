@@ -25,19 +25,20 @@ const isDescribeCallback = (fn) => {
   return false
 }
 
+const methodStubPropertyNames = new Set(['stub', 'spyOn'])
 const noMethodStubOutsideHook = {
   meta: {
     type: 'problem',
     schema: [],
     messages: {
-      leak: 'Method-replacing stub() must be inside a test hook or helper function (beforeEach/it/before/after or any function called from a test). At describe or module scope the stub runs once at describe registration, and sandbox.restore() unrestores the method after the first test — later tests then run against the unpatched method.',
+      leak: 'Method-replacing stub()/spyOn() must be inside a test hook or helper function (beforeEach/it/before/after or any function called from a test). At describe or module scope the stub runs once at describe registration, and the per-test restore (sandbox.restore() / vi.restoreAllMocks()) unrestores the method after the first test — later tests then run against the unpatched method.',
     },
   },
   create(context) {
     // Stack of booleans: true = current lexical position executes at describe-body
     // evaluation time (module scope, or directly inside a describe/context callback).
     // false = inside some other function (hook, test body, helper, iteration callback)
-    // which only runs when invoked, so sandbox.restore() cleans up between tests.
+    // which only runs when invoked, so the per-test restore cleans up between tests.
     const executesAtDescribeTime = [true]
     return {
       ':function'(node) {
@@ -51,7 +52,7 @@ const noMethodStubOutsideHook = {
         if (
           node.callee.type === 'MemberExpression' &&
           node.callee.property.type === 'Identifier' &&
-          node.callee.property.name === 'stub' &&
+          methodStubPropertyNames.has(node.callee.property.name) &&
           node.arguments.length >= 2 &&
           node.arguments[1].type === 'Literal' &&
           typeof node.arguments[1].value === 'string'

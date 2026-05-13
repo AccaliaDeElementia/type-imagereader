@@ -1,21 +1,19 @@
 'use sanity'
 
 import { isKnexOptions, Internals } from '#utils/persistence.js'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('utils/persistence isKnexOptions()', () => {
-  let isMigrationsValidStub = sandbox.stub()
-  let isConnectionValid = sandbox.stub()
-  let isPoolValid = sandbox.stub()
+  let isMigrationsValidStub: MockInstance = vi.fn()
+  let isConnectionValid: MockInstance = vi.fn()
+  let isPoolValid: MockInstance = vi.fn()
   beforeEach(() => {
-    isMigrationsValidStub = sandbox.stub(Internals, 'isMigrationsValid').returns(true)
-    isConnectionValid = sandbox.stub(Internals, 'isConnectionValid').returns(true)
-    isPoolValid = sandbox.stub(Internals, 'isPoolValid').returns(true)
+    isMigrationsValidStub = vi.spyOn(Internals, 'isMigrationsValid').mockReturnValue(true)
+    isConnectionValid = vi.spyOn(Internals, 'isConnectionValid').mockReturnValue(true)
+    isPoolValid = vi.spyOn(Internals, 'isPoolValid').mockReturnValue(true)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],
@@ -42,15 +40,15 @@ describe('utils/persistence isKnexOptions()', () => {
     })
   })
   it('should reject when isMigrationsValidStub fails', () => {
-    isMigrationsValidStub.returns(false)
+    isMigrationsValidStub.mockReturnValue(false)
     expect(isKnexOptions({ client: 'sqlite' })).toBe(false)
   })
   it('should reject when isConnectionValid fails', () => {
-    isConnectionValid.returns(false)
+    isConnectionValid.mockReturnValue(false)
     expect(isKnexOptions({ client: 'sqlite' })).toBe(false)
   })
   it('should reject when isPoolValid fails', () => {
-    isPoolValid.returns(false)
+    isPoolValid.mockReturnValue(false)
     expect(isKnexOptions({ client: 'sqlite' })).toBe(false)
   })
 })
