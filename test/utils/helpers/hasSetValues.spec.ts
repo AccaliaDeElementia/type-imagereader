@@ -1,16 +1,13 @@
 'use sanity'
 
 import { hasSetValues } from '#utils/helpers.js'
-import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
-
-const sandbox = Sinon.createSandbox()
 
 describe('utils/helpers hasSetValues()', () => {
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
-  const add = sandbox.stub()
+  const add = vi.fn()
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],

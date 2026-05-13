@@ -242,6 +242,21 @@ export default [
     },
   },
   {
+    // One-off dev tools (e.g. the sinon->vitest migration codemod) live in tools/.
+    // They are not production code and use tool-style patterns (literal regex group
+    // indices, CLI counters, etc.) that the production-grade rules don't accommodate.
+    // The pubsub guard and `local/*` rules still apply.
+    files: ['tools/**/*.ts'],
+    rules: {
+      'require-unicode-regexp': 'off',
+      'prefer-named-capture-group': 'off',
+      '@typescript-eslint/no-magic-numbers': 'off',
+      '@typescript-eslint/strict-boolean-expressions': 'off',
+      'no-plusplus': 'off',
+      complexity: 'off',
+    },
+  },
+  {
     ignores: ['coverage/**', 'coverage-vitest/**', 'eslint.config.mjs', 'dist/**', 'deploy/**'],
   },
 ]

@@ -1,10 +1,8 @@
 'use sanity'
 
 import { readConfigurationBlock, Internals, Imports } from '#utils/persistence.js'
-import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('utils/persistence readConfigurationBlock()', () => {
   let configContent = {
@@ -17,7 +15,7 @@ describe('utils/persistence readConfigurationBlock()', () => {
     },
   }
   let configName = 'testtest'
-  let readFileStub = sandbox.stub()
+  let readFileStub: MockInstance = vi.fn()
   beforeEach(() => {
     configContent = {
       testtest: {
@@ -29,40 +27,40 @@ describe('utils/persistence readConfigurationBlock()', () => {
       },
     }
     configName = 'testtest'
-    sandbox.stub(Internals, 'getEnvironmentName').returns(configName)
-    readFileStub = sandbox
-      .stub(Imports, 'readFile')
-      .callsFake(async () => await Promise.resolve(JSON.stringify(configContent)))
+    vi.spyOn(Internals, 'getEnvironmentName').mockReturnValue(configName)
+    readFileStub = vi
+      .spyOn(Imports, 'readFile')
+      .mockImplementation(async () => await Promise.resolve(JSON.stringify(configContent)))
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should resolve to object', async () => {
     const result = await readConfigurationBlock()
     expect(result).toEqual(configContent.testtest)
   })
   it('should reject when ReadFile rejects', async () => {
-    readFileStub.rejects(new Error('poopy pants are no fun'))
+    readFileStub.mockRejectedValue(new Error('poopy pants are no fun'))
     const err = await eventuallyRejects(readConfigurationBlock())
     expect(err.message).toBe('poopy pants are no fun')
   })
   it('should reject on empty file', async () => {
-    readFileStub.resolves('')
+    readFileStub.mockResolvedValue('')
     const err = await eventuallyRejects(readConfigurationBlock())
     expect(err.message).toBe('Invalid Configuration Detected!')
   })
   it('should reject on invalid JSON file', async () => {
-    readFileStub.resolves('"')
+    readFileStub.mockResolvedValue('"')
     const err = await eventuallyRejects(readConfigurationBlock())
     expect(err.message).toBe('Unterminated string in JSON at position 1 (line 1 column 2)')
   })
   it('should reject on non object file', async () => {
-    readFileStub.resolves('"not an object"')
+    readFileStub.mockResolvedValue('"not an object"')
     const err = await eventuallyRejects(readConfigurationBlock())
     expect(err.message).toBe('Invalid Configuration Detected!')
   })
   it('should reject on missing environment block file', async () => {
-    readFileStub.resolves('{"a": {}}')
+    readFileStub.mockResolvedValue('{"a": {}}')
     const err = await eventuallyRejects(readConfigurationBlock())
     expect(err.message).toBe('Invalid Configuration Detected!')
   })

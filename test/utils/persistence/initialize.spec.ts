@@ -1,11 +1,9 @@
 'use sanity'
 
 import { initialize, Internals, Imports, Persistence, type KnexOptions } from '#utils/persistence.js'
-import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('utils/persistence initialize()', () => {
   let fakeEnvironment: KnexOptions = {
@@ -17,11 +15,11 @@ describe('utils/persistence initialize()', () => {
       tableName: 'migrations tablename',
     },
   }
-  let stubEnvironment = sandbox.stub()
-  let stubKnex = sandbox.stub()
+  let stubEnvironment: MockInstance = vi.fn()
+  let stubKnex: MockInstance = vi.fn()
   let stubKnexInstance = {
     migrate: {
-      latest: sandbox.stub().resolves(),
+      latest: vi.fn().mockResolvedValue(undefined),
     },
   }
 
@@ -38,15 +36,15 @@ describe('utils/persistence initialize()', () => {
     }
     stubKnexInstance = {
       migrate: {
-        latest: sandbox.stub().resolves(),
+        latest: vi.fn().mockResolvedValue(undefined),
       },
     }
-    stubKnex = sandbox.stub(Imports, 'knex').returns(stubToKnex(stubKnexInstance))
-    stubEnvironment = sandbox.stub(Internals, 'getKnexConfig').resolves(fakeEnvironment)
+    stubKnex = vi.spyOn(Imports, 'knex').mockReturnValue(stubToKnex(stubKnexInstance))
+    stubEnvironment = vi.spyOn(Internals, 'getKnexConfig').mockResolvedValue(fakeEnvironment)
   })
 
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should return stored initializer when one is already created', async () => {
     const promise = Promise.resolve(stubToKnex(stubKnexInstance))
@@ -57,7 +55,7 @@ describe('utils/persistence initialize()', () => {
     const promise = Promise.resolve(stubToKnex(stubKnexInstance))
     Persistence.initializer = promise
     await initialize()
-    expect(stubKnex.called).toBe(false)
+    expect(stubKnex).not.toHaveBeenCalled()
   })
   it('should set stored Initializer when empty', async () => {
     initialize().catch(() => null)
@@ -69,39 +67,45 @@ describe('utils/persistence initialize()', () => {
   })
   it('should pass config to knex initializer', async () => {
     await initialize()
-    expect(stubKnex.calledWith(fakeEnvironment)).toBe(true)
+    expect(stubKnex).toHaveBeenCalledWith(fakeEnvironment)
   })
   it('should run knex migrations', async () => {
     await initialize()
-    expect(stubKnexInstance.migrate.latest.called).toBe(true)
+    expect(stubKnexInstance.migrate.latest).toHaveBeenCalled()
   })
   it('should reject when reading config fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
-    stubEnvironment.rejects(err)
+    stubEnvironment.mockRejectedValue(err)
     const result = await eventuallyRejects(initialize())
     expect(result).toBe(err)
   })
   it('should reject when reading config throws', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
-    stubEnvironment.throws(err)
+    stubEnvironment.mockImplementation(() => {
+      throw err
+    })
     const result = await eventuallyRejects(initialize())
     expect(result).toBe(err)
   })
   it('should reject when creating Knex  fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
-    stubKnex.throws(err)
+    stubKnex.mockImplementation(() => {
+      throw err
+    })
     const result = await eventuallyRejects(initialize())
     expect(result).toBe(err)
   })
   it('should reject when migrating to latest fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
-    stubKnexInstance.migrate.latest.rejects(err)
+    stubKnexInstance.migrate.latest.mockRejectedValue(err)
     const result = await eventuallyRejects(initialize())
     expect(result).toBe(err)
   })
   it('should reject when migrating to latest throws', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
-    stubKnexInstance.migrate.latest.throws(err)
+    stubKnexInstance.migrate.latest.mockImplementation(() => {
+      throw err
+    })
     const result = await eventuallyRejects(initialize())
     expect(result).toBe(err)
   })

@@ -1,10 +1,8 @@
 'use sanity'
 
 import { getKnexConfig, Internals } from '#utils/persistence.js'
-import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('utils/persistence getKnexConfig()', () => {
   let configBlock = {
@@ -18,7 +16,7 @@ describe('utils/persistence getKnexConfig()', () => {
     },
     migrations: { tableName: '' },
   }
-  let readConfigurationBlockStub = sandbox.stub()
+  let readConfigurationBlockStub: MockInstance = vi.fn()
   beforeEach(() => {
     delete process.env.DB_HOST
     delete process.env.DB_DATABASE
@@ -36,14 +34,14 @@ describe('utils/persistence getKnexConfig()', () => {
       },
       migrations: { tableName: '' },
     }
-    readConfigurationBlockStub = sandbox.stub(Internals, 'readConfigurationBlock').resolves(configBlock)
+    readConfigurationBlockStub = vi.spyOn(Internals, 'readConfigurationBlock').mockResolvedValue(configBlock)
   })
 
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should reject when readConfig rejects', async () => {
-    readConfigurationBlockStub.rejects(new Error('FOO I FAIL'))
+    readConfigurationBlockStub.mockRejectedValue(new Error('FOO I FAIL'))
     const err = await eventuallyRejects(getKnexConfig())
     expect(err.message).toBe('FOO I FAIL')
   })
