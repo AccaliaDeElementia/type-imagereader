@@ -69,9 +69,9 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
       label: 'remove: named import from "sinon"',
     },
 
-    // 2. Drop the createSandbox declaration.
+    // 2. Drop the createSandbox declaration (handles indented declarations too — e.g. inside a nested describe).
     {
-      pattern: /^(?:const|let|var)\s+sandbox\s*=\s*Sinon\.createSandbox\(\)\s*\n/gm,
+      pattern: /^[ \t]*(?:const|let|var)\s+sandbox\s*=\s*Sinon\.createSandbox\(\)\s*\n/gm,
       replace: '',
       label: 'remove: Sinon.createSandbox() declaration',
     },
@@ -129,29 +129,32 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
 
     // 6. Call-record inspection. These rewrites are global; in test files the API names are sinon-specific.
     //    The file-import guard (above) keeps us out of files that consume sinon-typed objects through testutils.
+    // Note: emit `[N]?.[M]` (optional index chain) because tsconfig has
+    // `noUncheckedIndexedAccess: true`. The optional chain keeps the output type-safe
+    // when the call we're indexing into hasn't happened yet.
     {
       pattern: /\.firstCall\.args\[(\d+)\]/g,
-      replace: '.mock.calls[0][$1]',
-      label: '.firstCall.args[N] -> .mock.calls[0][N]',
+      replace: '.mock.calls[0]?.[$1]',
+      label: '.firstCall.args[N] -> .mock.calls[0]?.[N]',
     },
     { pattern: /\.firstCall\.args\b/g, replace: '.mock.calls[0]', label: '.firstCall.args -> .mock.calls[0]' },
     {
       pattern: /\.firstCall\.returnValue\b/g,
-      replace: '.mock.results[0].value',
-      label: '.firstCall.returnValue -> .mock.results[0].value',
+      replace: '.mock.results[0]?.value',
+      label: '.firstCall.returnValue -> .mock.results[0]?.value',
     },
     {
       pattern: /\.secondCall\.args\[(\d+)\]/g,
-      replace: '.mock.calls[1][$1]',
-      label: '.secondCall.args[N] -> .mock.calls[1][N]',
+      replace: '.mock.calls[1]?.[$1]',
+      label: '.secondCall.args[N] -> .mock.calls[1]?.[N]',
     },
     { pattern: /\.secondCall\.args\b/g, replace: '.mock.calls[1]', label: '.secondCall.args -> .mock.calls[1]' },
     {
       pattern: /\.lastCall\.args\[(\d+)\]/g,
-      replace: '.mock.lastCall![$1]',
-      label: '.lastCall.args[N] -> .mock.lastCall![N]',
+      replace: '.mock.lastCall?.[$1]',
+      label: '.lastCall.args[N] -> .mock.lastCall?.[N]',
     },
-    { pattern: /\.lastCall\.args\b/g, replace: '.mock.lastCall!', label: '.lastCall.args -> .mock.lastCall!' },
+    { pattern: /\.lastCall\.args\b/g, replace: '.mock.lastCall', label: '.lastCall.args -> .mock.lastCall' },
     { pattern: /\.callCount\b/g, replace: '.mock.calls.length', label: '.callCount -> .mock.calls.length' },
     { pattern: /\.getCalls\(\s*\)/g, replace: '.mock.calls', label: '.getCalls() -> .mock.calls' },
     { pattern: /\.resetHistory\(\s*\)/g, replace: '.mockClear()', label: '.resetHistory() -> .mockClear()' },
@@ -165,6 +168,39 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
     // 7. Type references.
     { pattern: /\bSinon\.SinonStub\b/g, replace: 'MockInstance', label: 'Sinon.SinonStub -> MockInstance' },
     { pattern: /\bSinon\.SinonSpy\b/g, replace: 'MockInstance', label: 'Sinon.SinonSpy -> MockInstance' },
+
+    // 7b. Fake-timer plumbing. The teardown side (vi.useRealTimers in afterEach) is
+    // flagged below as a CODEMOD-TODO since structure-changing rewrites are out of scope.
+    // Drop `let ClockFake: Sinon.SinonFakeTimers | undefined = undefined` style declarations
+    // entirely — the variable is no longer needed (vi.useFakeTimers() returns void).
+    {
+      pattern: /^\s*let\s+\w+:\s*[Ss]inon\.SinonFakeTimers\s*\|\s*undefined\s*=\s*undefined\s*\n/gm,
+      replace: '',
+      label: 'remove: let <name>: Sinon.SinonFakeTimers | undefined = undefined',
+    },
+    // `<id> = sandbox.useFakeTimers()` -> `vi.useFakeTimers()` (LHS dropped).
+    {
+      pattern: /\b\w+\s*=\s*(?:sandbox|Sinon|sinon)\s*\.\s*useFakeTimers\(\s*\)/g,
+      replace: 'vi.useFakeTimers()',
+      label: '<id> = X.useFakeTimers() -> vi.useFakeTimers() (LHS dropped)',
+    },
+    // Bare `sandbox.useFakeTimers()` (no LHS).
+    {
+      pattern: /\b(?:sandbox|Sinon|sinon)\s*\.\s*useFakeTimers\(\s*\)/g,
+      replace: 'vi.useFakeTimers()',
+      label: 'X.useFakeTimers() -> vi.useFakeTimers()',
+    },
+    // `<id>?.tick(N)` / `<id>.tick(N)` -> `vi.advanceTimersByTime(N)`.
+    {
+      pattern: /\b\w+\?\.tick\(/g,
+      replace: 'vi.advanceTimersByTime(',
+      label: '<id>?.tick(N) -> vi.advanceTimersByTime(N)',
+    },
+    {
+      pattern: /\b\w+\.tick\(/g,
+      replace: 'vi.advanceTimersByTime(',
+      label: '<id>.tick(N) -> vi.advanceTimersByTime(N)',
+    },
 
     // 8. Sinon.match.string -> expect.any(String) (only known use)
     {
@@ -180,6 +216,12 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
     out = out.replace(t.pattern, t.replace)
     result.applied.push(`${t.label} (${matches.length}x)`)
   }
+
+  // Post-pass: optional-chain `.called` -> `.mock.calls.length > 0` produces a
+  // `number | undefined > 0` type that tsconfig's strict mode rejects. Wrap with
+  // `?? 0` to keep the comparison type-safe. Only fires on `<id>?.mock.calls.length > 0`
+  // patterns produced earlier in the transform list.
+  out = out.replace(/\b(\w+)\?\.mock\.calls\.length > 0/g, '($1?.mock.calls.length ?? 0) > 0')
 
   // Post-pass: add `: MockInstance` annotation to `let X = vi.fn()` (without existing type
   // annotation) so reassignments to vi.spyOn(...) results don't trip type inference.
@@ -211,13 +253,48 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
   // Detect unconverted patterns that need hand-review.
   const flagPatterns: Array<{ re: RegExp; reason: string }> = [
     { re: /\.calledWith\(/g, reason: '.calledWith(...) — rewrite as expect(stub).toHaveBeenCalledWith(...)' },
+    {
+      re: /vi\.spyOn\([^)]+\)\.value\(/g,
+      reason:
+        ".value(<obj>) — sinon-only; vi.spyOn can't replace non-function properties. Spy on the inner method instead, or directly assign + restore in afterEach",
+    },
     { re: /\.onCall\(/g, reason: '.onCall(N) — consider .mockReturnValueOnce sequence' },
+    {
+      re: /\.on(?:First|Second|Third|Fourth)Call\(/g,
+      reason:
+        '.on(First|Second|...)Call() — rewrite as chained .mockReturnValueOnce/.mockResolvedValueOnce/.mockRejectedValueOnce',
+    },
+    {
+      re: /\.calledAfter\(/g,
+      reason: '.calledAfter(X) — rewrite via mock.invocationCallOrder comparison',
+    },
+    {
+      re: /\.calledBefore\(/g,
+      reason: '.calledBefore(X) — rewrite via mock.invocationCallOrder comparison',
+    },
+    {
+      re: /\.tickAsync\(/g,
+      reason: '.tickAsync(N) — rewrite as `await vi.advanceTimersByTimeAsync(N)`',
+    },
     { re: /\.resolvesThis\(/g, reason: '.resolvesThis() — no clean vitest equivalent' },
     { re: /\.throws\(/g, reason: '.throws(<complex>) — rewrite as .mockImplementation(() => { throw <expr> })' },
     { re: /\bSinon\.SinonSandbox\b/g, reason: 'Sinon.SinonSandbox type — sandbox concept removed' },
     { re: /\bSinon\.SinonFakeTimers\b/g, reason: 'Sinon.SinonFakeTimers type — needs fake-timer restructuring' },
     { re: /\bSinon\.SinonSpyCall\b/g, reason: 'Sinon.SinonSpyCall type — hand-review' },
-    { re: /\buseFakeTimers\b/g, reason: 'useFakeTimers — vi.useFakeTimers() + vi.setSystemTime() restructure' },
+    {
+      re: /\.useFakeTimers\(\s*\{/g,
+      reason: 'useFakeTimers({...}) with options — hand-rewrite as vi.useFakeTimers(); vi.setSystemTime(...)',
+    },
+    {
+      re: /\.useFakeTimers\(\s*\d/g,
+      reason:
+        'useFakeTimers(<number>) with numeric arg — hand-rewrite as vi.useFakeTimers(); vi.setSystemTime(<number>)',
+    },
+    {
+      re: /vi\.useFakeTimers\(\)/g,
+      reason:
+        'vi.useFakeTimers() detected — ensure afterEach also calls vi.useRealTimers() (vi.restoreAllMocks() does NOT restore timers)',
+    },
     { re: /\bsandbox\.\w+/g, reason: 'leftover sandbox.* reference' },
     { re: /\bSinon\.\w+/g, reason: 'leftover Sinon.* reference' },
     { re: /\bsinon\.\w+/g, reason: 'leftover sinon.* reference' },

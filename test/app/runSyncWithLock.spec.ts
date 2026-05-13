@@ -1,45 +1,43 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { ImageReader, runSyncWithLock } from '#app.js'
 import { eventuallyRejects } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('app.ts runSyncWithLock()', () => {
-  let synchronizeStub = sandbox.stub()
-  let takeStub = sandbox.stub()
-  let releaseStub = sandbox.stub()
+  let synchronizeStub: MockInstance = vi.fn()
+  let takeStub: MockInstance = vi.fn()
+  let releaseStub: MockInstance = vi.fn()
   beforeEach(() => {
-    synchronizeStub = sandbox.stub(ImageReader, 'synchronize').resolves()
-    takeStub = sandbox.stub(ImageReader.syncLock, 'take').returns(true)
-    releaseStub = sandbox.stub(ImageReader.syncLock, 'release')
+    synchronizeStub = vi.spyOn(ImageReader, 'synchronize').mockResolvedValue(undefined)
+    takeStub = vi.spyOn(ImageReader.syncLock, 'take').mockReturnValue(true)
+    releaseStub = vi.spyOn(ImageReader.syncLock, 'release')
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should attempt to take the sync lock', async () => {
     await runSyncWithLock()
-    expect(takeStub.callCount).toBe(1)
+    expect(takeStub.mock.calls.length).toBe(1)
   })
   it('should not synchronize when lock is already held', async () => {
-    takeStub.returns(false)
+    takeStub.mockReturnValue(false)
     await runSyncWithLock()
-    expect(synchronizeStub.callCount).toBe(0)
+    expect(synchronizeStub.mock.calls.length).toBe(0)
   })
   it('should not release lock when lock was not acquired', async () => {
-    takeStub.returns(false)
+    takeStub.mockReturnValue(false)
     await runSyncWithLock()
-    expect(releaseStub.callCount).toBe(0)
+    expect(releaseStub.mock.calls.length).toBe(0)
   })
   it('should synchronize when lock is acquired', async () => {
     await runSyncWithLock()
-    expect(synchronizeStub.callCount).toBe(1)
+    expect(synchronizeStub.mock.calls.length).toBe(1)
   })
   it('should take lock before synchronizing', async () => {
     let lockTakenBeforeSync = false
-    synchronizeStub.callsFake(async () => {
-      lockTakenBeforeSync = takeStub.called
+    synchronizeStub.mockImplementation(async () => {
+      lockTakenBeforeSync = takeStub.mock.calls.length > 0
       await Promise.resolve()
     })
     await runSyncWithLock()
@@ -47,8 +45,8 @@ describe('app.ts runSyncWithLock()', () => {
   })
   it('should not release lock before synchronizing', async () => {
     let lockReleasedBeforeSync = false
-    synchronizeStub.callsFake(async () => {
-      lockReleasedBeforeSync = releaseStub.called
+    synchronizeStub.mockImplementation(async () => {
+      lockReleasedBeforeSync = releaseStub.mock.calls.length > 0
       await Promise.resolve()
     })
     await runSyncWithLock()
@@ -56,20 +54,22 @@ describe('app.ts runSyncWithLock()', () => {
   })
   it('should release lock once after synchronize resolves', async () => {
     await runSyncWithLock()
-    expect(releaseStub.callCount).toBe(1)
+    expect(releaseStub.mock.calls.length).toBe(1)
   })
   it('should release lock after (not before) synchronize resolves', async () => {
     await runSyncWithLock()
-    expect(releaseStub.calledAfter(synchronizeStub)).toBe(true)
+    expect((releaseStub.mock.invocationCallOrder[0] ?? 0) > (synchronizeStub.mock.invocationCallOrder[0] ?? 0)).toBe(
+      true,
+    )
   })
   it('should release lock after synchronize rejects', async () => {
-    synchronizeStub.rejects(new Error('SYNC ERROR'))
+    synchronizeStub.mockRejectedValue(new Error('SYNC ERROR'))
     await runSyncWithLock().catch(() => null)
-    expect(releaseStub.callCount).toBe(1)
+    expect(releaseStub.mock.calls.length).toBe(1)
   })
   it('should propagate rejection from synchronize', async () => {
     const err = new Error('SYNC ERROR')
-    synchronizeStub.rejects(err)
+    synchronizeStub.mockRejectedValue(err)
     const caught = await eventuallyRejects(runSyncWithLock())
     expect(caught).toBe(err)
   })

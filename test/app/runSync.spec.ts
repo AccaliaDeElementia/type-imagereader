@@ -1,10 +1,8 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { ImageReader, runSync, Internals, Imports } from '#app.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const fireImmediately = (fn: () => Promise<void>): number => {
   fn().catch(() => null)
@@ -12,79 +10,76 @@ const fireImmediately = (fn: () => Promise<void>): number => {
 }
 
 describe('app.ts runSync() tests', () => {
-  let actuallyRunSpy = sandbox.stub().resolves()
-  let setIntervalFake = sandbox.stub()
-  let loggerStub = sandbox.stub()
+  let actuallyRunSpy = vi.fn().mockResolvedValue(undefined)
+  let setIntervalFake: MockInstance = vi.fn()
+  let loggerStub: MockInstance = vi.fn()
   const defaultInterval = ImageReader.syncInterval
   beforeEach(() => {
     ImageReader.interval = undefined
     ImageReader.syncInterval = defaultInterval
-    actuallyRunSpy = sandbox.stub(Internals, 'runSyncWithLock').resolves()
-    setIntervalFake = sandbox.stub(Imports, 'setInterval').returns(0)
-    loggerStub = sandbox.stub(Imports, 'logger')
+    actuallyRunSpy = vi.spyOn(Internals, 'runSyncWithLock').mockResolvedValue(undefined)
+    setIntervalFake = vi.spyOn(Imports, 'setInterval').mockReturnValue(0)
+    loggerStub = vi.spyOn(Imports, 'logger')
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should set interval to execute sync on schedule', async () => {
     await runSync()
-    expect(setIntervalFake.callCount).toBe(1)
+    expect(setIntervalFake.mock.calls.length).toBe(1)
   })
   it('should take call ActuallyRun synchronously on initial call', async () => {
     const promise = runSync()
-    const beforeWaitCallcount = actuallyRunSpy.callCount
+    const beforeWaitCallcount = actuallyRunSpy.mock.calls.length
     await promise
     expect(beforeWaitCallcount).toBe(1)
   })
   it('should resolve when ActuallyRun rejects', async () => {
-    actuallyRunSpy.rejects('foo!')
+    actuallyRunSpy.mockRejectedValue('foo!')
     await eventuallyFulfills(runSync())
   })
   it('should log once when the initial sync rejects', async () => {
-    actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))
+    actuallyRunSpy.mockRejectedValue(new Error('INITIAL SYNC FAILED'))
     await runSync()
-    expect(loggerStub.callCount).toBe(1)
+    expect(loggerStub.mock.calls.length).toBe(1)
   })
   it("should log with message 'initial sync error' when the initial sync rejects", async () => {
-    actuallyRunSpy.rejects(new Error('INITIAL SYNC FAILED'))
+    actuallyRunSpy.mockRejectedValue(new Error('INITIAL SYNC FAILED'))
     await runSync()
-    expect(loggerStub.firstCall.args[0]).toBe('initial sync error')
+    expect(loggerStub.mock.calls[0]?.[0]).toBe('initial sync error')
   })
   it('should log the error object when the initial sync rejects', async () => {
     const err = new Error('INITIAL SYNC FAILED')
-    actuallyRunSpy.rejects(err)
+    actuallyRunSpy.mockRejectedValue(err)
     await runSync()
-    expect(loggerStub.firstCall.args[1]).toBe(err)
+    expect(loggerStub.mock.calls[0]?.[1]).toBe(err)
   })
   it('should log once when interval callback rejects', async () => {
-    actuallyRunSpy.resolves()
-    setIntervalFake.callsFake(fireImmediately)
-    actuallyRunSpy.onSecondCall().rejects(new Error('SYNC FAILED'))
+    actuallyRunSpy.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('SYNC FAILED'))
+    setIntervalFake.mockImplementation(fireImmediately)
     await runSync()
     await Promise.resolve()
-    expect(loggerStub.callCount).toBe(1)
+    expect(loggerStub.mock.calls.length).toBe(1)
   })
   it("should log with message 'sync interval error' when interval callback rejects", async () => {
-    actuallyRunSpy.resolves()
-    setIntervalFake.callsFake(fireImmediately)
-    actuallyRunSpy.onSecondCall().rejects(new Error('SYNC FAILED'))
+    actuallyRunSpy.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('SYNC FAILED'))
+    setIntervalFake.mockImplementation(fireImmediately)
     await runSync()
     await Promise.resolve()
-    expect(loggerStub.firstCall.args[0]).toBe('sync interval error')
+    expect(loggerStub.mock.calls[0]?.[0]).toBe('sync interval error')
   })
   it('should log the error object when interval callback rejects', async () => {
     const err = new Error('SYNC FAILED')
-    actuallyRunSpy.resolves()
-    setIntervalFake.callsFake(fireImmediately)
-    actuallyRunSpy.onSecondCall().rejects(err)
+    actuallyRunSpy.mockResolvedValueOnce(undefined).mockRejectedValueOnce(err)
+    setIntervalFake.mockImplementation(fireImmediately)
     await runSync()
     await Promise.resolve()
-    expect(loggerStub.firstCall.args[1]).toBe(err)
+    expect(loggerStub.mock.calls[0]?.[1]).toBe(err)
   })
   it('should not log when interval callback resolves', async () => {
-    setIntervalFake.callsFake(fireImmediately)
+    setIntervalFake.mockImplementation(fireImmediately)
     await runSync()
     await Promise.resolve()
-    expect(loggerStub.callCount).toBe(0)
+    expect(loggerStub.mock.calls.length).toBe(0)
   })
 })

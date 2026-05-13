@@ -2,7 +2,6 @@
 
 import { JSDOM } from 'jsdom'
 import { renderFile } from 'pug'
-import Sinon from 'sinon'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
@@ -111,20 +110,19 @@ describe('app.pug ↔ client init binding', () => {
   })
 
   describe('pictures init', () => {
-    const sandbox = Sinon.createSandbox()
     beforeEach(() => {
       // Let resetMarkup run for real so both DOM handles get populated; stub
       // the rest of the transitive chain since this spec is about wiring, not
       // what the pictureInput/unreadFilter modules do at init.
-      sandbox.stub(PicturesImports, 'initActions')
-      sandbox.stub(PicturesImports, 'initMouse')
-      sandbox.stub(PicturesImports, 'initUnreadSelectorSlider')
+      vi.spyOn(PicturesImports, 'initActions')
+      vi.spyOn(PicturesImports, 'initMouse')
+      vi.spyOn(PicturesImports, 'initUnreadSelectorSlider')
       Pictures.mainImage = null
       Grid.imageCard = null
       Pictures.init()
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     it('populates Pictures.mainImage from #bigImage img', () => {
       expect(Pictures.mainImage).not.toBe(null)
