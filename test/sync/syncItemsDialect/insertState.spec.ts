@@ -1,13 +1,9 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { InsertState, type InsertFallbackHelpers } from '#sync/syncItemsDialect.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { noopLogger } from '#testutils/debug.js'
 import type { Debugger } from 'debug'
-
-const sandbox = Sinon.createSandbox()
 
 const FILE_DELTA = 7
 const DIR_DELTA = 3
@@ -19,7 +15,7 @@ const SQLITE_DB_CHUNK_SIZE = 200
 
 describe('sync/syncItemsDialect InsertState', () => {
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('addCounts()', () => {
@@ -112,14 +108,14 @@ describe('sync/syncItemsDialect InsertState', () => {
 
     it('should add the buildSyncItemRows counts to state.files', async () => {
       const state = new InsertState()
-      const knex = stubToKnex(sandbox.stub())
+      const knex = stubToKnex(vi.fn())
       await state.advance({ knex, helpers: buildHelpers(), logger: noopLogger, items: [], pending: 0 })
       expect(state.files).toBe(FILE_DELTA)
     })
 
     it('should call knex insert when buildSyncItemRows returns rows', async () => {
-      const insertSpy = sandbox.stub().resolves()
-      const knexSpy = sandbox.stub().returns({ insert: insertSpy })
+      const insertSpy = vi.fn().mockResolvedValue(undefined)
+      const knexSpy = vi.fn().mockReturnValue({ insert: insertSpy })
       const state = new InsertState()
       await state.advance({
         knex: stubToKnex(knexSpy),
@@ -130,12 +126,12 @@ describe('sync/syncItemsDialect InsertState', () => {
         items: [],
         pending: 0,
       })
-      expect(insertSpy.callCount).toBe(1)
+      expect(insertSpy.mock.calls.length).toBe(1)
     })
 
     it('should request chunks of size SQLITE_DB_CHUNK_SIZE', async () => {
-      const chunkSpy = sandbox.stub().returns([[sampleRow]])
-      const knex = stubToKnex(sandbox.stub().returns({ insert: sandbox.stub().resolves() }))
+      const chunkSpy = vi.fn().mockReturnValue([[sampleRow]])
+      const knex = stubToKnex(vi.fn().mockReturnValue({ insert: vi.fn().mockResolvedValue(undefined) }))
       const state = new InsertState()
       await state.advance({
         knex,
@@ -147,13 +143,13 @@ describe('sync/syncItemsDialect InsertState', () => {
         items: [],
         pending: 0,
       })
-      expect(chunkSpy.firstCall.args[1]).toBe(SQLITE_DB_CHUNK_SIZE)
+      expect(chunkSpy.mock.calls[0]?.[1]).toBe(SQLITE_DB_CHUNK_SIZE)
     })
 
     it('should log on the first iteration', async () => {
-      const loggerSpy = sandbox.stub()
+      const loggerSpy = vi.fn()
       const state = new InsertState()
-      const knex = stubToKnex(sandbox.stub())
+      const knex = stubToKnex(vi.fn())
       await state.advance({
         knex,
         helpers: buildHelpers(),
@@ -161,12 +157,12 @@ describe('sync/syncItemsDialect InsertState', () => {
         items: [],
         pending: PENDING,
       })
-      expect(loggerSpy.firstCall.args[0]).toBe(`Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`)
+      expect(loggerSpy.mock.calls[0]?.[0]).toBe(`Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`)
     })
 
     it('should advance the counter', async () => {
       const state = new InsertState()
-      const knex = stubToKnex(sandbox.stub())
+      const knex = stubToKnex(vi.fn())
       await state.advance({ knex, helpers: buildHelpers(), logger: noopLogger, items: [], pending: 0 })
       expect(state.counter).toBe(1)
     })

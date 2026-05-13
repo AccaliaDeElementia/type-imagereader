@@ -1,10 +1,8 @@
 'use sanity'
 
 import { incrementalRemovePicturesBulk } from '#sync/incrementalsync.js'
-import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/typeGuards.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('sync/incrementalsync incrementalRemovePicturesBulk()', () => {
   let pictureWhereInCalls: unknown[][] = []
@@ -13,14 +11,18 @@ describe('sync/incrementalsync incrementalRemovePicturesBulk()', () => {
   let bookmarkDeleteCount = 0
 
   let picturesQuery = {
-    whereIn: sandbox.stub().returnsThis(),
-    delete: sandbox.stub().resolves(0),
+    whereIn: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    delete: vi.fn().mockResolvedValue(0),
   }
   let bookmarksQuery = {
-    whereIn: sandbox.stub().returnsThis(),
-    delete: sandbox.stub().resolves(0),
+    whereIn: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    delete: vi.fn().mockResolvedValue(0),
   }
-  let knexFnStub = sandbox.stub()
+  let knexFnStub: MockInstance = vi.fn()
   let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
@@ -29,28 +31,28 @@ describe('sync/incrementalsync incrementalRemovePicturesBulk()', () => {
     pictureDeleteCount = 0
     bookmarkDeleteCount = 0
     picturesQuery = {
-      whereIn: sandbox.stub().callsFake((_col: string, values: unknown[]) => {
+      whereIn: vi.fn().mockImplementation((_col: string, values: unknown[]) => {
         pictureWhereInCalls.push(values)
         return picturesQuery
       }),
-      delete: sandbox.stub().callsFake(async () => {
+      delete: vi.fn().mockImplementation(async () => {
         pictureDeleteCount += 1
         await Promise.resolve()
         return 0
       }),
     }
     bookmarksQuery = {
-      whereIn: sandbox.stub().callsFake((_col: string, values: unknown[]) => {
+      whereIn: vi.fn().mockImplementation((_col: string, values: unknown[]) => {
         bookmarkWhereInCalls.push(values)
         return bookmarksQuery
       }),
-      delete: sandbox.stub().callsFake(async () => {
+      delete: vi.fn().mockImplementation(async () => {
         bookmarkDeleteCount += 1
         await Promise.resolve()
         return 0
       }),
     }
-    knexFnStub = sandbox.stub().callsFake((table: string) => {
+    knexFnStub = vi.fn().mockImplementation((table: string) => {
       if (table === 'pictures') return picturesQuery
       if (table === 'bookmarks') return bookmarksQuery
       throw new Error(`Unexpected knex table: ${table}`)
@@ -63,7 +65,7 @@ describe('sync/incrementalsync incrementalRemovePicturesBulk()', () => {
   })
 
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('when given an empty list of paths', () => {
@@ -107,11 +109,11 @@ describe('sync/incrementalsync incrementalRemovePicturesBulk()', () => {
     })
     it('should call whereIn on the path column for pictures', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/a.jpg'])
-      expect(picturesQuery.whereIn.firstCall.args[0]).toBe('path')
+      expect(picturesQuery.whereIn.mock.calls[0]?.[0]).toBe('path')
     })
     it('should call whereIn on the path column for bookmarks', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, ['/a.jpg'])
-      expect(bookmarksQuery.whereIn.firstCall.args[0]).toBe('path')
+      expect(bookmarksQuery.whereIn.mock.calls[0]?.[0]).toBe('path')
     })
   })
 })

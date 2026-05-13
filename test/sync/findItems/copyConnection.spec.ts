@@ -1,28 +1,25 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { Imports } from '#sync/findItems.js'
 import { cast } from '#testutils/typeGuards.js'
 import type { Knex } from 'knex'
 import type { PoolClient } from 'pg'
 
-const sandbox = Sinon.createSandbox()
-
 describe('sync/findItems copy connection helpers', () => {
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('acquireCopyConnection()', () => {
     it('should delegate to knex.client.acquireConnection', async () => {
-      const acquireStub = sandbox.stub().resolves('THE_CLIENT')
+      const acquireStub = vi.fn().mockResolvedValue('THE_CLIENT')
       const knexFake = cast<Knex>({ client: { acquireConnection: acquireStub } })
       await Imports.acquireCopyConnection(knexFake)
-      expect(acquireStub.callCount).toBe(1)
+      expect(acquireStub.mock.calls.length).toBe(1)
     })
     it('should return whatever knex.client.acquireConnection resolves with', async () => {
       const expected = { marker: 'pg-client' }
-      const knexFake = cast<Knex>({ client: { acquireConnection: sandbox.stub().resolves(expected) } })
+      const knexFake = cast<Knex>({ client: { acquireConnection: vi.fn().mockResolvedValue(expected) } })
       const result = await Imports.acquireCopyConnection(knexFake)
       expect(result).toBe(expected)
     })
@@ -30,17 +27,17 @@ describe('sync/findItems copy connection helpers', () => {
 
   describe('releaseCopyConnection()', () => {
     it('should delegate to knex.client.releaseConnection', async () => {
-      const releaseStub = sandbox.stub().resolves()
+      const releaseStub = vi.fn().mockResolvedValue(undefined)
       const knexFake = cast<Knex>({ client: { releaseConnection: releaseStub } })
       await Imports.releaseCopyConnection(knexFake, cast<PoolClient>({}))
-      expect(releaseStub.callCount).toBe(1)
+      expect(releaseStub.mock.calls.length).toBe(1)
     })
     it('should hand back the same client that was acquired', async () => {
-      const releaseStub = sandbox.stub().resolves()
+      const releaseStub = vi.fn().mockResolvedValue(undefined)
       const knexFake = cast<Knex>({ client: { releaseConnection: releaseStub } })
       const client = cast<PoolClient>({ marker: 'client' })
       await Imports.releaseCopyConnection(knexFake, client)
-      expect(releaseStub.firstCall.args[0]).toBe(client)
+      expect(releaseStub.mock.calls[0]?.[0]).toBe(client)
     })
   })
 })

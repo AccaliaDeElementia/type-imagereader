@@ -1,10 +1,8 @@
 'use sanity'
 
 import { incrementalAddPicturesBulk } from '#sync/incrementalsync.js'
-import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/typeGuards.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 interface PictureRow {
   folder: string
@@ -23,38 +21,50 @@ describe('sync/incrementalsync incrementalAddPicturesBulk()', () => {
   let folderChunks: FolderRow[][] = []
 
   let picturesInsertQuery = {
-    insert: sandbox.stub().returnsThis(),
-    onConflict: sandbox.stub().returnsThis(),
-    ignore: sandbox.stub().resolves(),
+    insert: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    ignore: vi.fn().mockResolvedValue(undefined),
   }
   let foldersInsertQuery = {
-    insert: sandbox.stub().returnsThis(),
-    onConflict: sandbox.stub().returnsThis(),
-    ignore: sandbox.stub().resolves(),
+    insert: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    ignore: vi.fn().mockResolvedValue(undefined),
   }
-  let knexFnStub = sandbox.stub()
+  let knexFnStub: MockInstance = vi.fn()
   let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
     pictureChunks = []
     folderChunks = []
     picturesInsertQuery = {
-      insert: sandbox.stub().callsFake((chunk: PictureRow[]) => {
+      insert: vi.fn().mockImplementation((chunk: PictureRow[]) => {
         pictureChunks.push(chunk)
         return picturesInsertQuery
       }),
-      onConflict: sandbox.stub().returnsThis(),
-      ignore: sandbox.stub().resolves(),
+      onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      ignore: vi.fn().mockResolvedValue(undefined),
     }
     foldersInsertQuery = {
-      insert: sandbox.stub().callsFake((chunk: FolderRow[]) => {
+      insert: vi.fn().mockImplementation((chunk: FolderRow[]) => {
         folderChunks.push(chunk)
         return foldersInsertQuery
       }),
-      onConflict: sandbox.stub().returnsThis(),
-      ignore: sandbox.stub().resolves(),
+      onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      ignore: vi.fn().mockResolvedValue(undefined),
     }
-    knexFnStub = sandbox.stub().callsFake((table: string) => {
+    knexFnStub = vi.fn().mockImplementation((table: string) => {
       if (table === 'pictures') return picturesInsertQuery
       if (table === 'folders') return foldersInsertQuery
       throw new Error(`Unexpected knex table: ${table}`)
@@ -67,17 +77,17 @@ describe('sync/incrementalsync incrementalAddPicturesBulk()', () => {
   })
 
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('when given an empty list of paths', () => {
     it('should not call pictures.insert', async () => {
       await incrementalAddPicturesBulk(knexFnFake, [])
-      expect(picturesInsertQuery.insert.callCount).toBe(0)
+      expect(picturesInsertQuery.insert.mock.calls.length).toBe(0)
     })
     it('should not call folders.insert', async () => {
       await incrementalAddPicturesBulk(knexFnFake, [])
-      expect(foldersInsertQuery.insert.callCount).toBe(0)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(0)
     })
   })
 
@@ -104,11 +114,11 @@ describe('sync/incrementalsync incrementalAddPicturesBulk()', () => {
     })
     it('should call onConflict with path on the picture insert', async () => {
       await incrementalAddPicturesBulk(knexFnFake, ['/comics/page.jpg'])
-      expect(picturesInsertQuery.onConflict.firstCall.args).toEqual(['path'])
+      expect(picturesInsertQuery.onConflict.mock.calls[0]).toEqual(['path'])
     })
     it('should call ignore on the picture insert (not merge)', async () => {
       await incrementalAddPicturesBulk(knexFnFake, ['/comics/page.jpg'])
-      expect(picturesInsertQuery.ignore.callCount).toBeGreaterThan(0)
+      expect(picturesInsertQuery.ignore.mock.calls.length).toBeGreaterThan(0)
     })
     it('should bulk-insert one folder row for the parent folder', async () => {
       await incrementalAddPicturesBulk(knexFnFake, ['/comics/page.jpg'])
@@ -116,11 +126,11 @@ describe('sync/incrementalsync incrementalAddPicturesBulk()', () => {
     })
     it('should call onConflict with path on the folder insert', async () => {
       await incrementalAddPicturesBulk(knexFnFake, ['/comics/page.jpg'])
-      expect(foldersInsertQuery.onConflict.firstCall.args).toEqual(['path'])
+      expect(foldersInsertQuery.onConflict.mock.calls[0]).toEqual(['path'])
     })
     it('should call ignore on the folder insert (not merge)', async () => {
       await incrementalAddPicturesBulk(knexFnFake, ['/comics/page.jpg'])
-      expect(foldersInsertQuery.ignore.callCount).toBeGreaterThan(0)
+      expect(foldersInsertQuery.ignore.mock.calls.length).toBeGreaterThan(0)
     })
   })
 
@@ -131,7 +141,7 @@ describe('sync/incrementalsync incrementalAddPicturesBulk()', () => {
     })
     it('should issue exactly one pictures.insert call (single chunk)', async () => {
       await incrementalAddPicturesBulk(knexFnFake, ['/comics/page1.jpg', '/comics/page2.jpg', '/comics/page3.jpg'])
-      expect(picturesInsertQuery.insert.callCount).toBe(1)
+      expect(picturesInsertQuery.insert.mock.calls.length).toBe(1)
     })
     it('should de-duplicate the parent folder row', async () => {
       await incrementalAddPicturesBulk(knexFnFake, ['/comics/page1.jpg', '/comics/page2.jpg', '/comics/page3.jpg'])

@@ -2,10 +2,8 @@
 
 import { incrementalEnsureFoldersBulk } from '#sync/incrementalsync.js'
 import { toSortKey } from '#sync/helpers.js'
-import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/typeGuards.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 interface FolderRow {
   folder: string
@@ -16,24 +14,30 @@ interface FolderRow {
 describe('sync/incrementalsync incrementalEnsureFoldersBulk()', () => {
   let folderChunks: FolderRow[][] = []
   let foldersInsertQuery = {
-    insert: sandbox.stub().returnsThis(),
-    onConflict: sandbox.stub().returnsThis(),
-    ignore: sandbox.stub().resolves(),
+    insert: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    ignore: vi.fn().mockResolvedValue(undefined),
   }
-  let knexFnStub = sandbox.stub()
+  let knexFnStub: MockInstance = vi.fn()
   let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
     folderChunks = []
     foldersInsertQuery = {
-      insert: sandbox.stub().callsFake((chunk: FolderRow[]) => {
+      insert: vi.fn().mockImplementation((chunk: FolderRow[]) => {
         folderChunks.push(chunk)
         return foldersInsertQuery
       }),
-      onConflict: sandbox.stub().returnsThis(),
-      ignore: sandbox.stub().resolves(),
+      onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      ignore: vi.fn().mockResolvedValue(undefined),
     }
-    knexFnStub = sandbox.stub().callsFake((table: string) => {
+    knexFnStub = vi.fn().mockImplementation((table: string) => {
       if (table === 'folders') return foldersInsertQuery
       throw new Error(`Unexpected knex table: ${table}`)
     })
@@ -45,20 +49,20 @@ describe('sync/incrementalsync incrementalEnsureFoldersBulk()', () => {
   })
 
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('when given an empty list', () => {
     it('should not call folders.insert', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, [])
-      expect(foldersInsertQuery.insert.callCount).toBe(0)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(0)
     })
   })
 
   describe('when given only the root folder', () => {
     it('should not call folders.insert (root sentinel is implicit)', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/'])
-      expect(foldersInsertQuery.insert.callCount).toBe(0)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(0)
     })
   })
 
@@ -85,11 +89,11 @@ describe('sync/incrementalsync incrementalEnsureFoldersBulk()', () => {
     })
     it('should call onConflict with path', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(foldersInsertQuery.onConflict.firstCall.args).toEqual(['path'])
+      expect(foldersInsertQuery.onConflict.mock.calls[0]).toEqual(['path'])
     })
     it('should call ignore (not merge)', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/comics/'])
-      expect(foldersInsertQuery.ignore.callCount).toBeGreaterThan(0)
+      expect(foldersInsertQuery.ignore.mock.calls.length).toBeGreaterThan(0)
     })
   })
 
@@ -112,7 +116,7 @@ describe('sync/incrementalsync incrementalEnsureFoldersBulk()', () => {
   describe('when given many folders', () => {
     it('should issue one bulk insert call for the chunk', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, ['/a/', '/b/', '/c/'])
-      expect(foldersInsertQuery.insert.callCount).toBe(1)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(1)
     })
   })
 })

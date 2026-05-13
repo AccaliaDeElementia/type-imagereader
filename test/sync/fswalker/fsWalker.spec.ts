@@ -1,54 +1,50 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 
 import { fsWalker, Imports, Fswalker } from '#sync/fswalker.js'
 import { eventuallyRejects } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('sync/fswalker fsWalker()', () => {
-  let readdirSpy = sandbox.stub()
+  let readdirSpy: MockInstance = vi.fn()
   const originalConcurrency = Fswalker.concurrency
   beforeEach(() => {
-    readdirSpy = sandbox.stub(Imports, 'readdir')
-    readdirSpy.resolves([])
+    readdirSpy = vi.spyOn(Imports, 'readdir').mockResolvedValue([])
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     Fswalker.concurrency = originalConcurrency
   })
   it('should call readdir starting at root', async () => {
     await fsWalker('/foo/bar/baz', async () => {
       await Promise.resolve()
     })
-    expect(readdirSpy.callCount).toBe(1)
+    expect(readdirSpy.mock.calls.length).toBe(1)
   })
   it('should call the item callback once for root node', async () => {
-    readdirSpy.resolves([
+    readdirSpy.mockResolvedValue([
       {
         name: 'foo.png',
         isDirectory: () => false,
       },
     ])
-    const spy = sandbox.stub()
-    spy.resolves()
+    const spy = vi.fn()
+    spy.mockResolvedValue(undefined)
     await fsWalker('/bar/baz', spy)
-    expect(spy.callCount).toBe(1)
+    expect(spy.mock.calls.length).toBe(1)
   })
   it('should call the item callback with expected items for root node', async () => {
-    readdirSpy.resolves([
+    readdirSpy.mockResolvedValue([
       {
         name: 'foo.png',
         isDirectory: () => false,
       },
     ])
-    const spy = sandbox.stub()
-    spy.resolves()
+    const spy = vi.fn()
+    spy.mockResolvedValue(undefined)
     await fsWalker('/bar/baz', spy)
-    expect(spy.firstCall.args[0]).toEqual([
+    expect(spy.mock.calls[0]?.[0]).toEqual([
       {
         path: '/foo.png',
         isFile: true,
@@ -56,28 +52,28 @@ describe('sync/fswalker fsWalker()', () => {
     ])
   })
   it('should call the item callback twice when folder found', async () => {
-    readdirSpy.onFirstCall().resolves([
+    readdirSpy.mockResolvedValueOnce([
       {
         name: 'foo.png',
         isDirectory: () => true,
       },
     ])
-    const spy = sandbox.stub()
-    spy.resolves()
+    const spy = vi.fn()
+    spy.mockResolvedValue(undefined)
     await fsWalker('/bar/baz', spy)
-    expect(spy.callCount).toBe(2)
+    expect(spy.mock.calls.length).toBe(2)
   })
   it('should add folder to list', async () => {
-    readdirSpy.onFirstCall().resolves([
+    readdirSpy.mockResolvedValueOnce([
       {
         name: 'foo.png',
         isDirectory: () => true,
       },
     ])
-    const spy = sandbox.stub()
-    spy.resolves()
+    const spy = vi.fn()
+    spy.mockResolvedValue(undefined)
     await fsWalker('/bar/baz', spy)
-    expect(spy.firstCall.args[0]).toEqual([
+    expect(spy.mock.calls[0]?.[0]).toEqual([
       {
         path: '/foo.png',
         isFile: false,
@@ -85,95 +81,95 @@ describe('sync/fswalker fsWalker()', () => {
     ])
   })
   it('should call the item callback once when filtering unexpected filetype', async () => {
-    readdirSpy.resolves([
+    readdirSpy.mockResolvedValue([
       {
         name: 'foo.txt',
         isDirectory: () => false,
       },
     ])
-    const spy = sandbox.stub()
-    spy.resolves()
+    const spy = vi.fn()
+    spy.mockResolvedValue(undefined)
     await fsWalker('/bar/baz', spy)
-    expect(spy.callCount).toBe(1)
+    expect(spy.mock.calls.length).toBe(1)
   })
   it('should filter unexpected filetype', async () => {
-    readdirSpy.resolves([
+    readdirSpy.mockResolvedValue([
       {
         name: 'foo.txt',
         isDirectory: () => false,
       },
     ])
-    const spy = sandbox.stub()
-    spy.resolves()
+    const spy = vi.fn()
+    spy.mockResolvedValue(undefined)
     await fsWalker('/bar/baz', spy)
-    expect(spy.firstCall.args[0]).toEqual([])
+    expect(spy.mock.calls[0]?.[0]).toEqual([])
   })
   const upperCaseExtensions = ['JPG', 'JPEG', 'PNG', 'WEBP', 'GIF', 'SVG', 'TIF', 'TIFF', 'BMP', 'JFIF', 'JPE']
   upperCaseExtensions.forEach((ext) => {
     it(`should accept uppercase .${ext} extension`, async () => {
-      readdirSpy.resolves([{ name: `foo.${ext}`, isDirectory: () => false }])
-      const spy = sandbox.stub().resolves()
+      readdirSpy.mockResolvedValue([{ name: `foo.${ext}`, isDirectory: () => false }])
+      const spy = vi.fn().mockResolvedValue(undefined)
       await fsWalker('/bar/baz', spy)
-      expect(spy.firstCall.args[0]).toEqual([{ path: `/foo.${ext}`, isFile: true }])
+      expect(spy.mock.calls[0]?.[0]).toEqual([{ path: `/foo.${ext}`, isFile: true }])
     })
   })
   const mixedCaseExtensions = ['Jpg', 'jPeG', 'Png', 'WebP', 'Gif', 'Svg', 'Tif', 'tIfF', 'Bmp', 'jFiF', 'Jpe']
   mixedCaseExtensions.forEach((ext) => {
     it(`should accept mixed-case .${ext} extension`, async () => {
-      readdirSpy.resolves([{ name: `foo.${ext}`, isDirectory: () => false }])
-      const spy = sandbox.stub().resolves()
+      readdirSpy.mockResolvedValue([{ name: `foo.${ext}`, isDirectory: () => false }])
+      const spy = vi.fn().mockResolvedValue(undefined)
       await fsWalker('/bar/baz', spy)
-      expect(spy.firstCall.args[0]).toEqual([{ path: `/foo.${ext}`, isFile: true }])
+      expect(spy.mock.calls[0]?.[0]).toEqual([{ path: `/foo.${ext}`, isFile: true }])
     })
   })
   it('should propagate rejection from eachItem callback', async () => {
-    readdirSpy.resolves([{ name: 'foo.png', isDirectory: () => false }])
+    readdirSpy.mockResolvedValue([{ name: 'foo.png', isDirectory: () => false }])
     const error = new Error('callback failed')
-    const err = await eventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(error)))
+    const err = await eventuallyRejects(fsWalker('/bar/baz', vi.fn().mockRejectedValue(error)))
     expect(err).toBe(error)
   })
   it('should stop walking when eachItem rejects mid-walk', async () => {
-    readdirSpy.onFirstCall().resolves([
+    readdirSpy.mockResolvedValueOnce([
       { name: 'subdir', isDirectory: () => true },
       { name: 'foo.png', isDirectory: () => false },
     ])
-    readdirSpy.onSecondCall().resolves([])
-    await eventuallyRejects(fsWalker('/bar/baz', sandbox.stub().rejects(new Error('stop'))))
-    expect(readdirSpy.callCount).toBe(1)
+    readdirSpy.mockResolvedValueOnce([])
+    await eventuallyRejects(fsWalker('/bar/baz', vi.fn().mockRejectedValue(new Error('stop'))))
+    expect(readdirSpy.mock.calls.length).toBe(1)
   })
   it('should preserve a single error when concurrent peer workers both reject', async () => {
-    readdirSpy.onFirstCall().resolves([
+    readdirSpy.mockResolvedValueOnce([
       { name: 'subA', isDirectory: () => true },
       { name: 'subB', isDirectory: () => true },
     ])
-    readdirSpy.onSecondCall().rejects(new Error('errA'))
-    readdirSpy.onThirdCall().rejects(new Error('errB'))
-    const err = await eventuallyRejects(fsWalker('/bar/baz', sandbox.stub().resolves()))
+    readdirSpy.mockRejectedValueOnce(new Error('errA'))
+    readdirSpy.mockRejectedValueOnce(new Error('errB'))
+    const err = await eventuallyRejects(fsWalker('/bar/baz', vi.fn().mockResolvedValue(undefined)))
     expect(err.message).toMatch(/^err[AB]$/v)
   })
   it('should call the item callback once when hidden folder present', async () => {
-    readdirSpy.onFirstCall().resolves([
+    readdirSpy.mockResolvedValueOnce([
       {
         name: '.foo.png',
         isDirectory: () => true,
       },
     ])
-    const spy = sandbox.stub()
-    spy.resolves()
+    const spy = vi.fn()
+    spy.mockResolvedValue(undefined)
     await fsWalker('/bar/baz', spy)
-    expect(spy.callCount).toBe(1)
+    expect(spy.mock.calls.length).toBe(1)
   })
   it('should ignore hidden folder', async () => {
-    readdirSpy.onFirstCall().resolves([
+    readdirSpy.mockResolvedValueOnce([
       {
         name: '.foo.png',
         isDirectory: () => true,
       },
     ])
-    const spy = sandbox.stub()
-    spy.resolves()
+    const spy = vi.fn()
+    spy.mockResolvedValue(undefined)
     await fsWalker('/bar/baz', spy)
-    expect(spy.firstCall.args[0]).toEqual([])
+    expect(spy.mock.calls[0]?.[0]).toEqual([])
   })
   it('should run multiple readdirs in flight once the queue has siblings', async () => {
     Fswalker.concurrency = 3
@@ -181,7 +177,7 @@ describe('sync/fswalker fsWalker()', () => {
     const release: Array<() => void> = []
     let drain = false
     const subdirs = ['a', 'b', 'c', 'd', 'e'].map((name) => ({ name, isDirectory: () => true }))
-    readdirSpy.callsFake(async (path: string) => {
+    readdirSpy.mockImplementation(async (path: string) => {
       if (path === '/root/') {
         return subdirs
       }
@@ -197,7 +193,7 @@ describe('sync/fswalker fsWalker()', () => {
       inFlight.count -= 1
       return []
     })
-    const walk = fsWalker('/root', sandbox.stub().resolves())
+    const walk = fsWalker('/root', vi.fn().mockResolvedValue(undefined))
     while (inFlight.count < 3) {
       // eslint-disable-next-line no-await-in-loop -- waiting for workers to saturate
       await yieldMacro()
@@ -209,15 +205,15 @@ describe('sync/fswalker fsWalker()', () => {
   })
   it('should process all nested directories when concurrency exceeds queue depth', async () => {
     Fswalker.concurrency = 4
-    readdirSpy.onCall(0).resolves([
+    readdirSpy.mockResolvedValueOnce([
       { name: 'a', isDirectory: () => true },
       { name: 'b', isDirectory: () => true },
       { name: 'c', isDirectory: () => true },
     ])
-    readdirSpy.onCall(1).resolves([])
-    readdirSpy.onCall(2).resolves([])
-    readdirSpy.onCall(3).resolves([])
-    await fsWalker('/root', sandbox.stub().resolves())
-    expect(readdirSpy.callCount).toBe(4)
+    readdirSpy.mockResolvedValueOnce([])
+    readdirSpy.mockResolvedValueOnce([])
+    readdirSpy.mockResolvedValueOnce([])
+    await fsWalker('/root', vi.fn().mockResolvedValue(undefined))
+    expect(readdirSpy.mock.calls.length).toBe(4)
   })
 })

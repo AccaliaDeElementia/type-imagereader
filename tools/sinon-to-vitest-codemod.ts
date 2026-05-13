@@ -130,6 +130,19 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
       replace: '.mockReturnValueOnce(',
       label: '.onNthCall().returns(v) -> .mockReturnValueOnce(v)',
     },
+    // `.onNthCall().callsFake(fn)` → `.mockImplementationOnce(fn)`. Must run BEFORE the
+    // general `.callsFake(` rewrite, otherwise we'd be left with `.onNthCall().mockImplementation(`
+    // which is invalid (sinon's onCall accessor doesn't exist on vitest mocks).
+    {
+      pattern: /\.on(?:First|Second|Third|Fourth)Call\(\)\s*\.\s*callsFake\(/g,
+      replace: '.mockImplementationOnce(',
+      label: '.onNthCall().callsFake(fn) -> .mockImplementationOnce(fn)',
+    },
+    {
+      pattern: /\.onCall\(\d+\)\s*\.\s*callsFake\(/g,
+      replace: '.mockImplementationOnce(',
+      label: '.onCall(N).callsFake(fn) -> .mockImplementationOnce(fn)',
+    },
     // No-arg forms first — sinon's bare .resolves()/.rejects() resolved/rejected to undefined.
     {
       pattern: /\.on(?:First|Second|Third|Fourth)Call\(\)\.resolves\(\s*\)/g,

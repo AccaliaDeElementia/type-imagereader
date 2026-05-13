@@ -1,13 +1,9 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { findSyncItemsViaInsert, type InsertFallbackHelpers } from '#sync/syncItemsDialect.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { noopLogger } from '#testutils/debug.js'
 import type { Debugger } from 'debug'
-
-const sandbox = Sinon.createSandbox()
 
 const FILE_COUNT = 7
 const DIR_COUNT = 3
@@ -32,40 +28,40 @@ const buildHelpers = (overrides: Partial<InsertFallbackHelpers> = {}): InsertFal
 
 describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   it('should return aggregated counts from buildSyncItemRows', async () => {
-    const knex = stubToKnex(sandbox.stub())
+    const knex = stubToKnex(vi.fn())
     const result = await findSyncItemsViaInsert(knex, noopLogger, buildHelpers())
     expect(result).toEqual({ files: FILE_COUNT, dirs: DIR_COUNT })
   })
 
   it('should call knex insert exactly once when one chunk of rows is produced', async () => {
-    const insertSpy = sandbox.stub().resolves()
-    const knexSpy = sandbox.stub().returns({ insert: insertSpy })
+    const insertSpy = vi.fn().mockResolvedValue(undefined)
+    const knexSpy = vi.fn().mockReturnValue({ insert: insertSpy })
     const helpers = buildHelpers({
       buildSyncItemRows: () => ({ files: 1, dirs: 0, rows: [sampleRow] }),
     })
     await findSyncItemsViaInsert(stubToKnex(knexSpy), noopLogger, helpers)
-    expect(insertSpy.callCount).toBe(1)
+    expect(insertSpy.mock.calls.length).toBe(1)
   })
 
   it('should pass getDataDir() result as fsWalker root', async () => {
-    const fsWalkerSpy = sandbox.stub().resolves()
-    const knex = stubToKnex(sandbox.stub())
+    const fsWalkerSpy = vi.fn().mockResolvedValue(undefined)
+    const knex = stubToKnex(vi.fn())
     await findSyncItemsViaInsert(
       knex,
       noopLogger,
       buildHelpers({ fsWalker: fsWalkerSpy, getDataDir: () => '/custom/data' }),
     )
-    expect(fsWalkerSpy.firstCall.args[0]).toBe('/custom/data')
+    expect(fsWalkerSpy.mock.calls[0]?.[0]).toBe('/custom/data')
   })
 
   it('should pass items from fsWalker through to buildSyncItemRows', async () => {
     const items = [{ path: '/a.jpg', isFile: true }]
-    const buildRowsSpy = sandbox.stub().returns({ files: 0, dirs: 0, rows: [] })
-    const knex = stubToKnex(sandbox.stub())
+    const buildRowsSpy = vi.fn().mockReturnValue({ files: 0, dirs: 0, rows: [] })
+    const knex = stubToKnex(vi.fn())
     await findSyncItemsViaInsert(
       knex,
       noopLogger,
@@ -76,12 +72,12 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         buildSyncItemRows: buildRowsSpy,
       }),
     )
-    expect(buildRowsSpy.firstCall.args[0]).toBe(items)
+    expect(buildRowsSpy.mock.calls[0]?.[0]).toBe(items)
   })
 
   it('should request chunks of size SQLITE_DB_CHUNK_SIZE', async () => {
-    const chunkSpy = sandbox.stub().returns([[sampleRow]])
-    const knex = stubToKnex(sandbox.stub().returns({ insert: sandbox.stub().resolves() }))
+    const chunkSpy = vi.fn().mockReturnValue([[sampleRow]])
+    const knex = stubToKnex(vi.fn().mockReturnValue({ insert: vi.fn().mockResolvedValue(undefined) }))
     await findSyncItemsViaInsert(
       knex,
       noopLogger,
@@ -90,21 +86,21 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         chunk: chunkSpy,
       }),
     )
-    expect(chunkSpy.firstCall.args[1]).toBe(SQLITE_DB_CHUNK_SIZE)
+    expect(chunkSpy.mock.calls[0]?.[1]).toBe(SQLITE_DB_CHUNK_SIZE)
   })
 
   it("should insert into the 'syncitems' table", async () => {
-    const knexSpy = sandbox.stub().returns({ insert: sandbox.stub().resolves() })
+    const knexSpy = vi.fn().mockReturnValue({ insert: vi.fn().mockResolvedValue(undefined) })
     await findSyncItemsViaInsert(
       stubToKnex(knexSpy),
       noopLogger,
       buildHelpers({ buildSyncItemRows: () => ({ files: 1, dirs: 0, rows: [sampleRow] }) }),
     )
-    expect(knexSpy.firstCall.args[0]).toBe('syncitems')
+    expect(knexSpy.mock.calls[0]?.[0]).toBe('syncitems')
   })
 
   it('should accumulate files and dirs across multiple fsWalker iterations', async () => {
-    const knex = stubToKnex(sandbox.stub())
+    const knex = stubToKnex(vi.fn())
     const result = await findSyncItemsViaInsert(
       knex,
       noopLogger,
@@ -120,8 +116,8 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
 
   it('should call insert once per chunk when chunk() returns multiple chunks', async () => {
     const CHUNK_COUNT = 3
-    const insertSpy = sandbox.stub().resolves()
-    const knexSpy = sandbox.stub().returns({ insert: insertSpy })
+    const insertSpy = vi.fn().mockResolvedValue(undefined)
+    const knexSpy = vi.fn().mockReturnValue({ insert: insertSpy })
     await findSyncItemsViaInsert(
       stubToKnex(knexSpy),
       noopLogger,
@@ -130,13 +126,13 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         chunk: <T>(arr: T[]): T[][] => Array.from({ length: CHUNK_COUNT }, () => arr),
       }),
     )
-    expect(insertSpy.callCount).toBe(CHUNK_COUNT)
+    expect(insertSpy.mock.calls.length).toBe(CHUNK_COUNT)
   })
 
   it('should log "Found N dirs (P pending) and F files" on the first iteration', async () => {
     const PENDING = 5
-    const loggerSpy = sandbox.stub()
-    const knex = stubToKnex(sandbox.stub())
+    const loggerSpy = vi.fn()
+    const knex = stubToKnex(vi.fn())
     await findSyncItemsViaInsert(
       knex,
       cast<Debugger>(loggerSpy),
@@ -146,12 +142,12 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         },
       }),
     )
-    expect(loggerSpy.firstCall.args[0]).toBe(`Found ${DIR_COUNT} dirs (${PENDING} pending) and ${FILE_COUNT} files`)
+    expect(loggerSpy.mock.calls[0]?.[0]).toBe(`Found ${DIR_COUNT} dirs (${PENDING} pending) and ${FILE_COUNT} files`)
   })
 
   it('should not log on the second iteration', async () => {
-    const loggerSpy = sandbox.stub()
-    const knex = stubToKnex(sandbox.stub())
+    const loggerSpy = vi.fn()
+    const knex = stubToKnex(vi.fn())
     await findSyncItemsViaInsert(
       knex,
       cast<Debugger>(loggerSpy),
@@ -162,14 +158,14 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         },
       }),
     )
-    expect(loggerSpy.callCount).toBe(1)
+    expect(loggerSpy.mock.calls.length).toBe(1)
   })
 
   it('should log again every LOGGING_INTERVAL iterations', async () => {
     const ITERATIONS = LOGGING_INTERVAL + 1
     const EXPECTED_LOG_COUNT = 2
-    const loggerSpy = sandbox.stub()
-    const knex = stubToKnex(sandbox.stub())
+    const loggerSpy = vi.fn()
+    const knex = stubToKnex(vi.fn())
     await findSyncItemsViaInsert(
       knex,
       cast<Debugger>(loggerSpy),
@@ -185,6 +181,6 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
         },
       }),
     )
-    expect(loggerSpy.callCount).toBe(EXPECTED_LOG_COUNT)
+    expect(loggerSpy.mock.calls.length).toBe(EXPECTED_LOG_COUNT)
   })
 })
