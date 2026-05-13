@@ -1,21 +1,19 @@
 'use sanity'
 
 import { Imports } from '#routes/weather.js'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
-
 describe('routes/weather getLatestSunrise()', () => {
   let tz: string | undefined = undefined
 
   beforeEach(() => {
     tz = process.env.TZ
     process.env.TZ = 'UTC'
-    sandbox.useFakeTimers(946684800000) // 2000-01-01T00:00:00.000Z
+    vi.useFakeTimers()
+    vi.setSystemTime(946684800000) // 2000-01-01T00:00:00.000Z
     delete process.env.NIGHT_NOT_AFTER
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.useRealTimers()
+    vi.restoreAllMocks()
     process.env.TZ = tz
     delete process.env.NIGHT_NOT_AFTER
   })

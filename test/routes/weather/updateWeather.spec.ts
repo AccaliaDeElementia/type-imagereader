@@ -9,10 +9,8 @@ import {
   type OpenWeatherData,
   type WeatherResults,
 } from '#routes/weather.js'
-import Sinon from 'sinon'
 import { eventuallyRejects } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('routes/weather updateWeather', () => {
   let weatherData: OpenWeatherData = {
@@ -20,9 +18,9 @@ describe('routes/weather updateWeather', () => {
     weather: [{ main: 'weatherMain', icon: 'weatherIcon' }],
     sys: { sunrise: 123.5, sunset: 455.5 },
   }
-  let getLatestSunriseStub = sandbox.stub()
-  let getEarliestSunsetStub = sandbox.stub()
-  let getWeatherStub = sandbox.stub()
+  let getLatestSunriseStub: MockInstance = vi.fn()
+  let getEarliestSunsetStub: MockInstance = vi.fn()
+  let getWeatherStub: MockInstance = vi.fn()
 
   beforeEach(() => {
     weatherData = {
@@ -30,9 +28,9 @@ describe('routes/weather updateWeather', () => {
       weather: [{ main: 'weatherMain', icon: 'weatherIcon' }],
       sys: { sunrise: 123000, sunset: 456000 },
     }
-    getLatestSunriseStub = sandbox.stub(Imports, 'getLatestSunrise').returns(123000)
-    getEarliestSunsetStub = sandbox.stub(Imports, 'getEarliestSunset').returns(456000)
-    getWeatherStub = sandbox.stub(Internals, 'getWeather').resolves(weatherData)
+    getLatestSunriseStub = vi.spyOn(Imports, 'getLatestSunrise').mockReturnValue(123000)
+    getEarliestSunsetStub = vi.spyOn(Imports, 'getEarliestSunset').mockReturnValue(456000)
+    getWeatherStub = vi.spyOn(Internals, 'getWeather').mockResolvedValue(weatherData)
     Object.assign(Weather, {
       temp: -4.1,
       pressure: 1000.0,
@@ -44,19 +42,23 @@ describe('routes/weather updateWeather', () => {
     })
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('when sun-time helpers throw', () => {
     it('should reject when getEarliestSunset throws', async () => {
       const err = new Error('FOO!')
-      getEarliestSunsetStub.throws(err)
+      getEarliestSunsetStub.mockImplementation(() => {
+        throw err
+      })
       const result = await eventuallyRejects(updateWeather())
       expect(result).toBe(err)
     })
     it('should reject when getLatestSunrise throws', async () => {
       const err = new Error('FOO!')
-      getLatestSunriseStub.throws(err)
+      getLatestSunriseStub.mockImplementation(() => {
+        throw err
+      })
       const result = await eventuallyRejects(updateWeather())
       expect(result).toBe(err)
     })
@@ -183,8 +185,14 @@ describe('routes/weather updateWeather', () => {
   })
 
   const failureModes: Array<[string, () => void]> = [
-    ['rejects', () => getWeatherStub.rejects(new Error('foo!'))],
-    ['throws', () => getWeatherStub.throws(new Error('foo!'))],
+    ['rejects', () => getWeatherStub.mockRejectedValue(new Error('foo!'))],
+    [
+      'throws',
+      () =>
+        getWeatherStub.mockImplementation(() => {
+          throw new Error('foo!')
+        }),
+    ],
   ]
   failureModes.forEach(([mode, induceFailure]) => {
     describe(`when getWeather ${mode}`, () => {
@@ -221,49 +229,49 @@ describe('routes/weather updateWeather', () => {
   })
 
   describe('logging when getWeather rejects', () => {
-    let loggerStub = sandbox.stub()
+    let loggerStub: MockInstance = vi.fn()
     beforeEach(() => {
-      loggerStub = sandbox.stub(Imports, 'logger')
+      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
     })
     it('should log the weather-update failure', async () => {
-      getWeatherStub.rejects(new Error('openweather down'))
+      getWeatherStub.mockRejectedValue(new Error('openweather down'))
       await updateWeather()
-      const hasLog = loggerStub.getCalls().some((c) => c.args[0] === 'updateWeather error')
+      const hasLog = loggerStub.mock.calls.some((c) => c[0] === 'updateWeather error')
       expect(hasLog).toBe(true)
     })
     it('should include the rejection error in the log arguments', async () => {
       const err = new Error('openweather down')
-      getWeatherStub.rejects(err)
+      getWeatherStub.mockRejectedValue(err)
       await updateWeather()
-      const logCall = loggerStub.getCalls().find((c) => c.args[0] === 'updateWeather error')
-      expect(logCall?.args[1]).toBe(err)
+      const logCall = loggerStub.mock.calls.find((c) => c[0] === 'updateWeather error')
+      expect(logCall?.[1]).toBe(err)
     })
     it('should log once per failed call even though fields are reset', async () => {
-      getWeatherStub.rejects(new Error('openweather down'))
+      getWeatherStub.mockRejectedValue(new Error('openweather down'))
       await updateWeather()
-      const matching = loggerStub.getCalls().filter((c) => c.args[0] === 'updateWeather error')
+      const matching = loggerStub.mock.calls.filter((c) => c[0] === 'updateWeather error')
       expect(matching).toHaveLength(1)
     })
     it('should log skipped-format when getWeather rejects with WeatherConfigError', async () => {
-      getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
+      getWeatherStub.mockRejectedValue(new WeatherConfigError('no OpenWeather AppId Defined!'))
       await updateWeather()
-      expect(loggerStub.firstCall.args[0]).toBe('updateWeather skipped: %s')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('updateWeather skipped: %s')
     })
     it('should pass the error message string when getWeather rejects with WeatherConfigError', async () => {
-      getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
+      getWeatherStub.mockRejectedValue(new WeatherConfigError('no OpenWeather AppId Defined!'))
       await updateWeather()
-      expect(loggerStub.firstCall.args[1]).toBe('no OpenWeather AppId Defined!')
+      expect(loggerStub.mock.calls[0]?.[1]).toBe('no OpenWeather AppId Defined!')
     })
     it('should not include any Error instance in log args when getWeather rejects with WeatherConfigError', async () => {
-      getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
+      getWeatherStub.mockRejectedValue(new WeatherConfigError('no OpenWeather AppId Defined!'))
       await updateWeather()
-      const hasErrorArg = loggerStub.firstCall.args.some((a: unknown) => a instanceof Error)
+      const hasErrorArg = loggerStub.mock.calls[0]?.some((a: unknown) => a instanceof Error) ?? false
       expect(hasErrorArg).toBe(false)
     })
     it('should not log error-format when getWeather rejects with WeatherConfigError', async () => {
-      getWeatherStub.rejects(new WeatherConfigError('no OpenWeather AppId Defined!'))
+      getWeatherStub.mockRejectedValue(new WeatherConfigError('no OpenWeather AppId Defined!'))
       await updateWeather()
-      const hasErrorFormat = loggerStub.getCalls().some((c) => c.args[0] === 'updateWeather error')
+      const hasErrorFormat = loggerStub.mock.calls.some((c) => c[0] === 'updateWeather error')
       expect(hasErrorFormat).toBe(false)
     })
   })
