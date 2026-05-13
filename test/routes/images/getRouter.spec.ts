@@ -1,16 +1,12 @@
 'use sanity'
 
-import type { Debugger } from 'debug'
-
 import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
 import { CacheStorage, readAndRescaleImage, getRouter, Imports } from '#routes/images.js'
-import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('routes/images export getRouter()', () => {
   const defaultKioskCache = CacheStorage.kioskCache
@@ -19,23 +15,26 @@ describe('routes/images export getRouter()', () => {
   let serverFake = cast<Server>({})
   let websocketsFake = cast<WebSocketServer>({})
   let routerFake = {
-    get: sandbox.stub().returnsThis(),
+    get: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
   }
-  let getRouterStub = sandbox.stub()
-  let loggerStub = sandbox.stub()
+  let getRouterStub: MockInstance = vi.fn()
+  let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
     applicationFake = cast<Application>({})
     serverFake = cast<Server>({})
     websocketsFake = cast<WebSocketServer>({})
     routerFake = {
-      get: sandbox.stub().returnsThis(),
+      get: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
     }
-    getRouterStub = sandbox.stub(Imports, 'Router').returns(cast<Router>(routerFake))
-    loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'logger').value(cast<Debugger>(loggerStub))
+    getRouterStub = vi.spyOn(Imports, 'Router').mockReturnValue(cast<Router>(routerFake))
+    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   afterAll(() => {
     CacheStorage.kioskCache = defaultKioskCache
@@ -43,15 +42,15 @@ describe('routes/images export getRouter()', () => {
   })
   it('should use router import to construct router', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(getRouterStub.callCount).toBe(1)
+    expect(getRouterStub.mock.calls.length).toBe(1)
   })
   it('should call router import with no arguments', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(getRouterStub.firstCall.args).toEqual([])
+    expect(getRouterStub.mock.calls[0]).toEqual([])
   })
   it('should not generate logging messages on construction', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(loggerStub.callCount).toBe(0)
+    expect(loggerStub.mock.calls.length).toBe(0)
   })
   it('should create new kiosk mode image cache', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
@@ -81,12 +80,12 @@ describe('routes/images export getRouter()', () => {
   ]
   it('should register only expected router count', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(routerFake.get.callCount).toBe(routes.length)
+    expect(routerFake.get.mock.calls.length).toBe(routes.length)
   })
   routes.forEach((route) => {
     it(`should register expected router: ${route}`, async () => {
       await getRouter(applicationFake, serverFake, websocketsFake)
-      expect(routerFake.get.calledWith(route)).toBe(true)
+      expect(routerFake.get).toHaveBeenCalledWith(route, expect.anything())
     })
   })
 })

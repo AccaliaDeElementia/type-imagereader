@@ -1,35 +1,31 @@
 'use sanity'
 
-import type { Debugger } from 'debug'
 import { Imports, readImage, ImageData } from '#routes/images.js'
 import { StatusCodes } from 'http-status-codes'
-import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('routes/images readImage()', () => {
-  let fromErrorStub = sandbox.stub()
-  let fromImageStub = sandbox.stub()
-  let readFileStub = sandbox.stub()
-  let isPathTraversalStub = sandbox.stub()
-  let loggerStub = sandbox.stub()
+  let fromErrorStub: MockInstance = vi.fn()
+  let fromImageStub: MockInstance = vi.fn()
+  let readFileStub: MockInstance = vi.fn()
+  let isPathTraversalStub: MockInstance = vi.fn()
+  let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
-    fromErrorStub = sandbox.stub(ImageData, 'fromError')
-    fromImageStub = sandbox.stub(ImageData, 'fromImage')
-    readFileStub = sandbox.stub(Imports, 'readFile').resolves()
-    isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
-    loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'logger').value(cast<Debugger>(loggerStub))
+    fromErrorStub = vi.spyOn(ImageData, 'fromError').mockImplementation(cast(() => undefined))
+    fromImageStub = vi.spyOn(ImageData, 'fromImage').mockImplementation(cast(() => undefined))
+    readFileStub = vi.spyOn(Imports, 'readFile').mockResolvedValue(cast<string>(undefined))
+    isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
+    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
-  const configureReadFile = (stub: Sinon.SinonStub, result: Promise<unknown> | Error): void => {
+  const configureReadFile = (stub: MockInstance, result: Promise<unknown> | Error): void => {
     if (result instanceof Error) {
-      stub.rejects(result)
+      stub.mockRejectedValue(result)
     } else {
-      stub.returns(result)
+      stub.mockReturnValue(result)
     }
   }
 
@@ -81,55 +77,55 @@ describe('routes/images readImage()', () => {
       let result: ImageData = cast<ImageData>({})
       beforeEach(async () => {
         configureReadFile(readFileStub, readFileResult)
-        fromErrorStub.returns(img)
+        fromErrorStub.mockReturnValue(img)
         result = await readImage(path)
       })
       it('should reject with error ImageData', () => {
         expect(result).toBe(img)
       })
       it('should call ImageData.fromError once', () => {
-        expect(fromErrorStub.callCount).toBe(1)
+        expect(fromErrorStub.mock.calls.length).toBe(1)
       })
       it('should call ImageData.fromError with 4 arguments', () => {
-        expect(fromErrorStub.firstCall.args).toHaveLength(4)
+        expect(fromErrorStub.mock.calls[0]).toHaveLength(4)
       })
       it('should reject with expected error code', () => {
-        expect(fromErrorStub.firstCall.args[0]).toBe(errorCode)
+        expect(fromErrorStub.mock.calls[0]?.[0]).toBe(errorCode)
       })
       it('should reject with expected status code', () => {
-        expect(fromErrorStub.firstCall.args[1]).toBe(statusCode)
+        expect(fromErrorStub.mock.calls[0]?.[1]).toBe(statusCode)
       })
       it('should reject with expected error message', () => {
-        expect(fromErrorStub.firstCall.args[2]).toBe(message)
+        expect(fromErrorStub.mock.calls[0]?.[2]).toBe(message)
       })
       it('should reject with expected path', () => {
-        expect(fromErrorStub.firstCall.args[3]).toBe(path)
+        expect(fromErrorStub.mock.calls[0]?.[3]).toBe(path)
       })
     })
   })
 
   it('should call isPathTraversal with the path', async () => {
     await readImage('/foo/bar/image.png')
-    expect(isPathTraversalStub.firstCall.args).toEqual(['/foo/bar/image.png'])
+    expect(isPathTraversalStub.mock.calls[0]).toEqual(['/foo/bar/image.png'])
   })
   it('should return E_NO_TRAVERSE error when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
+    isPathTraversalStub.mockReturnValue(true)
     const img = { img: Math.random() }
-    fromErrorStub.returns(img)
+    fromErrorStub.mockReturnValue(img)
     await readImage('/foo/bar/image.png')
-    expect(fromErrorStub.firstCall.args[0]).toBe('E_NO_TRAVERSE')
+    expect(fromErrorStub.mock.calls[0]?.[0]).toBe('E_NO_TRAVERSE')
   })
   it('should return FORBIDDEN status when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
-    fromErrorStub.returns({})
+    isPathTraversalStub.mockReturnValue(true)
+    fromErrorStub.mockReturnValue({})
     await readImage('/foo/bar/image.png')
-    expect(fromErrorStub.firstCall.args[1]).toBe(StatusCodes.FORBIDDEN)
+    expect(fromErrorStub.mock.calls[0]?.[1]).toBe(StatusCodes.FORBIDDEN)
   })
   it('should not read file when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
-    fromErrorStub.returns({})
+    isPathTraversalStub.mockReturnValue(true)
+    fromErrorStub.mockReturnValue({})
     await readImage('/foo/bar/image.png')
-    expect(readFileStub.callCount).toBe(0)
+    expect(readFileStub.mock.calls.length).toBe(0)
   })
 
   describe('with valid image (.gif)', () => {
@@ -137,30 +133,30 @@ describe('routes/images readImage()', () => {
     const data = Buffer.from('SOME DATA HERE')
     let result: ImageData = cast<ImageData>({})
     beforeEach(async () => {
-      fromImageStub.returns(img)
-      readFileStub.resolves(data)
+      fromImageStub.mockReturnValue(img)
+      readFileStub.mockResolvedValue(data)
       result = await readImage('/foo/bar/image.gif')
     })
     it('should read file', () => {
-      expect(readFileStub.callCount).toBe(1)
+      expect(readFileStub.mock.calls.length).toBe(1)
     })
     it('should read file with expected path', () => {
-      expect(readFileStub.firstCall.args).toEqual(['/data/foo/bar/image.gif'])
+      expect(readFileStub.mock.calls[0]).toEqual(['/data/foo/bar/image.gif'])
     })
     it('should resolve to parsed ImageData', () => {
       expect(result).toBe(img)
     })
     it('should construct ImageData result using ImageData.fromImage', () => {
-      expect(fromImageStub.callCount).toBe(1)
+      expect(fromImageStub.mock.calls.length).toBe(1)
     })
     it('should call fromImage with expected buffered data', () => {
-      expect(fromImageStub.firstCall.args[0]).toBe(data)
+      expect(fromImageStub.mock.calls[0]?.[0]).toBe(data)
     })
     it('should call fromImage with expected extension', () => {
-      expect(fromImageStub.firstCall.args[1]).toBe('gif')
+      expect(fromImageStub.mock.calls[0]?.[1]).toBe('gif')
     })
     it('should call fromImage with expected path', () => {
-      expect(fromImageStub.firstCall.args[2]).toBe('/foo/bar/image.gif')
+      expect(fromImageStub.mock.calls[0]?.[2]).toBe('/foo/bar/image.gif')
     })
   })
 
@@ -168,14 +164,14 @@ describe('routes/images readImage()', () => {
   allowedExtensions.forEach((ext) => {
     it(`should allow .${ext}`, async () => {
       const img = { img: Math.random() }
-      fromImageStub.returns(img)
+      fromImageStub.mockReturnValue(img)
       const result = await readImage(`/foo/bar/image.${ext}`)
       expect(result).toBe(img)
     })
   })
   it('should allow dotfile with valid image extension', async () => {
     const img = { img: Math.random() }
-    fromImageStub.returns(img)
+    fromImageStub.mockReturnValue(img)
     const result = await readImage('/foo/.hidden.jpg')
     expect(result).toBe(img)
   })
@@ -183,10 +179,10 @@ describe('routes/images readImage()', () => {
   it('should join DATA_DIR with the requested path when DATA_DIR is set', async () => {
     process.env.DATA_DIR = '/library/images'
     try {
-      readFileStub.resolves(Buffer.from('SOME DATA HERE'))
-      fromImageStub.returns(cast<ImageData>({}))
+      readFileStub.mockResolvedValue(Buffer.from('SOME DATA HERE'))
+      fromImageStub.mockReturnValue(cast<ImageData>({}))
       await readImage('/foo/bar/image.gif')
-      expect(readFileStub.firstCall.args[0]).toBe('/library/images/foo/bar/image.gif')
+      expect(readFileStub.mock.calls[0]?.[0]).toBe('/library/images/foo/bar/image.gif')
     } finally {
       delete process.env.DATA_DIR
     }
@@ -194,74 +190,74 @@ describe('routes/images readImage()', () => {
 
   describe('logging', () => {
     it('should log path-traversal-blocked format when isPathTraversal returns true', async () => {
-      isPathTraversalStub.returns(true)
-      fromErrorStub.returns({})
+      isPathTraversalStub.mockReturnValue(true)
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.png')
-      expect(loggerStub.firstCall.args[0]).toBe('path traversal blocked: %s')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('path traversal blocked: %s')
     })
 
     it('should log the blocked path when isPathTraversal returns true', async () => {
-      isPathTraversalStub.returns(true)
-      fromErrorStub.returns({})
+      isPathTraversalStub.mockReturnValue(true)
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.png')
-      expect(loggerStub.firstCall.args[1]).toBe('/foo/bar/image.png')
+      expect(loggerStub.mock.calls[0]?.[1]).toBe('/foo/bar/image.png')
     })
 
     it('should log not-an-image format when extension is not allowed', async () => {
-      fromErrorStub.returns({})
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.exe')
-      expect(loggerStub.firstCall.args[0]).toBe('not an image: ext=%s for %s')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('not an image: ext=%s for %s')
     })
 
     it('should log the disallowed extension when extension is not allowed', async () => {
-      fromErrorStub.returns({})
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.exe')
-      expect(loggerStub.firstCall.args[1]).toBe('exe')
+      expect(loggerStub.mock.calls[0]?.[1]).toBe('exe')
     })
 
     it('should log the path when extension is not allowed', async () => {
-      fromErrorStub.returns({})
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.exe')
-      expect(loggerStub.firstCall.args[2]).toBe('/foo/bar/image.exe')
+      expect(loggerStub.mock.calls[0]?.[2]).toBe('/foo/bar/image.exe')
     })
 
     it('should log image-not-found format when readFile rejects', async () => {
-      readFileStub.rejects(new Error('disk failure'))
-      fromErrorStub.returns({})
+      readFileStub.mockRejectedValue(new Error('disk failure'))
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.png')
-      expect(loggerStub.firstCall.args[0]).toBe('image not found: %s (%s)')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('image not found: %s (%s)')
     })
 
     it('should log the missing path when readFile rejects', async () => {
-      readFileStub.rejects(new Error('disk failure'))
-      fromErrorStub.returns({})
+      readFileStub.mockRejectedValue(new Error('disk failure'))
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.png')
-      expect(loggerStub.firstCall.args[1]).toBe('/foo/bar/image.png')
+      expect(loggerStub.mock.calls[0]?.[1]).toBe('/foo/bar/image.png')
     })
 
     it('should log the underlying error message when readFile rejects with Error', async () => {
-      readFileStub.rejects(new Error('disk failure'))
-      fromErrorStub.returns({})
+      readFileStub.mockRejectedValue(new Error('disk failure'))
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.png')
-      expect(loggerStub.firstCall.args[2]).toBe('disk failure')
+      expect(loggerStub.mock.calls[0]?.[2]).toBe('disk failure')
     })
 
     it('should log a string fallback when readFile rejects with a non-Error', async () => {
-      readFileStub.callsFake(async () => {
+      readFileStub.mockImplementation(async () => {
         await Promise.resolve()
         throw cast<Error>({ toString: () => 'rejection-token' })
       })
-      fromErrorStub.returns({})
+      fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.png')
-      expect(loggerStub.firstCall.args[2]).toBe('rejection-token')
+      expect(loggerStub.mock.calls[0]?.[2]).toBe('rejection-token')
     })
 
     it('should not log when readFile resolves and image is valid', async () => {
       const img = { img: Math.random() }
-      fromImageStub.returns(img)
-      readFileStub.resolves(Buffer.from('data'))
+      fromImageStub.mockReturnValue(img)
+      readFileStub.mockResolvedValue(Buffer.from('data'))
       await readImage('/foo/bar/image.png')
-      expect(loggerStub.callCount).toBe(0)
+      expect(loggerStub.mock.calls.length).toBe(0)
     })
   })
 })

@@ -1,33 +1,29 @@
 'use sanity'
 
 import { type CacheItem, ImageCache, ImageData } from '#routes/images.js'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
-
 describe('routes/images ImageData', () => {
   const defaultCacheSize = ImageCache.cacheSize
-  let createSpy = sandbox.stub()
+  let createSpy = vi.fn()
   let imageCache = new ImageCache(createSpy)
   beforeEach(() => {
     ImageCache.cacheSize = 5
-    createSpy = sandbox.stub().resolves(ImageData.fromImage(Buffer.from(''), '', ''))
+    createSpy = vi.fn().mockResolvedValue(ImageData.fromImage(Buffer.from(''), '', ''))
     imageCache = new ImageCache(createSpy)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   afterAll(() => {
     ImageCache.cacheSize = defaultCacheSize
   })
   describe('ctor', () => {
     it('should store cache item creation function', () => {
-      const spy = sandbox.stub().resolves()
+      const spy = vi.fn().mockResolvedValue(undefined)
       const cache = new ImageCache(spy)
       expect(cache.cacheFunction).toBe(spy)
     })
     it('should create cache with empty cache', () => {
-      const cache = new ImageCache(sandbox.stub())
+      const cache = new ImageCache(vi.fn())
       expect(cache.items).toHaveLength(0)
     })
   })
@@ -72,7 +68,7 @@ describe('routes/images ImageData', () => {
         image: Promise.resolve(img),
       })
       await imageCache.fetch('/foo.jpg', 45, 50)
-      expect(createSpy.callCount).toBe(0)
+      expect(createSpy.mock.calls.length).toBe(0)
     })
     it('should fetch existing match item with larger height', async () => {
       const img = ImageData.fromImage(Buffer.from(''), '', '')
@@ -92,7 +88,7 @@ describe('routes/images ImageData', () => {
         image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
       })
       await imageCache.fetch('/foo.jpg', 45, 50)
-      expect(createSpy.callCount).toBe(1)
+      expect(createSpy.mock.calls.length).toBe(1)
     })
     it('should not match cache item when stored width is less than requested', async () => {
       imageCache.items.push({
@@ -102,7 +98,7 @@ describe('routes/images ImageData', () => {
         image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
       })
       await imageCache.fetch('/foo.jpg', 50, 45)
-      expect(createSpy.callCount).toBe(1)
+      expect(createSpy.mock.calls.length).toBe(1)
     })
     it('should fetch existing match item with larger width and height', async () => {
       const img = ImageData.fromImage(Buffer.from(''), '', '')
@@ -137,11 +133,11 @@ describe('routes/images ImageData', () => {
     })
     it('should create new cache item when query not found', async () => {
       await imageCache.fetch('/foo.jpg', 45, 45)
-      expect(createSpy.callCount).toBe(1)
+      expect(createSpy.mock.calls.length).toBe(1)
     })
     it('should provide expected parameters to create function when entry not found', async () => {
       await imageCache.fetch('/foo.jpg', 45, 54)
-      expect(createSpy.firstCall.args).toEqual(['/foo.jpg', 45, 54])
+      expect(createSpy.mock.calls[0]).toEqual(['/foo.jpg', 45, 54])
     })
     it('should insert new cache item at beginning of queue', async () => {
       for (let i = 0; i < 10; i += 1) {
@@ -153,7 +149,7 @@ describe('routes/images ImageData', () => {
         })
       }
       const img = ImageData.fromImage(Buffer.from(''), '', '')
-      createSpy.resolves(img)
+      createSpy.mockResolvedValue(img)
       await imageCache.fetch('/foo.jpg', 45, 54)
       expect(imageCache.items[0]?.path).toBe('/foo.jpg')
     })
@@ -167,7 +163,7 @@ describe('routes/images ImageData', () => {
         })
       }
       const img = ImageData.fromImage(Buffer.from(''), '', '')
-      createSpy.resolves(img)
+      createSpy.mockResolvedValue(img)
       await imageCache.fetch('/foo.jpg', 45, 54)
       expect(imageCache.items[0]?.width).toBe(45)
     })
@@ -181,7 +177,7 @@ describe('routes/images ImageData', () => {
         })
       }
       const img = ImageData.fromImage(Buffer.from(''), '', '')
-      createSpy.resolves(img)
+      createSpy.mockResolvedValue(img)
       await imageCache.fetch('/foo.jpg', 45, 54)
       expect(imageCache.items[0]?.height).toBe(54)
     })
@@ -195,26 +191,26 @@ describe('routes/images ImageData', () => {
         })
       }
       const img = ImageData.fromImage(Buffer.from(''), '', '')
-      createSpy.resolves(img)
+      createSpy.mockResolvedValue(img)
       await imageCache.fetch('/foo.jpg', 45, 54)
       const result = await imageCache.items[0]?.image
       expect(result).toBe(img)
     })
     it('should call cacheFunction only once for concurrent requests to same uncached path', async () => {
       const { promise, resolve } = Promise.withResolvers<ImageData>()
-      createSpy.callsFake(async () => await promise)
+      createSpy.mockImplementation(async () => await promise)
 
       const fetch1 = imageCache.fetch('/foo.jpg', 50, 50)
       const fetch2 = imageCache.fetch('/foo.jpg', 50, 50)
       resolve(ImageData.fromImage(Buffer.from(''), '', ''))
       await Promise.all([fetch1, fetch2])
 
-      expect(createSpy.callCount).toBe(1)
+      expect(createSpy.mock.calls.length).toBe(1)
     })
     it('should return expected result to first concurrent request', async () => {
       const img = ImageData.fromImage(Buffer.from(''), '', '')
       const { promise, resolve } = Promise.withResolvers<ImageData>()
-      createSpy.callsFake(async () => await promise)
+      createSpy.mockImplementation(async () => await promise)
 
       const fetch1 = imageCache.fetch('/foo.jpg', 50, 50)
       const fetch2 = imageCache.fetch('/foo.jpg', 50, 50)
@@ -226,7 +222,7 @@ describe('routes/images ImageData', () => {
     it('should return expected result to second concurrent request', async () => {
       const img = ImageData.fromImage(Buffer.from(''), '', '')
       const { promise, resolve } = Promise.withResolvers<ImageData>()
-      createSpy.callsFake(async () => await promise)
+      createSpy.mockImplementation(async () => await promise)
 
       const fetch1 = imageCache.fetch('/foo.jpg', 50, 50)
       const fetch2 = imageCache.fetch('/foo.jpg', 50, 50)
@@ -237,7 +233,7 @@ describe('routes/images ImageData', () => {
     })
     it('should store only one item for concurrent requests to same uncached path', async () => {
       const { promise, resolve } = Promise.withResolvers<ImageData>()
-      createSpy.callsFake(async () => await promise)
+      createSpy.mockImplementation(async () => await promise)
 
       const fetch1 = imageCache.fetch('/foo.jpg', 50, 50)
       const fetch2 = imageCache.fetch('/foo.jpg', 50, 50)

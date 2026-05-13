@@ -128,10 +128,13 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
     { pattern: /\.resolves\(/g, replace: '.mockResolvedValue(', label: '.resolves -> .mockResolvedValue' },
     { pattern: /\.rejects\(/g, replace: '.mockRejectedValue(', label: '.rejects -> .mockRejectedValue' },
     { pattern: /\.callsFake\(/g, replace: '.mockImplementation(', label: '.callsFake -> .mockImplementation' },
+    // Explicit `this: object` annotation keeps `noImplicitThis`/`no-unsafe-return` happy.
+    // Sinon's returnsThis() is overwhelmingly used on chainable-builder fakes whose `this`
+    // is the host object — `object` is a broad-enough constraint to satisfy strict rules.
     {
       pattern: /\.returnsThis\(\s*\)/g,
-      replace: '.mockImplementation(function () { return this })',
-      label: '.returnsThis() -> .mockImplementation(function () { return this })',
+      replace: '.mockImplementation(function (this: object): unknown { return this })',
+      label: '.returnsThis() -> .mockImplementation(function (this: object): unknown { return this })',
     },
     // .throws(<simple-identifier>) -> .mockImplementation(() => { throw <id> })
     // Only the simple form is auto-rewritten; complex throw arguments are flagged below.
