@@ -29,10 +29,16 @@ interface ButtonGroups {
   buttons: ButtonDefinition[][]
 }
 
-const BUTTON_A = 0
-const BUTTON_B = 1
-const BUTTON_X = 3
-const BUTTON_Y = 2
+// Position-based indices per the Gamepad API standard mapping:
+// https://www.w3.org/TR/gamepad/#remapping
+// South/East/West/North refer to physical face-button positions, not the
+// vendor-specific labels printed on the controller (Xbox A/B/X/Y, PlayStation
+// Cross/Circle/Square/Triangle, Switch B/A/Y/X). Using compass directions
+// keeps the mapping vendor-neutral.
+const BUTTON_SOUTH = 0
+const BUTTON_EAST = 1
+const BUTTON_WEST = 3
+const BUTTON_NORTH = 2
 const BUTTON_L = 4
 const BUTTON_R = 5
 const BUTTON_LEFT = 14
@@ -48,10 +54,10 @@ const ZERO_REMAINING_PADS = 0
 
 export class GamepadButtons {
   public buttons: Record<string, number> = {
-    A: BUTTON_A,
-    B: BUTTON_B,
-    X: BUTTON_X,
-    Y: BUTTON_Y,
+    South: BUTTON_SOUTH,
+    East: BUTTON_EAST,
+    West: BUTTON_WEST,
+    North: BUTTON_NORTH,
     L: BUTTON_L,
     R: BUTTON_R,
     Left: BUTTON_LEFT,

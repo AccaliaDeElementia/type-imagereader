@@ -71,10 +71,10 @@ describe('public/app/actions GamepadButtons', () => {
 
   const ReadButtonTests = (): void => {
     const validButtons: Array<[string, number]> = [
-      ['A', 0],
-      ['B', 1],
-      ['X', 3],
-      ['Y', 2],
+      ['South', 0],
+      ['East', 1],
+      ['West', 3],
+      ['North', 2],
       ['L', 4],
       ['R', 5],
       ['Left', 14],

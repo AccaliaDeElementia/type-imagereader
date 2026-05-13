@@ -96,7 +96,7 @@ export function initActions(): void {
     await Promise.resolve()
   }
   Imports.subscribe('Action:Execute:Bookmark', addBookmark)
-  Imports.subscribe('Action:Gamepad:B', addBookmark)
+  Imports.subscribe('Action:Gamepad:South', addBookmark)
   Imports.subscribe('Pictures:selectPage', async () => {
     Imports.loadCurrentPageImages()
     await Promise.resolve()

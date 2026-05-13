@@ -96,8 +96,8 @@ describe('public/app/navigation init()', () => {
     'Action:Keypress:<Ctrl>ArrowRight',
     'Action:Gamepad:Down',
     'Action:Gamepad:Up',
-    'Action:Gamepad:Y',
-    'Action:Gamepad:A',
+    'Action:Gamepad:North',
+    'Action:Gamepad:East',
   ]
   describe('subscriber list after init', () => {
     const subs = subscribers.map((s) => s.toUpperCase())

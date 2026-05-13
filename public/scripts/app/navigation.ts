@@ -202,8 +202,8 @@ export function init(): void {
   Imports.forward('Action:Keypress:<Ctrl>ArrowRight', 'Action:Execute:NextFolder')
   Imports.forward('Action:Gamepad:Down', 'Action:Execute:PreviousFolder')
   Imports.forward('Action:Gamepad:Up', 'Action:Execute:NextFolder')
-  Imports.forward('Action:Gamepad:Y', 'Action:Execute:ParentFolder')
-  Imports.forward('Action:Gamepad:A', 'Action:Execute:FirstUnfinished')
+  Imports.forward('Action:Gamepad:North', 'Action:Execute:ParentFolder')
+  Imports.forward('Action:Gamepad:East', 'Action:Execute:FirstUnfinished')
 }
 
 export const Internals = {

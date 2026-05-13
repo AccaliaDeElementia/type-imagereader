@@ -73,7 +73,7 @@ describe('public/app/pictures initActions()', () => {
     'Action:Execute:Next',
     'Action:Execute:ViewFullSize',
     'Action:Execute:Bookmark',
-    'Action:Gamepad:B',
+    'Action:Gamepad:South',
     'Pictures:selectPage',
   ]
   it('should only have expected subscribers', () => {
@@ -289,10 +289,10 @@ describe('public/app/pictures initActions()', () => {
     await fn(undefined)
     expect(publishStub.callCount).toBe(0)
   })
-  it('should use same handler for Action:Execute:Bookmark and Action:Gamepad:B', () => {
+  it('should use same handler for Action:Execute:Bookmark and Action:Gamepad:South', () => {
     initActions()
     const fn1 = capturedSubscriber(subscribeStub, 'Action:Execute:Bookmark')
-    const fn2 = capturedSubscriber(subscribeStub, 'Action:Gamepad:B')
+    const fn2 = capturedSubscriber(subscribeStub, 'Action:Gamepad:South')
     expect(fn1).toBe(fn2)
   })
   it('should load images for Pictures:selectPage', async () => {
