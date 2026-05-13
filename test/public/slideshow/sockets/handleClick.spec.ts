@@ -1,33 +1,31 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { Internals, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { cast } from '#testutils/typeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import assert from 'node:assert'
-const sandbox = Sinon.createSandbox()
-
+import type { MockInstance } from 'vitest'
 describe('public/slideshow/sockets handleClick()', () => {
-  const fakeEmit = sandbox.stub()
+  const fakeEmit = vi.fn()
   const fakeSocket = cast<WebSocket>({ emit: fakeEmit })
-  let fakeAssign = sandbox.stub()
+  let fakeAssign: MockInstance = vi.fn()
   const fakeViewport = { scale: 1 }
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
-    fakeAssign = sandbox.stub(WebSockets, 'locationAssign')
+    fakeAssign = vi.spyOn(WebSockets, 'locationAssign').mockImplementation((..._args: unknown[]) => undefined)
     mountDom(dom)
     global.window.visualViewport = cast<VisualViewport>(fakeViewport)
   })
   afterAll(() => {
-    fakeAssign.restore()
+    fakeAssign.mockRestore()
     unmountDom()
-    Sinon.restore()
+    vi.restoreAllMocks()
   })
   beforeEach(() => {
     fakeViewport.scale = 1
-    fakeEmit.reset()
-    fakeAssign.reset()
+    fakeEmit.mockClear()
+    fakeAssign.mockClear()
     dom.reconfigure({
       url: `http://127.0.0.1:2999/slideshow?`,
     })
@@ -95,11 +93,11 @@ describe('public/slideshow/sockets handleClick()', () => {
     }
     it(`should emit once when click is at ${xPercent} with search "${search}"`, () => {
       doClick()
-      expect(fakeEmit.callCount).toBe(1)
+      expect(fakeEmit.mock.calls.length).toBe(1)
     })
     it(`should emit ${expected} when click is at ${xPercent} with search "${search}"`, () => {
       doClick()
-      expect(fakeEmit.firstCall.args[0]).toEqual(expected)
+      expect(fakeEmit.mock.calls[0]?.[0]).toEqual(expected)
     })
     it(`should not ignore click at ${xPercent}:${yPercent} when zoomed in`, () => {
       const event = new global.window.MouseEvent('click', {
@@ -107,7 +105,7 @@ describe('public/slideshow/sockets handleClick()', () => {
         clientY: global.window.innerHeight * yPercent,
       })
       Internals.handleClick(event, fakeSocket, 1.001)
-      expect(fakeEmit.callCount).toBe(1)
+      expect(fakeEmit.mock.calls.length).toBe(1)
     })
     it(`should ignore click at ${xPercent}:${yPercent} when zoomed out`, () => {
       const event = new global.window.MouseEvent('click', {
@@ -115,7 +113,7 @@ describe('public/slideshow/sockets handleClick()', () => {
         clientY: global.window.innerHeight * yPercent,
       })
       Internals.handleClick(event, fakeSocket, 0.999)
-      expect(fakeEmit.callCount).toBe(0)
+      expect(fakeEmit.mock.calls.length).toBe(0)
     })
   })
   describe('when center-clicked for goto-image event', () => {
@@ -127,10 +125,10 @@ describe('public/slideshow/sockets handleClick()', () => {
       Internals.handleClick(event, fakeSocket, 1)
     })
     it('should emit second parameter for goto-image event', () => {
-      expect(fakeEmit.firstCall.args).toHaveLength(2)
+      expect(fakeEmit.mock.calls[0]).toHaveLength(2)
     })
     it('should provide callback function for goto-image event', () => {
-      expect(fakeEmit.firstCall.args[1]).toBeInstanceOf(Function)
+      expect(fakeEmit.mock.calls[0]?.[1]).toBeInstanceOf(Function)
     })
   })
   describe('when visualViewport is null', () => {
@@ -146,7 +144,7 @@ describe('public/slideshow/sockets handleClick()', () => {
         clientY: global.window.innerHeight / 2,
       })
       Internals.handleClick(event, fakeSocket, 1)
-      expect(fakeEmit.callCount).toBe(1)
+      expect(fakeEmit.mock.calls.length).toBe(1)
     })
     it('should emit next-image for right click when visualViewport is null', () => {
       const event = new global.window.MouseEvent('click', {
@@ -154,7 +152,7 @@ describe('public/slideshow/sockets handleClick()', () => {
         clientY: global.window.innerHeight / 2,
       })
       Internals.handleClick(event, fakeSocket, 1)
-      expect(fakeEmit.firstCall.args[0]).toBe('next-image')
+      expect(fakeEmit.mock.calls[0]?.[0]).toBe('next-image')
     })
   })
   describe('when goto-image callback is invoked with null', () => {
@@ -164,11 +162,11 @@ describe('public/slideshow/sockets handleClick()', () => {
         clientY: global.window.innerHeight * 0.5,
       })
       Internals.handleClick(event, fakeSocket, 1)
-      const fn = cast<(x: string | null) => void>(fakeEmit.firstCall.args[1])
+      const fn = cast<(x: string | null) => void>(fakeEmit.mock.calls[0]?.[1])
       fn(null)
     })
     it('should not call location.assign from goto-image callback when folder is null', () => {
-      expect(fakeAssign.callCount).toBe(0)
+      expect(fakeAssign.mock.calls.length).toBe(0)
     })
   })
   describe('when goto-image callback is invoked', () => {
@@ -178,14 +176,14 @@ describe('public/slideshow/sockets handleClick()', () => {
         clientY: global.window.innerHeight * 0.5,
       })
       Internals.handleClick(event, fakeSocket, 1)
-      const fn = cast<(x: string) => void>(fakeEmit.firstCall.args[1])
+      const fn = cast<(x: string) => void>(fakeEmit.mock.calls[0]?.[1])
       fn('/foo/bar/baz')
     })
     it('should call location.assign from goto-image callback', () => {
-      expect(fakeAssign.callCount).toBe(1)
+      expect(fakeAssign.mock.calls.length).toBe(1)
     })
     it('should assign expected uri from goto-image callback', () => {
-      expect(fakeAssign.firstCall.args).toEqual(['/show/foo/bar/baz?noMenu'])
+      expect(fakeAssign.mock.calls[0]).toEqual(['/show/foo/bar/baz?noMenu'])
     })
   })
 })

@@ -4,11 +4,9 @@ import { timeUpdater as Updater, Internals } from '#public/scripts/slideshow/tim
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import Sinon from 'sinon'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
 import assert from 'node:assert'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -19,21 +17,23 @@ html
 `
 
 describe('public/slideshow/time Updater()', () => {
-  let fakeFormatTime: Sinon.SinonStub | undefined = undefined
-  let fakeFormatDate: Sinon.SinonStub | undefined = undefined
+  let fakeFormatTime: MockInstance | undefined = undefined
+  let fakeFormatDate: MockInstance | undefined = undefined
   let dom = new JSDOM(render(markup))
   const now = new Date(2000, 3, 1, 0, 0, 0, 0)
   beforeEach(() => {
-    fakeFormatTime = sandbox.stub(Internals, 'formatTime').returns('')
-    fakeFormatDate = sandbox.stub(Internals, 'formatDate').returns('')
-    sandbox.useFakeTimers({ now })
+    fakeFormatTime = vi.spyOn(Internals, 'formatTime').mockReturnValue('')
+    fakeFormatDate = vi.spyOn(Internals, 'formatDate').mockReturnValue('')
+    vi.useFakeTimers()
+    vi.setSystemTime(now)
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })
     mountDom(dom)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.useRealTimers()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should expose a CyclicUpdater', () => {
@@ -44,14 +44,14 @@ describe('public/slideshow/time Updater()', () => {
   })
   it('should format time for display', async () => {
     await Updater.updateFn()
-    expect(fakeFormatTime?.callCount).toBe(1)
+    expect(fakeFormatTime?.mock.calls.length).toBe(1)
   })
   it('should format now as time for display', async () => {
     await Updater.updateFn()
-    expect(fakeFormatTime?.firstCall.args).toEqual([now])
+    expect(fakeFormatTime?.mock.calls[0]).toEqual([now])
   })
   it('should place formated data into .time', async () => {
-    fakeFormatTime?.returns('I am time')
+    fakeFormatTime?.mockReturnValue('I am time')
     await Updater.updateFn()
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
     expect(elem?.innerHTML).toBe('I am time')
@@ -66,18 +66,18 @@ describe('public/slideshow/time Updater()', () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
     elem?.remove()
     await Updater.updateFn()
-    expect(fakeFormatTime?.callCount).toBe(0)
+    expect(fakeFormatTime?.mock.calls.length).toBe(0)
   })
   it('should format date for display', async () => {
     await Updater.updateFn()
-    expect(fakeFormatDate?.callCount).toBe(1)
+    expect(fakeFormatDate?.mock.calls.length).toBe(1)
   })
   it('should format now as date for display', async () => {
     await Updater.updateFn()
-    expect(fakeFormatDate?.firstCall.args).toEqual([now])
+    expect(fakeFormatDate?.mock.calls[0]).toEqual([now])
   })
   it('should place formated data into .date', async () => {
-    fakeFormatDate?.returns('I am date')
+    fakeFormatDate?.mockReturnValue('I am date')
     await Updater.updateFn()
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
     expect(elem?.innerHTML).toBe('I am date')
@@ -92,6 +92,6 @@ describe('public/slideshow/time Updater()', () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
     elem?.remove()
     await Updater.updateFn()
-    expect(fakeFormatDate?.callCount).toBe(0)
+    expect(fakeFormatDate?.mock.calls.length).toBe(0)
   })
 })

@@ -1,21 +1,18 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { disconnect, Internals, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { cast } from '#testutils/typeGuards.js'
 import assert from 'node:assert'
 
-const sandbox = Sinon.createSandbox()
-
 describe('public/slideshow/sockets disconnect()', () => {
-  const fakeDisconnect = sandbox.stub()
+  const fakeDisconnect = vi.fn()
   const fakeSocket = cast<WebSocket>({ disconnect: fakeDisconnect })
   beforeEach(() => {
     WebSockets.socket = fakeSocket
-    fakeDisconnect.reset()
+    fakeDisconnect.mockClear()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should allow disconnect without socket', () => {
     WebSockets.socket = undefined
@@ -24,7 +21,7 @@ describe('public/slideshow/sockets disconnect()', () => {
   })
   it('should disconnect with socket', () => {
     disconnect()
-    expect(fakeDisconnect.callCount).toBe(1)
+    expect(fakeDisconnect.mock.calls.length).toBe(1)
   })
   it('should clear launchId with socket', () => {
     WebSockets.launchId = 42
@@ -38,24 +35,24 @@ describe('public/slideshow/sockets disconnect()', () => {
     expect(WebSockets.launchId).toBe(undefined)
   })
   it('should clear locationAssign with socket', () => {
-    WebSockets.locationAssign = sandbox.stub()
+    WebSockets.locationAssign = vi.fn()
     disconnect()
     expect(WebSockets.locationAssign).toBe(Internals.uninitializedLocationAssign)
   })
   it('should clear locationAssign without socket', () => {
     WebSockets.socket = undefined
-    WebSockets.locationAssign = sandbox.stub()
+    WebSockets.locationAssign = vi.fn()
     disconnect()
     expect(WebSockets.locationAssign).toBe(Internals.uninitializedLocationAssign)
   })
   it('should clear locationReload with socket', () => {
-    WebSockets.locationReload = sandbox.stub()
+    WebSockets.locationReload = vi.fn()
     disconnect()
     expect(WebSockets.locationReload).toBe(Internals.uninitializedLocationReload)
   })
   it('should clear locationReload without socket', () => {
     WebSockets.socket = undefined
-    WebSockets.locationReload = sandbox.stub()
+    WebSockets.locationReload = vi.fn()
     disconnect()
     expect(WebSockets.locationReload).toBe(Internals.uninitializedLocationReload)
   })

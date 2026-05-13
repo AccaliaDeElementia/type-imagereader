@@ -2,23 +2,20 @@
 
 import { add, CyclicManager, CyclicUpdater, Internals, start, stop } from '#public/scripts/slideshow/updater.js'
 import { cast } from '#testutils/typeGuards.js'
-import Sinon from 'sinon'
 import { assert } from 'node:console'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('public/slideshow/updater CyclicManager', () => {
-  let fakeSetInterval: Sinon.SinonStub | undefined = undefined
-  let fakeClearInterval: Sinon.SinonStub | undefined = undefined
+  let fakeSetInterval: MockInstance | undefined = undefined
+  let fakeClearInterval: MockInstance | undefined = undefined
   beforeEach(() => {
     CyclicManager.__updaters = []
     CyclicManager.__timer = undefined
-    fakeSetInterval = sandbox.stub(global, 'setInterval')
-    fakeSetInterval.returns(1)
-    fakeClearInterval = sandbox.stub(global, 'clearInterval')
+    fakeSetInterval = vi.spyOn(global, 'setInterval').mockReturnValue(cast(1))
+    fakeClearInterval = vi.spyOn(global, 'clearInterval').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   describe('__triggerUpdaters()', () => {
     it('should handle updating zero updaters', async () => {
@@ -27,41 +24,46 @@ describe('public/slideshow/updater CyclicManager', () => {
     })
     it('should trigger one updaters', async () => {
       const updater = new CyclicUpdater()
-      const spy = sandbox.stub(updater, 'trigger').resolves()
+      const spy = vi.spyOn(updater, 'trigger').mockResolvedValue(undefined)
       CyclicManager.__updaters = [updater]
       await Internals.triggerUpdaters(10)
-      expect(spy.callCount).toBe(1)
+      expect(spy.mock.calls.length).toBe(1)
     })
     it('should trigger many updaters', async () => {
       const updater = new CyclicUpdater()
-      const spy = sandbox.stub(updater, 'trigger').resolves()
+      const spy = vi.spyOn(updater, 'trigger').mockResolvedValue(undefined)
       CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
-      expect(spy.callCount).toBe(10)
+      expect(spy.mock.calls.length).toBe(10)
     })
     it('should trigger with provided interval', async () => {
       const interval = Math.round(Math.random() * 1e9)
       const updater = new CyclicUpdater()
-      const spy = sandbox.stub(updater, 'trigger').resolves()
+      const spy = vi.spyOn(updater, 'trigger').mockResolvedValue(undefined)
       CyclicManager.__updaters = [updater]
       await Internals.triggerUpdaters(interval)
-      expect(spy.firstCall.args).toEqual([interval])
+      expect(spy.mock.calls[0]).toEqual([interval])
     })
     it('should tolerate updater rejecting', async () => {
       const updater = new CyclicUpdater()
-      const spy = sandbox.stub(updater, 'trigger').resolves()
-      spy.onThirdCall().rejects(new Error('This is a rejection error!'))
+      const spy = vi.spyOn(updater, 'trigger').mockResolvedValue(undefined)
+      spy.mockRejectedValueOnce(new Error('This is a rejection error!'))
       CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
-      expect(spy.callCount).toBe(10)
+      expect(spy.mock.calls.length).toBe(10)
     })
     it('should tolerate updater throwing', async () => {
       const updater = new CyclicUpdater()
-      const spy = sandbox.stub(updater, 'trigger').resolves()
-      spy.onThirdCall().throws(new Error('This is a rejection error!'))
+      const spy = vi.spyOn(updater, 'trigger').mockResolvedValue(undefined)
+      spy
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined)
+        .mockImplementationOnce(() => {
+          throw new Error('This is a rejection error!')
+        })
       CyclicManager.__updaters = cast<CyclicUpdater[]>(Array.from({ length: 10 }).fill(updater))
       await Internals.triggerUpdaters(10)
-      expect(spy.callCount).toBe(10)
+      expect(spy.mock.calls.length).toBe(10)
     })
   })
   describe('add()', () => {
@@ -112,51 +114,51 @@ describe('public/slideshow/updater CyclicManager', () => {
     })
   })
   describe('start()', () => {
-    let fakeTrigger: Sinon.SinonStub | undefined = undefined
+    let fakeTrigger: MockInstance | undefined = undefined
     beforeEach(() => {
-      fakeTrigger = sandbox.stub(Internals, 'triggerUpdaters').resolves()
+      fakeTrigger = vi.spyOn(Internals, 'triggerUpdaters').mockResolvedValue(undefined)
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     it('should set interval on call', () => {
-      expect(fakeSetInterval?.callCount).toBe(0)
+      expect(fakeSetInterval?.mock.calls.length).toBe(0)
       start(1000)
-      expect(fakeSetInterval?.callCount).toBe(1)
+      expect(fakeSetInterval?.mock.calls.length).toBe(1)
     })
     it('should set interval with provided interval', () => {
       const ival = Math.round(Math.random() * 1e9)
       start(ival)
-      expect(fakeSetInterval?.firstCall.args[1]).toBe(ival)
+      expect(fakeSetInterval?.mock.calls[0]?.[1]).toBe(ival)
     })
     it('should save interval value from setInterval', () => {
       const timer = Math.round(Math.random() * 1e9)
-      fakeSetInterval?.returns(timer)
+      fakeSetInterval?.mockReturnValue(timer)
       start(1000)
       expect(CyclicManager.__timer).toBe(timer)
     })
     it('should trigger updaters when interval fires', () => {
       start(1000)
-      const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
-      expect(fakeTrigger?.callCount).toBe(0)
+      const fn = cast<() => void>(fakeSetInterval?.mock.calls[0]?.[0])
+      expect(fakeTrigger?.mock.calls.length).toBe(0)
       fn()
-      expect(fakeTrigger?.callCount).toBe(1)
+      expect(fakeTrigger?.mock.calls.length).toBe(1)
     })
     it('should trigger updaters with provided interval', () => {
       const ival = Math.round(Math.random() * 1e9)
       start(ival)
-      const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
+      const fn = cast<() => void>(fakeSetInterval?.mock.calls[0]?.[0])
       fn()
-      expect(fakeTrigger?.firstCall.args).toEqual([ival])
+      expect(fakeTrigger?.mock.calls[0]).toEqual([ival])
     })
     it('should tolerate trigger rejecting', async () => {
       let a = Promise.resolve()
-      fakeTrigger?.callsFake(async () => {
+      fakeTrigger?.mockImplementation(async () => {
         a = Promise.resolve()
         return await Promise.reject(new Error('this should get swallowed!'))
       })
       start(1000)
-      const fn = cast<() => void>(fakeSetInterval?.firstCall.args[0])
+      const fn = cast<() => void>(fakeSetInterval?.mock.calls[0]?.[0])
       fn()
       await a
       assert(true, 'the error should have been thrown aweay and not treated as uncaught error')
@@ -164,7 +166,7 @@ describe('public/slideshow/updater CyclicManager', () => {
     it('should not call setInterval when a timer is already running', () => {
       CyclicManager.__timer = 42
       start(1000)
-      expect(fakeSetInterval?.callCount).toBe(0)
+      expect(fakeSetInterval?.mock.calls.length).toBe(0)
     })
     it('should preserve the existing timer when start is called again', () => {
       CyclicManager.__timer = 42
@@ -174,25 +176,25 @@ describe('public/slideshow/updater CyclicManager', () => {
     it('should not call clearInterval when start is called again', () => {
       CyclicManager.__timer = 42
       start(1000)
-      expect(fakeClearInterval?.callCount).toBe(0)
+      expect(fakeClearInterval?.mock.calls.length).toBe(0)
     })
   })
   describe('stop()', () => {
     it('should not clear interval without starting', () => {
       CyclicManager.__timer = undefined
       stop()
-      expect(fakeClearInterval?.callCount).toBe(0)
+      expect(fakeClearInterval?.mock.calls.length).toBe(0)
     })
     it('should clear interval when timer set', () => {
       CyclicManager.__timer = 1
       stop()
-      expect(fakeClearInterval?.callCount).toBe(1)
+      expect(fakeClearInterval?.mock.calls.length).toBe(1)
     })
     it('should clear saved timer when stopping', () => {
       const timer = Math.round(Math.random() * 1e9)
       CyclicManager.__timer = timer
       stop()
-      expect(fakeClearInterval?.firstCall.args).toEqual([timer])
+      expect(fakeClearInterval?.mock.calls[0]).toEqual([timer])
     })
     it('should erase saved timer when stopping', () => {
       const timer = Math.round(Math.random() * 1e9)

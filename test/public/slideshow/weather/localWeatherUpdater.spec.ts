@@ -4,10 +4,8 @@ import { Internals, localWeatherUpdater } from '#public/scripts/slideshow/weathe
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import Sinon from 'sinon'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -24,20 +22,20 @@ html
         img.icon
 `
 describe('public/slideshow/weather localWeatherUpdater', () => {
-  let fetchWeatherStub = sandbox.stub()
-  let showWeatherStub = sandbox.stub()
+  let fetchWeatherStub: MockInstance = vi.fn()
+  let showWeatherStub: MockInstance = vi.fn()
 
   let dom = new JSDOM(render(markup))
 
   beforeEach(() => {
-    fetchWeatherStub = sandbox.stub(Internals, 'fetchWeather').resolves({})
-    showWeatherStub = sandbox.stub(Internals, 'showWeather').returns({})
+    fetchWeatherStub = vi.spyOn(Internals, 'fetchWeather').mockResolvedValue({})
+    showWeatherStub = vi.spyOn(Internals, 'showWeather').mockReturnValue({})
     dom = new JSDOM(render(markup))
     mountDom(dom)
   })
 
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
 
@@ -51,34 +49,36 @@ describe('public/slideshow/weather localWeatherUpdater', () => {
 
   it('should fetch weather once when triggered', async () => {
     await localWeatherUpdater.updateFn()
-    expect(fetchWeatherStub.callCount).toBe(1)
+    expect(fetchWeatherStub.mock.calls.length).toBe(1)
   })
 
   it('should fetch weather from expected url when triggered', async () => {
     await localWeatherUpdater.updateFn()
-    expect(fetchWeatherStub.firstCall.args).toEqual(['https://localhost:8443/'])
+    expect(fetchWeatherStub.mock.calls[0]).toEqual(['https://localhost:8443/'])
   })
 
   it('should show fetched data once after retrieval', async () => {
     await localWeatherUpdater.updateFn()
-    expect(showWeatherStub.callCount).toBe(1)
+    expect(showWeatherStub.mock.calls.length).toBe(1)
   })
 
   it('should show fetched data after fetch when triggered', async () => {
     await localWeatherUpdater.updateFn()
-    expect(showWeatherStub.calledAfter(fetchWeatherStub)).toBe(true)
+    expect(
+      (showWeatherStub.mock.invocationCallOrder[0] ?? 0) > (fetchWeatherStub.mock.invocationCallOrder[0] ?? 0),
+    ).toBe(true)
   })
 
   it('should show weather with expected element as base', async () => {
     const base = dom.window.document.querySelector<HTMLElement>('.localweather')
     await localWeatherUpdater.updateFn()
-    expect(showWeatherStub.firstCall.args[0]).toBe(base)
+    expect(showWeatherStub.mock.calls[0]?.[0]).toBe(base)
   })
 
   it('should show weather with retrieved weather', async () => {
     const data = { FOO: Math.random() }
-    fetchWeatherStub.resolves(data)
+    fetchWeatherStub.mockResolvedValue(data)
     await localWeatherUpdater.updateFn()
-    expect(showWeatherStub.firstCall.args[1]).toBe(data)
+    expect(showWeatherStub.mock.calls[0]?.[1]).toBe(data)
   })
 })

@@ -1,13 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { overlayUpdater as Updater, Internals } from '#public/scripts/slideshow/overlay.js'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
+import type { MockInstance } from 'vitest'
 
-const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -15,21 +14,21 @@ html
 `
 
 describe('public/slideshow/overlay CyclicUpdater()', () => {
-  let fakeShowHide: Sinon.SinonStub | undefined = undefined
-  let fakeCalculateDarknessMs: Sinon.SinonStub | undefined = undefined
-  let fakeGetOpacity: Sinon.SinonStub | undefined = undefined
+  let fakeShowHide: MockInstance | undefined = undefined
+  let fakeCalculateDarknessMs: MockInstance | undefined = undefined
+  let fakeGetOpacity: MockInstance | undefined = undefined
   let dom = new JSDOM()
   beforeEach(() => {
-    fakeShowHide = sandbox.stub(Internals, 'showHideKiosk')
-    fakeCalculateDarknessMs = sandbox.stub(Internals, 'calculateDarknessMs').returns(0)
-    fakeGetOpacity = sandbox.stub(Internals, 'getOpacity').returns(0)
+    fakeShowHide = vi.spyOn(Internals, 'showHideKiosk').mockImplementation((..._args: unknown[]) => undefined)
+    fakeCalculateDarknessMs = vi.spyOn(Internals, 'calculateDarknessMs').mockReturnValue(0)
+    fakeGetOpacity = vi.spyOn(Internals, 'getOpacity').mockReturnValue(0)
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:29999',
     })
     mountDom(dom)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should be a CyclicUpdater', () => {
@@ -42,16 +41,16 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     const overlay = dom.window.document.querySelector('.overlay')
     overlay?.remove()
     await Updater.updateFn()
-    expect(fakeShowHide?.callCount).toBe(0)
+    expect(fakeShowHide?.mock.calls.length).toBe(0)
   })
   it('should call showHideKiosk to show/hide kiosk overlay', async () => {
     await Updater.updateFn()
-    expect(fakeShowHide?.callCount).toBe(1)
+    expect(fakeShowHide?.mock.calls.length).toBe(1)
   })
   it('should pass overlay to showHideKiosk call', async () => {
     const overlay = dom.window.document.querySelector('.overlay')
     await Updater.updateFn()
-    expect(fakeShowHide?.firstCall.args[0]).toBe(overlay)
+    expect(fakeShowHide?.mock.calls[0]?.[0]).toBe(overlay)
   })
   const kioskCases: Array<[string, boolean]> = [
     ['kiosk', true],
@@ -70,27 +69,27 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     it(`${expected ? 'should' : 'should not'} enable kiosk mode for search '${search}'`, async () => {
       dom.reconfigure({ url: `http://not.a.kiosk.example.com:29999?${search}` })
       await Updater.updateFn()
-      expect(fakeShowHide?.firstCall.args[1]).toBe(expected)
+      expect(fakeShowHide?.mock.calls[0]?.[1]).toBe(expected)
     })
   })
   it('should call calculateDarknessMs to get timer offset', async () => {
     await Updater.updateFn()
-    expect(fakeCalculateDarknessMs?.callCount).toBe(1)
+    expect(fakeCalculateDarknessMs?.mock.calls.length).toBe(1)
   })
   it('should call getOpacity to turn offset into opacity valie', async () => {
     await Updater.updateFn()
-    expect(fakeGetOpacity?.callCount).toBe(1)
+    expect(fakeGetOpacity?.mock.calls.length).toBe(1)
   })
   it('should call getOpacity with offset valueto turn offset into opacity valie', async () => {
     const value = Math.random()
-    fakeCalculateDarknessMs?.returns(value)
+    fakeCalculateDarknessMs?.mockReturnValue(value)
     await Updater.updateFn()
-    expect(fakeGetOpacity?.firstCall.args).toEqual([value])
+    expect(fakeGetOpacity?.mock.calls[0]).toEqual([value])
   })
   it('should set opacity on the overlay element', async () => {
     const overlay = dom.window.document.querySelector<HTMLElement>('.overlay')
     overlay?.style.setProperty('opacity', '1')
-    fakeGetOpacity?.returns(0.5)
+    fakeGetOpacity?.mockReturnValue(0.5)
     await Updater.updateFn()
     expect(overlay?.style.getPropertyValue('opacity')).toBe('0.5')
   })

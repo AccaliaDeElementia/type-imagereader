@@ -3,17 +3,14 @@
 import { CyclicUpdater, Internals } from '#public/scripts/slideshow/updater.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
-
+import type { MockInstance } from 'vitest'
 describe('public/slideshow/updater CyclicUpdater', () => {
   it('should set default update function when fn undefined', () => {
     const test = new CyclicUpdater(undefined, undefined)
     expect(test.updateFn).toBe(Internals.defaultUpdateFn)
   })
   it('should set proviced update function', () => {
-    const fn = sandbox.stub().resolves()
+    const fn = vi.fn().mockResolvedValue(undefined)
     const test = new CyclicUpdater(fn, undefined)
     expect(test.updateFn).toBe(fn)
   })
@@ -47,30 +44,30 @@ describe('public/slideshow/updater CyclicUpdater', () => {
   })
   describe('this.trigger()', () => {
     const dom = new JSDOM('', {})
-    let errorStub = sandbox.stub()
-    const updateFn = sandbox.stub().resolves()
+    let errorStub: MockInstance = vi.fn()
+    const updateFn = vi.fn().mockResolvedValue(undefined)
     const updater = new CyclicUpdater(updateFn, undefined)
     beforeAll(() => {
       mountDom(dom)
     })
     afterAll(() => {
       unmountDom()
-      Sinon.restore()
+      vi.restoreAllMocks()
     })
     beforeEach(() => {
-      updateFn.reset()
-      updateFn.resolves()
+      updateFn.mockClear()
+      updateFn.mockResolvedValue(undefined)
       updater.period = 60000
       updater._countdown = 6000
       updater._failCount = 0
-      errorStub = sandbox.stub(global.window.console, 'error')
+      errorStub = vi.spyOn(global.window.console, 'error').mockImplementation((..._args: unknown[]) => undefined)
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     it('should not call updateFn when countdown has not expired', async () => {
       await updater.trigger(200)
-      expect(updateFn.callCount).toBe(0)
+      expect(updateFn.mock.calls.length).toBe(0)
     })
     it('should decrement countdown on call', async () => {
       await updater.trigger(200)
@@ -83,13 +80,13 @@ describe('public/slideshow/updater CyclicUpdater', () => {
     })
     it('should set call update function when triggered', async () => {
       const waiter = updater.trigger(200000)
-      expect(updateFn.callCount).toBe(1)
+      expect(updateFn.mock.calls.length).toBe(1)
       await waiter
     })
     it('should set call update function for overdue updater', async () => {
       updater._countdown = -9
       const waiter = updater.trigger(0)
-      expect(updateFn.callCount).toBe(1)
+      expect(updateFn.mock.calls.length).toBe(1)
       await waiter
     })
     it('should set set countdown to base period on update success', async () => {
@@ -107,37 +104,37 @@ describe('public/slideshow/updater CyclicUpdater', () => {
     it('should not log anything when update not yet due', async () => {
       updater._countdown = 65535
       await updater.trigger(0)
-      expect(errorStub.callCount).toBe(0)
+      expect(errorStub.mock.calls.length).toBe(0)
     })
     it('should not log anything when update succeeds', async () => {
       updater._countdown = -9
       await updater.trigger(0)
-      expect(errorStub.callCount).toBe(0)
+      expect(errorStub.mock.calls.length).toBe(0)
     })
     it('should log once when update fails', async () => {
       updater._countdown = -9
-      updateFn.rejects(new Error('FOO'))
+      updateFn.mockRejectedValue(new Error('FOO'))
       await updater.trigger(0)
-      expect(errorStub.callCount).toBe(1)
+      expect(errorStub.mock.calls.length).toBe(1)
     })
     it('should log the error with message when update fails', async () => {
       updater._countdown = -9
       const err = new Error('FOO')
-      updateFn.rejects(err)
+      updateFn.mockRejectedValue(err)
       await updater.trigger(0)
-      expect(errorStub.firstCall.args).toEqual(['CyclicUpdater update resulted in error:', err])
+      expect(errorStub.mock.calls[0]).toEqual(['CyclicUpdater update resulted in error:', err])
     })
     it('should increase failCount when update fails', async () => {
       updater._countdown = -9
       updater._failCount = 0
-      updateFn.rejects(new Error('FOO'))
+      updateFn.mockRejectedValue(new Error('FOO'))
       await updater.trigger(0)
       expect(updater._failCount).toBe(1)
     })
     it('should increase failCount up to maximum when update fails', async () => {
       updater._countdown = -9
       updater._failCount = 9
-      updateFn.rejects(new Error('FOO'))
+      updateFn.mockRejectedValue(new Error('FOO'))
       await updater.trigger(0)
       expect(updater._failCount).toBe(10)
     })
@@ -145,7 +142,7 @@ describe('public/slideshow/updater CyclicUpdater', () => {
       updater._countdown = -9
       updater._failCount = 100
       updater._maxFails = 50
-      updateFn.rejects(new Error('FOO'))
+      updateFn.mockRejectedValue(new Error('FOO'))
       await updater.trigger(0)
       expect(updater._failCount).toBe(50)
     })
@@ -159,7 +156,7 @@ describe('public/slideshow/updater CyclicUpdater', () => {
     ]
     expectedDelays.forEach(([failCount, expectedDelay]) => {
       it(`should set countdown of ${expectedDelay} for failed trigger after ${failCount} prior fails`, async () => {
-        updateFn.rejects(new Error('FOO'))
+        updateFn.mockRejectedValue(new Error('FOO'))
         updater.period = 10
         updater._countdown = -1
         updater._failCount = failCount

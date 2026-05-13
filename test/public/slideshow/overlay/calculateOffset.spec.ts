@@ -1,10 +1,7 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { Internals } from '#public/scripts/slideshow/overlay.js'
 import { getAlmanac } from '#public/scripts/slideshow/weather.js'
-const sandbox = Sinon.createSandbox()
-
 describe('public/slideshow/overlay calculateDarknessMs()', () => {
   const almanac = getAlmanac()
   beforeEach(() => {
@@ -12,7 +9,8 @@ describe('public/slideshow/overlay calculateDarknessMs()', () => {
     almanac.sunset = new Date('2025-03-18T20:45:00.000Z').getTime()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.useRealTimers()
+    vi.restoreAllMocks()
   })
   const testCases: Array<[string, number]> = [
     ['2025-03-18T05:30:00.000Z', 900000],
@@ -30,9 +28,8 @@ describe('public/slideshow/overlay calculateDarknessMs()', () => {
   ]
   testCases.forEach(([timeNow, expected]) => {
     it(`should calculate correct offset for ${timeNow}`, () => {
-      sandbox.useFakeTimers({
-        now: new Date(timeNow).getTime(),
-      })
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date(timeNow).getTime())
       expect(Internals.calculateDarknessMs()).toBe(expected)
     })
   })

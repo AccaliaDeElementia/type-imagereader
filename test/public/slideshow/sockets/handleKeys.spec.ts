@@ -1,15 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { Internals, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { cast } from '#testutils/typeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import assert from 'node:assert'
-const sandbox = Sinon.createSandbox()
-
 describe('public/slideshow/sockets handleKeys()', () => {
-  const fakeEmit = sandbox.stub()
+  const fakeEmit = vi.fn()
   const fakeSocket = cast<WebSocket>({ emit: fakeEmit })
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
@@ -19,10 +16,10 @@ describe('public/slideshow/sockets handleKeys()', () => {
     unmountDom()
   })
   beforeEach(() => {
-    fakeEmit.reset()
+    fakeEmit.mockClear()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should not break if socket is null', () => {
     const evt = new global.window.KeyboardEvent('keyup', { key: 'a' })
@@ -39,7 +36,7 @@ describe('public/slideshow/sockets handleKeys()', () => {
     it(`should not emit when key is '${key}'`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
       Internals.handleKeys(evt, fakeSocket)
-      expect(fakeEmit.callCount).toBe(0)
+      expect(fakeEmit.mock.calls.length).toBe(0)
     })
   })
   const triggerKeys: Array<[string, string]> = [
@@ -56,12 +53,12 @@ describe('public/slideshow/sockets handleKeys()', () => {
     it(`should emit only once for key: ${key}`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
       Internals.handleKeys(evt, fakeSocket)
-      expect(fakeEmit.callCount).toBe(1)
+      expect(fakeEmit.mock.calls.length).toBe(1)
     })
     it(`should emit '${expected}' for key: ${key}`, () => {
       const evt = new global.window.KeyboardEvent('keyup', { key })
       Internals.handleKeys(evt, fakeSocket)
-      expect(fakeEmit.firstCall.args).toEqual([expected])
+      expect(fakeEmit.mock.calls[0]).toEqual([expected])
     })
   })
 })

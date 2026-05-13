@@ -2,19 +2,17 @@
 
 import { Internals, getAlmanac } from '#public/scripts/slideshow/weather.js'
 import type { WeatherResults } from '#contracts/weather.js'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
-
 describe('public/slideshow/weather setAlmanac()', () => {
   let weather: WeatherResults = {}
   beforeEach(() => {
     weather = {}
     const date = new Date(2024, 5, 12, 12, 0, 0, 0)
-    sandbox.useFakeTimers({ now: date.getTime() })
+    vi.useFakeTimers()
+    vi.setSystemTime(date.getTime())
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.useRealTimers()
+    vi.restoreAllMocks()
   })
 
   it('should set sunrise when sunrise occurs after minimum value', () => {
