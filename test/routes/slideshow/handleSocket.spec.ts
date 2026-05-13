@@ -1,52 +1,47 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import assert from 'node:assert'
 import { handleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('routes/slideshow handleSocket()', () => {
   let knexFake = stubToKnex({})
   let serverFake = cast<WebSocketServer>({})
-  let socketStub = { on: sandbox.stub() }
+  let socketStub = { on: vi.fn() }
   let socketFake = cast<Socket>(socketStub)
-  let socketStubs: Array<[string, Sinon.SinonStub]> = []
-  let loggerStub = sandbox.stub()
+  let socketStubs: Array<[string, MockInstance]> = []
+  let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
     knexFake = stubToKnex({})
     serverFake = cast<WebSocketServer>({})
-    socketStub = { on: sandbox.stub() }
+    socketStub = { on: vi.fn() }
     socketFake = cast<Socket>(socketStub)
-    loggerStub = sandbox.stub(Imports, 'logger')
+    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
     socketStubs = [
-      ['get-launchId', sandbox.stub(Internals, 'getLaunchId')],
-      ['join-slideshow', sandbox.stub(Internals, 'joinSlideshow').resolves()],
-      ['prev-image', sandbox.stub(Internals, 'prevImage').resolves()],
-      ['next-image', sandbox.stub(Internals, 'nextImage').resolves()],
-      ['goto-image', sandbox.stub(Internals, 'gotoImage').resolves()],
+      ['get-launchId', vi.spyOn(Internals, 'getLaunchId').mockImplementation((..._args: unknown[]) => undefined)],
+      ['join-slideshow', vi.spyOn(Internals, 'joinSlideshow').mockResolvedValue(undefined)],
+      ['prev-image', vi.spyOn(Internals, 'prevImage').mockResolvedValue(undefined)],
+      ['next-image', vi.spyOn(Internals, 'nextImage').mockResolvedValue(undefined)],
+      ['goto-image', vi.spyOn(Internals, 'gotoImage').mockResolvedValue(undefined)],
     ]
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   const endpoints = ['get-launchId', 'join-slideshow', 'prev-image', 'next-image', 'goto-image']
   it('should register expected endpoint count', () => {
     handleSocket(knexFake, serverFake, socketFake)
-    expect(socketStub.on.callCount).toBe(endpoints.length)
+    expect(socketStub.on.mock.calls.length).toBe(endpoints.length)
   })
   const getCallback = (endpoint: string): unknown =>
-    socketStub.on
-      .getCalls()
-      .filter((call) => call.args[0] === endpoint)
-      .map((call) => call.args[1] as unknown)[0]
+    socketStub.on.mock.calls.filter((call) => call[0] === endpoint).map((call) => call[1] as unknown)[0]
   endpoints.forEach((endpoint) => {
     it(`should handle socket message '${endpoint}'`, () => {
       handleSocket(knexFake, serverFake, socketFake)
-      expect(socketStub.on.calledWith(endpoint)).toBe(true)
+      expect(socketStub.on).toHaveBeenCalledWith(endpoint, expect.anything())
     })
     it(`should register a callback for '${endpoint}'`, () => {
       handleSocket(knexFake, serverFake, socketFake)
@@ -58,7 +53,7 @@ describe('routes/slideshow handleSocket()', () => {
       fn()
       const stub = socketStubs.find(([name]) => name === endpoint)
       assert(stub !== undefined)
-      expect(stub[1].callCount).toBe(1)
+      expect(stub[1].mock.calls.length).toBe(1)
     })
   })
   const asyncEndpoints: Array<[string, string]> = [
@@ -72,25 +67,25 @@ describe('routes/slideshow handleSocket()', () => {
       const stub = socketStubs.find(([name]) => name === endpoint)
       assert(stub !== undefined)
       const err = new Error(`boom-${handlerName}`)
-      stub[1].rejects(err)
+      stub[1].mockRejectedValue(err)
       handleSocket(knexFake, serverFake, socketFake)
       const fn = cast<(cb?: () => void) => void>(getCallback(endpoint))
       fn(() => undefined)
       await yieldMacro()
-      const matching = loggerStub.getCalls().find((call) => call.args[1] === err)
+      const matching = loggerStub.mock.calls.find((call) => call[1] === err)
       assert(matching !== undefined, `expected logger to be called with the ${handlerName} error`)
     })
   })
   it('should invoke the client callback with null when goto-image rejects', async () => {
     const stub = socketStubs.find(([name]) => name === 'goto-image')
     assert(stub !== undefined)
-    stub[1].rejects(new Error('goto failed'))
+    stub[1].mockRejectedValue(new Error('goto failed'))
     handleSocket(knexFake, serverFake, socketFake)
     const fn = cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
-    const callbackStub = sandbox.stub()
+    const callbackStub = vi.fn()
     fn(callbackStub)
     await yieldMacro()
-    expect(callbackStub.firstCall.args).toEqual([null])
+    expect(callbackStub.mock.calls[0]).toEqual([null])
   })
   it('should return an object for state storage', () => {
     const state = handleSocket(knexFake, serverFake, socketFake)

@@ -1,44 +1,44 @@
 'use sanity'
 
-import Sinon from 'sinon'
-import { stubToKnex } from '#testutils/typeGuards.js'
+import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { Imports } from '#routes/slideshow.js'
 import { eventuallyRejects } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('routes/slideshow Imports', () => {
-  let setLatestPictureStub = sandbox.stub()
+  let setLatestPictureStub: MockInstance = vi.fn()
   let knexFake = stubToKnex({})
   beforeEach(() => {
     knexFake = stubToKnex({})
-    setLatestPictureStub = sandbox.stub(Imports, 'setLatestPicture').resolves()
+    setLatestPictureStub = vi.spyOn(Imports, 'setLatestPicture').mockResolvedValue(cast(undefined))
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   describe('setLatest()', () => {
     it('should call api function setLatestPicture', async () => {
       await Imports.setLatest(knexFake, '')
-      expect(setLatestPictureStub.callCount).toBe(1)
+      expect(setLatestPictureStub.mock.calls.length).toBe(1)
     })
     it('should call setLatestPicture with knex', async () => {
       await Imports.setLatest(knexFake, '')
-      expect(setLatestPictureStub.firstCall.args[0]).toBe(knexFake)
+      expect(setLatestPictureStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('should call setLatestPicture with path', async () => {
       await Imports.setLatest(knexFake, '/foo/bar/baz')
-      expect(setLatestPictureStub.firstCall.args[1]).toBe('/foo/bar/baz')
+      expect(setLatestPictureStub.mock.calls[0]?.[1]).toBe('/foo/bar/baz')
     })
     it('should not catch rejection from setLatestPicture', async () => {
       const err = new Error('PKACHU! SMASH!')
-      setLatestPictureStub.rejects(err)
+      setLatestPictureStub.mockRejectedValue(err)
       const result = await eventuallyRejects(Imports.setLatest(knexFake, ''))
       expect(result).toBe(err)
     })
     it('should not catch thrown error from setLatestPicture', async () => {
       const err = new Error('PKACHU! SMASH!')
-      setLatestPictureStub.throws(err)
+      setLatestPictureStub.mockImplementation(() => {
+        throw err
+      })
       const result = await eventuallyRejects(Imports.setLatest(knexFake, ''))
       expect(result).toBe(err)
     })

@@ -130,6 +130,17 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
       replace: '.mockReturnValueOnce(',
       label: '.onNthCall().returns(v) -> .mockReturnValueOnce(v)',
     },
+    // No-arg forms first — sinon's bare .resolves()/.rejects() resolved/rejected to undefined.
+    {
+      pattern: /\.on(?:First|Second|Third|Fourth)Call\(\)\.resolves\(\s*\)/g,
+      replace: '.mockResolvedValueOnce(undefined)',
+      label: '.onNthCall().resolves() -> .mockResolvedValueOnce(undefined)',
+    },
+    {
+      pattern: /\.on(?:First|Second|Third|Fourth)Call\(\)\.rejects\(\s*\)/g,
+      replace: '.mockRejectedValueOnce(undefined)',
+      label: '.onNthCall().rejects() -> .mockRejectedValueOnce(undefined)',
+    },
     {
       pattern: /\.on(?:First|Second|Third|Fourth)Call\(\)\.resolves\(/g,
       replace: '.mockResolvedValueOnce(',

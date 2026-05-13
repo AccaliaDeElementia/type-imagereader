@@ -1,162 +1,159 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { SlideshowSocketState, handleSocket, gotoImage, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('routes/slideshow socket goto-image', () => {
   let knexFake = stubToKnex({})
   let ioStub = {}
   let serverFake = cast<WebSocketServer>(ioStub)
-  let socketStub = { on: sandbox.stub() }
+  let socketStub = { on: vi.fn() }
   let socketFake = cast<Socket>(socketStub)
   let socketState = new SlideshowSocketState()
   let folder = { path: '/foo/bar' }
   let roomData = { images: [folder], index: -1 }
-  let getRoomStub = sandbox.stub().resolves(roomData)
+  let getRoomStub = vi.fn().mockResolvedValue(roomData)
   let picturePath = ''
-  let setLatestStub = sandbox.stub().resolves(picturePath)
+  let setLatestStub = vi.fn().mockResolvedValue(picturePath)
   beforeEach(() => {
     knexFake = stubToKnex({})
     ioStub = {}
     serverFake = cast<WebSocketServer>(ioStub)
-    socketStub = { on: sandbox.stub() }
+    socketStub = { on: vi.fn() }
     socketFake = cast<Socket>(socketStub)
     socketState = handleSocket(knexFake, serverFake, socketFake)
     folder = { path: '/foo/bar' }
     roomData = { images: [folder], index: -1 }
-    getRoomStub = sandbox.stub(Internals, 'getRoomAndIncrementImage')
-    getRoomStub.resolves(roomData)
+    getRoomStub = vi.spyOn(Internals, 'getRoomAndIncrementImage').mockResolvedValue(cast(roomData))
     picturePath = `Picture-${Math.random()}.png`
-    setLatestStub = sandbox.stub(Imports, 'setLatest').resolves(picturePath)
+    setLatestStub = vi.spyOn(Imports, 'setLatest').mockResolvedValue(picturePath)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('with null room', () => {
-    let spy = sandbox.stub()
+    let spy = vi.fn()
     beforeEach(async () => {
-      spy = sandbox.stub()
+      spy = vi.fn()
       socketState.roomName = null
       roomData.index = 0
       await gotoImage(spy, socketState, knexFake)
     })
     it('should not get room', () => {
-      expect(getRoomStub.callCount).toBe(0)
+      expect(getRoomStub.mock.calls.length).toBe(0)
     })
     it('should not provide callback path', () => {
-      expect(spy.firstCall.args).toEqual([null])
+      expect(spy.mock.calls[0]).toEqual([null])
     })
     it('should not set latest', () => {
-      expect(setLatestStub.callCount).toBe(0)
+      expect(setLatestStub.mock.calls.length).toBe(0)
     })
   })
 
   describe('with valid room and bad index (-1)', () => {
-    let spy = sandbox.stub()
+    let spy = vi.fn()
     beforeEach(async () => {
-      spy = sandbox.stub()
+      spy = vi.fn()
       socketState.roomName = '/foo'
       roomData.index = -1
       await gotoImage(spy, socketState, knexFake)
     })
     it('should get room', () => {
-      expect(getRoomStub.callCount).toBe(1)
+      expect(getRoomStub.mock.calls.length).toBe(1)
     })
     it('should get room with knex', () => {
-      expect(getRoomStub.firstCall.args[0]).toBe(knexFake)
+      expect(getRoomStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('should get room with room name', () => {
-      expect(getRoomStub.firstCall.args[1]).toBe('/foo')
+      expect(getRoomStub.mock.calls[0]?.[1]).toBe('/foo')
     })
     it('should get room without increment', () => {
-      expect(getRoomStub.firstCall.args).toHaveLength(2)
+      expect(getRoomStub.mock.calls[0]).toHaveLength(2)
     })
     it('should not provide callback path', () => {
-      expect(spy.firstCall.args).toEqual([null])
+      expect(spy.mock.calls[0]).toEqual([null])
     })
   })
 
   describe('with valid room and good index (0)', () => {
-    let spy = sandbox.stub()
+    let spy = vi.fn()
     beforeEach(async () => {
-      spy = sandbox.stub()
+      spy = vi.fn()
       socketState.roomName = '/foo'
       roomData.index = 0
       await gotoImage(spy, socketState, knexFake)
     })
     it('should get room with knex', () => {
-      expect(getRoomStub.firstCall.args[0]).toBe(knexFake)
+      expect(getRoomStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('should get room with room name', () => {
-      expect(getRoomStub.firstCall.args[1]).toBe('/foo')
+      expect(getRoomStub.mock.calls[0]?.[1]).toBe('/foo')
     })
     it('should get room without increment', () => {
-      expect(getRoomStub.firstCall.args).toHaveLength(2)
+      expect(getRoomStub.mock.calls[0]).toHaveLength(2)
     })
     it('should send callback path', () => {
-      expect(spy.firstCall.args[0]).toBe(picturePath)
+      expect(spy.mock.calls[0]?.[0]).toBe(picturePath)
     })
     it('should set latest', () => {
-      expect(setLatestStub.callCount).toBe(1)
+      expect(setLatestStub.mock.calls.length).toBe(1)
     })
     it('should set latest with knex', () => {
-      expect(setLatestStub.firstCall.args[0]).toBe(knexFake)
+      expect(setLatestStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('should set latest with folder object', () => {
-      expect(setLatestStub.firstCall.args[1]).toBe(folder)
+      expect(setLatestStub.mock.calls[0]?.[1]).toBe(folder)
     })
   })
 
   describe('with valid room and out-of-range index (12)', () => {
     beforeEach(async () => {
-      const spy = sandbox.stub()
+      const spy = vi.fn()
       socketState.roomName = '/foo'
       roomData.index = 12
       await gotoImage(spy, socketState, knexFake)
     })
     it('should not set latest', () => {
-      expect(setLatestStub.callCount).toBe(0)
+      expect(setLatestStub.mock.calls.length).toBe(0)
     })
   })
 
   it('should send null callback path when setLatest returns null', async () => {
-    setLatestStub.resolves(null)
+    setLatestStub.mockResolvedValue(null)
     socketState.roomName = '/foo'
     roomData.index = 0
-    const spy = sandbox.stub()
+    const spy = vi.fn()
     await gotoImage(spy, socketState, knexFake)
-    expect(spy.firstCall.args[0]).toBe(null)
+    expect(spy.mock.calls[0]?.[0]).toBe(null)
   })
 
   describe('logging', () => {
-    let loggerStub = sandbox.stub()
+    let loggerStub: MockInstance = vi.fn()
     beforeEach(() => {
-      loggerStub = sandbox.stub(Imports, 'logger')
+      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
     })
 
     it('should log gotoImage format on valid invocation', async () => {
       socketState.roomName = '/foo'
       roomData.index = 0
-      await gotoImage(sandbox.stub(), socketState, knexFake)
-      expect(loggerStub.firstCall.args[0]).toBe('gotoImage in %s')
+      await gotoImage(vi.fn(), socketState, knexFake)
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('gotoImage in %s')
     })
 
     it('should log the room name on valid invocation', async () => {
       socketState.roomName = '/foo'
       roomData.index = 0
-      await gotoImage(sandbox.stub(), socketState, knexFake)
-      expect(loggerStub.firstCall.args[1]).toBe('/foo')
+      await gotoImage(vi.fn(), socketState, knexFake)
+      expect(loggerStub.mock.calls[0]?.[1]).toBe('/foo')
     })
 
     it('should not log when room name is null', async () => {
       socketState.roomName = null
-      await gotoImage(sandbox.stub(), socketState, knexFake)
-      expect(loggerStub.callCount).toBe(0)
+      await gotoImage(vi.fn(), socketState, knexFake)
+      expect(loggerStub.mock.calls.length).toBe(0)
     })
   })
 })
