@@ -172,6 +172,14 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
     { pattern: /\.callCount\b/g, replace: '.mock.calls.length', label: '.callCount -> .mock.calls.length' },
     { pattern: /\.getCalls\(\s*\)/g, replace: '.mock.calls', label: '.getCalls() -> .mock.calls' },
     { pattern: /\.resetHistory\(\s*\)/g, replace: '.mockClear()', label: '.resetHistory() -> .mockClear()' },
+    // Per-stub restore (sinon's instance method) -> vitest's per-mock restore.
+    // Distinct from sandbox.restore() which is handled above (-> vi.restoreAllMocks()).
+    // Match `<id>?.restore()` and `<id>.restore()` but NOT `sandbox.restore()` / `Sinon.restore()` / `sinon.restore()`.
+    {
+      pattern: /(?<!\b(?:sandbox|Sinon|sinon))\.restore\(\s*\)/g,
+      replace: '.mockRestore()',
+      label: '<stub>.restore() -> <stub>.mockRestore()',
+    },
     // .called (boolean) — careful with the negative lookahead so we don't eat .calledWith/.calledOnce/etc.
     {
       pattern: /\.called(?![A-Za-z])/g,
