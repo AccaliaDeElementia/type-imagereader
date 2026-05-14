@@ -55,7 +55,7 @@ describe('testutils/Express createResponseFake()', () => {
     const a = createResponseFake()
     const b = createResponseFake()
     a.stub.status(200)
-    expect(b.stub.status.callCount).toBe(0)
+    expect(b.stub.status.mock.calls.length).toBe(0)
   })
   it('should return fake that is the same object reference as stub', () => {
     const { stub, fake } = createResponseFake()

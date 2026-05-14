@@ -1,17 +1,13 @@
 'use sanity'
 
-import type { Debugger } from 'debug'
-
 import type { Request, RequestHandler, Response, Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
 import { CacheStorage, Internals, getRouter, ImageData, Imports } from '#routes/images.js'
-import Sinon from 'sinon'
 import { cast } from '#testutils/typeGuards.js'
 import { createResponseFake } from '#testutils/express.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 interface ReqParams {
   path: string | string[] | undefined
@@ -43,31 +39,33 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
   let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   let routerFake = {
-    get: sandbox.stub().returnsThis(),
+    get: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
   }
-  let loggerStub = sandbox.stub()
-  let router = cast<(req: Request, res: Response) => Promise<void>>(sandbox.stub())
-  let fetchImageStub = sandbox.stub()
-  let sendImageStub = sandbox.stub()
+  let loggerStub: MockInstance = vi.fn()
+  let router = cast<(req: Request, res: Response) => Promise<void>>(vi.fn())
+  let fetchImageStub: MockInstance = vi.fn()
+  let sendImageStub: MockInstance = vi.fn()
   beforeEach(async () => {
     applicationFake = cast<Application>({})
     serverFake = cast<Server>({})
     websocketsFake = cast<WebSocketServer>({})
     routerFake = {
-      get: sandbox.stub().returnsThis(),
+      get: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
     }
-    sandbox.stub(Imports, 'Router').returns(cast<Router>(routerFake))
-    loggerStub = sandbox.stub()
-    sandbox.stub(Imports, 'logger').value(cast<Debugger>(loggerStub))
-    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<RequestHandler>(action))
+    vi.spyOn(Imports, 'Router').mockReturnValue(cast<Router>(routerFake))
+    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)
-    const [fn] = routerFake.get
-      .getCalls()
-      .filter((call) => call.args[0] === '/scaled/:width/:height/*path-image.webp')
-      .map((call) => call.args[1] as unknown)
+    const [fn] = routerFake.get.mock.calls
+      .filter((call) => call[0] === '/scaled/:width/:height/*path-image.webp')
+      .map((call) => call[1] as unknown)
     router = cast<(req: Request, res: Response) => Promise<void>>(fn)
-    fetchImageStub = sandbox.stub(CacheStorage.scaledCache, 'fetch').resolves()
-    sendImageStub = sandbox.stub(Internals, 'sendImage').resolves()
+    fetchImageStub = vi.spyOn(CacheStorage.scaledCache, 'fetch').mockResolvedValue(cast<ImageData>(undefined))
+    sendImageStub = vi.spyOn(Internals, 'sendImage').mockResolvedValue(undefined)
     requestStub = {
       params: { path: undefined },
       body: '',
@@ -77,7 +75,7 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   afterAll(() => {
     CacheStorage.kioskCache = defaultKioskCache
@@ -88,51 +86,51 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     let img: ImageData = new ImageData()
     beforeEach(async () => {
       img = new ImageData()
-      fetchImageStub.resolves(img)
+      fetchImageStub.mockResolvedValue(img)
       requestStub.params = { path: 'full/image/test.png', width: '123', height: '456' }
       await router(requestFake, responseFake)
     })
     it('should not set response status', () => {
-      expect(responseStub.status.callCount).toBe(0)
+      expect(responseStub.status.mock.calls.length).toBe(0)
     })
     it('should not send json data response', () => {
-      expect(responseStub.json.callCount).toBe(0)
+      expect(responseStub.json.mock.calls.length).toBe(0)
     })
     it('should log invocation once', () => {
-      expect(loggerStub.callCount).toBe(1)
+      expect(loggerStub.mock.calls.length).toBe(1)
     })
     it('should log invocation with GET-format', () => {
-      expect(loggerStub.firstCall.args[0]).toBe('GET /images/scaled %dx%d %s')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('GET /images/scaled %dx%d %s')
     })
     it('should log invocation with width arg', () => {
-      expect(loggerStub.firstCall.args[1]).toBe(123)
+      expect(loggerStub.mock.calls[0]?.[1]).toBe(123)
     })
     it('should log invocation with height arg', () => {
-      expect(loggerStub.firstCall.args[2]).toBe(456)
+      expect(loggerStub.mock.calls[0]?.[2]).toBe(456)
     })
     it('should log invocation with filename arg', () => {
-      expect(loggerStub.firstCall.args[3]).toBe('/full/image/test.png')
+      expect(loggerStub.mock.calls[0]?.[3]).toBe('/full/image/test.png')
     })
     it('should call fetch on the cache', () => {
-      expect(fetchImageStub.callCount).toBe(1)
+      expect(fetchImageStub.mock.calls.length).toBe(1)
     })
     it('should fetch with expected path', () => {
-      expect(fetchImageStub.firstCall.args[0]).toBe('/full/image/test.png')
+      expect(fetchImageStub.mock.calls[0]?.[0]).toBe('/full/image/test.png')
     })
     it('should fetch with expected width', () => {
-      expect(fetchImageStub.firstCall.args[1]).toBe(123)
+      expect(fetchImageStub.mock.calls[0]?.[1]).toBe(123)
     })
     it('should fetch with expected height', () => {
-      expect(fetchImageStub.firstCall.args[2]).toBe(456)
+      expect(fetchImageStub.mock.calls[0]?.[2]).toBe(456)
     })
     it('should send image with sendImage()', () => {
-      expect(sendImageStub.callCount).toBe(1)
+      expect(sendImageStub.mock.calls.length).toBe(1)
     })
     it('should send image data with sendImage()', () => {
-      expect(sendImageStub.firstCall.args[0]).toBe(img)
+      expect(sendImageStub.mock.calls[0]?.[0]).toBe(img)
     })
     it('should send to response with sendImage()', () => {
-      expect(sendImageStub.firstCall.args[1]).toBe(responseFake)
+      expect(sendImageStub.mock.calls[0]?.[1]).toBe(responseFake)
     })
   })
 
@@ -172,25 +170,25 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
         await router(requestFake, responseFake)
       })
       it('should not fetch image', () => {
-        expect(fetchImageStub.callCount).toBe(0)
+        expect(fetchImageStub.mock.calls.length).toBe(0)
       })
       it('should not send image', () => {
-        expect(sendImageStub.callCount).toBe(0)
+        expect(sendImageStub.mock.calls.length).toBe(0)
       })
       it('should not log message', () => {
-        expect(loggerStub.callCount).toBe(0)
+        expect(loggerStub.mock.calls.length).toBe(0)
       })
       it('should set response status', () => {
-        expect(responseStub.status.callCount).toBe(1)
+        expect(responseStub.status.mock.calls.length).toBe(1)
       })
       it('should send BAD_REQUEST status code', () => {
-        expect(responseStub.status.firstCall.args).toEqual([400])
+        expect(responseStub.status.mock.calls[0]).toEqual([400])
       })
       it('should send json response', () => {
-        expect(responseStub.json.callCount).toBe(1)
+        expect(responseStub.json.mock.calls.length).toBe(1)
       })
       it('should send error message in json response', () => {
-        expect(responseStub.json.firstCall.args).toEqual([{ error: { code: 'E_BAD_REQUEST', message } }])
+        expect(responseStub.json.mock.calls[0]).toEqual([{ error: { code: 'E_BAD_REQUEST', message } }])
       })
     })
   })

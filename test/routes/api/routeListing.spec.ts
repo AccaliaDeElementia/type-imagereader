@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
@@ -9,8 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { stubDebug } from '#testutils/debug.js'
 import { createResponseFake } from '#testutils/express.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 type RequestHandler = (req: Request, res: ExpressResponse) => Promise<void>
 
@@ -22,10 +20,14 @@ describe('routes/api route GET /listing', () => {
   }
   let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let routeHandler = cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
-  let isPathTraversalStub = sandbox.stub()
-  let getListingStub = sandbox.stub()
-  let loggerStub = sandbox.stub()
+  let routeHandler = cast<RequestHandler>(
+    vi.fn().mockImplementation(() => {
+      throw cast<Error>('WRONG CALL')
+    }),
+  )
+  let isPathTraversalStub: MockInstance = vi.fn()
+  let getListingStub: MockInstance = vi.fn()
+  let loggerStub: MockInstance = vi.fn()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -36,84 +38,84 @@ describe('routes/api route GET /listing', () => {
     requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     knexFake = { Knex: Math.random() }
-    const getFn = sandbox.stub()
-    const InitializeStub = sandbox.stub(Imports, 'initialize').resolves(stubToKnex(knexFake))
-    const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
+    const getFn = vi.fn()
+    const InitializeStub = vi.spyOn(Imports, 'initialize').mockResolvedValue(stubToKnex(knexFake))
+    const MakeRouterStub = vi.spyOn(Imports, 'Router').mockReturnValue(
       cast<Router>({
         get: getFn,
-        post: sandbox.stub(),
+        post: vi.fn(),
       }),
     )
-    getListingStub = sandbox.stub(Imports, 'getListing').resolves()
-    ;({ loggerStub } = stubDebug(sandbox, Imports))
-    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
-    isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
+    getListingStub = vi.spyOn(Imports, 'getListing').mockResolvedValue(null)
+    ;({ loggerStub } = stubDebug(Imports))
+    vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
+    isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
     routeHandler = cast(
-      getFn.getCalls().find((call) => call.args[0] === '/listing')?.args[1],
+      getFn.mock.calls.find((call) => call[0] === '/listing')?.[1],
       (fn): fn is RequestHandler => fn !== null,
     )
-    InitializeStub.restore()
-    MakeRouterStub.restore()
+    InitializeStub.mockRestore()
+    MakeRouterStub.mockRestore()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should return status OK', async () => {
-    getListingStub.resolves({})
+    getListingStub.mockResolvedValue({})
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.OK])
+    expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.OK])
   })
   it('should json send listing response', async () => {
     const listing = { listing: Math.random() }
-    getListingStub.resolves(listing)
+    getListingStub.mockResolvedValue(listing)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).toBe(listing)
+    expect(responseStub.json.mock.calls[0]?.[0]).toBe(listing)
   })
   it('should pass Knex to getListing', async () => {
     requestStub.params.path = []
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[0]).toBe(knexFake)
+    expect(getListingStub.mock.calls[0]?.[0]).toBe(knexFake)
   })
   it('should retrieve implicit root listing', async () => {
     requestStub.params.path = []
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[1]).toBe('/')
+    expect(getListingStub.mock.calls[0]?.[1]).toBe('/')
   })
   it('should retrieve explicit root listing', async () => {
     requestStub.params.path = ['']
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[1]).toBe('/')
+    expect(getListingStub.mock.calls[0]?.[1]).toBe('/')
   })
   it('should retrieve web path listing for string', async () => {
     requestStub.params.path = 'foo/a bar/baz'
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[1]).toBe('/foo/a bar/baz/')
+    expect(getListingStub.mock.calls[0]?.[1]).toBe('/foo/a bar/baz/')
   })
   it('should retrieve web path listing for string array', async () => {
     requestStub.params.path = ['foo', 'a bar', 'baz']
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.firstCall.args[1]).toBe('/foo/a bar/baz/')
+    expect(getListingStub.mock.calls[0]?.[1]).toBe('/foo/a bar/baz/')
   })
   it('should not call getListing when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
+    isPathTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
-    expect(getListingStub.callCount).toBe(0)
+    expect(getListingStub.mock.calls.length).toBe(0)
   })
   it('should return status FORBIDDEN when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
+    isPathTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.FORBIDDEN])
+    expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.FORBIDDEN])
   })
   it('should return E_NO_TRAVERSE json error when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
+    isPathTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
+    expect(responseStub.json.mock.calls[0]?.[0]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
   })
   it('should return status NOT_FOUND for missing folder', async () => {
-    getListingStub.resolves(null)
+    getListingStub.mockResolvedValue(null)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.NOT_FOUND])
+    expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.NOT_FOUND])
   })
   it('should json error for missing folder', async () => {
     const err = {
@@ -123,26 +125,26 @@ describe('routes/api route GET /listing', () => {
         path: '/',
       },
     }
-    getListingStub.resolves(null)
+    getListingStub.mockResolvedValue(null)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).toEqual(err)
+    expect(responseStub.json.mock.calls[0]?.[0]).toEqual(err)
   })
   it('should log on entry to listing handler', async () => {
-    getListingStub.resolves({})
+    getListingStub.mockResolvedValue({})
     await routeHandler(requestFake, responseFake)
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GET /listing'))
+    const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('GET /listing'))
     expect(matched).toBe(true)
   })
   it('should log a path traversal attempt', async () => {
-    isPathTraversalStub.returns(true)
+    isPathTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('path traversal blocked'))
+    const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('path traversal blocked'))
     expect(matched).toBe(true)
   })
   it('should log when listing is not found', async () => {
-    getListingStub.resolves(null)
+    getListingStub.mockResolvedValue(null)
     await routeHandler(requestFake, responseFake)
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('listing not found'))
+    const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('listing not found'))
     expect(matched).toBe(true)
   })
 })

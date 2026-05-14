@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
@@ -8,21 +7,24 @@ import { getRouter, Imports } from '#routes/api.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { stubDebug } from '#testutils/debug.js'
 import { createResponseFake } from '#testutils/express.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 type RequestHandler = (req: Request, res: ExpressResponse) => Promise<void>
 
 describe('routes/api route GET /bookmarks', () => {
-  let getBookmarkStub = sandbox.stub()
+  let getBookmarkStub: MockInstance = vi.fn()
   let requestStub = {
     body: {},
     originalUrl: '/',
   }
   let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let routeHandler = cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
-  let loggerStub = sandbox.stub()
+  let routeHandler = cast<RequestHandler>(
+    vi.fn().mockImplementation(() => {
+      throw cast<Error>('WRONG CALL')
+    }),
+  )
+  let loggerStub: MockInstance = vi.fn()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -31,41 +33,41 @@ describe('routes/api route GET /bookmarks', () => {
     }
     requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
-    const getFn = sandbox.stub()
+    const getFn = vi.fn()
     knexFake = { Knex: Math.random() }
-    const InitializeStub = sandbox.stub(Imports, 'initialize').resolves(stubToKnex(knexFake))
-    const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
+    const InitializeStub = vi.spyOn(Imports, 'initialize').mockResolvedValue(stubToKnex(knexFake))
+    const MakeRouterStub = vi.spyOn(Imports, 'Router').mockReturnValue(
       cast<Router>({
         get: getFn,
-        post: sandbox.stub(),
+        post: vi.fn(),
       }),
     )
-    getBookmarkStub = sandbox.stub(Imports, 'getBookmarks').resolves()
-    ;({ loggerStub } = stubDebug(sandbox, Imports))
-    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
+    getBookmarkStub = vi.spyOn(Imports, 'getBookmarks').mockResolvedValue([])
+    ;({ loggerStub } = stubDebug(Imports))
+    vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
-    const fn = getFn.getCalls().find((call) => call.args[0] === '/bookmarks')?.args[1] as unknown
+    const fn = getFn.mock.calls.find((call) => call[0] === '/bookmarks')?.[1] as unknown
     routeHandler = cast(fn, (fn): fn is RequestHandler => typeof fn === 'function')
-    InitializeStub.restore()
-    MakeRouterStub.restore()
+    InitializeStub.mockRestore()
+    MakeRouterStub.mockRestore()
   })
 
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should pass bookmarks to json response', async () => {
     const bookmarks = { Bookmarks: Math.random() }
-    getBookmarkStub.resolves(bookmarks)
+    getBookmarkStub.mockResolvedValue(bookmarks)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).toBe(bookmarks)
+    expect(responseStub.json.mock.calls[0]?.[0]).toBe(bookmarks)
   })
   it('should pass knex to getBookmarks', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(getBookmarkStub.firstCall.args[0]).toBe(knexFake)
+    expect(getBookmarkStub.mock.calls[0]?.[0]).toBe(knexFake)
   })
   it('should log on entry to bookmarks handler', async () => {
     await routeHandler(requestFake, responseFake)
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('GET /bookmarks'))
+    const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('GET /bookmarks'))
     expect(matched).toBe(true)
   })
 })

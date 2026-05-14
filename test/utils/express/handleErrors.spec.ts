@@ -59,13 +59,13 @@ describe('utils/Express handleErrors', () => {
     const action = sandbox.stub().rejects(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
+    expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
   })
   it('should set E_INTERNAL_ERROR json payload on error', async () => {
     const action = sandbox.stub().rejects(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(responseStub.json.firstCall.args).toEqual([
+    expect(responseStub.json.mock.calls[0]).toEqual([
       { error: { code: 'E_INTERNAL_ERROR', message: 'Internal Server Error' } },
     ])
   })
@@ -108,6 +108,6 @@ describe('utils/Express handleErrors', () => {
     const action = sandbox.stub().throws(err)
     const handler = handleErrors(loggerFake, action)
     await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
+    expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
   })
 })

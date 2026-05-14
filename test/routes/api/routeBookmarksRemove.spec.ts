@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import type { Application, RequestHandler as ExpressRequestHandler, Response as ExpressResponse, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
@@ -9,8 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { stubDebug } from '#testutils/debug.js'
 import { createResponseFake } from '#testutils/express.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 type RequestHandler = (req: Request, res: ExpressResponse) => Promise<void>
 
@@ -23,10 +21,14 @@ describe('routes/api route POST /bookmarks/remove', () => {
   }
   let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let routeHandler = cast<RequestHandler>(sandbox.stub().throws('WRONG CALL'))
-  let isPathTraversalStub = sandbox.stub()
-  let removeBookmarkStub = sandbox.stub()
-  let loggerStub = sandbox.stub()
+  let routeHandler = cast<RequestHandler>(
+    vi.fn().mockImplementation(() => {
+      throw cast<Error>('WRONG CALL')
+    }),
+  )
+  let isPathTraversalStub: MockInstance = vi.fn()
+  let removeBookmarkStub: MockInstance = vi.fn()
+  let loggerStub: MockInstance = vi.fn()
   let knexFake = { Knex: Math.random() }
   beforeEach(async () => {
     requestStub = {
@@ -38,65 +40,65 @@ describe('routes/api route POST /bookmarks/remove', () => {
     requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     knexFake = { Knex: Math.random() }
-    const postFn = sandbox.stub()
-    const InitializeStub = sandbox.stub(Imports, 'initialize').resolves(stubToKnex(knexFake))
-    const MakeRouterStub = sandbox.stub(Imports, 'Router').returns(
+    const postFn = vi.fn()
+    const InitializeStub = vi.spyOn(Imports, 'initialize').mockResolvedValue(stubToKnex(knexFake))
+    const MakeRouterStub = vi.spyOn(Imports, 'Router').mockReturnValue(
       cast<Router>({
         post: postFn,
-        get: sandbox.stub(),
+        get: vi.fn(),
       }),
     )
-    removeBookmarkStub = sandbox.stub(Imports, 'removeBookmark').resolves()
-    ;({ loggerStub } = stubDebug(sandbox, Imports))
-    sandbox.stub(Imports, 'handleErrors').callsFake((_logger, action) => cast<ExpressRequestHandler>(action))
-    isPathTraversalStub = sandbox.stub(Imports, 'isPathTraversal').returns(false)
+    removeBookmarkStub = vi.spyOn(Imports, 'removeBookmark').mockResolvedValue(undefined)
+    ;({ loggerStub } = stubDebug(Imports))
+    vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
+    isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
     routeHandler = cast(
-      postFn.getCalls().find((call) => call.args[0] === '/bookmarks/remove')?.args[1],
+      postFn.mock.calls.find((call) => call[0] === '/bookmarks/remove')?.[1],
       (fn): fn is RequestHandler => fn !== null,
     )
-    InitializeStub.restore()
-    MakeRouterStub.restore()
+    InitializeStub.mockRestore()
+    MakeRouterStub.mockRestore()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.OK])
+    expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.OK])
   })
   it('should return empty response body on success', async () => {
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.end.firstCall.args).toHaveLength(0)
+    expect(responseStub.end.mock.calls[0]).toHaveLength(0)
   })
   it('should call removeBookmark with knex instance', async () => {
     requestStub.body.path = 'foo/a%20bar/baz.gif'
     await routeHandler(requestFake, responseFake)
-    expect(removeBookmarkStub.firstCall.args[0]).toBe(knexFake)
+    expect(removeBookmarkStub.mock.calls[0]?.[0]).toBe(knexFake)
   })
   it('should call removeBookmark with decoded path', async () => {
     requestStub.body.path = 'foo/a%20bar/baz.gif'
     await routeHandler(requestFake, responseFake)
-    expect(removeBookmarkStub.firstCall.args[1]).toBe('/foo/a bar/baz.gif')
+    expect(removeBookmarkStub.mock.calls[0]?.[1]).toBe('/foo/a bar/baz.gif')
   })
   it('should not call removeBookmark when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
+    isPathTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
-    expect(removeBookmarkStub.callCount).toBe(0)
+    expect(removeBookmarkStub.mock.calls.length).toBe(0)
   })
   it('should return status FORBIDDEN when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
+    isPathTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.status.firstCall.args).toEqual([StatusCodes.FORBIDDEN])
+    expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.FORBIDDEN])
   })
   it('should return E_NO_TRAVERSE json error when isPathTraversal returns true', async () => {
-    isPathTraversalStub.returns(true)
+    isPathTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
-    expect(responseStub.json.firstCall.args[0]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
+    expect(responseStub.json.mock.calls[0]?.[0]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
   })
   it('should log on entry to bookmarks/remove handler', async () => {
     await routeHandler(requestFake, responseFake)
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('POST /bookmarks/remove'))
+    const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('POST /bookmarks/remove'))
     expect(matched).toBe(true)
   })
 })

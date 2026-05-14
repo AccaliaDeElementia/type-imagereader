@@ -1,65 +1,62 @@
 'use sanity'
 
 import type { Express, Response } from 'express'
-import Sinon from 'sinon'
 import { StatusCodes } from 'http-status-codes'
 import { cast } from '#testutils/typeGuards.js'
 import { createResponseFake } from '#testutils/express.js'
 import { configureErrorHandler } from '#server.js'
 
-const sandbox = Sinon.createSandbox()
-
 describe('Server configureErrorHandler', () => {
-  let appStub = { use: sandbox.stub() }
+  let appStub = { use: vi.fn() }
   let appFake = cast<Express>(appStub)
   let { stub: responseStub } = createResponseFake()
   beforeEach(() => {
-    appStub = { use: sandbox.stub() }
+    appStub = { use: vi.fn() }
     appFake = cast<Express>(appStub)
     ;({ stub: responseStub } = createResponseFake())
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should register exactly one handler', () => {
     configureErrorHandler(appFake)
-    expect(appStub.use.callCount).toBe(1)
+    expect(appStub.use.mock.calls.length).toBe(1)
   })
   it('should register a function as the error handler', () => {
     configureErrorHandler(appFake)
-    const fn = appStub.use.firstCall.args[0] as unknown
+    const fn = appStub.use.mock.calls[0]?.[0] as unknown
     expect(fn).toBeTypeOf('function')
   })
   const errorHandlerTests: Array<[string, () => void]> = [
     [
       'set status code once',
       () => {
-        expect(responseStub.status.callCount).toBe(1)
+        expect(responseStub.status.mock.calls.length).toBe(1)
       },
     ],
     [
       'set INTERNAL_SERVER_ERROR status code',
       () => {
-        expect(responseStub.status.firstCall.args).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
+        expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
       },
     ],
     [
       'send JSON message',
       () => {
-        expect(responseStub.json.callCount).toBe(1)
+        expect(responseStub.json.mock.calls.length).toBe(1)
       },
     ],
     [
       'send encoded JSON error',
       () => {
-        expect(responseStub.json.firstCall.args).toEqual([{ error: 'FOO!' }])
+        expect(responseStub.json.mock.calls[0]).toEqual([{ error: 'FOO!' }])
       },
     ],
   ]
   errorHandlerTests.forEach(([title, validationFn]) => {
     it(`should ${title} when handling an error`, () => {
       configureErrorHandler(appFake)
-      const fn = cast<(err: Error, _: unknown, res: Response, __: unknown) => void>(appStub.use.firstCall.args[0])
+      const fn = cast<(err: Error, _: unknown, res: Response, __: unknown) => void>(appStub.use.mock.calls[0]?.[0])
       const err = new Error('FOO!')
       fn(err, null, cast<Response>(responseStub), null)
       validationFn()
