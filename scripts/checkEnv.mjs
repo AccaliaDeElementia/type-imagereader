@@ -46,13 +46,26 @@ if (actualNpm !== requiredNpm) {
 }
 
 // Dockerfile ARG NODE_VERSION default must match engines.node so docker builds
-// can't silently pull a floating node tag.
-const dockerfile = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8')
-const nodeArgMatch = dockerfile.match(/^ARG\s+NODE_VERSION=(\S+)\s*$/m)
-if (nodeArgMatch === null) {
-  problems.push('  Dockerfile: ARG NODE_VERSION line not found')
-} else if (nodeArgMatch[1] !== requiredNode) {
-  problems.push(`  Dockerfile NODE_VERSION: required ${requiredNode}, declared ${nodeArgMatch[1]}`)
+// can't silently pull a floating node tag. Skip silently when the Dockerfile
+// isn't accessible — that's the case when this script runs inside the built
+// container itself (Dockerfile isn't typically copied into the image). The
+// runtime check above still catches Dockerfile-engines drift indirectly:
+// the running node is determined by Dockerfile's NODE_VERSION via FROM, so
+// a mismatch between Dockerfile and engines.node surfaces as a runtime-node
+// check failure.
+let dockerfile = null
+try {
+  dockerfile = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8')
+} catch (err) {
+  if (err.code !== 'ENOENT') throw err
+}
+if (dockerfile !== null) {
+  const nodeArgMatch = dockerfile.match(/^ARG\s+NODE_VERSION=(\S+)\s*$/m)
+  if (nodeArgMatch === null) {
+    problems.push('  Dockerfile: ARG NODE_VERSION line not found')
+  } else if (nodeArgMatch[1] !== requiredNode) {
+    problems.push(`  Dockerfile NODE_VERSION: required ${requiredNode}, declared ${nodeArgMatch[1]}`)
+  }
 }
 
 if (problems.length > 0) {
