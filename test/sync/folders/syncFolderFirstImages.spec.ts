@@ -1,261 +1,311 @@
 'use sanity'
 
 import { syncFolderFirstImages, Imports } from '#sync/folders.js'
-import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { createLoggerFake } from '#testutils/debug.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('sync/folders syncFolderFirstImages()', () => {
-  let { fake: loggerFake } = createLoggerFake(sandbox)
+  let { fake: loggerFake } = createLoggerFake()
   let innerQueryBuilder = {
-    select: sandbox.stub().returnsThis(),
-    min: sandbox.stub().returnsThis(),
-    from: sandbox.stub().returnsThis(),
-    groupBy: sandbox.stub().returnsThis(),
+    select: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    min: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    from: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    groupBy: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
   }
   let queryBuilder = {
-    with: sandbox.stub().returnsThis(),
-    select: sandbox.stub().returnsThis(),
-    min: sandbox.stub().returnsThis(),
-    from: sandbox.stub().returnsThis(),
-    join: sandbox.stub().returnsThis(),
-    innerJoin: sandbox.stub().returnsThis(),
-    groupBy: sandbox.stub().returnsThis(),
-    orderBy: sandbox.stub().resolves([]),
+    with: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    select: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    min: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    from: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    join: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    innerJoin: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    groupBy: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    orderBy: vi.fn().mockResolvedValue([]),
   }
-  let queryBuilderStub = sandbox.stub().returns(queryBuilder)
+  let queryBuilderStub = vi.fn().mockReturnValue(queryBuilder)
   let knexInstanceStub = {
-    insert: sandbox.stub().returnsThis(),
-    onConflict: sandbox.stub().returnsThis(),
-    merge: sandbox.stub().resolves(0),
+    insert: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    merge: vi.fn().mockResolvedValue(0),
   }
-  let knexFnStub = sandbox.stub().returns(knexInstanceStub)
+  let knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
   let knexFnFake = stubToKnex(knexFnStub)
-  let chunkStub = sandbox.stub()
+  let chunkStub: MockInstance = vi.fn()
   beforeEach(() => {
-    ;({ fake: loggerFake } = createLoggerFake(sandbox))
+    ;({ fake: loggerFake } = createLoggerFake())
     innerQueryBuilder = {
-      select: sandbox.stub().returnsThis(),
-      min: sandbox.stub().returnsThis(),
-      from: sandbox.stub().returnsThis(),
-      groupBy: sandbox.stub().returnsThis(),
+      select: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      min: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      from: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      groupBy: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
     }
     queryBuilder = {
-      with: sandbox.stub().returnsThis(),
-      select: sandbox.stub().returnsThis(),
-      min: sandbox.stub().returnsThis(),
-      from: sandbox.stub().returnsThis(),
-      join: sandbox.stub().returnsThis(),
-      innerJoin: sandbox.stub().returnsThis(),
-      groupBy: sandbox.stub().returnsThis(),
-      orderBy: sandbox.stub().resolves([]),
+      with: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      select: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      min: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      from: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      join: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      innerJoin: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      groupBy: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      orderBy: vi.fn().mockResolvedValue([]),
     }
-    queryBuilderStub = sandbox.stub().returns(queryBuilder)
+    queryBuilderStub = vi.fn().mockReturnValue(queryBuilder)
     knexInstanceStub = {
-      insert: sandbox.stub().returnsThis(),
-      onConflict: sandbox.stub().returnsThis(),
-      merge: sandbox.stub().resolves(0),
+      insert: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      merge: vi.fn().mockResolvedValue(0),
     }
-    knexFnStub = sandbox.stub().returns(knexInstanceStub)
+    knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
     knexFnFake = stubToKnex(knexFnStub)
-    chunkStub = sandbox.stub()
+    chunkStub = vi.fn()
     knexFnFake.queryBuilder = queryBuilderStub
-    chunkStub = sandbox.stub(Imports, 'chunk').returns([])
+    chunkStub = vi.spyOn(Imports, 'chunk').mockReturnValue([])
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should call querybuilder once for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilderStub.callCount).toBe(1)
+    expect(queryBuilderStub.mock.calls.length).toBe(1)
   })
   it('should select from querybuilder with no arguments for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilderStub.firstCall.args).toHaveLength(0)
+    expect(queryBuilderStub.mock.calls[0]).toHaveLength(0)
   })
   it('should call with once when creating CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.with.callCount).toBe(1)
+    expect(queryBuilder.with.mock.calls.length).toBe(1)
   })
   it('should create CTE named firsts for inner select of primary sort keys', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.with.firstCall.args[0]).toBe('firsts')
+    expect(queryBuilder.with.mock.calls[0]?.[0]).toBe('firsts')
   })
   it('should call select once in CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
-    expect(innerQueryBuilder.select.callCount).toBe(1)
+    cast<(o: unknown) => void>(queryBuilder.with.mock.calls[0]?.[1])(innerQueryBuilder)
+    expect(innerQueryBuilder.select.mock.calls.length).toBe(1)
   })
   it('should select folder name in CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
-    expect(innerQueryBuilder.select.firstCall.args[0]).toBe('pictures.folder')
+    cast<(o: unknown) => void>(queryBuilder.with.mock.calls[0]?.[1])(innerQueryBuilder)
+    expect(innerQueryBuilder.select.mock.calls[0]?.[0]).toBe('pictures.folder')
   })
   it('should call min once in CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
-    expect(innerQueryBuilder.min.callCount).toBe(1)
+    cast<(o: unknown) => void>(queryBuilder.with.mock.calls[0]?.[1])(innerQueryBuilder)
+    expect(innerQueryBuilder.min.mock.calls.length).toBe(1)
   })
   it('should select minimum sortKey in CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
-    expect(innerQueryBuilder.min.firstCall.args[0]).toBe('pictures.sortKey as sortKey')
+    cast<(o: unknown) => void>(queryBuilder.with.mock.calls[0]?.[1])(innerQueryBuilder)
+    expect(innerQueryBuilder.min.mock.calls[0]?.[0]).toBe('pictures.sortKey as sortKey')
   })
   it('should call from once in CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
-    expect(innerQueryBuilder.from.callCount).toBe(1)
+    cast<(o: unknown) => void>(queryBuilder.with.mock.calls[0]?.[1])(innerQueryBuilder)
+    expect(innerQueryBuilder.from.mock.calls.length).toBe(1)
   })
   it('should select from pictures table in CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
-    expect(innerQueryBuilder.from.firstCall.args[0]).toBe('pictures')
+    cast<(o: unknown) => void>(queryBuilder.with.mock.calls[0]?.[1])(innerQueryBuilder)
+    expect(innerQueryBuilder.from.mock.calls[0]?.[0]).toBe('pictures')
   })
   it('should call groupBy once in CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
-    expect(innerQueryBuilder.groupBy.callCount).toBe(1)
+    cast<(o: unknown) => void>(queryBuilder.with.mock.calls[0]?.[1])(innerQueryBuilder)
+    expect(innerQueryBuilder.groupBy.mock.calls.length).toBe(1)
   })
   it('should group by foldername in CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    cast<(o: unknown) => void>(queryBuilder.with.firstCall.args[1])(innerQueryBuilder)
-    expect(innerQueryBuilder.groupBy.firstCall.args[0]).toBe('pictures.folder')
+    cast<(o: unknown) => void>(queryBuilder.with.mock.calls[0]?.[1])(innerQueryBuilder)
+    expect(innerQueryBuilder.groupBy.mock.calls[0]?.[0]).toBe('pictures.folder')
   })
   it('should call select once for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.select.callCount).toBe(1)
+    expect(queryBuilder.select.mock.calls.length).toBe(1)
   })
   it('should select folder path for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.select.firstCall.args).toContain('pictures.folder as path')
+    expect(queryBuilder.select.mock.calls[0]).toContain('pictures.folder as path')
   })
   it('should also select folders.folder so the upsert satisfies NOT NULL on folder', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.select.firstCall.args).toContain('folders.folder as folder')
+    expect(queryBuilder.select.mock.calls[0]).toContain('folders.folder as folder')
   })
   it('should also select folders.sortKey so the upsert satisfies NOT NULL on sortKey', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.select.firstCall.args).toContain('folders.sortKey as sortKey')
+    expect(queryBuilder.select.mock.calls[0]).toContain('folders.sortKey as sortKey')
   })
   it('should call min once for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.min.callCount).toBe(1)
+    expect(queryBuilder.min.mock.calls.length).toBe(1)
   })
   it('should select minimum picture path for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.min.firstCall.args[0]).toBe('pictures.path as firstPicture')
+    expect(queryBuilder.min.mock.calls[0]?.[0]).toBe('pictures.path as firstPicture')
   })
   it('should call from once for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.from.callCount).toBe(1)
+    expect(queryBuilder.from.mock.calls.length).toBe(1)
   })
   it('should select from firsts CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.from.firstCall.args[0]).toBe('firsts')
+    expect(queryBuilder.from.mock.calls[0]?.[0]).toBe('firsts')
   })
   it('should call join once when joining pictures table to CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.join.callCount).toBe(1)
+    expect(queryBuilder.join.mock.calls.length).toBe(1)
   })
   it('should join pictures table to CTE', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.join.firstCall.args).toEqual([
+    expect(queryBuilder.join.mock.calls[0]).toEqual([
       'pictures',
       { 'firsts.folder': 'pictures.folder', 'firsts.sortKey': 'pictures.sortKey' },
     ])
   })
   it('should call innerJoin once to restrict updates to existing folders', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.innerJoin.callCount).toBe(1)
+    expect(queryBuilder.innerJoin.mock.calls.length).toBe(1)
   })
   it('should innerJoin folders on path to prevent inserting rows with null folder/sortKey', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.innerJoin.firstCall.args).toEqual(['folders', 'folders.path', 'pictures.folder'])
+    expect(queryBuilder.innerJoin.mock.calls[0]).toEqual(['folders', 'folders.path', 'pictures.folder'])
   })
   it('should call groupBy once for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.groupBy.callCount).toBe(1)
+    expect(queryBuilder.groupBy.mock.calls.length).toBe(1)
   })
   it('should group by foldername to prevent duplicates when first picture has non unique sortkey', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.groupBy.firstCall.args).toContain('pictures.folder')
+    expect(queryBuilder.groupBy.mock.calls[0]).toContain('pictures.folder')
   })
   it('should also group by folders.folder so non-aggregated select column is permitted by Postgres', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.groupBy.firstCall.args).toContain('folders.folder')
+    expect(queryBuilder.groupBy.mock.calls[0]).toContain('folders.folder')
   })
   it('should also group by folders.sortKey so non-aggregated select column is permitted by Postgres', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.groupBy.firstCall.args).toContain('folders.sortKey')
+    expect(queryBuilder.groupBy.mock.calls[0]).toContain('folders.sortKey')
   })
   it('should call orderBy once', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.orderBy.callCount).toBe(1)
+    expect(queryBuilder.orderBy.mock.calls.length).toBe(1)
   })
   it('should order by foldername', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(queryBuilder.orderBy.firstCall.args[0]).toEqual([{ column: 'pictures.folder' }])
+    expect(queryBuilder.orderBy.mock.calls[0]?.[0]).toEqual([{ column: 'pictures.folder' }])
   })
   it('should call chunk once for batched update', async () => {
     const results = { toUpdate: Math.random() }
-    queryBuilder.orderBy.resolves(results)
+    queryBuilder.orderBy.mockResolvedValue(results)
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(chunkStub.callCount).toBe(1)
+    expect(chunkStub.mock.calls.length).toBe(1)
   })
   it('should chunk results for batched update', async () => {
     const results = { toUpdate: Math.random() }
-    queryBuilder.orderBy.resolves(results)
+    queryBuilder.orderBy.mockResolvedValue(results)
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(chunkStub.firstCall.args[0]).toBe(results)
+    expect(chunkStub.mock.calls[0]?.[0]).toBe(results)
   })
   it('should call knex once per chunk when updating folders', async () => {
     const chunk = { chunk: Math.random() }
-    chunkStub.returns([chunk])
+    chunkStub.mockReturnValue([chunk])
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexFnStub.callCount).toBe(1)
+    expect(knexFnStub.mock.calls.length).toBe(1)
   })
   it('should update folders table for each chunk', async () => {
     const chunk = { chunk: Math.random() }
-    chunkStub.returns([chunk])
+    chunkStub.mockReturnValue([chunk])
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexFnStub.firstCall.args).toEqual(['folders'])
+    expect(knexFnStub.mock.calls[0]).toEqual(['folders'])
   })
   it('should call insert once per chunk', async () => {
     const chunk = { chunk: Math.random() }
-    chunkStub.returns([chunk])
+    chunkStub.mockReturnValue([chunk])
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexInstanceStub.insert.callCount).toBe(1)
+    expect(knexInstanceStub.insert.mock.calls.length).toBe(1)
   })
   it('should insert chunk data when updating folders', async () => {
     const chunk = { chunk: Math.random() }
-    chunkStub.returns([chunk])
+    chunkStub.mockReturnValue([chunk])
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexInstanceStub.insert.firstCall.args[0]).toBe(chunk)
+    expect(knexInstanceStub.insert.mock.calls[0]?.[0]).toBe(chunk)
   })
   it('should call onConflict once per chunk', async () => {
     const chunk = { chunk: Math.random() }
-    chunkStub.returns([chunk])
+    chunkStub.mockReturnValue([chunk])
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexInstanceStub.onConflict.callCount).toBe(1)
+    expect(knexInstanceStub.onConflict.mock.calls.length).toBe(1)
   })
   it('should resolve conflict on path column', async () => {
     const chunk = { chunk: Math.random() }
-    chunkStub.returns([chunk])
+    chunkStub.mockReturnValue([chunk])
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexInstanceStub.onConflict.firstCall.args).toEqual(['path'])
+    expect(knexInstanceStub.onConflict.mock.calls[0]).toEqual(['path'])
   })
   it('should call merge once per chunk', async () => {
     const chunk = { chunk: Math.random() }
-    chunkStub.returns([chunk])
+    chunkStub.mockReturnValue([chunk])
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexInstanceStub.merge.callCount).toBe(1)
+    expect(knexInstanceStub.merge.mock.calls.length).toBe(1)
   })
   it('should merge only the firstPicture column on conflict', async () => {
     const chunk = { chunk: Math.random() }
-    chunkStub.returns([chunk])
+    chunkStub.mockReturnValue([chunk])
     await syncFolderFirstImages(loggerFake, knexFnFake)
-    expect(knexInstanceStub.merge.firstCall.args[0]).toEqual(['firstPicture'])
+    expect(knexInstanceStub.merge.mock.calls[0]?.[0]).toEqual(['firstPicture'])
   })
 })

@@ -1,14 +1,11 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import type { NextFunction, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { cast } from '#testutils/typeGuards.js'
 import { createResponseFake } from '#testutils/express.js'
 import { handleErrors } from '#utils/express.js'
 import { createLoggerFake } from '#testutils/debug.js'
-
-const sandbox = Sinon.createSandbox()
 
 describe('utils/Express handleErrors', () => {
   let requestStub = {
@@ -17,7 +14,7 @@ describe('utils/Express handleErrors', () => {
   }
   let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
 
   beforeEach(() => {
     requestStub = {
@@ -26,88 +23,90 @@ describe('utils/Express handleErrors', () => {
     }
     requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should call the action with request and response', async () => {
-    const action = sandbox.stub().resolves()
+    const action = vi.fn().mockResolvedValue(undefined)
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(action.callCount).toBe(1)
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(action.mock.calls.length).toBe(1)
   })
   it('should pass request as first argument to action', async () => {
-    const action = sandbox.stub().resolves()
+    const action = vi.fn().mockResolvedValue(undefined)
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(action.firstCall.args[0]).toBe(requestFake)
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(action.mock.calls[0]?.[0]).toBe(requestFake)
   })
   it('should pass response as second argument to action', async () => {
-    const action = sandbox.stub().resolves()
+    const action = vi.fn().mockResolvedValue(undefined)
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(action.firstCall.args[1]).toBe(responseFake)
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(action.mock.calls[0]?.[1]).toBe(responseFake)
   })
   it('should not call logger when action succeeds', async () => {
-    const action = sandbox.stub().resolves()
+    const action = vi.fn().mockResolvedValue(undefined)
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.callCount).toBe(0)
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(loggerStub.mock.calls.length).toBe(0)
   })
   it('should call response status with INTERNAL_SERVER_ERROR on error', async () => {
-    const action = sandbox.stub().rejects(new Error('test error'))
+    const action = vi.fn().mockRejectedValue(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
   })
   it('should set E_INTERNAL_ERROR json payload on error', async () => {
-    const action = sandbox.stub().rejects(new Error('test error'))
+    const action = vi.fn().mockRejectedValue(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
     expect(responseStub.json.mock.calls[0]).toEqual([
       { error: { code: 'E_INTERNAL_ERROR', message: 'Internal Server Error' } },
     ])
   })
   it('should log two arguments on first log call on error', async () => {
-    const action = sandbox.stub().rejects(new Error('test error'))
+    const action = vi.fn().mockRejectedValue(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.firstCall.args).toHaveLength(2)
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(loggerStub.mock.calls[0]).toHaveLength(2)
   })
   it('should log rendered url as first log argument on error', async () => {
     requestStub.originalUrl = '/test-path'
-    const action = sandbox.stub().rejects(new Error('test error'))
+    const action = vi.fn().mockRejectedValue(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.firstCall.args[0]).toBe('Error rendering: /test-path')
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(loggerStub.mock.calls[0]?.[0]).toBe('Error rendering: /test-path')
   })
   it('should log request body as second log argument on error', async () => {
     const bodyData = { Body: Math.random() }
     requestStub.body = bodyData
-    const action = sandbox.stub().rejects(new Error('test error'))
+    const action = vi.fn().mockRejectedValue(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.firstCall.args[1]).toBe(bodyData)
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(loggerStub.mock.calls[0]?.[1]).toBe(bodyData)
   })
   it('should log error object as last log argument on error', async () => {
     const err = new Error('test error')
-    const action = sandbox.stub().rejects(err)
+    const action = vi.fn().mockRejectedValue(err)
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.lastCall.args[0]).toBe(err)
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(loggerStub.mock.lastCall?.[0]).toBe(err)
   })
   it('should call logger twice on error', async () => {
-    const action = sandbox.stub().rejects(new Error('test error'))
+    const action = vi.fn().mockRejectedValue(new Error('test error'))
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
-    expect(loggerStub.callCount).toBe(2)
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
+    expect(loggerStub.mock.calls.length).toBe(2)
   })
   it('should handle synchronous throws from action', async () => {
     const err = new Error('sync error')
-    const action = sandbox.stub().throws(err)
+    const action = vi.fn().mockImplementation(() => {
+      throw err
+    })
     const handler = handleErrors(loggerFake, action)
-    await handler(requestFake, responseFake, cast<NextFunction>(sandbox.stub()))
+    await handler(requestFake, responseFake, cast<NextFunction>(vi.fn()))
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.INTERNAL_SERVER_ERROR])
   })
 })

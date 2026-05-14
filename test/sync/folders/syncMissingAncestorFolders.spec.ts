@@ -2,11 +2,9 @@
 
 import { syncMissingAncestorFolders } from '#sync/folders.js'
 import { toSortKey } from '#sync/helpers.js'
-import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/typeGuards.js'
 import { createLoggerFake } from '#testutils/debug.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 interface InsertedRow {
   folder: string
@@ -15,7 +13,7 @@ interface InsertedRow {
 }
 
 describe('sync/folders syncMissingAncestorFolders()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
 
   let distinctPictureFolders: Array<{ folder: string }> = []
   let existingFolderPaths: Array<{ path: string }> = []
@@ -23,29 +21,37 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
   let whereInCalls: unknown[][] = []
 
   let picturesQuery = {
-    distinct: sandbox.stub(),
-    whereNotNull: sandbox.stub(),
+    distinct: vi.fn(),
+    whereNotNull: vi.fn(),
   }
   let foldersSelectQuery = {
-    select: sandbox.stub().returnsThis(),
-    whereIn: sandbox.stub(),
+    select: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    whereIn: vi.fn(),
   }
   let foldersInsertQuery = {
-    insert: sandbox.stub().returnsThis(),
-    onConflict: sandbox.stub().returnsThis(),
-    ignore: sandbox.stub(),
+    insert: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    ignore: vi.fn(),
   }
-  let knexFnStub = sandbox.stub()
+  let knexFnStub: MockInstance = vi.fn()
   let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
     insertedChunks = []
     whereInCalls = []
 
     picturesQuery = {
-      distinct: sandbox.stub().returnsThis(),
-      whereNotNull: sandbox.stub().resolves(distinctPictureFolders),
+      distinct: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      whereNotNull: vi.fn().mockResolvedValue(distinctPictureFolders),
     }
     const runWhereIn = async (_col: string, values: unknown[]): Promise<Array<{ path: string }>> => {
       whereInCalls.push(values)
@@ -53,20 +59,24 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
       return existingFolderPaths.filter((r) => values.includes(r.path))
     }
     foldersSelectQuery = {
-      select: sandbox.stub().returnsThis(),
-      whereIn: sandbox.stub().callsFake(runWhereIn),
+      select: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      whereIn: vi.fn().mockImplementation(runWhereIn),
     }
     foldersInsertQuery = {
-      insert: sandbox.stub().callsFake((chunk: InsertedRow[]) => {
+      insert: vi.fn().mockImplementation((chunk: InsertedRow[]) => {
         insertedChunks.push(chunk)
         return foldersInsertQuery
       }),
-      onConflict: sandbox.stub().returnsThis(),
-      ignore: sandbox.stub().resolves(),
+      onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      ignore: vi.fn().mockResolvedValue(undefined),
     }
 
     let foldersCallCount = 0
-    knexFnStub = sandbox.stub().callsFake((table: string) => {
+    knexFnStub = vi.fn().mockImplementation((table: string) => {
       if (table === 'pictures') return picturesQuery
       if (table === 'folders') {
         foldersCallCount += 1
@@ -85,7 +95,7 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     setup()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('when no pictures exist', () => {
@@ -95,11 +105,11 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should not attempt folder inserts', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(foldersInsertQuery.insert.callCount).toBe(0)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(0)
     })
     it('should log zero added ancestors', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(loggerStub.firstCall.args[0]).toBe('Added 0 missing ancestor folders')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('Added 0 missing ancestor folders')
     })
   })
 
@@ -148,15 +158,15 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should log the number of ancestors added', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(loggerStub.firstCall.args[0]).toBe('Added 3 missing ancestor folders')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('Added 3 missing ancestor folders')
     })
     it('should use onConflict on path when inserting', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(foldersInsertQuery.onConflict.firstCall.args).toEqual(['path'])
+      expect(foldersInsertQuery.onConflict.mock.calls[0]).toEqual(['path'])
     })
     it('should use ignore (not merge) when inserting', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(foldersInsertQuery.ignore.callCount).toBeGreaterThan(0)
+      expect(foldersInsertQuery.ignore.mock.calls.length).toBeGreaterThan(0)
     })
   })
 
@@ -173,7 +183,7 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should log the number of ancestors actually added', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(loggerStub.firstCall.args[0]).toBe('Added 1 missing ancestor folders')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('Added 1 missing ancestor folders')
     })
   })
 
@@ -185,11 +195,11 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should not call insert', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(foldersInsertQuery.insert.callCount).toBe(0)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(0)
     })
     it('should log zero ancestors added', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(loggerStub.firstCall.args[0]).toBe('Added 0 missing ancestor folders')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('Added 0 missing ancestor folders')
     })
   })
 
@@ -214,15 +224,15 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     })
     it('should query pictures once for distinct folders', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(knexFnStub.withArgs('pictures').callCount).toBe(1)
+      expect(knexFnStub.mock.calls.filter((c) => c[0] === 'pictures').length).toBe(1)
     })
     it('should call distinct with folder column', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(picturesQuery.distinct.firstCall.args).toEqual(['folder'])
+      expect(picturesQuery.distinct.mock.calls[0]).toEqual(['folder'])
     })
     it('should exclude null folders from the picture query', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)
-      expect(picturesQuery.whereNotNull.firstCall.args).toEqual(['folder'])
+      expect(picturesQuery.whereNotNull.mock.calls[0]).toEqual(['folder'])
     })
     it('should look up existing folder paths with whereIn', async () => {
       await syncMissingAncestorFolders(loggerFake, knexFnFake)

@@ -1,132 +1,154 @@
 'use sanity'
 
 import { syncRemovedFolders } from '#sync/folders.js'
-import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { createLoggerFake } from '#testutils/debug.js'
 
-const sandbox = Sinon.createSandbox()
-
 describe('sync/folders syncRemovedFolders()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
   let knexInnerInstanceStub = {
-    select: sandbox.stub().returnsThis(),
-    from: sandbox.stub().returnsThis(),
-    whereRaw: sandbox.stub().returnsThis(),
-    catch: sandbox.stub(),
+    select: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    from: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    whereRaw: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    catch: vi.fn(),
   }
   let knexInstanceStub = {
-    whereNotExists: sandbox.stub().returnsThis(),
-    delete: sandbox.stub().resolves(0),
-    catch: sandbox.stub(),
+    whereNotExists: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    delete: vi.fn().mockResolvedValue(0),
+    catch: vi.fn(),
   }
-  let knexFnStub = sandbox.stub().returns(knexInstanceStub)
+  let knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
   let knexFnFake = stubToKnex(knexFnStub)
   beforeEach(() => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
     knexInnerInstanceStub = {
-      select: sandbox.stub().returnsThis(),
-      from: sandbox.stub().returnsThis(),
-      whereRaw: sandbox.stub().returnsThis(),
-      catch: sandbox.stub(),
+      select: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      from: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      whereRaw: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      catch: vi.fn(),
     }
     knexInstanceStub = {
-      whereNotExists: sandbox.stub().returnsThis(),
-      delete: sandbox.stub().resolves(0),
-      catch: sandbox.stub(),
+      whereNotExists: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      delete: vi.fn().mockResolvedValue(0),
+      catch: vi.fn(),
     }
-    knexFnStub = sandbox.stub().returns(knexInstanceStub)
+    knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
     knexFnFake = stubToKnex(knexFnStub)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it("should call knex with 'folders' table", async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(knexFnStub.calledWith('folders')).toBe(true)
+    expect(knexFnStub).toHaveBeenCalledWith('folders')
   })
   it('should call knex once', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(knexFnStub.callCount).toBe(1)
+    expect(knexFnStub.mock.calls.length).toBe(1)
   })
   it('should call knex before whereNotExists', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(knexFnStub.calledImmediatelyBefore(knexInstanceStub.whereNotExists)).toBe(true)
+    expect(
+      (knexInstanceStub.whereNotExists.mock.invocationCallOrder.at(-1) ?? 0) -
+        (knexFnStub.mock.invocationCallOrder.at(-1) ?? 0),
+    ).toBe(1)
   })
   it('should call delete once', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(knexInstanceStub.delete.callCount).toBe(1)
+    expect(knexInstanceStub.delete.mock.calls.length).toBe(1)
   })
   it('should call delete with no arguments', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(knexInstanceStub.delete.firstCall.args).toEqual([])
+    expect(knexInstanceStub.delete.mock.calls[0]).toEqual([])
   })
   it('should log once when records are removed', async () => {
-    knexInstanceStub.delete.resolves(1023)
+    knexInstanceStub.delete.mockResolvedValue(1023)
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(loggerStub.callCount).toBe(1)
+    expect(loggerStub.mock.calls.length).toBe(1)
   })
   it('should log removed count when records are removed', async () => {
-    knexInstanceStub.delete.resolves(1023)
+    knexInstanceStub.delete.mockResolvedValue(1023)
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(loggerStub.firstCall.args).toEqual(['Removed 1023 missing folders'])
+    expect(loggerStub.mock.calls[0]).toEqual(['Removed 1023 missing folders'])
   })
   it('should log once when no folders are removed', async () => {
-    knexInstanceStub.delete.resolves(0)
+    knexInstanceStub.delete.mockResolvedValue(0)
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(loggerStub.callCount).toBe(1)
+    expect(loggerStub.mock.calls.length).toBe(1)
   })
   it('should log zero count when no folders are removed', async () => {
-    knexInstanceStub.delete.resolves(0)
+    knexInstanceStub.delete.mockResolvedValue(0)
     await syncRemovedFolders(loggerFake, knexFnFake)
-    expect(loggerStub.firstCall.args).toEqual(['Removed 0 missing folders'])
+    expect(loggerStub.mock.calls[0]).toEqual(['Removed 0 missing folders'])
   })
   it('should call select once in inner query', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.mock.calls[0]?.[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.select.callCount).toBe(1)
+    expect(knexInnerInstanceStub.select.mock.calls.length).toBe(1)
   })
   it("should call select with '*' in inner query", async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.mock.calls[0]?.[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.select.firstCall.args).toEqual(['*'])
+    expect(knexInnerInstanceStub.select.mock.calls[0]).toEqual(['*'])
   })
   it('should call select before from in inner query', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.mock.calls[0]?.[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.select.calledImmediatelyBefore(knexInnerInstanceStub.from)).toBe(true)
+    expect(
+      (knexInnerInstanceStub.from.mock.invocationCallOrder.at(-1) ?? 0) -
+        (knexInnerInstanceStub.select.mock.invocationCallOrder.at(-1) ?? 0),
+    ).toBe(1)
   })
   it('should call from once in inner query', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.mock.calls[0]?.[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.from.callCount).toBe(1)
+    expect(knexInnerInstanceStub.from.mock.calls.length).toBe(1)
   })
   it("should call from with 'syncitems' in inner query", async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.mock.calls[0]?.[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.from.firstCall.args).toEqual(['syncitems'])
+    expect(knexInnerInstanceStub.from.mock.calls[0]).toEqual(['syncitems'])
   })
   it('should call from before whereRaw in inner query', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.mock.calls[0]?.[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.from.calledImmediatelyBefore(knexInnerInstanceStub.whereRaw)).toBe(true)
+    expect(
+      (knexInnerInstanceStub.whereRaw.mock.invocationCallOrder.at(-1) ?? 0) -
+        (knexInnerInstanceStub.from.mock.invocationCallOrder.at(-1) ?? 0),
+    ).toBe(1)
   })
   it('should call whereRaw once in inner query', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.mock.calls[0]?.[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.whereRaw.callCount).toBe(1)
+    expect(knexInnerInstanceStub.whereRaw.mock.calls.length).toBe(1)
   })
   it('should call whereRaw with correct condition in inner query', async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
-    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.firstCall.args[0])
+    const fn = cast<(this: unknown) => void>(knexInstanceStub.whereNotExists.mock.calls[0]?.[0])
     fn.apply(knexInnerInstanceStub)
-    expect(knexInnerInstanceStub.whereRaw.firstCall.args).toEqual(['syncitems.path = folders.path'])
+    expect(knexInnerInstanceStub.whereRaw.mock.calls[0]).toEqual(['syncitems.path = folders.path'])
   })
 })

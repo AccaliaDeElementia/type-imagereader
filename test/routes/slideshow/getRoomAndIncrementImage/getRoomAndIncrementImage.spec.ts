@@ -1,11 +1,9 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { STEP } from '#utils/helpers.js'
 import { Config, getRoomAndIncrementImage, Internals, Imports, type SlideshowRoom } from '#routes/slideshow.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const pagedImages = (count: number, offset = 0): string[] =>
   Array(count)
@@ -16,7 +14,7 @@ const isNumberMutator = (o: unknown): o is (_: number) => number => typeof o ===
 
 describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()', () => {
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     Config.countdownDuration = 60
     Config.memorySize = 100
   })
@@ -26,9 +24,9 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
       .fill(undefined)
       .map((_, i) => `/image${i}.png`)
     let knexFake = stubToKnex({ knex: Math.random() })
-    let getImagesStub = sandbox.stub()
-    let getCountsStub = sandbox.stub()
-    let markImageReadStub = sandbox.stub()
+    let getImagesStub: MockInstance = vi.fn()
+    let getCountsStub: MockInstance = vi.fn()
+    let markImageReadStub: MockInstance = vi.fn()
     let pages = {
       pages: 0,
       page: 0,
@@ -44,9 +42,9 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
       Config.rooms = {}
       Config.countdownDuration = 60
       Config.memorySize = 100
-      getImagesStub = sandbox.stub(Internals, 'getImages').resolves(stockImages)
-      markImageReadStub = sandbox.stub(Internals, 'markImageRead').resolves()
-      getCountsStub = sandbox.stub(Internals, 'getCounts').resolves(pages)
+      getImagesStub = vi.spyOn(Internals, 'getImages').mockResolvedValue(stockImages)
+      markImageReadStub = vi.spyOn(Internals, 'markImageRead').mockResolvedValue(undefined)
+      getCountsStub = vi.spyOn(Internals, 'getCounts').mockResolvedValue(pages)
     })
     it('it should create a room when the room does not exist in the cache', async () => {
       await getRoomAndIncrementImage(knexFake, '/images!/')
@@ -65,7 +63,7 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         index: 0,
         uriSafeImage: undefined,
       }
-      getCountsStub.callsFake(async () => {
+      getCountsStub.mockImplementation(async () => {
         // Simulate a concurrent call completing and populating Config.rooms before this one finishes
         Config.rooms['/images!/'] = concurrentRoom
         return await Promise.resolve(pages)
@@ -82,7 +80,7 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         index: 0,
         uriSafeImage: undefined,
       }
-      getCountsStub.callsFake(async () => {
+      getCountsStub.mockImplementation(async () => {
         Config.rooms['/images!/'] = concurrentRoom
         return await Promise.resolve(pages)
       })
@@ -102,17 +100,17 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
     it('it should retrieve image counts with getCounts()', async () => {
       const name = `/path/${Math.random()}/`
       await getRoomAndIncrementImage(knexFake, name)
-      expect(getCountsStub.callCount).toBe(1)
+      expect(getCountsStub.mock.calls.length).toBe(1)
     })
     it('it should pass knex to getCounts()', async () => {
       const name = `/path/${Math.random()}/`
       await getRoomAndIncrementImage(knexFake, name)
-      expect(getCountsStub.firstCall.args[0]).toBe(knexFake)
+      expect(getCountsStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('it should pass path to getCounts()', async () => {
       const name = `/path/${Math.random()}/`
       await getRoomAndIncrementImage(knexFake, name)
-      expect(getCountsStub.firstCall.args[1]).toBe(name)
+      expect(getCountsStub.mock.calls[0]?.[1]).toBe(name)
     })
     it('it should set pages config in result', async () => {
       const name = `/path/${Math.random()}/`
@@ -124,35 +122,35 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
       pages.page = 92
       const name = `/path/${Math.random()}/`
       await getRoomAndIncrementImage(knexFake, name)
-      expect(getImagesStub.callCount).toBe(1)
+      expect(getImagesStub.mock.calls.length).toBe(1)
     })
     it('it should pass knex to getImages() to seed images on new room', async () => {
       Config.memorySize = 42
       pages.page = 92
       const name = `/path/${Math.random()}/`
       await getRoomAndIncrementImage(knexFake, name)
-      expect(getImagesStub.firstCall.args[0]).toBe(knexFake)
+      expect(getImagesStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('it should pass path to getImages() to seed images on new room', async () => {
       Config.memorySize = 42
       pages.page = 92
       const name = `/path/${Math.random()}/`
       await getRoomAndIncrementImage(knexFake, name)
-      expect(getImagesStub.firstCall.args[1]).toBe(name)
+      expect(getImagesStub.mock.calls[0]?.[1]).toBe(name)
     })
     it('it should pass current page to getImages() to seed images on new room', async () => {
       Config.memorySize = 42
       pages.page = 92
       const name = `/path/${Math.random()}/`
       await getRoomAndIncrementImage(knexFake, name)
-      expect(getImagesStub.firstCall.args[2]).toBe(92)
+      expect(getImagesStub.mock.calls[0]?.[2]).toBe(92)
     })
     it('it should pass page size to getImages() to seed images on new room', async () => {
       Config.memorySize = 42
       pages.page = 92
       const name = `/path/${Math.random()}/`
       await getRoomAndIncrementImage(knexFake, name)
-      expect(getImagesStub.firstCall.args[3]).toBe(42)
+      expect(getImagesStub.mock.calls[0]?.[3]).toBe(42)
     })
     it('it should set default index on new room', async () => {
       const room = await getRoomAndIncrementImage(knexFake, '/path/')
@@ -177,66 +175,66 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
     })
     it('it should set uriSafeImage to blank if there are no pictures', async () => {
       stockImages = []
-      getImagesStub.resolves([])
+      getImagesStub.mockResolvedValue([])
       const room = await getRoomAndIncrementImage(knexFake, '/images!/')
       expect(room.uriSafeImage).toBe('')
     })
     it('it should call markImageRead if there are pictures on fetch', async () => {
       await getRoomAndIncrementImage(knexFake, '/images!/')
-      expect(markImageReadStub.callCount).toBe(1)
+      expect(markImageReadStub.mock.calls.length).toBe(1)
     })
     it('it should call markImageRead with 2 arguments if there are pictures on fetch', async () => {
       await getRoomAndIncrementImage(knexFake, '/images!/')
-      expect(markImageReadStub.firstCall.args).toHaveLength(2)
+      expect(markImageReadStub.mock.calls[0]).toHaveLength(2)
     })
     it('it should pass knex to markImageRead if there are pictures on fetch', async () => {
       await getRoomAndIncrementImage(knexFake, '/images!/')
-      expect(markImageReadStub.firstCall.args[0]).toBe(knexFake)
+      expect(markImageReadStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('it should pass first image path to markImageRead if there are pictures on fetch', async () => {
       await getRoomAndIncrementImage(knexFake, '/images!/')
-      expect(markImageReadStub.firstCall.args[1]).toBe('/image0.png')
+      expect(markImageReadStub.mock.calls[0]?.[1]).toBe('/image0.png')
     })
     it('it should omit call to markImageRead if there are no pictures', async () => {
       stockImages = []
-      getImagesStub.resolves([])
+      getImagesStub.mockResolvedValue([])
       await getRoomAndIncrementImage(knexFake, '/images!/')
-      expect(markImageReadStub.callCount).toBe(0)
+      expect(markImageReadStub.mock.calls.length).toBe(0)
     })
 
     describe('logging', () => {
-      let loggerStub = sandbox.stub()
+      let loggerStub: MockInstance = vi.fn()
       const ROOM_CREATED_FORMAT = 'slideshow room created: %s (pages=%d unread=%d)'
-      const isRoomCreatedCall = (c: Sinon.SinonSpyCall): boolean => c.args[0] === ROOM_CREATED_FORMAT
+      const isRoomCreatedCall = (c: readonly unknown[]): boolean => c[0] === ROOM_CREATED_FORMAT
       beforeEach(() => {
-        loggerStub = sandbox.stub(Imports, 'logger')
+        loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
       })
 
       it('should log room-created format when creating a new room', async () => {
         pages.pages = 5
         pages.unread = 12
-        getCountsStub.resolves(pages)
+        getCountsStub.mockResolvedValue(pages)
         await getRoomAndIncrementImage(knexFake, '/new-room/')
-        expect(loggerStub.firstCall.args[0]).toBe('slideshow room created: %s (pages=%d unread=%d)')
+        expect(loggerStub.mock.calls[0]?.[0]).toBe('slideshow room created: %s (pages=%d unread=%d)')
       })
 
       it('should log the room name when creating a new room', async () => {
         await getRoomAndIncrementImage(knexFake, '/new-room/')
-        expect(loggerStub.firstCall.args[1]).toBe('/new-room/')
+        expect(loggerStub.mock.calls[0]?.[1]).toBe('/new-room/')
       })
 
       it('should log the page count when creating a new room', async () => {
         pages.pages = 7
-        getCountsStub.resolves(pages)
+        getCountsStub.mockResolvedValue(pages)
         await getRoomAndIncrementImage(knexFake, '/new-room/')
-        expect(loggerStub.firstCall.args[2]).toBe(7)
+        expect(loggerStub.mock.calls[0]?.[2]).toBe(7)
       })
 
       it('should log the unread count when creating a new room', async () => {
         pages.unread = 42
-        getCountsStub.resolves(pages)
+        getCountsStub.mockResolvedValue(pages)
         await getRoomAndIncrementImage(knexFake, '/new-room/')
-        expect(loggerStub.firstCall.args[3]).toBe(42)
+        expect(loggerStub.mock.calls[0]?.[3]).toBe(42)
       })
 
       it('should not log room-created when room already exists', async () => {
@@ -249,7 +247,7 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
           uriSafeImage: undefined,
         }
         await getRoomAndIncrementImage(knexFake, '/existing/')
-        const hasCreateLog = loggerStub.getCalls().some(isRoomCreatedCall)
+        const hasCreateLog = loggerStub.mock.calls.some(isRoomCreatedCall)
         expect(hasCreateLog).toBe(false)
       })
     })
@@ -258,9 +256,9 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
   describe('index navigation', () => {
     let stockImages = pagedImages(Config.memorySize)
     let knexFake = stubToKnex({ knex: Math.random() })
-    let getImagesStub = sandbox.stub()
-    let getCountsStub = sandbox.stub()
-    let markImageReadStub = sandbox.stub()
+    let getImagesStub: MockInstance = vi.fn()
+    let getCountsStub: MockInstance = vi.fn()
+    let markImageReadStub: MockInstance = vi.fn()
     let pages = { pages: 0, page: 0, unread: 0, all: 0 }
     beforeEach(() => {
       stockImages = pagedImages(Config.memorySize)
@@ -269,41 +267,41 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
       Config.rooms = {}
       Config.countdownDuration = 60
       Config.memorySize = 100
-      getImagesStub = sandbox.stub(Internals, 'getImages').resolves(stockImages)
-      markImageReadStub = sandbox.stub(Internals, 'markImageRead').resolves()
-      getCountsStub = sandbox.stub(Internals, 'getCounts').resolves(pages)
+      getImagesStub = vi.spyOn(Internals, 'getImages').mockResolvedValue(stockImages)
+      markImageReadStub = vi.spyOn(Internals, 'markImageRead').mockResolvedValue(undefined)
+      getCountsStub = vi.spyOn(Internals, 'getCounts').mockResolvedValue(pages)
     })
     describe('when decrementing past the start of the current page', () => {
       let room = cast<SlideshowRoom>({})
       let second: string[] = []
       beforeEach(async () => {
         second = pagedImages(100)
-        getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves(second)
+        getImagesStub.mockResolvedValueOnce(pagedImages(200, 200)).mockResolvedValueOnce(second)
         pages.page = 10
         room = await getRoomAndIncrementImage(knexFake, '/path/')
-        getCountsStub.resetHistory()
+        getCountsStub.mockClear()
         await getRoomAndIncrementImage(knexFake, '/path/', -1)
       })
       it('should call getCounts once', () => {
-        expect(getCountsStub.callCount).toBe(1)
+        expect(getCountsStub.mock.calls.length).toBe(1)
       })
       it('should call getCounts with 4 arguments', () => {
-        expect(getCountsStub.firstCall.args).toHaveLength(4)
+        expect(getCountsStub.mock.calls[0]).toHaveLength(4)
       })
       it('should pass knex to getCounts', () => {
-        expect(getCountsStub.firstCall.args[0]).toBe(knexFake)
+        expect(getCountsStub.mock.calls[0]?.[0]).toBe(knexFake)
       })
       it('should pass path to getCounts', () => {
-        expect(getCountsStub.firstCall.args[1]).toBe('/path/')
+        expect(getCountsStub.mock.calls[0]?.[1]).toBe('/path/')
       })
       it('should pass current page to getCounts', () => {
-        expect(getCountsStub.firstCall.args[2]).toBe(10)
+        expect(getCountsStub.mock.calls[0]?.[2]).toBe(10)
       })
       it('should pass decrement mutator to getCounts', () => {
-        expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).toBe(3)
+        expect(cast(getCountsStub.mock.calls[0]?.[3], isNumberMutator)(4)).toBe(3)
       })
       it('should reload images from the new page', () => {
-        expect(getImagesStub.callCount).toBe(2)
+        expect(getImagesStub.mock.calls.length).toBe(2)
       })
       it('should set index to last image of new page', () => {
         expect(room.index).toBe(99)
@@ -326,32 +324,32 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
           pages: { unread: 0, all: 0, pages: 0, page: 11 },
         })
         Config.rooms['/path/'] = room
-        getImagesStub.onFirstCall().resolves(second)
+        getImagesStub.mockResolvedValueOnce(second)
         await getRoomAndIncrementImage(knexFake, '/path/')
         await getRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
-        getCountsStub.resetHistory()
+        getCountsStub.mockClear()
         await getRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
       })
       it('should call getCounts once', () => {
-        expect(getCountsStub.callCount).toBe(1)
+        expect(getCountsStub.mock.calls.length).toBe(1)
       })
       it('should call getCounts with 4 arguments', () => {
-        expect(getCountsStub.firstCall.args).toHaveLength(4)
+        expect(getCountsStub.mock.calls[0]).toHaveLength(4)
       })
       it('should pass knex to getCounts', () => {
-        expect(getCountsStub.firstCall.args[0]).toBe(knexFake)
+        expect(getCountsStub.mock.calls[0]?.[0]).toBe(knexFake)
       })
       it('should pass path to getCounts', () => {
-        expect(getCountsStub.firstCall.args[1]).toBe('/path/')
+        expect(getCountsStub.mock.calls[0]?.[1]).toBe('/path/')
       })
       it('should pass current page to getCounts', () => {
-        expect(getCountsStub.firstCall.args[2]).toBe(11)
+        expect(getCountsStub.mock.calls[0]?.[2]).toBe(11)
       })
       it('should pass decrement mutator to getCounts', () => {
-        expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).toBe(3)
+        expect(cast(getCountsStub.mock.calls[0]?.[3], isNumberMutator)(4)).toBe(3)
       })
       it('should reload images from the new page', () => {
-        expect(getImagesStub.callCount).toBe(1)
+        expect(getImagesStub.mock.calls.length).toBe(1)
       })
       it('should set index to last image of new page', () => {
         expect(room.index).toBe(29)
@@ -368,7 +366,7 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
       let second: string[] = []
       beforeEach(async () => {
         second = pagedImages(100)
-        getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves(second)
+        getImagesStub.mockResolvedValueOnce(pagedImages(200, 200)).mockResolvedValueOnce(second)
         room = await getRoomAndIncrementImage(knexFake, '/path/')
         await getRoomAndIncrementImage(knexFake, '/path/', STEP.BACK)
       })
@@ -376,7 +374,7 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         expect(room.index).toBe(99)
       })
       it('should reload images from new page', () => {
-        expect(getImagesStub.callCount).toBe(2)
+        expect(getImagesStub.mock.calls.length).toBe(2)
       })
       it('should load a full page of images', () => {
         expect(room.images).toHaveLength(100)
@@ -390,33 +388,33 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
       let second: string[] = []
       beforeEach(async () => {
         second = pagedImages(100)
-        getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves(second)
+        getImagesStub.mockResolvedValueOnce(pagedImages(200, 200)).mockResolvedValueOnce(second)
         room = await getRoomAndIncrementImage(knexFake, '/path/')
         room.index = room.images.length + STEP.BACK
         room.pages.page = 13
-        getCountsStub.resetHistory()
+        getCountsStub.mockClear()
         await getRoomAndIncrementImage(knexFake, '/path/', STEP.FORWARD)
       })
       it('should call getCounts once', () => {
-        expect(getCountsStub.callCount).toBe(1)
+        expect(getCountsStub.mock.calls.length).toBe(1)
       })
       it('should call getCounts with 4 arguments', () => {
-        expect(getCountsStub.firstCall.args).toHaveLength(4)
+        expect(getCountsStub.mock.calls[0]).toHaveLength(4)
       })
       it('should pass knex to getCounts', () => {
-        expect(getCountsStub.firstCall.args[0]).toBe(knexFake)
+        expect(getCountsStub.mock.calls[0]?.[0]).toBe(knexFake)
       })
       it('should pass path to getCounts', () => {
-        expect(getCountsStub.firstCall.args[1]).toBe('/path/')
+        expect(getCountsStub.mock.calls[0]?.[1]).toBe('/path/')
       })
       it('should pass current page to getCounts', () => {
-        expect(getCountsStub.firstCall.args[2]).toBe(13)
+        expect(getCountsStub.mock.calls[0]?.[2]).toBe(13)
       })
       it('should pass increment mutator to getCounts', () => {
-        expect(cast(getCountsStub.firstCall.args[3], isNumberMutator)(4)).toBe(5)
+        expect(cast(getCountsStub.mock.calls[0]?.[3], isNumberMutator)(4)).toBe(5)
       })
       it('should reload images from the new page', () => {
-        expect(getImagesStub.callCount).toBe(2)
+        expect(getImagesStub.mock.calls.length).toBe(2)
       })
       it('should reset index to start of new page', () => {
         expect(room.index).toBe(0)
@@ -443,10 +441,10 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         await getRoomAndIncrementImage(knexFake, '/path/', 1)
       })
       it('should not call advancePage when images is already empty', () => {
-        expect(getImagesStub.callCount).toBe(0)
+        expect(getImagesStub.mock.calls.length).toBe(0)
       })
       it('should not call getCounts when images is already empty', () => {
-        expect(getCountsStub.callCount).toBe(0)
+        expect(getCountsStub.mock.calls.length).toBe(0)
       })
       it('should keep index at 0', () => {
         expect(room.index).toBe(0)
@@ -473,10 +471,10 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         await getRoomAndIncrementImage(knexFake, '/path/', -1)
       })
       it('should not call advancePage when images is already empty', () => {
-        expect(getImagesStub.callCount).toBe(0)
+        expect(getImagesStub.mock.calls.length).toBe(0)
       })
       it('should not call getCounts when images is already empty', () => {
-        expect(getCountsStub.callCount).toBe(0)
+        expect(getCountsStub.mock.calls.length).toBe(0)
       })
       it('should keep index at 0', () => {
         expect(room.index).toBe(0)
@@ -491,12 +489,12 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
     describe('when incrementing to a page with no images', () => {
       let room = cast<SlideshowRoom>({})
       beforeEach(async () => {
-        getImagesStub.resolves(pagedImages(1))
+        getImagesStub.mockResolvedValue(pagedImages(1))
         room = await getRoomAndIncrementImage(knexFake, '/path/')
-        getImagesStub.resolves([])
-        getImagesStub.resetHistory()
-        getCountsStub.resetHistory()
-        markImageReadStub.resetHistory()
+        getImagesStub.mockResolvedValue([])
+        getImagesStub.mockClear()
+        getCountsStub.mockClear()
+        markImageReadStub.mockClear()
         await getRoomAndIncrementImage(knexFake, '/path/', 1)
       })
       it('should set index to 0', () => {
@@ -506,18 +504,18 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         expect(room.uriSafeImage).toBe('')
       })
       it('should not call markImageRead for empty page', () => {
-        expect(markImageReadStub.callCount).toBe(0)
+        expect(markImageReadStub.mock.calls.length).toBe(0)
       })
     })
     describe('when decrementing to a page with no images', () => {
       let room = cast<SlideshowRoom>({})
       beforeEach(async () => {
-        getImagesStub.resolves(pagedImages(200, 200))
+        getImagesStub.mockResolvedValue(pagedImages(200, 200))
         room = await getRoomAndIncrementImage(knexFake, '/path/')
-        getImagesStub.resolves([])
-        getImagesStub.resetHistory()
-        getCountsStub.resetHistory()
-        markImageReadStub.resetHistory()
+        getImagesStub.mockResolvedValue([])
+        getImagesStub.mockClear()
+        getCountsStub.mockClear()
+        markImageReadStub.mockClear()
         await getRoomAndIncrementImage(knexFake, '/path/', -1)
       })
       it('should set index to 0', () => {
@@ -527,24 +525,24 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         expect(room.uriSafeImage).toBe('')
       })
       it('should not call markImageRead for empty page', () => {
-        expect(markImageReadStub.callCount).toBe(0)
+        expect(markImageReadStub.mock.calls.length).toBe(0)
       })
     })
     describe('when ticking a room after decrement landed on an empty page', () => {
       let room = cast<SlideshowRoom>({})
       beforeEach(async () => {
-        getImagesStub.onFirstCall().resolves(pagedImages(200, 200)).onSecondCall().resolves([])
+        getImagesStub.mockResolvedValueOnce(pagedImages(200, 200)).mockResolvedValueOnce([])
         room = await getRoomAndIncrementImage(knexFake, '/path/')
         await getRoomAndIncrementImage(knexFake, '/path/', -1)
-        getImagesStub.resetHistory()
-        getCountsStub.resetHistory()
+        getImagesStub.mockClear()
+        getCountsStub.mockClear()
         await getRoomAndIncrementImage(knexFake, '/path/', 1)
       })
       it('should not call advancePage again on subsequent tick', () => {
-        expect(getImagesStub.callCount).toBe(0)
+        expect(getImagesStub.mock.calls.length).toBe(0)
       })
       it('should not call getCounts again on subsequent tick', () => {
-        expect(getCountsStub.callCount).toBe(0)
+        expect(getCountsStub.mock.calls.length).toBe(0)
       })
       it('should keep index at 0', () => {
         expect(room.index).toBe(0)
@@ -585,9 +583,9 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
 
   describe('unread to all-images mode transition', () => {
     let knexFake = stubToKnex({ knex: Math.random() })
-    let getImagesStub = sandbox.stub()
-    let getCountsStub = sandbox.stub()
-    let markImageReadStub = sandbox.stub()
+    let getImagesStub: MockInstance = vi.fn()
+    let getCountsStub: MockInstance = vi.fn()
+    let markImageReadStub: MockInstance = vi.fn()
     let transitionPages = { pages: 3, page: 1, unread: 0, all: 30 }
     let freshPages = { pages: 3, page: 2, unread: 0, all: 30 }
     let unreadRoom = {
@@ -613,106 +611,108 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
       Config.rooms = {}
       Config.countdownDuration = 60
       Config.memorySize = 100
-      getImagesStub = sandbox.stub(Internals, 'getImages').resolves([])
-      markImageReadStub = sandbox.stub(Internals, 'markImageRead').resolves()
-      getCountsStub = sandbox.stub(Internals, 'getCounts')
-      getCountsStub.onFirstCall().resolves(transitionPages)
-      getCountsStub.onSecondCall().resolves(freshPages)
+      getImagesStub = vi.spyOn(Internals, 'getImages').mockResolvedValue([])
+      markImageReadStub = vi.spyOn(Internals, 'markImageRead').mockResolvedValue(undefined)
+      getCountsStub = vi.spyOn(Internals, 'getCounts')
+      getCountsStub.mockResolvedValueOnce(transitionPages)
+      getCountsStub.mockResolvedValueOnce(freshPages)
       Config.rooms['/path/'] = unreadRoom
     })
     it('it should call getCounts twice when transitioning from unread to all-images on increment', async () => {
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(getCountsStub.callCount).toBe(2)
+      expect(getCountsStub.mock.calls.length).toBe(2)
     })
     it('it should call second getCounts with no currentPage on unread to all-images transition on increment', async () => {
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(getCountsStub.secondCall.args).toHaveLength(2)
+      expect(getCountsStub.mock.calls[1]).toHaveLength(2)
     })
     it('it should call second getCounts with knex on unread to all-images transition on increment', async () => {
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(getCountsStub.secondCall.args[0]).toBe(knexFake)
+      expect(getCountsStub.mock.calls[1]?.[0]).toBe(knexFake)
     })
     it('it should call second getCounts with path on unread to all-images transition on increment', async () => {
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(getCountsStub.secondCall.args[1]).toBe('/path/')
+      expect(getCountsStub.mock.calls[1]?.[1]).toBe('/path/')
     })
     it('it should load images from fresh random page on unread to all-images transition on increment', async () => {
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(getImagesStub.firstCall.args[2]).toBe(freshPages.page)
+      expect(getImagesStub.mock.calls[0]?.[2]).toBe(freshPages.page)
     })
     it('it should call getCounts twice when transitioning from unread to all-images on decrement', async () => {
       unreadRoom.index = 0
       await getRoomAndIncrementImage(knexFake, '/path/', -1)
-      expect(getCountsStub.callCount).toBe(2)
+      expect(getCountsStub.mock.calls.length).toBe(2)
     })
     it('it should call second getCounts with no currentPage on unread to all-images transition on decrement', async () => {
       unreadRoom.index = 0
       await getRoomAndIncrementImage(knexFake, '/path/', -1)
-      expect(getCountsStub.secondCall.args).toHaveLength(2)
+      expect(getCountsStub.mock.calls[1]).toHaveLength(2)
     })
     it('it should load images from fresh random page on unread to all-images transition on decrement', async () => {
       unreadRoom.index = 0
       await getRoomAndIncrementImage(knexFake, '/path/', -1)
-      expect(getImagesStub.firstCall.args[2]).toBe(freshPages.page)
+      expect(getImagesStub.mock.calls[0]?.[2]).toBe(freshPages.page)
     })
     it('it should not call getCounts twice when unread remains above zero on increment', async () => {
-      getCountsStub.onFirstCall().resolves({ ...transitionPages, unread: 3 })
+      getCountsStub.mockReset()
+      getCountsStub.mockResolvedValue({ ...transitionPages, unread: 3 })
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(getCountsStub.callCount).toBe(1)
+      expect(getCountsStub.mock.calls.length).toBe(1)
     })
     it('it should not call getCounts twice when unread remains above zero on decrement', async () => {
       unreadRoom.index = 0
-      getCountsStub.onFirstCall().resolves({ ...transitionPages, unread: 3 })
+      getCountsStub.mockReset()
+      getCountsStub.mockResolvedValue({ ...transitionPages, unread: 3 })
       await getRoomAndIncrementImage(knexFake, '/path/', -1)
-      expect(getCountsStub.callCount).toBe(1)
+      expect(getCountsStub.mock.calls.length).toBe(1)
     })
     it('it should not call getCounts twice when already in all-images mode on increment', async () => {
       unreadRoom.pages.unread = 0
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(getCountsStub.callCount).toBe(1)
+      expect(getCountsStub.mock.calls.length).toBe(1)
     })
     it('it should not call getCounts twice when already in all-images mode on decrement', async () => {
       unreadRoom.pages.unread = 0
       unreadRoom.index = 0
       await getRoomAndIncrementImage(knexFake, '/path/', -1)
-      expect(getCountsStub.callCount).toBe(1)
+      expect(getCountsStub.mock.calls.length).toBe(1)
     })
     it('it should call markImageRead once on unread to all-images transition on increment', async () => {
-      getImagesStub.resolves(['/new_image.png'])
+      getImagesStub.mockResolvedValue(['/new_image.png'])
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(markImageReadStub.calledOnce).toBe(true)
+      expect(markImageReadStub.mock.calls.length).toBe(1)
     })
     it('it should call markImageRead with knex on unread to all-images transition on increment', async () => {
-      getImagesStub.resolves(['/new_image.png'])
+      getImagesStub.mockResolvedValue(['/new_image.png'])
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(markImageReadStub.firstCall.args[0]).toBe(knexFake)
+      expect(markImageReadStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('it should call markImageRead with the first fresh image on unread to all-images transition on increment', async () => {
-      getImagesStub.resolves(['/new_image.png'])
+      getImagesStub.mockResolvedValue(['/new_image.png'])
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(markImageReadStub.firstCall.args[1]).toBe('/new_image.png')
+      expect(markImageReadStub.mock.calls[0]?.[1]).toBe('/new_image.png')
     })
     it('it should call markImageRead once on unread to all-images transition on decrement', async () => {
       unreadRoom.index = 0
-      getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
+      getImagesStub.mockResolvedValue(['/prev_a.png', '/prev_b.png'])
       await getRoomAndIncrementImage(knexFake, '/path/', -1)
-      expect(markImageReadStub.calledOnce).toBe(true)
+      expect(markImageReadStub.mock.calls.length).toBe(1)
     })
     it('it should call markImageRead with knex on unread to all-images transition on decrement', async () => {
       unreadRoom.index = 0
-      getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
+      getImagesStub.mockResolvedValue(['/prev_a.png', '/prev_b.png'])
       await getRoomAndIncrementImage(knexFake, '/path/', -1)
-      expect(markImageReadStub.firstCall.args[0]).toBe(knexFake)
+      expect(markImageReadStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
     it('it should call markImageRead with the last fresh image on unread to all-images transition on decrement', async () => {
       unreadRoom.index = 0
-      getImagesStub.resolves(['/prev_a.png', '/prev_b.png'])
+      getImagesStub.mockResolvedValue(['/prev_a.png', '/prev_b.png'])
       await getRoomAndIncrementImage(knexFake, '/path/', -1)
-      expect(markImageReadStub.firstCall.args[1]).toBe('/prev_b.png')
+      expect(markImageReadStub.mock.calls[0]?.[1]).toBe('/prev_b.png')
     })
     it('it should not call markImageRead when no images are available after transition', async () => {
       await getRoomAndIncrementImage(knexFake, '/path/', 1)
-      expect(markImageReadStub.notCalled).toBe(true)
+      expect(markImageReadStub.mock.calls.length).toBe(0)
     })
   })
 })

@@ -2,11 +2,9 @@
 
 import { incrementalUpdateFolders } from '#sync/incrementalsync.js'
 import { toSortKey } from '#sync/helpers.js'
-import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { createLoggerFake } from '#testutils/debug.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 interface AggregateRow {
   folder: string
@@ -22,7 +20,7 @@ interface UpsertRow {
 }
 
 describe('sync/incrementalsync incrementalUpdateFolders()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
 
   let aggregateRowsForReturn: AggregateRow[] = []
   let whereRawCalls: Array<{ pattern: string; bindings: unknown[] }> = []
@@ -33,28 +31,46 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
   let pruneAndWhereCalls: unknown[][] = []
 
   let picturesAggregateQuery = {
-    select: sandbox.stub().returnsThis(),
-    count: sandbox.stub().returnsThis(),
-    sum: sandbox.stub().returnsThis(),
-    whereRaw: sandbox.stub().returnsThis(),
-    groupBy: sandbox.stub().returnsThis(),
-    then: sandbox.stub(),
+    select: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    count: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    sum: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    whereRaw: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    groupBy: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    then: vi.fn(),
   }
   let foldersUpsertQuery = {
-    insert: sandbox.stub().returnsThis(),
-    onConflict: sandbox.stub().returnsThis(),
-    merge: sandbox.stub().resolves(),
+    insert: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    merge: vi.fn().mockResolvedValue(undefined),
   }
   let foldersPruneQuery = {
-    where: sandbox.stub().returnsThis(),
-    andWhere: sandbox.stub().returnsThis(),
-    delete: sandbox.stub().resolves(0),
+    where: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    andWhere: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    delete: vi.fn().mockResolvedValue(0),
   }
-  let knexFnStub = sandbox.stub()
+  let knexFnStub: MockInstance = vi.fn()
   let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
     whereRawCalls = []
     groupByCalls = []
     upsertChunks = []
@@ -62,45 +78,53 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     pruneAndWhereCalls = []
 
     picturesAggregateQuery = {
-      select: sandbox.stub().returnsThis(),
-      count: sandbox.stub().returnsThis(),
-      sum: sandbox.stub().returnsThis(),
-      whereRaw: sandbox.stub().callsFake((pattern: string, bindings: unknown[]) => {
+      select: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      count: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      sum: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      whereRaw: vi.fn().mockImplementation((pattern: string, bindings: unknown[]) => {
         whereRawCalls.push({ pattern, bindings })
         return picturesAggregateQuery
       }),
-      groupBy: sandbox.stub().callsFake(async (arg: unknown) => {
+      groupBy: vi.fn().mockImplementation(async (arg: unknown) => {
         groupByCalls.push(arg)
         await Promise.resolve()
         return aggregateRowsForReturn
       }),
-      then: sandbox.stub(),
+      then: vi.fn(),
     }
     foldersUpsertQuery = {
-      insert: sandbox.stub().callsFake((chunk: UpsertRow[]) => {
+      insert: vi.fn().mockImplementation((chunk: UpsertRow[]) => {
         upsertChunks.push(chunk)
         return foldersUpsertQuery
       }),
-      onConflict: sandbox.stub().returnsThis(),
-      merge: sandbox.stub().resolves(),
+      onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      merge: vi.fn().mockResolvedValue(undefined),
     }
     foldersPruneQuery = {
-      where: sandbox.stub().callsFake((...args: unknown[]) => {
+      where: vi.fn().mockImplementation((...args: unknown[]) => {
         pruneWhereCalls.push(args)
         return foldersPruneQuery
       }),
-      andWhere: sandbox.stub().callsFake((...args: unknown[]) => {
+      andWhere: vi.fn().mockImplementation((...args: unknown[]) => {
         pruneAndWhereCalls.push(args)
         return foldersPruneQuery
       }),
-      delete: sandbox.stub().callsFake(async () => {
+      delete: vi.fn().mockImplementation(async () => {
         await Promise.resolve()
         return pruneDeletedRows
       }),
     }
 
     let foldersCallCount = 0
-    knexFnStub = sandbox.stub().callsFake((table: string) => {
+    knexFnStub = vi.fn().mockImplementation((table: string) => {
       if (table === 'pictures') return picturesAggregateQuery
       if (table === 'folders') {
         foldersCallCount += 1
@@ -109,7 +133,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       }
       throw new Error(`Unexpected knex table: ${table}`)
     })
-    cast<Record<string, unknown>>(knexFnStub).raw = sandbox.stub().returns('CASE WHEN seen THEN 1 ELSE 0 END')
+    cast<Record<string, unknown>>(knexFnStub).raw = vi.fn().mockReturnValue('CASE WHEN seen THEN 1 ELSE 0 END')
     knexFnFake = stubToKnex(knexFnStub)
   }
 
@@ -123,7 +147,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
   })
 
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('with no affected folders', () => {
@@ -133,34 +157,34 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     })
     it('should not run the aggregate picture query', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set())
-      expect(picturesAggregateQuery.whereRaw.callCount).toBe(0)
+      expect(picturesAggregateQuery.whereRaw.mock.calls.length).toBe(0)
     })
     it('should not run any folder upsert', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set())
-      expect(foldersUpsertQuery.insert.callCount).toBe(0)
+      expect(foldersUpsertQuery.insert.mock.calls.length).toBe(0)
     })
     it('should still run the empty-folder prune', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set())
-      expect(foldersPruneQuery.delete.callCount).toBe(1)
+      expect(foldersPruneQuery.delete.mock.calls.length).toBe(1)
     })
   })
 
   describe('with one affected folder', () => {
     it('should issue exactly one aggregate picture query (single chunk)', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(picturesAggregateQuery.whereRaw.callCount).toBe(1)
+      expect(picturesAggregateQuery.whereRaw.mock.calls.length).toBe(1)
     })
     it('should call select on the folder column for the aggregate', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(picturesAggregateQuery.select.calledWith('folder')).toBe(true)
+      expect(picturesAggregateQuery.select).toHaveBeenCalledWith('folder')
     })
     it('should call count with totalCount alias', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(picturesAggregateQuery.count.calledWith({ totalCount: '*' })).toBe(true)
+      expect(picturesAggregateQuery.count).toHaveBeenCalledWith({ totalCount: '*' })
     })
     it('should call sum with seenCount alias', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(picturesAggregateQuery.sum.callCount).toBe(1)
+      expect(picturesAggregateQuery.sum.mock.calls.length).toBe(1)
     })
     it('should group the aggregate by folder', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
@@ -174,7 +198,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(foldersUpsertQuery.insert.callCount).toBe(1)
+      expect(foldersUpsertQuery.insert.mock.calls.length).toBe(1)
     })
     it('should pass the rolled-up totalCount in the upsert payload', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
@@ -210,20 +234,20 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(foldersUpsertQuery.onConflict.firstCall.args).toEqual(['path'])
+      expect(foldersUpsertQuery.onConflict.mock.calls[0]).toEqual(['path'])
     })
     it('should merge only totalCount and seenCount on conflict', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(foldersUpsertQuery.merge.firstCall.args[0]).toEqual(['totalCount', 'seenCount'])
+      expect(foldersUpsertQuery.merge.mock.calls[0]?.[0]).toEqual(['totalCount', 'seenCount'])
     })
   })
 
   describe('with multiple affected folders sharing a chunk', () => {
     it('should issue one aggregate query covering all affected folders', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/a/', '/b/']))
-      expect(picturesAggregateQuery.whereRaw.callCount).toBe(1)
+      expect(picturesAggregateQuery.whereRaw.mock.calls.length).toBe(1)
     })
     it('should pass each affected folder as a LIKE binding', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/a/', '/b/']))
@@ -317,7 +341,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
   describe('prune step', () => {
     it('should call delete on the prune query', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
-      expect(foldersPruneQuery.delete.callCount).toBe(1)
+      expect(foldersPruneQuery.delete.mock.calls.length).toBe(1)
     })
     it('should filter prune to folders with totalCount zero', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
@@ -334,7 +358,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       pruneDeletedRows = 2
       setup()
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/', '/photos/']))
-      expect(loggerStub.lastCall.args[0]).toBe('Incremental folder update: 2 folders checked, 2 empty folders pruned')
+      expect(loggerStub.mock.lastCall?.[0]).toBe('Incremental folder update: 2 folders checked, 2 empty folders pruned')
     })
   })
 })

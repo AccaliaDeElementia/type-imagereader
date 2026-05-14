@@ -2,11 +2,9 @@
 
 import { incrementalEnsureAncestors } from '#sync/incrementalsync.js'
 import { toSortKey } from '#sync/helpers.js'
-import Sinon from 'sinon'
 import { stubToKnex } from '#testutils/typeGuards.js'
 import { createLoggerFake } from '#testutils/debug.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 interface InsertedRow {
   folder: string
@@ -15,26 +13,32 @@ interface InsertedRow {
 }
 
 describe('sync/incrementalsync incrementalEnsureAncestors()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox)
+  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
 
   let existingFolderPaths: Array<{ path: string }> = []
   let insertedChunks: InsertedRow[][] = []
   let whereInCalls: unknown[][] = []
 
   let foldersSelectQuery = {
-    select: sandbox.stub().returnsThis(),
-    whereIn: sandbox.stub(),
+    select: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    whereIn: vi.fn(),
   }
   let foldersInsertQuery = {
-    insert: sandbox.stub().returnsThis(),
-    onConflict: sandbox.stub().returnsThis(),
-    ignore: sandbox.stub(),
+    insert: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
+    ignore: vi.fn(),
   }
-  let knexFnStub = sandbox.stub()
+  let knexFnStub: MockInstance = vi.fn()
   let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake(sandbox))
+    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
     insertedChunks = []
     whereInCalls = []
 
@@ -44,20 +48,24 @@ describe('sync/incrementalsync incrementalEnsureAncestors()', () => {
       return existingFolderPaths.filter((r) => values.includes(r.path))
     }
     foldersSelectQuery = {
-      select: sandbox.stub().returnsThis(),
-      whereIn: sandbox.stub().callsFake(runWhereIn),
+      select: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      whereIn: vi.fn().mockImplementation(runWhereIn),
     }
     foldersInsertQuery = {
-      insert: sandbox.stub().callsFake((chunk: InsertedRow[]) => {
+      insert: vi.fn().mockImplementation((chunk: InsertedRow[]) => {
         insertedChunks.push(chunk)
         return foldersInsertQuery
       }),
-      onConflict: sandbox.stub().returnsThis(),
-      ignore: sandbox.stub().resolves(),
+      onConflict: vi.fn().mockImplementation(function (this: object): unknown {
+        return this
+      }),
+      ignore: vi.fn().mockResolvedValue(undefined),
     }
 
     let foldersCallCount = 0
-    knexFnStub = sandbox.stub().callsFake((table: string) => {
+    knexFnStub = vi.fn().mockImplementation((table: string) => {
       if (table === 'folders') {
         foldersCallCount += 1
         return foldersCallCount === 1 ? foldersSelectQuery : foldersInsertQuery
@@ -72,28 +80,28 @@ describe('sync/incrementalsync incrementalEnsureAncestors()', () => {
     setup()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('when affected folders is empty', () => {
     it('should not attempt any folder inserts', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set())
-      expect(foldersInsertQuery.insert.callCount).toBe(0)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(0)
     })
     it('should log zero ensured', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set())
-      expect(loggerStub.firstCall.args[0]).toBe('Ensured 0 ancestor folders')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('Ensured 0 ancestor folders')
     })
   })
 
   describe('when only root is affected', () => {
     it('should not attempt any folder inserts', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/']))
-      expect(foldersInsertQuery.insert.callCount).toBe(0)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(0)
     })
     it('should log zero ensured', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/']))
-      expect(loggerStub.firstCall.args[0]).toBe('Ensured 0 ancestor folders')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('Ensured 0 ancestor folders')
     })
   })
 
@@ -134,15 +142,15 @@ describe('sync/incrementalsync incrementalEnsureAncestors()', () => {
     })
     it('should log the number of ancestors ensured', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
-      expect(loggerStub.firstCall.args[0]).toBe('Ensured 2 ancestor folders')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('Ensured 2 ancestor folders')
     })
     it('should use onConflict on path when inserting', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
-      expect(foldersInsertQuery.onConflict.firstCall.args).toEqual(['path'])
+      expect(foldersInsertQuery.onConflict.mock.calls[0]).toEqual(['path'])
     })
     it('should use ignore (not merge) when inserting', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
-      expect(foldersInsertQuery.ignore.callCount).toBeGreaterThan(0)
+      expect(foldersInsertQuery.ignore.mock.calls.length).toBeGreaterThan(0)
     })
   })
 
@@ -153,11 +161,11 @@ describe('sync/incrementalsync incrementalEnsureAncestors()', () => {
     })
     it('should not call insert', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
-      expect(foldersInsertQuery.insert.callCount).toBe(0)
+      expect(foldersInsertQuery.insert.mock.calls.length).toBe(0)
     })
     it('should log zero ancestors ensured', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set(['/a/b/c/']))
-      expect(loggerStub.firstCall.args[0]).toBe('Ensured 0 ancestor folders')
+      expect(loggerStub.mock.calls[0]?.[0]).toBe('Ensured 0 ancestor folders')
     })
   })
 
