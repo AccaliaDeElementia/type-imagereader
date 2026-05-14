@@ -3,7 +3,7 @@
 import { synchronize, Imports, LOG_PREFIX } from '#sync/synchronize.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { stubDebug } from '#testutils/debug.js'
-import { findStubCall } from '#testutils/sinon.js'
+import { findStubCall } from '#testutils/mocks.js'
 import type { MockInstance } from 'vitest'
 
 const stepLog = /^[A-Za-z]+ completed in \d+\.\d+s$/v

@@ -63,7 +63,7 @@ describe('public/slideshow/sockets connect()', () => {
     // runtimes. Direct behavioral testing (stub window.location.assign,
     // invoke locationAssign, assert call) is not viable — JSDOM marks
     // Location.prototype.assign as non-configurable/non-writable, blocking
-    // both sinon.stub and Object.defineProperty.
+    // both vi.spyOn and Object.defineProperty.
     expect(WebSockets.locationAssign.name).toBe('bound assign')
   })
   it('should store location.reload as a function for later use', () => {

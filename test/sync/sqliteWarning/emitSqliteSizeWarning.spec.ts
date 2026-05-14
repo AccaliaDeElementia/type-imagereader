@@ -3,7 +3,7 @@
 import type { Debugger } from 'debug'
 import { emitSqliteSizeWarning, SqliteWarning, Imports } from '#sync/sqliteWarning.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { findStubCall } from '#testutils/sinon.js'
+import { findStubCall } from '#testutils/mocks.js'
 import type { MockInstance } from 'vitest'
 
 const SOFT_LIMIT = 100_000

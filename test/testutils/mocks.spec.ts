@@ -1,6 +1,6 @@
 'use sanity'
 
-import { findStubCall } from '#testutils/sinon.js'
+import { findStubCall } from '#testutils/mocks.js'
 
 describe('testutils findStubCall()', () => {
   afterEach(() => {

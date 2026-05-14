@@ -241,7 +241,7 @@ describe('routes/apiFunctions setLatestPicture', () => {
   })
   // setupSuccessfulFlip queues calls 0 and 1. Production also makes a call 2 (folders
   // increment) before reaching call 3 (folders.current update). Pad with a default
-  // knex instance so the test's updater lands on call 3 like sinon's onCall(3) did.
+  // knex instance so the test's updater lands on call 3.
   it('should call update once on folders.current after flipping', async () => {
     setupSuccessfulFlip()
     const updater = makeKnexInstance()
