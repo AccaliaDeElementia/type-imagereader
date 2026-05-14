@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { EventEmitter } from 'node:events'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 
@@ -13,8 +12,6 @@ import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
 
-const sandbox = Sinon.createSandbox()
-
 const FILE_DELTA = 7
 const DIR_DELTA = 3
 const FILE_DELTA_2 = 2
@@ -23,11 +20,11 @@ const PENDING = 5
 const LOGGING_INTERVAL = 100
 const DEFAULT_CHUNK_SIZE = 5000
 
-const buildStreamHandles = (): ReturnType<typeof createCopyStreamFake> => createCopyStreamFake(sandbox)
+const buildStreamHandles = (): ReturnType<typeof createCopyStreamFake> => createCopyStreamFake()
 
 describe('sync/syncItemsDialect CopyState', () => {
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   describe('addCounts()', () => {
@@ -84,7 +81,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       const handles = buildStreamHandles()
       const state = new CopyState()
       await state.flushBuffer(handles.stream)
-      expect(handles.writeSpy.callCount).toBe(0)
+      expect(handles.writeSpy.mock.calls.length).toBe(0)
     })
 
     it('should write the joined buffer payload to the stream', async () => {
@@ -93,7 +90,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       state.pushRow('a')
       state.pushRow('b')
       await state.flushBuffer(handles.stream)
-      expect(handles.writeSpy.firstCall.args[0]).toBe('ab')
+      expect(handles.writeSpy.mock.calls[0]?.[0]).toBe('ab')
     })
 
     it('should empty the buffer after flushing', async () => {
@@ -106,13 +103,13 @@ describe('sync/syncItemsDialect CopyState', () => {
 
     it("should wait for 'drain' when stream.write returns false", async () => {
       const handles = buildStreamHandles()
-      handles.writeSpy.returns(false)
+      handles.writeSpy.mockReturnValue(false)
       const state = new CopyState()
       state.pushRow('a')
       const flushPromise = state.flushBuffer(handles.stream)
       scheduleEmit(handles.ee, 'drain')
       await flushPromise
-      expect(handles.writeSpy.callCount).toBe(1)
+      expect(handles.writeSpy.mock.calls.length).toBe(1)
     })
   })
 
@@ -122,7 +119,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       const state = new CopyState()
       state.pushRow('only-row')
       await state.scheduleFlush(handles.stream)
-      expect(handles.writeSpy.firstCall.args[0]).toBe('only-row')
+      expect(handles.writeSpy.mock.calls[0]?.[0]).toBe('only-row')
     })
 
     it('should drain rows pushed between back-to-back scheduleFlush calls into the first flush', async () => {
@@ -133,7 +130,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       state.pushRow('second')
       const b = state.scheduleFlush(handles.stream)
       await Promise.all([a, b])
-      expect(handles.writeSpy.firstCall.args[0]).toBe('firstsecond')
+      expect(handles.writeSpy.mock.calls[0]?.[0]).toBe('firstsecond')
     })
   })
 
@@ -241,11 +238,11 @@ describe('sync/syncItemsDialect CopyState', () => {
         items: [],
         pending: 0,
       })
-      expect(handles.writeSpy.callCount).toBe(1)
+      expect(handles.writeSpy.mock.calls.length).toBe(1)
     })
 
     it('should log on the first iteration', async () => {
-      const loggerSpy = sandbox.stub()
+      const loggerSpy = vi.fn()
       const handles = buildStreamHandles()
       const state = new CopyState()
       await state.advance({
@@ -257,7 +254,7 @@ describe('sync/syncItemsDialect CopyState', () => {
         items: [],
         pending: PENDING,
       })
-      expect(loggerSpy.firstCall.args[0]).toBe(`Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`)
+      expect(loggerSpy.mock.calls[0]?.[0]).toBe(`Found ${DIR_DELTA} dirs (${PENDING} pending) and ${FILE_DELTA} files`)
     })
 
     it('should advance the counter', async () => {
@@ -279,7 +276,7 @@ describe('sync/syncItemsDialect CopyState', () => {
 
 describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
 
   it("should resolve when the stream emits 'finish'", async () => {

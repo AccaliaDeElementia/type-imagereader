@@ -1,7 +1,7 @@
 'use sanity'
 
 import { EventEmitter } from 'node:events'
-import type { SinonSandbox, SinonStub } from 'sinon'
+import { vi, type Mock } from 'vitest'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 
 import { cast } from './typeGuards.js'
@@ -9,9 +9,9 @@ import { cast } from './typeGuards.js'
 export interface CopyStreamFake {
   stream: CopyStreamQuery
   ee: EventEmitter
-  writeSpy: SinonStub
-  endSpy: SinonStub
-  destroySpy: SinonStub
+  writeSpy: Mock
+  endSpy: Mock
+  destroySpy: Mock
 }
 
 export interface CopyStreamFakeOptions {
@@ -27,14 +27,14 @@ export interface CopyStreamFakeOptions {
 // Build a fake `pg-copy-streams` CopyStreamQuery. Returns the typed `stream`
 // to pass to the code under test, the underlying `ee` for tests to dispatch
 // 'drain' / 'error' / 'finish' on demand, and named spies for write/end/destroy.
-export function createCopyStreamFake(sandbox: SinonSandbox, opts: CopyStreamFakeOptions = {}): CopyStreamFake {
+export function createCopyStreamFake(opts: CopyStreamFakeOptions = {}): CopyStreamFake {
   const ee = new EventEmitter()
-  const writeSpy = sandbox.stub().returns(opts.writeReturns ?? true)
-  const destroySpy = sandbox.stub()
-  const endSpy = sandbox.stub()
+  const writeSpy = vi.fn().mockReturnValue(opts.writeReturns ?? true)
+  const destroySpy = vi.fn()
+  const endSpy = vi.fn()
   const onEnd = opts.emitOnEnd
   if (onEnd !== undefined) {
-    endSpy.callsFake(() => {
+    endSpy.mockImplementation(() => {
       queueMicrotask(() => {
         if (onEnd === 'finish') ee.emit('finish')
         else ee.emit('error', onEnd.error)
