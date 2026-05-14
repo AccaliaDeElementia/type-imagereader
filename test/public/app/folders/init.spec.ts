@@ -6,10 +6,8 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 
 import { Folders, Imports, init, Internals } from '#public/scripts/app/folders.js'
-import Sinon from 'sinon'
 import type { Listing } from '#contracts/listing.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -35,23 +33,23 @@ html
 `
 
 describe('public/app/folders init()', () => {
-  let buildFoldersSpy: Sinon.SinonStub = sandbox.stub()
-  let subscribeStub = sandbox.stub()
+  let buildFoldersSpy: MockInstance = vi.fn()
+  let subscribeStub: MockInstance = vi.fn()
   beforeEach(() => {
     mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
 
     resetPubSub()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
     Folders.folderCard = null
-    buildFoldersSpy = sandbox.stub(Internals, 'buildFolders')
+    buildFoldersSpy = vi.spyOn(Internals, 'buildFolders').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should subscribe to Navigate:Data', () => {
     init()
-    expect(subscribeStub.calledWith('Navigate:Data')).toBe(true)
+    expect(subscribeStub.mock.calls.some((c) => c[0] === 'Navigate:Data')).toBe(true)
   })
   it('should build folders on Navigate:Data with valid listing', async () => {
     init()
@@ -63,7 +61,7 @@ describe('public/app/folders init()', () => {
       children: [],
     }
     await subscriberfn(data)
-    expect(buildFoldersSpy.calledWith(data)).toBe(true)
+    expect(buildFoldersSpy.mock.calls.some((c) => c[0] === data)).toBe(true)
   })
   it('should not build folders on Navigate:Data with invalid data', async () => {
     init()
@@ -72,7 +70,7 @@ describe('public/app/folders init()', () => {
       invalid: 'OBJECT',
     }
     await subscriberfn(data)
-    expect(buildFoldersSpy.called).toBe(false)
+    expect(buildFoldersSpy.mock.calls.length > 0).toBe(false)
   })
   it('should locate and save the folder card for use when building markup', () => {
     init()

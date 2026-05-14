@@ -1,14 +1,13 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, init, Loading } from '#public/scripts/app/loading.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
+import type { MockInstance } from 'vitest'
 
-const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -17,20 +16,20 @@ html
 `
 describe('public/app/loading subscriber "Loading:show" and "Loading:Hide"', () => {
   let dom: JSDOM = new JSDOM('', {})
-  let subscribeStub = sandbox.stub()
+  let subscribeStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
     resetPubSub()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
     Loading.overlay = null
     Loading.navbar = null
     init()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should show the loading overlay for "Loading:show"', async () => {

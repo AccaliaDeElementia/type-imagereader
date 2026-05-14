@@ -21,16 +21,7 @@ const SKIP_IMPORT_GUARD_FLAG = '--skip-import-guard'
 // the helper's return value (e.g. responseStub.status.firstCall.args) or the
 // helper's argument expectations (e.g. findStubCall expects a SinonStub and
 // internally calls .getCalls() — which vitest mocks don't have).
-const TESTUTIL_SINON_PRODUCERS = [
-  'createLoggerFake',
-  'createCopyStreamFake',
-  // pubsub testutils internally call `.getCalls()` on the stub passed in.
-  // Specs that use these helpers stay on sinon mocks until the testutil migrates.
-  'capturedSubscriber',
-  'publishedData',
-  'capturedInterval',
-  'capturedDeferred',
-]
+const TESTUTIL_SINON_PRODUCERS = ['createLoggerFake', 'createCopyStreamFake']
 
 interface Transform {
   pattern: RegExp

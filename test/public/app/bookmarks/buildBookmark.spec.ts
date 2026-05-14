@@ -1,7 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -12,8 +10,7 @@ import { Bookmarks, Imports, Internals } from '#public/scripts/app/bookmarks.js'
 import assert from 'node:assert'
 import type { Bookmark } from '#contracts/listing.js'
 import { isListing } from '#contracts/listing.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -35,8 +32,8 @@ html
 describe('public/app/bookmarks buildBookmark()', () => {
   let document: Document = global.document
   let dom: JSDOM = new JSDOM('', {})
-  let publishStub = sandbox.stub()
-  let postJSONSpy = sandbox.stub()
+  let publishStub: MockInstance = vi.fn()
+  let postJSONSpy: MockInstance = vi.fn()
 
   beforeEach(() => {
     document = global.document
@@ -47,15 +44,15 @@ describe('public/app/bookmarks buildBookmark()', () => {
     mountDom(dom)
 
     resetPubSub()
-    publishStub = sandbox.stub(Imports, 'publish')
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
 
     Bookmarks.bookmarkCard = document.querySelector<HTMLTemplateElement>('#BookmarkCard')?.content
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
-    postJSONSpy = sandbox.stub(Imports, 'postJSON').resolves()
+    postJSONSpy = vi.spyOn(Imports, 'postJSON').mockResolvedValue(undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return null if card template is missing', () => {
@@ -107,7 +104,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
-    sandbox.stub(evt, 'stopPropagation').callsFake(() => {
+    vi.spyOn(evt, 'stopPropagation').mockImplementation(() => {
       awaiter = Promise.resolve()
     })
     const button = result.querySelector('button')
@@ -122,7 +119,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(publishStub.calledWith('Bookmarks:Remove')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Bookmarks:Remove')).toBe(true)
   })
   it('should publish selected path to Bookmarks:Remove on button click', async () => {
     await ClickRemoveAndWait({
@@ -130,14 +127,14 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(publishStub.calledWith('Bookmarks:Remove', '/path/to/foo/folder/foo')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Bookmarks:Remove', '/path/to/foo/folder/foo')).toBe(true)
   })
   it('should stop propagation of event after handling button click', async () => {
     const result = Internals.buildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
     assert(result !== null)
     let stopPropagationCalled = false
     const evt = new dom.window.MouseEvent('click')
-    sandbox.stub(evt, 'stopPropagation').callsFake(() => {
+    vi.spyOn(evt, 'stopPropagation').mockImplementation(() => {
       stopPropagationCalled = true
     })
     result.querySelector('button')?.dispatchEvent(evt)
@@ -149,7 +146,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
     assert(result !== null)
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
-    sandbox.stub(evt, 'stopPropagation').callsFake(() => {
+    vi.spyOn(evt, 'stopPropagation').mockImplementation(() => {
       awaiter = Promise.resolve()
     })
     result.dispatchEvent(evt)
@@ -164,7 +161,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(postJSONSpy.callCount).toBe(1)
+    expect(postJSONSpy.mock.calls.length).toBe(1)
   })
   it('should post JSON to navigate latest on bookmark click', async () => {
     await ClickBookmarkAndWait({
@@ -172,7 +169,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(postJSONSpy.firstCall.args[0]).toBe('/api/navigate/latest')
+    expect(postJSONSpy.mock.calls[0]?.[0]).toBe('/api/navigate/latest')
   })
   it('should post JSON with expected data on bookmark click', async () => {
     await ClickBookmarkAndWait({
@@ -180,7 +177,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(postJSONSpy.firstCall.args[1]).toEqual({
+    expect(postJSONSpy.mock.calls[0]?.[1]).toEqual({
       path: '/path/to/foo/folder/foo',
       modCount: -1,
     })
@@ -203,7 +200,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
         path: '/path/to/foo/folder/foo',
         folder: 'bar',
       })
-      const acceptor = postJSONSpy.firstCall.args[2] as unknown
+      const acceptor = postJSONSpy.mock.calls[0]?.[2] as unknown
       assert(acceptor !== undefined)
       const result = cast<(o: unknown) => boolean>(acceptor)(obj)
       expect(result).toBe(true)
@@ -215,7 +212,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(publishStub.withArgs('Navigate:Load').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Navigate:Load').length).toBe(1)
   })
   it('should publish Navigate:Load with expected payload when postJSON resolves', async () => {
     await ClickBookmarkAndWait({
@@ -240,12 +237,12 @@ describe('public/app/bookmarks buildBookmark()', () => {
     expect(isListing(publishedData(publishStub, 'Navigate:Load'))).toBe(true)
   })
   it('should not publish Navigate:Load when postJSON rejects', async () => {
-    postJSONSpy.rejects('FOO')
+    postJSONSpy.mockRejectedValue('FOO')
     await ClickBookmarkAndWait({
       name: '',
       path: '/path/to/foo/folder/foo',
       folder: 'bar',
     })
-    expect(publishStub.withArgs('Navigate:Load').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Navigate:Load').length).toBe(0)
   })
 })

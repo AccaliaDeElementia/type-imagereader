@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { PubSub } from '#public/scripts/app/pubsub.js'
 import {
   capturedDeferred,
@@ -12,12 +11,11 @@ import {
   shouldGuard,
   unmountPubSub,
 } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import type { Mock } from 'vitest'
 
 describe('testutils/PubSub resetPubSub()', () => {
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     resetPubSub()
   })
   it('should clear subscribers', () => {
@@ -26,12 +24,12 @@ describe('testutils/PubSub resetPubSub()', () => {
     expect(PubSub.subscribers).toEqual({})
   })
   it('should clear deferred', () => {
-    PubSub.deferred = [{ method: sandbox.stub(), delayCycles: 1 }]
+    PubSub.deferred = [{ method: vi.fn(), delayCycles: 1 }]
     resetPubSub()
     expect(PubSub.deferred).toEqual([])
   })
   it('should clear intervals', () => {
-    PubSub.intervals = { test: { method: sandbox.stub(), delayCycles: 0, intervalCycles: 5 } }
+    PubSub.intervals = { test: { method: vi.fn(), delayCycles: 0, intervalCycles: 5 } }
     resetPubSub()
     expect(PubSub.intervals).toEqual({})
   })
@@ -61,39 +59,39 @@ describe('testutils/PubSub resetPubSub()', () => {
 })
 
 describe('testutils/PubSub capturedSubscriber()', () => {
-  let subscribeStub = sandbox.stub()
+  let subscribeStub: Mock = vi.fn()
   beforeEach(() => {
-    subscribeStub = sandbox.stub()
+    subscribeStub = vi.fn()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should return the handler function from the matching subscribe call', () => {
-    const handler = sandbox.stub().resolves()
+    const handler = vi.fn().mockResolvedValue(undefined)
     subscribeStub('Test:Topic', handler)
     expect(capturedSubscriber(subscribeStub, 'Test:Topic')).toBe(handler)
   })
   it('should match the topic case-insensitively', () => {
-    const handler = sandbox.stub().resolves()
+    const handler = vi.fn().mockResolvedValue(undefined)
     subscribeStub('Test:Topic', handler)
     expect(capturedSubscriber(subscribeStub, 'test:topic')).toBe(handler)
   })
   it('should return the most-recently-registered handler when multiple calls match', () => {
-    const earlier = sandbox.stub().resolves()
-    const latest = sandbox.stub().resolves()
+    const earlier = vi.fn().mockResolvedValue(undefined)
+    const latest = vi.fn().mockResolvedValue(undefined)
     subscribeStub('Test:Topic', earlier)
     subscribeStub('Test:Topic', latest)
     expect(capturedSubscriber(subscribeStub, 'Test:Topic')).toBe(latest)
   })
   it('should ignore calls for non-matching topics', () => {
-    const matching = sandbox.stub().resolves()
-    const other = sandbox.stub().resolves()
+    const matching = vi.fn().mockResolvedValue(undefined)
+    const other = vi.fn().mockResolvedValue(undefined)
     subscribeStub('Other:Topic', other)
     subscribeStub('Test:Topic', matching)
     expect(capturedSubscriber(subscribeStub, 'Test:Topic')).toBe(matching)
   })
   it('should throw when the stub has no matching subscribe call', () => {
-    subscribeStub('Other:Topic', sandbox.stub().resolves())
+    subscribeStub('Other:Topic', vi.fn().mockResolvedValue(undefined))
     expect(() => capturedSubscriber(subscribeStub, 'Test:Missing')).toThrow(/Test:Missing/v)
   })
   it('should throw when the stub has no calls at all', () => {
@@ -102,12 +100,12 @@ describe('testutils/PubSub capturedSubscriber()', () => {
 })
 
 describe('testutils/PubSub publishedData()', () => {
-  let publishStub = sandbox.stub()
+  let publishStub: Mock = vi.fn()
   beforeEach(() => {
-    publishStub = sandbox.stub()
+    publishStub = vi.fn()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should return the data arg of the matching publish call', () => {
     publishStub('Test:Topic', 'payload')
@@ -139,7 +137,7 @@ describe('testutils/PubSub publishedData()', () => {
 describe('testutils/PubSub mountPubSub() / unmountPubSub()', () => {
   afterEach(() => {
     unmountPubSub()
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should set PubSub.guardCallback when mounted', () => {
     expect(PubSub.guardCallback).toBe(undefined)
@@ -162,39 +160,39 @@ describe('testutils/PubSub mountPubSub() / unmountPubSub()', () => {
 })
 
 describe('testutils/PubSub capturedInterval()', () => {
-  let addIntervalStub = sandbox.stub()
+  let addIntervalStub: Mock = vi.fn()
   beforeEach(() => {
-    addIntervalStub = sandbox.stub()
+    addIntervalStub = vi.fn()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should return the method arg from the matching addInterval call', () => {
-    const method = sandbox.stub()
+    const method = vi.fn()
     addIntervalStub('TestInterval', method, 100)
     expect(capturedInterval(addIntervalStub, 'TestInterval')).toBe(method)
   })
   it('should match the name case-sensitively', () => {
-    const method = sandbox.stub()
+    const method = vi.fn()
     addIntervalStub('TestInterval', method, 100)
     expect(() => capturedInterval(addIntervalStub, 'testinterval')).toThrow(/testinterval/v)
   })
   it('should return the most-recently-registered method when multiple calls match', () => {
-    const earlier = sandbox.stub()
-    const latest = sandbox.stub()
+    const earlier = vi.fn()
+    const latest = vi.fn()
     addIntervalStub('TestInterval', earlier, 100)
     addIntervalStub('TestInterval', latest, 200)
     expect(capturedInterval(addIntervalStub, 'TestInterval')).toBe(latest)
   })
   it('should ignore calls for non-matching names', () => {
-    const matching = sandbox.stub()
-    const other = sandbox.stub()
+    const matching = vi.fn()
+    const other = vi.fn()
     addIntervalStub('Other', other, 100)
     addIntervalStub('TestInterval', matching, 200)
     expect(capturedInterval(addIntervalStub, 'TestInterval')).toBe(matching)
   })
   it('should throw when the stub has no matching addInterval call', () => {
-    addIntervalStub('Other', sandbox.stub(), 100)
+    addIntervalStub('Other', vi.fn(), 100)
     expect(() => capturedInterval(addIntervalStub, 'Missing')).toThrow(/Missing/v)
   })
   it('should throw when the stub has no calls at all', () => {
@@ -203,16 +201,16 @@ describe('testutils/PubSub capturedInterval()', () => {
 })
 
 describe('testutils/PubSub capturedDeferred()', () => {
-  let deferStub = sandbox.stub()
+  let deferStub: Mock = vi.fn()
   beforeEach(() => {
-    deferStub = sandbox.stub()
+    deferStub = vi.fn()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should return all method args from defer calls in registration order', () => {
-    const first = sandbox.stub()
-    const second = sandbox.stub()
+    const first = vi.fn()
+    const second = vi.fn()
     deferStub(first, 100)
     deferStub(second, 200)
     expect(capturedDeferred(deferStub)).toEqual([first, second])

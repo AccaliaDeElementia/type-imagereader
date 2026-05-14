@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -9,8 +8,7 @@ import { Imports, init, Internals, Navigation } from '#public/scripts/app/naviga
 import { cast } from '#testutils/typeGuards.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { eventuallyRejects } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -25,7 +23,7 @@ html
 `
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
-  let subscribeStub = sandbox.stub()
+  let subscribeStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -33,9 +31,9 @@ describe('public/app/navigation/messageHandlers init()', () => {
     mountDom(dom)
 
     resetPubSub()
-    sandbox.stub(Internals, 'loadData').resolves()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
-    sandbox.stub(Imports, 'forward')
+    vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
     Navigation.current = {
       path: '/',
       name: '',
@@ -43,15 +41,15 @@ describe('public/app/navigation/messageHandlers init()', () => {
     }
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   afterAll(() => {
     unmountDom()
-    Sinon.restore()
+    vi.restoreAllMocks()
   })
   describe('Action:Execute:PreviousFolder message Handler', () => {
-    let navigateToStub = sandbox.stub()
-    let showUnreadOnlyStub = sandbox.stub()
+    let navigateToStub: MockInstance = vi.fn()
+    let showUnreadOnlyStub: MockInstance = vi.fn()
     let previousFolder = {
       name: 'FOO',
       path: '/FOO',
@@ -66,8 +64,8 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Internals, 'navigateTo')
-      showUnreadOnlyStub = sandbox.stub(Imports, 'getShowUnreadOnly').returns(false)
+      navigateToStub = vi.spyOn(Internals, 'navigateTo').mockResolvedValue(undefined)
+      showUnreadOnlyStub = vi.spyOn(Imports, 'getShowUnreadOnly').mockReturnValue(false)
       init()
       previousFolder = {
         name: `Foo ${Math.random()}`,
@@ -84,57 +82,57 @@ describe('public/app/navigation/messageHandlers init()', () => {
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousFolder')
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     it('should call navigateTo once when showUnreadOnly is not set', async () => {
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to previous folder when showUnreadOnly is not set', async () => {
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([previousFolder.path, 'PreviousFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([previousFolder.path, 'PreviousFolder'])
     })
     it('should call navigateTo once when tolerating missing previous folder', async () => {
       Navigation.current.prev = undefined
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should tolerate missing previous folder when showUnreadOnly is not set', async () => {
       Navigation.current.prev = undefined
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([undefined, 'PreviousFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'PreviousFolder'])
     })
     it('should call navigateTo once when showUnreadOnly is set', async () => {
-      showUnreadOnlyStub.returns(true)
+      showUnreadOnlyStub.mockReturnValue(true)
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to previous unread folder when showUnreadOnly is set', async () => {
-      showUnreadOnlyStub.returns(true)
+      showUnreadOnlyStub.mockReturnValue(true)
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([previousUnreadFolder.path, 'PreviousFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([previousUnreadFolder.path, 'PreviousFolder'])
     })
     it('should call navigateTo once when tolerating missing previous unread folder', async () => {
       Navigation.current.prevUnread = undefined
-      showUnreadOnlyStub.returns(true)
+      showUnreadOnlyStub.mockReturnValue(true)
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should tolerate missing previous unread folder when showUnreadOnly is set', async () => {
       Navigation.current.prevUnread = undefined
-      showUnreadOnlyStub.returns(true)
+      showUnreadOnlyStub.mockReturnValue(true)
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([undefined, 'PreviousFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'PreviousFolder'])
     })
     it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
-      navigateToStub.rejects(err)
+      navigateToStub.mockRejectedValue(err)
       expect(await eventuallyRejects(handler())).toBe(err)
     })
   })
   describe('Action:Execute:NextFolder message Handler', () => {
-    let navigateToStub = sandbox.stub()
-    let showUnreadOnlyStub = sandbox.stub()
+    let navigateToStub: MockInstance = vi.fn()
+    let showUnreadOnlyStub: MockInstance = vi.fn()
     let nextFolder = {
       name: 'FOO',
       path: '/FOO',
@@ -149,8 +147,8 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Internals, 'navigateTo')
-      showUnreadOnlyStub = sandbox.stub(Imports, 'getShowUnreadOnly').returns(false)
+      navigateToStub = vi.spyOn(Internals, 'navigateTo').mockResolvedValue(undefined)
+      showUnreadOnlyStub = vi.spyOn(Imports, 'getShowUnreadOnly').mockReturnValue(false)
       init()
       nextFolder = {
         name: `Foo ${Math.random()}`,
@@ -167,102 +165,102 @@ describe('public/app/navigation/messageHandlers init()', () => {
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:NextFolder')
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     it('should call navigateTo once when showUnreadOnly is not set', async () => {
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to next folder when showUnreadOnly is not set', async () => {
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([nextFolder.path, 'NextFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([nextFolder.path, 'NextFolder'])
     })
     it('should call navigateTo once when tolerating missing next folder', async () => {
       Navigation.current.next = undefined
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should tolerate missing next folder when showUnreadOnly is not set', async () => {
       Navigation.current.next = undefined
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([undefined, 'NextFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'NextFolder'])
     })
     it('should call navigateTo once when showUnreadOnly is set', async () => {
-      showUnreadOnlyStub.returns(true)
+      showUnreadOnlyStub.mockReturnValue(true)
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to next unread folder when showUnreadOnly is set', async () => {
-      showUnreadOnlyStub.returns(true)
+      showUnreadOnlyStub.mockReturnValue(true)
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([nextUnreadFolder.path, 'NextFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([nextUnreadFolder.path, 'NextFolder'])
     })
     it('should call navigateTo once when tolerating missing next unread folder', async () => {
       Navigation.current.nextUnread = undefined
-      showUnreadOnlyStub.returns(true)
+      showUnreadOnlyStub.mockReturnValue(true)
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should tolerate missing next unread folder when showUnreadOnly is set', async () => {
       Navigation.current.nextUnread = undefined
-      showUnreadOnlyStub.returns(true)
+      showUnreadOnlyStub.mockReturnValue(true)
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([undefined, 'NextFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'NextFolder'])
     })
     it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
-      navigateToStub.rejects(err)
+      navigateToStub.mockRejectedValue(err)
       expect(await eventuallyRejects(handler())).toBe(err)
     })
   })
   describe('Action:Execute:ParentFolder message Handler', () => {
-    let navigateToStub = sandbox.stub()
+    let navigateToStub: MockInstance = vi.fn()
     let parentFolder = ''
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Internals, 'navigateTo')
+      navigateToStub = vi.spyOn(Internals, 'navigateTo').mockResolvedValue(undefined)
       init()
       parentFolder = `/Foo ${Math.random()}`
       Navigation.current.parent = parentFolder
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:ParentFolder')
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     it('should call navigateTo once when navigating to parent folder', async () => {
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to parent folder', async () => {
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([parentFolder, 'ParentFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([parentFolder, 'ParentFolder'])
     })
     it('should call navigateTo once when tolerating undefined parent folder', async () => {
       Navigation.current.parent = cast<string>(undefined)
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should tolerate invalidly undefined parent folder', async () => {
       Navigation.current.parent = cast<string>(undefined)
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([undefined, 'ParentFolder'])
+      expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'ParentFolder'])
     })
     it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
-      navigateToStub.rejects(err)
+      navigateToStub.mockRejectedValue(err)
       expect(await eventuallyRejects(handler())).toBe(err)
     })
   })
   describe('Action:Execute:FirstUnfinished message Handler', () => {
-    let navigateToStub = sandbox.stub()
+    let navigateToStub: MockInstance = vi.fn()
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
     let children = [{ name: '', path: '', cover: '', seenCount: 0, totalCount: 0 }]
     beforeEach(() => {
-      navigateToStub = sandbox.stub(Internals, 'navigateTo')
+      navigateToStub = vi.spyOn(Internals, 'navigateTo').mockResolvedValue(undefined)
       init()
       children = Array(20)
         .fill(undefined)
@@ -277,49 +275,49 @@ describe('public/app/navigation/messageHandlers init()', () => {
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:FirstUnfinished')
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     it('should call navigateTo once when children are undefined', async () => {
       Navigation.current.children = undefined
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to undefined when no children are undefined', async () => {
       Navigation.current.children = undefined
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([undefined, 'FirstUnfinished'])
+      expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'FirstUnfinished'])
     })
     it('should call navigateTo once when no child folder exist', async () => {
       Navigation.current.children = []
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to undefined when no child folder exist', async () => {
       Navigation.current.children = []
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([undefined, 'FirstUnfinished'])
+      expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'FirstUnfinished'])
     })
     it('should call navigateTo once when no child folder is unfinished', async () => {
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to undefined when no child folder is unfinished', async () => {
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([undefined, 'FirstUnfinished'])
+      expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'FirstUnfinished'])
     })
     it('should call navigateTo once when navigating to unfinished child folder', async () => {
       assert(children[10] !== undefined)
       children[10].totalCount = 100
       children[10].seenCount = 10
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to unfinished child folder', async () => {
       assert(children[10] !== undefined)
       children[10].totalCount = 100
       children[10].seenCount = 10
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([children[10].path, 'FirstUnfinished'])
+      expect(navigateToStub.mock.calls[0]).toEqual([children[10].path, 'FirstUnfinished'])
     })
     it('should call navigateTo once when navigating to first unfinished child folder', async () => {
       assert(children[10] !== undefined)
@@ -332,7 +330,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       children[19].totalCount = 100
       children[19].seenCount = 10
       await handler()
-      expect(navigateToStub.callCount).toBe(1)
+      expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to first unfinished child folder', async () => {
       assert(children[10] !== undefined)
@@ -345,11 +343,11 @@ describe('public/app/navigation/messageHandlers init()', () => {
       children[19].totalCount = 100
       children[19].seenCount = 10
       await handler()
-      expect(navigateToStub.firstCall.args).toEqual([children[10].path, 'FirstUnfinished'])
+      expect(navigateToStub.mock.calls[0]).toEqual([children[10].path, 'FirstUnfinished'])
     })
     it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
-      navigateToStub.rejects(err)
+      navigateToStub.mockRejectedValue(err)
       expect(await eventuallyRejects(handler())).toBe(err)
     })
   })

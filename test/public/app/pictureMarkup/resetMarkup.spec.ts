@@ -4,13 +4,11 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
-import Sinon from 'sinon'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { Grid, Imports, resetMarkup } from '#public/scripts/app/pictureMarkup.js'
 import assert from 'node:assert'
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -35,20 +33,20 @@ html
 
 describe('public/app/pictureMarkup resetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
-  let publishStub = sandbox.stub()
+  let publishStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
     resetPubSub()
-    publishStub = sandbox.stub(Imports, 'publish')
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     Pictures.mainImage = null
     Pictures.current = null
     Grid.imageCard = null
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
 
@@ -136,9 +134,9 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     assert(img !== null)
     const evt = new dom.window.Event('load')
     resetMarkup()
-    expect(publishStub.withArgs('Loading:Hide').called).toBe(false)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Hide')).toBe(false)
     img.dispatchEvent(evt)
-    expect(publishStub.withArgs('Loading:Hide').called).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Hide')).toBe(true)
   })
   it('should publish Loading:Error on mainImage error event with src set', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -146,9 +144,9 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     const evt = new dom.window.ErrorEvent('error')
     resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
-    expect(publishStub.withArgs('Loading:Error').called).toBe(false)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Error')).toBe(false)
     img.dispatchEvent(evt)
-    expect(publishStub.withArgs('Loading:Error').called).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Error')).toBe(true)
   })
   it('should not publish Loading:Error on mainImage error event with src empty', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
@@ -157,7 +155,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     resetMarkup()
     img.setAttribute('src', '')
     img.dispatchEvent(evt)
-    expect(publishStub.withArgs('Loading:Error').called).toBe(false)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Error')).toBe(false)
   })
   it('should publish expected error message when load fails and no current image', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')

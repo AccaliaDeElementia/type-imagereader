@@ -1,48 +1,46 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import type { Picture } from '#contracts/listing.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { changePicture, Imports, Internals, Viewer } from '#public/scripts/app/pictureNavigation.js'
 import { publishedData } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const HISTORY_SIZE = 10
 
 describe('public/app/pictures changePicture()', () => {
-  let publishStub = sandbox.stub()
-  let isLoadingSpy = sandbox.stub()
-  let loadImageSpy = sandbox.stub()
+  let publishStub: MockInstance = vi.fn()
+  let isLoadingSpy: MockInstance = vi.fn()
+  let loadImageSpy: MockInstance = vi.fn()
   beforeEach(() => {
     Pictures.current = null
     Viewer.history = { prev: [], next: [] }
-    publishStub = sandbox.stub(Imports, 'publish')
-    isLoadingSpy = sandbox.stub(Imports, 'isLoading').returns(false)
-    loadImageSpy = sandbox.stub(Internals, 'loadImage').resolves()
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    isLoadingSpy = vi.spyOn(Imports, 'isLoading').mockReturnValue(false)
+    loadImageSpy = vi.spyOn(Internals, 'loadImage').mockResolvedValue(undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should not set current picture if image is currently loading', async () => {
-    isLoadingSpy.returns(true)
+    isLoadingSpy.mockReturnValue(true)
     await changePicture({ name: '', path: '', seen: false })
     expect(Pictures.current).toBe(null)
   })
   it('should not load image if image is currently loading', async () => {
-    isLoadingSpy.returns(true)
+    isLoadingSpy.mockReturnValue(true)
     await changePicture({ name: '', path: '', seen: false })
-    expect(loadImageSpy.callCount).toBe(0)
+    expect(loadImageSpy.mock.calls.length).toBe(0)
   })
   it('should not hide menu if image is currently loading', async () => {
-    isLoadingSpy.returns(true)
+    isLoadingSpy.mockReturnValue(true)
     await changePicture({ name: '', path: '', seen: false })
-    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:Hide').length).toBe(0)
   })
   it('should not publish error if image is currently loading', async () => {
-    isLoadingSpy.returns(true)
+    isLoadingSpy.mockReturnValue(true)
     await changePicture(undefined)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(0)
   })
   it('should not set current image when changing to empty picture', async () => {
     const pic = { name: '', path: '', seen: true }
@@ -52,15 +50,15 @@ describe('public/app/pictures changePicture()', () => {
   })
   it('should not load image when changing to empty picture', async () => {
     await changePicture(undefined)
-    expect(loadImageSpy.callCount).toBe(0)
+    expect(loadImageSpy.mock.calls.length).toBe(0)
   })
   it('should not hide menu when changing to empty picture', async () => {
     await changePicture(undefined)
-    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:Hide').length).toBe(0)
   })
   it('should publish error when changing to empty picture', async () => {
     await changePicture(undefined)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(1)
   })
   it('should publish specific error message when changing to empty picture', async () => {
     await changePicture(undefined)
@@ -74,23 +72,23 @@ describe('public/app/pictures changePicture()', () => {
   it('should hide menu when changing to valid picture', async () => {
     const pic = { name: '', path: '', seen: true }
     await changePicture(pic)
-    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:Hide').length).toBe(1)
   })
   it('should tolerate loadImage rejecting', async () => {
     const pic = { name: '', path: '', seen: true }
-    loadImageSpy.rejects('FOO!')
+    loadImageSpy.mockRejectedValue('FOO!')
     await changePicture(pic)
-    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:Hide').length).toBe(1)
   })
   it('should load image when changing to valid picture', async () => {
     const pic = { name: '', path: '', seen: true }
     await changePicture(pic)
-    expect(loadImageSpy.callCount).toBe(1)
+    expect(loadImageSpy.mock.calls.length).toBe(1)
   })
   it('should not publish error when changing to valid picture', async () => {
     const pic = { name: '', path: '', seen: true }
     await changePicture(pic)
-    expect(publishStub.withArgs('Loading:Error').callCount).toBe(0)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(0)
   })
   it('should push prior current onto history.prev', async () => {
     const prior: Picture = { name: 'prior', path: '/prior', seen: true }
@@ -124,7 +122,7 @@ describe('public/app/pictures changePicture()', () => {
     expect(Viewer.history.prev[0]?.name).toBe('f1')
   })
   it('should not record history when isLoading guard fires', async () => {
-    isLoadingSpy.returns(true)
+    isLoadingSpy.mockReturnValue(true)
     Pictures.current = { name: 'prior', path: '/prior', seen: true }
     await changePicture({ name: 'next', path: '/next', seen: false })
     expect(Viewer.history.prev).toEqual([])

@@ -1,13 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { init, Internals, Imports, Navigation } from '#public/scripts/app/navigation.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import { cast } from '#testutils/typeGuards.js'
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -22,8 +21,8 @@ html
 `
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
-  let subscribeStub = sandbox.stub()
-  let forwardStub = sandbox.stub()
+  let subscribeStub: MockInstance = vi.fn()
+  let forwardStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -31,9 +30,9 @@ describe('public/app/navigation/messageHandlers init()', () => {
     mountDom(dom)
 
     resetPubSub()
-    sandbox.stub(Internals, 'loadData').resolves()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
-    forwardStub = sandbox.stub(Imports, 'forward')
+    vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    forwardStub = vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
     Navigation.current = {
       path: '/',
       name: '',
@@ -41,91 +40,92 @@ describe('public/app/navigation/messageHandlers init()', () => {
     }
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   afterAll(() => {
     unmountDom()
-    Sinon.restore()
+    vi.restoreAllMocks()
   })
   describe('Action:Execute:Slideshow Message Handler', () => {
-    let locationAssignSpy = sandbox.stub()
+    let locationAssignSpy: MockInstance = vi.fn()
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
     beforeEach(() => {
       init()
-      locationAssignSpy = sandbox.stub(Navigation, 'locationAssign')
+      locationAssignSpy = vi.fn()
+      Navigation.locationAssign = cast<(url: string | URL) => void>(locationAssignSpy)
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:Slideshow')
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     it('should alter location via locationAssign when invoked', async () => {
       await handler()
-      expect(locationAssignSpy.callCount).toBe(1)
+      expect(locationAssignSpy.mock.calls.length).toBe(1)
     })
     it('should alter location to expected path when invoked', async () => {
       const path = `/foo/${Math.random()}`
       Navigation.current.path = path
       await handler()
-      expect(locationAssignSpy.firstCall.args[0]).toBe(`/slideshow${path}`)
+      expect(locationAssignSpy.mock.calls[0]?.[0]).toBe(`/slideshow${path}`)
     })
     it('should pass expected this value when invoked', async () => {
       await handler()
-      expect(locationAssignSpy.firstCall.thisValue).toBe(dom.window.location)
+      expect(locationAssignSpy.mock.contexts[0]).toBe(dom.window.location)
     })
   })
   describe('Action:Execute:Fullscreen Message Handler', () => {
-    const requestFullscreenStub = sandbox.stub()
-    const exitFullscreenStub = sandbox.stub()
-    let publishStub = sandbox.stub()
+    const requestFullscreenStub = vi.fn()
+    const exitFullscreenStub = vi.fn()
+    let publishStub: MockInstance = vi.fn()
     let handler = async (_?: unknown, __?: string): Promise<void> => {
       await Promise.resolve()
     }
     beforeEach(() => {
       init()
-      requestFullscreenStub.resolves()
-      exitFullscreenStub.resolves()
+      requestFullscreenStub.mockResolvedValue(undefined)
+      exitFullscreenStub.mockResolvedValue(undefined)
       dom.window.document.body.requestFullscreen = requestFullscreenStub
       dom.window.document.exitFullscreen = exitFullscreenStub
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:FullScreen')
-      publishStub = sandbox.stub(Imports, 'publish')
+      publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     })
     afterEach(() => {
-      requestFullscreenStub.reset()
-      exitFullscreenStub.reset()
+      requestFullscreenStub.mockReset()
+      exitFullscreenStub.mockReset()
     })
     it('should call requestFullscreen once when no fullscreen element exists', async () => {
       await handler()
-      expect(requestFullscreenStub.callCount).toBe(1)
+      expect(requestFullscreenStub.mock.calls.length).toBe(1)
     })
     it('should not call exitFullscreen when no fullscreen element exists', async () => {
       await handler()
-      expect(exitFullscreenStub.callCount).toBe(0)
+      expect(exitFullscreenStub.mock.calls.length).toBe(0)
     })
     it('should request fullscreen with one argument', async () => {
       await handler()
-      expect(requestFullscreenStub.firstCall.args).toHaveLength(1)
+      expect(requestFullscreenStub.mock.calls[0]).toHaveLength(1)
     })
     it('should request fullscreen without navigationUI', async () => {
       await handler()
-      expect(requestFullscreenStub.firstCall.args[0]).toEqual({ navigationUI: 'hide' })
+      expect(requestFullscreenStub.mock.calls[0]?.[0]).toEqual({ navigationUI: 'hide' })
     })
     it('should not publish Loading:Error when requestFullscreen resolves', async () => {
-      requestFullscreenStub.resolves()
+      requestFullscreenStub.mockResolvedValue(undefined)
       await handler()
-      expect(publishStub.called).toBe(false)
+      expect(publishStub.mock.calls.length > 0).toBe(false)
     })
     it('should publish Loading:Error when requestFullscreen rejects', async () => {
-      requestFullscreenStub.rejects('FOO')
+      requestFullscreenStub.mockRejectedValue('FOO')
       await handler()
-      expect(publishStub.called).toBe(true)
+      expect(publishStub.mock.calls.length > 0).toBe(true)
     })
     it('should pass exception to Loading:Error when requestFullscreen rejects', async () => {
       const err = new Error('FOO')
-      requestFullscreenStub.rejects(err)
+      requestFullscreenStub.mockRejectedValue(err)
       await handler()
-      expect(publishStub.firstCall.args[1]).toBe(err)
+      expect(publishStub.mock.calls[0]?.[1]).toBe(err)
     })
     it('should not call requestFullscreen when fullscreen element exists', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -133,7 +133,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
         value: dom.window.document.body,
       })
       await handler()
-      expect(requestFullscreenStub.callCount).toBe(0)
+      expect(requestFullscreenStub.mock.calls.length).toBe(0)
     })
     it('should call exitFullscreen once when fullscreen element exists', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -141,25 +141,25 @@ describe('public/app/navigation/messageHandlers init()', () => {
         value: dom.window.document.body,
       })
       await handler()
-      expect(exitFullscreenStub.callCount).toBe(1)
+      expect(exitFullscreenStub.mock.calls.length).toBe(1)
     })
     it('should not publish Loading:Error when exitFullscreen resolves', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
         writable: true,
         value: dom.window.document.body,
       })
-      exitFullscreenStub.resolves()
+      exitFullscreenStub.mockResolvedValue(undefined)
       await handler()
-      expect(publishStub.called).toBe(false)
+      expect(publishStub.mock.calls.length > 0).toBe(false)
     })
     it('should publish Loading:Error when exitFullscreen rejects', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
         writable: true,
         value: dom.window.document.body,
       })
-      exitFullscreenStub.rejects('FOO')
+      exitFullscreenStub.mockRejectedValue('FOO')
       await handler()
-      expect(publishStub.called).toBe(true)
+      expect(publishStub.mock.calls.length > 0).toBe(true)
     })
     it('should pass exception to Loading:Error when exitFullscreen rejects', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -167,9 +167,9 @@ describe('public/app/navigation/messageHandlers init()', () => {
         value: dom.window.document.body,
       })
       const err = new Error('FOO')
-      exitFullscreenStub.rejects(err)
+      exitFullscreenStub.mockRejectedValue(err)
       await handler()
-      expect(publishStub.firstCall.args[1]).toBe(err)
+      expect(publishStub.mock.calls[0]?.[1]).toBe(err)
     })
   })
   describe('Message Forwarding Configuration', () => {
@@ -190,7 +190,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     ]
     mappers.forEach(([from, to]) => {
       it(`should register forward from ${from} to ${to}`, () => {
-        expect(forwardStub.calledWith(from, to)).toBe(true)
+        expect(forwardStub.mock.calls.some((c) => c[0] === from, to)).toBe(true)
       })
     })
   })

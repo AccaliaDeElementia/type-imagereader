@@ -1,13 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, init, Loading } from '#public/scripts/app/loading.js'
 import { capturedDeferred, capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
+import type { MockInstance } from 'vitest'
 
-const sandbox = Sinon.createSandbox()
 const markup = `
 html
   body
@@ -16,23 +15,23 @@ html
 `
 describe('public/app/loading subscriber "Loading:Success"', () => {
   let dom: JSDOM = new JSDOM('', {})
-  let subscribeStub = sandbox.stub()
-  let deferStub = sandbox.stub()
+  let subscribeStub: MockInstance = vi.fn()
+  let deferStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
     resetPubSub()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
-    sandbox.stub(Imports, 'publish')
-    deferStub = sandbox.stub(Imports, 'defer')
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    deferStub = vi.spyOn(Imports, 'defer').mockImplementation((..._args: unknown[]) => undefined)
     Loading.overlay = null
     Loading.navbar = null
     init()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should remove css transition style on navbar', async () => {
@@ -50,10 +49,10 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     expect(navbar?.style.getPropertyValue('background-color')).toBe('rgb(0, 170, 0)')
   })
   it('should set a deferred function', async () => {
-    expect(deferStub.callCount).toBe(0)
+    expect(deferStub.mock.calls.length).toBe(0)
     const handler = capturedSubscriber(subscribeStub, 'Loading:Success')
     await handler(undefined)
-    expect(deferStub.callCount).toBe(1)
+    expect(deferStub.mock.calls.length).toBe(1)
   })
   it('should defer transition definition', async () => {
     const navbar = dom.window.document.querySelector<HTMLElement>('#navbar')

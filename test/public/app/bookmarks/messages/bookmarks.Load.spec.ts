@@ -1,7 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -12,8 +10,7 @@ import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, init, Internals } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -35,10 +32,10 @@ html
 describe('public/app/bookmarks init Bookmarks:Load', () => {
   let dom: JSDOM = new JSDOM('', {})
 
-  let BuildBookmarksSpy = sandbox.stub()
-  let getJSONSpy = sandbox.stub()
-  let publishStub = sandbox.stub()
-  let subscribeStub = sandbox.stub()
+  let BuildBookmarksSpy: MockInstance = vi.fn()
+  let getJSONSpy: MockInstance = vi.fn()
+  let publishStub: MockInstance = vi.fn()
+  let subscribeStub: MockInstance = vi.fn()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -47,30 +44,30 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     mountDom(dom)
 
     resetPubSub()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = sandbox.stub(Internals, 'buildBookmarks')
-    getJSONSpy = sandbox.stub(Imports, 'getJSON').resolves()
+    BuildBookmarksSpy = vi.spyOn(Internals, 'buildBookmarks').mockImplementation((..._args: unknown[]) => undefined)
+    getJSONSpy = vi.spyOn(Imports, 'getJSON').mockResolvedValue(undefined)
     init()
-    publishStub = sandbox.stub(Imports, 'publish')
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should use Net.getJSON to load bookmarks', async () => {
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(getJSONSpy.callCount).toBe(1)
+    expect(getJSONSpy.mock.calls.length).toBe(1)
   })
   it('should request expected API endpoint to load bookmarks', async () => {
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(getJSONSpy.firstCall.args[0]).toBe('/api/bookmarks')
+    expect(getJSONSpy.mock.calls[0]?.[0]).toBe('/api/bookmarks')
   })
   const bookmarkTestCases: Array<[string, unknown, boolean]> = [
     ['null', null, false],
@@ -87,7 +84,7 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     it(`should${expected ? '' : ' not'} accept ${title} data`, async () => {
       const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
       await fn(undefined)
-      const acceptor = getJSONSpy.firstCall.args[1] as unknown
+      const acceptor = getJSONSpy.mock.calls[0]?.[1] as unknown
       assert(acceptor !== undefined)
       const result = cast<(o: unknown) => boolean>(acceptor)
       expect(result(obj)).toBe(expected)
@@ -95,64 +92,64 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
   })
   it('should call BuildBookmarks once when getJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
-    getJSONSpy.resolves(data)
+    getJSONSpy.mockResolvedValue(data)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(BuildBookmarksSpy.callCount).toBe(1)
+    expect(BuildBookmarksSpy.mock.calls.length).toBe(1)
   })
   it('should pass empty name to BuildBookmarks when getJSON resolves', async () => {
-    getJSONSpy.resolves([])
+    getJSONSpy.mockResolvedValue([])
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).name).toBe('')
+    expect(cast<Listing>(BuildBookmarksSpy.mock.calls[0]?.[0]).name).toBe('')
   })
   it('should pass empty path to BuildBookmarks when getJSON resolves', async () => {
-    getJSONSpy.resolves([])
+    getJSONSpy.mockResolvedValue([])
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).path).toBe('')
+    expect(cast<Listing>(BuildBookmarksSpy.mock.calls[0]?.[0]).path).toBe('')
   })
   it('should pass resolved data as bookmarks to BuildBookmarks', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
-    getJSONSpy.resolves(data)
+    getJSONSpy.mockResolvedValue(data)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).toBe(data)
+    expect(cast<Listing>(BuildBookmarksSpy.mock.calls[0]?.[0]).bookmarks).toBe(data)
   })
   it('should not publish Loading:Error when getJSON resolves', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
-    getJSONSpy.resolves(data)
+    getJSONSpy.mockResolvedValue(data)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(publishStub.callCount).toBe(0)
+    expect(publishStub.mock.calls.length).toBe(0)
   })
   it('should not build bookmarks when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
-    getJSONSpy.rejects(data)
+    getJSONSpy.mockRejectedValue(data)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(BuildBookmarksSpy.callCount).toBe(0)
+    expect(BuildBookmarksSpy.mock.calls.length).toBe(0)
   })
   it('should publish Loading:Error when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
-    getJSONSpy.rejects(data)
+    getJSONSpy.mockRejectedValue(data)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(publishStub.calledWith('Loading:Error')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Error')).toBe(true)
   })
   it('should publish received error to Loading:Error when getJSON rejects', async () => {
     const data = [{ BOOKMARK_DATA: Math.random() }]
-    getJSONSpy.rejects(data)
+    getJSONSpy.mockRejectedValue(data)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     await fn(undefined)
-    expect(publishStub.firstCall.args[1]).toBe(data)
+    expect(publishStub.mock.calls[0]?.[1]).toBe(data)
   })
 
   const runStaleResponseScenario = async (): Promise<{ secondData: unknown }> => {
     const { promise: firstPromise, resolve: resolveFirst } = Promise.withResolvers<unknown>()
     const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
     const secondData = [{ name: 'second', path: '/second', bookmarks: [] }]
-    getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
+    getJSONSpy.mockReturnValueOnce(firstPromise).mockReturnValueOnce(secondPromise)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     const a = fn(undefined)
     const b = fn(undefined)
@@ -165,16 +162,16 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
 
   it('should call buildBookmarks exactly once when a stale response arrives after a newer one', async () => {
     await runStaleResponseScenario()
-    expect(BuildBookmarksSpy.callCount).toBe(1)
+    expect(BuildBookmarksSpy.mock.calls.length).toBe(1)
   })
   it('should pass the newer response to buildBookmarks when a stale response arrives later', async () => {
     const { secondData } = await runStaleResponseScenario()
-    expect(cast<Listing>(BuildBookmarksSpy.firstCall.args[0]).bookmarks).toBe(secondData)
+    expect(cast<Listing>(BuildBookmarksSpy.mock.calls[0]?.[0]).bookmarks).toBe(secondData)
   })
   it('should not publish Loading:Error for a stale rejection', async () => {
     const { promise: firstPromise, reject: rejectFirst } = Promise.withResolvers<unknown>()
     const { promise: secondPromise, resolve: resolveSecond } = Promise.withResolvers<unknown>()
-    getJSONSpy.onFirstCall().returns(firstPromise).onSecondCall().returns(secondPromise)
+    getJSONSpy.mockReturnValueOnce(firstPromise).mockReturnValueOnce(secondPromise)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
     const a = fn(undefined)
     const b = fn(undefined)
@@ -182,6 +179,6 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     await b
     rejectFirst(new Error('stale'))
     await a
-    expect(publishStub.callCount).toBe(0)
+    expect(publishStub.mock.calls.length).toBe(0)
   })
 })

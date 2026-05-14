@@ -1,15 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, init, Internals } from '#public/scripts/app/bookmarks.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -31,8 +28,8 @@ html
 describe('public/app/bookmarks init Navigate:Data', () => {
   let dom: JSDOM = new JSDOM('', {})
 
-  let BuildBookmarksSpy = sandbox.stub()
-  let subscribeStub = sandbox.stub()
+  let BuildBookmarksSpy: MockInstance = vi.fn()
+  let subscribeStub: MockInstance = vi.fn()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -41,18 +38,18 @@ describe('public/app/bookmarks init Navigate:Data', () => {
     mountDom(dom)
 
     resetPubSub()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = sandbox.stub(Internals, 'buildBookmarks')
+    BuildBookmarksSpy = vi.spyOn(Internals, 'buildBookmarks').mockImplementation((..._args: unknown[]) => undefined)
 
     init()
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   const testCases: Array<[string, unknown, boolean]> = [
@@ -67,7 +64,7 @@ describe('public/app/bookmarks init Navigate:Data', () => {
     it(`should${expected ? '' : ' not'} build bookmarks when Navigate:Load loads ${title}`, async () => {
       const fn = capturedSubscriber(subscribeStub, 'Navigate:Data')
       await fn(data)
-      expect(BuildBookmarksSpy.called).toBe(expected)
+      expect(BuildBookmarksSpy.mock.calls.length > 0).toBe(expected)
     })
   })
 })

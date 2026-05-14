@@ -1,7 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -11,8 +9,7 @@ import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, init } from '#public/scripts/app/bookmarks.js'
 
 import assert from 'node:assert'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -34,9 +31,9 @@ html
 describe('public/app/bookmarks init Bookmarks:Remove', () => {
   let dom: JSDOM = new JSDOM('', {})
 
-  let postJSONSpy = sandbox.stub()
-  let publishStub = sandbox.stub()
-  let subscribeStub = sandbox.stub()
+  let postJSONSpy: MockInstance = vi.fn()
+  let publishStub: MockInstance = vi.fn()
+  let subscribeStub: MockInstance = vi.fn()
 
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -45,18 +42,18 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
     mountDom(dom)
 
     resetPubSub()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    postJSONSpy = sandbox.stub(Imports, 'postJSON').resolves()
+    postJSONSpy = vi.spyOn(Imports, 'postJSON').mockResolvedValue(undefined)
     init()
-    publishStub = sandbox.stub(Imports, 'publish')
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   const postDataCases: Array<[string, unknown, boolean]> = [
@@ -73,12 +70,12 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
     it(`should${expected ? '' : ' not'} post ${title} data`, async () => {
       const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
       await fn(data)
-      expect(postJSONSpy.called).toBe(expected)
+      expect(postJSONSpy.mock.calls.length > 0).toBe(expected)
     })
     it(`should accept ${title} data from network`, async () => {
       const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
       await fn('FOO!')
-      const acceptor = postJSONSpy.firstCall.args[2] as unknown
+      const acceptor = postJSONSpy.mock.calls[0]?.[2] as unknown
       assert(acceptor !== undefined)
       const result = cast<(o: unknown) => boolean>(acceptor)(data)
       expect(result).toBe(true)
@@ -87,85 +84,85 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
   it('should post to expected URL', async () => {
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('FOO!')
-    expect(postJSONSpy.firstCall.args[0]).toBe('/api/bookmarks/remove')
+    expect(postJSONSpy.mock.calls[0]?.[0]).toBe('/api/bookmarks/remove')
   })
   it('should post expected data object', async () => {
     const path = `THIS IS MY PATH${Math.random()}`
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn(path)
-    expect(postJSONSpy.firstCall.args[1]).toEqual({ path })
+    expect(postJSONSpy.mock.calls[0]?.[1]).toEqual({ path })
   })
   it('should publish Bookmarks:Load on success with data', async () => {
-    postJSONSpy.resolves({ foo: 'BAR!' })
+    postJSONSpy.mockResolvedValue({ foo: 'BAR!' })
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Bookmarks:Load')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Bookmarks:Load')).toBe(true)
   })
   it('should publish Loading:Success on success with data', async () => {
-    postJSONSpy.resolves({ foo: 'BAR!' })
+    postJSONSpy.mockResolvedValue({ foo: 'BAR!' })
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Loading:Success')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Success')).toBe(true)
   })
   it('should not publish Loading:Error on success with data', async () => {
-    postJSONSpy.resolves({ foo: 'BAR!' })
+    postJSONSpy.mockResolvedValue({ foo: 'BAR!' })
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Loading:Error')).toBe(false)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Error')).toBe(false)
   })
   it('should publish Bookmarks:Load on empty response', async () => {
-    postJSONSpy.resolves(null)
+    postJSONSpy.mockResolvedValue(null)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Bookmarks:Load')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Bookmarks:Load')).toBe(true)
   })
   it('should publish Loading:Success on empty response', async () => {
-    postJSONSpy.resolves(null)
+    postJSONSpy.mockResolvedValue(null)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Loading:Success')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Success')).toBe(true)
   })
   it('should not publish Loading:Error on empty response', async () => {
-    postJSONSpy.resolves(null)
+    postJSONSpy.mockResolvedValue(null)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Loading:Error')).toBe(false)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Error')).toBe(false)
   })
   it('should not publish Bookmarks:Load on rejection', async () => {
-    postJSONSpy.rejects(new Error('FOO!'))
+    postJSONSpy.mockRejectedValue(new Error('FOO!'))
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Bookmarks:Load')).toBe(false)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Bookmarks:Load')).toBe(false)
   })
   it('should not publish Loading:Success on rejection', async () => {
-    postJSONSpy.rejects(new Error('FOO!'))
+    postJSONSpy.mockRejectedValue(new Error('FOO!'))
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Loading:Success')).toBe(false)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Success')).toBe(false)
   })
   it('should publish Loading:Error on rejection', async () => {
-    postJSONSpy.rejects(new Error('FOO!'))
+    postJSONSpy.mockRejectedValue(new Error('FOO!'))
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.calledWith('Loading:Error')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Error')).toBe(true)
   })
   it('should publish Loading:Error with error on rejection', async () => {
     const err = new Error('FOO!')
-    postJSONSpy.rejects(err)
+    postJSONSpy.mockRejectedValue(err)
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.firstCall.args[1]).toBe(err)
+    expect(publishStub.mock.calls[0]?.[1]).toBe(err)
   })
   it('should publish a generic Error on rejection with non-error', async () => {
-    postJSONSpy.rejects({})
+    postJSONSpy.mockRejectedValue({})
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(publishStub.firstCall.args[1]).toBeInstanceOf(Error)
+    expect(publishStub.mock.calls[0]?.[1]).toBeInstanceOf(Error)
   })
   it('should set message on generic error on rejection with non-error', async () => {
-    postJSONSpy.rejects({})
+    postJSONSpy.mockRejectedValue({})
     const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Remove')
     await fn('foo!')
-    expect(cast<Error>(publishStub.firstCall.args[1]).message).toBe('Non Error rejection!')
+    expect(cast<Error>(publishStub.mock.calls[0]?.[1]).message).toBe('Non Error rejection!')
   })
 })

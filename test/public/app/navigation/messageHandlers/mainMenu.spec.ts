@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
@@ -8,8 +7,7 @@ import { render } from 'pug'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { eventuallyFulfills } from '#testutils/errors.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -24,7 +22,7 @@ html
 `
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
-  let subscribeStub = sandbox.stub()
+  let subscribeStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -32,9 +30,9 @@ describe('public/app/navigation/messageHandlers init()', () => {
     mountDom(dom)
 
     resetPubSub()
-    sandbox.stub(Internals, 'loadData').resolves()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
-    sandbox.stub(Imports, 'forward')
+    vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
     Navigation.current = {
       path: '/',
       name: '',
@@ -42,11 +40,11 @@ describe('public/app/navigation/messageHandlers init()', () => {
     }
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   afterAll(() => {
     unmountDom()
-    Sinon.restore()
+    vi.restoreAllMocks()
   })
   describe('Menu:show Message Handler', () => {
     let menuNode: HTMLDivElement | null = null
@@ -131,13 +129,13 @@ describe('public/app/navigation/messageHandlers init()', () => {
           seen: false,
         },
       ]
-      const publishStub = sandbox.stub(Imports, 'publish')
+      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
       const target = dom.window.document.querySelector('.innerTarget')
       assert(target !== null, 'target must exist')
       Navigation.current.pictures = [{ name: '', path: '', seen: false }]
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(publishStub.callCount).toBe(0)
+      expect(publishStub.mock.calls.length).toBe(0)
     })
     it('should ignore click event node outside of #mainMenu', () => {
       init()
@@ -148,32 +146,32 @@ describe('public/app/navigation/messageHandlers init()', () => {
           seen: false,
         },
       ]
-      const publishStub = sandbox.stub(Imports, 'publish')
+      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
       const target = dom.window.document.querySelector('.navbar-brand')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(publishStub.callCount).toBe(0)
+      expect(publishStub.mock.calls.length).toBe(0)
     })
     it('should ignore click event will missing pictures list', () => {
       init()
       Navigation.current.pictures = undefined
-      const publishStub = sandbox.stub(Imports, 'publish')
+      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(publishStub.callCount).toBe(0)
+      expect(publishStub.mock.calls.length).toBe(0)
     })
     it('should ignore click event will empty pictures list', () => {
       init()
       Navigation.current.pictures = []
-      const publishStub = sandbox.stub(Imports, 'publish')
+      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(publishStub.callCount).toBe(0)
+      expect(publishStub.mock.calls.length).toBe(0)
     })
     it('should publish hide menu event for click event with pictures', () => {
       init()
@@ -184,24 +182,24 @@ describe('public/app/navigation/messageHandlers init()', () => {
           seen: true,
         },
       ]
-      const publishStub = sandbox.stub(Imports, 'publish')
+      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
-      expect(publishStub.callCount).toBe(1)
+      expect(publishStub.mock.calls.length).toBe(1)
     })
   })
   describe('.menuButton click handler', () => {
     it('should publish Menu:show', () => {
       init()
-      const publishStub = sandbox.stub(Imports, 'publish')
+      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
       const target = dom.window.document.querySelector('.menuButton')
       assert(target !== null, 'target must exist')
       Navigation.current.pictures = [{ name: '', path: '', seen: true }]
       const event = new dom.window.MouseEvent('click')
       target.dispatchEvent(event)
-      expect(publishStub.callCount).toBe(1)
+      expect(publishStub.mock.calls.length).toBe(1)
     })
   })
 })

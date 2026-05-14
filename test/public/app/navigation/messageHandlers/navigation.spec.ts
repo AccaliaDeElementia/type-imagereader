@@ -1,14 +1,12 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import type { Listing } from '#contracts/listing.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -23,8 +21,8 @@ html
 `
 describe('public/app/navigation/messageHandlers init()', () => {
   let dom = new JSDOM('', {})
-  let loadDataStub = sandbox.stub()
-  let subscribeStub = sandbox.stub()
+  let loadDataStub: MockInstance = vi.fn()
+  let subscribeStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -32,9 +30,9 @@ describe('public/app/navigation/messageHandlers init()', () => {
     mountDom(dom)
 
     resetPubSub()
-    loadDataStub = sandbox.stub(Internals, 'loadData').resolves()
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
-    sandbox.stub(Imports, 'forward')
+    loadDataStub = vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
     Navigation.current = {
       path: '/',
       name: '',
@@ -42,11 +40,11 @@ describe('public/app/navigation/messageHandlers init()', () => {
     }
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   afterAll(() => {
     unmountDom()
-    Sinon.restore()
+    vi.restoreAllMocks()
   })
   describe('Navigate:Load Handler', () => {
     it('should set current location when passed string', async () => {
@@ -80,38 +78,38 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should not load data when passed invalid data', async () => {
       init()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       await handler(null)
-      expect(loadDataStub.callCount).toBe(0)
+      expect(loadDataStub.mock.calls.length).toBe(0)
     })
     it('should tolerate loadData() rejecting', async () => {
       init()
-      loadDataStub.resetHistory()
-      loadDataStub.rejects(new Event('FOO!'))
+      loadDataStub.mockClear()
+      loadDataStub.mockRejectedValue(new Event('FOO!'))
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       const catcher = (): never => expect.fail('Handler should not reject!')
       await handler('a string').catch(catcher)
     })
     it('should call loadData() once with defaults', async () => {
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler('a string')
-      expect(loadDataStub.callCount).toBe(1)
+      expect(loadDataStub.mock.calls.length).toBe(1)
     })
     it('should call loadData() with noHistory=false for string path', async () => {
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler('a string')
-      expect(loadDataStub.firstCall.args[0]).toBe(false)
+      expect(loadDataStub.mock.calls[0]?.[0]).toBe(false)
     })
     it('should call loadData() with suppressMenu=false for string path', async () => {
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler('a string')
-      expect(loadDataStub.firstCall.args[1]).toBe(false)
+      expect(loadDataStub.mock.calls[0]?.[1]).toBe(false)
     })
     it('should call loadData() with suppressMenu=true when listing has noMenu=true', async () => {
       const data: Listing = {
@@ -121,10 +119,10 @@ describe('public/app/navigation/messageHandlers init()', () => {
         noMenu: true,
       }
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler(data)
-      expect(loadDataStub.firstCall.args[1]).toBe(true)
+      expect(loadDataStub.mock.calls[0]?.[1]).toBe(true)
     })
     it('should call loadData() with suppressMenu=false when listing has noMenu=false', async () => {
       const data: Listing = {
@@ -134,10 +132,10 @@ describe('public/app/navigation/messageHandlers init()', () => {
         noMenu: false,
       }
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler(data)
-      expect(loadDataStub.firstCall.args[1]).toBe(false)
+      expect(loadDataStub.mock.calls[0]?.[1]).toBe(false)
     })
     it('should call loadData() with suppressMenu=false when listing has no noMenu key', async () => {
       const data: Listing = {
@@ -146,31 +144,31 @@ describe('public/app/navigation/messageHandlers init()', () => {
         parent: '/foo/bar',
       }
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Load')
       await handler(data)
-      expect(loadDataStub.firstCall.args[1]).toBe(false)
+      expect(loadDataStub.mock.calls[0]?.[1]).toBe(false)
     })
   })
   describe('Navigate:Reload Message Handler', () => {
     it('should call loadData() once', async () => {
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Reload')
       await handler('a string')
-      expect(loadDataStub.callCount).toBe(1)
+      expect(loadDataStub.mock.calls.length).toBe(1)
     })
     it('should call loadData() with no arguments', async () => {
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Reload')
       await handler('a string')
-      expect(loadDataStub.firstCall.args).toEqual([])
+      expect(loadDataStub.mock.calls[0]).toEqual([])
     })
     it('should tolerate loadData() rejecting', async () => {
       init()
-      loadDataStub.resetHistory()
-      loadDataStub.rejects(new Event('FOO!'))
+      loadDataStub.mockClear()
+      loadDataStub.mockRejectedValue(new Event('FOO!'))
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Reload')
       const catcher = (): never => expect.fail('Handler should not reject!')
       await handler('a string').catch(catcher)
@@ -199,40 +197,40 @@ describe('public/app/navigation/messageHandlers init()', () => {
     })
     it('should register popstate listener that tolerates loadData rejecting', () => {
       init()
-      loadDataStub.resetHistory()
-      loadDataStub.rejects(new Event('FOO!'))
+      loadDataStub.mockClear()
+      loadDataStub.mockRejectedValue(new Event('FOO!'))
       const popStateEvent = new dom.window.PopStateEvent('popstate', {
         state: {},
       })
       dom.window.dispatchEvent(popStateEvent)
-      expect(loadDataStub.callCount).toBe(1)
+      expect(loadDataStub.mock.calls.length).toBe(1)
     })
     it('should register popstate listener that calls loadData once with no history flag set', () => {
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const popStateEvent = new dom.window.PopStateEvent('popstate', {
         state: {},
       })
       dom.window.dispatchEvent(popStateEvent)
-      expect(loadDataStub.callCount).toBe(1)
+      expect(loadDataStub.mock.calls.length).toBe(1)
     })
     it('should register popstate listener that calls loadData with no history flag set', () => {
       init()
-      loadDataStub.resetHistory()
+      loadDataStub.mockClear()
       const popStateEvent = new dom.window.PopStateEvent('popstate', {
         state: {},
       })
       dom.window.dispatchEvent(popStateEvent)
-      expect(loadDataStub.firstCall.args).toEqual([true])
+      expect(loadDataStub.mock.calls[0]).toEqual([true])
     })
   })
   describe('Navigate:Data Message Handler', () => {
-    let consoleLogSpy = sandbox.stub()
+    let consoleLogSpy: MockInstance = vi.fn()
     beforeEach(() => {
-      consoleLogSpy = sandbox.stub(global.window.console, 'log')
+      consoleLogSpy = vi.spyOn(global.window.console, 'log').mockImplementation((..._args: unknown[]) => undefined)
     })
     afterEach(() => {
-      sandbox.restore()
+      vi.restoreAllMocks()
     })
     const testCases: Array<[string, unknown, boolean]> = [
       ['null', null, false],
@@ -248,10 +246,10 @@ describe('public/app/navigation/messageHandlers init()', () => {
     testCases.forEach(([name, data, expected]) => {
       it(`should${expected ? '' : ' not'} log data when passed ${name}`, async () => {
         init()
-        loadDataStub.resetHistory()
+        loadDataStub.mockClear()
         const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
         await handler(data)
-        expect(consoleLogSpy.called).toBe(expected)
+        expect(consoleLogSpy.mock.calls.length > 0).toBe(expected)
       })
     })
     testCases
@@ -259,17 +257,17 @@ describe('public/app/navigation/messageHandlers init()', () => {
       .forEach(([name, data]) => {
         it(`should log data with one argument when passed ${name}`, async () => {
           init()
-          loadDataStub.resetHistory()
+          loadDataStub.mockClear()
           const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
           await handler(data)
-          expect(consoleLogSpy.firstCall.args).toHaveLength(1)
+          expect(consoleLogSpy.mock.calls[0]).toHaveLength(1)
         })
         it(`should log data value when passed ${name}`, async () => {
           init()
-          loadDataStub.resetHistory()
+          loadDataStub.mockClear()
           const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
           await handler(data)
-          expect(consoleLogSpy.firstCall.args[0]).toBe(data)
+          expect(consoleLogSpy.mock.calls[0]?.[0]).toBe(data)
         })
       })
   })

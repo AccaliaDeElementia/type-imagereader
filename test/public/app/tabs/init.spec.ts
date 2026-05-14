@@ -1,6 +1,5 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -9,8 +8,7 @@ import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Imports, init, Internals, Tabs } from '#public/scripts/app/tabs.js'
 import assert from 'node:assert'
 import { hasValue } from '#utils/helpers.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -35,21 +33,21 @@ html
 
 describe('public/app/tabs init()', () => {
   let dom = new JSDOM('<html></html>', {})
-  let selectTabSpy = sandbox.stub()
-  let subscribeStub = sandbox.stub()
+  let selectTabSpy: MockInstance = vi.fn()
+  let subscribeStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'https://127.1.1.1:5050/',
     })
     mountDom(dom)
-    selectTabSpy = sandbox.stub(Internals, 'selectTab')
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
+    selectTabSpy = vi.spyOn(Internals, 'selectTab').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
     resetPubSub()
     Tabs.tabs = []
     Tabs.tabNames = []
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   const links = ['#tabActions', '#tabFolders', '#tabImages', '#tabBookmarks']
@@ -65,28 +63,28 @@ describe('public/app/tabs init()', () => {
   })
   it('should subscribe to Tab:Select event', () => {
     init()
-    expect(subscribeStub.calledWith('Tab:Select')).toBe(true)
+    expect(subscribeStub.mock.calls.some((c) => c[0] === 'Tab:Select')).toBe(true)
   })
   it('should call selectTab once for Tab:Select event', async () => {
     init()
-    selectTabSpy.resetHistory()
+    selectTabSpy.mockClear()
     const fn = capturedSubscriber(subscribeStub, 'Tab:Select')
     await fn('FOOBAR')
-    expect(selectTabSpy.callCount).toBe(1)
+    expect(selectTabSpy.mock.calls.length).toBe(1)
   })
   it('should select provided tab for Tab:Select event', async () => {
     init()
-    selectTabSpy.resetHistory()
+    selectTabSpy.mockClear()
     const fn = capturedSubscriber(subscribeStub, 'Tab:Select')
     await fn('FOOBAR')
-    expect(selectTabSpy.firstCall.args).toEqual(['FOOBAR'])
+    expect(selectTabSpy.mock.calls[0]).toEqual(['FOOBAR'])
   })
   it('should ignore non string value for Tab:Select event', async () => {
     init()
-    selectTabSpy.resetHistory()
+    selectTabSpy.mockClear()
     const fn = capturedSubscriber(subscribeStub, 'Tab:Select')
     await fn(null)
-    expect(selectTabSpy.callCount).toBe(0)
+    expect(selectTabSpy.mock.calls.length).toBe(0)
   })
   links.forEach((link, idx) => {
     it(`should find a[href="${link}"] as tab selector`, () => {
@@ -101,60 +99,60 @@ describe('public/app/tabs init()', () => {
     it(`should call addEventListener once on tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
       assert(hasValue(elem))
-      const spy = sandbox.stub(elem, 'addEventListener')
+      const spy = vi.spyOn(elem, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
       try {
         init()
-        expect(spy.callCount).toBe(1)
+        expect(spy.mock.calls.length).toBe(1)
       } finally {
-        spy.restore()
+        spy.mockRestore()
       }
     })
     it(`should add click handler with two args to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
       assert(hasValue(elem))
-      const spy = sandbox.stub(elem, 'addEventListener')
+      const spy = vi.spyOn(elem, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
       try {
         init()
-        expect(spy.firstCall.args).toHaveLength(2)
+        expect(spy.mock.calls[0]).toHaveLength(2)
       } finally {
-        spy.restore()
+        spy.mockRestore()
       }
     })
     it(`should add click handler to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
       assert(hasValue(elem))
-      const spy = sandbox.stub(elem, 'addEventListener')
+      const spy = vi.spyOn(elem, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
       try {
         init()
-        expect(spy.firstCall.args[0]).toBe('click')
+        expect(spy.mock.calls[0]?.[0]).toBe('click')
       } finally {
-        spy.restore()
+        spy.mockRestore()
       }
     })
     it(`should trigger selectTab on tab click for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
       init()
-      selectTabSpy.resetHistory()
+      selectTabSpy.mockClear()
       const evt = new dom.window.MouseEvent('click')
       elem?.parentElement?.dispatchEvent(evt)
-      expect(selectTabSpy.callCount).toBe(1)
+      expect(selectTabSpy.mock.calls.length).toBe(1)
     })
     it(`should select expected tab for ${link} click handler`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
       init()
-      selectTabSpy.resetHistory()
+      selectTabSpy.mockClear()
       const evt = new dom.window.MouseEvent('click')
       elem?.parentElement?.dispatchEvent(evt)
-      expect(selectTabSpy.firstCall.args).toEqual([link])
+      expect(selectTabSpy.mock.calls[0]).toEqual([link])
     })
     it(`should select default for ${link} with removed href`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)
       elem?.removeAttribute('href')
       init()
-      selectTabSpy.resetHistory()
+      selectTabSpy.mockClear()
       const evt = new dom.window.MouseEvent('click')
       elem?.parentElement?.dispatchEvent(evt)
-      expect(selectTabSpy.firstCall.args).toEqual([''])
+      expect(selectTabSpy.mock.calls[0]).toEqual([''])
     })
   })
 })

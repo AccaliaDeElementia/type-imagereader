@@ -4,12 +4,10 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
-import Sinon from 'sinon'
 import { Pictures, Imports } from '#public/scripts/app/pictureState.js'
 import type { Picture } from '#contracts/listing.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const markup = `
 html
@@ -50,31 +48,33 @@ html
 
 describe('public/app/pictures init()', () => {
   let dom = new JSDOM(render(markup), {})
-  let resetMarkupSpy = sandbox.stub()
-  let initActionsSpy = sandbox.stub()
-  let initMouseSpy = sandbox.stub()
-  let initUnreadSliderSpy = sandbox.stub()
-  let loadDataSpy = sandbox.stub()
-  let changePictureSpy = sandbox.stub()
-  let subscribeStub = sandbox.stub()
-  let resetViewerStateStub = sandbox.stub()
+  let resetMarkupSpy: MockInstance = vi.fn()
+  let initActionsSpy: MockInstance = vi.fn()
+  let initMouseSpy: MockInstance = vi.fn()
+  let initUnreadSliderSpy: MockInstance = vi.fn()
+  let loadDataSpy: MockInstance = vi.fn()
+  let changePictureSpy: MockInstance = vi.fn()
+  let subscribeStub: MockInstance = vi.fn()
+  let resetViewerStateStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
     resetPubSub()
-    resetMarkupSpy = sandbox.stub(Imports, 'resetMarkup')
-    initActionsSpy = sandbox.stub(Imports, 'initActions')
-    initMouseSpy = sandbox.stub(Imports, 'initMouse')
-    initUnreadSliderSpy = sandbox.stub(Imports, 'initUnreadSelectorSlider')
-    loadDataSpy = sandbox.stub(Imports, 'loadData')
-    changePictureSpy = sandbox.stub(Imports, 'changePicture')
-    subscribeStub = sandbox.stub(Imports, 'subscribe')
-    resetViewerStateStub = sandbox.stub(Imports, 'resetViewerState')
+    resetMarkupSpy = vi.spyOn(Imports, 'resetMarkup').mockImplementation((..._args: unknown[]) => undefined)
+    initActionsSpy = vi.spyOn(Imports, 'initActions').mockImplementation((..._args: unknown[]) => undefined)
+    initMouseSpy = vi.spyOn(Imports, 'initMouse').mockImplementation((..._args: unknown[]) => undefined)
+    initUnreadSliderSpy = vi
+      .spyOn(Imports, 'initUnreadSelectorSlider')
+      .mockImplementation((..._args: unknown[]) => undefined)
+    loadDataSpy = vi.spyOn(Imports, 'loadData').mockResolvedValue(undefined)
+    changePictureSpy = vi.spyOn(Imports, 'changePicture').mockResolvedValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    resetViewerStateStub = vi.spyOn(Imports, 'resetViewerState').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should clear pictures array', () => {
@@ -88,33 +88,33 @@ describe('public/app/pictures init()', () => {
     expect(Pictures.current).toBe(null)
   })
   it('should reset viewer state on init', () => {
-    expect(resetViewerStateStub.called).toBe(false)
+    expect(resetViewerStateStub.mock.calls.length > 0).toBe(false)
     Pictures.init()
-    expect(resetViewerStateStub.called).toBe(true)
+    expect(resetViewerStateStub.mock.calls.length > 0).toBe(true)
   })
   it('should reset markup on init', () => {
-    expect(resetMarkupSpy.called).toBe(false)
+    expect(resetMarkupSpy.mock.calls.length > 0).toBe(false)
     Pictures.init()
-    expect(resetMarkupSpy.called).toBe(true)
+    expect(resetMarkupSpy.mock.calls.length > 0).toBe(true)
   })
   it('should init actions on main init', () => {
-    expect(initActionsSpy.called).toBe(false)
+    expect(initActionsSpy.mock.calls.length > 0).toBe(false)
     Pictures.init()
-    expect(initActionsSpy.called).toBe(true)
+    expect(initActionsSpy.mock.calls.length > 0).toBe(true)
   })
   it('should init mouse on main init', () => {
-    expect(initMouseSpy.called).toBe(false)
+    expect(initMouseSpy.mock.calls.length > 0).toBe(false)
     Pictures.init()
-    expect(initMouseSpy.called).toBe(true)
+    expect(initMouseSpy.mock.calls.length > 0).toBe(true)
   })
   it('should init unread slider on main init', () => {
-    expect(initUnreadSliderSpy.called).toBe(false)
+    expect(initUnreadSliderSpy.mock.calls.length > 0).toBe(false)
     Pictures.init()
-    expect(initUnreadSliderSpy.called).toBe(true)
+    expect(initUnreadSliderSpy.mock.calls.length > 0).toBe(true)
   })
   it('should register subscribers for Navigate:Data and Pictures:Change', () => {
     Pictures.init()
-    const subscribedTopics = subscribeStub.getCalls().map((c) => cast<string>(c.args[0]).toUpperCase())
+    const subscribedTopics = subscribeStub.mock.calls.map((c) => cast<string>(c[0]).toUpperCase())
     expect(subscribedTopics.sort()).toEqual(['NAVIGATE:DATA', 'PICTURES:CHANGE'].sort())
   })
   const testCases: Array<[string, boolean, unknown]> = [
@@ -130,7 +130,7 @@ describe('public/app/pictures init()', () => {
       Pictures.init()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
       await handler(data)
-      expect(loadDataSpy.called).toBe(expected)
+      expect(loadDataSpy.mock.calls.length > 0).toBe(expected)
     })
   })
   const pictureChangeCases: Array<[string, boolean, unknown]> = [
@@ -146,7 +146,7 @@ describe('public/app/pictures init()', () => {
       Pictures.init()
       const handler = capturedSubscriber(subscribeStub, 'Pictures:Change')
       await handler(data)
-      expect(changePictureSpy.called).toBe(expected)
+      expect(changePictureSpy.mock.calls.length > 0).toBe(expected)
     })
   })
 })

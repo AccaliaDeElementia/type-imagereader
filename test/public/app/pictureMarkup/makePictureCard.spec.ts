@@ -1,32 +1,29 @@
 'use sanity'
 
-import Sinon from 'sinon'
-
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Grid, Imports, Internals } from '#public/scripts/app/pictureMarkup.js'
 import { cast } from '#testutils/typeGuards.js'
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 describe('public/app/pictures makePictureCard()', () => {
   let dom = new JSDOM('<html></html>', {})
-  let publishStub = sandbox.stub()
+  let publishStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
     resetPubSub()
-    publishStub = sandbox.stub(Imports, 'publish')
+    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     const template = dom.window.document.createElement('div')
     template.innerHTML =
       '<template id="ImageCard><div class="card"><div class="card-body"><h5>placeholder</h5></div></div></template>'
     Grid.imageCard = cast<HTMLTemplateElement>(template.firstChild)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return an HTMLElement on failure', () => {
@@ -86,13 +83,13 @@ describe('public/app/pictures makePictureCard()', () => {
     })
     const evt = new dom.window.MouseEvent('click')
     card?.dispatchEvent(evt)
-    expect(publishStub.calledWith('Pictures:Change')).toBe(true)
+    expect(publishStub.mock.calls.some((c) => c[0] === 'Pictures:Change')).toBe(true)
   })
   it('should publish Pictures:Change once on click event', () => {
     const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
     const card = Internals.makePictureCard(pic)
     card?.dispatchEvent(new dom.window.MouseEvent('click'))
-    expect(publishStub.withArgs('Pictures:Change').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Pictures:Change').length).toBe(1)
   })
   it('should pass the picture as Pictures:Change data on click event', () => {
     const pic = { name: 'Foobar 9001', path: '/foo/bar/baz.jpg', seen: false }
@@ -109,6 +106,6 @@ describe('public/app/pictures makePictureCard()', () => {
     const card = Internals.makePictureCard(pic)
     const evt = new dom.window.MouseEvent('click')
     card?.dispatchEvent(evt)
-    expect(publishStub.withArgs('Menu:Hide').callCount).toBe(1)
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:Hide').length).toBe(1)
   })
 })
