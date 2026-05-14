@@ -21,9 +21,6 @@ describe('sync/folderCounts pruneEmptyFolders()', () => {
     } = createKnexChainFake(['where', 'andWhere'] as const, ['delete'] as const, undefined))
     ;({ debugStub, loggerStub } = stubDebug(Imports))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call debug once when constructing logger', async () => {
     await pruneEmptyFolders(knexFnFake)
     expect(debugStub.mock.calls.length).toBe(1)

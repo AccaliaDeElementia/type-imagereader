@@ -62,10 +62,6 @@ describe('sync/findItems findSyncItems()', () => {
     acquireStub = vi.spyOn(Imports, 'acquireCopyConnection').mockResolvedValue(cast<PoolClient>(pgClientStub))
     releaseStub = vi.spyOn(Imports, 'releaseCopyConnection').mockResolvedValue(undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('when client is postgres', () => {
     beforeEach(() => {
       vi.spyOn(Imports, 'isPostgres').mockReturnValue(true)

@@ -18,10 +18,6 @@ describe('sync/incrementalsync incrementalUpdateFirstImages()', () => {
     knexFnFake = stubToKnex(knexFnStub)
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should delegate to syncFolderFirstImages', async () => {
     await incrementalUpdateFirstImages(loggerFake, knexFnFake)
     expect(syncFolderFirstImagesStub.mock.calls.length).toBe(1)

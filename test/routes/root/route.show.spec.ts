@@ -40,9 +40,6 @@ describe('routes/root route /show', () => {
     requestFake = cast<Request>(requestStub)
     ;({ stub: resposeStub, fake: responseFake } = createResponseFake())
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it("should alias same handler for both '/show' and '/show/*path' routes", () => {
     expect(routeFn).toBe(routeAltFn)
   })

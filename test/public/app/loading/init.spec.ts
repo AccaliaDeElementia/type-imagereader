@@ -28,7 +28,6 @@ describe('public/app/loading init()', () => {
     init()
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should subscribe to Loading:Error', () => {

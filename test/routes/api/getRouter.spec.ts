@@ -26,9 +26,6 @@ describe('routes/api getRouter()', () => {
     vi.spyOn(Imports, 'initialize').mockResolvedValue(cast(undefined))
     vi.spyOn(Imports, 'Router').mockReturnValue(cast<Router>(routerStub))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   const getRoutes = ['/', '/healthcheck', '/listing/*path', '/listing', '/bookmarks/*path', '/bookmarks']
   getRoutes.forEach((path) => {
     it(`should attach handler for get \`${path}\``, async () => {

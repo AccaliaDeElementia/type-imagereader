@@ -43,7 +43,6 @@ describe('public/app/pictures initActions()', () => {
     subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   const noMenuSubscribers: Array<[string, string]> = [

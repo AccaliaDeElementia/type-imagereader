@@ -22,10 +22,6 @@ describe('public/app/pictures getPicture()', () => {
     }
     choosePictureIndexSpy = vi.spyOn(Internals, 'choosePictureIndex').mockReturnValue(24)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   const tests: Array<[string, NavigateTo]> = [
     ['NavigateTo.First', NavigateTo.First],
     ['NavigateTo.PreviousUnread', NavigateTo.PreviousUnread],

@@ -21,7 +21,6 @@ describe('sync/sqliteWarning emitSqliteSizeWarning()', () => {
     knexFnFake = stubToKnex(vi.fn())
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     SqliteWarning.sqliteSizeWarningEmitted = false
   })
 

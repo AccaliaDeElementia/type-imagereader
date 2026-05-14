@@ -79,10 +79,6 @@ describe('sync/incrementalsync incrementalEnsureAncestors()', () => {
     existingFolderPaths = []
     setup()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('when affected folders is empty', () => {
     it('should not attempt any folder inserts', async () => {
       await incrementalEnsureAncestors(loggerFake, knexFnFake, new Set())

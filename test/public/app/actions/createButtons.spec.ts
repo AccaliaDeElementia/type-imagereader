@@ -32,7 +32,6 @@ describe('public/app/actions createButtons()', () => {
     resetPubSub()
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return div element', () => {

@@ -25,7 +25,6 @@ describe('routes/images rescaleImage()', () => {
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     sharpInstanceStub = {
       rotate: vi.fn().mockImplementation(function (this: object): unknown {
         return this

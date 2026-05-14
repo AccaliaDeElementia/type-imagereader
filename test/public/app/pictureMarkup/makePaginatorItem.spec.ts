@@ -21,7 +21,6 @@ describe('public/app/pictures makePaginatorItem()', () => {
     dom.window.document.body.appendChild(holder)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('returns an List Item Element', () => {

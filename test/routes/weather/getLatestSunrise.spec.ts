@@ -13,7 +13,6 @@ describe('routes/weather getLatestSunrise()', () => {
   })
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
     process.env.TZ = tz
     delete process.env.NIGHT_NOT_AFTER
   })

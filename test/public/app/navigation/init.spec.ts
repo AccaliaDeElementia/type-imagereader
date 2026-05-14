@@ -44,9 +44,6 @@ describe('public/app/navigation init()', () => {
       parent: '',
     }
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     unmountDom()
     vi.restoreAllMocks()

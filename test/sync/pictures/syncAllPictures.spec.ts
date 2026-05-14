@@ -19,9 +19,6 @@ describe('sync/pictures syncAllPictures()', () => {
     syncRemovedPicturesStub = vi.spyOn(Internals, 'syncRemovedPictures').mockResolvedValue(undefined)
     syncRemovedBookmarksStub = vi.spyOn(Internals, 'syncRemovedBookmarks').mockResolvedValue(undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call debug once when constructing logger', async () => {
     await syncAllPictures(knexFake)
     expect(debugStub.mock.calls.length).toBe(1)

@@ -13,9 +13,6 @@ describe('app.ts runSyncWithLock()', () => {
     takeStub = vi.spyOn(ImageReader.syncLock, 'take').mockReturnValue(true)
     releaseStub = vi.spyOn(ImageReader.syncLock, 'release')
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should attempt to take the sync lock', async () => {
     await runSyncWithLock()
     expect(takeStub.mock.calls.length).toBe(1)

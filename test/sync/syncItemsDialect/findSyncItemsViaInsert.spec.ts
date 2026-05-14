@@ -27,10 +27,6 @@ const buildHelpers = (overrides: Partial<InsertFallbackHelpers> = {}): InsertFal
 })
 
 describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should return aggregated counts from buildSyncItemRows', async () => {
     const knex = stubToKnex(vi.fn())
     const result = await findSyncItemsViaInsert(knex, noopLogger, buildHelpers())

@@ -15,9 +15,6 @@ describe('routes/root getRouter()', () => {
     routerStub = { get: vi.fn() }
     vi.spyOn(Imports, 'Router').mockReturnValue(cast<Router>(routerStub))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   const endpoints = ['/', '/show', '/show/*path']
   it('should register expected number of endpoints', async () => {
     await getRouter(applicationFake, serverFake, socketsFake)

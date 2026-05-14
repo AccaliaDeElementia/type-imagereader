@@ -37,10 +37,6 @@ describe('routes/slideshow socket prev-image', () => {
     }
     getRoomStub = vi.spyOn(Internals, 'getRoomAndIncrementImage').mockResolvedValue(cast(roomData))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('with null room', () => {
     beforeEach(async () => {
       socketState.roomName = null

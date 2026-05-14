@@ -13,9 +13,6 @@ describe('routes/apiFunctions getNextFolder', () => {
     ;({ fake: knexFake } = createKnexChainFake([] as const, [] as const))
     getDirectionFolderStub = vi.spyOn(Internals, 'getDirectionFolder').mockResolvedValue(null)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call getDirectionFolder to do actual query', async () => {
     await getNextFolder(knexFake, '/foo', 'foo')
     expect(getDirectionFolderStub.mock.calls.length).toBe(1)

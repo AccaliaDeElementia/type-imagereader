@@ -64,9 +64,6 @@ describe('testutils/PubSub capturedSubscriber()', () => {
   beforeEach(() => {
     subscribeStub = vi.fn()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should return the handler function from the matching subscribe call', () => {
     const handler = vi.fn().mockResolvedValue(undefined)
     subscribeStub('Test:Topic', handler)
@@ -104,9 +101,6 @@ describe('testutils/PubSub publishedData()', () => {
   let publishStub: Mock = vi.fn()
   beforeEach(() => {
     publishStub = vi.fn()
-  })
-  afterEach(() => {
-    vi.restoreAllMocks()
   })
   it('should return the data arg of the matching publish call', () => {
     publishStub('Test:Topic', 'payload')
@@ -165,9 +159,6 @@ describe('testutils/PubSub capturedInterval()', () => {
   beforeEach(() => {
     addIntervalStub = vi.fn()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should return the method arg from the matching addInterval call', () => {
     const method = vi.fn()
     addIntervalStub('TestInterval', method, 100)
@@ -205,9 +196,6 @@ describe('testutils/PubSub capturedDeferred()', () => {
   let deferStub: Mock = vi.fn()
   beforeEach(() => {
     deferStub = vi.fn()
-  })
-  afterEach(() => {
-    vi.restoreAllMocks()
   })
   it('should return all method args from defer calls in registration order', () => {
     const first = vi.fn()

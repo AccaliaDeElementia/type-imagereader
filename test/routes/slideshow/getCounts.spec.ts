@@ -13,9 +13,6 @@ describe('routes/slideshow getCounts()', () => {
     getImageCountStub = vi.spyOn(Internals, 'getImageCount').mockResolvedValue(0)
     randomStub = vi.spyOn(Math, 'random').mockReturnValue(0.5)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call getImageCount twice', async () => {
     await getCounts(knexFake, 'foo')
     expect(getImageCountStub.mock.calls.length).toBe(2)

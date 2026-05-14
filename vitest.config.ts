@@ -21,7 +21,7 @@ export default defineConfig({
   test: {
     globals: true,
     include: ['test/**/*.spec.ts'],
-    setupFiles: ['./testutils/pubsubGuardSetup.ts'],
+    setupFiles: ['./testutils/restoreMocksSetup.ts', './testutils/pubsubGuardSetup.ts'],
     retry: FLAKY_RETRY_COUNT,
     testTimeout: TEST_TIMEOUT_MS,
     slowTestThreshold: SLOW_TEST_THRESHOLD_MS,

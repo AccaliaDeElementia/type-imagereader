@@ -49,7 +49,6 @@ describe('public/app/actions readGamepad()', () => {
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     Actions.gamepads.reset()
     Object.defineProperty(global, 'navigator', {
       configurable: true,

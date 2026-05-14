@@ -8,9 +8,6 @@ describe('public/slideshow/sockets handleGetLaunchId()', () => {
     fakeReload = vi.spyOn(WebSockets, 'locationReload').mockImplementation((..._args: unknown[]) => undefined)
     WebSockets.launchId = undefined
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should save launchId on call', () => {
     Internals.handleGetLaunchId(8675309)
     expect(WebSockets.launchId).toBe(8675309)

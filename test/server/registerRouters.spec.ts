@@ -28,10 +28,6 @@ describe('Server registerRouters', () => {
     serverFake = cast<HttpServer>({})
     socketsFake = cast<WebSocketServer>({})
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   const tests: Array<[string, string, () => MockInstance]> = [
     ['Root', '/', () => getRootRouter],
     ['Api', '/api', () => getApiRouter],

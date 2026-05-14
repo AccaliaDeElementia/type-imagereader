@@ -80,10 +80,6 @@ describe('sync/incrementalsync incrementalRemoveFolder()', () => {
     knexFnFake = stubToKnex(knexFnStub)
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should query pictures by folder prefix', async () => {
     await incrementalRemoveFolder(loggerFake, knexFnFake, '/comics/series/')
     expect(picturesStub.where).toHaveBeenCalledWith('folder', 'like', '/comics/series/%')

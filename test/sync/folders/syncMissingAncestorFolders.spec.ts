@@ -94,10 +94,6 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
     existingFolderPaths = []
     setup()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('when no pictures exist', () => {
     beforeEach(() => {
       distinctPictureFolders = []

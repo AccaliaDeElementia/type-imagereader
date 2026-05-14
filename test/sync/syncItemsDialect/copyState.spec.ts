@@ -23,10 +23,6 @@ const DEFAULT_CHUNK_SIZE = 5000
 const buildStreamHandles = (): ReturnType<typeof createCopyStreamFake> => createCopyStreamFake()
 
 describe('sync/syncItemsDialect CopyState', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('addCounts()', () => {
     it('should increment files by cf', () => {
       const state = new CopyState()
@@ -275,10 +271,6 @@ describe('sync/syncItemsDialect CopyState', () => {
 })
 
 describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it("should resolve when the stream emits 'finish'", async () => {
     const ee = new EventEmitter()
     const stream = cast<CopyStreamQuery>(ee)

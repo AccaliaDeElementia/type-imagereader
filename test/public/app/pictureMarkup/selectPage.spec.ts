@@ -20,7 +20,6 @@ describe('public/app/pictures selectPage()', () => {
     Pictures.mainImage = null
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   const makePageLinks = (count: number): HTMLDivElement[] => {

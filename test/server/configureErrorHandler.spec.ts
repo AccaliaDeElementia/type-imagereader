@@ -15,9 +15,6 @@ describe('Server configureErrorHandler', () => {
     appFake = cast<Express>(appStub)
     ;({ stub: responseStub } = createResponseFake())
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should register exactly one handler', () => {
     configureErrorHandler(appFake)
     expect(appStub.use.mock.calls.length).toBe(1)

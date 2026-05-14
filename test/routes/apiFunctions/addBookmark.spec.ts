@@ -17,9 +17,6 @@ describe('routes/apiFunctions addBookmark', () => {
     knexStub = vi.fn().mockReturnValue(knexInstance)
     knexFake = stubToKnex(knexStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should query bookmarks table once to set bookmark', async () => {
     await addBookmark(knexFake, '/foo/bar/baz.png')
     expect(knexStub.mock.calls.length).toBe(1)

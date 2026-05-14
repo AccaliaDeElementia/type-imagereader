@@ -21,7 +21,6 @@ describe('public/slideshow/bootstrap', () => {
     fakeSocketConnect?.mockRestore()
     fakeCyclicStart?.mockRestore()
     fakeCyclicAdd?.mockRestore()
-    vi.restoreAllMocks()
   })
   it('should add cyclic updaters on initial load', () => {
     expect(fakeCyclicAdd?.mock.calls.length).toBe(1)

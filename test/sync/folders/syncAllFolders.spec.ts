@@ -23,9 +23,6 @@ describe('sync/folders syncAllFolders()', () => {
     syncFolderFirstImagesStub = vi.spyOn(Internals, 'syncFolderFirstImages').mockResolvedValue(undefined)
     knexFake = stubToKnex({ id: Math.random() })
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call debug once when constructing logger', async () => {
     await syncAllFolders(knexFake)
     expect(debugStub.mock.calls.length).toBe(1)

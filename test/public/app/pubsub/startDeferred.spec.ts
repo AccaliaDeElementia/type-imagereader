@@ -23,7 +23,6 @@ describe('public/app/pubsub startDeferred()', () => {
     executeIntervalSpy = vi.spyOn(Internals, 'executeInterval').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should set interval with Window.SetInterval()', () => {

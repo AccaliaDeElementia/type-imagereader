@@ -22,9 +22,6 @@ describe('routes/apiFunctions markFolderSeen', () => {
     getParentFoldersStub = vi.spyOn(Imports, 'getParentFolders').mockReturnValue([])
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   describe('with markAsSeen = true', () => {
     it('should update pictures table once to set pictures read', async () => {
       await markFolderSeen(knexFake, '/foo/bar/baz/quux/', true)

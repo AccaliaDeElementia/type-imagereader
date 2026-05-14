@@ -35,7 +35,6 @@ describe('public/slideshow/weather showWeather()', () => {
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
 

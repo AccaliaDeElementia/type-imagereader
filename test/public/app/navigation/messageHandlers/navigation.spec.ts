@@ -39,9 +39,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       parent: '',
     }
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     unmountDom()
     vi.restoreAllMocks()
@@ -228,9 +225,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
     let consoleLogSpy: MockInstance = vi.fn()
     beforeEach(() => {
       consoleLogSpy = vi.spyOn(global.window.console, 'log').mockImplementation((..._args: unknown[]) => undefined)
-    })
-    afterEach(() => {
-      vi.restoreAllMocks()
     })
     const testCases: Array<[string, unknown, boolean]> = [
       ['null', null, false],

@@ -35,9 +35,6 @@ describe('Server registerRouters', () => {
     }
     appFake = cast<Express>(appStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should app.set() all views options', () => {
     registerViewsAndMiddleware(appFake)
     expect(appStub.use.mock.calls.length).toBe(1)

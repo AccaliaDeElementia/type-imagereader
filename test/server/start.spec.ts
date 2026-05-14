@@ -32,10 +32,6 @@ describe('Server start', () => {
     registerViewsStub = vi.spyOn(Internals, 'registerViewsAndMiddleware').mockImplementation(() => undefined)
     listenOnPortStub = vi.spyOn(Internals, 'listenOnPort').mockImplementation(() => undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('when start(65535) succeeds', () => {
     beforeEach(async () => {
       await start(65535)

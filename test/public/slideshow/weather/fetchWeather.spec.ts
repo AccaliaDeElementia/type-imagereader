@@ -19,7 +19,6 @@ describe('public/slideshow/weather fetchWeather()', () => {
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
 

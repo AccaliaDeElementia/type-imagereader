@@ -47,9 +47,6 @@ describe('testutils createLoggerFake()', () => {
 })
 
 describe('testutils stubDebug()', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should replace the debug property with a stub', () => {
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
     stubDebug(target)

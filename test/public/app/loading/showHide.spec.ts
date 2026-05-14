@@ -29,7 +29,6 @@ describe('public/app/loading subscriber "Loading:show" and "Loading:Hide"', () =
     init()
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should show the loading overlay for "Loading:show"', async () => {

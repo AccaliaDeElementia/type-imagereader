@@ -46,10 +46,6 @@ const buildHelpers = (overrides: Partial<CopyHelpers> = {}): CopyHelpers => ({
 })
 
 describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should return aggregated counts from buildSyncItemRows', async () => {
     const knex = stubToKnex(vi.fn())
     const result = await findSyncItemsViaCopy(knex, noopLogger, buildHelpers())

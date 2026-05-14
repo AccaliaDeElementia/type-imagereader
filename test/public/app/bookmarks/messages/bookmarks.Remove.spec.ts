@@ -53,7 +53,6 @@ describe('public/app/bookmarks init Bookmarks:Remove', () => {
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   const postDataCases: Array<[string, unknown, boolean]> = [

@@ -17,9 +17,6 @@ describe('routes/slideshow socket get-launchId()', () => {
     socketFake = cast<Socket>(socketStub)
     handleSocket(knexFake, serverFake, socketFake)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call provided callback on invocation', () => {
     const spy = voidFn()
     getLaunchId(spy)

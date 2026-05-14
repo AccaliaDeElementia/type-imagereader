@@ -75,7 +75,6 @@ describe('public/app/pictures loadImage()', () => {
     bottomRightText = dom.window.document.querySelector('.statusBar.bottom .right')
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should be noop when current image is null', async () => {

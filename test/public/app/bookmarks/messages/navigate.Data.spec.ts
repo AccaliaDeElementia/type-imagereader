@@ -49,7 +49,6 @@ describe('public/app/bookmarks init Navigate:Data', () => {
     init()
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   const testCases: Array<[string, unknown, boolean]> = [

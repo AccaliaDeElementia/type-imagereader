@@ -40,7 +40,6 @@ describe('public/app/WakeLock takeLock()', () => {
     })
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     Object.defineProperty(global.navigator, 'wakeLock', {
       configurable: true,
       get: () => undefined,

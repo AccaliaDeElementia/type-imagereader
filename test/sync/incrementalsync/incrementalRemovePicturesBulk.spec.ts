@@ -64,10 +64,6 @@ describe('sync/incrementalsync incrementalRemovePicturesBulk()', () => {
     setup()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('when given an empty list of paths', () => {
     it('should not call pictures.delete', async () => {
       await incrementalRemovePicturesBulk(knexFnFake, [])

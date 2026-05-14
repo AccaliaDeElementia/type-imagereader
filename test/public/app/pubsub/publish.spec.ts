@@ -14,9 +14,6 @@ describe('public/app/pubsub publish()', () => {
   beforeEach(() => {
     publishAsyncSpy = vi.spyOn(Internals, 'publishAsync').mockResolvedValue(undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call publishAsync once when publishing', () => {
     const topic = `TOPIC${Math.random()}`
     const data = `DATA${Math.random()}`

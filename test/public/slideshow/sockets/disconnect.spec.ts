@@ -12,9 +12,6 @@ describe('public/slideshow/sockets disconnect()', () => {
     WebSockets.socket = fakeSocket
     fakeDisconnect.mockClear()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should allow disconnect without socket', () => {
     WebSockets.socket = undefined
     disconnect()

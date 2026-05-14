@@ -39,9 +39,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       parent: '',
     }
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     unmountDom()
     vi.restoreAllMocks()

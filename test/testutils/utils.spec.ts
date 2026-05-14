@@ -8,7 +8,6 @@ describe('testutils delay()', () => {
   })
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
   })
 
   it('should not resolve before the specified delay elapses', async () => {

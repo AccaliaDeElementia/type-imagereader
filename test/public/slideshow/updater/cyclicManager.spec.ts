@@ -14,9 +14,6 @@ describe('public/slideshow/updater CyclicManager', () => {
     fakeSetInterval = vi.spyOn(global, 'setInterval').mockReturnValue(cast(1))
     fakeClearInterval = vi.spyOn(global, 'clearInterval').mockImplementation((..._args: unknown[]) => undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   describe('__triggerUpdaters()', () => {
     it('should handle updating zero updaters', async () => {
       await Internals.triggerUpdaters(10)
@@ -117,9 +114,6 @@ describe('public/slideshow/updater CyclicManager', () => {
     let fakeTrigger: MockInstance | undefined = undefined
     beforeEach(() => {
       fakeTrigger = vi.spyOn(Internals, 'triggerUpdaters').mockResolvedValue(undefined)
-    })
-    afterEach(() => {
-      vi.restoreAllMocks()
     })
     it('should set interval on call', () => {
       expect(fakeSetInterval?.mock.calls.length).toBe(0)

@@ -48,7 +48,6 @@ describe('routes/slideshow getRouter', () => {
   })
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
   })
 
   const routes = ['/launchId', '/', '/*path']

@@ -34,7 +34,6 @@ describe('public/app/pictures makePaginator()', () => {
     resetPubSub()
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return null for negative page count', () => {

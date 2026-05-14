@@ -51,9 +51,6 @@ describe('sync/folders syncRemovedFolders()', () => {
     knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
     knexFnFake = stubToKnex(knexFnStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it("should call knex with 'folders' table", async () => {
     await syncRemovedFolders(loggerFake, knexFnFake)
     expect(knexFnStub).toHaveBeenCalledWith('folders')

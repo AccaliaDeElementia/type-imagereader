@@ -114,9 +114,6 @@ describe('sync/folders syncFolderFirstImages()', () => {
     knexFnFake.queryBuilder = queryBuilderStub
     chunkStub = vi.spyOn(Imports, 'chunk').mockReturnValue([])
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call querybuilder once for update', async () => {
     await syncFolderFirstImages(loggerFake, knexFnFake)
     expect(queryBuilderStub.mock.calls.length).toBe(1)

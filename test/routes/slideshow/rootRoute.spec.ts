@@ -33,9 +33,6 @@ describe('routes/slideshow rootRoute', () => {
     isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
     getRoomError = new Error('Error Fetching Room!')
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   const eTraverse = {
     title: 'ERROR',
     code: 'E_NO_TRAVERSE',

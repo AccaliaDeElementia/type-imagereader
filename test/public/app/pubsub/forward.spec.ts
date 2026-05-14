@@ -10,10 +10,6 @@ describe('public/app/pubsub forward()', () => {
     resetPubSub()
     PubSub.cycleTime = 10
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should register a subscriber under the source topic', () => {
     forward('Foo:Bar', 'Baz:Qux')
     expect(Object.keys(PubSub.subscribers)).toContain('FOO:BAR')

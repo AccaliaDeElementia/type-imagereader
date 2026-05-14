@@ -74,7 +74,6 @@ describe('public/app/pictures init()', () => {
     resetViewerStateStub = vi.spyOn(Imports, 'resetViewerState').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should clear pictures array', () => {

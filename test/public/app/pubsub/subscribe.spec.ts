@@ -10,10 +10,6 @@ describe('public/app/pubsub subscribe()', () => {
     PubSub.cycleTime = 10
     subscriber = vi.fn().mockResolvedValue(undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   const topics = ['foobar:baz', 'Foobar:Baz', 'fOoBaR:bAz', 'FoOBaR:BaZ', 'FOOBAR:BAZ', 'foobar:BAZ', 'FOOBAR:baz']
   topics.forEach((topic) => {
     it(`should normalise ${topic} to FOOBAR:BAZ key`, () => {

@@ -146,10 +146,6 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     setup()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('with no affected folders', () => {
     beforeEach(() => {
       upsertCallExpectation = 0

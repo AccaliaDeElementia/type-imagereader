@@ -17,7 +17,6 @@ describe('public/app/pictures getCurrentPage()', () => {
     Pictures.mainImage = null
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   const makePages = (count: number): HTMLDivElement[] => {

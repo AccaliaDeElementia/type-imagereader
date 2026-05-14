@@ -31,10 +31,6 @@ describe('routes/slideshow socket goto-image', () => {
     picturePath = `Picture-${Math.random()}.png`
     setLatestStub = vi.spyOn(Imports, 'setLatest').mockResolvedValue(picturePath)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('with null room', () => {
     let spy = voidFn()
     beforeEach(async () => {

@@ -40,9 +40,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       parent: '',
     }
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     unmountDom()
     vi.restoreAllMocks()
@@ -80,9 +77,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       Navigation.current.prev = previousFolder
       Navigation.current.prevUnread = previousUnreadFolder
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousFolder')
-    })
-    afterEach(() => {
-      vi.restoreAllMocks()
     })
     it('should call navigateTo once when showUnreadOnly is not set', async () => {
       await handler()
@@ -164,9 +158,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       Navigation.current.nextUnread = nextUnreadFolder
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:NextFolder')
     })
-    afterEach(() => {
-      vi.restoreAllMocks()
-    })
     it('should call navigateTo once when showUnreadOnly is not set', async () => {
       await handler()
       expect(navigateToStub.mock.calls.length).toBe(1)
@@ -226,9 +217,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       Navigation.current.parent = parentFolder
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:ParentFolder')
     })
-    afterEach(() => {
-      vi.restoreAllMocks()
-    })
     it('should call navigateTo once when navigating to parent folder', async () => {
       await handler()
       expect(navigateToStub.mock.calls.length).toBe(1)
@@ -273,9 +261,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
         }))
       Navigation.current.children = children
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:FirstUnfinished')
-    })
-    afterEach(() => {
-      vi.restoreAllMocks()
     })
     it('should call navigateTo once when children are undefined', async () => {
       Navigation.current.children = undefined

@@ -54,7 +54,6 @@ describe('public/app/pictures initMouse()', () => {
     assert(Pictures.mainImage !== null)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should ignore clicks when visual viewport was null at init time and any scale is present at click time', () => {

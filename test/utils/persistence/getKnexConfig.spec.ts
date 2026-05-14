@@ -37,9 +37,6 @@ describe('utils/persistence getKnexConfig()', () => {
     readConfigurationBlockStub = vi.spyOn(Internals, 'readConfigurationBlock').mockResolvedValue(configBlock)
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should reject when readConfig rejects', async () => {
     readConfigurationBlockStub.mockRejectedValue(new Error('FOO I FAIL'))
     const err = await eventuallyRejects(getKnexConfig())

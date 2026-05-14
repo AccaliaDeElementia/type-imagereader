@@ -27,10 +27,6 @@ describe('routes/slideshow socket join-slideshow()', () => {
     }
     getRoomStub = vi.spyOn(Internals, 'getRoomAndIncrementImage').mockResolvedValue(cast(roomData))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('with no-room value', () => {
     const noRoomCases: Array<[string, string | null | undefined]> = [
       ['undefined', undefined],

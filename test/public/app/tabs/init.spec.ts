@@ -47,7 +47,6 @@ describe('public/app/tabs init()', () => {
     Tabs.tabNames = []
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   const links = ['#tabActions', '#tabFolders', '#tabImages', '#tabBookmarks']

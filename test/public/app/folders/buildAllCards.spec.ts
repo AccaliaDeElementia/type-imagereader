@@ -50,7 +50,6 @@ describe('public/app/folders buildAllCards()', () => {
     buildCardStub = vi.spyOn(Internals, 'buildCard').mockReturnValue(null)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should handle undefined listing', () => {

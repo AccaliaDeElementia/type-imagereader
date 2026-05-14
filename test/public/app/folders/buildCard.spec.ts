@@ -44,7 +44,6 @@ describe('public/app/folders buildCard()', () => {
     Folders.folderCard = folderCard
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return null when template is missing', () => {

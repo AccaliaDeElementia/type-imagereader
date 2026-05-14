@@ -52,7 +52,6 @@ describe('public/app/bookmarks buildBookmark()', () => {
     postJSONSpy = vi.spyOn(Imports, 'postJSON').mockResolvedValue(undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return null if card template is missing', () => {

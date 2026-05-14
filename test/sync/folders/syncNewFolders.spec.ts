@@ -57,9 +57,6 @@ describe('sync/folders syncNewFolders()', () => {
     }
     knexFnFake = stubToKnex(knexInstanceStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call raw once for folders table', async () => {
     await syncNewFolders(loggerFake, knexFnFake)
     expect(knexInstanceStub.raw.mock.calls.length).toBe(1)

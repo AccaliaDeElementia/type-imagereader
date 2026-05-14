@@ -13,19 +13,16 @@ describe('public/slideshow/sockets handleClick()', () => {
   const fakeViewport = { scale: 1 }
   const dom = new JSDOM('<html></html>')
   beforeAll(() => {
-    fakeAssign = vi.spyOn(WebSockets, 'locationAssign').mockImplementation((..._args: unknown[]) => undefined)
     mountDom(dom)
     global.window.visualViewport = cast<VisualViewport>(fakeViewport)
   })
   afterAll(() => {
-    fakeAssign.mockRestore()
     unmountDom()
-    vi.restoreAllMocks()
   })
   beforeEach(() => {
+    fakeAssign = vi.spyOn(WebSockets, 'locationAssign').mockImplementation((..._args: unknown[]) => undefined)
     fakeViewport.scale = 1
     fakeEmit.mockClear()
-    fakeAssign.mockClear()
     dom.reconfigure({
       url: `http://127.0.0.1:2999/slideshow?`,
     })

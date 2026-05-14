@@ -6,10 +6,6 @@ import type { Knex } from 'knex'
 import type { PoolClient } from 'pg'
 
 describe('sync/findItems copy connection helpers', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('acquireCopyConnection()', () => {
     it('should delegate to knex.client.acquireConnection', async () => {
       const acquireStub = vi.fn().mockResolvedValue('THE_CLIENT')

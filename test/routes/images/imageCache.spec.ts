@@ -10,9 +10,6 @@ describe('routes/images ImageData', () => {
     createSpy = vi.fn().mockResolvedValue(ImageData.fromImage(Buffer.from(''), '', ''))
     imageCache = new ImageCache(createSpy)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     ImageCache.cacheSize = defaultCacheSize
   })

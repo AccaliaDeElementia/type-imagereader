@@ -39,7 +39,6 @@ describe('public/slideshow/weather weatherUpdater', () => {
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
 

@@ -31,10 +31,6 @@ describe('sync/incrementalsync incrementalSync()', () => {
     knexFnFake = stubToKnex(knexFnStub)
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should call incrementalAddPicturesBulk once for any number of create entries', async () => {
     const changeset: Changeset = new Map([
       ['/comics/page1.jpg', 'create'],

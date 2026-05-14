@@ -27,9 +27,6 @@ describe('public/app/bootstrap', () => {
     wakeLockInitSpy = vi.spyOn(Imports, 'WakeLockInit').mockImplementation((..._args: unknown[]) => undefined)
     bootstrap()
   })
-  afterAll(() => {
-    vi.restoreAllMocks()
-  })
   it('should call Loading.init()', () => {
     expect(loadingInitSpy.mock.calls.length > 0).toBe(true)
   })

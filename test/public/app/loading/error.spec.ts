@@ -34,7 +34,6 @@ describe('public/app/loading subscriber "Loading:Error"', () => {
     init()
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should log message to web console', async () => {

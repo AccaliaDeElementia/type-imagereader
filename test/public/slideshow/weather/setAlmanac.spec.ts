@@ -12,7 +12,6 @@ describe('public/slideshow/weather setAlmanac()', () => {
   })
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
   })
 
   it('should set sunrise when sunrise occurs after minimum value', () => {

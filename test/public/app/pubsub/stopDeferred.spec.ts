@@ -20,7 +20,6 @@ describe('public/app/pubsub stopDeferred()', () => {
     vi.spyOn(Internals, 'executeInterval').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should clear interval with Window.clearInterval()', () => {

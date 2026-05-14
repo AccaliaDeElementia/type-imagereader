@@ -61,9 +61,6 @@ describe('public/app/navigation loadData()', () => {
     })
     suppressMenuSpy = vi.spyOn(Internals, 'isSuppressMenu').mockReturnValue(false)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     unmountDom()
     vi.restoreAllMocks()

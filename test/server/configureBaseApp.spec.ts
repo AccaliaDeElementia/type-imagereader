@@ -25,9 +25,6 @@ describe('Server configureBaseApp', () => {
     appStub = { use: vi.fn() }
     appFake = cast<Express>(appStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should use correct count of extensions', () => {
     configureBaseApp(appFake)
     expect(appStub.use.mock.calls.length).toBe(4)

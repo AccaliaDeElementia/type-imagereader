@@ -28,7 +28,6 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     mountDom(dom)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should be a CyclicUpdater', () => {

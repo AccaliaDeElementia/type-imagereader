@@ -14,7 +14,6 @@ const isNumberMutator = (o: unknown): o is (_: number) => number => typeof o ===
 
 describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
     Config.countdownDuration = 60
     Config.memorySize = 100
   })

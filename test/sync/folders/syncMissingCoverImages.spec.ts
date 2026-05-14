@@ -57,9 +57,6 @@ describe('sync/folders syncMissingCoverImages()', () => {
     knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
     knexFnFake = stubToKnex(knexFnStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it("should call knex with 'folders' table", async () => {
     await syncMissingCoverImages(loggerFake, knexFnFake)
     expect(knexFnStub.mock.calls[0]).toEqual(['folders'])

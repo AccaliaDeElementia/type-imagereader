@@ -41,10 +41,6 @@ describe('routes/weather updateWeather', () => {
       sunset: -456000,
     })
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('when sun-time helpers throw', () => {
     it('should reject when getEarliestSunset throws', async () => {
       const err = new Error('FOO!')

@@ -33,10 +33,6 @@ describe('sync/filewatcher start()', () => {
     Filewatcher.maxPendingChanges = 500
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should create a debug logger', async () => {
     await start('/data', flushCallback)
     expect(debugStub.mock.calls.length).toBe(1)

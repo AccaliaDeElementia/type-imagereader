@@ -21,9 +21,6 @@ describe('app.ts runSync() tests', () => {
     setIntervalFake = vi.spyOn(Imports, 'setInterval').mockReturnValue(0)
     loggerStub = vi.spyOn(Imports, 'logger')
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should set interval to execute sync on schedule', async () => {
     await runSync()
     expect(setIntervalFake.mock.calls.length).toBe(1)

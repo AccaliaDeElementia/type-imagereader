@@ -29,9 +29,6 @@ describe('routes/slideshow handleSocket()', () => {
       ['goto-image', vi.spyOn(Internals, 'gotoImage').mockResolvedValue(undefined)],
     ]
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   const endpoints = ['get-launchId', 'join-slideshow', 'prev-image', 'next-image', 'goto-image']
   it('should register expected endpoint count', () => {
     handleSocket(knexFake, serverFake, socketFake)

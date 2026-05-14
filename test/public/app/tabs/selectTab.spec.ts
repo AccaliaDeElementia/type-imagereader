@@ -70,7 +70,6 @@ describe('public/app/tabs selectTab()', () => {
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     actionsScroll.mockReset()
     foldersScroll.mockReset()
     imagesScroll.mockReset()

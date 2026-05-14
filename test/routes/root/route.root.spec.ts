@@ -30,9 +30,6 @@ describe('routes/root route /', () => {
     resposeStub = { redirect: vi.fn() }
     responseFake = cast<Response>(resposeStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should redirect response', () => {
     routeFn(requestFake, responseFake)
     expect(resposeStub.redirect.mock.calls.length).toBe(1)

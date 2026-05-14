@@ -30,7 +30,6 @@ describe('public/app/loading isLoading()', () => {
     init()
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   const testCases: Array<[string, boolean]> = [

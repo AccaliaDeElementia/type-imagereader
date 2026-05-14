@@ -24,7 +24,6 @@ describe('public/app/WakeLock init()', () => {
     WakeLock.initialized = false
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should subscribe to Picture:LoadNew', () => {

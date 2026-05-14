@@ -44,10 +44,6 @@ describe('routes/apiFunctions setLatestPicture', () => {
     getParentFoldersStub = vi.spyOn(Imports, 'getParentFolders').mockReturnValue([])
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   // ---- Existence-check chain ----
 
   it('should call knex with the pictures table when checking existence', async () => {

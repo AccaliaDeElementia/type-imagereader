@@ -13,7 +13,6 @@ describe('sync/fswalker fsWalker()', () => {
     readdirSpy = vi.spyOn(Imports, 'readdir').mockResolvedValue([])
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     Fswalker.concurrency = originalConcurrency
   })
   it('should call readdir starting at root', async () => {

@@ -23,7 +23,6 @@ describe('public/app/pictures makePictureCard()', () => {
     Grid.imageCard = cast<HTMLTemplateElement>(template.firstChild)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return an HTMLElement on failure', () => {

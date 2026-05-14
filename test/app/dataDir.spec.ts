@@ -41,7 +41,6 @@ describe('app.ts DATA_DIR handling', (): void => {
 
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
     delete process.env.DATA_DIR
     ImageReader.interval = undefined
     ImageReader.watcherSubscription = undefined

@@ -4,9 +4,6 @@ import { hasSetValues } from '#utils/helpers.js'
 import { cast } from '#testutils/typeGuards.js'
 
 describe('utils/helpers hasSetValues()', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   const add = vi.fn()
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],

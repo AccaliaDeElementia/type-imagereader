@@ -57,9 +57,6 @@ describe('sync/pictures syncNewPictures()', () => {
     }
     knexFnFake = stubToKnex(knexInstanceStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call raw once for pictures table', async () => {
     await syncNewPictures(loggerFake, knexFnFake)
     expect(knexInstanceStub.raw.mock.calls.length).toBe(1)

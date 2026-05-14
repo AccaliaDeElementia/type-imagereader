@@ -44,7 +44,6 @@ describe('public/app/folders init()', () => {
     buildFoldersSpy = vi.spyOn(Internals, 'buildFolders').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should subscribe to Navigate:Data', () => {

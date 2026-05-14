@@ -18,9 +18,6 @@ describe('routes/images readImage()', () => {
     isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   const configureReadFile = (stub: MockInstance, result: Promise<unknown> | Error): void => {
     if (result instanceof Error) {
       stub.mockRejectedValue(result)

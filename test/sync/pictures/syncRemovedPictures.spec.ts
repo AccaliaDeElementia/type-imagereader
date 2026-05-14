@@ -51,9 +51,6 @@ describe('sync/pictures syncRemovedPictures()', () => {
     knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
     knexFnFake = stubToKnex(knexFnStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it("should call knex with 'pictures' table", async () => {
     await syncRemovedPictures(loggerFake, knexFnFake)
     expect(knexFnStub).toHaveBeenCalledWith('pictures')

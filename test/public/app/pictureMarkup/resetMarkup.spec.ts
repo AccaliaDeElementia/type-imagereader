@@ -46,7 +46,6 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     Grid.imageCard = null
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
 

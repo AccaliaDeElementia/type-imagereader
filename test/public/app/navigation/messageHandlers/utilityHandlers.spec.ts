@@ -39,9 +39,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       parent: '',
     }
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     unmountDom()
     vi.restoreAllMocks()
@@ -56,9 +53,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       locationAssignSpy = vi.fn()
       Navigation.locationAssign = cast<(url: string | URL) => void>(locationAssignSpy)
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:Slideshow')
-    })
-    afterEach(() => {
-      vi.restoreAllMocks()
     })
     it('should alter location via locationAssign when invoked', async () => {
       await handler()

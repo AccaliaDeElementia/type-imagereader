@@ -58,9 +58,6 @@ describe('routes/api route GET /listing', () => {
     InitializeStub.mockRestore()
     MakeRouterStub.mockRestore()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should return status OK', async () => {
     getListingStub.mockResolvedValue({})
     await routeHandler(requestFake, responseFake)

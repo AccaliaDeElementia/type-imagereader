@@ -17,9 +17,6 @@ describe('Server configureLogging', () => {
     appFake = cast<Express>(appStub)
     delete process.env.NODE_ENV
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should not register any handler for unconfigured env variable', () => {
     configureLogging(appFake)
     expect(appStub.use.mock.calls.length).toBe(0)

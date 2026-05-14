@@ -22,10 +22,6 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
     knexFnFake = stubToKnex(knexFnStub)
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('should call fsWalker once', async () => {
     await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
     expect(fsWalkerStub.mock.calls.length).toBe(1)

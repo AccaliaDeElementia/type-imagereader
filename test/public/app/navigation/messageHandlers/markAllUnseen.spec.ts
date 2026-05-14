@@ -30,9 +30,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
     loadDataStub = vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
     Navigation.current = { path: '/', name: '', parent: '' }
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     unmountDom()
     vi.restoreAllMocks()
@@ -54,9 +51,6 @@ describe('public/app/navigation/messageHandlers init()', () => {
       loadDataStub.mockClear()
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:MarkAllUnseen')
       publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
-    })
-    afterEach(() => {
-      vi.restoreAllMocks()
     })
     it('should post to mark unread API endpoint', async () => {
       await handler()

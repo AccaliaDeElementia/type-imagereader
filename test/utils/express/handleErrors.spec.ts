@@ -25,9 +25,6 @@ describe('utils/Express handleErrors', () => {
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
     ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call the action with request and response', async () => {
     const action = vi.fn().mockResolvedValue(undefined)
     const handler = handleErrors(loggerFake, action)

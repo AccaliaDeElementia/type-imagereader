@@ -36,9 +36,6 @@ describe('sync/folderCounts getFolderInfosWithPictures()', () => {
     knexFnFake = stubToKnex(knexFnStub)
     knexFnStub.raw = vi.fn()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should handle empty results gracefully', async () => {
     const result = await getFolderInfosWithPictures(knexFnFake)
     expect(result).toEqual([])

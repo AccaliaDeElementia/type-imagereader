@@ -27,9 +27,6 @@ describe('Server createApp', () => {
       ),
     )
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should construct express app', () => {
     createApp()
     expect(expressStub.mock.calls.length).toBe(1)

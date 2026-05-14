@@ -15,9 +15,6 @@ describe('routes/apiFunctions ModCount functions', () => {
     modCountInternals.modCount = 5050
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation(cast(() => undefined))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('reset() should call Math.random once', () => {
     modCountInternals.reset()
     expect(mathRandomSpy.mock.calls.length).toBe(1)

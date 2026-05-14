@@ -32,9 +32,6 @@ describe('utils/persistence readConfigurationBlock()', () => {
       .spyOn(Imports, 'readFile')
       .mockImplementation(async () => await Promise.resolve(JSON.stringify(configContent)))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should resolve to object', async () => {
     const result = await readConfigurationBlock()
     expect(result).toEqual(configContent.testtest)

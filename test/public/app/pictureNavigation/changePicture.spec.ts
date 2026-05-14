@@ -19,9 +19,6 @@ describe('public/app/pictures changePicture()', () => {
     isLoadingSpy = vi.spyOn(Imports, 'isLoading').mockReturnValue(false)
     loadImageSpy = vi.spyOn(Internals, 'loadImage').mockResolvedValue(undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should not set current picture if image is currently loading', async () => {
     isLoadingSpy.mockReturnValue(true)
     await changePicture({ name: '', path: '', seen: false })

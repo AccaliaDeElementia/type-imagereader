@@ -31,7 +31,6 @@ describe('public/app/loading subscriber "Loading:Success"', () => {
     init()
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should remove css transition style on navbar', async () => {

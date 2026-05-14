@@ -44,7 +44,6 @@ describe('public/slideshow/sockets connect()', () => {
     global.window.visualViewport = cast<VisualViewport>(fakeViewport)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should clear launchId prior to connect succeeding', () => {

@@ -10,9 +10,6 @@ describe('routes/images readAndRescaleImage()', () => {
     readImageStub = vi.spyOn(Internals, 'readImage').mockResolvedValue(cast<ImageData>(undefined))
     rescaleImageStub = vi.spyOn(Internals, 'rescaleImage').mockReturnValue(Promise.resolve())
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call readImage once', async () => {
     await readAndRescaleImage('/foo.png', 999, 999)
     expect(readImageStub.mock.calls.length).toBe(1)

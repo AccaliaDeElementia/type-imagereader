@@ -49,7 +49,6 @@ describe('public/app/pictures makeTab()', () => {
     tab = dom.window.document.querySelector('#tabImages')
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should call makePicturesPage with page 1', () => {

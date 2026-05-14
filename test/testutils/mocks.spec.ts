@@ -3,9 +3,6 @@
 import { findStubCall } from '#testutils/mocks.js'
 
 describe('testutils findStubCall()', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should return undefined when the stub has not been called', () => {
     const stub = vi.fn()
     expect(findStubCall(stub, () => true)).toBe(undefined)

@@ -52,9 +52,6 @@ describe('routes/api route GET /bookmarks', () => {
     MakeRouterStub.mockRestore()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should pass bookmarks to json response', async () => {
     const bookmarks = { Bookmarks: Math.random() }
     getBookmarkStub.mockResolvedValue(bookmarks)

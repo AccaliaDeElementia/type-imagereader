@@ -21,7 +21,6 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     getShowUnreadOnlySpy = vi.spyOn(Internals, 'getShowUnreadOnly').mockReturnValue(false)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should handle missing target element gracefully', () => {

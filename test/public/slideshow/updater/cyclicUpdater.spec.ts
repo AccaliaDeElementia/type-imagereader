@@ -62,9 +62,6 @@ describe('public/slideshow/updater CyclicUpdater', () => {
       updater._failCount = 0
       errorStub = vi.spyOn(global.window.console, 'error').mockImplementation((..._args: unknown[]) => undefined)
     })
-    afterEach(() => {
-      vi.restoreAllMocks()
-    })
     it('should not call updateFn when countdown has not expired', async () => {
       await updater.trigger(200)
       expect(updateFn.mock.calls.length).toBe(0)

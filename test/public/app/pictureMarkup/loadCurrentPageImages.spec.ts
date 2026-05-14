@@ -17,7 +17,6 @@ describe('public/app/pictures loadCurrentPageImages()', () => {
     Pictures.mainImage = null
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should gracefully handle no tabs existing', () => {

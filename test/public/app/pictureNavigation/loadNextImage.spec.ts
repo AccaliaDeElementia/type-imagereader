@@ -44,7 +44,6 @@ describe('public/app/pictures loadNextImage()', () => {
     Pictures.mainImage = cast<HTMLImageElement>(mainImage)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should call getPicture once when ShowUnreadOnly is unset', async () => {

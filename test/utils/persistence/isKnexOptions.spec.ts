@@ -12,9 +12,6 @@ describe('utils/persistence isKnexOptions()', () => {
     isConnectionValid = vi.spyOn(Internals, 'isConnectionValid').mockReturnValue(true)
     isPoolValid = vi.spyOn(Internals, 'isPoolValid').mockReturnValue(true)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   const tests: Array<[string, unknown, boolean]> = [
     ['null', null, false],
     ['undefined', undefined, false],

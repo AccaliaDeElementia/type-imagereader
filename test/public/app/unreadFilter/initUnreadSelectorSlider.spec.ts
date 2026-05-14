@@ -29,7 +29,6 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
       .mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should update current status on init', () => {

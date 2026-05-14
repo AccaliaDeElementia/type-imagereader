@@ -39,9 +39,6 @@ describe('sync/synchronize synchronize()', () => {
       .spyOn(Imports, 'emitSqliteSizeWarning')
       .mockImplementation((..._args: unknown[]) => undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call debug once at start of process', async () => {
     await synchronize()
     expect(debugStub.mock.calls.length).toBe(1)

@@ -10,7 +10,6 @@ describe('public/slideshow/overlay calculateDarknessMs()', () => {
   })
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
   })
   const testCases: Array<[string, number]> = [
     ['2025-03-18T05:30:00.000Z', 900000],

@@ -45,7 +45,6 @@ describe('public/app/bookmarks buildBookmarkNodes()', () => {
     Bookmarks.bookmarkFolders = []
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should not retrieve folder when bookmarks are undefined', () => {

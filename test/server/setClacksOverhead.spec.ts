@@ -14,9 +14,6 @@ describe('Server setClacksOverhead', () => {
     resFake = cast<Response>(resStub)
     nextStub = voidFn()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call res.set once', () => {
     setClacksOverhead(cast<Request>({}), resFake, nextStub)
     expect(resStub.set.mock.calls.length).toBe(1)

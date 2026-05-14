@@ -35,7 +35,6 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
     Viewer.modCount = SENTINEL_MOD_COUNT
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should abort gracefully for null mainImage', () => {

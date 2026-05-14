@@ -34,7 +34,6 @@ describe('public/app/folders buildFolders()', () => {
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     resetPubSub()
     unmountDom()
   })

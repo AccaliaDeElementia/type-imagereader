@@ -43,9 +43,6 @@ describe('utils/persistence initialize()', () => {
     stubEnvironment = vi.spyOn(Internals, 'getKnexConfig').mockResolvedValue(fakeEnvironment)
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should return stored initializer when one is already created', async () => {
     const promise = Promise.resolve(stubToKnex(stubKnexInstance))
     Persistence.initializer = promise

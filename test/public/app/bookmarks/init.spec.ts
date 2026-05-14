@@ -46,7 +46,6 @@ describe('public/app/bookmarks init()', () => {
     Bookmarks.bookmarksTab = null
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should locate bookmarkCard template on init', () => {

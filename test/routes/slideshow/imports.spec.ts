@@ -12,9 +12,6 @@ describe('routes/slideshow Imports', () => {
     knexFake = stubToKnex({})
     setLatestPictureStub = vi.spyOn(Imports, 'setLatestPicture').mockResolvedValue(cast(undefined))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   describe('setLatest()', () => {
     it('should call api function setLatestPicture', async () => {
       await Imports.setLatest(knexFake, '')

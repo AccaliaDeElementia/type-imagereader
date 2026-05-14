@@ -29,9 +29,6 @@ describe('public/app/net getJSON()', () => {
     })
     fetchStub = vi.spyOn(global, 'fetch').mockResolvedValue(response)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call fetch with provided path', async () => {
     const path = `/Some/Test/Path/${Math.random()}`
     await getJSON(path, isUnknown)

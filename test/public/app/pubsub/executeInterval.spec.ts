@@ -26,9 +26,6 @@ describe('public/app/pubsub executeInterval()', () => {
     testDefer.delayCycles = 10
     testDefer.method.mockReset()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should decrement delayCycle count once for pending defer', () => {
     Internals.executeInterval()
     expect(testDefer.delayCycles).toBe(9)

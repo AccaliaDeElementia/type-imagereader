@@ -14,9 +14,6 @@ describe('Server listenOnPort', () => {
     serverFake = cast<Server>({ listen: listenStub })
     loggerFake = vi.spyOn(Imports, 'logger').mockImplementation(cast(() => undefined))
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call server.listen once', () => {
     listenOnPort(serverFake, 65535)
     expect(listenStub.mock.calls.length).toBe(1)

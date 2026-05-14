@@ -34,7 +34,6 @@ describe('routes/weather getRouter()', () => {
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
   })

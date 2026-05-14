@@ -6,9 +6,6 @@ import { createCopyStreamFake, scheduleEmit } from '#testutils/copyStream.js'
 import { voidFn } from '#testutils/mocks.js'
 
 describe('testutils createCopyStreamFake()', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should return an object exposing the typed stream', () => {
     expect(createCopyStreamFake().stream).toBeTypeOf('object')
   })

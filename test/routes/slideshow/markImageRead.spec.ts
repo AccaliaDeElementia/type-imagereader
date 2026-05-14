@@ -37,10 +37,6 @@ describe('routes/slideshow markImageRead()', () => {
     knexFake = stubToKnex(knexStub)
     getParentFoldersStub = vi.spyOn(Imports, 'getParentFolders').mockReturnValue(['/foo/bar/', '/foo/', '/'])
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   // ---- Conditional UPDATE on pictures ----
 
   it('should call knex with the pictures table for the conditional UPDATE', async () => {

@@ -22,7 +22,6 @@ describe('public/app/pictures makePicturesPage()', () => {
       .mockImplementation(() => dom.window.document.createElement('div'))
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should return div element', () => {

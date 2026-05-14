@@ -33,7 +33,6 @@ describe('public/slideshow/time Updater()', () => {
   })
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should expose a CyclicUpdater', () => {

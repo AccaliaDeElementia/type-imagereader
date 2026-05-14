@@ -40,10 +40,6 @@ describe('routes/apiFunctions getListing', () => {
     getBookmarksStub = vi.spyOn(Internals, 'getBookmarks').mockResolvedValue([])
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('getFolder() interface', () => {
     it('should call getFolder() once', async () => {
       await getListing(knexFake, '/foo/bar/')

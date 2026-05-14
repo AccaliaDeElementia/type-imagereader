@@ -73,10 +73,6 @@ describe('routes/apiFunctions getDirectionFolder', () => {
     knexFake = stubToKnex(knexStub)
     knexFake.raw = rawStub
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('queries the folders table', () => {
     const queryCases: Array<[string, 'asc' | 'desc', 0 | 1]> = [
       ['same-sortKey query (asc)', 'asc', 0],

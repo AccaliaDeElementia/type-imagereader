@@ -34,7 +34,6 @@ describe('routes/weather getWeather', () => {
     fetchStub = vi.spyOn(global, 'fetch').mockResolvedValue(cast<globalThis.Response>(fetchResult))
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
   })

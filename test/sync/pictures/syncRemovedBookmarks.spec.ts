@@ -51,9 +51,6 @@ describe('sync/pictures syncRemovedBookmarks()', () => {
     knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
     knexFnFake = stubToKnex(knexFnStub)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it("should call knex with 'bookmarks' table", async () => {
     await syncRemovedBookmarks(loggerFake, knexFnFake)
     expect(knexFnStub).toHaveBeenCalledWith('bookmarks')

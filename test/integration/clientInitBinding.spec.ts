@@ -121,9 +121,6 @@ describe('app.pug ↔ client init binding', () => {
       Grid.imageCard = null
       Pictures.init()
     })
-    afterEach(() => {
-      vi.restoreAllMocks()
-    })
     it('populates Pictures.mainImage from #bigImage img', () => {
       expect(Pictures.mainImage).not.toBe(null)
     })

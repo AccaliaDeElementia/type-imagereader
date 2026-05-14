@@ -56,7 +56,6 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should use Net.getJSON to load bookmarks', async () => {

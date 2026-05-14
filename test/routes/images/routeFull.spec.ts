@@ -56,9 +56,6 @@ describe('routes/images route /full/*', () => {
     requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   afterAll(() => {
     CacheStorage.kioskCache = defaultKioskCache
     CacheStorage.scaledCache = defaultScaledCache

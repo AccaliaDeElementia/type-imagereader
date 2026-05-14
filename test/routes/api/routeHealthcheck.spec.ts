@@ -48,9 +48,6 @@ describe('routes/api route GET /healthcheck', () => {
     InitializeStub.mockRestore()
     MakeRouterStub.mockRestore()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should return status OK', async () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.OK])

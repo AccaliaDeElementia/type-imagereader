@@ -48,10 +48,6 @@ describe('sync/incrementalsync incrementalEnsureFoldersBulk()', () => {
     setup()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('when given an empty list', () => {
     it('should not call folders.insert', async () => {
       await incrementalEnsureFoldersBulk(knexFnFake, [])

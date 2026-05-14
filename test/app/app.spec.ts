@@ -36,7 +36,6 @@ describe('/app.ts tests', (): void => {
 
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
     ImageReader.interval = undefined
     ImageReader.watcherSubscription = undefined
     ImageReader.watcherEnabled = false

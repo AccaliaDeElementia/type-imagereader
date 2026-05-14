@@ -29,9 +29,6 @@ describe('public/app/pictures loadData()', () => {
     makeTabSpy = vi.spyOn(Imports, 'makeTab').mockImplementation((..._args: unknown[]) => undefined)
     loadImageSpy = vi.spyOn(Internals, 'loadImage').mockResolvedValue(undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should reset markup on load', async () => {
     await loadData({
       name: '',

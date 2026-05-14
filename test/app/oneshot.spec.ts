@@ -33,7 +33,6 @@ describe('app.ts ONESHOT mode tests', (): void => {
 
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
     delete process.env.SKIP_SERVE
     ImageReader.interval = undefined
     ImageReader.watcherSubscription = undefined

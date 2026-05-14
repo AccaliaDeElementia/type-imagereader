@@ -27,7 +27,6 @@ describe('public/app/actions init()', () => {
     removeIntervalStub = vi.spyOn(Imports, 'removeInterval').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should build actions on init', () => {

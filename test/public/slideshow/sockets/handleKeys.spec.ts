@@ -18,9 +18,6 @@ describe('public/slideshow/sockets handleKeys()', () => {
   beforeEach(() => {
     fakeEmit.mockClear()
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should not break if socket is null', () => {
     const evt = new global.window.KeyboardEvent('keyup', { key: 'a' })
     Internals.handleKeys(evt, cast<WebSocket>(null))

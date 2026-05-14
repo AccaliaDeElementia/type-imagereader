@@ -27,10 +27,6 @@ describe('public/app/pictureNavigation navigateUnreadBack()', () => {
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     getPictureSpy = vi.spyOn(Internals, 'getPicture').mockImplementation((..._args: unknown[]) => undefined)
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('isLoading guard', () => {
     beforeEach(() => {
       isLoadingSpy.mockReturnValue(true)

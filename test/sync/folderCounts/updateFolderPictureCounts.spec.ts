@@ -30,9 +30,6 @@ describe('sync/folderCounts updateFolderPictureCounts()', () => {
     calculateFolderInfosStub = vi.spyOn(Internals, 'calculateFolderInfos').mockReturnValue([])
     chunkStub = vi.spyOn(Imports, 'chunk').mockReturnValue([])
   })
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
   it('should call debug once when constructing logger', async () => {
     await updateFolderPictureCounts(knexFnFake)
     expect(debugStub.mock.calls.length).toBe(1)

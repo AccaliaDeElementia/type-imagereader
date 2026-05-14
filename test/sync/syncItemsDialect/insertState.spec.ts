@@ -14,10 +14,6 @@ const LOGGING_INTERVAL = 100
 const SQLITE_DB_CHUNK_SIZE = 200
 
 describe('sync/syncItemsDialect InsertState', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('addCounts()', () => {
     it('should increment files by cf', () => {
       const state = new InsertState()

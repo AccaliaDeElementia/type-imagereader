@@ -50,7 +50,6 @@ describe('public/app/bookmarks buildBookmarks()', () => {
     Bookmarks.bookmarksTab = dom.window.document.querySelector<HTMLElement>('#tabBookmarks')
   })
   afterEach(() => {
-    vi.restoreAllMocks()
     unmountDom()
   })
   it('should not call getOrCreateFolderElement when bookmarksTab is missing', () => {

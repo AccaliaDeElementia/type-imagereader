@@ -76,10 +76,6 @@ describe('sync/incrementalsync incrementalAddPicturesBulk()', () => {
     setup()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('when given an empty list of paths', () => {
     it('should not call pictures.insert', async () => {
       await incrementalAddPicturesBulk(knexFnFake, [])
