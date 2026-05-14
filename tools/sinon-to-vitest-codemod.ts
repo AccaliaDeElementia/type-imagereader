@@ -23,7 +23,6 @@ const SKIP_IMPORT_GUARD_FLAG = '--skip-import-guard'
 // internally calls .getCalls() — which vitest mocks don't have).
 const TESTUTIL_SINON_PRODUCERS = [
   'createLoggerFake',
-  'createKnexChainFake',
   'createCopyStreamFake',
   // pubsub testutils internally call `.getCalls()` on the stub passed in.
   // Specs that use these helpers stay on sinon mocks until the testutil migrates.
@@ -193,13 +192,13 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
     // Specific no-arg forms must come BEFORE the general open-paren forms.
     {
       pattern: /\.resolves\(\s*\)/g,
-      replace: '.mockResolvedValue(undefined as never)',
-      label: '.resolves() -> .mockResolvedValue(undefined as never)',
+      replace: '.mockResolvedValue(undefined)',
+      label: '.resolves() -> .mockResolvedValue(undefined)',
     },
     {
       pattern: /\.rejects\(\s*\)/g,
-      replace: '.mockRejectedValue(undefined as never)',
-      label: '.rejects() -> .mockRejectedValue(undefined as never)',
+      replace: '.mockRejectedValue(undefined)',
+      label: '.rejects() -> .mockRejectedValue(undefined)',
     },
     { pattern: /\.returns\(/g, replace: '.mockReturnValue(', label: '.returns -> .mockReturnValue' },
     { pattern: /\.resolves\(/g, replace: '.mockResolvedValue(', label: '.resolves -> .mockResolvedValue' },
@@ -244,6 +243,12 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
       label: '.secondCall.args[N] -> .mock.calls[1]?.[N]',
     },
     { pattern: /\.secondCall\.args\b/g, replace: '.mock.calls[1]', label: '.secondCall.args -> .mock.calls[1]' },
+    {
+      pattern: /\.thirdCall\.args\[(\d+)\]/g,
+      replace: '.mock.calls[2]?.[$1]',
+      label: '.thirdCall.args[N] -> .mock.calls[2]?.[N]',
+    },
+    { pattern: /\.thirdCall\.args\b/g, replace: '.mock.calls[2]', label: '.thirdCall.args -> .mock.calls[2]' },
     {
       pattern: /\.lastCall\.args\[(\d+)\]/g,
       replace: '.mock.lastCall?.[$1]',
@@ -328,10 +333,7 @@ function migrate(path: string, src: string, skipImportGuard: boolean): FileResul
   // function types AND passes strict `no-unsafe-argument` lint that `cast(() => undefined)`
   // sometimes tripped on Debugger-typed properties (any-parameter signatures).
   // When a subsequent chain like `.mockReturnValue(v)` exists, it overrides the default impl.
-  out = out.replace(
-    /(vi\.spyOn\([^)]+\))(?!\.\w)/g,
-    '$1.mockImplementation(((..._args: unknown[]) => undefined) as never)',
-  )
+  out = out.replace(/(vi\.spyOn\([^)]+\))(?!\.\w)/g, '$1.mockImplementation((..._args: unknown[]) => undefined)')
 
   // Post-pass: optional-chain `.called` -> `.mock.calls.length > 0` produces a
   // `number | undefined > 0` type that tsconfig's strict mode rejects. Wrap with

@@ -18,17 +18,17 @@ describe('routes/apiFunctions getChildFolders', () => {
   })
   it('should call knex once when selecting data from folders', async () => {
     await getChildFolders(knexFake, '/foo/bar/')
-    expect(knexStub.callCount).toBe(1)
+    expect(knexStub.mock.calls.length).toBe(1)
   })
   it('should select data from folders', async () => {
     await getChildFolders(knexFake, '/foo/bar/')
-    expect(knexStub.firstCall.args).toEqual(['folders'])
+    expect(knexStub.mock.calls[0]).toEqual(['folders'])
   })
   const columns = ['path', 'current', 'firstPicture', 'totalCount', 'seenCount'] as const
   columns.forEach((col) => {
     it(`should include ${col} column in select`, async () => {
       await getChildFolders(knexFake, '/foo/bar/')
-      expect(knexInstance.select.firstCall.args).toContain(col)
+      expect(knexInstance.select.mock.calls[0]).toContain(col)
     })
   })
   const namePathTests: Array<[string, string, 'name' | 'path', string]> = [
@@ -39,7 +39,7 @@ describe('routes/apiFunctions getChildFolders', () => {
   ]
   namePathTests.forEach(([title, path, prop, expected]) => {
     it(`should select ${title} from folders`, async () => {
-      knexInstance.orderBy.resolves([{ path }])
+      knexInstance.orderBy.mockResolvedValue([{ path }])
       const result = await getChildFolders(knexFake, '/foo/bar/')
       expect(result[0]?.[prop]).toBe(expected)
     })
@@ -59,35 +59,35 @@ describe('routes/apiFunctions getChildFolders', () => {
   ]
   coverTests.forEach(([title, current, firstPicture, expected]) => {
     it(`should select ${title} from folders`, async () => {
-      knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', current, firstPicture }])
+      knexInstance.orderBy.mockResolvedValue([{ path: '/foo/bar/baz', current, firstPicture }])
       const result = await getChildFolders(knexFake, '/foo/bar/')
       expect(result[0]?.cover).toBe(expected)
     })
   })
   it('should select totalCount from folders', async () => {
-    knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', totalCount: 42 }])
+    knexInstance.orderBy.mockResolvedValue([{ path: '/foo/bar/baz', totalCount: 42 }])
     const result = await getChildFolders(knexFake, '/foo/bar/')
     expect(result[0]?.totalCount).toBe(42)
   })
   it('should select seenCount from folders', async () => {
-    knexInstance.orderBy.resolves([{ path: '/foo/bar/baz', seenCount: 69 }])
+    knexInstance.orderBy.mockResolvedValue([{ path: '/foo/bar/baz', seenCount: 69 }])
     const result = await getChildFolders(knexFake, '/foo/bar/')
     expect(result[0]?.seenCount).toBe(69)
   })
   it('should call where once when filtering query by folder', async () => {
     await getChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.where.callCount).toBe(1)
+    expect(knexInstance.where.mock.calls.length).toBe(1)
   })
   it('should filter query by folder', async () => {
     await getChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.where.firstCall.args).toEqual(['folder', '=', '/foo/bar/'])
+    expect(knexInstance.where.mock.calls[0]).toEqual(['folder', '=', '/foo/bar/'])
   })
   it('should call orderBy once', async () => {
     await getChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.orderBy.callCount).toBe(1)
+    expect(knexInstance.orderBy.mock.calls.length).toBe(1)
   })
   it('should order by sortKey', async () => {
     await getChildFolders(knexFake, '/foo/bar/')
-    expect(knexInstance.orderBy.firstCall.args[0]).toBe('sortKey')
+    expect(knexInstance.orderBy.mock.calls[0]?.[0]).toBe('sortKey')
   })
 })

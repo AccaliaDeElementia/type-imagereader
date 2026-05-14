@@ -83,15 +83,15 @@ describe('sync/findItems findSyncItems()', () => {
     })
     it('should truncate syncitems once to clear prior contents', async () => {
       await findSyncItems(knexFnFake)
-      expect(knexInstanceStub.truncate.callCount).toBe(1)
+      expect(knexInstanceStub.truncate.mock.calls.length).toBe(1)
     })
     it('should insert the root folder row once', async () => {
       await findSyncItems(knexFnFake)
-      expect(knexInstanceStub.insert.callCount).toBe(1)
+      expect(knexInstanceStub.insert.mock.calls.length).toBe(1)
     })
     it('should insert the root folder row with the root sentinel in the folder column', async () => {
       await findSyncItems(knexFnFake)
-      expect(knexInstanceStub.insert.firstCall.args).toEqual([
+      expect(knexInstanceStub.insert.mock.calls[0]).toEqual([
         {
           folder: '',
           path: '/',
@@ -103,16 +103,16 @@ describe('sync/findItems findSyncItems()', () => {
     })
     it('should insert the root folder row with a non-empty pathHash to satisfy NOT NULL', async () => {
       await findSyncItems(knexFnFake)
-      const row = cast<{ pathHash: string }>(knexInstanceStub.insert.firstCall.args[0])
+      const row = cast<{ pathHash: string }>(knexInstanceStub.insert.mock.calls[0]?.[0])
       expect(row.pathHash.length).toBeGreaterThan(0)
     })
     it('should request syncitems on the first knex call', async () => {
       await findSyncItems(knexFnFake)
-      expect(knexFnStub.firstCall.calledWith('syncitems')).toBe(true)
+      expect(knexFnStub.mock.calls[0]?.[0] === 'syncitems').toBe(true)
     })
     it('should request syncitems on the second knex call', async () => {
       await findSyncItems(knexFnFake)
-      expect(knexFnStub.secondCall.calledWith('syncitems')).toBe(true)
+      expect(knexFnStub.mock.calls[1]?.[0] === 'syncitems').toBe(true)
     })
     it('should acquire a pool connection for the COPY stream', async () => {
       await findSyncItems(knexFnFake)
@@ -399,7 +399,7 @@ describe('sync/findItems findSyncItems()', () => {
         await callback([{ path: '/f.jpg', isFile: true }], 0)
       })
       await findSyncItems(knexFnFake)
-      expect(knexInstanceStub.insert.callCount).toBe(2)
+      expect(knexInstanceStub.insert.mock.calls.length).toBe(2)
     })
 
     it('should pass chunk rows to insert', async () => {
@@ -409,7 +409,7 @@ describe('sync/findItems findSyncItems()', () => {
         await callback([{ path: '/f.jpg', isFile: true }], 0)
       })
       await findSyncItems(knexFnFake)
-      expect(knexInstanceStub.insert.secondCall.args[0]).toEqual([row])
+      expect(knexInstanceStub.insert.mock.calls[1]?.[0]).toEqual([row])
     })
 
     it('should not insert when a callback yields zero rows', async () => {
@@ -418,7 +418,7 @@ describe('sync/findItems findSyncItems()', () => {
         await callback([], 0)
       })
       await findSyncItems(knexFnFake)
-      expect(knexInstanceStub.insert.callCount).toBe(1)
+      expect(knexInstanceStub.insert.mock.calls.length).toBe(1)
     })
 
     it('should log status on first loop', async () => {

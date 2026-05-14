@@ -1,29 +1,31 @@
 'use sanity'
 
-import Sinon from 'sinon'
+import { vi, type Mock } from 'vitest'
 import { cast, stubToKnex } from './typeGuards.js'
 
-type KnexQueryStub = Record<string, Sinon.SinonStub>
+type KnexQueryStub = Record<string, Mock>
 
 export function createKnexChainFake<C extends readonly string[], T extends readonly string[]>(
   chainMethods: C,
   terminalMethods: T,
   defaultValue: unknown = [],
 ): {
-  instance: Record<C[number] | T[number], Sinon.SinonStub>
-  stub: Sinon.SinonStub
+  instance: Record<C[number] | T[number], Mock>
+  stub: Mock
   fake: ReturnType<typeof stubToKnex>
 } {
   const instance: KnexQueryStub = {}
   for (const method of chainMethods) {
-    instance[method] = Sinon.stub().returnsThis()
+    instance[method] = vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    })
   }
   for (const method of terminalMethods) {
-    instance[method] = Sinon.stub().resolves(defaultValue)
+    instance[method] = vi.fn().mockResolvedValue(defaultValue)
   }
-  const stub = Sinon.stub().returns(instance)
+  const stub = vi.fn().mockReturnValue(instance)
   return {
-    instance: cast<Record<C[number] | T[number], Sinon.SinonStub>>(instance),
+    instance: cast<Record<C[number] | T[number], Mock>>(instance),
     stub,
     fake: stubToKnex(stub),
   }

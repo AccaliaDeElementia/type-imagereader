@@ -3,83 +3,80 @@
 import { getBookmarks, Imports } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/knex.js'
 import assert from 'node:assert'
-import Sinon from 'sinon'
-
-const sandbox = Sinon.createSandbox()
-
+import type { MockInstance } from 'vitest'
 describe('routes/apiFunctions getBookmarks', () => {
   let {
     instance: knexInstance,
     stub: knexStub,
     fake: knexFake,
   } = createKnexChainFake(['select', 'join'] as const, ['orderBy'] as const)
-  let loggerStub: Sinon.SinonStub = sandbox.stub()
+  let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
     ;({
       instance: knexInstance,
       stub: knexStub,
       fake: knexFake,
     } = createKnexChainFake(['select', 'join'] as const, ['orderBy'] as const))
-    loggerStub = sandbox.stub(Imports, 'logger')
+    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should select results from bookmarks once', async () => {
     await getBookmarks(knexFake)
-    expect(knexStub.callCount).toBe(1)
+    expect(knexStub.mock.calls.length).toBe(1)
   })
   it('should select results from bookmarks table', async () => {
     await getBookmarks(knexFake)
-    expect(knexStub.firstCall.args).toEqual(['bookmarks'])
+    expect(knexStub.mock.calls[0]).toEqual(['bookmarks'])
   })
   it('should select expected fields from bookmarks once', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.select.callCount).toBe(1)
+    expect(knexInstance.select.mock.calls.length).toBe(1)
   })
   it('should select expected number of fields from bookmarks', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.select.firstCall.args).toHaveLength(2)
+    expect(knexInstance.select.mock.calls[0]).toHaveLength(2)
   })
   it('should select pictures.path from bookmarks', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.select.firstCall.args).toContain('pictures.path')
+    expect(knexInstance.select.mock.calls[0]).toContain('pictures.path')
   })
   it('should select pictures.folder from bookmarks', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.select.firstCall.args).toContain('pictures.folder')
+    expect(knexInstance.select.mock.calls[0]).toContain('pictures.folder')
   })
   it('should join pictures to bookmarks at least once', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.join.callCount).toBeGreaterThanOrEqual(1)
+    expect(knexInstance.join.mock.calls.length).toBeGreaterThanOrEqual(1)
   })
   it('should join pictures to bookmarks with expected args', async () => {
     await getBookmarks(knexFake)
-    const call = knexInstance.join.getCalls().find((call) => call.args[0] === 'pictures')
+    const call = knexInstance.join.mock.calls.find((call) => call[0] === 'pictures')
     assert(call !== undefined)
-    expect(call.args).toEqual(['pictures', 'pictures.path', 'bookmarks.path'])
+    expect(call).toEqual(['pictures', 'pictures.path', 'bookmarks.path'])
   })
   it('should join folders to bookmarks at least once', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.join.callCount).toBeGreaterThanOrEqual(1)
+    expect(knexInstance.join.mock.calls.length).toBeGreaterThanOrEqual(1)
   })
   it('should join folders to bookmarks with expected args', async () => {
     await getBookmarks(knexFake)
-    const call = knexInstance.join.getCalls().find((call) => call.args[0] === 'folders')
+    const call = knexInstance.join.mock.calls.find((call) => call[0] === 'folders')
     assert(call !== undefined)
-    expect(call.args).toEqual(['folders', 'folders.path', 'pictures.folder'])
+    expect(call).toEqual(['folders', 'folders.path', 'pictures.folder'])
   })
   it('should order strictly by folder then picture once', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.orderBy.callCount).toBe(1)
+    expect(knexInstance.orderBy.mock.calls.length).toBe(1)
   })
   it('should order strictly by folder then picture with one arg', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.orderBy.firstCall.args).toHaveLength(1)
+    expect(knexInstance.orderBy.mock.calls[0]).toHaveLength(1)
   })
   it('should order strictly by folder then picture including sortkey and paths', async () => {
     await getBookmarks(knexFake)
-    expect(knexInstance.orderBy.firstCall.args[0]).toEqual([
+    expect(knexInstance.orderBy.mock.calls[0]?.[0]).toEqual([
       'folders.path',
       'folders.sortKey',
       'pictures.sortKey',
@@ -87,7 +84,7 @@ describe('routes/apiFunctions getBookmarks', () => {
     ])
   })
   it('should include the only bookmark folder in results', async () => {
-    knexInstance.orderBy.resolves([{ path: '/foo/bar/quux.png', folder: '/foo/bar/' }])
+    knexInstance.orderBy.mockResolvedValue([{ path: '/foo/bar/quux.png', folder: '/foo/bar/' }])
     const bookmarks = await getBookmarks(knexFake)
     expect(bookmarks).toHaveLength(1)
     expect(bookmarks[0]).toEqual({
@@ -97,12 +94,12 @@ describe('routes/apiFunctions getBookmarks', () => {
     })
   })
   it('should resolve to empty with no bookmarks', async () => {
-    knexInstance.orderBy.resolves([])
+    knexInstance.orderBy.mockResolvedValue([])
     const bookmarks = await getBookmarks(knexFake)
     expect(bookmarks).toEqual([])
   })
   it('should resolve to results with bookmarks', async () => {
-    knexInstance.orderBy.resolves([
+    knexInstance.orderBy.mockResolvedValue([
       { path: '/foo/a bar/a quux.png', folder: '/foo/a bar/' },
       { path: '/foo/a bar/a quuux.png', folder: '/foo/a bar/' },
       { path: '/foo/a baz/a quux.png', folder: '/foo/a baz/' },
@@ -140,9 +137,9 @@ describe('routes/apiFunctions getBookmarks', () => {
     expect(bookmarks).toEqual(expected)
   })
   it('should log a bookmark and folder count summary', async () => {
-    knexInstance.orderBy.resolves([{ path: '/foo/bar/quux.png', folder: '/foo/bar/' }])
+    knexInstance.orderBy.mockResolvedValue([{ path: '/foo/bar/quux.png', folder: '/foo/bar/' }])
     await getBookmarks(knexFake)
-    const matched = loggerStub.getCalls().some((c) => String(c.args[0]).includes('getBookmarks'))
+    const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('getBookmarks'))
     expect(matched).toBe(true)
   })
 })
