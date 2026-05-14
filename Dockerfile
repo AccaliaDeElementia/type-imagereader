@@ -1,10 +1,16 @@
 # syntax=docker/dockerfile:1.7
-ARG NODE_VERSION=24
+# Must match package.json engines.node. scripts/checkEnv.mjs (run during npm test)
+# validates that this string matches engines.node — drift fails the build.
+ARG NODE_VERSION=24.12.0
 
 # ── Stage 1: install full deps, run tests, build assets ──
 FROM docker.io/library/node:${NODE_VERSION}-slim AS build
 WORKDIR /app
-COPY package.json package-lock.json ./
+# COPY package.json alone so the npm pin step is cached separately from the
+# lockfile install. npm pin is read FROM package.json — single source of truth.
+COPY package.json ./
+RUN npm install -g npm@$(node -p "require('./package.json').engines.npm")
+COPY package-lock.json .npmrc ./
 RUN npm ci
 COPY . .
 RUN npm test && npm run build
@@ -24,7 +30,9 @@ ENV NODE_ENV=production \
 WORKDIR /app
 RUN mkdir -p /data && chown node:node /data /app
 
-COPY --chown=node:node package.json package-lock.json ./
+COPY --chown=node:node package.json ./
+RUN npm install -g npm@$(node -p "require('./package.json').engines.npm")
+COPY --chown=node:node package-lock.json .npmrc ./
 RUN npm ci --omit=dev
 COPY --chown=node:node . .
 COPY --from=build --chown=node:node /app/dist ./dist

@@ -240,6 +240,6 @@ export default [
     },
   },
   {
-    ignores: ['coverage/**', 'coverage-vitest/**', 'eslint.config.mjs', 'dist/**', 'deploy/**'],
+    ignores: ['coverage/**', 'coverage-vitest/**', 'eslint.config.mjs', 'dist/**', 'deploy/**', 'scripts/**'],
   },
 ]

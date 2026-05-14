@@ -5,7 +5,8 @@
   "main": "./app.ts",
   "description": "Self-hosted web app for browsing local image and comic collections, with PostgreSQL-backed indexing and live filesystem sync",
   "scripts": {
-    "prebuild": "npm run lint",
+    "check:env": "node scripts/checkEnv.mjs",
+    "prebuild": "npm run check:env && npm run lint",
     "build:client": "esbuild app=public/scripts/app/main.ts slideshow=public/scripts/slideshow/main.ts --bundle --minify --target=es2024 --format=iife --outdir=dist/scripts --sourcemap",
     "build:sass": "sass public/stylesheets:dist/stylesheets --style=compressed",
     "build": "run-p build:client build:sass typecheck",
@@ -14,9 +15,9 @@
     "prelint": "npm run pretty",
     "lint": "eslint .",
     "start": "DEBUG='type-imagereader:*' tsx .",
-    "pretest": "npm run lint && npm run typecheck",
+    "pretest": "npm run check:env && npm run lint && npm run typecheck",
     "test": "vitest run --coverage",
-    "pretest:detailed": "npm run lint && npm run typecheck",
+    "pretest:detailed": "npm run check:env && npm run lint && npm run typecheck",
     "test:detailed": "vitest run --coverage --reporter=verbose",
     "test:watch": "vitest --coverage",
     "knex": "tsx ./node_modules/knex/bin/cli.js --knexfile knexfile.json",
@@ -35,6 +36,10 @@
   },
   "author": "Accalia Elementia",
   "license": "MIT",
+  "engines": {
+    "node": "24.12.0",
+    "npm": "11.14.1"
+  },
   "bugs": {
     "url": "https://github.com/AccaliaDeElementia/type-imagereader/issues"
   },
