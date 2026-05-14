@@ -2,16 +2,17 @@
 
 import type { Request, Response } from 'express'
 import { cast } from '#testutils/typeGuards.js'
+import { voidFn } from '#testutils/mocks.js'
 import { setClacksOverhead } from '#server.js'
 
 describe('Server setClacksOverhead', () => {
   let resStub = { set: vi.fn() }
   let resFake = cast<Response>(resStub)
-  let nextStub = vi.fn()
+  let nextStub = voidFn()
   beforeEach(() => {
     resStub = { set: vi.fn() }
     resFake = cast<Response>(resStub)
-    nextStub = vi.fn()
+    nextStub = voidFn()
   })
   afterEach(() => {
     vi.restoreAllMocks()

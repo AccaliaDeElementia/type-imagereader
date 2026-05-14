@@ -1,6 +1,7 @@
 'use sanity'
 
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
+import { voidFn } from '#testutils/mocks.js'
 import { SlideshowSocketState, handleSocket, gotoImage, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import type { MockInstance } from 'vitest'
@@ -9,7 +10,7 @@ describe('routes/slideshow socket goto-image', () => {
   let knexFake = stubToKnex({})
   let ioStub = {}
   let serverFake = cast<WebSocketServer>(ioStub)
-  let socketStub = { on: vi.fn() }
+  let socketStub = { on: voidFn() }
   let socketFake = cast<Socket>(socketStub)
   let socketState = new SlideshowSocketState()
   let folder = { path: '/foo/bar' }
@@ -21,7 +22,7 @@ describe('routes/slideshow socket goto-image', () => {
     knexFake = stubToKnex({})
     ioStub = {}
     serverFake = cast<WebSocketServer>(ioStub)
-    socketStub = { on: vi.fn() }
+    socketStub = { on: voidFn() }
     socketFake = cast<Socket>(socketStub)
     socketState = handleSocket(knexFake, serverFake, socketFake)
     folder = { path: '/foo/bar' }
@@ -35,9 +36,9 @@ describe('routes/slideshow socket goto-image', () => {
   })
 
   describe('with null room', () => {
-    let spy = vi.fn()
+    let spy = voidFn()
     beforeEach(async () => {
-      spy = vi.fn()
+      spy = voidFn()
       socketState.roomName = null
       roomData.index = 0
       await gotoImage(spy, socketState, knexFake)
@@ -54,9 +55,9 @@ describe('routes/slideshow socket goto-image', () => {
   })
 
   describe('with valid room and bad index (-1)', () => {
-    let spy = vi.fn()
+    let spy = voidFn()
     beforeEach(async () => {
-      spy = vi.fn()
+      spy = voidFn()
       socketState.roomName = '/foo'
       roomData.index = -1
       await gotoImage(spy, socketState, knexFake)
@@ -79,9 +80,9 @@ describe('routes/slideshow socket goto-image', () => {
   })
 
   describe('with valid room and good index (0)', () => {
-    let spy = vi.fn()
+    let spy = voidFn()
     beforeEach(async () => {
-      spy = vi.fn()
+      spy = voidFn()
       socketState.roomName = '/foo'
       roomData.index = 0
       await gotoImage(spy, socketState, knexFake)
@@ -111,7 +112,7 @@ describe('routes/slideshow socket goto-image', () => {
 
   describe('with valid room and out-of-range index (12)', () => {
     beforeEach(async () => {
-      const spy = vi.fn()
+      const spy = voidFn()
       socketState.roomName = '/foo'
       roomData.index = 12
       await gotoImage(spy, socketState, knexFake)
@@ -125,13 +126,13 @@ describe('routes/slideshow socket goto-image', () => {
     setLatestStub.mockResolvedValue(null)
     socketState.roomName = '/foo'
     roomData.index = 0
-    const spy = vi.fn()
+    const spy = voidFn()
     await gotoImage(spy, socketState, knexFake)
     expect(spy.mock.calls[0]?.[0]).toBe(null)
   })
 
   describe('logging', () => {
-    let loggerStub: MockInstance = vi.fn()
+    let loggerStub: MockInstance = voidFn()
     beforeEach(() => {
       loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
     })
@@ -139,20 +140,20 @@ describe('routes/slideshow socket goto-image', () => {
     it('should log gotoImage format on valid invocation', async () => {
       socketState.roomName = '/foo'
       roomData.index = 0
-      await gotoImage(vi.fn(), socketState, knexFake)
+      await gotoImage(voidFn(), socketState, knexFake)
       expect(loggerStub.mock.calls[0]?.[0]).toBe('gotoImage in %s')
     })
 
     it('should log the room name on valid invocation', async () => {
       socketState.roomName = '/foo'
       roomData.index = 0
-      await gotoImage(vi.fn(), socketState, knexFake)
+      await gotoImage(voidFn(), socketState, knexFake)
       expect(loggerStub.mock.calls[0]?.[1]).toBe('/foo')
     })
 
     it('should not log when room name is null', async () => {
       socketState.roomName = null
-      await gotoImage(vi.fn(), socketState, knexFake)
+      await gotoImage(voidFn(), socketState, knexFake)
       expect(loggerStub.mock.calls.length).toBe(0)
     })
   })

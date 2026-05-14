@@ -3,6 +3,7 @@
 import assert from 'node:assert'
 import { PubSub, forward } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
+import { voidFn } from '#testutils/mocks.js'
 
 describe('public/app/pubsub forward()', () => {
   beforeEach(() => {
@@ -43,7 +44,7 @@ describe('public/app/pubsub forward()', () => {
     expect(PubSub.subscribers['FOO:BAR']).toHaveLength(2)
   })
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = vi.fn()
+    const guard = voidFn()
     PubSub.guardCallback = guard
     try {
       forward('Foo:Bar', 'Baz:Qux')

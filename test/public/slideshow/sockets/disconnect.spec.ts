@@ -2,6 +2,7 @@
 
 import { disconnect, Internals, WebSockets, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { cast } from '#testutils/typeGuards.js'
+import { voidFn } from '#testutils/mocks.js'
 import assert from 'node:assert'
 
 describe('public/slideshow/sockets disconnect()', () => {
@@ -35,24 +36,24 @@ describe('public/slideshow/sockets disconnect()', () => {
     expect(WebSockets.launchId).toBe(undefined)
   })
   it('should clear locationAssign with socket', () => {
-    WebSockets.locationAssign = vi.fn()
+    WebSockets.locationAssign = voidFn()
     disconnect()
     expect(WebSockets.locationAssign).toBe(Internals.uninitializedLocationAssign)
   })
   it('should clear locationAssign without socket', () => {
     WebSockets.socket = undefined
-    WebSockets.locationAssign = vi.fn()
+    WebSockets.locationAssign = voidFn()
     disconnect()
     expect(WebSockets.locationAssign).toBe(Internals.uninitializedLocationAssign)
   })
   it('should clear locationReload with socket', () => {
-    WebSockets.locationReload = vi.fn()
+    WebSockets.locationReload = voidFn()
     disconnect()
     expect(WebSockets.locationReload).toBe(Internals.uninitializedLocationReload)
   })
   it('should clear locationReload without socket', () => {
     WebSockets.socket = undefined
-    WebSockets.locationReload = vi.fn()
+    WebSockets.locationReload = voidFn()
     disconnect()
     expect(WebSockets.locationReload).toBe(Internals.uninitializedLocationReload)
   })

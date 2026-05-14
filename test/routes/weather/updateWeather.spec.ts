@@ -184,7 +184,7 @@ describe('routes/weather updateWeather', () => {
     })
   })
 
-  const failureModes: Array<[string, () => void]> = [
+  const failureModes: Array<[string, () => unknown]> = [
     ['rejects', () => getWeatherStub.mockRejectedValue(new Error('foo!'))],
     [
       'throws',

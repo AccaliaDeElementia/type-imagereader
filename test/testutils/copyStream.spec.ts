@@ -3,6 +3,7 @@
 import { EventEmitter } from 'node:events'
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 import { createCopyStreamFake, scheduleEmit } from '#testutils/copyStream.js'
+import { voidFn } from '#testutils/mocks.js'
 
 describe('testutils createCopyStreamFake()', () => {
   afterEach(() => {
@@ -44,7 +45,7 @@ describe('testutils createCopyStreamFake()', () => {
   })
   it('should not auto-emit anything on end() by default', async () => {
     const { stream, ee } = createCopyStreamFake()
-    const finishSpy = vi.fn()
+    const finishSpy = voidFn()
     ee.on('finish', finishSpy)
     stream.end()
     await yieldMacro()
@@ -52,7 +53,7 @@ describe('testutils createCopyStreamFake()', () => {
   })
   it('should emit "finish" on the next microtask when emitOnEnd is "finish"', async () => {
     const { stream, ee } = createCopyStreamFake({ emitOnEnd: 'finish' })
-    const finishSpy = vi.fn()
+    const finishSpy = voidFn()
     ee.once('finish', finishSpy)
     stream.end()
     await yieldMacro()
@@ -61,7 +62,7 @@ describe('testutils createCopyStreamFake()', () => {
   it('should emit "error" with the supplied error when emitOnEnd is { error }', async () => {
     const err = new Error('boom')
     const { stream, ee } = createCopyStreamFake({ emitOnEnd: { error: err } })
-    const errorSpy = vi.fn()
+    const errorSpy = voidFn()
     ee.once('error', errorSpy)
     stream.end()
     await yieldMacro()
@@ -72,7 +73,7 @@ describe('testutils createCopyStreamFake()', () => {
 describe('testutils scheduleEmit()', () => {
   it('should emit the event on the next microtask', async () => {
     const ee = new EventEmitter()
-    const drainSpy = vi.fn()
+    const drainSpy = voidFn()
     ee.once('drain', drainSpy)
     scheduleEmit(ee, 'drain')
     await yieldMacro()
@@ -80,7 +81,7 @@ describe('testutils scheduleEmit()', () => {
   })
   it('should pass extra arguments through to the listener', async () => {
     const ee = new EventEmitter()
-    const payloadSpy = vi.fn()
+    const payloadSpy = voidFn()
     ee.once('payload', payloadSpy)
     scheduleEmit(ee, 'payload', 'first', 42)
     await yieldMacro()

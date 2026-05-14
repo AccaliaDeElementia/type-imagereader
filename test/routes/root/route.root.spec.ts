@@ -5,10 +5,11 @@ import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { getRouter, Imports } from '#routes/root.js'
 import { cast } from '#testutils/typeGuards.js'
+import { voidFn } from '#testutils/mocks.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/root route /', () => {
-  let routeFn: (_: Request, __: Response) => void = vi.fn()
+  let routeFn: (_: Request, __: Response) => void = voidFn()
   let requestFake = cast<Request>({})
   let resposeStub = { redirect: vi.fn() }
   let responseFake = cast<Response>(resposeStub)

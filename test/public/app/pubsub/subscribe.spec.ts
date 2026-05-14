@@ -2,6 +2,7 @@
 
 import { PubSub, subscribe } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
+import { voidFn } from '#testutils/mocks.js'
 describe('public/app/pubsub subscribe()', () => {
   let subscriber = vi.fn().mockResolvedValue(undefined)
   beforeEach(() => {
@@ -41,7 +42,7 @@ describe('public/app/pubsub subscribe()', () => {
     expect(PubSub.subscribers['FOOBAR:BAZ'][10]).toBe(subscriber)
   })
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = vi.fn()
+    const guard = voidFn()
     PubSub.guardCallback = guard
     try {
       subscribe('Foobar:Baz', subscriber)

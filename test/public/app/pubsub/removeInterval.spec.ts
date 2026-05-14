@@ -3,6 +3,7 @@
 import { PubSub, removeInterval } from '#public/scripts/app/pubsub.js'
 import assert from 'node:assert'
 import { cast } from '#testutils/typeGuards.js'
+import { voidFn } from '#testutils/mocks.js'
 import type { MockInstance } from 'vitest'
 
 describe('public/app/pubsub removeInterval()', () => {
@@ -10,17 +11,17 @@ describe('public/app/pubsub removeInterval()', () => {
     PubSub.cycleTime = 10
     PubSub.intervals = {
       FOOBAR: {
-        method: vi.fn(),
+        method: voidFn(),
         delayCycles: 0,
         intervalCycles: 10,
       },
       BAZ: {
-        method: vi.fn(),
+        method: voidFn(),
         delayCycles: 0,
         intervalCycles: 10,
       },
       QUUX: {
-        method: vi.fn(),
+        method: voidFn(),
         delayCycles: 0,
         intervalCycles: 10,
       },
@@ -56,7 +57,7 @@ describe('public/app/pubsub removeInterval()', () => {
     expect(spy.mock.calls.length).toBe(0)
   })
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = vi.fn()
+    const guard = voidFn()
     PubSub.guardCallback = guard
     try {
       removeInterval('FOOBAR')

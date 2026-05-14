@@ -5,6 +5,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { PubSub, publish, Internals } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import { cast } from '#testutils/typeGuards.js'
+import { voidFn } from '#testutils/mocks.js'
 import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
@@ -29,7 +30,7 @@ describe('public/app/pubsub publish()', () => {
     expect(publishAsyncSpy.mock.calls[0]).toEqual([topic, data])
   })
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = vi.fn()
+    const guard = voidFn()
     PubSub.guardCallback = guard
     try {
       publish('Foobar:Baz')

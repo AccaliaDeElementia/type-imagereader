@@ -5,6 +5,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
 import { resetPubSub } from '#testutils/pubsub.js'
+import { voidFn } from '#testutils/mocks.js'
 import assert from 'node:assert'
 import { Imports, init, Internals, Tabs } from '#public/scripts/app/tabs.js'
 import type { MockInstance } from 'vitest'
@@ -32,10 +33,10 @@ html
 
 describe('public/app/tabs selectTab()', () => {
   let dom = new JSDOM('<html></html>', {})
-  const actionsScroll = vi.fn()
-  const foldersScroll = vi.fn()
-  const imagesScroll = vi.fn()
-  const bookmarksScroll = vi.fn()
+  const actionsScroll = voidFn()
+  const foldersScroll = voidFn()
+  const imagesScroll = voidFn()
+  const bookmarksScroll = voidFn()
   let publishStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {})

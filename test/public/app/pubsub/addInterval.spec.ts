@@ -2,6 +2,7 @@
 
 import { PubSub, addInterval } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
+import { voidFn } from '#testutils/mocks.js'
 
 describe('public/app/pubsub addInterval()', () => {
   beforeEach(() => {
@@ -9,27 +10,27 @@ describe('public/app/pubsub addInterval()', () => {
     resetPubSub()
   })
   it('should add to intervals map', () => {
-    const spy = vi.fn()
+    const spy = voidFn()
     addInterval('FOOBAR', spy, 0)
     expect(Object.keys(PubSub.intervals)).toContain('FOOBAR')
   })
   it('should store method to intervals map', () => {
-    const spy = vi.fn()
+    const spy = voidFn()
     addInterval('FOOBAR', spy, 0)
     expect(PubSub.intervals.FOOBAR?.method).toBe(spy)
   })
   it('should replace interval method when adding already existing name', () => {
     const ival = {
-      method: vi.fn(),
+      method: voidFn(),
       intervalCycles: 9,
       delayCycles: 0,
     }
     PubSub.intervals.FOOBAR = ival
-    addInterval('FOOBAR', vi.fn(), 0)
+    addInterval('FOOBAR', voidFn(), 0)
     expect(PubSub.intervals.FOOBAR).not.toBe(ival)
   })
   it('should add method with a zero delay cycles valuu', () => {
-    const spy = vi.fn()
+    const spy = voidFn()
     addInterval('FOOBAR', spy, 65535)
     expect(PubSub.intervals.FOOBAR?.delayCycles).toBe(0)
   })
@@ -50,15 +51,15 @@ describe('public/app/pubsub addInterval()', () => {
   ]
   for (const [delay, mapped] of delayMaps) {
     it(`should convert an interval of ${delay}ms to ${mapped} interval cycles`, () => {
-      addInterval('FOOBAR', vi.fn(), delay)
+      addInterval('FOOBAR', voidFn(), delay)
       expect(PubSub.intervals.FOOBAR?.intervalCycles).toBe(mapped)
     })
   }
   it('should invoke guardCallback with the operation when set', () => {
-    const guard = vi.fn()
+    const guard = voidFn()
     PubSub.guardCallback = guard
     try {
-      addInterval('FOOBAR', vi.fn(), 100)
+      addInterval('FOOBAR', voidFn(), 100)
     } finally {
       PubSub.guardCallback = undefined
     }
@@ -70,7 +71,7 @@ describe('public/app/pubsub addInterval()', () => {
     }
     try {
       expect(() => {
-        addInterval('FOOBAR', vi.fn(), 100)
+        addInterval('FOOBAR', voidFn(), 100)
       }).toThrow(/guard tripped/v)
       expect(PubSub.intervals.FOOBAR).toBe(undefined)
     } finally {

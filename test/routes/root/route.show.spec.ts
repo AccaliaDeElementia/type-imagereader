@@ -7,11 +7,12 @@ import { getRouter, Imports } from '#routes/root.js'
 import { StatusCodes } from 'http-status-codes'
 import { cast } from '#testutils/typeGuards.js'
 import { createResponseFake } from '#testutils/express.js'
+import { voidFn } from '#testutils/mocks.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/root route /show', () => {
-  let routeFn: (_: Request, __: ExpressResponse) => void = vi.fn()
-  let routeAltFn: (_: Request, __: ExpressResponse) => void = vi.fn()
+  let routeFn: (_: Request, __: ExpressResponse) => void = voidFn()
+  let routeAltFn: (_: Request, __: ExpressResponse) => void = voidFn()
   let requestStub = { params: { path: undefined as string[] | string | undefined } }
   let requestFake = cast<Request>(requestStub)
   let { stub: resposeStub, fake: responseFake } = createResponseFake()

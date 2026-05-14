@@ -139,7 +139,7 @@ describe('routes/images rescaleImage()', () => {
     expect(img.data).toBe(data)
   })
 
-  const failureModes: Array<[string, () => void]> = [
+  const failureModes: Array<[string, () => unknown]> = [
     [
       'sharp throws',
       () =>

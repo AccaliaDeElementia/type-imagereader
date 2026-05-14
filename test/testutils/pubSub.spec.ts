@@ -11,6 +11,7 @@ import {
   shouldGuard,
   unmountPubSub,
 } from '#testutils/pubsub.js'
+import { voidFn } from '#testutils/mocks.js'
 import type { Mock } from 'vitest'
 
 describe('testutils/PubSub resetPubSub()', () => {
@@ -24,12 +25,12 @@ describe('testutils/PubSub resetPubSub()', () => {
     expect(PubSub.subscribers).toEqual({})
   })
   it('should clear deferred', () => {
-    PubSub.deferred = [{ method: vi.fn(), delayCycles: 1 }]
+    PubSub.deferred = [{ method: voidFn(), delayCycles: 1 }]
     resetPubSub()
     expect(PubSub.deferred).toEqual([])
   })
   it('should clear intervals', () => {
-    PubSub.intervals = { test: { method: vi.fn(), delayCycles: 0, intervalCycles: 5 } }
+    PubSub.intervals = { test: { method: voidFn(), delayCycles: 0, intervalCycles: 5 } }
     resetPubSub()
     expect(PubSub.intervals).toEqual({})
   })

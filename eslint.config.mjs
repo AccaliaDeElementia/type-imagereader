@@ -170,7 +170,6 @@ export default [
       },
     },
     rules: {
-      '@typescript-eslint/strict-void-return': 'off', // Chai assertions and Sinon spies idiomatically return values in void contexts
       // Typescript tests typically use magic numbers as they are often more readable than hundreds or thousands of constants created
       // for the many test cases that tests use
       '@typescript-eslint/no-magic-numbers': 'off',

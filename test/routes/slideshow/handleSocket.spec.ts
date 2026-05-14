@@ -1,6 +1,7 @@
 'use sanity'
 
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
+import { voidFn } from '#testutils/mocks.js'
 import assert from 'node:assert'
 import { handleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
@@ -82,7 +83,7 @@ describe('routes/slideshow handleSocket()', () => {
     stub[1].mockRejectedValue(new Error('goto failed'))
     handleSocket(knexFake, serverFake, socketFake)
     const fn = cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
-    const callbackStub = vi.fn()
+    const callbackStub = voidFn()
     fn(callbackStub)
     await yieldMacro()
     expect(callbackStub.mock.calls[0]).toEqual([null])
