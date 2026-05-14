@@ -1,86 +1,84 @@
 'use sanity'
 
-import Sinon from 'sinon'
 import type { Debugger } from 'debug'
 import { emitSqliteSizeWarning, SqliteWarning, Imports } from '#sync/sqliteWarning.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { findStubCall } from '#testutils/sinon.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const SOFT_LIMIT = 100_000
 const FIRM_LIMIT = 250_000
 
 describe('sync/sqliteWarning emitSqliteSizeWarning()', () => {
-  let loggerStub = sandbox.stub()
-  let isPostgresStub = sandbox.stub()
-  let knexFnFake = stubToKnex(sandbox.stub())
+  let loggerStub: MockInstance = vi.fn()
+  let isPostgresStub: MockInstance = vi.fn()
+  let knexFnFake = stubToKnex(vi.fn())
 
   beforeEach(() => {
     SqliteWarning.sqliteSizeWarningEmitted = false
-    loggerStub = sandbox.stub()
-    isPostgresStub = sandbox.stub(Imports, 'isPostgres').returns(false)
-    knexFnFake = stubToKnex(sandbox.stub())
+    loggerStub = vi.fn()
+    isPostgresStub = vi.spyOn(Imports, 'isPostgres').mockReturnValue(false)
+    knexFnFake = stubToKnex(vi.fn())
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
     SqliteWarning.sqliteSizeWarningEmitted = false
   })
 
   it('should not log when client is postgres', () => {
-    isPostgresStub.returns(true)
+    isPostgresStub.mockReturnValue(true)
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, FIRM_LIMIT + 1)
-    expect(loggerStub.callCount).toBe(0)
+    expect(loggerStub.mock.calls.length).toBe(0)
   })
 
   it('should not log when picture count is at the soft limit', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, SOFT_LIMIT)
-    expect(loggerStub.callCount).toBe(0)
+    expect(loggerStub.mock.calls.length).toBe(0)
   })
 
   it('should not log when picture count is below the soft limit', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, SOFT_LIMIT - 1)
-    expect(loggerStub.callCount).toBe(0)
+    expect(loggerStub.mock.calls.length).toBe(0)
   })
 
   it('should emit a banner top line when soft limit is exceeded', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, SOFT_LIMIT + 1)
-    expect(loggerStub.firstCall.args[0]).toMatch(/^=+$/v)
+    expect(loggerStub.mock.calls[0]?.[0]).toMatch(/^=+$/v)
   })
 
   it('should emit a banner bottom line when soft limit is exceeded', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, SOFT_LIMIT + 1)
-    expect(loggerStub.lastCall.args[0]).toMatch(/^=+$/v)
+    expect(loggerStub.mock.lastCall?.[0]).toMatch(/^=+$/v)
   })
 
   it('should emit a soft warning message when soft limit is exceeded', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, SOFT_LIMIT + 1)
     const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('WARNING:'))
-    expect(call?.args[0]).toMatch(/soft recommended limit/v)
+    expect(call?.[0]).toMatch(/soft recommended limit/v)
   })
 
   it('should include the actual picture count in the soft warning', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, 180_000)
     const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('WARNING:'))
-    expect(call?.args[0]).toContain('180,000')
+    expect(call?.[0]).toContain('180,000')
   })
 
   it('should include the soft limit value in the soft warning', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, SOFT_LIMIT + 1)
     const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('WARNING:'))
-    expect(call?.args[0]).toContain('100,000')
+    expect(call?.[0]).toContain('100,000')
   })
 
   it('should emit a firm warning message when firm limit is exceeded', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, FIRM_LIMIT + 1)
     const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('WARNING:'))
-    expect(call?.args[0]).toMatch(/firm recommended limit/v)
+    expect(call?.[0]).toMatch(/firm recommended limit/v)
   })
 
   it('should include the firm limit value in the firm warning', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, 350_000)
     const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith('WARNING:'))
-    expect(call?.args[0]).toContain('250,000')
+    expect(call?.[0]).toContain('250,000')
   })
 
   it('should suppress the soft warning when the firm limit is also exceeded', () => {
@@ -99,13 +97,13 @@ describe('sync/sqliteWarning emitSqliteSizeWarning()', () => {
 
   it('should not emit twice across separate invocations', () => {
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, SOFT_LIMIT + 1)
-    loggerStub.resetHistory()
+    loggerStub.mockClear()
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, FIRM_LIMIT + 1)
-    expect(loggerStub.callCount).toBe(0)
+    expect(loggerStub.mock.calls.length).toBe(0)
   })
 
   it('should not flip sqliteSizeWarningEmitted when client is postgres', () => {
-    isPostgresStub.returns(true)
+    isPostgresStub.mockReturnValue(true)
     emitSqliteSizeWarning(cast<Debugger>(loggerStub), knexFnFake, FIRM_LIMIT + 1)
     expect(SqliteWarning.sqliteSizeWarningEmitted).toBe(false)
   })

@@ -1,12 +1,10 @@
 'use sanity'
 
 import { synchronize, Imports, LOG_PREFIX } from '#sync/synchronize.js'
-import Sinon from 'sinon'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { stubDebug } from '#testutils/debug.js'
 import { findStubCall } from '#testutils/sinon.js'
-
-const sandbox = Sinon.createSandbox()
+import type { MockInstance } from 'vitest'
 
 const stepLog = /^[A-Za-z]+ completed in \d+\.\d+s$/v
 const stepFailureLog = /^[A-Za-z]+ failed after \d+\.\d+s$/v
@@ -14,65 +12,71 @@ const completeLog = /^Folder Synchronization Complete after \d+\.\d+s$/v
 const failedSummaryLog = /^Folder Synchronization Failed after \d+\.\d+s$/v
 
 describe('sync/synchronize synchronize()', () => {
-  let loggerStub = sandbox.stub()
-  let debugStub = sandbox.stub()
-  let findSyncItemsStub = sandbox.stub()
-  let syncAllPicturesStub = sandbox.stub()
-  let syncAllFoldersStub = sandbox.stub()
-  let updateFolderPictureCountsStub = sandbox.stub()
-  let pruneEmptyFoldersStub = sandbox.stub()
-  let emitSqliteSizeWarningStub = sandbox.stub()
-  let persistenceInitializerStub = sandbox.stub()
-  let knexFnStub = sandbox.stub().returnsThis()
+  let loggerStub: MockInstance = vi.fn()
+  let debugStub: MockInstance = vi.fn()
+  let findSyncItemsStub: MockInstance = vi.fn()
+  let syncAllPicturesStub: MockInstance = vi.fn()
+  let syncAllFoldersStub: MockInstance = vi.fn()
+  let updateFolderPictureCountsStub: MockInstance = vi.fn()
+  let pruneEmptyFoldersStub: MockInstance = vi.fn()
+  let emitSqliteSizeWarningStub: MockInstance = vi.fn()
+  let persistenceInitializerStub: MockInstance = vi.fn()
+  let knexFnStub = vi.fn().mockImplementation(function (this: object): unknown {
+    return this
+  })
   beforeEach(() => {
-    knexFnStub = sandbox.stub().returnsThis()
-    ;({ debugStub, loggerStub } = stubDebug(sandbox, Imports))
-    persistenceInitializerStub = sandbox.stub(Imports, 'initialize').resolves(stubToKnex(knexFnStub))
-    findSyncItemsStub = sandbox.stub(Imports, 'findSyncItems').resolves(1)
-    syncAllPicturesStub = sandbox.stub(Imports, 'syncAllPictures').resolves()
-    syncAllFoldersStub = sandbox.stub(Imports, 'syncAllFolders').resolves()
-    updateFolderPictureCountsStub = sandbox.stub(Imports, 'updateFolderPictureCounts').resolves()
-    pruneEmptyFoldersStub = sandbox.stub(Imports, 'pruneEmptyFolders').resolves()
-    emitSqliteSizeWarningStub = sandbox.stub(Imports, 'emitSqliteSizeWarning')
+    knexFnStub = vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    })
+    ;({ debugStub, loggerStub } = stubDebug(Imports))
+    persistenceInitializerStub = vi.spyOn(Imports, 'initialize').mockResolvedValue(stubToKnex(knexFnStub))
+    findSyncItemsStub = vi.spyOn(Imports, 'findSyncItems').mockResolvedValue(1)
+    syncAllPicturesStub = vi.spyOn(Imports, 'syncAllPictures').mockResolvedValue(undefined)
+    syncAllFoldersStub = vi.spyOn(Imports, 'syncAllFolders').mockResolvedValue(undefined)
+    updateFolderPictureCountsStub = vi.spyOn(Imports, 'updateFolderPictureCounts').mockResolvedValue(undefined)
+    pruneEmptyFoldersStub = vi.spyOn(Imports, 'pruneEmptyFolders').mockResolvedValue(undefined)
+    emitSqliteSizeWarningStub = vi
+      .spyOn(Imports, 'emitSqliteSizeWarning')
+      .mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
-    sandbox.restore()
+    vi.restoreAllMocks()
   })
   it('should call debug once at start of process', async () => {
     await synchronize()
-    expect(debugStub.callCount).toBe(1)
+    expect(debugStub.mock.calls.length).toBe(1)
   })
   it('should create logger at start of process', async () => {
     await synchronize()
-    expect(debugStub.firstCall.args[0]).toBe(LOG_PREFIX)
+    expect(debugStub.mock.calls[0]?.[0]).toBe(LOG_PREFIX)
   })
   it('should log more than once when processing', async () => {
     await synchronize()
-    expect(loggerStub.callCount).toBeGreaterThan(1)
+    expect(loggerStub.mock.calls.length).toBeGreaterThan(1)
   })
   it('should log start of processing', async () => {
     await synchronize()
-    expect(loggerStub.firstCall.args[0]).toBe('Folder Synchronization Begins')
+    expect(loggerStub.mock.calls[0]?.[0]).toBe('Folder Synchronization Begins')
   })
   it('should call initialize once', async () => {
     await synchronize()
-    expect(persistenceInitializerStub.callCount).toBe(1)
+    expect(persistenceInitializerStub.mock.calls.length).toBe(1)
   })
   it('should initialize the persistence layer with no arguments', async () => {
     await synchronize()
-    expect(persistenceInitializerStub.firstCall.args).toEqual([])
+    expect(persistenceInitializerStub.mock.calls[0]).toEqual([])
   })
   it('should call findSyncItems once', async () => {
     await synchronize()
-    expect(findSyncItemsStub.callCount).toBe(1)
+    expect(findSyncItemsStub.mock.calls.length).toBe(1)
   })
   it('should call findSyncItems with one argument', async () => {
     await synchronize()
-    expect(findSyncItemsStub.firstCall.args).toHaveLength(1)
+    expect(findSyncItemsStub.mock.calls[0]).toHaveLength(1)
   })
   it('should find the sync items using the knex instance', async () => {
     await synchronize()
-    expect(findSyncItemsStub.firstCall.args[0]).toBe(knexFnStub)
+    expect(findSyncItemsStub.mock.calls[0]?.[0]).toBe(knexFnStub)
   })
   const stepNames = [
     'findSyncItems',
@@ -85,77 +89,77 @@ describe('sync/synchronize synchronize()', () => {
     it(`should log elapsed time for ${step} step`, async () => {
       await synchronize()
       const call = findStubCall(loggerStub, (args) => typeof args[0] === 'string' && args[0].startsWith(`${step} `))
-      expect(call?.args[0]).toMatch(stepLog)
+      expect(call?.[0]).toMatch(stepLog)
     })
   })
   it('should not call syncAllPictures when zero images found', async () => {
-    findSyncItemsStub.resolves(0)
+    findSyncItemsStub.mockResolvedValue(0)
     await synchronize().catch(() => null)
-    expect(syncAllPicturesStub.callCount).toBe(0)
+    expect(syncAllPicturesStub.mock.calls.length).toBe(0)
   })
   it('should not call syncAllFolders when zero images found', async () => {
-    findSyncItemsStub.resolves(0)
+    findSyncItemsStub.mockResolvedValue(0)
     await synchronize().catch(() => null)
-    expect(syncAllFoldersStub.callCount).toBe(0)
+    expect(syncAllFoldersStub.mock.calls.length).toBe(0)
   })
   it('should not call updateFolderPictureCounts when zero images found', async () => {
-    findSyncItemsStub.resolves(0)
+    findSyncItemsStub.mockResolvedValue(0)
     await synchronize().catch(() => null)
-    expect(updateFolderPictureCountsStub.callCount).toBe(0)
+    expect(updateFolderPictureCountsStub.mock.calls.length).toBe(0)
   })
   it('should not call pruneEmptyFolders when zero images found', async () => {
-    findSyncItemsStub.resolves(0)
+    findSyncItemsStub.mockResolvedValue(0)
     await synchronize().catch(() => null)
-    expect(pruneEmptyFoldersStub.callCount).toBe(0)
+    expect(pruneEmptyFoldersStub.mock.calls.length).toBe(0)
   })
   it('should log error with two arguments when aborting', async () => {
-    findSyncItemsStub.resolves(-1)
+    findSyncItemsStub.mockResolvedValue(-1)
     await synchronize().catch(() => null)
     const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
-    expect(call?.args).toHaveLength(2)
+    expect(call).toHaveLength(2)
   })
   it('should log error label when aborting synchronizing with zero images found', async () => {
-    findSyncItemsStub.resolves(-1)
+    findSyncItemsStub.mockResolvedValue(-1)
     await synchronize().catch(() => null)
     const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
-    expect(call?.args[0]).toBe('Folder Synchronization Failed')
+    expect(call?.[0]).toBe('Folder Synchronization Failed')
   })
   it('should log an Error instance when aborting synchronizing with zero images found', async () => {
-    findSyncItemsStub.resolves(-1)
+    findSyncItemsStub.mockResolvedValue(-1)
     await synchronize().catch(() => null)
     const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
-    const error = cast(call?.args[1], (e) => e instanceof Error)
+    const error = cast(call?.[1], (e) => e instanceof Error)
     expect(error).toBeInstanceOf(Error)
   })
   it('should log error message when aborting synchronizing with zero images found', async () => {
-    findSyncItemsStub.resolves(-1)
+    findSyncItemsStub.mockResolvedValue(-1)
     await synchronize().catch(() => null)
     const call = findStubCall(loggerStub, (args) => args[0] === 'Folder Synchronization Failed')
-    const error = cast(call?.args[1], (e) => e instanceof Error)
+    const error = cast(call?.[1], (e) => e instanceof Error)
     expect(error.message).toBe('Found Zero images, refusing to process empty base folder')
   })
   it('should log success message at end of successful processing', async () => {
-    findSyncItemsStub.resolves(45)
+    findSyncItemsStub.mockResolvedValue(45)
     await synchronize()
-    expect(loggerStub.lastCall.args).toHaveLength(1)
+    expect(loggerStub.mock.lastCall).toHaveLength(1)
   })
   it('should log elapsed total time in seconds at end of processing with success', async () => {
-    findSyncItemsStub.resolves(45)
+    findSyncItemsStub.mockResolvedValue(45)
     await synchronize()
-    expect(loggerStub.lastCall.args[0]).toMatch(completeLog)
+    expect(loggerStub.mock.lastCall?.[0]).toMatch(completeLog)
   })
   it('should log success message at end of failed processing', async () => {
-    findSyncItemsStub.resolves(-1)
+    findSyncItemsStub.mockResolvedValue(-1)
     await synchronize().catch(() => null)
-    expect(loggerStub.lastCall.args).toHaveLength(1)
+    expect(loggerStub.mock.lastCall).toHaveLength(1)
   })
   it('should log elapsed total time in seconds at end of processing with error', async () => {
-    findSyncItemsStub.resolves(-1)
+    findSyncItemsStub.mockResolvedValue(-1)
     await synchronize().catch(() => null)
-    expect(loggerStub.lastCall.args[0]).toMatch(failedSummaryLog)
+    expect(loggerStub.mock.lastCall?.[0]).toMatch(failedSummaryLog)
   })
   it('should log a per-step failure when a step rejects', async () => {
-    syncAllPicturesStub.rejects(new Error('boom'))
+    syncAllPicturesStub.mockRejectedValue(new Error('boom'))
     await synchronize().catch(() => null)
     const call = findStubCall(
       loggerStub,
@@ -164,27 +168,27 @@ describe('sync/synchronize synchronize()', () => {
     expect(call).not.toBe(undefined)
   })
   it('should include elapsed time in per-step failure log', async () => {
-    syncAllPicturesStub.rejects(new Error('boom'))
+    syncAllPicturesStub.mockRejectedValue(new Error('boom'))
     await synchronize().catch(() => null)
     const call = findStubCall(
       loggerStub,
       (args) => typeof args[0] === 'string' && args[0].startsWith('syncAllPictures failed'),
     )
-    expect(call?.args[0]).toMatch(stepFailureLog)
+    expect(call?.[0]).toMatch(stepFailureLog)
   })
   it('should pass the rejected error to the per-step failure log', async () => {
     const err = new Error('boom')
-    syncAllPicturesStub.rejects(err)
+    syncAllPicturesStub.mockRejectedValue(err)
     await synchronize().catch(() => null)
     const call = findStubCall(
       loggerStub,
       (args) => typeof args[0] === 'string' && args[0].startsWith('syncAllPictures failed'),
     )
-    expect(call?.args[1]).toBe(err)
+    expect(call?.[1]).toBe(err)
   })
   it('should reject with the original error when a step throws', async () => {
     const err = new Error('boom')
-    syncAllPicturesStub.rejects(err)
+    syncAllPicturesStub.mockRejectedValue(err)
     let caught: unknown = null
     try {
       await synchronize()
@@ -194,7 +198,7 @@ describe('sync/synchronize synchronize()', () => {
     expect(caught).toBe(err)
   })
   it('should reject when zero images found', async () => {
-    findSyncItemsStub.resolves(0)
+    findSyncItemsStub.mockResolvedValue(0)
     let rejected = false
     try {
       await synchronize()
@@ -205,39 +209,39 @@ describe('sync/synchronize synchronize()', () => {
   })
 
   it('should call emitSqliteSizeWarning once on a successful sync', async () => {
-    findSyncItemsStub.resolves(45)
+    findSyncItemsStub.mockResolvedValue(45)
     await synchronize()
-    expect(emitSqliteSizeWarningStub.callCount).toBe(1)
+    expect(emitSqliteSizeWarningStub.mock.calls.length).toBe(1)
   })
 
   it('should pass the logger as the first argument to emitSqliteSizeWarning', async () => {
-    findSyncItemsStub.resolves(45)
+    findSyncItemsStub.mockResolvedValue(45)
     await synchronize()
-    expect(emitSqliteSizeWarningStub.firstCall.args[0]).toBe(loggerStub)
+    expect(emitSqliteSizeWarningStub.mock.calls[0]?.[0]).toBe(loggerStub)
   })
 
   it('should pass the knex instance as the second argument to emitSqliteSizeWarning', async () => {
-    findSyncItemsStub.resolves(45)
+    findSyncItemsStub.mockResolvedValue(45)
     await synchronize()
-    expect(emitSqliteSizeWarningStub.firstCall.args[1]).toBe(knexFnStub)
+    expect(emitSqliteSizeWarningStub.mock.calls[0]?.[1]).toBe(knexFnStub)
   })
 
   it('should pass the picture count from findSyncItems as the third argument to emitSqliteSizeWarning', async () => {
-    findSyncItemsStub.resolves(12345)
+    findSyncItemsStub.mockResolvedValue(12345)
     await synchronize()
-    expect(emitSqliteSizeWarningStub.firstCall.args[2]).toBe(12345)
+    expect(emitSqliteSizeWarningStub.mock.calls[0]?.[2]).toBe(12345)
   })
 
   it('should not call emitSqliteSizeWarning when zero images found', async () => {
-    findSyncItemsStub.resolves(0)
+    findSyncItemsStub.mockResolvedValue(0)
     await synchronize().catch(() => null)
-    expect(emitSqliteSizeWarningStub.callCount).toBe(0)
+    expect(emitSqliteSizeWarningStub.mock.calls.length).toBe(0)
   })
 
   it('should not call emitSqliteSizeWarning when a step rejects', async () => {
-    findSyncItemsStub.resolves(45)
-    syncAllPicturesStub.rejects(new Error('boom'))
+    findSyncItemsStub.mockResolvedValue(45)
+    syncAllPicturesStub.mockRejectedValue(new Error('boom'))
     await synchronize().catch(() => null)
-    expect(emitSqliteSizeWarningStub.callCount).toBe(0)
+    expect(emitSqliteSizeWarningStub.mock.calls.length).toBe(0)
   })
 })

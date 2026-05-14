@@ -26,7 +26,6 @@ const TESTUTIL_SINON_PRODUCERS = [
   'createLoggerFake',
   'createKnexChainFake',
   'createCopyStreamFake',
-  'findStubCall',
   // pubsub testutils internally call `.getCalls()` on the stub passed in.
   // Specs that use these helpers stay on sinon mocks until the testutil migrates.
   'capturedSubscriber',
