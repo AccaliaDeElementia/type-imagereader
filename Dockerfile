@@ -3,7 +3,7 @@
 # also match engines.npm — verify with `docker run --rm node:${NODE_VERSION}-slim npm --version`
 # when bumping. scripts/checkEnv.mjs (run during npm test) validates NODE_VERSION
 # matches engines.node — drift fails the build.
-ARG NODE_VERSION=24.12.0
+ARG NODE_VERSION=26.1.0
 
 # ── Stage 1: install full deps, run tests, build assets ──
 FROM docker.io/library/node:${NODE_VERSION}-slim AS build
