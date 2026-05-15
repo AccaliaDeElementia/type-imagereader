@@ -35,6 +35,7 @@ export default defineConfig({
         'knexfile.ts',
         'migrations/**',
         'deploy/**',
+        'scripts/withTimeout.ts',
         'public/scripts/app/main.ts',
         'public/scripts/slideshow/main.ts',
       ],
