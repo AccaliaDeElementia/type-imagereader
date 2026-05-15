@@ -5,7 +5,7 @@
   "main": "./app.ts",
   "description": "Self-hosted web app for browsing local image and comic collections, with PostgreSQL-backed indexing and live filesystem sync",
   "scripts": {
-    "check:env": "node scripts/checkEnv.mjs",
+    "check:env": "tsx tools/checkEnv.ts",
     "prebuild": "npm run check:env && npm run lint",
     "build:client": "esbuild app=public/scripts/app/main.ts slideshow=public/scripts/slideshow/main.ts --bundle --minify --target=es2024 --format=iife --outdir=dist/scripts --sourcemap",
     "build:sass": "sass public/stylesheets:dist/stylesheets --style=compressed",
@@ -16,9 +16,9 @@
     "lint": "eslint .",
     "start": "DEBUG='type-imagereader:*' tsx .",
     "pretest": "npm run check:env && npm run lint && npm run typecheck",
-    "test": "tsx scripts/withTimeout.ts vitest run --coverage",
+    "test": "tsx tools/withTimeout.ts vitest run --coverage",
     "pretest:detailed": "npm run check:env && npm run lint && npm run typecheck",
-    "test:detailed": "tsx scripts/withTimeout.ts vitest run --coverage --reporter=verbose",
+    "test:detailed": "tsx tools/withTimeout.ts vitest run --coverage --reporter=verbose",
     "test:watch": "vitest --coverage",
     "knex": "tsx ./node_modules/knex/bin/cli.js --knexfile knexfile.json",
     "predev": "npm run build",
@@ -46,6 +46,7 @@
   "homepage": "https://github.com/AccaliaDeElementia/type-imagereader#readme",
   "imports": {
     "#testutils/*.js": "./testutils/*.ts",
+    "#tools/*.js": "./tools/*.ts",
     "#public/*.js": "./public/*.ts",
     "#routes/*.js": "./routes/*.ts",
     "#utils/*.js": "./utils/*.ts",

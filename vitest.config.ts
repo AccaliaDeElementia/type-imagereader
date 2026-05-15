@@ -35,7 +35,11 @@ export default defineConfig({
         'knexfile.ts',
         'migrations/**',
         'deploy/**',
-        'scripts/withTimeout.ts',
+        // tools/withTimeout.ts is tested via subprocess spawn (process management
+        // is its whole behavior); coverage instrumentation runs in the parent
+        // process and can't reach the spawned child, so the file would always
+        // show 0% covered despite being fully integration-tested.
+        'tools/withTimeout.ts',
         'public/scripts/app/main.ts',
         'public/scripts/slideshow/main.ts',
       ],

@@ -240,17 +240,17 @@ export default [
     },
   },
   {
-    // Build/test helper scripts. CLI utilities legitimately use console for
-    // stderr/stdout reporting and rely on idiomatic exit-code literals (0 for
-    // success, 124 for timeout) that the project-wide no-magic-numbers /
-    // no-console rules would otherwise flag.
-    files: ['scripts/**/*.ts'],
+    // Build/test helper utilities. CLI tooling legitimately uses console for
+    // stderr/stdout reporting and idiomatic exit-code literals (0 for success,
+    // 124 for timeout) that the project-wide no-magic-numbers / no-console
+    // rules would otherwise flag.
+    files: ['tools/**/*.ts'],
     rules: {
       'no-console': 'off',
       '@typescript-eslint/no-magic-numbers': 'off',
     },
   },
   {
-    ignores: ['coverage/**', 'coverage-vitest/**', 'eslint.config.mjs', 'dist/**', 'deploy/**', 'scripts/*.mjs'],
+    ignores: ['coverage/**', 'coverage-vitest/**', 'eslint.config.mjs', 'dist/**', 'deploy/**'],
   },
 ]
