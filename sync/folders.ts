@@ -13,6 +13,7 @@ import {
   toSortKey,
 } from './helpers.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
+import { toFolderPath } from '#utils/path.js'
 
 const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1
@@ -73,8 +74,7 @@ export async function syncMissingAncestorFolders(logger: Debugger, knex: Knex): 
   }
   const rows = missing.map((path) => {
     const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
-    const parentDir = posix.dirname(withoutSlash)
-    const folder = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
+    const folder = toFolderPath(posix.dirname(withoutSlash))
     const sortKey = toSortKey(posix.basename(withoutSlash))
     return { folder, path, sortKey }
   })

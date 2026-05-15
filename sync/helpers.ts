@@ -4,6 +4,8 @@ import { wordsToNumbers } from 'words-to-numbers'
 import posix from 'node:path'
 import { createHash } from 'node:crypto'
 
+import { toFolderPath } from '#utils/path.js'
+
 const ZERO = 0
 const ONE = 1
 const NUMBER_PAD_LENGTH = 20
@@ -107,7 +109,6 @@ export function addFolderAndAncestors(affected: Set<string>, folderPath: string)
   while (true) {
     affected.add(current)
     if (current === posix.sep) return
-    const parent = posix.dirname(current.slice(ZERO, TRAILING_SLASH_OFFSET))
-    current = parent === posix.sep ? posix.sep : parent + posix.sep
+    current = toFolderPath(posix.dirname(current.slice(ZERO, TRAILING_SLASH_OFFSET)))
   }
 }

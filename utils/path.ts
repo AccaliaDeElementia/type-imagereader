@@ -15,3 +15,7 @@ export function getParentFolders(path: string): string[] {
   }
   return results
 }
+
+export function toFolderPath(path: string): string {
+  return path === sep ? sep : `${path}${sep}`
+}

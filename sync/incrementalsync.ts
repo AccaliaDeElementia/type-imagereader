@@ -13,6 +13,7 @@ import { addFolderAndAncestors, chunk, execChunksSynchronously, toSortKey } from
 import { syncFolderFirstImages as _syncFolderFirstImages } from './folders.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 import { escapeLikeWildcards } from '#utils/helpers.js'
+import { toFolderPath } from '#utils/path.js'
 
 const ZERO = 0
 const TRAILING_SLASH_OFFSET = -1
@@ -30,8 +31,7 @@ export const Imports = {
 export async function incrementalAddPicturesBulk(knex: Knex, paths: string[]): Promise<void> {
   if (paths.length === ZERO) return
   const pictureRows = paths.map((path) => {
-    const parent = posix.dirname(path)
-    const folder = parent === posix.sep ? posix.sep : `${parent}${posix.sep}`
+    const folder = toFolderPath(posix.dirname(path))
     return {
       folder,
       path,
@@ -53,10 +53,8 @@ export async function incrementalEnsureFoldersBulk(knex: Knex, folderPaths: stri
   if (unique.size === ZERO) return
   const rows = [...unique].map((folderPath) => {
     const withoutSlash = folderPath.slice(ZERO, TRAILING_SLASH_OFFSET)
-    const parentDir = posix.dirname(withoutSlash)
-    const parent = parentDir === posix.sep ? posix.sep : `${parentDir}${posix.sep}`
     return {
-      folder: parent,
+      folder: toFolderPath(posix.dirname(withoutSlash)),
       path: folderPath,
       sortKey: toSortKey(posix.basename(withoutSlash)),
     }
@@ -119,9 +117,7 @@ export async function incrementalEnsureAncestors(
   for (const folder of affectedFolders) {
     if (folder === posix.sep) continue
     const withoutSlash = folder.slice(ZERO, TRAILING_SLASH_OFFSET)
-    const parentDir = posix.dirname(withoutSlash)
-    const parentPath = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
-    addFolderAndAncestors(ancestors, parentPath)
+    addFolderAndAncestors(ancestors, toFolderPath(posix.dirname(withoutSlash)))
   }
   ancestors.delete(posix.sep)
   if (ancestors.size === ZERO) {
@@ -141,8 +137,7 @@ export async function incrementalEnsureAncestors(
   }
   const rows = missing.map((path) => {
     const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
-    const parentDir = posix.dirname(withoutSlash)
-    const folder = parentDir === posix.sep ? posix.sep : parentDir + posix.sep
+    const folder = toFolderPath(posix.dirname(withoutSlash))
     const sortKey = toSortKey(posix.basename(withoutSlash))
     return { folder, path, sortKey }
   })
@@ -195,8 +190,7 @@ export async function incrementalUpdateFolders(
         }
       }
       const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
-      const parentDir = posix.dirname(withoutSlash)
-      const parent = path === posix.sep ? '' : parentDir === posix.sep ? posix.sep : `${parentDir}${posix.sep}`
+      const parent = path === posix.sep ? '' : toFolderPath(posix.dirname(withoutSlash))
       const sortKey = path === posix.sep ? '' : toSortKey(posix.basename(withoutSlash))
       return { path, totalCount, seenCount, folder: parent, sortKey }
     })
@@ -242,8 +236,7 @@ export async function incrementalSync(knex: Knex, changeset: Changeset, dataDir 
     await Internals.incrementalRemoveFolder(logger, knex, dirPath)
   }
   for (const path of fileDeletes) {
-    const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
-    addFolderAndAncestors(affectedFolders, folder)
+    addFolderAndAncestors(affectedFolders, toFolderPath(posix.dirname(path)))
   }
   if (fileDeletes.length > ZERO) {
     await Internals.incrementalRemovePicturesBulk(knex, fileDeletes)
@@ -255,8 +248,7 @@ export async function incrementalSync(knex: Knex, changeset: Changeset, dataDir 
     await Internals.incrementalScanFolder(logger, knex, dirPath, dataDir)
   }
   for (const path of fileCreates) {
-    const folder = posix.dirname(path) === posix.sep ? posix.sep : posix.dirname(path) + posix.sep
-    addFolderAndAncestors(affectedFolders, folder)
+    addFolderAndAncestors(affectedFolders, toFolderPath(posix.dirname(path)))
   }
   if (fileCreates.length > ZERO) {
     await Internals.incrementalAddPicturesBulk(knex, fileCreates)
