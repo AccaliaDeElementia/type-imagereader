@@ -52,7 +52,7 @@ function isOptionalMainValid(data: object): boolean {
 }
 
 function isWeatherValid(data: object): boolean {
-  if (!('weather' in data) || !(data.weather instanceof Array)) return false
+  if (!('weather' in data) || !Array.isArray(data.weather)) return false
   for (const record of data.weather as unknown[]) {
     if (typeof record !== 'object' || record === null) return false
     if (!('main' in record) || typeof record.main !== 'string') return false

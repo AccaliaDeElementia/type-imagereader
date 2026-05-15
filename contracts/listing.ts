@@ -21,7 +21,7 @@ export interface Bookmark {
 }
 
 export function isBookmark(obj: unknown): obj is Bookmark {
-  if (obj === null || typeof obj !== 'object' || obj instanceof Array) return false
+  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) return false
   if (!('name' in obj) || typeof obj.name !== 'string') return false
   if (!('path' in obj) || typeof obj.path !== 'string') return false
   if (!('folder' in obj) || typeof obj.folder !== 'string') return false
@@ -35,7 +35,7 @@ export interface BookmarkFolder {
 }
 
 function hasValidBookmarks(obj: object): boolean {
-  if (!('bookmarks' in obj) || !(obj.bookmarks instanceof Array)) return false
+  if (!('bookmarks' in obj) || !Array.isArray(obj.bookmarks)) return false
   for (const bookmark of obj.bookmarks as unknown[]) {
     if (!isBookmark(bookmark)) return false
   }
@@ -104,7 +104,7 @@ export function isPicture(obj: unknown): obj is Picture {
 }
 
 export function isArray<T>(obj: unknown, isT: (o: unknown) => o is T): obj is T[] {
-  if (!(obj instanceof Array)) return false
+  if (!Array.isArray(obj)) return false
   if (obj.some((x) => !isT(x))) return false
   return true
 }

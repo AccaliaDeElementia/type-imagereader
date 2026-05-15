@@ -22,7 +22,7 @@ export function getDataDir(): string {
 
 export function reqParamToString(input: string | string[] | undefined | null, defaultValue = ''): string {
   if (input === undefined || input === null) return defaultValue
-  if (input instanceof Array) {
+  if (Array.isArray(input)) {
     const mergedinput = input.join('/')
     return mergedinput.length > ZERO_LENGTH ? mergedinput : defaultValue
   }

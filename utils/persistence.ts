@@ -30,7 +30,7 @@ export interface KnexOptions {
 }
 
 export function isDictionary(obj: unknown): obj is Record<string, unknown> {
-  if (obj === null || typeof obj !== 'object' || obj instanceof Array) return false
+  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) return false
   return true
 }
 

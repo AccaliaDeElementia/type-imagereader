@@ -8,7 +8,7 @@ import { cast } from '#testutils/typeGuards.js'
 import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-import { delay } from '#testutils/utils.js'
+import { setTimeout as delay } from 'node:timers/promises'
 import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 

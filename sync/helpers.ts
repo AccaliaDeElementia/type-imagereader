@@ -44,7 +44,7 @@ export function extractInsertCount(result: unknown): number {
   if (isRowCountResult(result)) {
     return result.rowCount
   }
-  if (result instanceof Array && result.length > ZERO && typeof result[ZERO] === 'number') {
+  if (Array.isArray(result) && result.length > ZERO && typeof result[ZERO] === 'number') {
     return result[ZERO]
   }
   return ZERO
