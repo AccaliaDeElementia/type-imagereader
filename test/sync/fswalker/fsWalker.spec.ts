@@ -3,7 +3,6 @@
 import { setImmediate as yieldMacro } from 'node:timers/promises'
 
 import { fsWalker, Imports, Fswalker } from '#sync/fswalker.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/fswalker fsWalker()', () => {
@@ -124,8 +123,7 @@ describe('sync/fswalker fsWalker()', () => {
   it('should propagate rejection from eachItem callback', async () => {
     readdirSpy.mockResolvedValue([{ name: 'foo.png', isDirectory: () => false }])
     const error = new Error('callback failed')
-    const err = await eventuallyRejects(fsWalker('/bar/baz', vi.fn().mockRejectedValue(error)))
-    expect(err).toBe(error)
+    await expect(fsWalker('/bar/baz', vi.fn().mockRejectedValue(error))).rejects.toBe(error)
   })
   it('should stop walking when eachItem rejects mid-walk', async () => {
     readdirSpy.mockResolvedValueOnce([
@@ -133,7 +131,7 @@ describe('sync/fswalker fsWalker()', () => {
       { name: 'foo.png', isDirectory: () => false },
     ])
     readdirSpy.mockResolvedValueOnce([])
-    await eventuallyRejects(fsWalker('/bar/baz', vi.fn().mockRejectedValue(new Error('stop'))))
+    await fsWalker('/bar/baz', vi.fn().mockRejectedValue(new Error('stop'))).catch(() => undefined)
     expect(readdirSpy.mock.calls.length).toBe(1)
   })
   it('should preserve a single error when concurrent peer workers both reject', async () => {
@@ -143,8 +141,7 @@ describe('sync/fswalker fsWalker()', () => {
     ])
     readdirSpy.mockRejectedValueOnce(new Error('errA'))
     readdirSpy.mockRejectedValueOnce(new Error('errB'))
-    const err = await eventuallyRejects(fsWalker('/bar/baz', vi.fn().mockResolvedValue(undefined)))
-    expect(err.message).toMatch(/^err[AB]$/v)
+    await expect(fsWalker('/bar/baz', vi.fn().mockResolvedValue(undefined))).rejects.toThrow(/^err[AB]$/v)
   })
   it('should call the item callback once when hidden folder present', async () => {
     readdirSpy.mockResolvedValueOnce([

@@ -7,7 +7,6 @@ import { render } from 'pug'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/typeGuards.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { MockInstance } from 'vitest'
 
 const markup = `
@@ -121,7 +120,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.mockRejectedValue(err)
-      expect(await eventuallyRejects(handler())).toBe(err)
+      await expect(handler()).rejects.toBe(err)
     })
   })
   describe('Action:Execute:NextFolder message Handler', () => {
@@ -201,7 +200,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.mockRejectedValue(err)
-      expect(await eventuallyRejects(handler())).toBe(err)
+      await expect(handler()).rejects.toBe(err)
     })
   })
   describe('Action:Execute:ParentFolder message Handler', () => {
@@ -238,7 +237,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.mockRejectedValue(err)
-      expect(await eventuallyRejects(handler())).toBe(err)
+      await expect(handler()).rejects.toBe(err)
     })
   })
   describe('Action:Execute:FirstUnfinished message Handler', () => {
@@ -333,7 +332,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
     it('should reject when navigateTo rejects', async () => {
       const err = new Error('FOO')
       navigateToStub.mockRejectedValue(err)
-      expect(await eventuallyRejects(handler())).toBe(err)
+      await expect(handler()).rejects.toBe(err)
     })
   })
 })

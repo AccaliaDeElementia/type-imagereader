@@ -4,7 +4,6 @@ import { findSyncItemsViaCopy, type CopyHelpers } from '#sync/syncItemsDialect.j
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { createCopyStreamFake } from '#testutils/copyStream.js'
 import { noopLogger } from '#testutils/debug.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
@@ -138,17 +137,18 @@ describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
     const streamErr = new Error('stream blew up')
     const handles = buildStreamHandles({ endError: streamErr })
     const knex = stubToKnex(vi.fn())
-    const err = await eventuallyRejects(
-      findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream })),
+    await expect(findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream }))).rejects.toBe(
+      streamErr,
     )
-    expect(err).toBe(streamErr)
   })
 
   it('should call stream.destroy with the emitted error', async () => {
     const streamErr = new Error('stream blew up')
     const handles = buildStreamHandles({ endError: streamErr })
     const knex = stubToKnex(vi.fn())
-    await eventuallyRejects(findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream })))
+    await findSyncItemsViaCopy(knex, noopLogger, buildHelpers({ copyFrom: () => handles.stream })).catch(
+      () => undefined,
+    )
     expect(handles.destroySpy.mock.calls[0]?.[0]).toBe(streamErr)
   })
 
@@ -156,13 +156,11 @@ describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
     const handles = buildStreamHandles({ endError: new Error('stream error') })
     const releaseSpy = vi.fn().mockResolvedValue(undefined)
     const knex = stubToKnex(vi.fn())
-    await eventuallyRejects(
-      findSyncItemsViaCopy(
-        knex,
-        noopLogger,
-        buildHelpers({ copyFrom: () => handles.stream, releaseCopyConnection: releaseSpy }),
-      ),
-    )
+    await findSyncItemsViaCopy(
+      knex,
+      noopLogger,
+      buildHelpers({ copyFrom: () => handles.stream, releaseCopyConnection: releaseSpy }),
+    ).catch(() => undefined)
     expect(releaseSpy.mock.calls.length).toBe(1)
   })
 

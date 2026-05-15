@@ -1,7 +1,6 @@
 'use sanity'
 
 import { ImageReader, runSyncWithLock } from '#app.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { MockInstance } from 'vitest'
 
 describe('app.ts runSyncWithLock()', () => {
@@ -67,7 +66,6 @@ describe('app.ts runSyncWithLock()', () => {
   it('should propagate rejection from synchronize', async () => {
     const err = new Error('SYNC ERROR')
     synchronizeStub.mockRejectedValue(err)
-    const caught = await eventuallyRejects(runSyncWithLock())
-    expect(caught).toBe(err)
+    await expect(runSyncWithLock()).rejects.toBe(err)
   })
 })

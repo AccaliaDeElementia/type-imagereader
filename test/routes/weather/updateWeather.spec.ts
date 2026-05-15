@@ -9,7 +9,6 @@ import {
   type OpenWeatherData,
   type WeatherResults,
 } from '#routes/weather.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/weather updateWeather', () => {
@@ -47,16 +46,14 @@ describe('routes/weather updateWeather', () => {
       getEarliestSunsetStub.mockImplementation(() => {
         throw err
       })
-      const result = await eventuallyRejects(updateWeather())
-      expect(result).toBe(err)
+      await expect(updateWeather()).rejects.toBe(err)
     })
     it('should reject when getLatestSunrise throws', async () => {
       const err = new Error('FOO!')
       getLatestSunriseStub.mockImplementation(() => {
         throw err
       })
-      const result = await eventuallyRejects(updateWeather())
-      expect(result).toBe(err)
+      await expect(updateWeather()).rejects.toBe(err)
     })
   })
 

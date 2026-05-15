@@ -3,7 +3,6 @@
 import { Internals } from '#public/scripts/slideshow/weather.js'
 import { URL } from 'node:url'
 import { JSDOM } from 'jsdom'
-import { eventuallyRejects } from '#testutils/errors.js'
 import { cast } from '#testutils/typeGuards.js'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 
@@ -74,20 +73,17 @@ describe('public/slideshow/weather fetchWeather()', () => {
   it('should reject when fetch rejects', async () => {
     const err = new Error('I AM ERROR')
     fetchStub.mockRejectedValue(err)
-    const result = await eventuallyRejects(Internals.fetchWeather('FOO'))
-    expect(result).toBe(err)
+    await expect(Internals.fetchWeather('FOO')).rejects.toBe(err)
   })
 
   it('should reject when json rejects', async () => {
     const err = new Error('I AM ERROR')
     fetchStub.mockResolvedValue({ json: vi.fn().mockRejectedValue(err) })
-    const result = await eventuallyRejects(Internals.fetchWeather('FOO'))
-    expect(result).toBe(err)
+    await expect(Internals.fetchWeather('FOO')).rejects.toBe(err)
   })
 
   it('should reject when fetch resolves invalid WeatherResultsjects', async () => {
     fetchStub.mockResolvedValue({ json: vi.fn().mockResolvedValue(42) })
-    const result = await eventuallyRejects(Internals.fetchWeather('FOO'))
-    expect(result.message).toBe('Invalid WeatherResponse Retrieved')
+    await expect(Internals.fetchWeather('FOO')).rejects.toHaveProperty('message', 'Invalid WeatherResponse Retrieved')
   })
 })

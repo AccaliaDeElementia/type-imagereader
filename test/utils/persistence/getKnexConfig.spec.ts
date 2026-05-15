@@ -1,7 +1,6 @@
 'use sanity'
 
 import { getKnexConfig, Internals } from '#utils/persistence.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { MockInstance } from 'vitest'
 
 describe('utils/persistence getKnexConfig()', () => {
@@ -39,8 +38,7 @@ describe('utils/persistence getKnexConfig()', () => {
 
   it('should reject when readConfig rejects', async () => {
     readConfigurationBlockStub.mockRejectedValue(new Error('FOO I FAIL'))
-    const err = await eventuallyRejects(getKnexConfig())
-    expect(err.message).toBe('FOO I FAIL')
+    await expect(getKnexConfig()).rejects.toHaveProperty('message', 'FOO I FAIL')
   })
   it('should not alter host when env is not set', async () => {
     configBlock.connection.host = 'one two three four'

@@ -2,7 +2,6 @@
 
 import { getWeather, WeatherConfigError } from '#routes/weather.js'
 import { cast } from '#testutils/typeGuards.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/weather getWeather', () => {
@@ -40,36 +39,30 @@ describe('routes/weather getWeather', () => {
   it('should reject missing appId', async () => {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    const err = await eventuallyRejects(getWeather())
-    expect(err.message).toBe('no OpenWeather AppId Defined!')
+    await expect(getWeather()).rejects.toHaveProperty('message', 'no OpenWeather AppId Defined!')
   })
   it('should reject with WeatherConfigError when appId is missing', async () => {
     delete process.env.OPENWEATHER_APPID
     delete process.env.OPENWEATHER_LOCATION
-    const err = await eventuallyRejects(getWeather())
-    expect(err).toBeInstanceOf(WeatherConfigError)
+    await expect(getWeather()).rejects.toBeInstanceOf(WeatherConfigError)
   })
   it('should reject missing location', async () => {
     delete process.env.OPENWEATHER_LOCATION
-    const err = await eventuallyRejects(getWeather())
-    expect(err.message).toBe('no OpenWeather Location Defined!')
+    await expect(getWeather()).rejects.toHaveProperty('message', 'no OpenWeather Location Defined!')
   })
   it('should reject with WeatherConfigError when location is missing', async () => {
     delete process.env.OPENWEATHER_LOCATION
-    const err = await eventuallyRejects(getWeather())
-    expect(err).toBeInstanceOf(WeatherConfigError)
+    await expect(getWeather()).rejects.toBeInstanceOf(WeatherConfigError)
   })
   it('should reject when fetch fails', async () => {
     const err = new Error('FOO')
     fetchStub.mockRejectedValue(err)
-    const result = await eventuallyRejects(getWeather())
-    expect(result).toBe(err)
+    await expect(getWeather()).rejects.toBe(err)
   })
   it('should reject when fetch throws', async () => {
     const err = new Error('FOO')
     fetchStub.mockRejectedValue(err)
-    const result = await eventuallyRejects(getWeather())
-    expect(result).toBe(err)
+    await expect(getWeather()).rejects.toBe(err)
   })
   it('should request expected openweather api url', async () => {
     await getWeather()
@@ -93,34 +86,29 @@ describe('routes/weather getWeather', () => {
   it('should reject when fetch rejects', async () => {
     const err = new Error('FOO')
     fetchStub.mockRejectedValue(err)
-    const result = await eventuallyRejects(getWeather())
-    expect(result).toBe(err)
+    await expect(getWeather()).rejects.toBe(err)
   })
   it('should reject when fetch throws', async () => {
     const err = new Error('FOO')
     fetchStub.mockImplementation(() => {
       throw err
     })
-    const result = await eventuallyRejects(getWeather())
-    expect(result).toBe(err)
+    await expect(getWeather()).rejects.toBe(err)
   })
   it('should reject when json parse rejects', async () => {
     const err = new Error('FOO')
     fetchResult.json.mockRejectedValue(err)
-    const result = await eventuallyRejects(getWeather())
-    expect(result).toBe(err)
+    await expect(getWeather()).rejects.toBe(err)
   })
   it('should reject when json parse throws', async () => {
     const err = new Error('FOO')
     fetchResult.json.mockImplementation(() => {
       throw err
     })
-    const result = await eventuallyRejects(getWeather())
-    expect(result).toBe(err)
+    await expect(getWeather()).rejects.toBe(err)
   })
   it('should reject when fetch retrieves invalid data', async () => {
     fetchResult.json.mockResolvedValue({})
-    const result = await eventuallyRejects(getWeather())
-    expect(result.message).toBe('Invalid JSON returned from Open Weather Map')
+    await expect(getWeather()).rejects.toHaveProperty('message', 'Invalid JSON returned from Open Weather Map')
   })
 })

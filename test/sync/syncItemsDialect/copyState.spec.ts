@@ -7,7 +7,6 @@ import { CopyState, awaitCopyStreamCompletion, type CopyHelpers } from '#sync/sy
 import { cast } from '#testutils/typeGuards.js'
 import { createCopyStreamFake, scheduleEmit } from '#testutils/copyStream.js'
 import { noopLogger } from '#testutils/debug.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
@@ -287,7 +286,6 @@ describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
     const streamErr = new Error('blew up')
     const promise = awaitCopyStreamCompletion(stream)
     scheduleEmit(ee, 'error', streamErr)
-    const err = await eventuallyRejects(promise)
-    expect(err).toBe(streamErr)
+    await expect(promise).rejects.toBe(streamErr)
   })
 })

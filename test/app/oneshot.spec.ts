@@ -1,6 +1,5 @@
 'use sanity'
 
-import { eventuallyRejects } from '#testutils/errors.js'
 import { cast } from '#testutils/typeGuards.js'
 import type { Stats } from 'node:fs'
 
@@ -101,15 +100,14 @@ describe('app.ts ONESHOT mode tests', (): void => {
   it('should call knex.destroy even when synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.mockRejectedValue(new Error('SYNC FAILED'))
-    await eventuallyRejects(ImageReader.run())
+    await ImageReader.run().catch(() => undefined)
     expect(DestroyStub).toHaveBeenCalled()
   })
 
   it('should reject with sync error when synchronize rejects in ONESHOT mode', async () => {
     process.env.ONESHOT = '1'
     SynchronizeStub?.mockRejectedValue(new Error('SYNC FAILED'))
-    const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).toBe('SYNC FAILED')
+    await expect(ImageReader.run()).rejects.toHaveProperty('message', 'SYNC FAILED')
   })
 
   it('should log when knex.destroy rejects in ONESHOT mode', async () => {

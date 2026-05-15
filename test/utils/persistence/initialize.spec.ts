@@ -1,7 +1,6 @@
 'use sanity'
 
 import { initialize, Internals, Imports, Persistence, type KnexOptions } from '#utils/persistence.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
 import type { MockInstance } from 'vitest'
 
@@ -73,37 +72,32 @@ describe('utils/persistence initialize()', () => {
   it('should reject when reading config fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubEnvironment.mockRejectedValue(err)
-    const result = await eventuallyRejects(initialize())
-    expect(result).toBe(err)
+    await expect(initialize()).rejects.toBe(err)
   })
   it('should reject when reading config throws', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubEnvironment.mockImplementation(() => {
       throw err
     })
-    const result = await eventuallyRejects(initialize())
-    expect(result).toBe(err)
+    await expect(initialize()).rejects.toBe(err)
   })
   it('should reject when creating Knex  fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnex.mockImplementation(() => {
       throw err
     })
-    const result = await eventuallyRejects(initialize())
-    expect(result).toBe(err)
+    await expect(initialize()).rejects.toBe(err)
   })
   it('should reject when migrating to latest fails', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnexInstance.migrate.latest.mockRejectedValue(err)
-    const result = await eventuallyRejects(initialize())
-    expect(result).toBe(err)
+    await expect(initialize()).rejects.toBe(err)
   })
   it('should reject when migrating to latest throws', async () => {
     const err = new Error('YOU FOOLISH FOOL!')
     stubKnexInstance.migrate.latest.mockImplementation(() => {
       throw err
     })
-    const result = await eventuallyRejects(initialize())
-    expect(result).toBe(err)
+    await expect(initialize()).rejects.toBe(err)
   })
 })

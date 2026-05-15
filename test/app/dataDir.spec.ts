@@ -1,6 +1,5 @@
 'use sanity'
 
-import { eventuallyRejects } from '#testutils/errors.js'
 import { cast } from '#testutils/typeGuards.js'
 import type { Stats } from 'node:fs'
 import type { Changeset, FlushCallback } from '#sync/filewatcher.js'
@@ -82,7 +81,7 @@ describe('app.ts DATA_DIR handling', (): void => {
 
   it('should log the data directory before stat rejects', async () => {
     StatStub?.mockRejectedValue(new Error('ENOENT'))
-    await eventuallyRejects(ImageReader.run())
+    await ImageReader.run().catch(() => undefined)
     const calls = LoggerStub?.mock.calls ?? []
     const hasDataDirLog = calls.some((c) => `${c[0]}`.startsWith('using data directory'))
     expect(hasDataDirLog).toBe(true)
@@ -90,57 +89,53 @@ describe('app.ts DATA_DIR handling', (): void => {
 
   it('should reject when stat rejects', async () => {
     StatStub?.mockRejectedValue(new Error('ENOENT'))
-    const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).toMatch(/DATA_DIR/v)
+    await expect(ImageReader.run()).rejects.toThrow(/DATA_DIR/v)
   })
 
   it('should include the data directory in the rejection message when stat rejects', async () => {
     process.env.DATA_DIR = '/missing/path'
     StatStub?.mockRejectedValue(new Error('ENOENT'))
-    const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).toContain('/missing/path')
+    await expect(ImageReader.run()).rejects.toThrow('/missing/path')
   })
 
   it('should not call startServer when stat rejects', async () => {
     StatStub?.mockRejectedValue(new Error('ENOENT'))
-    await eventuallyRejects(ImageReader.run())
+    await ImageReader.run().catch(() => undefined)
     expect(StartServerStub).not.toHaveBeenCalled()
   })
 
   it('should not call synchronize when stat rejects', async () => {
     StatStub?.mockRejectedValue(new Error('ENOENT'))
-    await eventuallyRejects(ImageReader.run())
+    await ImageReader.run().catch(() => undefined)
     expect(SynchronizeStub).not.toHaveBeenCalled()
   })
 
   it('should not start watcher when stat rejects', async () => {
     StatStub?.mockRejectedValue(new Error('ENOENT'))
-    await eventuallyRejects(ImageReader.run())
+    await ImageReader.run().catch(() => undefined)
     expect(StartWatcherStub).not.toHaveBeenCalled()
   })
 
   it('should reject when stat returns a non-directory', async () => {
     StatStub?.mockResolvedValue(fakeFileStats())
-    const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).toMatch(/not a directory/v)
+    await expect(ImageReader.run()).rejects.toThrow(/not a directory/v)
   })
 
   it('should include the data directory in the rejection when stat returns a non-directory', async () => {
     process.env.DATA_DIR = '/etc/passwd'
     StatStub?.mockResolvedValue(fakeFileStats())
-    const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).toContain('/etc/passwd')
+    await expect(ImageReader.run()).rejects.toThrow('/etc/passwd')
   })
 
   it('should not call startServer when stat returns a non-directory', async () => {
     StatStub?.mockResolvedValue(fakeFileStats())
-    await eventuallyRejects(ImageReader.run())
+    await ImageReader.run().catch(() => undefined)
     expect(StartServerStub).not.toHaveBeenCalled()
   })
 
   it('should not call synchronize when stat returns a non-directory', async () => {
     StatStub?.mockResolvedValue(fakeFileStats())
-    await eventuallyRejects(ImageReader.run())
+    await ImageReader.run().catch(() => undefined)
     expect(SynchronizeStub).not.toHaveBeenCalled()
   })
 

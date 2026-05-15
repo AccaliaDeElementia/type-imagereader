@@ -2,7 +2,6 @@
 
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { Imports } from '#routes/slideshow.js'
-import { eventuallyRejects } from '#testutils/errors.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/slideshow Imports', () => {
@@ -28,16 +27,14 @@ describe('routes/slideshow Imports', () => {
     it('should not catch rejection from setLatestPicture', async () => {
       const err = new Error('PKACHU! SMASH!')
       setLatestPictureStub.mockRejectedValue(err)
-      const result = await eventuallyRejects(Imports.setLatest(knexFake, ''))
-      expect(result).toBe(err)
+      await expect(Imports.setLatest(knexFake, '')).rejects.toBe(err)
     })
     it('should not catch thrown error from setLatestPicture', async () => {
       const err = new Error('PKACHU! SMASH!')
       setLatestPictureStub.mockImplementation(() => {
         throw err
       })
-      const result = await eventuallyRejects(Imports.setLatest(knexFake, ''))
-      expect(result).toBe(err)
+      await expect(Imports.setLatest(knexFake, '')).rejects.toBe(err)
     })
   })
 })

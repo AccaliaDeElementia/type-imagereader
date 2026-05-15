@@ -1,7 +1,6 @@
 'use sanity'
 
 import assert from 'node:assert'
-import { eventuallyRejects } from '#testutils/errors.js'
 import { cast } from '#testutils/typeGuards.js'
 import type { Stats } from 'node:fs'
 import type { Changeset, FlushCallback } from '#sync/filewatcher.js'
@@ -47,14 +46,12 @@ describe('/app.ts tests', (): void => {
     StartServerStub?.mockImplementation(() => {
       throw new Error('FOO')
     })
-    const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).toBe('FOO')
+    await expect(ImageReader.run()).rejects.toHaveProperty('message', 'FOO')
   })
 
   it('should reject when startServer rejects', async () => {
     StartServerStub?.mockRejectedValue(new Error('FOO'))
-    const err = await eventuallyRejects(ImageReader.run())
-    expect(err.message).toBe('FOO')
+    await expect(ImageReader.run()).rejects.toHaveProperty('message', 'FOO')
   })
 
   const portSuccesses: Array<[string, string | undefined, number]> = [
@@ -91,7 +88,9 @@ describe('/app.ts tests', (): void => {
       let err = cast<Error>({})
       beforeEach(async () => {
         process.env.PORT = port
-        err = await eventuallyRejects(ImageReader.run())
+        await ImageReader.run().catch((e: unknown) => {
+          err = cast<Error>(e)
+        })
       })
       it('should not call startServer', () => {
         expect(StartServerStub).not.toHaveBeenCalled()
@@ -434,8 +433,7 @@ describe('/app.ts tests', (): void => {
     ImageReader.syncLock._locked = true
     const onFlush = cast<FlushCallback>(StartWatcherStub?.mock.calls[0]?.[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
-    const err = await eventuallyRejects(onFlush(changeset))
-    expect(err.message).toBe('sync locked')
+    await expect(onFlush(changeset)).rejects.toHaveProperty('message', 'sync locked')
   })
 
   it('should not call incrementalSync when syncLock is held', async () => {
@@ -444,7 +442,7 @@ describe('/app.ts tests', (): void => {
     ImageReader.syncLock._locked = true
     const onFlush = cast<FlushCallback>(StartWatcherStub?.mock.calls[0]?.[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
-    await eventuallyRejects(onFlush(changeset))
+    await onFlush(changeset).catch(() => undefined)
     expect(IncrementalSyncStub?.mock.calls.length).toBe(0)
   })
 })
