@@ -25,7 +25,7 @@ describe('utils/persistence isKnexOptions()', () => {
     ['valid client', { client: 'sqlite', useNullAsDefault: false }, true],
     ['missing useNullAsDefault client', { client: 'sqlite' }, true],
     ['null useNullAsDefault', { client: 'sqlite', useNullAsDefault: null }, false],
-    ['undefined useNullAsDefault', { client: 'sqlite', useNullAsDefault: undefined }, false],
+    ['undefined useNullAsDefault', { client: 'sqlite', useNullAsDefault: undefined }, true],
     ['object useNullAsDefault', { client: 'sqlite', useNullAsDefault: {} }, false],
     ['array useNullAsDefault', { client: 'sqlite', useNullAsDefault: [] }, false],
     ['number useNullAsDefault', { client: 'sqlite', useNullAsDefault: 42 }, false],

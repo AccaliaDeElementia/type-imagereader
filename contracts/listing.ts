@@ -1,18 +1,7 @@
 'use sanity'
 
 import { isHTMLElement } from './markup.js'
-
-function hasOptionalKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {
-  if (!(key in obj)) return true
-  const value: unknown = Object.getOwnPropertyDescriptor(obj, key)?.value
-  return value === undefined || isT(value)
-}
-
-function hasRequiredKey(obj: object, key: string, isT: (o: unknown) => boolean): boolean {
-  if (!(key in obj)) return false
-  const value: unknown = Object.getOwnPropertyDescriptor(obj, key)?.value
-  return isT(value)
-}
+import { hasOptionalKey, hasRequiredKey } from '#utils/typeGuards.js'
 
 export interface Bookmark {
   name: string

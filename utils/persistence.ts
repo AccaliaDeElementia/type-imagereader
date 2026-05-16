@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import type { Knex } from 'knex'
 import knex from 'knex'
 import { stringishHasValue, stringIsNullOrEmpty } from './helpers.js'
+import { isDictionary, hasOptionalKey, hasRequiredKey } from './typeGuards.js'
 
 const moduleDir = dirname(fileURLToPath(import.meta.url))
 
@@ -27,11 +28,6 @@ export interface KnexOptions {
   migrations: {
     tableName: string
   }
-}
-
-export function isDictionary(obj: unknown): obj is Record<string, unknown> {
-  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) return false
-  return true
 }
 
 export function isConnectionValid(obj: object): boolean {
@@ -57,15 +53,15 @@ export function isPoolValid(obj: object): boolean {
 
 export function isMigrationsValid(obj: object): boolean {
   if (!('migrations' in obj) || !isDictionary(obj.migrations)) return false
-  if (!('tableName' in obj.migrations) || typeof obj.migrations.tableName !== 'string') return false
+  if (!hasRequiredKey(obj.migrations, 'tableName', (v) => typeof v === 'string')) return false
   return true
 }
 
 export function isKnexOptions(obj: unknown): obj is KnexOptions {
   if (!isDictionary(obj)) return false
-  if (!('client' in obj) || typeof obj.client !== 'string') return false
+  if (!hasRequiredKey(obj, 'client', (v) => typeof v === 'string')) return false
   if (!Internals.isConnectionValid(obj)) return false
-  if ('useNullAsDefault' in obj && typeof obj.useNullAsDefault !== 'boolean') return false
+  if (!hasOptionalKey(obj, 'useNullAsDefault', (v) => typeof v === 'boolean')) return false
   if (!Internals.isPoolValid(obj)) return false
   if (!Internals.isMigrationsValid(obj)) return false
   return true

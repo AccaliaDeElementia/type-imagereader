@@ -25,6 +25,7 @@ import debug from 'debug'
 import { reqParamToString } from '#utils/helpers.js'
 import { handleErrors as _handleErrors } from '#utils/express.js'
 import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
+import { isDictionary, hasOptionalKey, hasRequiredKey } from '#utils/typeGuards.js'
 
 export const Imports = {
   Router,
@@ -50,10 +51,9 @@ interface BodyData {
 }
 
 export function isReqWithBodyData(obj: unknown): obj is ReqWithBodyData {
-  if (obj === null || typeof obj !== 'object') return false
-  if (!('body' in obj) || obj.body === null || typeof obj.body !== 'object') return false
-  if ('modCount' in obj.body && typeof obj.body.modCount !== 'number') return false // optional
-  if (!('path' in obj.body) || typeof obj.body.path !== 'string') return false // required
+  if (!isDictionary(obj) || !isDictionary(obj.body)) return false
+  if (!hasOptionalKey(obj.body, 'modCount', (v) => typeof v === 'number')) return false
+  if (!hasRequiredKey(obj.body, 'path', (v) => typeof v === 'string')) return false
   return true
 }
 
