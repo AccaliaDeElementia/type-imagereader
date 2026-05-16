@@ -103,6 +103,38 @@ export function configureLogging(app: Express): void {
   }
 }
 
+// Distinguish "bogus app route" from "missing static asset" from "unknown api
+// endpoint." Express static is mounted at /, so unknown asset paths (e.g.
+// /scripts/x.js, /scripts/foo) fall through to here alongside unknown app
+// routes (e.g. /wat) and unknown api routes (e.g. /api/wat).
+//   - /api/* → JSON 404 (preserves the api contract)
+//   - asset-shaped URLs → bare 404 (matches express.static default)
+//   - everything else → styled error page
+const API_PREFIX = /^\/api(?:\/|$)/v
+const ASSET_PREFIXES = /^\/(?:fonts|images|scripts|stylesheets|public)(?:\/|$)/v
+const ASSET_EXTENSIONS = /\.(?:css|js|map|png|webp|ico|svg|jpe?g|gif|woff2?|ttf|eot)$/v
+
+export function configureNotFound(app: Express): void {
+  app.use((req: Request, res: Response) => {
+    const url = req.originalUrl
+    if (API_PREFIX.test(url)) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        error: { code: 'E_NOT_FOUND', message: `No such route: ${url}` },
+      })
+      return
+    }
+    if (ASSET_PREFIXES.test(url) || ASSET_EXTENSIONS.test(url)) {
+      res.status(StatusCodes.NOT_FOUND).end()
+      return
+    }
+    res.status(StatusCodes.NOT_FOUND).render('error', {
+      title: 'Not Found',
+      code: 'E_NOT_FOUND',
+      message: `No such route: ${url}`,
+    })
+  })
+}
+
 export function configureErrorHandler(app: Express): void {
   app.use((err: Error, _: Request, res: Response, __: NextFunction) =>
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: err.message }),
@@ -142,6 +174,7 @@ export async function start(port: number): Promise<{ app: Express; server: HttpS
   app.use(Internals.setClacksOverhead) // header on every response, not just 404s
   Internals.registerViewsAndMiddleware(app)
   await Internals.registerRouters(app, server, websockets)
+  Internals.configureNotFound(app) // catch-all for unknown routes (must follow all routers)
   Internals.configureErrorHandler(app) // Express error-handling middleware must be registered last
 
   Internals.listenOnPort(server, port)
@@ -154,6 +187,7 @@ export const Internals = {
   listenOnPort,
   configureBaseApp,
   configureLogging,
+  configureNotFound,
   configureErrorHandler,
   setClacksOverhead,
   registerRouters,

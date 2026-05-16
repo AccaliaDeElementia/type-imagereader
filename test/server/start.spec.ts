@@ -16,6 +16,7 @@ describe('Server start', () => {
   let configureBaseAppStub: MockInstance = vi.fn()
   let configureLoggingStub: MockInstance = vi.fn()
   let configureErrorHandlerStub: MockInstance = vi.fn()
+  let configureNotFoundStub: MockInstance = vi.fn()
   let registerRoutersStub: MockInstance = vi.fn()
   let registerViewsStub: MockInstance = vi.fn()
   let listenOnPortStub: MockInstance = vi.fn()
@@ -28,6 +29,7 @@ describe('Server start', () => {
     configureBaseAppStub = vi.spyOn(Internals, 'configureBaseApp').mockImplementation(() => undefined)
     configureLoggingStub = vi.spyOn(Internals, 'configureLogging').mockImplementation(() => undefined)
     configureErrorHandlerStub = vi.spyOn(Internals, 'configureErrorHandler').mockImplementation(() => undefined)
+    configureNotFoundStub = vi.spyOn(Internals, 'configureNotFound').mockImplementation(() => undefined)
     registerRoutersStub = vi.spyOn(Internals, 'registerRouters').mockResolvedValue(undefined)
     registerViewsStub = vi.spyOn(Internals, 'registerViewsAndMiddleware').mockImplementation(() => undefined)
     listenOnPortStub = vi.spyOn(Internals, 'listenOnPort').mockImplementation(() => undefined)
@@ -100,6 +102,18 @@ describe('Server start', () => {
       })
     })
 
+    describe('configureNotFound', () => {
+      it('should be called once', () => {
+        expect(configureNotFoundStub.mock.calls.length).toBe(1)
+      })
+      it('should be called with one argument', () => {
+        expect(configureNotFoundStub.mock.calls[0]).toHaveLength(1)
+      })
+      it('should be called with the app', () => {
+        expect(configureNotFoundStub.mock.calls[0]?.[0]).toBe(appFake)
+      })
+    })
+
     describe('registerViewsAndMiddleware', () => {
       it('should be called once', () => {
         expect(registerViewsStub.mock.calls.length).toBe(1)
@@ -160,6 +174,18 @@ describe('Server start', () => {
         expect(
           (configureErrorHandlerStub.mock.invocationCallOrder[0] ?? 0) >
             (registerRoutersStub.mock.invocationCallOrder[0] ?? 0),
+        ).toBe(true)
+      })
+      it('should configure not-found after registering routers so unmatched paths fall through to it', () => {
+        expect(
+          (configureNotFoundStub.mock.invocationCallOrder[0] ?? 0) >
+            (registerRoutersStub.mock.invocationCallOrder[0] ?? 0),
+        ).toBe(true)
+      })
+      it('should configure not-found before configuring error handler so the error handler stays last', () => {
+        expect(
+          (configureNotFoundStub.mock.invocationCallOrder[0] ?? 0) <
+            (configureErrorHandlerStub.mock.invocationCallOrder[0] ?? 0),
         ).toBe(true)
       })
       it('should listen on port only after all setup is complete', () => {

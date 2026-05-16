@@ -173,6 +173,11 @@ export async function getChildFolders(knex: Knex, path: string): Promise<FolderW
   }))
 }
 
+export async function folderExists(knex: Knex, path: string): Promise<boolean> {
+  const row = await knex('folders').select<Array<{ path: string }>>('path').where('path', '=', path).first()
+  return row !== undefined
+}
+
 export async function getFolder(knex: Knex, path: string): Promise<FolderWithParent | null> {
   const folder = (
     await knex('folders')

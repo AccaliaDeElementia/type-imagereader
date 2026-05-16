@@ -17,6 +17,7 @@ describe('routes/slideshow rootRoute', () => {
   let roomData = { images: [''], uriSafeImage: '' }
   let getRoomStub = vi.fn().mockResolvedValue(undefined)
   let isBlockedTraversalStub: MockInstance = vi.fn()
+  let folderExistsStub: MockInstance = vi.fn()
   let noImages = [] as string[]
   let fullImages = ['1', '2', '3', '4', '5', '6', '7', '8']
   let getRoomError = new Error('Error Fetching Room!')
@@ -32,17 +33,13 @@ describe('routes/slideshow rootRoute', () => {
     roomData = { images: noImages, uriSafeImage: '/foo/bar/baz.png' }
     getRoomStub = vi.spyOn(Internals, 'getRoomAndIncrementImage').mockResolvedValue(cast<SlideshowRoom>(roomData))
     isBlockedTraversalStub = vi.spyOn(Imports, 'isBlockedTraversal').mockReturnValue(false)
+    folderExistsStub = vi.spyOn(Imports, 'folderExists').mockResolvedValue(true)
     getRoomError = new Error('Error Fetching Room!')
   })
   const eTraverse = {
     title: 'ERROR',
     code: 'E_NO_TRAVERSE',
     message: 'Directory Traversal is not Allowed!',
-  }
-  const eNotFound = {
-    title: 'ERROR',
-    code: 'E_NOT_FOUND',
-    message: 'Not Found',
   }
   const eGeneric = {
     title: 'ERROR',
@@ -65,9 +62,40 @@ describe('routes/slideshow rootRoute', () => {
     it('should render E_NO_TRAVERSE error data', () => {
       expect(getArgs(resStub.render)[1]).toEqual(eTraverse)
     })
+    it('should not call folderExists', () => {
+      expect(folderExistsStub.mock.calls.length).toBe(0)
+    })
     it('should not get room', () => {
       expect(getRoomStub.mock.calls.length).toBe(0)
     })
+  })
+
+  describe('when folderExists returns false', () => {
+    beforeEach(async () => {
+      reqStub.params.path = 'missing'
+      folderExistsStub.mockResolvedValue(false)
+      await rootRoute(knexFake, requestFake, responseFake)
+    })
+    it('should set 404 status code', () => {
+      expect(getArgs(resStub.status)[0]).toBe(404)
+    })
+    it('should render error template', () => {
+      expect(getArgs(resStub.render)[0]).toBe('error')
+    })
+    it('should render E_NOT_FOUND error data', () => {
+      expect(getArgs(resStub.render)[1]).toHaveProperty('code', 'E_NOT_FOUND')
+    })
+    it('should not get room', () => {
+      expect(getRoomStub.mock.calls.length).toBe(0)
+    })
+  })
+
+  it('should pass the folder-style path to folderExists', async () => {
+    reqStub.params.path = 'foo'
+    roomData.images = fullImages
+    getRoomStub.mockResolvedValue(roomData)
+    await rootRoute(knexFake, requestFake, responseFake)
+    expect(folderExistsStub.mock.calls[0]?.[1]).toBe('/foo/')
   })
 
   describe('with undefined path', () => {
@@ -126,8 +154,8 @@ describe('routes/slideshow rootRoute', () => {
     it('should render error template', () => {
       expect(getArgs(resStub.render)[0]).toEqual('error')
     })
-    it('should render not-found error data', () => {
-      expect(getArgs(resStub.render)[1]).toEqual(eNotFound)
+    it('should render E_NOT_FOUND error data', () => {
+      expect(getArgs(resStub.render)[1]).toHaveProperty('code', 'E_NOT_FOUND')
     })
   })
 
@@ -185,6 +213,14 @@ describe('routes/slideshow rootRoute', () => {
       await rootRoute(knexFake, requestFake, responseFake)
       const hasTraversalLog = loggerStub.mock.calls.some((c) => c[0] === 'path traversal blocked: %s')
       expect(hasTraversalLog).toBe(true)
+    })
+
+    it('should log slideshow-folder-not-found when folderExists returns false', async () => {
+      reqStub.params.path = 'missing'
+      folderExistsStub.mockResolvedValue(false)
+      await rootRoute(knexFake, requestFake, responseFake)
+      const hasNotFoundLog = loggerStub.mock.calls.some((c) => c[0] === 'slideshow folder not found: %s')
+      expect(hasNotFoundLog).toBe(true)
     })
 
     it('should log slideshow-folder-empty when room has no images', async () => {

@@ -7,10 +7,14 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
-import { isBlockedTraversal as _isBlockedTraversal, getParentFolders as _getParentFolders } from '#utils/path.js'
+import {
+  isBlockedTraversal as _isBlockedTraversal,
+  getParentFolders as _getParentFolders,
+  toFolderPath,
+} from '#utils/path.js'
 
 import { initialize as _initialize } from '#utils/persistence.js'
-import { UriSafePath, setLatestPicture as _setLatestPicture } from './apiFunctions.js'
+import { UriSafePath, setLatestPicture as _setLatestPicture, folderExists as _folderExists } from './apiFunctions.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 
 import type { Knex } from 'knex'
@@ -70,6 +74,7 @@ export const Imports = {
   Router,
   initialize: _initialize,
   setLatestPicture: _setLatestPicture,
+  folderExists: _folderExists,
 }
 
 /** Per-socket bookkeeping for slideshow connections (joined room name). */
@@ -343,14 +348,23 @@ export async function rootRoute(knex: Knex, req: Request, res: Response): Promis
     })
     return
   }
+  if (!(await Imports.folderExists(knex, toFolderPath(folder)))) {
+    Imports.logger('slideshow folder not found: %s', folder)
+    res.status(StatusCodes.NOT_FOUND).render('error', {
+      title: 'Not Found',
+      code: 'E_NOT_FOUND',
+      message: `No such folder: ${folder}`,
+    })
+    return
+  }
   await Internals.getRoomAndIncrementImage(knex, folder)
     .then((room) => {
       if (!hasValues(room.images)) {
         Imports.logger('slideshow folder empty: %s', folder)
         res.status(StatusCodes.NOT_FOUND).render('error', {
-          title: 'ERROR',
+          title: 'Not Found',
           code: 'E_NOT_FOUND',
-          message: 'Not Found',
+          message: `Folder has no pictures: ${folder}`,
         })
         return
       }

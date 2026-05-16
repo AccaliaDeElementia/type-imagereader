@@ -1,10 +1,22 @@
-extends _layout
-
-block content
-  div An Unexpected Error Occurred
-  if code
-    h3= code
-  if message
-    h4= message
-  if stack
-    h5= stack
+doctype html
+html
+  head
+    meta(name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=8.0,width=device-width,user-scalable=yes")
+    title= title
+    link(rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png")
+    link(rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png")
+    link(rel='stylesheet', href=asset('/stylesheets/bundle.css'))
+  body
+    nav#navbar
+      h1
+        a.navbar-brand(href='/show') Comic Reader
+      div.expando
+    div#bigImage
+      div.error-block
+        h2 An Unexpected Error Occurred
+        if code
+          h3= code
+        if message
+          h4= message
+        if stack
+          pre= stack
