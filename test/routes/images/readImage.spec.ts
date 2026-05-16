@@ -3,19 +3,20 @@
 import { Imports, readImage, ImageData } from '#routes/images.js'
 import { StatusCodes } from 'http-status-codes'
 import { cast } from '#testutils/typeGuards.js'
+import type { Debugger } from 'debug'
 import type { MockInstance } from 'vitest'
 
 describe('routes/images readImage()', () => {
   let fromErrorStub: MockInstance = vi.fn()
   let fromImageStub: MockInstance = vi.fn()
   let readFileStub: MockInstance = vi.fn()
-  let isPathTraversalStub: MockInstance = vi.fn()
+  let isBlockedTraversalStub: MockInstance = vi.fn()
   let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
     fromErrorStub = vi.spyOn(ImageData, 'fromError').mockImplementation(cast(() => undefined))
     fromImageStub = vi.spyOn(ImageData, 'fromImage').mockImplementation(cast(() => undefined))
     readFileStub = vi.spyOn(Imports, 'readFile').mockResolvedValue(cast<string>(undefined))
-    isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
+    isBlockedTraversalStub = vi.spyOn(Imports, 'isBlockedTraversal').mockReturnValue(false)
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   const configureReadFile = (stub: MockInstance, result: Promise<unknown> | Error): void => {
@@ -101,25 +102,25 @@ describe('routes/images readImage()', () => {
     })
   })
 
-  it('should call isPathTraversal with the path', async () => {
+  it('should call isBlockedTraversal with the path', async () => {
     await readImage('/foo/bar/image.png')
-    expect(isPathTraversalStub.mock.calls[0]).toEqual(['/foo/bar/image.png'])
+    expect(isBlockedTraversalStub.mock.calls[0]?.[1]).toBe('/foo/bar/image.png')
   })
-  it('should return E_NO_TRAVERSE error when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should return E_NO_TRAVERSE error when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     const img = { img: Math.random() }
     fromErrorStub.mockReturnValue(img)
     await readImage('/foo/bar/image.png')
     expect(fromErrorStub.mock.calls[0]?.[0]).toBe('E_NO_TRAVERSE')
   })
-  it('should return FORBIDDEN status when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should return FORBIDDEN status when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     fromErrorStub.mockReturnValue({})
     await readImage('/foo/bar/image.png')
     expect(fromErrorStub.mock.calls[0]?.[1]).toBe(StatusCodes.FORBIDDEN)
   })
-  it('should not read file when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should not read file when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     fromErrorStub.mockReturnValue({})
     await readImage('/foo/bar/image.png')
     expect(readFileStub.mock.calls.length).toBe(0)
@@ -186,15 +187,21 @@ describe('routes/images readImage()', () => {
   })
 
   describe('logging', () => {
-    it('should log path-traversal-blocked format when isPathTraversal returns true', async () => {
-      isPathTraversalStub.mockReturnValue(true)
+    it('should log path-traversal-blocked format when isBlockedTraversal returns true', async () => {
+      isBlockedTraversalStub.mockImplementation((logger: Debugger, path: string): boolean => {
+        logger('path traversal blocked: %s', path)
+        return true
+      })
       fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.png')
       expect(loggerStub.mock.calls[0]?.[0]).toBe('path traversal blocked: %s')
     })
 
-    it('should log the blocked path when isPathTraversal returns true', async () => {
-      isPathTraversalStub.mockReturnValue(true)
+    it('should log the blocked path when isBlockedTraversal returns true', async () => {
+      isBlockedTraversalStub.mockImplementation((logger: Debugger, path: string): boolean => {
+        logger('path traversal blocked: %s', path)
+        return true
+      })
       fromErrorStub.mockReturnValue({})
       await readImage('/foo/bar/image.png')
       expect(loggerStub.mock.calls[0]?.[1]).toBe('/foo/bar/image.png')

@@ -14,7 +14,7 @@ import debug from 'debug'
 import type { Debugger } from 'debug'
 import { reqParamToString, getDataDir as _getDataDir } from '#utils/helpers.js'
 import { handleErrors as _handleErrors } from '#utils/express.js'
-import { isPathTraversal as _isPathTraversal } from '#utils/path.js'
+import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
 
 const CACHE_SIZE = 25
 const ONE_MONTH_MS = 2_592_000_000
@@ -82,7 +82,7 @@ export const Imports = {
   Sharp,
   Router,
   handleErrors: _handleErrors,
-  isPathTraversal: _isPathTraversal,
+  isBlockedTraversal: _isBlockedTraversal,
   getDataDir: _getDataDir,
 }
 
@@ -130,8 +130,7 @@ export class ImageCache {
 }
 
 export async function readImage(path: string): Promise<ImageData> {
-  if (Imports.isPathTraversal(path)) {
-    Imports.logger('path traversal blocked: %s', path)
+  if (Imports.isBlockedTraversal(Imports.logger, path)) {
     return ImageData.fromError('E_NO_TRAVERSE', StatusCodes.FORBIDDEN, 'Directory Traversal is not Allowed!', path)
   }
   const ext = extname(path).replace(/^\./v, '')

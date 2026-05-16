@@ -8,9 +8,9 @@ import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
 import { reqParamToString } from '#utils/helpers.js'
-import { isPathTraversal as _isPathTraversal } from '#utils/path.js'
+import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
 
-export const Imports = { Router, isPathTraversal: _isPathTraversal, logger: debug('type-imagereader:root') }
+export const Imports = { Router, isBlockedTraversal: _isBlockedTraversal, logger: debug('type-imagereader:root') }
 
 export async function getRouter(_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
@@ -18,14 +18,11 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   const rootRoute = (req: Request, res: Response): void => {
     const folder = `/${reqParamToString(req.params.path)}`
     Imports.logger('GET %s', folder)
-    if (Imports.isPathTraversal(folder)) {
-      Imports.logger('path traversal blocked: %s', folder)
+    if (Imports.isBlockedTraversal(Imports.logger, folder)) {
       res.status(StatusCodes.FORBIDDEN).render('error', {
-        error: {
-          title: 'ERROR',
-          code: 'E_NO_TRAVERSE',
-          message: 'Directory Traversal is not Allowed!',
-        },
+        title: 'ERROR',
+        code: 'E_NO_TRAVERSE',
+        message: 'Directory Traversal is not Allowed!',
       })
       return
     }

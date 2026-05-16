@@ -7,7 +7,7 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
-import { isPathTraversal as _isPathTraversal, getParentFolders as _getParentFolders } from '#utils/path.js'
+import { isBlockedTraversal as _isBlockedTraversal, getParentFolders as _getParentFolders } from '#utils/path.js'
 
 import { initialize as _initialize } from '#utils/persistence.js'
 import { UriSafePath, setLatestPicture as _setLatestPicture } from './apiFunctions.js'
@@ -66,7 +66,7 @@ export const Imports = {
   logger,
   setLatest: async (knex: Knex, path: string): Promise<string | null> => await Imports.setLatestPicture(knex, path),
   getParentFolders: _getParentFolders,
-  isPathTraversal: _isPathTraversal,
+  isBlockedTraversal: _isBlockedTraversal,
   Router,
   initialize: _initialize,
   setLatestPicture: _setLatestPicture,
@@ -335,8 +335,7 @@ export function handleSocket(knex: Knex, io: WebSocketServer, socket: Socket): S
 export async function rootRoute(knex: Knex, req: Request, res: Response): Promise<void> {
   const folder = `/${reqParamToString(req.params.path)}`
   Imports.logger('GET /slideshow %s', folder)
-  if (Imports.isPathTraversal(folder)) {
-    Imports.logger('path traversal blocked: %s', folder)
+  if (Imports.isBlockedTraversal(Imports.logger, folder)) {
     res.status(StatusCodes.FORBIDDEN).render('error', {
       title: 'ERROR',
       code: 'E_NO_TRAVERSE',

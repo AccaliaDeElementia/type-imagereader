@@ -3,6 +3,7 @@
 import type { Application, Response as ExpressResponse, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
+import type { Debugger } from 'debug'
 import { getRouter, Imports } from '#routes/root.js'
 import { StatusCodes } from 'http-status-codes'
 import { cast } from '#testutils/typeGuards.js'
@@ -16,7 +17,7 @@ describe('routes/root route /show', () => {
   let requestStub = { params: { path: undefined as string[] | string | undefined } }
   let requestFake = cast<Request>(requestStub)
   let { stub: resposeStub, fake: responseFake } = createResponseFake()
-  let isPathTraversalStub: MockInstance = vi.fn()
+  let isBlockedTraversalStub: MockInstance = vi.fn()
   beforeEach(async () => {
     const applicationFake = cast<Application>({})
     const serverFake = cast<Server>({})
@@ -35,7 +36,7 @@ describe('routes/root route /show', () => {
     } finally {
       getRouterStub?.mockRestore()
     }
-    isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
+    isBlockedTraversalStub = vi.spyOn(Imports, 'isBlockedTraversal').mockReturnValue(false)
     requestStub = { params: { path: undefined } }
     requestFake = cast<Request>(requestStub)
     ;({ stub: resposeStub, fake: responseFake } = createResponseFake())
@@ -43,23 +44,23 @@ describe('routes/root route /show', () => {
   it("should alias same handler for both '/show' and '/show/*path' routes", () => {
     expect(routeFn).toBe(routeAltFn)
   })
-  it('should return FORBIDDEN when isPathTraversal returns true', () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should return FORBIDDEN when isBlockedTraversal returns true', () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     routeFn(requestFake, responseFake)
     expect(resposeStub.status.mock.calls[0]).toEqual([StatusCodes.FORBIDDEN])
   })
-  it('should render error template when isPathTraversal returns true', () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should render error template when isBlockedTraversal returns true', () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     routeFn(requestFake, responseFake)
     expect(resposeStub.render.mock.calls[0]?.[0]).toBe('error')
   })
-  it('should render E_NO_TRAVERSE error data when isPathTraversal returns true', () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should render E_NO_TRAVERSE error data when isBlockedTraversal returns true', () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     routeFn(requestFake, responseFake)
-    expect(resposeStub.render.mock.calls[0]?.[1]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
+    expect(resposeStub.render.mock.calls[0]?.[1]).toHaveProperty('code', 'E_NO_TRAVERSE')
   })
-  it('should not render app when isPathTraversal returns true', () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should not render app when isBlockedTraversal returns true', () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     routeFn(requestFake, responseFake)
     expect(resposeStub.render.mock.calls[0]?.[0]).not.toBe('app')
   })
@@ -114,16 +115,22 @@ describe('routes/root route /show', () => {
       expect(loggerStub.mock.calls[0]?.[1]).toBe('/foo/bar')
     })
 
-    it('should log path-traversal-blocked format when isPathTraversal returns true', () => {
-      isPathTraversalStub.mockReturnValue(true)
+    it('should log path-traversal-blocked format when isBlockedTraversal returns true', () => {
+      isBlockedTraversalStub.mockImplementation((logger: Debugger, path: string): boolean => {
+        logger('path traversal blocked: %s', path)
+        return true
+      })
       requestStub.params.path = 'evil'
       routeFn(requestFake, responseFake)
       const hasTraversalLog = loggerStub.mock.calls.some(isTraversalCall)
       expect(hasTraversalLog).toBe(true)
     })
 
-    it('should log the blocked folder path when isPathTraversal returns true', () => {
-      isPathTraversalStub.mockReturnValue(true)
+    it('should log the blocked folder path when isBlockedTraversal returns true', () => {
+      isBlockedTraversalStub.mockImplementation((logger: Debugger, path: string): boolean => {
+        logger('path traversal blocked: %s', path)
+        return true
+      })
       requestStub.params.path = 'evil'
       routeFn(requestFake, responseFake)
       const traversalCall = loggerStub.mock.calls.find(isTraversalCall)

@@ -1,6 +1,7 @@
 'use sanity'
 
 import type { Request } from 'express'
+import type { Debugger } from 'debug'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { rootRoute, Internals, Imports, type SlideshowRoom } from '#routes/slideshow.js'
 import { createResponseFake } from '#testutils/express.js'
@@ -15,7 +16,7 @@ describe('routes/slideshow rootRoute', () => {
   let knexFake = stubToKnex({})
   let roomData = { images: [''], uriSafeImage: '' }
   let getRoomStub = vi.fn().mockResolvedValue(undefined)
-  let isPathTraversalStub: MockInstance = vi.fn()
+  let isBlockedTraversalStub: MockInstance = vi.fn()
   let noImages = [] as string[]
   let fullImages = ['1', '2', '3', '4', '5', '6', '7', '8']
   let getRoomError = new Error('Error Fetching Room!')
@@ -30,7 +31,7 @@ describe('routes/slideshow rootRoute', () => {
     fullImages = ['1', '2', '3', '4', '5', '6', '7', '8']
     roomData = { images: noImages, uriSafeImage: '/foo/bar/baz.png' }
     getRoomStub = vi.spyOn(Internals, 'getRoomAndIncrementImage').mockResolvedValue(cast<SlideshowRoom>(roomData))
-    isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
+    isBlockedTraversalStub = vi.spyOn(Imports, 'isBlockedTraversal').mockReturnValue(false)
     getRoomError = new Error('Error Fetching Room!')
   })
   const eTraverse = {
@@ -50,9 +51,9 @@ describe('routes/slideshow rootRoute', () => {
   }
   const getArgs = (stub: MockInstance): unknown[] => stub.mock.calls[0] ?? []
 
-  describe('when isPathTraversal returns true', () => {
+  describe('when isBlockedTraversal returns true', () => {
     beforeEach(async () => {
-      isPathTraversalStub.mockReturnValue(true)
+      isBlockedTraversalStub.mockReturnValue(true)
       await rootRoute(knexFake, requestFake, responseFake)
     })
     it('should return FORBIDDEN status', () => {
@@ -175,8 +176,11 @@ describe('routes/slideshow rootRoute', () => {
       expect(loggerStub.mock.calls[0]?.[1]).toBe('/foo')
     })
 
-    it('should log path-traversal-blocked when isPathTraversal returns true', async () => {
-      isPathTraversalStub.mockReturnValue(true)
+    it('should log path-traversal-blocked when isBlockedTraversal returns true', async () => {
+      isBlockedTraversalStub.mockImplementation((logger: Debugger, path: string): boolean => {
+        logger('path traversal blocked: %s', path)
+        return true
+      })
       reqStub.params.path = 'evil'
       await rootRoute(knexFake, requestFake, responseFake)
       const hasTraversalLog = loggerStub.mock.calls.some((c) => c[0] === 'path traversal blocked: %s')

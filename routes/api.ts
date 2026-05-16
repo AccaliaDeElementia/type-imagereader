@@ -24,13 +24,13 @@ import {
 import debug from 'debug'
 import { reqParamToString } from '#utils/helpers.js'
 import { handleErrors as _handleErrors } from '#utils/express.js'
-import { isPathTraversal as _isPathTraversal } from '#utils/path.js'
+import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
 
 export const Imports = {
   Router,
   debug,
   handleErrors: _handleErrors,
-  isPathTraversal: _isPathTraversal,
+  isBlockedTraversal: _isBlockedTraversal,
   initialize: _initialize,
   getListing: _getListing,
   setLatestPicture: _setLatestPicture,
@@ -73,8 +73,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     Imports.handleErrors(logger, action)
 
   const parsePath = (path: string, res: Response): string | null => {
-    if (Imports.isPathTraversal(path)) {
-      logger('path traversal blocked: %s', path)
+    if (Imports.isBlockedTraversal(logger, path)) {
       res.status(StatusCodes.FORBIDDEN).json({
         error: {
           code: 'E_NO_TRAVERSE',

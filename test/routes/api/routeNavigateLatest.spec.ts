@@ -28,7 +28,7 @@ describe('routes/api route POST /navigate/latest', () => {
       throw cast<Error>('WRONG CALL')
     }),
   )
-  let isPathTraversalStub: MockInstance = vi.fn()
+  let isBlockedTraversalStub: MockInstance = vi.fn()
   let setLatestPictureStub: MockInstance = vi.fn()
   let validateAndIncrementStub: MockInstance = vi.fn()
   let getModcountStub: MockInstance = vi.fn()
@@ -58,7 +58,7 @@ describe('routes/api route POST /navigate/latest', () => {
     getModcountStub = vi.spyOn(ModCount, 'get').mockReturnValue(69)
     ;({ loggerStub } = stubDebug(Imports))
     vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
-    isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
+    isBlockedTraversalStub = vi.spyOn(Imports, 'isBlockedTraversal').mockReturnValue(false)
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
     routeHandler = cast(
       postFn.mock.calls.find((call) => call[0] === '/navigate/latest')?.[1],
@@ -138,18 +138,18 @@ describe('routes/api route POST /navigate/latest', () => {
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.mock.calls.length).toBe(0)
   })
-  it('should not call setLatestPicture when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should not call setLatestPicture when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.mock.calls.length).toBe(0)
   })
-  it('should return status FORBIDDEN when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should return status FORBIDDEN when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.FORBIDDEN])
   })
-  it('should return E_NO_TRAVERSE json error when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should return E_NO_TRAVERSE json error when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.mock.calls[0]?.[0]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
   })

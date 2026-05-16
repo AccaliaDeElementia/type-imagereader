@@ -26,7 +26,7 @@ describe('routes/api route POST /mark/read', () => {
       throw cast<Error>('WRONG CALL')
     }),
   )
-  let isPathTraversalStub: MockInstance = vi.fn()
+  let isBlockedTraversalStub: MockInstance = vi.fn()
   let markFolderSeenStub: MockInstance = vi.fn()
   let loggerStub: MockInstance = vi.fn()
   let knexFake = { Knex: Math.random() }
@@ -51,7 +51,7 @@ describe('routes/api route POST /mark/read', () => {
     markFolderSeenStub = vi.spyOn(Imports, 'markFolderSeen').mockResolvedValue(undefined)
     ;({ loggerStub } = stubDebug(Imports))
     vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
-    isPathTraversalStub = vi.spyOn(Imports, 'isPathTraversal').mockReturnValue(false)
+    isBlockedTraversalStub = vi.spyOn(Imports, 'isBlockedTraversal').mockReturnValue(false)
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
     routeHandler = cast(
       postFn.mock.calls.find((call) => call[0] === '/mark/read')?.[1],
@@ -83,18 +83,18 @@ describe('routes/api route POST /mark/read', () => {
     await routeHandler(requestFake, responseFake)
     expect(markFolderSeenStub.mock.calls[0]?.[2]).toBe(true)
   })
-  it('should not call markFolderSeen when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should not call markFolderSeen when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
     expect(markFolderSeenStub.mock.calls.length).toBe(0)
   })
-  it('should return status FORBIDDEN when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should return status FORBIDDEN when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.FORBIDDEN])
   })
-  it('should return E_NO_TRAVERSE json error when isPathTraversal returns true', async () => {
-    isPathTraversalStub.mockReturnValue(true)
+  it('should return E_NO_TRAVERSE json error when isBlockedTraversal returns true', async () => {
+    isBlockedTraversalStub.mockReturnValue(true)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.json.mock.calls[0]?.[0]).toHaveProperty('error.code', 'E_NO_TRAVERSE')
   })
