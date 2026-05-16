@@ -10,13 +10,11 @@ import {
   chunk as _chunk,
   execChunksSynchronously,
   extractInsertCount,
-  toSortKey,
+  parseFolderPath,
 } from './helpers.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
-import { toFolderPath } from '#utils/path.js'
 
 const ZERO = 0
-const TRAILING_SLASH_OFFSET = -1
 
 export const LOG_PREFIX = 'type-imagereader:sync:folders'
 
@@ -72,12 +70,7 @@ export async function syncMissingAncestorFolders(logger: Debugger, knex: Knex): 
     logger('Added 0 missing ancestor folders')
     return
   }
-  const rows = missing.map((path) => {
-    const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
-    const folder = toFolderPath(posix.dirname(withoutSlash))
-    const sortKey = toSortKey(posix.basename(withoutSlash))
-    return { folder, path, sortKey }
-  })
+  const rows = missing.map((path) => ({ ...parseFolderPath(path), path }))
   await execChunksSynchronously(Imports.chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
     await knex('folders').insert(chunk).onConflict('path').ignore()
   })

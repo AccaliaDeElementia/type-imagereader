@@ -9,7 +9,7 @@ import _debug from 'debug'
 import type { Debugger } from 'debug'
 
 import { fsWalker as _fsWalker } from './fswalker.js'
-import { addFolderAndAncestors, chunk, execChunksSynchronously, toSortKey } from './helpers.js'
+import { addFolderAndAncestors, chunk, execChunksSynchronously, parseFolderPath, toSortKey } from './helpers.js'
 import { syncFolderFirstImages as _syncFolderFirstImages } from './folders.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
 import { escapeLikeWildcards } from '#utils/helpers.js'
@@ -51,14 +51,7 @@ export async function incrementalEnsureFoldersBulk(knex: Knex, folderPaths: stri
   const unique = new Set(folderPaths)
   unique.delete(posix.sep)
   if (unique.size === ZERO) return
-  const rows = [...unique].map((folderPath) => {
-    const withoutSlash = folderPath.slice(ZERO, TRAILING_SLASH_OFFSET)
-    return {
-      folder: toFolderPath(posix.dirname(withoutSlash)),
-      path: folderPath,
-      sortKey: toSortKey(posix.basename(withoutSlash)),
-    }
-  })
+  const rows = [...unique].map((folderPath) => ({ ...parseFolderPath(folderPath), path: folderPath }))
   await execChunksSynchronously(chunk(rows, Imports.getDbChunkSize(knex)), async (chunk) => {
     await knex('folders').insert(chunk).onConflict('path').ignore()
   })
@@ -135,12 +128,7 @@ export async function incrementalEnsureAncestors(
     logger('Ensured 0 ancestor folders')
     return
   }
-  const rows = missing.map((path) => {
-    const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
-    const folder = toFolderPath(posix.dirname(withoutSlash))
-    const sortKey = toSortKey(posix.basename(withoutSlash))
-    return { folder, path, sortKey }
-  })
+  const rows = missing.map((path) => ({ ...parseFolderPath(path), path }))
   await execChunksSynchronously(
     chunk(rows, Imports.getDbChunkSize(knex)),
     async (chunk: Array<{ folder: string; path: string; sortKey: string }>) => {
@@ -189,10 +177,8 @@ export async function incrementalUpdateFolders(
           seenCount += pc.seenCount
         }
       }
-      const withoutSlash = path.slice(ZERO, TRAILING_SLASH_OFFSET)
-      const parent = path === posix.sep ? '' : toFolderPath(posix.dirname(withoutSlash))
-      const sortKey = path === posix.sep ? '' : toSortKey(posix.basename(withoutSlash))
-      return { path, totalCount, seenCount, folder: parent, sortKey }
+      const { folder, sortKey } = path === posix.sep ? { folder: '', sortKey: '' } : parseFolderPath(path)
+      return { path, totalCount, seenCount, folder, sortKey }
     })
     await execChunksSynchronously(chunk(updateRows, Imports.getDbChunkSize(knex)), async (chunk) => {
       await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
