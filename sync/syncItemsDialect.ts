@@ -44,9 +44,27 @@ export interface CopyHelpers extends SharedHelpers {
   releaseCopyConnection: (knex: Knex, client: PoolClient) => Promise<void>
 }
 
+// Knex's published types declare `Knex.client` as `any`, which leaves the
+// internal client shape opaque. `knexClient()` is the project-local typed
+// lens for the properties sync code touches: `config.client` (universal,
+// for dialect detection) and the pg-pool methods `acquireConnection` /
+// `releaseConnection` (used only inside `isPostgres`-guarded branches in
+// findItems.ts). The single `as` cast lives here so call sites stay clean.
+export interface KnexClientShape {
+  config: { client: string }
+  acquireConnection: () => Promise<PoolClient>
+  releaseConnection: (client: PoolClient) => Promise<void>
+}
+
+export function knexClient(knex: Knex): KnexClientShape {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- knex types `client` as `any`; we assert the shape sync code relies on at runtime
+  return knex.client as KnexClientShape
+}
+
 export function isPostgres(knex: Knex): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- knex.client.config is typed `any`
-  const client: unknown = knex.client.config.client
+  const {
+    config: { client },
+  } = knexClient(knex)
   return client === 'pg' || client === 'postgresql'
 }
 
