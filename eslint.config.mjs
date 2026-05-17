@@ -233,7 +233,7 @@ export default [
       'testutils/pubsub.ts',
       'test/public/app/pubsub/**',
       'test/testutils/pubSub.spec.ts',
-      'test/integration/clientInitBinding.spec.ts',
+      'test/integration/templateContract.spec.ts',
     ],
     rules: {
       'no-restricted-imports': 'off',

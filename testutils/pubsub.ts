@@ -46,7 +46,7 @@ const GUARD_EXCLUDED_PATHS = [
   '/test/testutils/pubSub.spec.ts',
   // Integration spec that legitimately exercises real init() of multiple modules
   // and verifies pug-template ↔ JS binding via the live pubsub mechanism.
-  '/test/integration/clientInitBinding.spec.ts',
+  '/test/integration/templateContract.spec.ts',
 ]
 
 export function shouldGuard(testPath: string): boolean {
