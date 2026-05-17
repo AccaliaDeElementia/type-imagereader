@@ -13,12 +13,11 @@ import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 import type { Debugger } from 'debug'
 import { reqParamToString, getDataDir as _getDataDir } from '#utils/helpers.js'
-import { handleErrors as _handleErrors } from '#utils/express.js'
+import { handleErrors as _handleErrors, sendError } from '#utils/express.js'
 import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
 
 const CACHE_SIZE = 25
 const ONE_MONTH_MS = 2_592_000_000
-const NO_ERROR_STATUS = 0 // sentinel: ImageData created via fromImage(), not fromError()
 const PREVIEW_WIDTH = 240
 const PREVIEW_HEIGHT = 320
 const KIOSK_WIDTH = 1280
@@ -26,13 +25,17 @@ const KIOSK_HEIGHT = 800
 
 const allowedExtensions = /^(?:jpg|jpeg|png|webp|gif|svg|tif|tiff|bmp|jfif|jpe)$/iv
 
+export interface ImageError {
+  code: string
+  statusCode: number
+  message: string
+}
+
 export class ImageData {
   static defaultData = Buffer.from('')
   data: Buffer = ImageData.defaultData
   extension: string | null = null
-  code: string | null = null
-  statusCode = NO_ERROR_STATUS
-  message: string | null = null
+  error: ImageError | null = null
   path = ''
 
   static fromImage(data: Buffer, extension: string, path: string): ImageData {
@@ -45,15 +48,13 @@ export class ImageData {
 
   static fromError(code: string, statusCode: number, message: string, path: string): ImageData {
     const result = new ImageData()
-    result.code = code
-    result.statusCode = statusCode
-    result.message = message
+    result.error = { code, statusCode, message }
     result.path = path
     return result
   }
 
   async rescale(width: number, height: number, animated: boolean): Promise<void> {
-    if (this.code !== null) {
+    if (this.error !== null) {
       return // Image already has an error
     }
     try {
@@ -122,7 +123,7 @@ export class ImageCache {
     }
     const result = await item.image
     // Don't poison the cache with errors — let subsequent requests retry from disk.
-    if (result.code !== null) {
+    if (result.error !== null) {
       this.items = this.items.filter((entry) => entry !== item)
     }
     return result
@@ -163,14 +164,8 @@ export async function readAndRescaleImage(
 }
 
 export function sendImage(image: ImageData, res: Response): void {
-  if (image.code !== null) {
-    res.status(image.statusCode).json({
-      error: {
-        code: image.code,
-        message: image.message,
-        path: image.path,
-      },
-    })
+  if (image.error !== null) {
+    sendError(res, { ...image.error, path: image.path })
     return
   }
   res
@@ -199,15 +194,6 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   CacheStorage.kioskCache = new ImageCache(readAndRescaleImage)
   CacheStorage.scaledCache = new ImageCache(readAndRescaleImage)
 
-  const sendError = (res: Response, code: string, statusCode: StatusCodes, message: string): void => {
-    res.status(statusCode).json({
-      error: {
-        code,
-        message,
-      },
-    })
-  }
-
   const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
     Imports.handleErrors(Imports.logger, action)
 
@@ -231,21 +217,37 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     handleErrors(async (req, res) => {
       const filename = `/${reqParamToString(req.params.path)}`
       if (req.params.width === undefined) {
-        sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be provided')
+        sendError(res, {
+          code: 'E_BAD_REQUEST',
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: 'width parameter must be provided',
+        })
         return
       }
       const width = parseNumberParam(reqParamToString(req.params.width))
       if (width === undefined) {
-        sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'width parameter must be positive integer')
+        sendError(res, {
+          code: 'E_BAD_REQUEST',
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: 'width parameter must be positive integer',
+        })
         return
       }
       if (req.params.height === undefined) {
-        sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be provided')
+        sendError(res, {
+          code: 'E_BAD_REQUEST',
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: 'height parameter must be provided',
+        })
         return
       }
       const height = parseNumberParam(reqParamToString(req.params.height))
       if (height === undefined) {
-        sendError(res, 'E_BAD_REQUEST', StatusCodes.BAD_REQUEST, 'height parameter must be positive integer')
+        sendError(res, {
+          code: 'E_BAD_REQUEST',
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: 'height parameter must be positive integer',
+        })
         return
       }
       Imports.logger('GET /images/scaled %dx%d %s', width, height, filename)

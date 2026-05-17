@@ -20,6 +20,7 @@ import { getRouter as getSlideshowRouter } from '#routes/slideshow.js'
 import { getRouter as getWeatherRouter } from '#routes/weather.js'
 
 import { assetUrl, buildAssetVersions } from '#utils/assetVersions.js'
+import { sendError } from '#utils/express.js'
 
 import debug from 'debug'
 
@@ -118,9 +119,7 @@ export function configureNotFound(app: Express): void {
   app.use((req: Request, res: Response) => {
     const url = req.originalUrl
     if (API_PREFIX.test(url)) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        error: { code: 'E_NOT_FOUND', message: `No such route: ${url}` },
-      })
+      sendError(res, { code: 'E_NOT_FOUND', statusCode: StatusCodes.NOT_FOUND, message: `No such route: ${url}` })
       return
     }
     if (ASSET_PREFIXES.test(url) || ASSET_EXTENSIONS.test(url)) {

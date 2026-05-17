@@ -23,7 +23,7 @@ import {
 
 import debug from 'debug'
 import { reqParamToString } from '#utils/helpers.js'
-import { handleErrors as _handleErrors } from '#utils/express.js'
+import { handleErrors as _handleErrors, sendError as _sendError } from '#utils/express.js'
 import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
 import { isDictionary, hasOptionalKey, hasRequiredKey } from '#utils/typeGuards.js'
 
@@ -31,6 +31,7 @@ export const Imports = {
   Router,
   debug,
   handleErrors: _handleErrors,
+  sendError: _sendError,
   isBlockedTraversal: _isBlockedTraversal,
   initialize: _initialize,
   getListing: _getListing,
@@ -74,12 +75,11 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
 
   const parsePath = (path: string, res: Response): string | null => {
     if (Imports.isBlockedTraversal(logger, path)) {
-      res.status(StatusCodes.FORBIDDEN).json({
-        error: {
-          code: 'E_NO_TRAVERSE',
-          message: 'Directory Traversal is not Allowed!',
-          path,
-        },
+      Imports.sendError(res, {
+        code: 'E_NO_TRAVERSE',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: 'Directory Traversal is not Allowed!',
+        path,
       })
       return null
     }
@@ -112,12 +112,11 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
     const folder = await Imports.getListing(knex, normalize(`${path}/`))
     if (folder === null) {
       logger('listing not found: %s', path)
-      res.status(StatusCodes.NOT_FOUND).json({
-        error: {
-          code: 'E_NOT_FOUND',
-          message: 'Directory Not Found!',
-          path,
-        },
+      Imports.sendError(res, {
+        code: 'E_NOT_FOUND',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: 'Directory Not Found!',
+        path,
       })
       return
     }

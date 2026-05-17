@@ -49,7 +49,7 @@ describe('routes/images rescaleImage()', () => {
 
   it('should abort when error already detected', async () => {
     const img = new ImageData()
-    img.code = 'FOO'
+    img.error = { code: 'FOO', statusCode: 500, message: 'simulated' }
     await rescaleImage(img, 1280, 720)
     expect(sharpStub.mock.calls.length).toBe(0)
   })
@@ -155,17 +155,9 @@ describe('routes/images rescaleImage()', () => {
         img = new ImageData()
         induceFailure()
       })
-      it('should not set error code', async () => {
+      it('should leave error unset', async () => {
         await rescaleImage(img, 1280, 720)
-        expect(img.code).toBe(null)
-      })
-      it('should not set error status code', async () => {
-        await rescaleImage(img, 1280, 720)
-        expect(img.statusCode).toBe(0)
-      })
-      it('should not set error message', async () => {
-        await rescaleImage(img, 1280, 720)
-        expect(img.message).toBe(null)
+        expect(img.error).toBe(null)
       })
       it('should not update extension', async () => {
         img.extension = 'jpg'
@@ -233,7 +225,7 @@ describe('routes/images rescaleImage()', () => {
 
     it('should not log when image already has an error code', async () => {
       const img = new ImageData()
-      img.code = 'E_PRIOR'
+      img.error = { code: 'E_PRIOR', statusCode: 500, message: 'simulated' }
       sharpStub.mockImplementation(() => {
         throw new Error('OOPS')
       })

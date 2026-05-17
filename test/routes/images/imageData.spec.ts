@@ -8,17 +8,9 @@ describe('routes/images ImageData', () => {
       const result = ImageData.fromImage(Buffer.from('foo'), 'blep', 'foo.blep')
       expect(result).toBeInstanceOf(ImageData)
     })
-    it('should not set error code', () => {
+    it('should leave error unset', () => {
       const result = ImageData.fromImage(Buffer.from('foo'), 'blep', 'foo.blep')
-      expect(result.code).toBe(null)
-    })
-    it('should not set statusCode', () => {
-      const result = ImageData.fromImage(Buffer.from('foo'), 'blep', 'foo.blep')
-      expect(result.statusCode).toBe(0)
-    })
-    it('should not set error message', () => {
-      const result = ImageData.fromImage(Buffer.from('foo'), 'blep', 'foo.blep')
-      expect(result.message).toBe(null)
+      expect(result.error).toBe(null)
     })
     it('should set data', () => {
       const data = Buffer.from('FOO')
@@ -43,16 +35,16 @@ describe('routes/images ImageData', () => {
     })
     it('should set error code', () => {
       const result = ImageData.fromError('ERR123', 500, 'ERR: Message', 'foo.blep')
-      expect(result.code).toBe('ERR123')
+      expect(result.error?.code).toBe('ERR123')
     })
-    it('should set statusCode', () => {
+    it('should set error statusCode', () => {
       const code = 500 + Math.random()
       const result = ImageData.fromError('ERR123', code, 'ERR: Message', 'foo.blep')
-      expect(result.statusCode).toBe(code)
+      expect(result.error?.statusCode).toBe(code)
     })
     it('should set error message', () => {
       const result = ImageData.fromError('ERR123', 500, 'ERR: Message', 'foo.blep')
-      expect(result.message).toBe('ERR: Message')
+      expect(result.error?.message).toBe('ERR: Message')
     })
     it('should set data to default value', () => {
       const result = ImageData.fromError('ERR123', 500, 'ERR: Message', 'foo.blep')

@@ -20,3 +20,17 @@ export function handleErrors(logger: Debugger, action: (req: Request, res: Respo
     }
   }
 }
+
+export interface ErrorPayload {
+  code: string
+  statusCode: StatusCodes
+  message: string
+  path?: string
+}
+
+export function sendError(res: Response, error: ErrorPayload): void {
+  const { code, statusCode, message, path } = error
+  res.status(statusCode).json({
+    error: { code, message, ...(path === undefined ? {} : { path }) },
+  })
+}
