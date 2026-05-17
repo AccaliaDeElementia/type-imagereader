@@ -4,6 +4,8 @@ import { subscribe as _subscribe } from '@parcel/watcher'
 import _debug from 'debug'
 import { extname, relative, sep, posix } from 'node:path'
 
+import { catchLog as _catchLog } from '#utils/promises.js'
+
 const DEFAULT_DEBOUNCE_MS = 5000
 const DEFAULT_MAX_PENDING = 500
 const ZERO = 0
@@ -29,6 +31,7 @@ export const Imports = {
   subscribe: _subscribe,
   setTimeout: globalThis.setTimeout as (fn: () => void, ms: number) => ReturnType<typeof setTimeout>,
   clearTimeout: globalThis.clearTimeout as (id: ReturnType<typeof setTimeout>) => void,
+  catchLog: _catchLog,
 }
 
 export const Filewatcher = {
@@ -99,9 +102,7 @@ export async function start(dataDir: string, onFlush: FlushCallback): Promise<Wa
       Imports.clearTimeout(debounceTimer)
     }
     debounceTimer = Imports.setTimeout(() => {
-      flush().catch((err: unknown) => {
-        logger('flush error', err)
-      })
+      Imports.catchLog(flush(), logger, 'flush error')
     }, Filewatcher.debounceMs)
   }
 
@@ -111,18 +112,14 @@ export async function start(dataDir: string, onFlush: FlushCallback): Promise<Wa
         Imports.clearTimeout(debounceTimer)
         debounceTimer = null
       }
-      flush().catch((err: unknown) => {
-        logger('flush error', err)
-      })
+      Imports.catchLog(flush(), logger, 'flush error')
       return
     }
     if (debounceTimer !== null) {
       Imports.clearTimeout(debounceTimer)
     }
     debounceTimer = Imports.setTimeout(() => {
-      flush().catch((err: unknown) => {
-        logger('flush error', err)
-      })
+      Imports.catchLog(flush(), logger, 'flush error')
     }, Filewatcher.debounceMs)
   }
 

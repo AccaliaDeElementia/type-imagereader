@@ -14,6 +14,7 @@ import {
 } from '#utils/path.js'
 
 import { initialize as _initialize } from '#utils/persistence.js'
+import { catchLog as _catchLog } from '#utils/promises.js'
 import { UriSafePath, setLatestPicture as _setLatestPicture, folderExists as _folderExists } from './apiFunctions.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 
@@ -75,6 +76,7 @@ export const Imports = {
   initialize: _initialize,
   setLatestPicture: _setLatestPicture,
   folderExists: _folderExists,
+  catchLog: _catchLog,
 }
 
 /** Per-socket bookkeeping for slideshow connections (joined room name). */
@@ -314,19 +316,13 @@ export function handleSocket(knex: Knex, io: WebSocketServer, socket: Socket): S
     Internals.getLaunchId(callback)
   })
   socket.on(SocketEvents.JoinSlideshow, (roomName?: string) => {
-    Internals.joinSlideshow(roomName, state, socket, knex).catch((err: unknown) => {
-      Imports.logger('joinSlideshow error', err)
-    })
+    Imports.catchLog(Internals.joinSlideshow(roomName, state, socket, knex), Imports.logger, 'joinSlideshow error')
   })
   socket.on(SocketEvents.PrevImage, () => {
-    Internals.prevImage(state, io, knex).catch((err: unknown) => {
-      Imports.logger('prevImage error', err)
-    })
+    Imports.catchLog(Internals.prevImage(state, io, knex), Imports.logger, 'prevImage error')
   })
   socket.on(SocketEvents.NextImage, () => {
-    Internals.nextImage(state, io, knex).catch((err: unknown) => {
-      Imports.logger('nextImage error', err)
-    })
+    Imports.catchLog(Internals.nextImage(state, io, knex), Imports.logger, 'nextImage error')
   })
   socket.on(SocketEvents.GotoImage, (callback: SocketCallback) => {
     Internals.gotoImage(callback, state, knex).catch((err: unknown) => {
