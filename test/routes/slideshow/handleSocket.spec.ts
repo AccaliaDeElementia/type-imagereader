@@ -5,7 +5,7 @@ import { voidFn } from '#testutils/mocks.js'
 import assert from 'node:assert'
 import { handleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
-import { setImmediate as yieldMacro } from 'node:timers/promises'
+import { flushMicrotasks } from '#testutils/microtasks.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/slideshow handleSocket()', () => {
@@ -69,7 +69,7 @@ describe('routes/slideshow handleSocket()', () => {
       handleSocket(knexFake, serverFake, socketFake)
       const fn = cast<(cb?: () => void) => void>(getCallback(endpoint))
       fn(() => undefined)
-      await yieldMacro()
+      await flushMicrotasks()
       const matching = loggerStub.mock.calls.find((call) => call[1] === err)
       assert(matching !== undefined, `expected logger to be called with the ${handlerName} error`)
     })
@@ -82,7 +82,7 @@ describe('routes/slideshow handleSocket()', () => {
     const fn = cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
     const callbackStub = voidFn()
     fn(callbackStub)
-    await yieldMacro()
+    await flushMicrotasks()
     expect(callbackStub.mock.calls[0]).toEqual([null])
   })
   it('should return an object for state storage', () => {

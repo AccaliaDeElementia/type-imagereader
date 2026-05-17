@@ -1,9 +1,9 @@
 'use sanity'
 
 import { EventEmitter } from 'node:events'
-import { setImmediate as yieldMacro } from 'node:timers/promises'
 import { createCopyStreamFake, scheduleEmit } from '#testutils/copyStream.js'
 import { voidFn } from '#testutils/mocks.js'
+import { flushMicrotasks } from '#testutils/microtasks.js'
 
 describe('testutils createCopyStreamFake()', () => {
   it('should return an object exposing the typed stream', () => {
@@ -45,7 +45,7 @@ describe('testutils createCopyStreamFake()', () => {
     const finishSpy = voidFn()
     ee.on('finish', finishSpy)
     stream.end()
-    await yieldMacro()
+    await flushMicrotasks()
     expect(finishSpy.mock.calls.length).toBe(0)
   })
   it('should emit "finish" on the next microtask when emitOnEnd is "finish"', async () => {
@@ -53,7 +53,7 @@ describe('testutils createCopyStreamFake()', () => {
     const finishSpy = voidFn()
     ee.once('finish', finishSpy)
     stream.end()
-    await yieldMacro()
+    await flushMicrotasks()
     expect(finishSpy.mock.calls.length).toBe(1)
   })
   it('should emit "error" with the supplied error when emitOnEnd is { error }', async () => {
@@ -62,7 +62,7 @@ describe('testutils createCopyStreamFake()', () => {
     const errorSpy = voidFn()
     ee.once('error', errorSpy)
     stream.end()
-    await yieldMacro()
+    await flushMicrotasks()
     expect(errorSpy.mock.calls[0]?.[0]).toBe(err)
   })
 })
@@ -73,7 +73,7 @@ describe('testutils scheduleEmit()', () => {
     const drainSpy = voidFn()
     ee.once('drain', drainSpy)
     scheduleEmit(ee, 'drain')
-    await yieldMacro()
+    await flushMicrotasks()
     expect(drainSpy.mock.calls.length).toBe(1)
   })
   it('should pass extra arguments through to the listener', async () => {
@@ -81,7 +81,7 @@ describe('testutils scheduleEmit()', () => {
     const payloadSpy = voidFn()
     ee.once('payload', payloadSpy)
     scheduleEmit(ee, 'payload', 'first', 42)
-    await yieldMacro()
+    await flushMicrotasks()
     expect(payloadSpy.mock.calls[0]).toEqual(['first', 42])
   })
 })

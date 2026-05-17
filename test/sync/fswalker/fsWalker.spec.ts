@@ -1,8 +1,7 @@
 'use sanity'
 
-import { setImmediate as yieldMacro } from 'node:timers/promises'
-
 import { fsWalker, Imports, Fswalker } from '#sync/fswalker.js'
+import { flushMicrotasks } from '#testutils/microtasks.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/fswalker fsWalker()', () => {
@@ -192,7 +191,7 @@ describe('sync/fswalker fsWalker()', () => {
     const walk = fsWalker('/root', vi.fn().mockResolvedValue(undefined))
     while (inFlight.count < 3) {
       // eslint-disable-next-line no-await-in-loop -- waiting for workers to saturate
-      await yieldMacro()
+      await flushMicrotasks()
     }
     drain = true
     while (release.length > 0) release.shift()?.()

@@ -1,12 +1,12 @@
 'use sanity'
 
 import { EventEmitter } from 'node:events'
-import { setImmediate as yieldMacro } from 'node:timers/promises'
 
 import { CopyState, awaitCopyStreamCompletion, type CopyHelpers } from '#sync/syncItemsDialect.js'
 import { cast } from '#testutils/typeGuards.js'
 import { createCopyStreamFake, scheduleEmit } from '#testutils/copyStream.js'
 import { noopLogger } from '#testutils/debug.js'
+import { flushMicrotasks } from '#testutils/microtasks.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
@@ -276,7 +276,7 @@ describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
     const promise = awaitCopyStreamCompletion(stream)
     scheduleEmit(ee, 'finish')
     await promise
-    await yieldMacro()
+    await flushMicrotasks()
     expect(true).toBe(true)
   })
 
