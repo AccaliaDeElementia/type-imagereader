@@ -3,6 +3,7 @@
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { getJSON as _getJSON, postJSON as _postJSON, acceptAnyResponse } from './net.js'
 import { publish as _publish, subscribe as _subscribe, forward as _forward } from './pubsub.js'
+import { sendDiagnostic as _sendDiagnostic } from './diagnostic.js'
 import { isListing, type Listing } from '#contracts/listing.js'
 import { hasValue, hasValues, stringishHasValue } from '#utils/helpers.js'
 import { show as _show } from './confirm.js'
@@ -15,6 +16,7 @@ export const Imports = {
   forward: _forward,
   subscribe: _subscribe,
   publish: _publish,
+  sendDiagnostic: _sendDiagnostic,
 }
 
 const INITIAL_LOAD_TOKEN = 0
@@ -24,6 +26,7 @@ export const Navigation = {
   locationAssign: undefined as undefined | ((url: string | URL) => void),
   current: ((): Listing => ({ path: '', name: '', parent: '' }))(),
   loadToken: INITIAL_LOAD_TOKEN,
+  fullscreenIntent: 'none' as 'none' | 'enter' | 'exit',
 }
 
 function getBaseUrl(): string {
@@ -189,14 +192,31 @@ export function init(): void {
   })
   Imports.subscribe('Action:Execute:FullScreen', async () => {
     if (hasValue(document.fullscreenElement)) {
+      Navigation.fullscreenIntent = 'exit'
       await document.exitFullscreen().catch((err: unknown) => {
-        Imports.publish('Loading:Error', err)
+        Imports.publish('Fullscreen:Error', err)
       })
     } else {
+      Navigation.fullscreenIntent = 'enter'
       await document.body.requestFullscreen({ navigationUI: 'hide' }).catch((err: unknown) => {
-        Imports.publish('Loading:Error', err)
+        Imports.publish('Fullscreen:Error', err)
       })
     }
+  })
+  document.addEventListener('fullscreenchange', () => {
+    Internals.onFullscreenChange()
+  })
+  document.addEventListener('fullscreenerror', (event) => {
+    Internals.onFullscreenError(event)
+  })
+  Imports.subscribe('Fullscreen:Change', async (data) => {
+    await Imports.sendDiagnostic('Fullscreen:Change', data)
+  })
+  Imports.subscribe('Fullscreen:Error', async (data) => {
+    await Imports.sendDiagnostic('Fullscreen:Error', data)
+  })
+  Imports.subscribe('Fullscreen:UnexpectedExit', async (data) => {
+    await Imports.sendDiagnostic('Fullscreen:UnexpectedExit', data)
   })
   Imports.forward('Action:Keypress:<Ctrl>ArrowUp', 'Action:Execute:ParentFolder')
   Imports.forward('Action:Keypress:<Ctrl>ArrowDown', 'Action:Execute:FirstUnfinished')
@@ -208,10 +228,26 @@ export function init(): void {
   Imports.forward('Action:Gamepad:East', 'Action:Execute:FirstUnfinished')
 }
 
+function onFullscreenChange(): void {
+  const active = hasValue(document.fullscreenElement)
+  const intent = Navigation.fullscreenIntent
+  Navigation.fullscreenIntent = 'none'
+  Imports.publish('Fullscreen:Change', { active, intent })
+  if (!active && intent !== 'exit') {
+    Imports.publish('Fullscreen:UnexpectedExit', { intent })
+  }
+}
+
+function onFullscreenError(event: Event): void {
+  Imports.publish('Fullscreen:Error', event)
+}
+
 export const Internals = {
   getBaseUrl,
   getFolderPath,
   isSuppressMenu,
   navigateTo,
   loadData,
+  onFullscreenChange,
+  onFullscreenError,
 }

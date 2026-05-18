@@ -70,6 +70,7 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
   const router = Imports.Router()
 
   const logger = Imports.debug('type-imagereader:api')
+  const diagnosticLogger = Imports.debug('type-imagereader:diagnostic')
   const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
     Imports.handleErrors(logger, action)
 
@@ -211,6 +212,15 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
         await Imports.removeBookmark(knex, path)
         res.status(StatusCodes.OK).end()
       }
+    }),
+  )
+
+  router.post(
+    '/diagnostic',
+    handleErrors(async (req, res) => {
+      diagnosticLogger('%o', (req as { body: unknown }).body)
+      res.status(StatusCodes.NO_CONTENT).end()
+      await Promise.resolve()
     }),
   )
 

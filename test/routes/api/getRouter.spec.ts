@@ -34,7 +34,14 @@ describe('routes/api getRouter()', () => {
     })
   })
 
-  const postRoutes = ['/navigate/latest', '/mark/read', '/mark/unread', '/bookmarks/add', '/bookmarks/remove']
+  const postRoutes = [
+    '/navigate/latest',
+    '/mark/read',
+    '/mark/unread',
+    '/bookmarks/add',
+    '/bookmarks/remove',
+    '/diagnostic',
+  ]
   postRoutes.forEach((path) => {
     it(`should attach handler for post \`${path}\``, async () => {
       await getRouter(applicationFake, serverFake, socketServerFake)

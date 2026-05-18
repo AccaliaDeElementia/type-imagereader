@@ -93,6 +93,9 @@ describe('public/app/navigation init()', () => {
     'Action:Gamepad:Up',
     'Action:Gamepad:North',
     'Action:Gamepad:East',
+    'Fullscreen:Change',
+    'Fullscreen:Error',
+    'Fullscreen:UnexpectedExit',
   ]
   describe('subscriber list after init', () => {
     const subs = subscribers.map((s) => s.toUpperCase())

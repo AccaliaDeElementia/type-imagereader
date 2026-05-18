@@ -105,21 +105,30 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(requestFullscreenStub.mock.calls[0]?.[0]).toEqual({ navigationUI: 'hide' })
     })
-    it('should not publish Loading:Error when requestFullscreen resolves', async () => {
+    it('should not publish when requestFullscreen resolves', async () => {
       requestFullscreenStub.mockResolvedValue(undefined)
       await handler()
       expect(publishStub.mock.calls.length > 0).toBe(false)
     })
-    it('should publish Loading:Error when requestFullscreen rejects', async () => {
+    it('should publish to Fullscreen:Error when requestFullscreen rejects', async () => {
       requestFullscreenStub.mockRejectedValue('FOO')
       await handler()
-      expect(publishStub.mock.calls.length > 0).toBe(true)
+      expect(publishStub.mock.calls[0]?.[0]).toBe('Fullscreen:Error')
     })
-    it('should pass exception to Loading:Error when requestFullscreen rejects', async () => {
+    it('should pass exception to Fullscreen:Error when requestFullscreen rejects', async () => {
       const err = new Error('FOO')
       requestFullscreenStub.mockRejectedValue(err)
       await handler()
       expect(publishStub.mock.calls[0]?.[1]).toBe(err)
+    })
+    it('should set fullscreenIntent to enter before calling requestFullscreen', async () => {
+      let intentAtCallTime: typeof Navigation.fullscreenIntent = 'none'
+      requestFullscreenStub.mockImplementation(async () => {
+        intentAtCallTime = Navigation.fullscreenIntent
+        await Promise.resolve()
+      })
+      await handler()
+      expect(intentAtCallTime).toBe('enter')
     })
     it('should not call requestFullscreen when fullscreen element exists', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
@@ -137,7 +146,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(exitFullscreenStub.mock.calls.length).toBe(1)
     })
-    it('should not publish Loading:Error when exitFullscreen resolves', async () => {
+    it('should not publish when exitFullscreen resolves', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
         writable: true,
         value: dom.window.document.body,
@@ -146,16 +155,16 @@ describe('public/app/navigation/messageHandlers init()', () => {
       await handler()
       expect(publishStub.mock.calls.length > 0).toBe(false)
     })
-    it('should publish Loading:Error when exitFullscreen rejects', async () => {
+    it('should publish to Fullscreen:Error when exitFullscreen rejects', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
         writable: true,
         value: dom.window.document.body,
       })
       exitFullscreenStub.mockRejectedValue('FOO')
       await handler()
-      expect(publishStub.mock.calls.length > 0).toBe(true)
+      expect(publishStub.mock.calls[0]?.[0]).toBe('Fullscreen:Error')
     })
-    it('should pass exception to Loading:Error when exitFullscreen rejects', async () => {
+    it('should pass exception to Fullscreen:Error when exitFullscreen rejects', async () => {
       Object.defineProperty(dom.window.document, 'fullscreenElement', {
         writable: true,
         value: dom.window.document.body,
@@ -164,6 +173,158 @@ describe('public/app/navigation/messageHandlers init()', () => {
       exitFullscreenStub.mockRejectedValue(err)
       await handler()
       expect(publishStub.mock.calls[0]?.[1]).toBe(err)
+    })
+    it('should set fullscreenIntent to exit before calling exitFullscreen', async () => {
+      Object.defineProperty(dom.window.document, 'fullscreenElement', {
+        writable: true,
+        value: dom.window.document.body,
+      })
+      let intentAtCallTime: typeof Navigation.fullscreenIntent = 'none'
+      exitFullscreenStub.mockImplementation(async () => {
+        intentAtCallTime = Navigation.fullscreenIntent
+        await Promise.resolve()
+      })
+      await handler()
+      expect(intentAtCallTime).toBe('exit')
+    })
+  })
+  describe('Fullscreen observability listeners', () => {
+    let addEventListenerSpy: MockInstance = vi.fn()
+    beforeEach(() => {
+      addEventListenerSpy = vi.spyOn(dom.window.document, 'addEventListener')
+      init()
+    })
+    it('should register a fullscreenchange listener on document', () => {
+      expect(addEventListenerSpy.mock.calls.some((c) => c[0] === 'fullscreenchange')).toBe(true)
+    })
+    it('should register a fullscreenerror listener on document', () => {
+      expect(addEventListenerSpy.mock.calls.some((c) => c[0] === 'fullscreenerror')).toBe(true)
+    })
+    it('should dispatch fullscreenchange to Internals.onFullscreenChange', () => {
+      const onFullscreenChangeSpy = vi
+        .spyOn(Internals, 'onFullscreenChange')
+        .mockImplementation((..._args: unknown[]) => undefined)
+      const change = cast<(event: Event) => void>(
+        addEventListenerSpy.mock.calls.find((c) => c[0] === 'fullscreenchange')?.[1],
+      )
+      change(cast<Event>({}))
+      expect(onFullscreenChangeSpy.mock.calls.length).toBe(1)
+    })
+    it('should dispatch fullscreenerror to Internals.onFullscreenError', () => {
+      const onFullscreenErrorSpy = vi
+        .spyOn(Internals, 'onFullscreenError')
+        .mockImplementation((..._args: unknown[]) => undefined)
+      const fail = cast<(event: Event) => void>(
+        addEventListenerSpy.mock.calls.find((c) => c[0] === 'fullscreenerror')?.[1],
+      )
+      const event = cast<Event>({ type: 'fullscreenerror' })
+      fail(event)
+      expect(onFullscreenErrorSpy.mock.calls[0]?.[0]).toBe(event)
+    })
+  })
+  describe('Internals.onFullscreenChange', () => {
+    let publishStub: MockInstance = vi.fn()
+    beforeEach(() => {
+      init()
+      publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      Navigation.fullscreenIntent = 'none'
+    })
+    it('should publish Fullscreen:Change on transition', () => {
+      Internals.onFullscreenChange()
+      expect(publishStub.mock.calls.some((c) => c[0] === 'Fullscreen:Change')).toBe(true)
+    })
+    it('should include active=true in Fullscreen:Change payload when fullscreenElement set', () => {
+      Object.defineProperty(dom.window.document, 'fullscreenElement', {
+        writable: true,
+        value: dom.window.document.body,
+      })
+      Internals.onFullscreenChange()
+      const payload = cast<{ active: boolean }>(publishStub.mock.calls.find((c) => c[0] === 'Fullscreen:Change')?.[1])
+      expect(payload.active).toBe(true)
+    })
+    it('should include active=false in Fullscreen:Change payload when no fullscreenElement', () => {
+      Object.defineProperty(dom.window.document, 'fullscreenElement', {
+        writable: true,
+        value: null,
+      })
+      Internals.onFullscreenChange()
+      const payload = cast<{ active: boolean }>(publishStub.mock.calls.find((c) => c[0] === 'Fullscreen:Change')?.[1])
+      expect(payload.active).toBe(false)
+    })
+    it('should include captured intent in Fullscreen:Change payload', () => {
+      Navigation.fullscreenIntent = 'enter'
+      Internals.onFullscreenChange()
+      const payload = cast<{ intent: string }>(publishStub.mock.calls.find((c) => c[0] === 'Fullscreen:Change')?.[1])
+      expect(payload.intent).toBe('enter')
+    })
+    it('should reset fullscreenIntent to none after handling', () => {
+      Navigation.fullscreenIntent = 'enter'
+      Internals.onFullscreenChange()
+      expect(Navigation.fullscreenIntent).toBe('none')
+    })
+    it('should publish Fullscreen:UnexpectedExit on exit without exit intent', () => {
+      Object.defineProperty(dom.window.document, 'fullscreenElement', {
+        writable: true,
+        value: null,
+      })
+      Navigation.fullscreenIntent = 'none'
+      Internals.onFullscreenChange()
+      expect(publishStub.mock.calls.some((c) => c[0] === 'Fullscreen:UnexpectedExit')).toBe(true)
+    })
+    it('should not publish Fullscreen:UnexpectedExit when intent is exit', () => {
+      Object.defineProperty(dom.window.document, 'fullscreenElement', {
+        writable: true,
+        value: null,
+      })
+      Navigation.fullscreenIntent = 'exit'
+      Internals.onFullscreenChange()
+      expect(publishStub.mock.calls.some((c) => c[0] === 'Fullscreen:UnexpectedExit')).toBe(false)
+    })
+    it('should not publish Fullscreen:UnexpectedExit when entering fullscreen', () => {
+      Object.defineProperty(dom.window.document, 'fullscreenElement', {
+        writable: true,
+        value: dom.window.document.body,
+      })
+      Navigation.fullscreenIntent = 'enter'
+      Internals.onFullscreenChange()
+      expect(publishStub.mock.calls.some((c) => c[0] === 'Fullscreen:UnexpectedExit')).toBe(false)
+    })
+  })
+  describe('Internals.onFullscreenError', () => {
+    let publishStub: MockInstance = vi.fn()
+    beforeEach(() => {
+      init()
+      publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    })
+    it('should publish Fullscreen:Error', () => {
+      Internals.onFullscreenError(cast<Event>({ type: 'fullscreenerror' }))
+      expect(publishStub.mock.calls.some((c) => c[0] === 'Fullscreen:Error')).toBe(true)
+    })
+    it('should forward the event in the Fullscreen:Error payload', () => {
+      const event = cast<Event>({ type: 'fullscreenerror' })
+      Internals.onFullscreenError(event)
+      expect(publishStub.mock.calls.find((c) => c[0] === 'Fullscreen:Error')?.[1]).toBe(event)
+    })
+  })
+  describe('Diagnostic Sink Subscribers', () => {
+    let sendDiagnosticStub: MockInstance = vi.fn()
+    beforeEach(() => {
+      sendDiagnosticStub = vi.spyOn(Imports, 'sendDiagnostic').mockResolvedValue(undefined)
+      init()
+    })
+    const sinkTopics = ['Fullscreen:Change', 'Fullscreen:Error', 'Fullscreen:UnexpectedExit']
+    sinkTopics.forEach((topic) => {
+      it(`should forward ${topic} to sendDiagnostic`, async () => {
+        const handler = capturedSubscriber(subscribeStub, topic)
+        await handler({ marker: Math.random() })
+        expect(sendDiagnosticStub.mock.calls.some((c) => c[0] === topic)).toBe(true)
+      })
+      it(`should forward ${topic} payload to sendDiagnostic`, async () => {
+        const handler = capturedSubscriber(subscribeStub, topic)
+        const payload = { marker: Math.random() }
+        await handler(payload)
+        expect(sendDiagnosticStub.mock.calls.find((c) => c[0] === topic)?.[1]).toBe(payload)
+      })
     })
   })
   describe('Message Forwarding Configuration', () => {
