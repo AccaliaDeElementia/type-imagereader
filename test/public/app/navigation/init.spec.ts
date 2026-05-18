@@ -93,6 +93,7 @@ describe('public/app/navigation init()', () => {
     'Action:Gamepad:Up',
     'Action:Gamepad:North',
     'Action:Gamepad:East',
+    'Action:Gamepad:West',
     'Fullscreen:Change',
     'Fullscreen:Error',
     'Fullscreen:UnexpectedExit',

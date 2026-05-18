@@ -342,6 +342,7 @@ describe('public/app/navigation/messageHandlers init()', () => {
       ['Action:Gamepad:Up', 'Action:Execute:NextFolder'],
       ['Action:Gamepad:North', 'Action:Execute:ParentFolder'],
       ['Action:Gamepad:East', 'Action:Execute:FirstUnfinished'],
+      ['Action:Gamepad:West', 'Action:Execute:FullScreen'],
     ]
     mappers.forEach(([from, to]) => {
       it(`should register forward from ${from} to ${to}`, () => {

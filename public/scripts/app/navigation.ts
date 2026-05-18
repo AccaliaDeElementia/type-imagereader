@@ -226,6 +226,7 @@ export function init(): void {
   Imports.forward('Action:Gamepad:Up', 'Action:Execute:NextFolder')
   Imports.forward('Action:Gamepad:North', 'Action:Execute:ParentFolder')
   Imports.forward('Action:Gamepad:East', 'Action:Execute:FirstUnfinished')
+  Imports.forward('Action:Gamepad:West', 'Action:Execute:FullScreen')
 }
 
 function onFullscreenChange(): void {
