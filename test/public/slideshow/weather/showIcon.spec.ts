@@ -40,24 +40,53 @@ describe('public/slideshow/weather showIcon()', () => {
     })
   })
 
-  const iconDisplayTests: Array<[string, string | null | undefined, string]> = [
-    ['hide element on null icon', null, 'none'],
-    ['hide element on undefined icon', undefined, 'none'],
-    ['hide element on empty icon', '', 'none'],
-    ['unhide element on valid icon', '8472', 'inline-block'],
+  const hidingTests: Array<[string, string | null | undefined]> = [
+    ['hide element on null icon', null],
+    ['hide element on undefined icon', undefined],
+    ['hide element on empty icon', ''],
   ]
-  iconDisplayTests.forEach(([title, icon, expected]) => {
+  hidingTests.forEach(([title, icon]) => {
     it(`should ${title}`, () => {
-      const element = dom.window.document.querySelector<HTMLElement>('.weather .icon')
+      const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
       element?.style.setProperty('display', 'FOO')
       Internals.showIcon(element, icon)
-      expect(element?.style.display).toBe(expected)
+      expect(element?.style.display).toBe('none')
     })
   })
 
-  it('should set src attribute on valid icon', () => {
+  it('should hide element while load is pending on valid icon (no flash of broken image)', () => {
     const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
-    Internals.showIcon(element, '8472')
-    expect(element?.src).toBe('https://openweathermap.org/img/w/8472.png')
+    element?.style.setProperty('display', 'FOO')
+    Internals.showIcon(element, '01d')
+    expect(element?.style.display).toBe('none')
+  })
+
+  it('should set src to proxied path on valid icon', () => {
+    const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
+    Internals.showIcon(element, '01d')
+    expect(element?.getAttribute('src')).toBe('/weather/icon/01d')
+  })
+
+  it('should show the element when the onload handler fires', () => {
+    const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
+    Internals.showIcon(element, '01d')
+    element?.dispatchEvent(new dom.window.Event('load'))
+    expect(element?.style.display).toBe('inline-block')
+  })
+
+  it('should keep the element hidden when the onerror handler fires', () => {
+    const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
+    Internals.showIcon(element, '01d')
+    element?.dispatchEvent(new dom.window.Event('error'))
+    expect(element?.style.display).toBe('none')
+  })
+
+  it('should hide a previously-shown element if a subsequent load fails', () => {
+    const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
+    Internals.showIcon(element, '01d')
+    element?.dispatchEvent(new dom.window.Event('load'))
+    Internals.showIcon(element, '01n')
+    element?.dispatchEvent(new dom.window.Event('error'))
+    expect(element?.style.display).toBe('none')
   })
 })

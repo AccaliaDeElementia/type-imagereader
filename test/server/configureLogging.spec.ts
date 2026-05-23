@@ -70,13 +70,13 @@ describe('Server configureLogging', () => {
     configureLogging(appFake)
     expect(helmetStub.mock.calls[0]).toHaveLength(1)
   })
-  it('should allow openweathermap.org images in the helmet CSP img-src directive', () => {
+  it('should not allow https://openweathermap.org in the helmet CSP img-src directive (icons are proxied via /weather/icon)', () => {
     process.env.NODE_ENV = 'production'
     configureLogging(appFake)
     const opts = cast<{ contentSecurityPolicy?: { directives?: Record<string, string[]> } }>(
       helmetStub.mock.calls[0]?.[0],
     )
-    expect(opts.contentSecurityPolicy?.directives?.['img-src']).toContain('https://openweathermap.org')
+    expect(opts.contentSecurityPolicy?.directives?.['img-src'] ?? []).not.toContain('https://openweathermap.org')
   })
   it('should allow https://localhost:8443 in the helmet CSP connect-src directive so the slideshow can fetch local weather', () => {
     process.env.NODE_ENV = 'production'

@@ -12,6 +12,11 @@ const KELVIN_TO_CELCIUS_OFFSET = -273.15
 const SECONDS_TO_MILLISECONDS_MULTIPLE = 1000
 const UPDATE_INTERVAL = 600_000 // Ten Minutes in Milliseconds
 const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
+export const DEFAULT_ICON_TTL_MS = 86_400_000 // 24 hours
+export const MAX_ICON_TTL_MS = 604_800_000 // 7 days
+export const BROWSER_ICON_CACHE_SECONDS = 21_600 // 6 hours
+const ICON_CODE_PATTERN = /^\d{2}[dn]$/v
+const PASSTHROUGH_UPSTREAM_STATUSES: ReadonlySet<number> = new Set([StatusCodes.FORBIDDEN, StatusCodes.NOT_FOUND])
 
 export interface WeatherResults {
   temp: number | undefined
@@ -40,6 +45,24 @@ export interface OpenWeatherData {
 }
 
 export class WeatherConfigError extends Error {}
+
+export class IconFetchError extends Error {
+  public statusCode: number
+  constructor(statusCode: number) {
+    super(`Icon fetch failed with status ${statusCode}`)
+    this.statusCode = statusCode
+  }
+}
+
+export interface IconCacheEntry {
+  buffer: Buffer
+  contentType: string
+  expiresAt: number
+}
+
+export const IconCache: { entries: Map<string, IconCacheEntry> } = {
+  entries: new Map<string, IconCacheEntry>(),
+}
 
 function isOptionalMainValid(data: object): boolean {
   if ('main' in data) {
@@ -147,6 +170,74 @@ export async function getWeather(): Promise<OpenWeatherData> {
   return data
 }
 
+function parseCacheControlMaxAge(header: string | null): number | undefined {
+  if (header === null) return undefined
+  const directives = header.split(',').map((part) => part.trim().toLowerCase())
+  if (directives.includes('no-store') || directives.includes('no-cache')) return undefined
+  for (const directive of directives) {
+    const match = /^max-age=(?<seconds>\d+)$/v.exec(directive)
+    const raw = match?.groups?.seconds
+    if (raw === undefined) continue
+    return Number.parseInt(raw, 10) * SECONDS_TO_MILLISECONDS_MULTIPLE
+  }
+  return undefined
+}
+
+function clampTtl(ms: number): number {
+  return Math.min(ms, MAX_ICON_TTL_MS)
+}
+
+async function fetchIcon(code: string): Promise<{ buffer: Buffer; contentType: string; ttlMs: number }> {
+  const response = await fetch(`https://openweathermap.org/img/w/${code}.png`, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  })
+  if (PASSTHROUGH_UPSTREAM_STATUSES.has(response.status)) {
+    throw new IconFetchError(response.status)
+  }
+  if (!response.ok) {
+    throw new IconFetchError(StatusCodes.BAD_GATEWAY)
+  }
+  const buffer = Buffer.from(await response.arrayBuffer())
+  const contentType = response.headers.get('content-type') ?? 'image/png'
+  const maxAge = Internals.parseCacheControlMaxAge(response.headers.get('cache-control'))
+  const ttlMs = Internals.clampTtl(maxAge ?? DEFAULT_ICON_TTL_MS)
+  return { buffer, contentType, ttlMs }
+}
+
+async function serveIcon(req: Request, res: Response): Promise<void> {
+  const code = String(req.params.code)
+  if (!ICON_CODE_PATTERN.test(code)) {
+    res.status(StatusCodes.BAD_REQUEST).end()
+    return
+  }
+  const now = Date.now()
+  const cached = IconCache.entries.get(code)
+  if (cached !== undefined && cached.expiresAt > now) {
+    sendIconBytes(res, cached)
+    return
+  }
+  try {
+    const fresh = await Internals.fetchIcon(code)
+    const entry: IconCacheEntry = {
+      buffer: fresh.buffer,
+      contentType: fresh.contentType,
+      expiresAt: now + fresh.ttlMs,
+    }
+    IconCache.entries.set(code, entry)
+    sendIconBytes(res, entry)
+  } catch (err) {
+    const statusCode = err instanceof IconFetchError ? err.statusCode : StatusCodes.BAD_GATEWAY
+    res.status(statusCode).end()
+  }
+}
+
+function sendIconBytes(res: Response, entry: IconCacheEntry): void {
+  res.status(StatusCodes.OK)
+  res.set('Content-Type', entry.contentType)
+  res.set('Cache-Control', `public, max-age=${BROWSER_ICON_CACHE_SECONDS}`)
+  res.send(entry.buffer)
+}
+
 export async function updateWeather(): Promise<WeatherResults> {
   const latestSunrise = Imports.getLatestSunrise()
   const earliestSunset = Imports.getEarliestSunset()
@@ -193,6 +284,10 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
     res.status(StatusCodes.OK).json(Weather)
   })
 
+  router.get('/icon/:code', (req: Request, res: Response): void => {
+    void Internals.serveIcon(req, res)
+  })
+
   const missingVar = findMissingWeatherConfigVar()
   if (missingVar === undefined) {
     setInterval(() => {
@@ -207,4 +302,11 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
   return router
 }
 
-export const Internals = { getWeather, updateWeather }
+export const Internals = {
+  getWeather,
+  updateWeather,
+  parseCacheControlMaxAge,
+  clampTtl,
+  fetchIcon,
+  serveIcon,
+}

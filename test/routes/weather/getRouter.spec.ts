@@ -43,11 +43,25 @@ describe('routes/weather getRouter()', () => {
   })
   it('should register correct endpoint count', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    expect(routerStub.get.mock.calls.length).toBe(1)
+    expect(routerStub.get.mock.calls.length).toBe(2)
   })
   it('should register root route', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
-    expect(routerStub.get.mock.calls[0]?.[0]).toBe('/')
+    expect(routerStub.get.mock.calls.some((c) => c[0] === '/')).toBe(true)
+  })
+  it('should register /icon/:code route', async () => {
+    await getRouter(applicationFake, serverFake, socketFake)
+    expect(routerStub.get.mock.calls.some((c) => c[0] === '/icon/:code')).toBe(true)
+  })
+  it('should delegate /icon/:code requests to Internals.serveIcon', async () => {
+    const serveIconStub = vi.spyOn(Internals, 'serveIcon').mockResolvedValue(undefined)
+    await getRouter(applicationFake, serverFake, socketFake)
+    const fn = cast<(req: unknown, res: Response) => void>(
+      routerStub.get.mock.calls.find((c) => c[0] === '/icon/:code')?.[1],
+    )
+    const reqFake = cast<unknown>({ params: { code: '01d' } })
+    fn(reqFake, responseFake)
+    expect(serveIconStub.mock.calls[0]).toEqual([reqFake, responseFake])
   })
   it('should register interval', async () => {
     await getRouter(applicationFake, serverFake, socketFake)
@@ -101,7 +115,9 @@ describe('routes/weather getRouter()', () => {
   successTests.forEach(([title, validationFn]) => {
     it(`should ${title} on success`, async () => {
       await getRouter(applicationFake, serverFake, socketFake)
-      const fn = cast<(_: unknown, res: Response) => Promise<void>>(routerStub.get.mock.calls[0]?.[1])
+      const fn = cast<(_: unknown, res: Response) => Promise<void>>(
+        routerStub.get.mock.calls.find((c) => c[0] === '/')?.[1],
+      )
       await fn(null, responseFake)
       validationFn()
     })
@@ -128,7 +144,7 @@ describe('routes/weather getRouter()', () => {
     it('should still register the root route when OPENWEATHER_APPID is missing', async () => {
       delete process.env.OPENWEATHER_APPID
       await getRouter(applicationFake, serverFake, socketFake)
-      expect(routerStub.get.mock.calls[0]?.[0]).toBe('/')
+      expect(routerStub.get.mock.calls.some((c) => c[0] === '/')).toBe(true)
     })
 
     it('should log once when OPENWEATHER_APPID is missing', async () => {

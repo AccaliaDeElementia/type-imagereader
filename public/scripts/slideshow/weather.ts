@@ -5,6 +5,7 @@ import { type WeatherResults, isWeatherResults } from '#contracts/weather.js'
 import { hasValue, stringishHasValue } from '#utils/helpers.js'
 
 type HTMLElementish = HTMLElement | null | undefined
+type HTMLImageElementish = HTMLImageElement | null | undefined
 type Stringish = string | null | undefined
 const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
 
@@ -25,14 +26,20 @@ function showData(container: HTMLElementish, element: HTMLElementish, text: Stri
   element.replaceChildren(text)
 }
 
-function showIcon(element: HTMLElementish, icon: Stringish): void {
+function showIcon(element: HTMLImageElementish, icon: Stringish): void {
   if (!hasValue(element)) return
   if (!stringishHasValue(icon)) {
     element.style.setProperty('display', 'none')
     return
   }
-  element.style.setProperty('display', 'inline-block')
-  element.setAttribute('src', `https://openweathermap.org/img/w/${icon}.png`)
+  element.addEventListener('load', () => {
+    element.style.setProperty('display', 'inline-block')
+  })
+  element.addEventListener('error', () => {
+    element.style.setProperty('display', 'none')
+  })
+  element.style.setProperty('display', 'none')
+  element.setAttribute('src', `/weather/icon/${icon}`)
 }
 const DECIMAL_PLACES = 1
 function showWeather(base: HTMLElementish, weather: WeatherResults): WeatherResults {
@@ -45,7 +52,7 @@ function showWeather(base: HTMLElementish, weather: WeatherResults): WeatherResu
   const desc = base.querySelector<HTMLElement>('.desc')
   const desctext = desc?.querySelector<HTMLElement>('.desctext')
   Internals.showData(desc, desctext, weather.description)
-  const icon = base.querySelector<HTMLElement>('.icon')
+  const icon = base.querySelector<HTMLImageElement>('.icon')
   Internals.showIcon(icon, weather.icon)
   return weather
 }
