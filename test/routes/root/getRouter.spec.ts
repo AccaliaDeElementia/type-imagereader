@@ -4,7 +4,7 @@ import type { Application, Router } from 'express'
 import type { Server as WebSocketServer } from 'socket.io'
 import type { Server } from 'node:http'
 import { getRouter, Imports } from '#routes/root.js'
-import { cast } from '#testutils/typeGuards.js'
+import { cast, stubToKnex } from '#testutils/typeGuards.js'
 
 describe('routes/root getRouter()', () => {
   const applicationFake = cast<Application>({})
@@ -13,6 +13,7 @@ describe('routes/root getRouter()', () => {
   let routerStub = { get: vi.fn() }
   beforeEach(() => {
     routerStub = { get: vi.fn() }
+    vi.spyOn(Imports, 'initialize').mockResolvedValue(stubToKnex(vi.fn()))
     vi.spyOn(Imports, 'Router').mockReturnValue(cast<Router>(routerStub))
   })
   const endpoints = ['/', '/show', '/show/*path']
