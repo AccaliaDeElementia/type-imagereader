@@ -131,6 +131,39 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
     expect(incrementalAddPicturesBulkStub.mock.calls[0]?.[1]).toEqual([])
   })
 
+  it('should return the scanned root folder path', async () => {
+    fsWalkerStub.mockImplementation(
+      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await cb([])
+      },
+    )
+    const scanned = await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
+    expect(scanned).toContain('/comics/new/')
+  })
+
+  it('should return each discovered subdirectory so the caller can recount it', async () => {
+    fsWalkerStub.mockImplementation(
+      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await cb([
+          { path: '/chapter1', isFile: false },
+          { path: '/chapter1/pages', isFile: false },
+        ])
+      },
+    )
+    const scanned = await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
+    expect(scanned).toEqual(expect.arrayContaining(['/comics/new/chapter1/', '/comics/new/chapter1/pages/']))
+  })
+
+  it('should not return discovered picture paths', async () => {
+    fsWalkerStub.mockImplementation(
+      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await cb([{ path: '/page.jpg', isFile: true }])
+      },
+    )
+    const scanned = await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
+    expect(scanned).not.toContain('/comics/new/page.jpg')
+  })
+
   it('should log summary with added count', async () => {
     fsWalkerStub.mockImplementation(
       async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {

@@ -29,6 +29,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
   let pruneDeletedRows = 0
   let pruneWhereCalls: unknown[][] = []
   let pruneAndWhereCalls: unknown[][] = []
+  let pruneWhereInCalls: unknown[][] = []
 
   let picturesAggregateQuery = {
     select: vi.fn().mockImplementation(function (this: object): unknown {
@@ -64,6 +65,9 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     andWhere: vi.fn().mockImplementation(function (this: object): unknown {
       return this
     }),
+    whereIn: vi.fn().mockImplementation(function (this: object): unknown {
+      return this
+    }),
     delete: vi.fn().mockResolvedValue(0),
   }
   let knexFnStub: MockInstance = vi.fn()
@@ -76,6 +80,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     upsertChunks = []
     pruneWhereCalls = []
     pruneAndWhereCalls = []
+    pruneWhereInCalls = []
 
     picturesAggregateQuery = {
       select: vi.fn().mockImplementation(function (this: object): unknown {
@@ -115,6 +120,10 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       }),
       andWhere: vi.fn().mockImplementation((...args: unknown[]) => {
         pruneAndWhereCalls.push(args)
+        return foldersPruneQuery
+      }),
+      whereIn: vi.fn().mockImplementation((...args: unknown[]) => {
+        pruneWhereInCalls.push(args)
         return foldersPruneQuery
       }),
       delete: vi.fn().mockImplementation(async () => {
@@ -159,9 +168,9 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set())
       expect(foldersUpsertQuery.insert.mock.calls.length).toBe(0)
     })
-    it('should still run the empty-folder prune', async () => {
+    it('should not run the empty-folder prune', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set())
-      expect(foldersPruneQuery.delete.mock.calls.length).toBe(1)
+      expect(foldersPruneQuery.delete.mock.calls.length).toBe(0)
     })
   })
 
@@ -189,6 +198,14 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     it('should pass the LIKE prefix as the binding', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
       expect(whereRawCalls[0]?.bindings).toEqual(['/comics/%'])
+    })
+    it('should escape LIKE wildcards in the folder binding', async () => {
+      await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/vol_1 100%/']))
+      expect(whereRawCalls[0]?.bindings).toEqual(['/comics/vol\\_1 100\\%/%'])
+    })
+    it('should declare the escape character for the LIKE clause', async () => {
+      await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
+      expect(whereRawCalls[0]?.pattern).toBe("(folder LIKE ? ESCAPE '\\')")
     })
     it('should issue exactly one bulk upsert call (single chunk)', async () => {
       aggregateRowsForReturn = [{ folder: '/comics/', totalCount: '5', seenCount: '3' }]
@@ -346,6 +363,10 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     it('should exclude root folder from prune delete', async () => {
       await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/']))
       expect(pruneAndWhereCalls).toContainEqual(['path', '<>', '/'])
+    })
+    it('should restrict the prune to the folders whose counts were just recalculated', async () => {
+      await incrementalUpdateFolders(loggerFake, knexFnFake, new Set(['/comics/', '/photos/']))
+      expect(pruneWhereInCalls).toContainEqual(['path', ['/comics/', '/photos/']])
     })
   })
 

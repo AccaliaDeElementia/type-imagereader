@@ -23,7 +23,7 @@ describe('sync/incrementalsync incrementalSync()', () => {
     incrementalAddBulkStub = vi.spyOn(Internals, 'incrementalAddPicturesBulk').mockResolvedValue(undefined)
     incrementalRemoveBulkStub = vi.spyOn(Internals, 'incrementalRemovePicturesBulk').mockResolvedValue(undefined)
     incrementalRemoveFolderStub = vi.spyOn(Internals, 'incrementalRemoveFolder').mockResolvedValue(undefined)
-    incrementalScanFolderStub = vi.spyOn(Internals, 'incrementalScanFolder').mockResolvedValue(undefined)
+    incrementalScanFolderStub = vi.spyOn(Internals, 'incrementalScanFolder').mockResolvedValue([])
     incrementalEnsureAncestorsStub = vi.spyOn(Internals, 'incrementalEnsureAncestors').mockResolvedValue(undefined)
     incrementalUpdateFoldersStub = vi.spyOn(Internals, 'incrementalUpdateFolders').mockResolvedValue(undefined)
     incrementalUpdateFirstImagesStub = vi.spyOn(Internals, 'incrementalUpdateFirstImages').mockResolvedValue(undefined)
@@ -117,6 +117,22 @@ describe('sync/incrementalsync incrementalSync()', () => {
     await incrementalSync(knexFnFake, changeset)
     const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.mock.calls[0]?.[2])
     expect(affectedFolders.has('/photos/new/')).toBe(true)
+  })
+
+  it('should add folders discovered by the directory scan to affected folders', async () => {
+    incrementalScanFolderStub.mockResolvedValue(['/comics/new/', '/comics/new/chapter1/'])
+    const changeset: Changeset = new Map([['/comics/new/', 'dir-create']])
+    await incrementalSync(knexFnFake, changeset)
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.mock.calls[0]?.[2])
+    expect(affectedFolders.has('/comics/new/chapter1/')).toBe(true)
+  })
+
+  it('should add ancestors of scan-discovered folders to affected folders', async () => {
+    incrementalScanFolderStub.mockResolvedValue(['/comics/new/chapter1/pages/'])
+    const changeset: Changeset = new Map([['/comics/new/', 'dir-create']])
+    await incrementalSync(knexFnFake, changeset)
+    const affectedFolders = cast<Set<string>>(incrementalUpdateFoldersStub.mock.calls[0]?.[2])
+    expect(affectedFolders.has('/comics/new/chapter1/')).toBe(true)
   })
 
   it('should process dir-deletes before file-deletes', async () => {

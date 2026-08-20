@@ -77,12 +77,16 @@ export async function incrementalRemoveFolder(logger: Debugger, knex: Knex, dirP
   logger(`Incremental remove folder: ${dirPath} (${deletedPics} pictures, ${deletedFolders} folders)`)
 }
 
+// Returns every folder path the scan touched -- the scanned root plus all
+// descendants discovered on disk. Callers must fold these into the affected set
+// so their counts get recalculated; a folder inserted here with no count of its
+// own is pruned as empty by incrementalUpdateFolders.
 export async function incrementalScanFolder(
   logger: Debugger,
   knex: Knex,
   dirPath: string,
   dataDir: string,
-): Promise<void> {
+): Promise<string[]> {
   const scanRoot = posix.join(dataDir, dirPath)
   const picturePaths: string[] = []
   const folderPaths: string[] = [dirPath]
@@ -99,6 +103,7 @@ export async function incrementalScanFolder(
   await Internals.incrementalEnsureFoldersBulk(knex, folderPaths)
   await Internals.incrementalAddPicturesBulk(knex, picturePaths)
   logger(`Incremental scan folder: ${dirPath} (${picturePaths.length} pictures added)`)
+  return folderPaths
 }
 
 export async function incrementalEnsureAncestors(
@@ -147,8 +152,8 @@ export async function incrementalUpdateFolders(
   if (folderList.length > ZERO) {
     const perFolderCounts: Array<{ folder: string; totalCount: number; seenCount: number }> = []
     await execChunksSynchronously(chunk(folderList, Imports.getDbChunkSize(knex)), async (chunk: string[]) => {
-      const orLike = chunk.map(() => 'folder LIKE ?').join(' OR ')
-      const bindings = chunk.map((af) => `${af}%`)
+      const orLike = chunk.map(() => `folder LIKE ? ESCAPE '\\'`).join(' OR ')
+      const bindings = chunk.map((af) => `${escapeLikeWildcards(af)}%`)
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- knex aggregation result shape isn't inferred from chained count/sum
       const rows = (await knex('pictures')
         .select('folder')
@@ -184,7 +189,20 @@ export async function incrementalUpdateFolders(
       await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
     })
   }
-  const deletedfolders = await knex('folders').where('totalCount', '=', ZERO).andWhere('path', '<>', posix.sep).delete()
+  // Prune only folders whose counts were just recalculated. An unscoped prune
+  // would delete any folder still sitting at its default count of zero -- rows
+  // inserted by a directory scan die before they are ever counted.
+  const prunedPerChunk: number[] = []
+  await execChunksSynchronously(chunk(folderList, Imports.getDbChunkSize(knex)), async (chunk: string[]) => {
+    prunedPerChunk.push(
+      await knex('folders')
+        .where('totalCount', '=', ZERO)
+        .andWhere('path', '<>', posix.sep)
+        .whereIn('path', chunk)
+        .delete(),
+    )
+  })
+  const deletedfolders = prunedPerChunk.reduce((sum, count) => sum + count, ZERO)
   logger(`Incremental folder update: ${affectedFolders.size} folders checked, ${deletedfolders} empty folders pruned`)
 }
 
@@ -231,7 +249,10 @@ export async function incrementalSync(knex: Knex, changeset: Changeset, dataDir 
   for (const dirPath of dirCreates) {
     addFolderAndAncestors(affectedFolders, dirPath)
     // eslint-disable-next-line no-await-in-loop -- Deliberately synchronous to avoid race conditions
-    await Internals.incrementalScanFolder(logger, knex, dirPath, dataDir)
+    const scannedFolders = await Internals.incrementalScanFolder(logger, knex, dirPath, dataDir)
+    for (const scanned of scannedFolders) {
+      addFolderAndAncestors(affectedFolders, scanned)
+    }
   }
   for (const path of fileCreates) {
     addFolderAndAncestors(affectedFolders, toFolderPath(posix.dirname(path)))
