@@ -18,6 +18,7 @@ describe('public/app/pictureNavigation navigateUnreadForward()', () => {
   let loadImageSpy: MockInstance = vi.fn()
   let publishStub: MockInstance = vi.fn()
   let getPictureSpy: MockInstance = vi.fn()
+  let setEntryCornerStub: MockInstance = vi.fn()
   beforeEach(() => {
     resetPubSub()
     Pictures.current = { ...currentPic }
@@ -26,6 +27,16 @@ describe('public/app/pictureNavigation navigateUnreadForward()', () => {
     loadImageSpy = vi.spyOn(Internals, 'loadImage').mockResolvedValue(undefined)
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     getPictureSpy = vi.spyOn(Internals, 'getPicture').mockImplementation((..._args: unknown[]) => undefined)
+    setEntryCornerStub = vi.spyOn(Imports, 'setEntryCorner').mockImplementation((..._args: unknown[]) => undefined)
+  })
+  it('should arrive at the start of the next picture', async () => {
+    Viewer.history.next = [{ ...historyPic }]
+    await navigateUnreadForward()
+    expect(setEntryCornerStub.mock.calls).toEqual([['start']])
+  })
+  it('should not record an arrival when there is nowhere to go', async () => {
+    await navigateUnreadForward()
+    expect(setEntryCornerStub.mock.calls.length).toBe(0)
   })
   describe('isLoading guard', () => {
     beforeEach(() => {

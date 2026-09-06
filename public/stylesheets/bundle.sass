@@ -96,6 +96,29 @@ body
     max-height: 100%
     object-fit: contain
 
+// Actual size mode turns the viewer into a scroll container holding the picture
+// at its own dimensions. `safe center` is what makes one rule cover every shape:
+// on each axis the picture is centred while it fits and pinned to the start edge
+// once it overflows, so a tall picture starts at its top, a wide one at its left,
+// and one that overflows both at its top-left corner — always fully reachable.
+// Plain `center` would push the overflow outside the scrollable region instead.
+#bigImage.actualSize
+  overflow: auto
+  display: grid
+  place-content: safe center
+  overscroll-behavior: contain
+  scrollbar-color: $color-border transparent
+  cursor: grab
+  img
+    width: auto
+    max-width: none
+    height: auto
+    max-height: none
+    object-fit: none
+
+#bigImage.actualSize.panning
+  cursor: grabbing
+
 .menuButton
   background-color: $color-bg-card
   line-height: 0

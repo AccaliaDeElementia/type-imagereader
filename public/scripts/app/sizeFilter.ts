@@ -31,6 +31,9 @@ export function initSizeSelectorSlider(): void {
   document.querySelector('.selectScaledOriginal')?.addEventListener('click', (evt) => {
     Internals.setShowOriginalSize(!Internals.getShowOriginalSize())
     Internals.updateSizeSelectorSlider()
+    // Reshape the viewer before refetching, so the incoming picture lands in a
+    // container that is already scrollable (or already clipped).
+    Imports.publish('Pictures:SizeMode')
     // The picture on screen was fetched at the previous size; re-request it so
     // the toggle takes effect without navigating away and back.
     Imports.publish('Pictures:Refresh')

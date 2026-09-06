@@ -153,6 +153,7 @@ describe('client template contract', () => {
         ['#Paginator template (pictureMarkup.ts)', '#Paginator'],
         ['#PaginatorItem template (pictureMarkup.ts)', '#PaginatorItem'],
         ['#mainMenu (navigation.ts)', '#mainMenu'],
+        ['#bigImage scroll container (imageViewport.ts)', '#bigImage'],
         ['.menuButton (navigation.ts)', '.menuButton'],
         ['.selectUnreadAll (unreadFilter.ts)', '.selectUnreadAll'],
         ['.selectUnreadAll > div (unreadFilter.ts)', '.selectUnreadAll > div'],

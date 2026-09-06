@@ -34,6 +34,7 @@ html
 describe('public/app/pictureMarkup resetMarkup()', () => {
   let dom = new JSDOM(render(markup), {})
   let publishStub: MockInstance = vi.fn()
+  let applyEntryScrollStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -41,6 +42,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     mountDom(dom)
     resetPubSub()
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    applyEntryScrollStub = vi.spyOn(Imports, 'applyEntryScroll').mockImplementation((..._args: unknown[]) => undefined)
     Pictures.mainImage = null
     Pictures.current = null
     Grid.imageCard = null
@@ -136,6 +138,39 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Hide')).toBe(false)
     img.dispatchEvent(evt)
     expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Hide')).toBe(true)
+  })
+  // The scrollable extent of the new picture is only known once it has decoded,
+  // so the viewport takes up its arrival position on load rather than on request.
+  it('should position the viewport on mainImage load event', () => {
+    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
+    assert(img !== null)
+    resetMarkup()
+    img.dispatchEvent(new dom.window.Event('load'))
+    expect(applyEntryScrollStub.mock.calls.length).toBe(1)
+  })
+  it('should not position the viewport before the load event', () => {
+    resetMarkup()
+    expect(applyEntryScrollStub.mock.calls.length).toBe(0)
+  })
+  // resetMarkup runs again on every folder change against the same <img>. A
+  // second copy of the load handler would undo the arrival the first one
+  // applied, dropping the reader back at the top of the picture.
+  it('should not stack load handlers across resets', () => {
+    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
+    assert(img !== null)
+    resetMarkup()
+    resetMarkup()
+    img.dispatchEvent(new dom.window.Event('load'))
+    expect(applyEntryScrollStub.mock.calls.length).toBe(1)
+  })
+  it('should not stack error handlers across resets', () => {
+    const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
+    assert(img !== null)
+    resetMarkup()
+    resetMarkup()
+    img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
+    img.dispatchEvent(new dom.window.ErrorEvent('error'))
+    expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(1)
   })
   it('should publish Loading:Error on mainImage error event with src set', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')

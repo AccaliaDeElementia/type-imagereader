@@ -5,6 +5,7 @@ import { Pictures } from './pictureState.js'
 import { makeTab as _makeTab, resetMarkup as _resetMarkup, selectPage as _selectPage } from './pictureMarkup.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { getShowOriginalSize as _getShowOriginalSize } from './sizeFilter.js'
+import { setEntryCorner as _setEntryCorner, viewportSize as _viewportSize, type EntryCorner } from './imageViewport.js'
 import { getFirst, hasValues, indexPercentToText, indexToText } from '#utils/helpers.js'
 import { isLoading as _isLoading } from './loading.js'
 import { postJSON as _postJSON } from './net.js'
@@ -13,6 +14,8 @@ import { publish as _publish } from './pubsub.js'
 export const Imports = {
   getShowUnreadOnly: _getShowUnreadOnly,
   getShowOriginalSize: _getShowOriginalSize,
+  viewportSize: _viewportSize,
+  setEntryCorner: _setEntryCorner,
   makeTab: _makeTab,
   resetMarkup: _resetMarkup,
   selectPage: _selectPage,
@@ -83,13 +86,16 @@ export function setModCount(modCount: number): void {
   Viewer.modCount = modCount
 }
 
-// In original-size mode the server sends the image at its stored resolution and
-// the viewer keeps fitting it to the viewport, so pinch-zoom reveals real detail
-// instead of an upscaled downscale. The rendered dimensions are then irrelevant.
-function makeURI(width: number | undefined, height: number | undefined, img: Picture): string {
+// In original-size mode the image renders at its own dimensions inside a scroll
+// container, so there is no bounding box to ask the server for. Scaled requests
+// measure the container rather than the image element: in actual size mode that
+// element is as large as the picture, and reading it would ask for a scaled
+// image the size of the original on the way back to fit-screen mode.
+function makeURI(img: Picture): string {
   if (Imports.getShowOriginalSize()) {
     return `/images/original${img.path}-image.webp`
   }
+  const { width, height } = Imports.viewportSize()
   return `/images/scaled/${width}/${height}${img.path}-image.webp`
 }
 
@@ -109,7 +115,9 @@ function setTextContent(selector: string, content: string): void {
   document.querySelector(selector)?.replaceChildren(document.createTextNode(content))
 }
 
-export async function changePicture(pic: Picture | undefined): Promise<void> {
+// The entry corner is recorded only once the move is certain to happen, so a
+// navigation refused above leaves no arrival pending for the next picture.
+export async function changePicture(pic: Picture | undefined, entry: EntryCorner = 'start'): Promise<void> {
   if (Imports.isLoading()) {
     return
   }
@@ -117,6 +125,7 @@ export async function changePicture(pic: Picture | undefined): Promise<void> {
     Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
+  Imports.setEntryCorner(entry)
   recordFreshView()
   Pictures.current = pic
   await Internals.loadImage().catch(() => null)
@@ -138,6 +147,7 @@ export async function navigateUnreadBack(): Promise<void> {
     Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
+  Imports.setEntryCorner('end')
   pushToNextHistory()
   Pictures.current = target
   await Internals.loadImage().catch(() => null)
@@ -154,6 +164,7 @@ export async function navigateUnreadForward(): Promise<void> {
     Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
+  Imports.setEntryCorner('start')
   pushToPrevHistory()
   Pictures.current = target
   await Internals.loadImage().catch(() => null)
@@ -182,10 +193,7 @@ export async function loadImage(): Promise<void> {
     // eslint-disable-next-line require-atomic-updates -- modCount is intentionally updated with the server response
     Viewer.modCount = newModCount
     await Viewer.nextLoader
-    Pictures.mainImage?.setAttribute(
-      'src',
-      Internals.makeURI(Pictures.mainImage.width, Pictures.mainImage.height, Pictures.current),
-    )
+    Pictures.mainImage?.setAttribute('src', Internals.makeURI(Pictures.current))
     const { index = DEFAULT_INDEX } = Pictures.current
     const displayTotal = Pictures.pictures.length.toLocaleString()
     const displayIndex = indexToText(index)
@@ -208,10 +216,7 @@ export async function refreshImage(): Promise<void> {
   if (Pictures.current === null) return
   if (Pictures.current.path === '') return
   Imports.publish('Loading:show')
-  Pictures.mainImage?.setAttribute(
-    'src',
-    Internals.makeURI(Pictures.mainImage.width, Pictures.mainImage.height, Pictures.current),
-  )
+  Pictures.mainImage?.setAttribute('src', Internals.makeURI(Pictures.current))
   await Internals.loadNextImage().catch(() => undefined)
 }
 
@@ -221,7 +226,7 @@ async function loadNextImage(): Promise<void> {
     Viewer.nextPending = false
     Viewer.nextLoader = Promise.resolve()
   } else {
-    const uri = Internals.makeURI(Pictures.mainImage?.width, Pictures.mainImage?.height, next)
+    const uri = Internals.makeURI(next)
     Viewer.nextPending = true
     const clearPending = (): void => {
       Viewer.nextPending = false

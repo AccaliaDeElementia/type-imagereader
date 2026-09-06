@@ -18,6 +18,7 @@ describe('public/app/pictureNavigation navigateUnreadBack()', () => {
   let loadImageSpy: MockInstance = vi.fn()
   let publishStub: MockInstance = vi.fn()
   let getPictureSpy: MockInstance = vi.fn()
+  let setEntryCornerStub: MockInstance = vi.fn()
   beforeEach(() => {
     resetPubSub()
     Pictures.current = { ...currentPic }
@@ -26,6 +27,23 @@ describe('public/app/pictureNavigation navigateUnreadBack()', () => {
     loadImageSpy = vi.spyOn(Internals, 'loadImage').mockResolvedValue(undefined)
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     getPictureSpy = vi.spyOn(Internals, 'getPicture').mockImplementation((..._args: unknown[]) => undefined)
+    setEntryCornerStub = vi.spyOn(Imports, 'setEntryCorner').mockImplementation((..._args: unknown[]) => undefined)
+  })
+  // Walking back into a picture should resume where the reader left it, so the
+  // viewport arrives at the far corner rather than the top.
+  it('should arrive at the end of the previous picture', async () => {
+    Viewer.history.prev = [{ ...historyPic }]
+    await navigateUnreadBack()
+    expect(setEntryCornerStub.mock.calls).toEqual([['end']])
+  })
+  it('should arrive at the end when falling through to the index search', async () => {
+    getPictureSpy.mockReturnValue({ ...freshPic })
+    await navigateUnreadBack()
+    expect(setEntryCornerStub.mock.calls).toEqual([['end']])
+  })
+  it('should not record an arrival when there is nowhere to go', async () => {
+    await navigateUnreadBack()
+    expect(setEntryCornerStub.mock.calls.length).toBe(0)
   })
   describe('isLoading guard', () => {
     beforeEach(() => {

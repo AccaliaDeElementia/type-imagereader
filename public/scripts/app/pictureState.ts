@@ -12,6 +12,7 @@ import {
 import { initActions as _initActions, initMouse as _initMouse } from './pictureInput.js'
 import { initUnreadSelectorSlider as _initUnreadSelectorSlider } from './unreadFilter.js'
 import { initSizeSelectorSlider as _initSizeSelectorSlider } from './sizeFilter.js'
+import { init as _initImageViewport } from './imageViewport.js'
 import { subscribe as _subscribe } from './pubsub.js'
 
 export const Imports = {
@@ -24,6 +25,7 @@ export const Imports = {
   initMouse: _initMouse,
   initUnreadSelectorSlider: _initUnreadSelectorSlider,
   initSizeSelectorSlider: _initSizeSelectorSlider,
+  initImageViewport: _initImageViewport,
   subscribe: _subscribe,
 }
 
@@ -58,6 +60,7 @@ function init(): void {
   Imports.initMouse()
   Imports.initUnreadSelectorSlider()
   Imports.initSizeSelectorSlider()
+  Imports.initImageViewport()
 }
 
 export const Pictures = {

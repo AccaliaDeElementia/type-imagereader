@@ -5,6 +5,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { initActions, Imports } from '#public/scripts/app/pictureInput.js'
 import { NavigateTo } from '#public/scripts/app/pictureNavigation.js'
+import type { EntryCorner } from '#public/scripts/app/imageViewport.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
 import { cast } from '#testutils/typeGuards.js'
@@ -22,6 +23,10 @@ describe('public/app/pictures initActions()', () => {
   let loadCurrentPageSpy: MockInstance = vi.fn()
   let windowOpenSpy: MockInstance = vi.fn()
   let subscribeStub: MockInstance = vi.fn()
+  let scrollForwardStub: MockInstance = vi.fn()
+  let scrollBackwardStub: MockInstance = vi.fn()
+  let nudgeUpStub: MockInstance = vi.fn()
+  let nudgeDownStub: MockInstance = vi.fn()
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {
       url: 'http://127.0.0.1:2999',
@@ -41,12 +46,16 @@ describe('public/app/pictures initActions()', () => {
       .mockImplementation((..._args: unknown[]) => undefined)
     windowOpenSpy = vi.spyOn(global.window, 'open').mockReturnValue(null)
     subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    scrollForwardStub = vi.spyOn(Imports, 'scrollForward').mockReturnValue(false)
+    scrollBackwardStub = vi.spyOn(Imports, 'scrollBackward').mockReturnValue(false)
+    nudgeUpStub = vi.spyOn(Imports, 'nudgeUp').mockReturnValue(false)
+    nudgeDownStub = vi.spyOn(Imports, 'nudgeDown').mockReturnValue(false)
   })
   afterEach(() => {
     unmountDom()
   })
   const noMenuSubscribers: Array<[string, string]> = [
-    ['Action:Keypress:ArrowUp', 'ShowMenu'],
+    ['Action:Keypress:ArrowUp', 'ScrollUp'],
     ['Action:Keypress:ArrowRight', 'Next'],
     ['Action:Keypress:ArrowLeft', 'Previous'],
     ['Action:Gamepad:Right', 'Next'],
@@ -55,13 +64,15 @@ describe('public/app/pictures initActions()', () => {
     ['Action:Gamepad:Left', 'Previous'],
     ['Action:Gamepad:LLeft', 'PreviousUnseen'],
     ['Action:Gamepad:RLeft', 'PreviousImage'],
-    ['Action:Keypress:ArrowDown', 'ShowMenu'],
+    ['Action:Keypress:ArrowDown', 'ScrollDown'],
   ]
-  const changeToSubscribers: Array<[string, NavigateTo]> = [
-    ['Action:Execute:First', NavigateTo.First],
-    ['Action:Execute:PreviousImage', NavigateTo.Previous],
-    ['Action:Execute:NextImage', NavigateTo.Next],
-    ['Action:Execute:Last', NavigateTo.Last],
+  // Stepping back a picture resumes it at its far corner; every other move,
+  // including the jumps to either end of the folder, starts at the top.
+  const changeToSubscribers: Array<[string, NavigateTo, EntryCorner]> = [
+    ['Action:Execute:First', NavigateTo.First, 'start'],
+    ['Action:Execute:PreviousImage', NavigateTo.Previous, 'end'],
+    ['Action:Execute:NextImage', NavigateTo.Next, 'start'],
+    ['Action:Execute:Last', NavigateTo.Last, 'start'],
   ]
   const subscribers = [
     ...noMenuSubscribers.map((v) => v[0]),
@@ -70,6 +81,8 @@ describe('public/app/pictures initActions()', () => {
     'Action:Execute:NextUnseen',
     'Action:Execute:Previous',
     'Action:Execute:Next',
+    'Action:Execute:ScrollUp',
+    'Action:Execute:ScrollDown',
     'Action:Execute:ViewFullSize',
     'Action:Execute:Bookmark',
     'Action:Gamepad:South',
@@ -131,7 +144,7 @@ describe('public/app/pictures initActions()', () => {
       expect(publishStub.mock.calls.length).toBe(0)
     })
   })
-  changeToSubscribers.forEach(([action, direction]) => {
+  changeToSubscribers.forEach(([action, direction, corner]) => {
     it(`should call getPicture once for ${action}`, async () => {
       initActions()
       const fn = capturedSubscriber(subscribeStub, action)
@@ -150,17 +163,23 @@ describe('public/app/pictures initActions()', () => {
       await fn(undefined)
       expect(changePictureSpy.mock.calls.length).toBe(1)
     })
-    it(`should call changePicture with one argument for ${action}`, async () => {
+    it(`should call changePicture with two arguments for ${action}`, async () => {
       initActions()
       const fn = capturedSubscriber(subscribeStub, action)
       await fn(undefined)
-      expect(changePictureSpy.mock.calls[0]).toHaveLength(1)
+      expect(changePictureSpy.mock.calls[0]).toHaveLength(2)
     })
     it(`should change to fetched picture for ${action}`, async () => {
       initActions()
       const fn = capturedSubscriber(subscribeStub, action)
       await fn(undefined)
       expect(changePictureSpy.mock.calls[0]?.[0]).toBe(getPictureFake)
+    })
+    it(`should arrive at the ${corner} of the picture for ${action}`, async () => {
+      initActions()
+      const fn = capturedSubscriber(subscribeStub, action)
+      await fn(undefined)
+      expect(changePictureSpy.mock.calls[0]?.[1]).toBe(corner)
     })
   })
   it('should call navigateUnreadBack once for Action:Execute:PreviousUnseen', async () => {
@@ -242,6 +261,100 @@ describe('public/app/pictures initActions()', () => {
     getShowUnreadOnly.mockReturnValue(false)
     await fn(undefined)
     expect(publishStub.mock.calls.some((c) => c[0] === 'Action:Execute:NextImage')).toBe(true)
+  })
+  // In actual size mode a Next/Previous means "show me the rest of this page"
+  // until the page is exhausted; only then does it mean "show me another page".
+  it('should offer Action:Execute:Next to the viewport first', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:Next')
+    vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(scrollForwardStub.mock.calls.length).toBe(1)
+  })
+  it('should not change picture when Action:Execute:Next is consumed by the viewport', async () => {
+    initActions()
+    scrollForwardStub.mockReturnValue(true)
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:Next')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(publishStub.mock.calls.length).toBe(0)
+  })
+  it('should offer Action:Execute:Previous to the viewport first', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:Previous')
+    vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(scrollBackwardStub.mock.calls.length).toBe(1)
+  })
+  it('should not change picture when Action:Execute:Previous is consumed by the viewport', async () => {
+    initActions()
+    scrollBackwardStub.mockReturnValue(true)
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:Previous')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(publishStub.mock.calls.length).toBe(0)
+  })
+  // Up and Down fine-tune the scroll when a stepped move left a panel cut off,
+  // and only fall through to the menu once the picture has no slack left.
+  it('should offer Action:Execute:ScrollDown to the viewport first', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollDown')
+    vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(nudgeDownStub.mock.calls.length).toBe(1)
+  })
+  it('should not show the menu when Action:Execute:ScrollDown is consumed', async () => {
+    initActions()
+    nudgeDownStub.mockReturnValue(true)
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollDown')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(publishStub.mock.calls.length).toBe(0)
+  })
+  it('should show the menu when Action:Execute:ScrollDown finds no slack', async () => {
+    initActions()
+    nudgeDownStub.mockReturnValue(false)
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollDown')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(publishStub.mock.calls.map((c) => cast<string>(c[0]))).toEqual(['Action:Execute:ShowMenu'])
+  })
+  it('should offer Action:Execute:ScrollUp to the viewport first', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollUp')
+    vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(nudgeUpStub.mock.calls.length).toBe(1)
+  })
+  it('should not show the menu when Action:Execute:ScrollUp is consumed', async () => {
+    initActions()
+    nudgeUpStub.mockReturnValue(true)
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollUp')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(publishStub.mock.calls.length).toBe(0)
+  })
+  it('should show the menu when Action:Execute:ScrollUp finds no slack', async () => {
+    initActions()
+    nudgeUpStub.mockReturnValue(false)
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollUp')
+    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    await fn(undefined)
+    expect(publishStub.mock.calls.map((c) => cast<string>(c[0]))).toEqual(['Action:Execute:ShowMenu'])
+  })
+  // The explicit per-picture actions are the escape hatch out of a long page,
+  // so they must never be swallowed by scrolling.
+  it('should not offer Action:Execute:NextImage to the viewport', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextImage')
+    await fn(undefined)
+    expect(scrollForwardStub.mock.calls.length).toBe(0)
+  })
+  it('should not offer Action:Execute:PreviousImage to the viewport', async () => {
+    initActions()
+    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousImage')
+    await fn(undefined)
+    expect(scrollBackwardStub.mock.calls.length).toBe(0)
   })
   it('should call window.open once when Action:Execute:ViewFullSize', async () => {
     initActions()

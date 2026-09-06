@@ -38,6 +38,8 @@ describe('public/app/pictures loadImage()', () => {
   let selectPageSpy: MockInstance = vi.fn()
   let loadNextImageSpy: MockInstance = vi.fn()
   let publishStub: MockInstance = vi.fn()
+  let viewportSizeStub: MockInstance = vi.fn()
+  let getShowOriginalSizeStub: MockInstance = vi.fn()
   let bottomLeftText: HTMLElement | null = null
   let bottomCenterText: HTMLElement | null = null
   let bottomRightText: HTMLElement | null = null
@@ -73,6 +75,8 @@ describe('public/app/pictures loadImage()', () => {
     selectPageSpy = vi.spyOn(Imports, 'selectPage').mockImplementation((..._args: unknown[]) => undefined)
     loadNextImageSpy = vi.spyOn(Internals, 'loadNextImage').mockResolvedValue(undefined)
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    viewportSizeStub = vi.spyOn(Imports, 'viewportSize').mockReturnValue({ width: 0, height: 0 })
+    getShowOriginalSizeStub = vi.spyOn(Imports, 'getShowOriginalSize').mockReturnValue(false)
 
     bottomCenterText = dom.window.document.querySelector('.statusBar.bottom .center')
     bottomLeftText = dom.window.document.querySelector('.statusBar.bottom .left')
@@ -253,15 +257,21 @@ describe('public/app/pictures loadImage()', () => {
   })
   it('should set src height on image', async () => {
     assert(Pictures.mainImage !== null)
-    Pictures.mainImage.height = 512
+    viewportSizeStub.mockReturnValue({ width: 0, height: 512 })
     await loadImage()
     expect(Pictures.mainImage.getAttribute('src')).toBe('/images/scaled/0/512/some/path/1250.png-image.webp')
   })
   it('should set src width on image', async () => {
     assert(Pictures.mainImage !== null)
-    Pictures.mainImage.width = 1024
+    viewportSizeStub.mockReturnValue({ width: 1024, height: 0 })
     await loadImage()
     expect(Pictures.mainImage.getAttribute('src')).toBe('/images/scaled/1024/0/some/path/1250.png-image.webp')
+  })
+  it('should request the original resolution image in actual size mode', async () => {
+    assert(Pictures.mainImage !== null)
+    getShowOriginalSizeStub.mockReturnValue(true)
+    await loadImage()
+    expect(Pictures.mainImage.getAttribute('src')).toBe('/images/original/some/path/1250.png-image.webp')
   })
   it('should set statusbar name', async () => {
     await loadImage()

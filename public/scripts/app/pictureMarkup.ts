@@ -4,11 +4,13 @@ import type { Picture } from '#contracts/listing.js'
 import { Pictures } from './pictureState.js'
 import { hasValues, stringishHasValue } from '#utils/helpers.js'
 import { publish as _publish } from './pubsub.js'
+import { applyEntryScroll as _applyEntryScroll } from './imageViewport.js'
 import { cloneNode } from './utils.js'
 import { isHTMLElement } from '#contracts/markup.js'
 
 export const Imports = {
   publish: _publish,
+  applyEntryScroll: _applyEntryScroll,
 }
 
 const STATUS_BARS = ['top', 'bottom']
@@ -31,6 +33,20 @@ const MINIMUM_INDEX = 0
 
 type PageSelector = () => number
 
+function onMainImageLoad(): void {
+  // How far the new picture can scroll is only known once it has decoded, so the
+  // viewport takes up its arrival position here rather than at request time.
+  Imports.applyEntryScroll()
+  Imports.publish('Loading:Hide')
+}
+
+function onMainImageError(): void {
+  const src = Pictures.mainImage?.getAttribute('src')
+  if (stringishHasValue(src)) {
+    Imports.publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
+  }
+}
+
 export function resetMarkup(): void {
   Pictures.mainImage = document.querySelector<HTMLImageElement>('#bigImage img')
   Grid.imageCard = document.querySelector<HTMLTemplateElement>('#ImageCard')
@@ -43,15 +59,13 @@ export function resetMarkup(): void {
     }
   }
   Pictures.mainImage?.setAttribute('src', '')
-  Pictures.mainImage?.addEventListener('load', () => {
-    Imports.publish('Loading:Hide')
-  })
-  Pictures.mainImage?.addEventListener('error', () => {
-    const src = Pictures.mainImage?.getAttribute('src')
-    if (stringishHasValue(src)) {
-      Imports.publish('Loading:Error', `Main Image Failed to Load: ${Pictures.current?.name}`)
-    }
-  })
+  // Named handlers, not inline closures: resetMarkup runs again on every folder
+  // change while the <img> element stays the same, and addEventListener ignores
+  // a repeat registration of the same function. Fresh closures would instead
+  // stack up, firing once per folder visited — which for applyEntryScroll means
+  // the second run consumes nothing and sends the reader back to the top.
+  Pictures.mainImage?.addEventListener('load', onMainImageLoad)
+  Pictures.mainImage?.addEventListener('error', onMainImageError)
 }
 
 function makePictureCard(picture: Picture): HTMLElement | undefined {

@@ -57,6 +57,7 @@ describe('public/app/pictures init()', () => {
   let initMouseSpy: MockInstance = vi.fn()
   let initUnreadSliderSpy: MockInstance = vi.fn()
   let initSizeSliderSpy: MockInstance = vi.fn()
+  let initImageViewportSpy: MockInstance = vi.fn()
   let loadDataSpy: MockInstance = vi.fn()
   let changePictureSpy: MockInstance = vi.fn()
   let refreshImageSpy: MockInstance = vi.fn()
@@ -77,6 +78,7 @@ describe('public/app/pictures init()', () => {
     initSizeSliderSpy = vi
       .spyOn(Imports, 'initSizeSelectorSlider')
       .mockImplementation((..._args: unknown[]) => undefined)
+    initImageViewportSpy = vi.spyOn(Imports, 'initImageViewport').mockImplementation((..._args: unknown[]) => undefined)
     loadDataSpy = vi.spyOn(Imports, 'loadData').mockResolvedValue(undefined)
     changePictureSpy = vi.spyOn(Imports, 'changePicture').mockResolvedValue(undefined)
     refreshImageSpy = vi.spyOn(Imports, 'refreshImage').mockResolvedValue(undefined)
@@ -125,6 +127,11 @@ describe('public/app/pictures init()', () => {
     expect(initSizeSliderSpy.mock.calls.length > 0).toBe(false)
     Pictures.init()
     expect(initSizeSliderSpy.mock.calls.length > 0).toBe(true)
+  })
+  it('should init image viewport on main init', () => {
+    expect(initImageViewportSpy.mock.calls.length > 0).toBe(false)
+    Pictures.init()
+    expect(initImageViewportSpy.mock.calls.length > 0).toBe(true)
   })
   it('should register subscribers for Navigate:Data, Pictures:Change and Pictures:Refresh', () => {
     Pictures.init()

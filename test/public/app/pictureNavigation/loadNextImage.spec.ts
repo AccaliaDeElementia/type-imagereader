@@ -25,9 +25,9 @@ describe('public/app/pictures loadNextImage()', () => {
     path: '/foobar.png',
     seen: false,
   }
-  const mainImage = {
-    width: cast<number | undefined>(1024),
-    height: cast<number | undefined>(768),
+  const viewport = {
+    width: 1024,
+    height: 768,
   }
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
@@ -39,9 +39,11 @@ describe('public/app/pictures loadNextImage()', () => {
     fetchStub.mockResolvedValue(undefined)
     getPictureStub = vi.spyOn(Internals, 'getPicture').mockReturnValue(next)
     getShowUnreadOnlyStub = vi.spyOn(Imports, 'getShowUnreadOnly').mockReturnValue(false)
-    mainImage.width = 1024
-    mainImage.height = 768
-    Pictures.mainImage = cast<HTMLImageElement>(mainImage)
+    vi.spyOn(Imports, 'getShowOriginalSize').mockReturnValue(false)
+    viewport.width = 1024
+    viewport.height = 768
+    vi.spyOn(Imports, 'viewportSize').mockImplementation(() => ({ ...viewport }))
+    Pictures.mainImage = cast<HTMLImageElement>({})
   })
   afterEach(() => {
     unmountDom()
@@ -134,33 +136,33 @@ describe('public/app/pictures loadNextImage()', () => {
     await Internals.loadNextImage()
     expect(fetchStub.mock.calls[0]?.[0]).toBe('/images/scaled/1024/768/foobar.png-image.webp')
   })
-  it('should fetch once with main image width set', async () => {
-    mainImage.width = 65535
+  it('should fetch once with a wider viewport', async () => {
+    viewport.width = 65535
     await Internals.loadNextImage()
     expect(fetchStub.mock.calls.length).toBe(1)
   })
-  it('should fetch with one argument with main image width set', async () => {
-    mainImage.width = 65535
+  it('should fetch with one argument with a wider viewport', async () => {
+    viewport.width = 65535
     await Internals.loadNextImage()
     expect(fetchStub.mock.calls[0]).toHaveLength(1)
   })
-  it('should fetch expected url with main image width set', async () => {
-    mainImage.width = 65535
+  it('should fetch expected url with a wider viewport', async () => {
+    viewport.width = 65535
     await Internals.loadNextImage()
     expect(fetchStub.mock.calls[0]?.[0]).toContain('scaled/65535/768/')
   })
-  it('should fetch once with main image height set', async () => {
-    mainImage.height = 65535
+  it('should fetch once with a taller viewport', async () => {
+    viewport.height = 65535
     await Internals.loadNextImage()
     expect(fetchStub.mock.calls.length).toBe(1)
   })
-  it('should fetch with one argument with main image height set', async () => {
-    mainImage.height = 65535
+  it('should fetch with one argument with a taller viewport', async () => {
+    viewport.height = 65535
     await Internals.loadNextImage()
     expect(fetchStub.mock.calls[0]).toHaveLength(1)
   })
-  it('should fetch expected url with main image height set', async () => {
-    mainImage.height = 65535
+  it('should fetch expected url with a taller viewport', async () => {
+    viewport.height = 65535
     await Internals.loadNextImage()
     expect(fetchStub.mock.calls[0]?.[0]).toContain('scaled/1024/65535/')
   })

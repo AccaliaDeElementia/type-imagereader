@@ -5,6 +5,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { initSizeSelectorSlider, Imports, Internals } from '#public/scripts/app/sizeFilter.js'
 import { render } from 'pug'
 import assert from 'node:assert'
+import { cast } from '#testutils/typeGuards.js'
 import type { MockInstance } from 'vitest'
 
 const markup = `html
@@ -91,18 +92,11 @@ describe('public/app/pictures initSizeSelectorSlider()', () => {
     element.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }))
     expect(setShowOriginalSizeSpy.mock.calls[0]).toEqual([true])
   })
-  it('should request a picture refresh once on toggle', () => {
+  it('should publish only the size mode and refresh topics on toggle', () => {
     initSizeSelectorSlider()
     const element = dom.window.document.querySelector('.selectScaledOriginal')
     assert(element !== null)
     element.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }))
-    expect(publishSpy.mock.calls.length).toBe(1)
-  })
-  it('should request a picture refresh with the refresh topic on toggle', () => {
-    initSizeSelectorSlider()
-    const element = dom.window.document.querySelector('.selectScaledOriginal')
-    assert(element !== null)
-    element.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }))
-    expect(publishSpy.mock.calls[0]?.[0]).toBe('Pictures:Refresh')
+    expect(publishSpy.mock.calls.map((c) => cast<string>(c[0]))).toEqual(['Pictures:SizeMode', 'Pictures:Refresh'])
   })
 })

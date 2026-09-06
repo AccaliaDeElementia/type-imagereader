@@ -56,7 +56,7 @@ describe('public/app/pictures refreshImage()', () => {
   })
   it('should build a URI for the current picture', async () => {
     await refreshImage()
-    expect(makeURIStub.mock.calls[0]?.[2]).toBe(Pictures.current)
+    expect(makeURIStub.mock.calls[0]).toEqual([Pictures.current])
   })
   it('should set the rebuilt URI as the image source', async () => {
     await refreshImage()
