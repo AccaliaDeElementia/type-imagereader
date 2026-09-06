@@ -42,7 +42,11 @@ describe('public/app/pictures loadImage()', () => {
   let bottomCenterText: HTMLElement | null = null
   let bottomRightText: HTMLElement | null = null
   beforeEach(() => {
-    dom = new JSDOM(render(markup))
+    // makeURI() reads the size preference from localStorage, which throws on
+    // the opaque origin JSDOM uses when no url is given.
+    dom = new JSDOM(render(markup), {
+      url: 'http://127.0.0.1:2999',
+    })
     mountDom(dom)
     resetPubSub()
     Pictures.pictures = Array.from({ length: totalCount }).map(

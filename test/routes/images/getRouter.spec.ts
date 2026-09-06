@@ -4,13 +4,14 @@ import type { Application, Router } from 'express'
 import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
-import { CacheStorage, readAndRescaleImage, getRouter, Imports } from '#routes/images.js'
+import { CacheStorage, readAndConvertImage, readAndRescaleImage, getRouter, Imports } from '#routes/images.js'
 import { cast } from '#testutils/typeGuards.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/images export getRouter()', () => {
   const defaultKioskCache = CacheStorage.kioskCache
   const defaultScaledCache = CacheStorage.scaledCache
+  const defaultOriginalCache = CacheStorage.originalCache
   let applicationFake = cast<Application>({})
   let serverFake = cast<Server>({})
   let websocketsFake = cast<WebSocketServer>({})
@@ -36,6 +37,7 @@ describe('routes/images export getRouter()', () => {
   afterAll(() => {
     CacheStorage.kioskCache = defaultKioskCache
     CacheStorage.scaledCache = defaultScaledCache
+    CacheStorage.originalCache = defaultOriginalCache
   })
   it('should use router import to construct router', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
@@ -69,9 +71,28 @@ describe('routes/images export getRouter()', () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(CacheStorage.kioskCache).not.toBe(CacheStorage.scaledCache)
   })
+  it('should create new original mode image cache', async () => {
+    await getRouter(applicationFake, serverFake, websocketsFake)
+    expect(CacheStorage.originalCache).not.toBe(defaultOriginalCache)
+  })
+  it('should use readAndConvertImage() to fill original mode image cache', async () => {
+    await getRouter(applicationFake, serverFake, websocketsFake)
+    expect(CacheStorage.originalCache.cacheFunction).toBe(readAndConvertImage)
+  })
+  // Full resolution images are far larger than viewport-scaled ones, so the
+  // original cache holds fewer entries than the shared default.
+  it('should bound the original mode image cache below the shared default', async () => {
+    await getRouter(applicationFake, serverFake, websocketsFake)
+    expect(CacheStorage.originalCache.maxItems).toBe(5)
+  })
+  it('should create separate scaled and original mode image caches', async () => {
+    await getRouter(applicationFake, serverFake, websocketsFake)
+    expect(CacheStorage.originalCache).not.toBe(CacheStorage.scaledCache)
+  })
   const routes = [
     '/full/*path',
     '/scaled/:width/:height/*path-image.webp',
+    '/original/*path-image.webp',
     '/preview/*path-image.webp',
     '/kiosk/*path-image.webp',
   ]

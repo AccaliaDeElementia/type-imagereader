@@ -10,6 +10,11 @@ $color-accent-green-active: #00efb2
 $color-accent-blue: #375a7f
 $color-accent-red: #e74c3c
 
+// Sizing
+// Two toggle sliders share the navbar, so each is sized to the longest label it
+// carries rather than to a comfortable margin.
+$slider-width: 6.5rem
+
 @font-face
   font-family: 'Material Icons'
   font-style: normal
@@ -54,7 +59,9 @@ body
 
 #navbar
   display: flex
-  flex-wrap: wrap
+  // The bar is a fixed 2.5rem tall, so anything that wraps is clipped. With two
+  // toggle sliders competing for width the brand truncates instead.
+  flex-wrap: nowrap
   align-items: center
   justify-content: space-between
   background-color: $color-bg-dark
@@ -66,6 +73,11 @@ body
   left: 0
   right: 0
   z-index: 1000
+  h1
+    min-width: 0
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
   .expando
     flex-grow: 9
 
@@ -91,19 +103,20 @@ body
   border-radius: 0.25rem
   cursor: pointer
 
-.selectUnreadAll
+.selectUnreadAll, .selectScaledOriginal
   display: inline-block
   padding: 0
-  width: 7rem
+  width: $slider-width
   height: 2.1rem
   position: relative
   overflow: hidden
   border-radius: 0.25rem
   cursor: pointer
-  div.unread
-    left: -7rem
+  flex-shrink: 0
+  div.unread, div.original
+    left: -$slider-width
     transition: left 0.5s ease-in-out
-  div.all
+  div.all, div.scaled
     left: 0
     transition: left 0.5s ease-in-out
   div
@@ -114,13 +127,14 @@ body
     left: 0
     span
       display: inline-block
-      padding: 0.5rem
+      padding: 0.5rem 0.25rem
       margin: 0
-      width: 7rem
+      width: $slider-width
       text-align: center
-    .all
+      white-space: nowrap
+    .all, .scaled
       background-color: $color-accent-green
-    .unread
+    .unread, .original
       background-color: $color-accent-blue
 
 #mainMenu

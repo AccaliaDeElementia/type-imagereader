@@ -17,6 +17,12 @@ import { handleErrors as _handleErrors, sendError } from '#utils/express.js'
 import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
 
 const CACHE_SIZE = 25
+// Original resolution images are an order of magnitude larger than the
+// viewport-scaled ones, so their cache is held to far fewer entries.
+const ORIGINAL_CACHE_SIZE = 5
+// The original route serves the image at its stored resolution, so it has no
+// bounding box to key the cache on.
+const ORIGINAL_UNBOUNDED = 0
 const ONE_MONTH_MS = 2_592_000_000
 const PREVIEW_WIDTH = 240
 const PREVIEW_HEIGHT = 320
@@ -73,6 +79,23 @@ export class ImageData {
       Imports.logger('rescale failed for %s: %s', this.path, err instanceof Error ? err.message : String(err))
     }
   }
+
+  // Transcode at the stored resolution. Applies the same EXIF rotation and webp
+  // encoding as rescale() so an unscaled view matches the scaled one in
+  // orientation and colour, without resampling the pixels. An image the webp
+  // encoder can't handle (over 16383px on a side) leaves data and extension
+  // untouched, falling back to serving the original bytes.
+  async convert(animated: boolean): Promise<void> {
+    if (this.error !== null) {
+      return // Image already has an error
+    }
+    try {
+      this.data = await Imports.Sharp(this.data, { animated }).rotate().webp().toBuffer()
+      this.extension = 'webp'
+    } catch (err) {
+      Imports.logger('convert failed for %s: %s', this.path, err instanceof Error ? err.message : String(err))
+    }
+  }
 }
 
 const logger: Debugger = debug('type-imagereader:images')
@@ -100,9 +123,13 @@ export class ImageCache {
   public items: CacheItem[] = []
   public static cacheSize = CACHE_SIZE
   public cacheFunction: CacheCreator
+  // Per-instance override of the shared size limit, resolved on every fetch so
+  // that changes to the shared default still apply to instances without one.
+  public maxItems: number | undefined
 
-  constructor(cacheFn: CacheCreator) {
+  constructor(cacheFn: CacheCreator, maxItems?: number) {
     this.cacheFunction = cacheFn
+    this.maxItems = maxItems
   }
 
   public async fetch(path: string, width: number, height: number): Promise<ImageData> {
@@ -118,8 +145,9 @@ export class ImageCache {
       this.items = this.items.filter((entry) => entry !== item) // remove from current position before promoting to front
     }
     this.items.unshift(item)
-    if (this.items.length >= ImageCache.cacheSize) {
-      this.items = this.items.filter((_, i) => i < ImageCache.cacheSize)
+    const sizeLimit = this.maxItems ?? ImageCache.cacheSize
+    if (this.items.length >= sizeLimit) {
+      this.items = this.items.filter((_, i) => i < sizeLimit)
     }
     const result = await item.image
     // Don't poison the cache with errors — let subsequent requests retry from disk.
@@ -152,6 +180,10 @@ export async function rescaleImage(image: ImageData, width: number, height: numb
   await image.rescale(width, height, animated)
 }
 
+export async function convertImage(image: ImageData, animated = true): Promise<void> {
+  await image.convert(animated)
+}
+
 export async function readAndRescaleImage(
   path: string,
   width: number,
@@ -160,6 +192,19 @@ export async function readAndRescaleImage(
 ): Promise<ImageData> {
   const image = await Internals.readImage(path)
   await Internals.rescaleImage(image, width, height, animated)
+  return image
+}
+
+// Matches the CacheCreator contract so the original cache can share ImageCache;
+// the bounding box is meaningless for an unscaled image and is ignored.
+export async function readAndConvertImage(
+  path: string,
+  _width: number,
+  _height: number,
+  animated = true,
+): Promise<ImageData> {
+  const image = await Internals.readImage(path)
+  await Internals.convertImage(image, animated)
   return image
 }
 
@@ -184,6 +229,7 @@ const uninitializedCacheError: CacheCreator = async (path) => {
 export const CacheStorage = {
   kioskCache: new ImageCache(uninitializedCacheError),
   scaledCache: new ImageCache(uninitializedCacheError),
+  originalCache: new ImageCache(uninitializedCacheError, ORIGINAL_CACHE_SIZE),
 }
 
 // Export the base-router
@@ -193,6 +239,7 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
 
   CacheStorage.kioskCache = new ImageCache(readAndRescaleImage)
   CacheStorage.scaledCache = new ImageCache(readAndRescaleImage)
+  CacheStorage.originalCache = new ImageCache(readAndConvertImage, ORIGINAL_CACHE_SIZE)
 
   const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
     Imports.handleErrors(Imports.logger, action)
@@ -257,6 +304,16 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   )
 
   router.get(
+    '/original/*path-image.webp',
+    handleErrors(async (req, res) => {
+      const filename = `/${reqParamToString(req.params.path)}`
+      Imports.logger('GET /images/original %s', filename)
+      const image = await CacheStorage.originalCache.fetch(filename, ORIGINAL_UNBOUNDED, ORIGINAL_UNBOUNDED)
+      Internals.sendImage(image, res)
+    }),
+  )
+
+  router.get(
     '/preview/*path-image.webp',
     handleErrors(async (req, res) => {
       const filename = `/${reqParamToString(req.params.path)}`
@@ -281,4 +338,4 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
   return router
 }
 
-export const Internals = { readImage, rescaleImage, sendImage }
+export const Internals = { readImage, rescaleImage, convertImage, sendImage }

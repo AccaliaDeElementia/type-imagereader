@@ -6,10 +6,12 @@ import { resetMarkup as _resetMarkup } from './pictureMarkup.js'
 import {
   changePicture as _changePicture,
   loadData as _loadData,
+  refreshImage as _refreshImage,
   resetViewerState as _resetViewerState,
 } from './pictureNavigation.js'
 import { initActions as _initActions, initMouse as _initMouse } from './pictureInput.js'
 import { initUnreadSelectorSlider as _initUnreadSelectorSlider } from './unreadFilter.js'
+import { initSizeSelectorSlider as _initSizeSelectorSlider } from './sizeFilter.js'
 import { subscribe as _subscribe } from './pubsub.js'
 
 export const Imports = {
@@ -17,9 +19,11 @@ export const Imports = {
   resetMarkup: _resetMarkup,
   resetViewerState: _resetViewerState,
   changePicture: _changePicture,
+  refreshImage: _refreshImage,
   initActions: _initActions,
   initMouse: _initMouse,
   initUnreadSelectorSlider: _initUnreadSelectorSlider,
+  initSizeSelectorSlider: _initSizeSelectorSlider,
   subscribe: _subscribe,
 }
 
@@ -47,9 +51,13 @@ function init(): void {
   Imports.subscribe('Pictures:Change', async (data) => {
     if (isPicture(data)) await Imports.changePicture(data)
   })
+  Imports.subscribe('Pictures:Refresh', async () => {
+    await Imports.refreshImage()
+  })
   Imports.initActions()
   Imports.initMouse()
   Imports.initUnreadSelectorSlider()
+  Imports.initSizeSelectorSlider()
 }
 
 export const Pictures = {

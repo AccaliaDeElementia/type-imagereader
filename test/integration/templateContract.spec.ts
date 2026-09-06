@@ -156,6 +156,8 @@ describe('client template contract', () => {
         ['.menuButton (navigation.ts)', '.menuButton'],
         ['.selectUnreadAll (unreadFilter.ts)', '.selectUnreadAll'],
         ['.selectUnreadAll > div (unreadFilter.ts)', '.selectUnreadAll > div'],
+        ['.selectScaledOriginal (sizeFilter.ts)', '.selectScaledOriginal'],
+        ['.selectScaledOriginal > div (sizeFilter.ts)', '.selectScaledOriginal > div'],
         ['#confirmDialog .confirm button (confirm.ts)', '#confirmDialog .confirm'],
         ['#confirmDialog .cancel button (confirm.ts)', '#confirmDialog .cancel'],
         ['a.navbar-brand (navigation.ts)', 'a.navbar-brand'],

@@ -16,6 +16,10 @@ html
       div
         span.all show All
         span.unread show Unread
+    div.selectScaledOriginal
+      div
+        span.scaled Fit Screen
+        span.original Actual Size
     div#mainMenu
     div#bigImage
       img.hidden
@@ -52,8 +56,10 @@ describe('public/app/pictures init()', () => {
   let initActionsSpy: MockInstance = vi.fn()
   let initMouseSpy: MockInstance = vi.fn()
   let initUnreadSliderSpy: MockInstance = vi.fn()
+  let initSizeSliderSpy: MockInstance = vi.fn()
   let loadDataSpy: MockInstance = vi.fn()
   let changePictureSpy: MockInstance = vi.fn()
+  let refreshImageSpy: MockInstance = vi.fn()
   let subscribeStub: MockInstance = vi.fn()
   let resetViewerStateStub: MockInstance = vi.fn()
   beforeEach(() => {
@@ -68,8 +74,12 @@ describe('public/app/pictures init()', () => {
     initUnreadSliderSpy = vi
       .spyOn(Imports, 'initUnreadSelectorSlider')
       .mockImplementation((..._args: unknown[]) => undefined)
+    initSizeSliderSpy = vi
+      .spyOn(Imports, 'initSizeSelectorSlider')
+      .mockImplementation((..._args: unknown[]) => undefined)
     loadDataSpy = vi.spyOn(Imports, 'loadData').mockResolvedValue(undefined)
     changePictureSpy = vi.spyOn(Imports, 'changePicture').mockResolvedValue(undefined)
+    refreshImageSpy = vi.spyOn(Imports, 'refreshImage').mockResolvedValue(undefined)
     subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
     resetViewerStateStub = vi.spyOn(Imports, 'resetViewerState').mockImplementation((..._args: unknown[]) => undefined)
   })
@@ -111,10 +121,21 @@ describe('public/app/pictures init()', () => {
     Pictures.init()
     expect(initUnreadSliderSpy.mock.calls.length > 0).toBe(true)
   })
-  it('should register subscribers for Navigate:Data and Pictures:Change', () => {
+  it('should init size slider on main init', () => {
+    expect(initSizeSliderSpy.mock.calls.length > 0).toBe(false)
+    Pictures.init()
+    expect(initSizeSliderSpy.mock.calls.length > 0).toBe(true)
+  })
+  it('should register subscribers for Navigate:Data, Pictures:Change and Pictures:Refresh', () => {
     Pictures.init()
     const subscribedTopics = subscribeStub.mock.calls.map((c) => cast<string>(c[0]).toUpperCase())
-    expect(subscribedTopics.sort()).toEqual(['NAVIGATE:DATA', 'PICTURES:CHANGE'].sort())
+    expect(subscribedTopics.sort()).toEqual(['NAVIGATE:DATA', 'PICTURES:CHANGE', 'PICTURES:REFRESH'].sort())
+  })
+  it('should refresh the displayed picture in the Pictures:Refresh handler', async () => {
+    Pictures.init()
+    const handler = capturedSubscriber(subscribeStub, 'Pictures:Refresh')
+    await handler(undefined)
+    expect(refreshImageSpy.mock.calls.length).toBe(1)
   })
   const testCases: Array<[string, boolean, unknown]> = [
     ['listing', true, { path: '', parent: '', name: '' }],

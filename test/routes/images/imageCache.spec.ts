@@ -23,6 +23,38 @@ describe('routes/images ImageData', () => {
       const cache = new ImageCache(vi.fn())
       expect(cache.items).toHaveLength(0)
     })
+    it('should leave maxItems unset when no size limit is provided', () => {
+      const cache = new ImageCache(vi.fn())
+      expect(cache.maxItems).toBe(undefined)
+    })
+    it('should store an explicit size limit', () => {
+      const cache = new ImageCache(vi.fn(), 3)
+      expect(cache.maxItems).toBe(3)
+    })
+  })
+  describe('per instance size limit', () => {
+    it('should evict down to the instance limit when it is smaller than the shared default', async () => {
+      const cache = new ImageCache(createSpy, 2)
+      await cache.fetch('/a.png', 100, 100)
+      await cache.fetch('/b.png', 100, 100)
+      await cache.fetch('/c.png', 100, 100)
+      expect(cache.items).toHaveLength(2)
+    })
+    it('should retain the most recently fetched item within the instance limit', async () => {
+      const cache = new ImageCache(createSpy, 2)
+      await cache.fetch('/a.png', 100, 100)
+      await cache.fetch('/b.png', 100, 100)
+      await cache.fetch('/c.png', 100, 100)
+      expect(cache.items.map((item) => item.path)).toContain('/c.png')
+    })
+    it('should ignore later changes to the shared default when an instance limit is set', async () => {
+      const cache = new ImageCache(createSpy, 2)
+      ImageCache.cacheSize = 100
+      await cache.fetch('/a.png', 100, 100)
+      await cache.fetch('/b.png', 100, 100)
+      await cache.fetch('/c.png', 100, 100)
+      expect(cache.items).toHaveLength(2)
+    })
   })
   describe('fetch()', () => {
     it('should fetch existing exact match item', async () => {

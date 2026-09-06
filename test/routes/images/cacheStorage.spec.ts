@@ -34,4 +34,20 @@ describe('routes/images export CacheStorage()', () => {
     const image = await CacheStorage.scaledCache.fetch('/foo.png', 1280, 800)
     expect(image.path).toBe('/foo.png')
   })
+  it('should have default original Cache report error code', async () => {
+    const image = await CacheStorage.originalCache.fetch('/foo.png', 0, 0)
+    expect(image.error?.code).toBe('INTERNAL_SERVER_ERROR')
+  })
+  it('should have default original Cache report error status code', async () => {
+    const image = await CacheStorage.originalCache.fetch('/foo.png', 0, 0)
+    expect(image.error?.statusCode).toBe(500)
+  })
+  it('should have default original Cache report error message', async () => {
+    const image = await CacheStorage.originalCache.fetch('/foo.png', 0, 0)
+    expect(image.error?.message).toBe('CACHE_NOT_INITIALIZED')
+  })
+  it('should have default original Cache resolve to requested path', async () => {
+    const image = await CacheStorage.originalCache.fetch('/foo.png', 0, 0)
+    expect(image.path).toBe('/foo.png')
+  })
 })

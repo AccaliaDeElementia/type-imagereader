@@ -4,6 +4,7 @@ import type { Listing, Picture } from '#contracts/listing.js'
 import { Pictures } from './pictureState.js'
 import { makeTab as _makeTab, resetMarkup as _resetMarkup, selectPage as _selectPage } from './pictureMarkup.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
+import { getShowOriginalSize as _getShowOriginalSize } from './sizeFilter.js'
 import { getFirst, hasValues, indexPercentToText, indexToText } from '#utils/helpers.js'
 import { isLoading as _isLoading } from './loading.js'
 import { postJSON as _postJSON } from './net.js'
@@ -11,6 +12,7 @@ import { publish as _publish } from './pubsub.js'
 
 export const Imports = {
   getShowUnreadOnly: _getShowUnreadOnly,
+  getShowOriginalSize: _getShowOriginalSize,
   makeTab: _makeTab,
   resetMarkup: _resetMarkup,
   selectPage: _selectPage,
@@ -81,7 +83,13 @@ export function setModCount(modCount: number): void {
   Viewer.modCount = modCount
 }
 
+// In original-size mode the server sends the image at its stored resolution and
+// the viewer keeps fitting it to the viewport, so pinch-zoom reveals real detail
+// instead of an upscaled downscale. The rendered dimensions are then irrelevant.
 function makeURI(width: number | undefined, height: number | undefined, img: Picture): string {
+  if (Imports.getShowOriginalSize()) {
+    return `/images/original${img.path}-image.webp`
+  }
   return `/images/scaled/${width}/${height}${img.path}-image.webp`
 }
 
@@ -191,6 +199,20 @@ export async function loadImage(): Promise<void> {
   } catch (err) {
     Imports.publish('Loading:Error', err)
   }
+}
+
+// Re-request the picture already on screen at the currently selected size. It
+// deliberately skips the seen-marking and modCount round trip that loadImage
+// performs: nothing has been navigated to, only re-rendered.
+export async function refreshImage(): Promise<void> {
+  if (Pictures.current === null) return
+  if (Pictures.current.path === '') return
+  Imports.publish('Loading:show')
+  Pictures.mainImage?.setAttribute(
+    'src',
+    Internals.makeURI(Pictures.mainImage.width, Pictures.mainImage.height, Pictures.current),
+  )
+  await Internals.loadNextImage().catch(() => undefined)
 }
 
 async function loadNextImage(): Promise<void> {
