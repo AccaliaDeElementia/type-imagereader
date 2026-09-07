@@ -22,7 +22,16 @@ export interface ViewportSize {
   height: number
 }
 
+interface ScrollPosition {
+  left: number
+  top: number
+}
+
 export type Arrival = 'freshStart' | 'resumeFromEnd'
+
+export type InputDisposition = 'consumed' | 'exhausted'
+
+const ACTUAL_SIZE_CLASS = 'actualSize'
 
 export const Viewport = {
   container: null as HTMLElement | null,
@@ -38,22 +47,26 @@ export function init(): void {
   })
 }
 
-// Actual size mode turns the viewer into a scroll container holding an image at
-// its own dimensions; fit-screen mode goes back to a clipped box holding an
-// image scaled to fit. All of that lives in the stylesheet, keyed off the class.
 function applySizeMode(): void {
   if (Imports.getShowOriginalSize()) {
-    Viewport.container?.classList.add('actualSize')
+    Viewport.container?.classList.add(ACTUAL_SIZE_CLASS)
     return
   }
-  Viewport.container?.classList.remove('actualSize')
+  Viewport.container?.classList.remove(ACTUAL_SIZE_CLASS)
   Internals.resetScroll()
 }
 
+const ORIGIN: ScrollPosition = { left: SCROLL_ORIGIN, top: SCROLL_ORIGIN }
+
+function farCorner(element: HTMLElement): ScrollPosition {
+  return { left: maxScrollLeft(element), top: maxScrollTop(element) }
+}
+
 export function resetScroll(): void {
-  if (Viewport.container === null) return
-  Viewport.container.scrollLeft = SCROLL_ORIGIN
-  Viewport.container.scrollTop = SCROLL_ORIGIN
+  const element = Viewport.container
+  if (element === null) return
+  element.scrollLeft = ORIGIN.left
+  element.scrollTop = ORIGIN.top
 }
 
 export function setArrival(arrival: Arrival): void {
@@ -67,8 +80,6 @@ export function viewportSize(): ViewportSize {
   }
 }
 
-// Only actual size mode has anything to pan; in fit-screen mode the image is
-// always wholly visible and every input belongs to navigation.
 export function getPanTarget(): HTMLElement | null {
   if (!Imports.getShowOriginalSize()) return null
   return Viewport.container
@@ -108,79 +119,74 @@ function clampedHorizontalOffset(element: HTMLElement, fraction: number): number
   return Math.min(Math.max(element.scrollLeft + distance, SCROLL_ORIGIN), maxScrollLeft(element))
 }
 
-// Walk the picture the way it is read: down the current column, then across to
-// the top of the next one. An image that only overflows vertically never
-// reaches the sideways step, and one that only overflows horizontally starts at
-// it, so a single rule covers every combination. Reports whether the input was
-// consumed; false means the picture is exhausted and the caller should navigate.
-export function scrollForward(): boolean {
-  const element = getPanTarget()
-  if (element === null) return false
-  if (canScrollDown(element)) {
-    element.scrollTop = clampedVerticalOffset(element, STEP_FRACTION)
-    return true
-  }
-  if (canScrollRight(element)) {
-    element.scrollLeft = clampedHorizontalOffset(element, STEP_FRACTION)
-    element.scrollTop = SCROLL_ORIGIN
-    return true
-  }
-  return false
+function downColumn(element: HTMLElement, fraction: number): ScrollPosition {
+  return { left: element.scrollLeft, top: clampedVerticalOffset(element, fraction) }
 }
 
-// The exact reverse of scrollForward, which means stepping back across lands at
-// the foot of the previous column rather than its head.
-export function scrollBackward(): boolean {
-  const element = getPanTarget()
-  if (element === null) return false
-  if (canScrollUp(element)) {
-    element.scrollTop = clampedVerticalOffset(element, -STEP_FRACTION)
-    return true
-  }
-  if (canScrollLeft(element)) {
-    element.scrollLeft = clampedHorizontalOffset(element, -STEP_FRACTION)
-    element.scrollTop = maxScrollTop(element)
-    return true
-  }
-  return false
+function nextColumnHead(element: HTMLElement): ScrollPosition {
+  return { left: clampedHorizontalOffset(element, STEP_FRACTION), top: SCROLL_ORIGIN }
 }
 
-// Up and Down fine-tune the vertical position when a full step has left a panel
-// straddling the edge of the screen. Unlike the stepped walk they never move
-// between columns: handing the input back at the top and bottom edges is what
-// keeps the menu reachable from the keyboard in actual size mode.
-export function nudgeUp(): boolean {
-  const element = getPanTarget()
-  if (element === null) return false
-  if (!canScrollUp(element)) return false
-  element.scrollTop = clampedVerticalOffset(element, -NUDGE_FRACTION)
-  return true
+function previousColumnFoot(element: HTMLElement): ScrollPosition {
+  return { left: clampedHorizontalOffset(element, -STEP_FRACTION), top: maxScrollTop(element) }
 }
 
-export function nudgeDown(): boolean {
-  const element = getPanTarget()
-  if (element === null) return false
-  if (!canScrollDown(element)) return false
-  element.scrollTop = clampedVerticalOffset(element, NUDGE_FRACTION)
-  return true
+type PanPolicy = (element: HTMLElement) => ScrollPosition | null
+
+function nextForwardPosition(element: HTMLElement): ScrollPosition | null {
+  if (canScrollDown(element)) return downColumn(element, STEP_FRACTION)
+  if (canScrollRight(element)) return nextColumnHead(element)
+  return null
 }
 
-// Take up the arrival position recorded for this picture. Called once the image
-// has decoded, since until then there is nothing to scroll over. Arriving at the
-// end means the far corner — the bottom of the last column — which is exactly
-// where scrollForward would have run out, so a reader stepping back lands where
-// they would have been had they walked there. The arrival is consumed so that a
-// later reload of the same picture starts from the top again.
+function nextBackwardPosition(element: HTMLElement): ScrollPosition | null {
+  if (canScrollUp(element)) return downColumn(element, -STEP_FRACTION)
+  if (canScrollLeft(element)) return previousColumnFoot(element)
+  return null
+}
+
+function nudgedUpPosition(element: HTMLElement): ScrollPosition | null {
+  return canScrollUp(element) ? downColumn(element, -NUDGE_FRACTION) : null
+}
+
+function nudgedDownPosition(element: HTMLElement): ScrollPosition | null {
+  return canScrollDown(element) ? downColumn(element, NUDGE_FRACTION) : null
+}
+
+function panBy(choosePosition: PanPolicy): InputDisposition {
+  const element = getPanTarget()
+  if (element === null) return 'exhausted'
+  const position = choosePosition(element)
+  if (position === null) return 'exhausted'
+  element.scrollLeft = position.left
+  element.scrollTop = position.top
+  return 'consumed'
+}
+
+export function scrollForward(): InputDisposition {
+  return panBy(nextForwardPosition)
+}
+
+export function scrollBackward(): InputDisposition {
+  return panBy(nextBackwardPosition)
+}
+
+export function nudgeUp(): InputDisposition {
+  return panBy(nudgedUpPosition)
+}
+
+export function nudgeDown(): InputDisposition {
+  return panBy(nudgedDownPosition)
+}
+
+// The far corner is where scrollForward runs out, so resuming there puts the
+// reader where a forward walk would have left them.
 export function applyEntryScroll(): void {
   const element = Viewport.container
   if (element === null) return
-  if (Viewport.arrival === 'resumeFromEnd') {
-    element.scrollLeft = maxScrollLeft(element)
-    element.scrollTop = maxScrollTop(element)
-  } else {
-    element.scrollLeft = SCROLL_ORIGIN
-    element.scrollTop = SCROLL_ORIGIN
-  }
+  const position = Viewport.arrival === 'resumeFromEnd' ? farCorner(element) : ORIGIN
+  element.scrollLeft = position.left
+  element.scrollTop = position.top
   Viewport.arrival = 'freshStart'
 }
 

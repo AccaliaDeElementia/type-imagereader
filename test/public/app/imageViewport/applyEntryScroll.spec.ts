@@ -17,14 +17,17 @@ const VIEWPORT_HEIGHT = 600
 const MAX_SCROLL_LEFT = 1600
 const MAX_SCROLL_TOP = 1200
 
-const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => ({
-  scrollLeft: 250,
-  scrollTop: 400,
-  clientWidth: VIEWPORT_WIDTH,
-  clientHeight: VIEWPORT_HEIGHT,
-  scrollWidth,
-  scrollHeight,
-})
+const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => {
+  const container: FakeContainer = {
+    scrollLeft: 250,
+    scrollTop: 400,
+    clientWidth: VIEWPORT_WIDTH,
+    clientHeight: VIEWPORT_HEIGHT,
+    scrollWidth,
+    scrollHeight,
+  }
+  return container
+}
 
 describe('public/app/imageViewport applyEntryScroll()', () => {
   let container = makeContainer(2400, 1800)

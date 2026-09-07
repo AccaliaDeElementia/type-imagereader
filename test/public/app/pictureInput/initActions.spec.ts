@@ -46,10 +46,10 @@ describe('public/app/pictures initActions()', () => {
       .mockImplementation((..._args: unknown[]) => undefined)
     windowOpenSpy = vi.spyOn(global.window, 'open').mockReturnValue(null)
     subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
-    scrollForwardStub = vi.spyOn(Imports, 'scrollForward').mockReturnValue(false)
-    scrollBackwardStub = vi.spyOn(Imports, 'scrollBackward').mockReturnValue(false)
-    nudgeUpStub = vi.spyOn(Imports, 'nudgeUp').mockReturnValue(false)
-    nudgeDownStub = vi.spyOn(Imports, 'nudgeDown').mockReturnValue(false)
+    scrollForwardStub = vi.spyOn(Imports, 'scrollForward').mockReturnValue('exhausted')
+    scrollBackwardStub = vi.spyOn(Imports, 'scrollBackward').mockReturnValue('exhausted')
+    nudgeUpStub = vi.spyOn(Imports, 'nudgeUp').mockReturnValue('exhausted')
+    nudgeDownStub = vi.spyOn(Imports, 'nudgeDown').mockReturnValue('exhausted')
   })
   afterEach(() => {
     unmountDom()
@@ -273,7 +273,7 @@ describe('public/app/pictures initActions()', () => {
   })
   it('should not change picture when Action:Execute:Next is consumed by the viewport', async () => {
     initActions()
-    scrollForwardStub.mockReturnValue(true)
+    scrollForwardStub.mockReturnValue('consumed')
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:Next')
     const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     await fn(undefined)
@@ -288,7 +288,7 @@ describe('public/app/pictures initActions()', () => {
   })
   it('should not change picture when Action:Execute:Previous is consumed by the viewport', async () => {
     initActions()
-    scrollBackwardStub.mockReturnValue(true)
+    scrollBackwardStub.mockReturnValue('consumed')
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:Previous')
     const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     await fn(undefined)
@@ -305,7 +305,7 @@ describe('public/app/pictures initActions()', () => {
   })
   it('should not show the menu when Action:Execute:ScrollDown is consumed', async () => {
     initActions()
-    nudgeDownStub.mockReturnValue(true)
+    nudgeDownStub.mockReturnValue('consumed')
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollDown')
     const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     await fn(undefined)
@@ -313,7 +313,7 @@ describe('public/app/pictures initActions()', () => {
   })
   it('should show the menu when Action:Execute:ScrollDown finds no slack', async () => {
     initActions()
-    nudgeDownStub.mockReturnValue(false)
+    nudgeDownStub.mockReturnValue('exhausted')
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollDown')
     const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     await fn(undefined)
@@ -328,7 +328,7 @@ describe('public/app/pictures initActions()', () => {
   })
   it('should not show the menu when Action:Execute:ScrollUp is consumed', async () => {
     initActions()
-    nudgeUpStub.mockReturnValue(true)
+    nudgeUpStub.mockReturnValue('consumed')
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollUp')
     const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     await fn(undefined)
@@ -336,7 +336,7 @@ describe('public/app/pictures initActions()', () => {
   })
   it('should show the menu when Action:Execute:ScrollUp finds no slack', async () => {
     initActions()
-    nudgeUpStub.mockReturnValue(false)
+    nudgeUpStub.mockReturnValue('exhausted')
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollUp')
     const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     await fn(undefined)

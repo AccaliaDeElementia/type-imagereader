@@ -19,6 +19,7 @@ import {
   scrollBackward as _scrollBackward,
   scrollForward as _scrollForward,
   type Arrival,
+  type InputDisposition,
 } from './imageViewport.js'
 import { publish as _publish, subscribe as _subscribe } from './pubsub.js'
 
@@ -77,54 +78,40 @@ export function initActions(): void {
   Imports.subscribe('Action:Gamepad:RLeft', doIfNoMenu('PreviousImage'))
   Imports.subscribe('Action:Keypress:ArrowDown', doIfNoMenu('ScrollDown'))
 
-  // Only a step back to the previous picture resumes it at its far corner; the
-  // jumps to either end of the folder are fresh starts, not a continuation.
   const changeTo = async (direction: NavigateTo): Promise<void> => {
     const arrival: Arrival = direction === NavigateTo.Previous ? 'resumeFromEnd' : 'freshStart'
     await Imports.changePicture(Imports.getPicture(direction), arrival)
   }
 
-  // Previous and Next are the ambiguous inputs — arrows, taps and the gamepad
-  // d-pad. While a picture is larger than the viewport they mean "show me the
-  // rest of this one", and only once it is exhausted do they mean "show me
-  // another". The explicit PreviousImage/NextImage actions stay literal, so the
-  // menu buttons remain the way out of a long page.
-  Imports.subscribe('Action:Execute:Previous', async () => {
-    if (Imports.scrollBackward()) {
+  const panWithinPictureOrElse = (pan: () => InputDisposition, fallback: () => string) => async (): Promise<void> => {
+    if (pan() === 'consumed') {
       await Promise.resolve()
       return
     }
-    const actualEvent = Imports.getShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage'
-    Imports.publish(`Action:Execute:${actualEvent}`)
+    Imports.publish(`Action:Execute:${fallback()}`)
     await Promise.resolve()
-  })
-  Imports.subscribe('Action:Execute:Next', async () => {
-    if (Imports.scrollForward()) {
-      await Promise.resolve()
-      return
-    }
-    const actualEvent = Imports.getShowUnreadOnly() ? 'NextUnseen' : 'NextImage'
-    Imports.publish(`Action:Execute:${actualEvent}`)
-    await Promise.resolve()
-  })
-  // Up and Down fine-tune the vertical position of an oversized picture, and
-  // only summon the menu once the picture has no slack left in that direction.
-  Imports.subscribe('Action:Execute:ScrollUp', async () => {
-    if (Imports.nudgeUp()) {
-      await Promise.resolve()
-      return
-    }
-    Imports.publish('Action:Execute:ShowMenu')
-    await Promise.resolve()
-  })
-  Imports.subscribe('Action:Execute:ScrollDown', async () => {
-    if (Imports.nudgeDown()) {
-      await Promise.resolve()
-      return
-    }
-    Imports.publish('Action:Execute:ShowMenu')
-    await Promise.resolve()
-  })
+  }
+
+  const nextPicture = (): string => (Imports.getShowUnreadOnly() ? 'NextUnseen' : 'NextImage')
+  const previousPicture = (): string => (Imports.getShowUnreadOnly() ? 'PreviousUnseen' : 'PreviousImage')
+  const showMenu = (): string => 'ShowMenu'
+
+  Imports.subscribe(
+    'Action:Execute:Previous',
+    panWithinPictureOrElse(() => Imports.scrollBackward(), previousPicture),
+  )
+  Imports.subscribe(
+    'Action:Execute:Next',
+    panWithinPictureOrElse(() => Imports.scrollForward(), nextPicture),
+  )
+  Imports.subscribe(
+    'Action:Execute:ScrollUp',
+    panWithinPictureOrElse(() => Imports.nudgeUp(), showMenu),
+  )
+  Imports.subscribe(
+    'Action:Execute:ScrollDown',
+    panWithinPictureOrElse(() => Imports.nudgeDown(), showMenu),
+  )
   Imports.subscribe('Action:Execute:First', async () => {
     await changeTo(NavigateTo.First)
   })
@@ -163,25 +150,29 @@ export function initActions(): void {
   })
 }
 
+// The gutter scrolls natively, so a press there is already handled.
+function isInScrollbarGutter(evt: MouseEvent, target: HTMLElement): boolean {
+  const bounds = target.getBoundingClientRect()
+  return evt.clientX - bounds.left > target.clientWidth || evt.clientY - bounds.top > target.clientHeight
+}
+
+function suppressNativeImageDrag(evt: MouseEvent): void {
+  evt.preventDefault()
+}
+
 function startPan(evt: MouseEvent): void {
   if (evt.button !== PRIMARY_BUTTON) return
   Panning.moved = false
   const target = Imports.getPanTarget()
   if (target === null) return
-  // A press in the scrollbar gutter is already scrolling natively; joining in
-  // would move the image at double speed.
-  const bounds = target.getBoundingClientRect()
-  if (evt.clientX - bounds.left > target.clientWidth) return
-  if (evt.clientY - bounds.top > target.clientHeight) return
+  if (isInScrollbarGutter(evt, target)) return
   Panning.target = target
   Panning.originX = evt.clientX
   Panning.originY = evt.clientY
   Panning.scrollLeft = target.scrollLeft
   Panning.scrollTop = target.scrollTop
   target.classList.add('panning')
-  // Otherwise the browser starts its own image drag and the pan turns into a
-  // ghost image stuck to the cursor.
-  evt.preventDefault()
+  suppressNativeImageDrag(evt)
 }
 
 function updatePan(evt: MouseEvent): void {

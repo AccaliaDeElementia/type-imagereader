@@ -34,8 +34,6 @@ const MINIMUM_INDEX = 0
 type PageSelector = () => number
 
 function onMainImageLoad(): void {
-  // How far the new picture can scroll is only known once it has decoded, so the
-  // viewport takes up its arrival position here rather than at request time.
   Imports.applyEntryScroll()
   Imports.publish('Loading:Hide')
 }

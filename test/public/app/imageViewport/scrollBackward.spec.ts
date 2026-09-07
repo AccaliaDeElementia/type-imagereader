@@ -18,14 +18,17 @@ const VIEWPORT_HEIGHT = 600
 const VERTICAL_STEP = 540
 const HORIZONTAL_STEP = 720
 
-const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => ({
-  scrollLeft: 0,
-  scrollTop: 0,
-  clientWidth: VIEWPORT_WIDTH,
-  clientHeight: VIEWPORT_HEIGHT,
-  scrollWidth,
-  scrollHeight,
-})
+const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => {
+  const container: FakeContainer = {
+    scrollLeft: 0,
+    scrollTop: 0,
+    clientWidth: VIEWPORT_WIDTH,
+    clientHeight: VIEWPORT_HEIGHT,
+    scrollWidth,
+    scrollHeight,
+  }
+  return container
+}
 
 describe('public/app/imageViewport scrollBackward()', () => {
   let getShowOriginalSizeStub: MockInstance = vi.fn()
@@ -45,7 +48,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
 
   describe('when the image fits the viewport', () => {
     it('should not consume the input', () => {
-      expect(scrollBackward()).toBe(false)
+      expect(scrollBackward()).toBe('exhausted')
     })
     it('should not move the viewport', () => {
       scrollBackward()
@@ -60,7 +63,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
       container.scrollTop = 1200
     })
     it('should not consume the input', () => {
-      expect(scrollBackward()).toBe(false)
+      expect(scrollBackward()).toBe('exhausted')
     })
     it('should not move the viewport', () => {
       scrollBackward()
@@ -74,7 +77,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
       container.scrollTop = 1200
     })
     it('should consume the input', () => {
-      expect(scrollBackward()).toBe(true)
+      expect(scrollBackward()).toBe('consumed')
     })
     it('should retreat one screenful up', () => {
       scrollBackward()
@@ -87,7 +90,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
     })
     it('should hand the input on once the top is reached', () => {
       container.scrollTop = 0
-      expect(scrollBackward()).toBe(false)
+      expect(scrollBackward()).toBe('exhausted')
     })
   })
 
@@ -97,7 +100,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
       container.scrollLeft = 1600
     })
     it('should consume the input', () => {
-      expect(scrollBackward()).toBe(true)
+      expect(scrollBackward()).toBe('consumed')
     })
     it('should retreat one screenful left', () => {
       scrollBackward()
@@ -110,7 +113,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
     })
     it('should hand the input on once the left edge is reached', () => {
       container.scrollLeft = 0
-      expect(scrollBackward()).toBe(false)
+      expect(scrollBackward()).toBe('exhausted')
     })
   })
 
@@ -131,7 +134,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
       expect(container.scrollTop).toBe(1200)
     })
     it('should consume the input when stepping across', () => {
-      expect(scrollBackward()).toBe(true)
+      expect(scrollBackward()).toBe('consumed')
     })
     it('should work up the column before moving across', () => {
       container.scrollTop = 1200
@@ -141,7 +144,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
     it('should hand the input on at the near corner', () => {
       container.scrollLeft = 0
       container.scrollTop = 0
-      expect(scrollBackward()).toBe(false)
+      expect(scrollBackward()).toBe('exhausted')
     })
   })
 })

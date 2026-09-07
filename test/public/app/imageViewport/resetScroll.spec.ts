@@ -3,10 +3,23 @@
 import { resetScroll, Viewport } from '#public/scripts/app/imageViewport.js'
 import { cast } from '#testutils/typeGuards.js'
 
+interface FakeContainer {
+  scrollLeft: number
+  scrollTop: number
+}
+
+const makeContainer = (): FakeContainer => {
+  const container: FakeContainer = {
+    scrollLeft: 250,
+    scrollTop: 400,
+  }
+  return container
+}
+
 describe('public/app/imageViewport resetScroll()', () => {
-  let container = { scrollLeft: 0, scrollTop: 0 }
+  let container = makeContainer()
   beforeEach(() => {
-    container = { scrollLeft: 250, scrollTop: 400 }
+    container = makeContainer()
     Viewport.container = cast<HTMLElement>(container)
   })
   afterEach(() => {

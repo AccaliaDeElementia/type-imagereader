@@ -20,14 +20,17 @@ const VIEWPORT_HEIGHT = 600
 const NUDGE_DISTANCE = 120
 const MAX_SCROLL_TOP = 1200
 
-const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => ({
-  scrollLeft: 0,
-  scrollTop: 0,
-  clientWidth: VIEWPORT_WIDTH,
-  clientHeight: VIEWPORT_HEIGHT,
-  scrollWidth,
-  scrollHeight,
-})
+const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => {
+  const container: FakeContainer = {
+    scrollLeft: 0,
+    scrollTop: 0,
+    clientWidth: VIEWPORT_WIDTH,
+    clientHeight: VIEWPORT_HEIGHT,
+    scrollWidth,
+    scrollHeight,
+  }
+  return container
+}
 
 describe('public/app/imageViewport nudgeDown()', () => {
   let getShowOriginalSizeStub: MockInstance = vi.fn()
@@ -45,7 +48,7 @@ describe('public/app/imageViewport nudgeDown()', () => {
   })
 
   it('should consume the input while there is room below', () => {
-    expect(nudgeDown()).toBe(true)
+    expect(nudgeDown()).toBe('consumed')
   })
   it('should move down by less than a full step', () => {
     nudgeDown()
@@ -64,15 +67,15 @@ describe('public/app/imageViewport nudgeDown()', () => {
   // keyboard in actual size mode.
   it('should hand the input on at the bottom', () => {
     container.scrollTop = MAX_SCROLL_TOP
-    expect(nudgeDown()).toBe(false)
+    expect(nudgeDown()).toBe('exhausted')
   })
   it('should hand the input on when the image fits', () => {
     mount(makeContainer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT))
-    expect(nudgeDown()).toBe(false)
+    expect(nudgeDown()).toBe('exhausted')
   })
   it('should hand the input on when actual size mode is off', () => {
     getShowOriginalSizeStub.mockReturnValue(false)
-    expect(nudgeDown()).toBe(false)
+    expect(nudgeDown()).toBe('exhausted')
   })
   it('should not move when actual size mode is off', () => {
     getShowOriginalSizeStub.mockReturnValue(false)
@@ -82,6 +85,6 @@ describe('public/app/imageViewport nudgeDown()', () => {
   // A wide image has no vertical slack, so Up/Down must stay out of the way.
   it('should hand the input on for a horizontally overflowing image', () => {
     mount(makeContainer(2400, VIEWPORT_HEIGHT))
-    expect(nudgeDown()).toBe(false)
+    expect(nudgeDown()).toBe('exhausted')
   })
 })
