@@ -81,6 +81,30 @@ describe('public/slideshow/weather showIcon()', () => {
     expect(element?.style.display).toBe('none')
   })
 
+  // The weather updaters re-run showIcon against the same persistent <img> on
+  // every poll — once a second for local weather — so a handler bound per call
+  // would accumulate for the lifetime of the page.
+  it('should not stack load handlers across repeated updates', () => {
+    const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
+    assert(element !== null)
+    Internals.showIcon(element, '01d')
+    Internals.showIcon(element, '01n')
+    Internals.showIcon(element, '02d')
+    const setProperty = vi.spyOn(element.style, 'setProperty')
+    element.dispatchEvent(new dom.window.Event('load'))
+    expect(setProperty.mock.calls.length).toBe(1)
+  })
+  it('should not stack error handlers across repeated updates', () => {
+    const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
+    assert(element !== null)
+    Internals.showIcon(element, '01d')
+    Internals.showIcon(element, '01n')
+    Internals.showIcon(element, '02d')
+    const setProperty = vi.spyOn(element.style, 'setProperty')
+    element.dispatchEvent(new dom.window.Event('error'))
+    expect(setProperty.mock.calls.length).toBe(1)
+  })
+
   it('should hide a previously-shown element if a subsequent load fails', () => {
     const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
     Internals.showIcon(element, '01d')

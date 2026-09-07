@@ -26,18 +26,31 @@ function showData(container: HTMLElementish, element: HTMLElementish, text: Stri
   element.replaceChildren(text)
 }
 
-function showIcon(element: HTMLImageElementish, icon: Stringish): void {
-  if (!hasValue(element)) return
-  if (!stringishHasValue(icon)) {
-    element.style.setProperty('display', 'none')
-    return
-  }
+// Icon elements outlive every update: showIcon only ever re-points the same
+// persistent <img> at a new source. The updaters call it on each poll — once a
+// second for local weather — so the handlers are bound the first time an element
+// is seen and left in place. Binding per call would stack up a pair per poll for
+// the lifetime of the page, which on an always-on kiosk never stops growing.
+const boundIcons = new WeakSet<HTMLImageElement>()
+
+function bindIconHandlers(element: HTMLImageElement): void {
+  if (boundIcons.has(element)) return
+  boundIcons.add(element)
   element.addEventListener('load', () => {
     element.style.setProperty('display', 'inline-block')
   })
   element.addEventListener('error', () => {
     element.style.setProperty('display', 'none')
   })
+}
+
+function showIcon(element: HTMLImageElementish, icon: Stringish): void {
+  if (!hasValue(element)) return
+  if (!stringishHasValue(icon)) {
+    element.style.setProperty('display', 'none')
+    return
+  }
+  bindIconHandlers(element)
   element.style.setProperty('display', 'none')
   element.setAttribute('src', `/weather/icon/${icon}`)
 }
