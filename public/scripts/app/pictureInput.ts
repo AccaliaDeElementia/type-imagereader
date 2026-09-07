@@ -195,13 +195,9 @@ function endPan(): void {
 export function initMouse(): void {
   const initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : UNINITIALIZED_SCALE
   Pictures.mainImage?.parentElement?.addEventListener('mousedown', startPan)
-  // Tracked on the document so a drag that leaves the image still pans, and
-  // still ends, rather than sticking to the cursor.
   document.addEventListener('mousemove', updatePan)
   document.addEventListener('mouseup', endPan)
   Pictures.mainImage?.parentElement?.addEventListener('click', (evt) => {
-    // A drag that ends over the image would otherwise read as a tap and turn
-    // the page out from under the reader.
     if (Panning.moved) {
       Panning.moved = false
       Imports.publish('Ignored Mouse Click', evt)

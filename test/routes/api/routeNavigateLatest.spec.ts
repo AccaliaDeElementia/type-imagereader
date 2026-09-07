@@ -30,7 +30,7 @@ describe('routes/api route POST /navigate/latest', () => {
   )
   let isBlockedTraversalStub: MockInstance = vi.fn()
   let setLatestPictureStub: MockInstance = vi.fn()
-  let validateAndIncrementStub: MockInstance = vi.fn()
+  let claimAndIncrementStub: MockInstance = vi.fn()
   let getModcountStub: MockInstance = vi.fn()
   let loggerStub: MockInstance = vi.fn()
   let knexFake = { Knex: Math.random() }
@@ -54,7 +54,7 @@ describe('routes/api route POST /navigate/latest', () => {
       }),
     )
     setLatestPictureStub = vi.spyOn(Imports, 'setLatestPicture').mockResolvedValue(null)
-    validateAndIncrementStub = vi.spyOn(ModCount, 'validateAndIncrement').mockReturnValue(1)
+    claimAndIncrementStub = vi.spyOn(ModCount, 'claimAndIncrement').mockReturnValue({ claimed: true, count: 1 })
     getModcountStub = vi.spyOn(ModCount, 'get').mockReturnValue(69)
     ;({ loggerStub } = stubDebug(Imports))
     vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
@@ -72,17 +72,17 @@ describe('routes/api route POST /navigate/latest', () => {
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.OK])
   })
   it('should set status BAD_REQUEST when modcount is invalid', async () => {
-    validateAndIncrementStub.mockReturnValue(null)
+    claimAndIncrementStub.mockReturnValue({ claimed: false })
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.BAD_REQUEST])
   })
   it('should accept missing modcount and handle as invalid modcount', async () => {
-    validateAndIncrementStub.mockReturnValue(null)
+    claimAndIncrementStub.mockReturnValue({ claimed: false })
     await routeHandler(requestFake, responseFake)
     expect(responseStub.send.mock.calls[0]).toEqual(['-1'])
   })
-  it('should return new modcount when validate passes', async () => {
-    validateAndIncrementStub.mockReturnValue(5050)
+  it('should return new modcount when the claim succeeds', async () => {
+    claimAndIncrementStub.mockReturnValue({ claimed: true, count: 5050 })
     const req = cast<Request>({ body: { path: '/image.png' }, originalUrl: '/' })
     await routeHandler(req, responseFake)
     expect(responseStub.send.mock.calls[0]).toEqual(['5050'])
@@ -98,16 +98,16 @@ describe('routes/api route POST /navigate/latest', () => {
     expect(responseStub.send.mock.calls[0]).toEqual(['-1'])
   })
   it('should call setLatestPicture when validate is bypassed', async () => {
-    validateAndIncrementStub.mockReturnValue(null)
+    claimAndIncrementStub.mockReturnValue({ claimed: false })
     requestStub.body.modCount = -1
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.mock.calls[0]).toEqual([knexFake, '/foo/bar/a image.png'])
   })
-  it('should not call validateAndIncrement when validate is bypassed', async () => {
+  it('should not call claimAndIncrement when validate is bypassed', async () => {
     requestStub.body.modCount = -1
     await routeHandler(requestFake, responseFake)
-    expect(validateAndIncrementStub.mock.calls.length).toBe(0)
+    expect(claimAndIncrementStub.mock.calls.length).toBe(0)
   })
   it('should not call get when validate is bypassed', async () => {
     requestStub.body.modCount = -1
@@ -115,25 +115,25 @@ describe('routes/api route POST /navigate/latest', () => {
     expect(getModcountStub.mock.calls.length).toBe(0)
   })
   it('should call setLatestPicture when validate passes', async () => {
-    validateAndIncrementStub.mockReturnValue(5050)
+    claimAndIncrementStub.mockReturnValue({ claimed: true, count: 5050 })
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.mock.calls[0]).toEqual([knexFake, '/foo/bar/a image.png'])
   })
   it('should set status BAD_REQUEST when validate fails', async () => {
-    validateAndIncrementStub.mockReturnValue(null)
+    claimAndIncrementStub.mockReturnValue({ claimed: false })
     getModcountStub.mockReturnValue(69_420)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.BAD_REQUEST])
   })
   it('should return invalid when validate fails', async () => {
-    validateAndIncrementStub.mockReturnValue(null)
+    claimAndIncrementStub.mockReturnValue({ claimed: false })
     getModcountStub.mockReturnValue(69_420)
     await routeHandler(requestFake, responseFake)
     expect(responseStub.send.mock.calls[0]).toEqual(['-1'])
   })
   it('should not call setLatestPicture when validate fails', async () => {
-    validateAndIncrementStub.mockReturnValue(null)
+    claimAndIncrementStub.mockReturnValue({ claimed: false })
     requestStub.body.path = 'foo/bar/a%20image.png'
     await routeHandler(requestFake, responseFake)
     expect(setLatestPictureStub.mock.calls.length).toBe(0)
@@ -159,7 +159,7 @@ describe('routes/api route POST /navigate/latest', () => {
     expect(matched).toBe(true)
   })
   it('should log when modcount validation fails', async () => {
-    validateAndIncrementStub.mockReturnValue(null)
+    claimAndIncrementStub.mockReturnValue({ claimed: false })
     await routeHandler(requestFake, responseFake)
     const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('modcount mismatch'))
     expect(matched).toBe(true)

@@ -69,12 +69,11 @@ interface Listing {
   bookmarks: BookmarkFolder[]
   modCount: number
 }
+export type ModCountClaim = { claimed: true; count: number } | { claimed: false }
+
 interface ModCountPublic {
   get: () => number
-  // Atomic compare-and-increment: returns the new (post-increment) count on match, null on mismatch.
-  // Combining the validate and increment steps into a single synchronous call removes the temptation
-  // for callers to interleave an `await` between them and silently race concurrent requests.
-  validateAndIncrement: (incoming: number) => number | null
+  claimAndIncrement: (incoming: number) => ModCountClaim
 }
 export interface ModCountInternals {
   modCount: number
@@ -88,13 +87,13 @@ const modCountImpl: ModCountPublic & ModCountInternals = {
     return modCountImpl.modCount
   },
   get: (): number => modCountImpl.modCount,
-  validateAndIncrement: (incoming: number): number | null => {
-    if (modCountImpl.modCount !== incoming) return null
+  claimAndIncrement: (incoming: number): ModCountClaim => {
+    if (modCountImpl.modCount !== incoming) return { claimed: false }
     if (modCountImpl.modCount >= MAXIMUM_MOD_COUNT) {
       modCountImpl.modCount = RESET_MOD_COUNT
     }
     modCountImpl.modCount += INCREMENT_SINGLE
-    return modCountImpl.modCount
+    return { claimed: true, count: modCountImpl.modCount }
   },
 }
 modCountImpl.reset()
@@ -331,11 +330,10 @@ export async function setLatestPicture(knex: Knex, path: string): Promise<string
     Imports.logger('setLatestPicture: picture not found: %s', path)
     return null
   }
-  // Atomic conditional flip: the seen=false guard means only one concurrent UPDATE matches a row;
-  // the others see a zero rowcount and skip the seenCount increment. PostgreSQL serializes via row
-  // locks; SQLite via its whole-database write lock — same end-state either way.
-  const flipped = await knex('pictures').update({ seen: true }).where({ path, seen: false })
-  if (flipped > ZERO_COUNT) {
+  // PostgreSQL serialises the seen=false guard via row locks, SQLite via its
+  // whole-database write lock.
+  const rowsClaimed = await knex('pictures').update({ seen: true }).where({ path, seen: false })
+  if (rowsClaimed > ZERO_COUNT) {
     await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Imports.getParentFolders(path))
   }
   await knex('folders').update({ current: path }).where({ path: folder })

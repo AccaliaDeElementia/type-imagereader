@@ -55,30 +55,37 @@ describe('routes/apiFunctions ModCount functions', () => {
     modCountInternals.modCount = 69420
     expect(ModCount.get()).toBe(69420)
   })
-  it('validateAndIncrement() should return null when modcount mismatches', () => {
+  it('claimAndIncrement() should report no claim when modcount mismatches', () => {
     modCountInternals.modCount = 69420
-    expect(ModCount.validateAndIncrement(8675309)).toBe(null)
+    expect(ModCount.claimAndIncrement(8675309)).toEqual({ claimed: false })
   })
-  it('validateAndIncrement() should not change stored modcount when mismatch', () => {
+  it('claimAndIncrement() should not change stored modcount when mismatch', () => {
     modCountInternals.modCount = 69420
-    ModCount.validateAndIncrement(8675309)
+    ModCount.claimAndIncrement(8675309)
     expect(modCountInternals.modCount).toBe(69420)
   })
-  it('validateAndIncrement() should return incremented modcount when match', () => {
+  it('claimAndIncrement() should report the incremented modcount when claimed', () => {
     modCountInternals.modCount = 69420
-    expect(ModCount.validateAndIncrement(69420)).toBe(69421)
+    expect(ModCount.claimAndIncrement(69420)).toEqual({ claimed: true, count: 69421 })
   })
-  it('validateAndIncrement() should update stored modcount when match', () => {
+  it('claimAndIncrement() should update stored modcount when match', () => {
     modCountInternals.modCount = 69420
-    ModCount.validateAndIncrement(69420)
+    ModCount.claimAndIncrement(69420)
     expect(modCountInternals.modCount).toBe(69421)
   })
-  it('validateAndIncrement() should reset modcount on rollover', () => {
+  it('claimAndIncrement() should reset modcount on rollover', () => {
     modCountInternals.modCount = Number.MAX_SAFE_INTEGER
-    expect(ModCount.validateAndIncrement(Number.MAX_SAFE_INTEGER)).toBe(1)
+    expect(ModCount.claimAndIncrement(Number.MAX_SAFE_INTEGER)).toEqual({ claimed: true, count: 1 })
   })
-  it('validateAndIncrement() should reset modcount at exact rollover boundary', () => {
+  // The check and the increment are one synchronous step precisely so that
+  // several requests arriving on the same modcount cannot all be admitted.
+  it('claimAndIncrement() should admit only one of several callers presenting the same modcount', () => {
+    modCountInternals.modCount = 69420
+    const claims = Array.from({ length: 10 }, () => ModCount.claimAndIncrement(69420))
+    expect(claims.filter((claim) => claim.claimed)).toHaveLength(1)
+  })
+  it('claimAndIncrement() should reset modcount at exact rollover boundary', () => {
     modCountInternals.modCount = Number.MAX_SAFE_INTEGER - 1
-    expect(ModCount.validateAndIncrement(Number.MAX_SAFE_INTEGER - 1)).toBe(1)
+    expect(ModCount.claimAndIncrement(Number.MAX_SAFE_INTEGER - 1)).toEqual({ claimed: true, count: 1 })
   })
 })

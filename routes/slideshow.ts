@@ -158,11 +158,10 @@ export async function getImages(knex: Knex, path: string, page: number, count: n
 }
 
 export async function markImageRead(knex: Knex, image: string): Promise<void> {
-  // Atomic conditional flip: the seen=false guard means only one concurrent UPDATE matches a row;
-  // the others see a zero rowcount and skip the seenCount increment. PostgreSQL serializes via row
-  // locks; SQLite via its whole-database write lock — same end-state either way.
-  const flipped = await knex('pictures').update({ seen: true }).where({ path: image, seen: false })
-  if (flipped <= ZERO_COUNT) return
+  // PostgreSQL serialises the seen=false guard via row locks, SQLite via its
+  // whole-database write lock.
+  const rowsClaimed = await knex('pictures').update({ seen: true }).where({ path: image, seen: false })
+  if (rowsClaimed <= ZERO_COUNT) return
   await knex('folders').increment('seenCount', STEP.FORWARD).whereIn('path', Imports.getParentFolders(image))
 }
 
@@ -196,7 +195,6 @@ export async function getRoomAndIncrementImage(
       index: ZERO_COUNT,
       uriSafeImage: undefined,
     }
-    // If a concurrent call already populated the room, surrender to it so all callers share state
     Config.rooms[name] ??= newRoom
     room = Config.rooms[name]
   } else {

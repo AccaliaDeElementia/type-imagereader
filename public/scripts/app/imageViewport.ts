@@ -179,8 +179,6 @@ export function nudgeDown(): InputDisposition {
   return panBy(nudgedDownPosition)
 }
 
-// The far corner is where scrollForward runs out, so resuming there puts the
-// reader where a forward walk would have left them.
 export function applyEntryScroll(): void {
   const element = Viewport.container
   if (element === null) return

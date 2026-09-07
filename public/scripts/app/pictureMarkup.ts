@@ -57,11 +57,7 @@ export function resetMarkup(): void {
     }
   }
   Pictures.mainImage?.setAttribute('src', '')
-  // Named handlers, not inline closures: resetMarkup runs again on every folder
-  // change while the <img> element stays the same, and addEventListener ignores
-  // a repeat registration of the same function. Fresh closures would instead
-  // stack up, firing once per folder visited — which for applyEntryScroll means
-  // the second run consumes nothing and sends the reader back to the top.
+  // addEventListener ignores a repeat registration of the same function.
   Pictures.mainImage?.addEventListener('load', onMainImageLoad)
   Pictures.mainImage?.addEventListener('error', onMainImageError)
 }

@@ -261,6 +261,23 @@ describe('public/app/pictures initMouse()', () => {
       move(PAN_ORIGIN_X + 300, PAN_ORIGIN_Y)
       expect(panTarget.scrollLeft).toBe(100)
     })
+    // Both handlers sit on the document rather than the image. Dispatching from
+    // outside #bigImage proves it: were they bound to the image, a drag that
+    // wandered off it would freeze mid-pan and never register its release.
+    const moveOutsideImage = (clientX: number): void => {
+      dom.window.document.body.dispatchEvent(new dom.window.MouseEvent('mousemove', { clientX, bubbles: true }))
+    }
+    it('should keep panning once the pointer has left the image', () => {
+      press(PAN_ORIGIN_X, PAN_ORIGIN_Y)
+      moveOutsideImage(PAN_ORIGIN_X + 50)
+      expect(panTarget.scrollLeft).toBe(50)
+    })
+    it('should stop panning when the button is released outside the image', () => {
+      press(PAN_ORIGIN_X, PAN_ORIGIN_Y)
+      dom.window.document.body.dispatchEvent(new dom.window.MouseEvent('mouseup', { bubbles: true }))
+      move(PAN_ORIGIN_X + 300, PAN_ORIGIN_Y)
+      expect(panTarget.scrollLeft).toBe(100)
+    })
     // A drag that ends over the image would otherwise also read as a tap and
     // turn the page out from under the reader.
     it('should suppress the navigation click after a drag', () => {

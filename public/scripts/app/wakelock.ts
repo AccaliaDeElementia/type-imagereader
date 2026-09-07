@@ -42,7 +42,6 @@ export function init(): void {
 export async function takeLock(): Promise<void> {
   try {
     if (WakeLock.sentinel === null || WakeLock.sentinel.released) {
-      // Coalesce concurrent callers onto a single request so we don't orphan a lock
       WakeLock.pending ??= navigator.wakeLock.request('screen')
       try {
         const lock = await WakeLock.pending
