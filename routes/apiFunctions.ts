@@ -321,6 +321,14 @@ export async function getListing(knex: Knex, path: string): Promise<Listing | nu
   }
 }
 
+// PostgreSQL serialises the seen=false guard via row locks, SQLite via its
+// whole-database write lock.
+export async function claimUnseenPicture(knex: Knex, path: string): Promise<void> {
+  const rowsClaimed = await knex('pictures').update({ seen: true }).where({ path, seen: false })
+  if (rowsClaimed <= ZERO_COUNT) return
+  await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Imports.getParentFolders(path))
+}
+
 export async function setLatestPicture(knex: Knex, path: string): Promise<string | null> {
   const folder = normalize(dirname(path) + sep)
   const picture = (
@@ -330,12 +338,7 @@ export async function setLatestPicture(knex: Knex, path: string): Promise<string
     Imports.logger('setLatestPicture: picture not found: %s', path)
     return null
   }
-  // PostgreSQL serialises the seen=false guard via row locks, SQLite via its
-  // whole-database write lock.
-  const rowsClaimed = await knex('pictures').update({ seen: true }).where({ path, seen: false })
-  if (rowsClaimed > ZERO_COUNT) {
-    await knex('folders').increment('seenCount', INCREMENT_SINGLE).whereIn('path', Imports.getParentFolders(path))
-  }
+  await Internals.claimUnseenPicture(knex, path)
   await knex('folders').update({ current: path }).where({ path: folder })
   return UriSafePath.encode(folder)
 }
@@ -369,6 +372,7 @@ export async function removeBookmark(knex: Knex, path: string): Promise<void> {
 }
 
 export const Internals = {
+  claimUnseenPicture,
   getChildFolders,
   getFolder,
   getDirectionFolder,

@@ -7,15 +7,16 @@ import type { Server } from 'node:http'
 import { StatusCodes } from 'http-status-codes'
 import debug from 'debug'
 
-import {
-  isBlockedTraversal as _isBlockedTraversal,
-  getParentFolders as _getParentFolders,
-  toFolderPath,
-} from '#utils/path.js'
+import { isBlockedTraversal as _isBlockedTraversal, toFolderPath } from '#utils/path.js'
 
 import { initialize as _initialize } from '#utils/persistence.js'
 import { catchLog as _catchLog } from '#utils/promises.js'
-import { UriSafePath, setLatestPicture as _setLatestPicture, folderExists as _folderExists } from './apiFunctions.js'
+import {
+  UriSafePath,
+  claimUnseenPicture as _claimUnseenPicture,
+  setLatestPicture as _setLatestPicture,
+  folderExists as _folderExists,
+} from './apiFunctions.js'
 import { SocketEvents } from '#contracts/socketEvents.js'
 
 import type { Knex } from 'knex'
@@ -70,7 +71,7 @@ export const Config = {
 export const Imports = {
   logger,
   setLatest: async (knex: Knex, path: string): Promise<string | null> => await Imports.setLatestPicture(knex, path),
-  getParentFolders: _getParentFolders,
+  claimUnseenPicture: _claimUnseenPicture,
   isBlockedTraversal: _isBlockedTraversal,
   Router,
   initialize: _initialize,
@@ -158,11 +159,7 @@ export async function getImages(knex: Knex, path: string, page: number, count: n
 }
 
 export async function markImageRead(knex: Knex, image: string): Promise<void> {
-  // PostgreSQL serialises the seen=false guard via row locks, SQLite via its
-  // whole-database write lock.
-  const rowsClaimed = await knex('pictures').update({ seen: true }).where({ path: image, seen: false })
-  if (rowsClaimed <= ZERO_COUNT) return
-  await knex('folders').increment('seenCount', STEP.FORWARD).whereIn('path', Imports.getParentFolders(image))
+  await Imports.claimUnseenPicture(knex, image)
 }
 
 export async function getRoomAndIncrementImage(
