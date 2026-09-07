@@ -7,7 +7,7 @@ import type { Debugger } from 'debug'
 import { getRouter, Imports } from '#routes/api.js'
 import { StatusCodes } from 'http-status-codes'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import { createResponseFake } from '#testutils/express.js'
 import type { MockInstance } from 'vitest'
 
@@ -48,7 +48,7 @@ describe('routes/api route GET /listing', () => {
       }),
     )
     getListingStub = vi.spyOn(Imports, 'getListing').mockResolvedValue(null)
-    ;({ loggerStub } = stubDebug(Imports))
+    ;({ loggerStub } = stubLoggerFactory(Imports))
     vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
     isBlockedTraversalStub = vi.spyOn(Imports, 'isBlockedTraversal').mockReturnValue(false)
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))

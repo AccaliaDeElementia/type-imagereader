@@ -2,7 +2,7 @@
 
 import { syncAllFolders, Internals, Imports, LOG_PREFIX } from '#sync/folders.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/folders syncAllFolders()', () => {
@@ -15,7 +15,7 @@ describe('sync/folders syncAllFolders()', () => {
   let debugStub: MockInstance = vi.fn()
   let knexFake = stubToKnex({ id: Math.random() })
   beforeEach(() => {
-    ;({ debugStub, loggerStub } = stubDebug(Imports))
+    ;({ debugStub, loggerStub } = stubLoggerFactory(Imports))
     syncNewFoldersStub = vi.spyOn(Internals, 'syncNewFolders').mockResolvedValue(undefined)
     syncRemovedFoldersStub = vi.spyOn(Internals, 'syncRemovedFolders').mockResolvedValue(undefined)
     syncMissingAncestorFoldersStub = vi.spyOn(Internals, 'syncMissingAncestorFolders').mockResolvedValue(undefined)

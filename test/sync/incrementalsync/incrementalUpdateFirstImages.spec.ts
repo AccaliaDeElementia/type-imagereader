@@ -2,17 +2,17 @@
 
 import { incrementalUpdateFirstImages, Imports } from '#sync/incrementalsync.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
-import { createLoggerFake } from '#testutils/debug.js'
+import { stubInjectedLogger } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/incrementalsync incrementalUpdateFirstImages()', () => {
-  let { fake: loggerFake } = createLoggerFake()
+  let { fake: loggerFake } = stubInjectedLogger()
   let syncFolderFirstImagesStub: MockInstance = vi.fn()
   let knexFnStub: MockInstance = vi.fn()
   let knexFnFake = stubToKnex(knexFnStub)
 
   beforeEach(() => {
-    ;({ fake: loggerFake } = createLoggerFake())
+    ;({ fake: loggerFake } = stubInjectedLogger())
     syncFolderFirstImagesStub = vi.spyOn(Imports, 'syncFolderFirstImages').mockResolvedValue(undefined)
     knexFnStub = vi.fn()
     knexFnFake = stubToKnex(knexFnStub)

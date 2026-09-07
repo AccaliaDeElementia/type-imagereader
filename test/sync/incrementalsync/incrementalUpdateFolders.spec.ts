@@ -3,7 +3,7 @@
 import { incrementalUpdateFolders } from '#sync/incrementalsync.js'
 import { toSortKey } from '#sync/helpers.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { createLoggerFake } from '#testutils/debug.js'
+import { stubInjectedLogger } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 interface AggregateRow {
@@ -20,7 +20,7 @@ interface UpsertRow {
 }
 
 describe('sync/incrementalsync incrementalUpdateFolders()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
+  let { stub: loggerStub, fake: loggerFake } = stubInjectedLogger()
 
   let aggregateRowsForReturn: AggregateRow[] = []
   let whereRawCalls: Array<{ pattern: string; bindings: unknown[] }> = []
@@ -74,7 +74,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
   let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
+    ;({ stub: loggerStub, fake: loggerFake } = stubInjectedLogger())
     whereRawCalls = []
     groupByCalls = []
     upsertChunks = []

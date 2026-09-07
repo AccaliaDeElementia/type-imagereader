@@ -3,7 +3,7 @@
 import { syncMissingAncestorFolders } from '#sync/folders.js'
 import { toSortKey } from '#sync/helpers.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
-import { createLoggerFake } from '#testutils/debug.js'
+import { stubInjectedLogger } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 interface InsertedRow {
@@ -13,7 +13,7 @@ interface InsertedRow {
 }
 
 describe('sync/folders syncMissingAncestorFolders()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
+  let { stub: loggerStub, fake: loggerFake } = stubInjectedLogger()
 
   let distinctPictureFolders: Array<{ folder: string }> = []
   let existingFolderPaths: Array<{ path: string }> = []
@@ -43,7 +43,7 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
   let knexFnFake = stubToKnex(knexFnStub)
 
   const setup = (): void => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
+    ;({ stub: loggerStub, fake: loggerFake } = stubInjectedLogger())
     insertedChunks = []
     whereInCalls = []
 

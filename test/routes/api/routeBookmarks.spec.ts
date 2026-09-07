@@ -5,7 +5,7 @@ import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import { createResponseFake } from '#testutils/express.js'
 import type { MockInstance } from 'vitest'
 
@@ -43,7 +43,7 @@ describe('routes/api route GET /bookmarks', () => {
       }),
     )
     getBookmarkStub = vi.spyOn(Imports, 'getBookmarks').mockResolvedValue([])
-    ;({ loggerStub } = stubDebug(Imports))
+    ;({ loggerStub } = stubLoggerFactory(Imports))
     vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
     const fn = getFn.mock.calls.find((call) => call[0] === '/bookmarks')?.[1] as unknown

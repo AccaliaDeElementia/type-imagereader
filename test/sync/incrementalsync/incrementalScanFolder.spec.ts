@@ -2,11 +2,11 @@
 
 import { incrementalScanFolder, Internals, Imports } from '#sync/incrementalsync.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { createLoggerFake } from '#testutils/debug.js'
+import { stubInjectedLogger } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/incrementalsync incrementalScanFolder()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
+  let { stub: loggerStub, fake: loggerFake } = stubInjectedLogger()
   let fsWalkerStub: MockInstance = vi.fn()
   let incrementalAddPicturesBulkStub: MockInstance = vi.fn()
   let incrementalEnsureFoldersBulkStub: MockInstance = vi.fn()
@@ -14,7 +14,7 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
   let knexFnFake = stubToKnex(knexFnStub)
 
   beforeEach(() => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
+    ;({ stub: loggerStub, fake: loggerFake } = stubInjectedLogger())
     fsWalkerStub = vi.spyOn(Imports, 'fsWalker').mockResolvedValue(undefined)
     incrementalAddPicturesBulkStub = vi.spyOn(Internals, 'incrementalAddPicturesBulk').mockResolvedValue(undefined)
     incrementalEnsureFoldersBulkStub = vi.spyOn(Internals, 'incrementalEnsureFoldersBulk').mockResolvedValue(undefined)

@@ -6,7 +6,7 @@ import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
 import { StatusCodes } from 'http-status-codes'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import { createResponseFake } from '#testutils/express.js'
 
 type RequestHandler = (req: Request, res: ExpressResponse) => Promise<void>
@@ -38,7 +38,7 @@ describe('routes/api route GET /', () => {
         post: vi.fn(),
       }),
     )
-    stubDebug(Imports)
+    stubLoggerFactory(Imports)
     vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<ExpressRequestHandler>(action))
     await getRouter(cast<Application>(null), cast<Server>(null), cast<WebSocketServer>(null))
     routeHandler = cast(

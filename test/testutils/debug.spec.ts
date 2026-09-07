@@ -2,7 +2,7 @@
 
 import type { Debugger } from 'debug'
 
-import { createLoggerFake, noopLogger, stubDebug } from '#testutils/debug.js'
+import { stubInjectedLogger, noopLogger, stubLoggerFactory } from '#testutils/debug.js'
 import { cast } from '#testutils/typeGuards.js'
 
 describe('testutils/Debug noopLogger', () => {
@@ -21,69 +21,69 @@ describe('testutils/Debug noopLogger', () => {
   })
 })
 
-describe('testutils createLoggerFake()', () => {
+describe('testutils stubInjectedLogger()', () => {
   it('should return an object with a stub property', () => {
-    expect(createLoggerFake().stub).toBeTypeOf('function')
+    expect(stubInjectedLogger().stub).toBeTypeOf('function')
   })
   it('should return an object with a fake property', () => {
-    expect(createLoggerFake().fake).toBeTypeOf('function')
+    expect(stubInjectedLogger().fake).toBeTypeOf('function')
   })
   it('should record a call on stub when fake is invoked', () => {
-    const { stub, fake } = createLoggerFake()
+    const { stub, fake } = stubInjectedLogger()
     fake('hello')
     expect(stub.mock.calls.length).toBe(1)
   })
   it('should pass arguments through fake to stub', () => {
-    const { stub, fake } = createLoggerFake()
+    const { stub, fake } = stubInjectedLogger()
     fake('hello %s', 'world')
     expect(stub.mock.calls[0]).toEqual(['hello %s', 'world'])
   })
   it('should return independent stubs across calls', () => {
-    const a = createLoggerFake()
-    const b = createLoggerFake()
+    const a = stubInjectedLogger()
+    const b = stubInjectedLogger()
     a.fake('only-a')
     expect(b.stub.mock.calls.length).toBe(0)
   })
 })
 
-describe('testutils stubDebug()', () => {
+describe('testutils stubLoggerFactory()', () => {
   it('should replace the debug property with a stub', () => {
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
-    stubDebug(target)
+    stubLoggerFactory(target)
     expect(target.debug).toBeTypeOf('function')
   })
   it('should make target.debug return the loggerStub', () => {
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
-    const { loggerStub } = stubDebug(target)
+    const { loggerStub } = stubLoggerFactory(target)
     expect(target.debug('any:prefix')).toBe(loggerStub)
   })
   it('should record calls to target.debug on debugStub', () => {
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
-    const { debugStub } = stubDebug(target)
+    const { debugStub } = stubLoggerFactory(target)
     target.debug('the:prefix')
     expect(debugStub.mock.calls[0]).toEqual(['the:prefix'])
   })
   it('should record calls made through the returned logger on loggerStub', () => {
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
-    const { loggerStub } = stubDebug(target)
+    const { loggerStub } = stubLoggerFactory(target)
     const logger = target.debug('prefix')
     logger('a message')
     expect(loggerStub.mock.calls[0]).toEqual(['a message'])
   })
   it('should return the same logger regardless of which prefix is passed', () => {
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
-    stubDebug(target)
+    stubLoggerFactory(target)
     expect(target.debug('first')).toBe(target.debug('second'))
   })
   it('should return the loggerStub itself when target.debug is invoked', () => {
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
-    const { loggerStub } = stubDebug(target)
+    const { loggerStub } = stubLoggerFactory(target)
     expect(target.debug('any')).toBe(loggerStub)
   })
   it('should restore target.debug when restoreAllMocks runs', () => {
     const original = cast<(n: string) => Debugger>(() => undefined)
     const target = { debug: original }
-    stubDebug(target)
+    stubLoggerFactory(target)
     vi.restoreAllMocks()
     expect(target.debug).toBe(original)
   })

@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import { cast } from '#testutils/typeGuards.js'
 import { createResponseFake } from '#testutils/express.js'
 import { handleErrors } from '#utils/express.js'
-import { createLoggerFake } from '#testutils/debug.js'
+import { stubInjectedLogger } from '#testutils/debug.js'
 
 describe('utils/Express handleErrors', () => {
   let requestStub = {
@@ -14,7 +14,7 @@ describe('utils/Express handleErrors', () => {
   }
   let requestFake = cast<Request>(requestStub)
   let { stub: responseStub, fake: responseFake } = createResponseFake()
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
+  let { stub: loggerStub, fake: loggerFake } = stubInjectedLogger()
 
   beforeEach(() => {
     requestStub = {
@@ -23,7 +23,7 @@ describe('utils/Express handleErrors', () => {
     }
     requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
+    ;({ stub: loggerStub, fake: loggerFake } = stubInjectedLogger())
   })
   it('should call the action with request and response', async () => {
     const action = vi.fn().mockResolvedValue(undefined)

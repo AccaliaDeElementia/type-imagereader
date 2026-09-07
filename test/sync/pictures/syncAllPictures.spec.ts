@@ -2,7 +2,7 @@
 
 import { syncAllPictures, Internals, Imports, LOG_PREFIX } from '#sync/pictures.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/pictures syncAllPictures()', () => {
@@ -14,7 +14,7 @@ describe('sync/pictures syncAllPictures()', () => {
   let knexFake = stubToKnex({ id: Math.random() })
   beforeEach(() => {
     knexFake = stubToKnex({ id: Math.random() })
-    ;({ debugStub, loggerStub } = stubDebug(Imports))
+    ;({ debugStub, loggerStub } = stubLoggerFactory(Imports))
     syncNewPicturesStub = vi.spyOn(Internals, 'syncNewPictures').mockResolvedValue(undefined)
     syncRemovedPicturesStub = vi.spyOn(Internals, 'syncRemovedPictures').mockResolvedValue(undefined)
     syncRemovedBookmarksStub = vi.spyOn(Internals, 'syncRemovedBookmarks').mockResolvedValue(undefined)

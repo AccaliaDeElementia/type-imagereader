@@ -2,10 +2,10 @@
 
 import { syncRemovedPictures } from '#sync/pictures.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { createLoggerFake } from '#testutils/debug.js'
+import { stubInjectedLogger } from '#testutils/debug.js'
 
 describe('sync/pictures syncRemovedPictures()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
+  let { stub: loggerStub, fake: loggerFake } = stubInjectedLogger()
   let knexInnerInstanceStub = {
     select: vi.fn().mockImplementation(function (this: object): unknown {
       return this
@@ -28,7 +28,7 @@ describe('sync/pictures syncRemovedPictures()', () => {
   let knexFnStub = vi.fn().mockReturnValue(knexInstanceStub)
   let knexFnFake = stubToKnex(knexFnStub)
   beforeEach(() => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
+    ;({ stub: loggerStub, fake: loggerFake } = stubInjectedLogger())
     knexInnerInstanceStub = {
       select: vi.fn().mockImplementation(function (this: object): unknown {
         return this

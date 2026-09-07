@@ -26,8 +26,8 @@ describe('testutils createCopyStreamFake()', () => {
     const { stream } = createCopyStreamFake()
     expect(stream.write('x')).toBe(true)
   })
-  it('should honour writeReturns when overridden to false', () => {
-    const { stream } = createCopyStreamFake({ writeReturns: false })
+  it('should honour writeAcceptsMore when overridden to false', () => {
+    const { stream } = createCopyStreamFake({ writeAcceptsMore: false })
     expect(stream.write('x')).toBe(false)
   })
   it('should record stream.end() calls on endSpy', () => {

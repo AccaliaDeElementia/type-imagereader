@@ -2,7 +2,7 @@
 
 import { incrementalSync, Internals, Imports } from '#sync/incrementalsync.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import type { Changeset } from '#sync/filewatcher.js'
 import type { MockInstance } from 'vitest'
 
@@ -19,7 +19,7 @@ describe('sync/incrementalsync incrementalSync()', () => {
   let knexFnFake = stubToKnex(knexFnStub)
 
   beforeEach(() => {
-    ;({ loggerStub } = stubDebug(Imports))
+    ;({ loggerStub } = stubLoggerFactory(Imports))
     incrementalAddBulkStub = vi.spyOn(Internals, 'incrementalAddPicturesBulk').mockResolvedValue(undefined)
     incrementalRemoveBulkStub = vi.spyOn(Internals, 'incrementalRemovePicturesBulk').mockResolvedValue(undefined)
     incrementalRemoveFolderStub = vi.spyOn(Internals, 'incrementalRemoveFolder').mockResolvedValue(undefined)

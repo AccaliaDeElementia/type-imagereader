@@ -5,7 +5,7 @@ import { findSyncItems, Imports, LOG_PREFIX } from '#sync/findItems.js'
 import { cast } from '#testutils/typeGuards.js'
 import { createKnexChainFake } from '#testutils/knex.js'
 import { createCopyStreamFake, scheduleEmit as scheduleEmitOn } from '#testutils/copyStream.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import type { PoolClient } from 'pg'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { MockInstance } from 'vitest'
@@ -54,7 +54,7 @@ describe('sync/findItems findSyncItems()', () => {
     } = createKnexChainFake([] as const, ['truncate', 'insert'] as const, undefined))
     streamFake = makeStream()
     pgClientStub = { query: vi.fn().mockReturnValue(streamFake) }
-    ;({ debugStub, loggerStub } = stubDebug(Imports))
+    ;({ debugStub, loggerStub } = stubLoggerFactory(Imports))
     fsWalkerStub = vi.spyOn(Imports, 'fsWalker').mockResolvedValue(undefined)
     buildSyncItemRowsStub = vi.spyOn(Imports, 'buildSyncItemRows').mockReturnValue({ files: 0, dirs: 0, rows: [] })
     formatSyncItemCsvStub = vi.spyOn(Imports, 'formatSyncItemCsv').mockReturnValue('csv-row\n')

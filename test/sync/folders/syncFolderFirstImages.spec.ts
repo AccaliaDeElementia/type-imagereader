@@ -2,11 +2,11 @@
 
 import { syncFolderFirstImages, Imports } from '#sync/folders.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { createLoggerFake } from '#testutils/debug.js'
+import { stubInjectedLogger } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/folders syncFolderFirstImages()', () => {
-  let { fake: loggerFake } = createLoggerFake()
+  let { fake: loggerFake } = stubInjectedLogger()
   let innerQueryBuilder = {
     select: vi.fn().mockImplementation(function (this: object): unknown {
       return this
@@ -59,7 +59,7 @@ describe('sync/folders syncFolderFirstImages()', () => {
   let knexFnFake = stubToKnex(knexFnStub)
   let chunkStub: MockInstance = vi.fn()
   beforeEach(() => {
-    ;({ fake: loggerFake } = createLoggerFake())
+    ;({ fake: loggerFake } = stubInjectedLogger())
     innerQueryBuilder = {
       select: vi.fn().mockImplementation(function (this: object): unknown {
         return this

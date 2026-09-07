@@ -2,7 +2,7 @@
 
 import { pruneEmptyFolders, Imports, LOG_PREFIX } from '#sync/folderCounts.js'
 import { createKnexChainFake } from '#testutils/knex.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/folderCounts pruneEmptyFolders()', () => {
@@ -19,7 +19,7 @@ describe('sync/folderCounts pruneEmptyFolders()', () => {
       stub: knexFnStub,
       fake: knexFnFake,
     } = createKnexChainFake(['where', 'andWhere'] as const, ['delete'] as const, undefined))
-    ;({ debugStub, loggerStub } = stubDebug(Imports))
+    ;({ debugStub, loggerStub } = stubLoggerFactory(Imports))
   })
   it('should call debug once when constructing logger', async () => {
     await pruneEmptyFolders(knexFnFake)

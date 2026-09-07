@@ -3,7 +3,7 @@
 import { updateFolderPictureCounts, Internals, Imports, LOG_PREFIX } from '#sync/folderCounts.js'
 import { cast } from '#testutils/typeGuards.js'
 import { createKnexChainFake } from '#testutils/knex.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/folderCounts updateFolderPictureCounts()', () => {
@@ -24,7 +24,7 @@ describe('sync/folderCounts updateFolderPictureCounts()', () => {
       stub: knexFnStub,
       fake: knexFnFake,
     } = createKnexChainFake(['insert', 'onConflict'] as const, ['merge'] as const, undefined))
-    ;({ debugStub, loggerStub } = stubDebug(Imports))
+    ;({ debugStub, loggerStub } = stubLoggerFactory(Imports))
     getFolderInfosWithPicturesStub = vi.spyOn(Internals, 'getFolderInfosWithPictures').mockResolvedValue([])
     getAllFolderInfosStub = vi.spyOn(Internals, 'getAllFolderInfos').mockResolvedValue({})
     calculateFolderInfosStub = vi.spyOn(Internals, 'calculateFolderInfos').mockReturnValue([])

@@ -2,11 +2,11 @@
 
 import { incrementalRemoveFolder } from '#sync/incrementalsync.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
-import { createLoggerFake } from '#testutils/debug.js'
+import { stubInjectedLogger } from '#testutils/debug.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/incrementalsync incrementalRemoveFolder()', () => {
-  let { stub: loggerStub, fake: loggerFake } = createLoggerFake()
+  let { stub: loggerStub, fake: loggerFake } = stubInjectedLogger()
   let picturesStub = {
     where: vi.fn().mockImplementation(function (this: object): unknown {
       return this
@@ -40,7 +40,7 @@ describe('sync/incrementalsync incrementalRemoveFolder()', () => {
   let knexFnFake = stubToKnex(knexFnStub)
 
   beforeEach(() => {
-    ;({ stub: loggerStub, fake: loggerFake } = createLoggerFake())
+    ;({ stub: loggerStub, fake: loggerFake } = stubInjectedLogger())
     picturesStub = {
       where: vi.fn().mockImplementation(function (this: object): unknown {
         return this

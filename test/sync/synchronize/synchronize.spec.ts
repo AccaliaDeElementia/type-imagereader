@@ -2,7 +2,7 @@
 
 import { synchronize, Imports, LOG_PREFIX } from '#sync/synchronize.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import { findStubCall } from '#testutils/mocks.js'
 import type { MockInstance } from 'vitest'
 
@@ -28,7 +28,7 @@ describe('sync/synchronize synchronize()', () => {
     knexFnStub = vi.fn().mockImplementation(function (this: object): unknown {
       return this
     })
-    ;({ debugStub, loggerStub } = stubDebug(Imports))
+    ;({ debugStub, loggerStub } = stubLoggerFactory(Imports))
     persistenceInitializerStub = vi.spyOn(Imports, 'initialize').mockResolvedValue(stubToKnex(knexFnStub))
     findSyncItemsStub = vi.spyOn(Imports, 'findSyncItems').mockResolvedValue(1)
     syncAllPicturesStub = vi.spyOn(Imports, 'syncAllPictures').mockResolvedValue(undefined)

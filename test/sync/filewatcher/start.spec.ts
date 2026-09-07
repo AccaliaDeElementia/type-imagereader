@@ -3,7 +3,7 @@
 import { Imports, Filewatcher, start } from '#sync/filewatcher.js'
 import type { FlushCallback, WatcherSubscription } from '#sync/filewatcher.js'
 import { cast } from '#testutils/typeGuards.js'
-import { stubDebug } from '#testutils/debug.js'
+import { stubLoggerFactory } from '#testutils/debug.js'
 import { flushMicrotasks } from '#testutils/microtasks.js'
 import type { MockInstance } from 'vitest'
 
@@ -20,7 +20,7 @@ describe('sync/filewatcher start()', () => {
   let subscriberCallback: SubscriberCallback = vi.fn()
 
   beforeEach(() => {
-    ;({ debugStub, loggerStub } = stubDebug(Imports))
+    ;({ debugStub, loggerStub } = stubLoggerFactory(Imports))
     fakeSubscription = { unsubscribe: vi.fn().mockResolvedValue(undefined) }
     subscriberCallback = vi.fn()
     subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation(async (_dir, fn) => {
