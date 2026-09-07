@@ -73,12 +73,37 @@ Leave ESLint rules in place when practical. Override them inline (with a `--` re
 
 - **`no-await-in-loop`** — override when the loop is _deliberately serialized_ (e.g., polling for an HTTP endpoint to come up, processing items where iteration N depends on iteration N-1, avoiding a race condition that parallelism would introduce). Use a block-scoped disable with a reason: `/* eslint-disable no-await-in-loop -- polling is intentionally serial */` … `/* eslint-enable no-await-in-loop */`. Don't refactor to recursion just to dodge the rule — that hides the polling/serial semantics behind a less obvious control flow.
 
+## Comments
+
+Default to encoding the information in the code rather than writing a comment. In order of preference: a name, a type, a smaller function, an enforced test — and only when none of those can carry it, a comment.
+
+A comment is warranted in exactly two cases:
+
+- **Lint-suppression reasons.** Required in the `--` form (see Lint rule exceptions above).
+- **External-system facts** — a constraint that lives outside this repository and cannot be rediscovered by reading it. Engine limits (`SQLITE_LIMIT_COMPOUND_SELECT` is 500; webp cannot encode over 16383px), library typing gaps (knex types `client` as `any`), spec behaviour (`addEventListener` ignores a duplicate registration of the same function), cross-engine differences (PostgreSQL returns `boolean` where SQLite returns `0`/`1`).
+
+Anything else you are tempted to write is a signal that the code is under-encoded:
+
+| About to write…                       | Encode it as…                                             |
+| ------------------------------------- | --------------------------------------------------------- |
+| what the function does, step by step  | smaller functions whose names are those steps             |
+| what a return value means             | a union or named result type, not bare `boolean` / `null` |
+| why a constant holds that value       | a derived expression (`SCREENFUL - STEP_OVERLAP`)         |
+| an invariant ("only one caller wins") | a test that fails when the invariant breaks               |
+| why the obvious alternative is wrong  | a regression test named for the hazard                    |
+| a required call order                 | one function that performs both steps in that order       |
+
+Concurrency semantics are not an exception to this. If a guarantee needs prose, the structure is under-encoded: name the operation for its exclusivity (`claimUnseenRow`, not `updateRow`), give it a result type that distinguishes the winner from the losers, and assert the guarantee in a test that runs the calls concurrently. Only the engine mechanism that supplies the guarantee remains as an external-system fact.
+
+Worked before/after examples and the full category breakdown: [docs/CODE_STYLE.md](docs/CODE_STYLE.md).
+
 ## Testing conventions
 
 - One `Sinon.createSandbox()` per `describe` block; restore in `afterEach`.
 - `Imports.stub()` calls only inside hooks (`beforeEach`/`it`), never at describe scope (enforced by `local/no-method-stub-outside-hook`).
 - Single assertion per `it()` block.
 - Each spec file should target one module: at most one `Imports`/`Internals` import path per spec.
+- An invariant that would otherwise be explained in a comment gets a test whose **name states the invariant** — `should request the wake lock only once when takeLock is called concurrently`. The test enforces it across future edits; a comment only asks nicely.
 
 ### Two-pronged stub strategy
 
