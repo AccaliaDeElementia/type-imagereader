@@ -420,11 +420,7 @@ describe('/app.ts tests', (): void => {
     await ImageReader.run()
     const onFlush = cast<FlushCallback>(StartWatcherStub?.mock.calls[0]?.[1])
     const changeset: Changeset = new Map([['/comics/page.jpg', 'create']])
-    try {
-      await onFlush(changeset)
-    } catch {
-      // expected
-    }
+    await onFlush(changeset).catch(() => undefined)
     expect(ImageReader.syncLock._locked).toBe(false)
   })
 

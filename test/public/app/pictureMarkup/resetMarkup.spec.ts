@@ -139,8 +139,6 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     img.dispatchEvent(evt)
     expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Hide')).toBe(true)
   })
-  // The scrollable extent of the new picture is only known once it has decoded,
-  // so the viewport takes up its arrival position on load rather than on request.
   it('should position the viewport on mainImage load event', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)
@@ -152,9 +150,6 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     resetMarkup()
     expect(applyEntryScrollStub.mock.calls.length).toBe(0)
   })
-  // resetMarkup runs again on every folder change against the same <img>. A
-  // second copy of the load handler would undo the arrival the first one
-  // applied, dropping the reader back at the top of the picture.
   it('should not stack load handlers across resets', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
     assert(img !== null)

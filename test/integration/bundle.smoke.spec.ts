@@ -1,25 +1,24 @@
 'use sanity'
 
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { once } from 'node:events'
+import { isDictionary } from '#utils/typeGuards.js'
 
 const BUILD_TIMEOUT_MS = 60_000
 
-// Mirrors `build:client` in package.json. Update both together if the
-// production build invocation changes.
-const ESBUILD_ARGS = [
-  'esbuild',
-  'app=public/scripts/app/main.ts',
-  'slideshow=public/scripts/slideshow/main.ts',
-  '--bundle',
-  '--minify',
-  '--target=es2024',
-  '--format=iife',
-  '--sourcemap',
-]
+const readBuildClientScript = (): string => {
+  const parsed: unknown = JSON.parse(readFileSync('package.json', 'utf8'))
+  if (!isDictionary(parsed) || !isDictionary(parsed.scripts) || typeof parsed.scripts['build:client'] !== 'string') {
+    throw new Error('package.json is missing scripts.build:client')
+  }
+  return parsed.scripts['build:client']
+}
+const ESBUILD_ARGS = readBuildClientScript()
+  .split(' ')
+  .filter((arg) => !arg.startsWith('--outdir='))
 
 describe(
   'client bundle build smoke',

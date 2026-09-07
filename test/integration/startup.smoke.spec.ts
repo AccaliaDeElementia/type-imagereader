@@ -14,6 +14,12 @@ const HEALTHCHECK_DEADLINE_MS = 12_000
 const HEALTHCHECK_POLL_INTERVAL_MS = 100
 const SHUTDOWN_GRACE_MS = 2_000
 
+const signalIgnoringAlreadyExited = (groupPid: number, signal: NodeJS.Signals): void => {
+  try {
+    process.kill(groupPid, signal)
+  } catch {}
+}
+
 async function pickFreePort(): Promise<number> {
   const srv = createServer()
   srv.unref()
@@ -35,9 +41,7 @@ async function waitForHealthcheck(port: number, deadlineAt: number): Promise<Res
     try {
       const res = await fetch(url)
       if (res.status === 200) return res
-    } catch {
-      // ECONNREFUSED while server starts — retry
-    }
+    } catch {}
     await sleep(HEALTHCHECK_POLL_INTERVAL_MS)
   }
   /* eslint-enable no-await-in-loop */
@@ -93,21 +97,13 @@ describe(
         const exitPromise = once(child, 'exit')
         // SIGTERM first — gives express/knex a moment to close cleanly so we
         // don't leak orphaned postgres-style connection state on the way out.
-        try {
-          process.kill(groupPid, 'SIGTERM')
-        } catch {
-          // Group might already be gone.
-        }
+        signalIgnoringAlreadyExited(groupPid, 'SIGTERM')
         const winner = await Promise.race([
           exitPromise.then(() => 'exited' as const),
           sleep(SHUTDOWN_GRACE_MS).then(() => 'timeout' as const),
         ])
         if (winner === 'timeout') {
-          try {
-            process.kill(groupPid, 'SIGKILL')
-          } catch {
-            // Already dead.
-          }
+          signalIgnoringAlreadyExited(groupPid, 'SIGKILL')
           await exitPromise
         }
       }

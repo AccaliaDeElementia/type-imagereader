@@ -63,7 +63,6 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
         uriSafeImage: undefined,
       }
       getCountsStub.mockImplementation(async () => {
-        // Simulate a concurrent call completing and populating Config.rooms before this one finishes
         Config.rooms['/images!/'] = concurrentRoom
         return await Promise.resolve(pages)
       })

@@ -236,8 +236,6 @@ describe('public/app/pictures initMouse()', () => {
       move(PAN_ORIGIN_X, PAN_ORIGIN_Y + 80)
       expect(panTarget.scrollTop).toBe(120)
     })
-    // Without this the browser starts its own image drag-and-drop and the pan
-    // turns into a ghost image stuck to the cursor.
     it('should suppress the native image drag', () => {
       const evt = press(PAN_ORIGIN_X, PAN_ORIGIN_Y)
       expect(evt.defaultPrevented).toBe(true)
@@ -261,9 +259,6 @@ describe('public/app/pictures initMouse()', () => {
       move(PAN_ORIGIN_X + 300, PAN_ORIGIN_Y)
       expect(panTarget.scrollLeft).toBe(100)
     })
-    // Both handlers sit on the document rather than the image. Dispatching from
-    // outside #bigImage proves it: were they bound to the image, a drag that
-    // wandered off it would freeze mid-pan and never register its release.
     const moveOutsideImage = (clientX: number): void => {
       dom.window.document.body.dispatchEvent(new dom.window.MouseEvent('mousemove', { clientX, bubbles: true }))
     }
@@ -278,8 +273,6 @@ describe('public/app/pictures initMouse()', () => {
       move(PAN_ORIGIN_X + 300, PAN_ORIGIN_Y)
       expect(panTarget.scrollLeft).toBe(100)
     })
-    // A drag that ends over the image would otherwise also read as a tap and
-    // turn the page out from under the reader.
     it('should suppress the navigation click after a drag', () => {
       press(PAN_ORIGIN_X, PAN_ORIGIN_Y)
       move(PAN_ORIGIN_X + 50, PAN_ORIGIN_Y)
@@ -317,8 +310,6 @@ describe('public/app/pictures initMouse()', () => {
       move(PAN_ORIGIN_X + 50, PAN_ORIGIN_Y)
       expect(panTarget.scrollLeft).toBe(100)
     })
-    // The browser is already scrolling from a scrollbar drag; joining in would
-    // move the image at double speed.
     it('should not pan from a press on the vertical scrollbar', () => {
       press(VISIBLE_WIDTH + 5, PAN_ORIGIN_Y)
       move(VISIBLE_WIDTH + 5, PAN_ORIGIN_Y + 50)
@@ -331,9 +322,6 @@ describe('public/app/pictures initMouse()', () => {
     })
 
     describe('with actual size mode off', () => {
-      // The handlers registered above resolve the pan target on each event, so
-      // re-stubbing is enough — calling initMouse again would double every
-      // listener and with it every published action.
       beforeEach(() => {
         vi.spyOn(Imports, 'getPanTarget').mockReturnValue(null)
       })

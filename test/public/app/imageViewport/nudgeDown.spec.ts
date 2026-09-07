@@ -15,9 +15,8 @@ interface FakeContainer {
 
 const VIEWPORT_WIDTH = 800
 const VIEWPORT_HEIGHT = 600
-// A nudge is a fraction of a stepped scroll, for lining up a panel that a full
-// step left cut off.
-const NUDGE_DISTANCE = 120
+const NUDGE_FRACTION = 0.2
+const NUDGE_DISTANCE = VIEWPORT_HEIGHT * NUDGE_FRACTION
 const MAX_SCROLL_TOP = 1200
 
 const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => {
@@ -63,8 +62,6 @@ describe('public/app/imageViewport nudgeDown()', () => {
     nudgeDown()
     expect(container.scrollLeft).toBe(0)
   })
-  // Falling through at the edge is what leaves the menu reachable from the
-  // keyboard in actual size mode.
   it('should hand the input on at the bottom', () => {
     container.scrollTop = MAX_SCROLL_TOP
     expect(nudgeDown()).toBe('exhausted')
@@ -82,7 +79,6 @@ describe('public/app/imageViewport nudgeDown()', () => {
     nudgeDown()
     expect(container.scrollTop).toBe(0)
   })
-  // A wide image has no vertical slack, so Up/Down must stay out of the way.
   it('should hand the input on for a horizontally overflowing image', () => {
     mount(makeContainer(2400, VIEWPORT_HEIGHT))
     expect(nudgeDown()).toBe('exhausted')

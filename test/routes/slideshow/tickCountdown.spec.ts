@@ -7,19 +7,14 @@ import type { MockInstance } from 'vitest'
 
 const CLIENTS_WITH_ONE = new Set(['/'])
 
-// Client-presence variants that exercise every branch of "do we have viewers?":
-// null/undefined/empty-set all read as "no viewers"; CLIENTS_WITH_ONE reads as
-// "viewers present". Most scenarios behave identically across all four.
-const ALL_CLIENT_VALUES: Array<[string, unknown]> = [
+const ALL_VIEWER_PRESENCE_VARIANTS: Array<[string, unknown]> = [
   ['no clients', null],
   ['nil clients', undefined],
   ['empty clients', new Set()],
   ['with clients', CLIENTS_WITH_ONE],
 ]
 
-// Client-presence variants that should be equivalent to "no viewers". Used
-// where the "with viewers" branch differs and is tested separately.
-const CLIENT_VALUES_WITHOUT_VIEWERS: Array<[string, unknown]> = [
+const NO_VIEWER_VARIANTS: Array<[string, unknown]> = [
   ['no clients', null],
   ['nil clients', undefined],
   ['empty clients', new Set()],
@@ -99,7 +94,7 @@ describe('routes/slideshow tickCountdown()', () => {
   })
 
   describe('with expired room (countdown -3599)', () => {
-    ALL_CLIENT_VALUES.forEach(([label, clientsValue]) => {
+    ALL_VIEWER_PRESENCE_VARIANTS.forEach(([label, clientsValue]) => {
       describe(`and ${label}`, () => {
         beforeEach(async () => {
           buildRoom(-3599)
@@ -200,7 +195,7 @@ describe('routes/slideshow tickCountdown()', () => {
   })
 
   describe('with valid room (countdown 99)', () => {
-    ALL_CLIENT_VALUES.forEach(([label, clientsValue]) => {
+    ALL_VIEWER_PRESENCE_VARIANTS.forEach(([label, clientsValue]) => {
       describe(`and ${label}`, () => {
         beforeEach(async () => {
           buildRoom(99)
@@ -218,7 +213,7 @@ describe('routes/slideshow tickCountdown()', () => {
   })
 
   describe('with not-yet-due room (countdown 2)', () => {
-    ALL_CLIENT_VALUES.forEach(([label, clientsValue]) => {
+    ALL_VIEWER_PRESENCE_VARIANTS.forEach(([label, clientsValue]) => {
       it(`should not emit with ${label}`, async () => {
         buildRoom(2)
         ioStub.get.mockReturnValue(clientsValue)
@@ -230,7 +225,7 @@ describe('routes/slideshow tickCountdown()', () => {
 
   describe('with newly-due room (countdown 1)', () => {
     describe('without images', () => {
-      ALL_CLIENT_VALUES.forEach(([label, clientsValue]) => {
+      ALL_VIEWER_PRESENCE_VARIANTS.forEach(([label, clientsValue]) => {
         it(`should not emit with ${label}`, async () => {
           buildRoom(1, '/Room', [])
           ioStub.get.mockReturnValue(clientsValue)
@@ -249,7 +244,7 @@ describe('routes/slideshow tickCountdown()', () => {
 
   describe('with due room (countdown -99)', () => {
     describe('without viewers', () => {
-      CLIENT_VALUES_WITHOUT_VIEWERS.forEach(([label, clientsValue]) => {
+      NO_VIEWER_VARIANTS.forEach(([label, clientsValue]) => {
         it(`should not call getRoomAndIncrementImage with ${label}`, async () => {
           buildRoom(-99)
           ioStub.get.mockReturnValue(clientsValue)

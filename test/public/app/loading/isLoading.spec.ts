@@ -12,6 +12,10 @@ html
     nav#navbar
     div#loadingScreen
 `
+const absorbInitSubscriptions = (): void => {
+  vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+}
+
 describe('public/app/loading isLoading()', () => {
   let dom: JSDOM = new JSDOM('', {})
   beforeEach(() => {
@@ -20,11 +24,7 @@ describe('public/app/loading isLoading()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    // init() registers four Loading:* subscribers as a side effect of populating
-    // Loading.overlay/navbar — not part of isLoading's behavior surface. Stubbed
-    // here to absorb the registrations; captured and asserted in init.spec.ts
-    // (registration) and the per-handler specs (error, success, showHide).
-    vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    absorbInitSubscriptions()
     Loading.overlay = null
     Loading.navbar = null
     init()

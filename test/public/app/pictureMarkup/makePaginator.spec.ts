@@ -17,6 +17,11 @@ html
         ul.pagination
 `
 
+const PREV_BUTTON_CALLS = 1
+const PAGE_COUNT = 7
+const NEXT_PAGE_CALL_INDEX = PREV_BUTTON_CALLS + PAGE_COUNT
+const MIDDLE_PAGE_CALL_INDEX = 3
+
 describe('public/app/pictures makePaginator()', () => {
   let dom = new JSDOM('<html></html>', {})
   let makePageItemSpy: MockInstance = vi.fn()
@@ -33,6 +38,12 @@ describe('public/app/pictures makePaginator()', () => {
     getCurrentPageSpy = vi.spyOn(Internals, 'getCurrentPage').mockReturnValue(0)
     resetPubSub()
   })
+  const placeOnCall = (callIndex: number, item: HTMLElement | undefined): void => {
+    for (let i = 0; i < callIndex; i += 1) {
+      makePageItemSpy.mockReturnValueOnce(dom.window.document.createElement('li'))
+    }
+    makePageItemSpy.mockReturnValueOnce(item)
+  }
   afterEach(() => {
     unmountDom()
   })
@@ -120,11 +131,7 @@ describe('public/app/pictures makePaginator()', () => {
   it('should insert nextPage element as last child', () => {
     const sentinal = dom.window.document.createElement('div')
     sentinal.classList.add('sentinal')
-    // pad calls 0-7 (prev + 7 page items) so sentinal lands on call 8 (nextPage)
-    for (let i = 0; i < 8; i += 1) {
-      makePageItemSpy.mockReturnValueOnce(dom.window.document.createElement('li'))
-    }
-    makePageItemSpy.mockReturnValueOnce(sentinal)
+    placeOnCall(NEXT_PAGE_CALL_INDEX, sentinal)
     const result = Internals.makePaginator(7)
     const pages = result?.querySelector('.pagination')
     expect(pages?.lastElementChild).toBe(sentinal)
@@ -189,21 +196,13 @@ describe('public/app/pictures makePaginator()', () => {
     expect(pages?.children.length).toBe(8)
   })
   it('should skip a page child when makePaginatorItem returns undefined for it', () => {
-    // pad calls 0-2 so undefined lands on call 3 (a middle page)
-    for (let i = 0; i < 3; i += 1) {
-      makePageItemSpy.mockReturnValueOnce(dom.window.document.createElement('li'))
-    }
-    makePageItemSpy.mockReturnValueOnce(undefined)
+    placeOnCall(MIDDLE_PAGE_CALL_INDEX, undefined)
     const result = Internals.makePaginator(7)
     const pages = result?.querySelector('.pagination')
     expect(pages?.children.length).toBe(8)
   })
   it('should skip the nextPage child when makePaginatorItem returns undefined for it', () => {
-    // pad calls 0-7 (prev + 7 pages) so undefined lands on call 8 (nextPage)
-    for (let i = 0; i < 8; i += 1) {
-      makePageItemSpy.mockReturnValueOnce(dom.window.document.createElement('li'))
-    }
-    makePageItemSpy.mockReturnValueOnce(undefined)
+    placeOnCall(NEXT_PAGE_CALL_INDEX, undefined)
     const result = Internals.makePaginator(7)
     const pages = result?.querySelector('.pagination')
     expect(pages?.children.length).toBe(8)

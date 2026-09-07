@@ -3,6 +3,7 @@
 import { findSyncItemsViaCopy, type CopyHelpers } from '#sync/syncItemsDialect.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { createCopyStreamFake } from '#testutils/copyStream.js'
+import { COPY_SQL, DEFAULT_CHUNK_SIZE, LOGGING_INTERVAL } from '#sync/syncItemsDialect.js'
 import { noopLogger } from '#testutils/debug.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
@@ -10,10 +11,6 @@ import type { PoolClient } from 'pg'
 
 const FILE_COUNT = 4
 const DIR_COUNT = 1
-// Mirrors the file-private constants in utils/syncItemsDialect.ts.
-const DEFAULT_CHUNK_SIZE = 5000
-const LOGGING_INTERVAL = 100
-const COPY_SQL = 'COPY syncitems (folder, path, "isFile", "sortKey", "pathHash") FROM STDIN WITH (FORMAT csv)'
 
 const sampleRow = { folder: '', path: '/x', sortKey: 'x', isFile: true, pathHash: 'h' }
 

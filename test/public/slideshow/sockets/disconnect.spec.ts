@@ -10,8 +10,6 @@ import assert from 'node:assert'
 describe('public/slideshow/sockets disconnect()', () => {
   const fakeDisconnect = vi.fn()
   const fakeSocket = cast<WebSocket>({ disconnect: fakeDisconnect })
-  // disconnect() unbinds the body handlers connect() attached, so it needs a
-  // document even in the cases that never open a socket.
   beforeEach(() => {
     mountDom(new JSDOM('<html></html>'))
     WebSockets.socket = fakeSocket

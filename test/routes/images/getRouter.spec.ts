@@ -79,8 +79,6 @@ describe('routes/images export getRouter()', () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(CacheStorage.originalCache.cacheFunction).toBe(readAndConvertImage)
   })
-  // Full resolution images are far larger than viewport-scaled ones, so the
-  // original cache holds fewer entries than the shared default.
   it('should bound the original mode image cache below the shared default', async () => {
     await getRouter(applicationFake, serverFake, websocketsFake)
     expect(CacheStorage.originalCache.maxItems).toBe(5)

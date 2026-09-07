@@ -66,8 +66,6 @@ describe('public/app/pictures initActions()', () => {
     ['Action:Gamepad:RLeft', 'PreviousImage'],
     ['Action:Keypress:ArrowDown', 'ScrollDown'],
   ]
-  // Stepping back a picture resumes it at its far corner; every other move,
-  // including the jumps to either end of the folder, starts at the top.
   const changeToSubscribers: Array<[string, NavigateTo, Arrival]> = [
     ['Action:Execute:First', NavigateTo.First, 'freshStart'],
     ['Action:Execute:PreviousImage', NavigateTo.Previous, 'resumeFromEnd'],
@@ -262,8 +260,6 @@ describe('public/app/pictures initActions()', () => {
     await fn(undefined)
     expect(publishStub.mock.calls.some((c) => c[0] === 'Action:Execute:NextImage')).toBe(true)
   })
-  // In actual size mode a Next/Previous means "show me the rest of this page"
-  // until the page is exhausted; only then does it mean "show me another page".
   it('should offer Action:Execute:Next to the viewport first', async () => {
     initActions()
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:Next')
@@ -294,8 +290,6 @@ describe('public/app/pictures initActions()', () => {
     await fn(undefined)
     expect(publishStub.mock.calls.length).toBe(0)
   })
-  // Up and Down fine-tune the scroll when a stepped move left a panel cut off,
-  // and only fall through to the menu once the picture has no slack left.
   it('should offer Action:Execute:ScrollDown to the viewport first', async () => {
     initActions()
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:ScrollDown')
@@ -342,8 +336,6 @@ describe('public/app/pictures initActions()', () => {
     await fn(undefined)
     expect(publishStub.mock.calls.map((c) => cast<string>(c[0]))).toEqual(['Action:Execute:ShowMenu'])
   })
-  // The explicit per-picture actions are the escape hatch out of a long page,
-  // so they must never be swallowed by scrolling.
   it('should not offer Action:Execute:NextImage to the viewport', async () => {
     initActions()
     const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextImage')

@@ -17,8 +17,7 @@ function assertDb(d: Knex | undefined): asserts d is Knex {
   if (d === undefined) throw new Error('db not initialized — beforeEach did not run')
 }
 
-// Migrations + driver init can take a moment on first invocation.
-const INTEGRATION_TIMEOUT_MS = 15000
+const MIGRATION_AND_DRIVER_INIT_TIMEOUT_MS = 15000
 
 describe(
   'better-sqlite3 :memory: integration',
@@ -189,5 +188,5 @@ describe(
       expect(counts.files).toBe(ROW_COUNT)
     })
   },
-  INTEGRATION_TIMEOUT_MS,
+  MIGRATION_AND_DRIVER_INIT_TIMEOUT_MS,
 )

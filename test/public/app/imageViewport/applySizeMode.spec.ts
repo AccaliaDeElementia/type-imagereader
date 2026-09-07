@@ -57,8 +57,6 @@ describe('public/app/imageViewport applySizeMode()', () => {
     Internals.applySizeMode()
     expect(container.classList.contains('actualSize')).toBe(false)
   })
-  // Leaving actual size mode makes the container unscrollable, so a stale
-  // offset would strand the fitted image off screen in some browsers.
   it('should reset scroll when leaving actual size mode', () => {
     getShowOriginalSizeStub.mockReturnValue(false)
     Internals.applySizeMode()

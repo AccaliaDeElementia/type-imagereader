@@ -15,7 +15,8 @@ interface FakeContainer {
 
 const VIEWPORT_WIDTH = 800
 const VIEWPORT_HEIGHT = 600
-const NUDGE_DISTANCE = 120
+const NUDGE_FRACTION = 0.2
+const NUDGE_DISTANCE = VIEWPORT_HEIGHT * NUDGE_FRACTION
 const MAX_SCROLL_TOP = 1200
 
 const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => {

@@ -31,6 +31,10 @@ html
       div#tabBookmarks
 `
 
+const absorbInitSubscriptions = (): void => {
+  vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+}
+
 describe('public/app/tabs selectTab()', () => {
   let dom = new JSDOM('<html></html>', {})
   const actionsScroll = voidFn()
@@ -55,10 +59,7 @@ describe('public/app/tabs selectTab()', () => {
     assert(bookmarks !== null)
     bookmarks.scroll = bookmarksScroll
     resetPubSub()
-    // init() registers a Tab:Select subscriber as a side effect of populating
-    // Tabs.tabs/tabNames — not part of selectTab's behavior surface. Stubbed
-    // here to absorb the registration; captured and asserted in init.spec.ts.
-    vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    absorbInitSubscriptions()
     Tabs.tabs = []
     Tabs.tabNames = []
     const selectTabStub = vi.spyOn(Internals, 'selectTab').mockImplementation((..._args: unknown[]) => undefined)

@@ -64,7 +64,6 @@ describe('public/app/pictures selectPage()', () => {
     expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:Error').length).toBe(0)
   })
   it('should not publish error when no pages', () => {
-    // test various cases, none should error
     selectPage(0)
     selectPage(-1)
     selectPage(1e9)

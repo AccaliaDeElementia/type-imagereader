@@ -1,15 +1,17 @@
 'use sanity'
 
-import { findSyncItemsViaInsert, type InsertFallbackHelpers } from '#sync/syncItemsDialect.js'
+import {
+  findSyncItemsViaInsert,
+  LOGGING_INTERVAL,
+  SQLITE_DB_CHUNK_SIZE,
+  type InsertFallbackHelpers,
+} from '#sync/syncItemsDialect.js'
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
 import { noopLogger } from '#testutils/debug.js'
 import type { Debugger } from 'debug'
 
 const FILE_COUNT = 7
 const DIR_COUNT = 3
-// Mirrors the file-private constants in utils/syncItemsDialect.ts; not exported.
-const SQLITE_DB_CHUNK_SIZE = 200
-const LOGGING_INTERVAL = 100
 
 const sampleRow = { folder: '', path: '/x', sortKey: 'x', isFile: true, pathHash: 'h' }
 

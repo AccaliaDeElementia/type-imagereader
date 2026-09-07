@@ -13,10 +13,7 @@ const folderFixture = {
   cover: '/foo/bar/image.png',
   sortKey: 'bar>-<',
 }
-// Variant where the resolved folder's `path` differs from the getListing arg —
-// used to verify a downstream call uses the getListing arg rather than the
-// resolved folder's path.
-const folderFixtureDifferentPath = { ...folderFixture, path: '/fop/bat/' }
+const folderResolvingToADifferentPathThanRequested = { ...folderFixture, path: '/fop/bat/' }
 
 describe('routes/apiFunctions getListing', () => {
   let getFolderStub: MockInstance = vi.fn()
@@ -124,10 +121,8 @@ describe('routes/apiFunctions getListing', () => {
   })
 
   describe('getNextFolder() invocation', () => {
-    // Different path on the fixture verifies the call uses getListing's arg,
-    // not the resolved folder's path.
     beforeEach(() => {
-      getFolderStub.mockResolvedValue(folderFixtureDifferentPath)
+      getFolderStub.mockResolvedValue(folderResolvingToADifferentPathThanRequested)
     })
     it('should be called with three arguments', async () => {
       await getListing(knexFake, '/foo/bar/')
@@ -265,7 +260,7 @@ describe('routes/apiFunctions getListing', () => {
 
   describe('resolved folder properties', () => {
     beforeEach(() => {
-      getFolderStub.mockResolvedValue(folderFixtureDifferentPath)
+      getFolderStub.mockResolvedValue(folderResolvingToADifferentPathThanRequested)
     })
     it('should resolve folder name', async () => {
       const result = await getListing(knexFake, '/foo/bar/')

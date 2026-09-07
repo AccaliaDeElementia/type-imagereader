@@ -29,8 +29,6 @@ describe('public/app/pictures changePicture()', () => {
     await changePicture({ name: '', path: '/foo.png', seen: false }, 'resumeFromEnd')
     expect(setArrivalStub.mock.calls).toEqual([['resumeFromEnd']])
   })
-  // A refused navigation must not leave an arrival pending for whichever
-  // picture happens to load next.
   it('should not record an arrival if image is currently loading', async () => {
     isLoadingSpy.mockReturnValue(true)
     await changePicture({ name: '', path: '/foo.png', seen: false }, 'resumeFromEnd')

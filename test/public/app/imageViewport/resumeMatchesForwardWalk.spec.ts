@@ -16,8 +16,6 @@ const VIEWPORT_WIDTH = 800
 const VIEWPORT_HEIGHT = 600
 const OVERFLOWING_WIDTH = 2400
 const OVERFLOWING_HEIGHT = 1800
-// Guards the walk against a policy that never reports exhaustion; the largest
-// shape here needs an order of magnitude fewer steps.
 const MAX_STEPS = 100
 
 const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => ({
@@ -36,10 +34,6 @@ function walkForwardToExhaustion(): void {
   throw new Error('scrollForward never reported exhaustion')
 }
 
-// Stepping back into a picture is supposed to land the reader where a forward
-// walk through it would have left them. applyEntryScroll jumps straight to the
-// far corner instead of retracing the walk, so the two have to be checked
-// against each other or they can drift apart silently.
 describe('public/app/imageViewport resume position matches the forward walk', () => {
   let container = makeContainer(OVERFLOWING_WIDTH, OVERFLOWING_HEIGHT)
   beforeEach(() => {

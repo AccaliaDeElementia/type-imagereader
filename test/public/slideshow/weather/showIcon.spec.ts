@@ -81,9 +81,6 @@ describe('public/slideshow/weather showIcon()', () => {
     expect(element?.style.display).toBe('none')
   })
 
-  // The weather updaters re-run showIcon against the same persistent <img> on
-  // every poll — once a second for local weather — so a handler bound per call
-  // would accumulate for the lifetime of the page.
   it('should not stack load handlers across repeated updates', () => {
     const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
     assert(element !== null)

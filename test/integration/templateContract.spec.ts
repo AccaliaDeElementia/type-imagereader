@@ -6,16 +6,12 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
 import { Folders, init as foldersInit } from '#public/scripts/app/folders.js'
-import { Bookmarks, init as bookmarksInit } from '#public/scripts/app/bookmarks.js'
+import { Bookmarks, INITIAL_LOAD_TOKEN, init as bookmarksInit } from '#public/scripts/app/bookmarks.js'
 import { Confirm, init as confirmInit } from '#public/scripts/app/confirm.js'
 import { Loading, init as loadingInit } from '#public/scripts/app/loading.js'
 import { Pictures, Imports as PicturesImports } from '#public/scripts/app/pictureState.js'
 import { Grid } from '#public/scripts/app/pictureMarkup.js'
 import { Tabs, init as tabsInit } from '#public/scripts/app/tabs.js'
-
-// Match the private constant inside bookmarks.ts; if that source value ever changes,
-// this baseline reset will need to follow.
-const INITIAL_LOAD_TOKEN = 0
 
 describe('client template contract', () => {
   describe('app.pug', () => {
@@ -25,10 +21,7 @@ describe('client template contract', () => {
       mountDom(dom)
     })
 
-    afterAll(() => {
-      // Reset every state singleton this spec touches back to declared baselines,
-      // so test files that run later see the same module state as they would on
-      // a fresh import. PubSub subscribers and the DOM globals also get cleared.
+    const resetTouchedSingletonsToBaseline = (): void => {
       Folders.folderCard = null
       Bookmarks.bookmarkCard = undefined
       Bookmarks.bookmarkFolder = undefined
@@ -45,6 +38,10 @@ describe('client template contract', () => {
       Grid.imageCard = null
       Tabs.tabs = []
       Tabs.tabNames = []
+    }
+
+    afterAll(() => {
+      resetTouchedSingletonsToBaseline()
       resetPubSub()
       unmountDom()
     })
@@ -113,14 +110,15 @@ describe('client template contract', () => {
       })
     })
 
+    const stubEverythingExceptResetMarkup = (): void => {
+      vi.spyOn(PicturesImports, 'initActions')
+      vi.spyOn(PicturesImports, 'initMouse')
+      vi.spyOn(PicturesImports, 'initUnreadSelectorSlider')
+    }
+
     describe('pictures init', () => {
       beforeEach(() => {
-        // Let resetMarkup run for real so both DOM handles get populated; stub
-        // the rest of the transitive chain since this spec is about wiring, not
-        // what the pictureInput/unreadFilter modules do at init.
-        vi.spyOn(PicturesImports, 'initActions')
-        vi.spyOn(PicturesImports, 'initMouse')
-        vi.spyOn(PicturesImports, 'initUnreadSelectorSlider')
+        stubEverythingExceptResetMarkup()
         Pictures.mainImage = null
         Grid.imageCard = null
         Pictures.init()

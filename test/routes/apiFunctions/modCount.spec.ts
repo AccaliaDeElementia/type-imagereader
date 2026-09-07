@@ -77,8 +77,6 @@ describe('routes/apiFunctions ModCount functions', () => {
     modCountInternals.modCount = Number.MAX_SAFE_INTEGER
     expect(ModCount.claimAndIncrement(Number.MAX_SAFE_INTEGER)).toEqual({ claimed: true, count: 1 })
   })
-  // The check and the increment are one synchronous step precisely so that
-  // several requests arriving on the same modcount cannot all be admitted.
   it('claimAndIncrement() should admit only one of several callers presenting the same modcount', () => {
     modCountInternals.modCount = 69420
     const claims = Array.from({ length: 10 }, () => ModCount.claimAndIncrement(69420))

@@ -28,8 +28,6 @@ describe('public/app/pictures makeURI()', () => {
     getShowOriginalSizeStub.mockReturnValue(true)
     expect(Internals.makeURI(picture)).toBe('/images/original/some/path/foobar.png-image.webp')
   })
-  // Actual size mode makes the image element as large as the picture, so the
-  // measured viewport is irrelevant and must not be consulted.
   it('should not measure the viewport when ShowOriginalSize is set', () => {
     getShowOriginalSizeStub.mockReturnValue(true)
     Internals.makeURI(picture)

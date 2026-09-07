@@ -29,7 +29,7 @@ const UNINITIALIZED_MOD_COUNT = -1
 const SORT_BEFORE = -1
 const SORT_AFTER = 1
 const SORT_EQUAL = 0
-const INITIAL_LOAD_TOKEN = 0
+export const INITIAL_LOAD_TOKEN = 0
 const TOKEN_STEP = 1
 
 export const Bookmarks = {

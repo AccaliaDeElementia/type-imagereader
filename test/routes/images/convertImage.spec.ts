@@ -144,8 +144,6 @@ describe('routes/images convertImage()', () => {
         await convertImage(img)
         expect(img.error).toBe(null)
       })
-      // An image too large for the webp encoder falls back to the original
-      // bytes and extension rather than failing the request.
       it('should not update extension', async () => {
         img.extension = 'jpg'
         await convertImage(img)

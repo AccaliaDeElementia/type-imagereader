@@ -29,8 +29,6 @@ describe('public/app/pictureNavigation navigateUnreadBack()', () => {
     getPictureSpy = vi.spyOn(Internals, 'getPicture').mockImplementation((..._args: unknown[]) => undefined)
     setArrivalStub = vi.spyOn(Imports, 'setArrival').mockImplementation((..._args: unknown[]) => undefined)
   })
-  // Walking back into a picture should resume where the reader left it, so the
-  // viewport arrives at the far corner rather than the top.
   it('should arrive at the end of the previous picture', async () => {
     Viewer.history.prev = [{ ...historyPic }]
     await navigateUnreadBack()

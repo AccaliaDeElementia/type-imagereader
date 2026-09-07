@@ -5,6 +5,8 @@ import { SlideshowSocketState, handleSocket, joinSlideshow, Internals, Imports }
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import type { MockInstance } from 'vitest'
 
+const SENTINEL_ROOM_NAME = 'NO_ROOM'
+
 describe('routes/slideshow socket join-slideshow()', () => {
   let knexFake = stubToKnex({})
   let serverFake = cast<WebSocketServer>({})
@@ -21,7 +23,7 @@ describe('routes/slideshow socket join-slideshow()', () => {
     socketStub = { on: vi.fn(), join: vi.fn().mockResolvedValue(undefined), emit: vi.fn() }
     socketFake = cast<Socket>(socketStub)
     socketState = handleSocket(knexFake, serverFake, socketFake)
-    socketState.roomName = 'NO_ROOM' // assign sentinel value to test against later
+    socketState.roomName = SENTINEL_ROOM_NAME
     roomData = {
       uriSafeImage: '/foo/quux.png',
     }
@@ -42,7 +44,7 @@ describe('routes/slideshow socket join-slideshow()', () => {
           expect(socketStub.join.mock.calls.length).toBe(0)
         })
         it('should not save room name to state', () => {
-          expect(socketState.roomName).toBe('NO_ROOM')
+          expect(socketState.roomName).toBe(SENTINEL_ROOM_NAME)
         })
         it('should not get room', () => {
           expect(getRoomStub.mock.calls.length).toBe(0)

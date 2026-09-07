@@ -71,7 +71,6 @@ describe('public/slideshow/sockets connect()', () => {
   })
   it('should store location.reload bound for later use', () => {
     connect()
-    // See locationAssign's .name assertion above for rationale.
     expect(WebSockets.locationReload.name).toBe('bound reload')
   })
   it('should construct socket.io client', () => {
@@ -207,9 +206,6 @@ describe('public/slideshow/sockets connect()', () => {
     expect(fakeHandleKeys?.mock.calls[0]?.[1]).toBe(fakeSocket)
   })
 
-  // These run against the real document.body rather than a stubbed
-  // addEventListener, because what matters is how many handlers end up attached
-  // to the element and whether disconnect takes them off again.
   describe('body handler lifecycle', () => {
     const click = (): void => {
       dom.window.document.body.dispatchEvent(new dom.window.MouseEvent('click'))
@@ -229,7 +225,6 @@ describe('public/slideshow/sockets connect()', () => {
       click()
       expect(fakeHandleClick?.mock.calls.length).toBe(1)
     })
-    // Reconnecting must not double every tap into two socket emits.
     it('should handle a click once after reconnecting', () => {
       connect()
       disconnect()

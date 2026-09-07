@@ -51,8 +51,6 @@ describe('Server createApp', () => {
   })
   it('should not start listening from createApp', () => {
     createApp()
-    // createApp must stay passive — listening is deferred to listenOnPort at the end of start()
-    // so requests cannot reach handlers until every router is registered.
     expect(serverFake).not.toHaveProperty('listen')
   })
   it('should create websocket server', () => {

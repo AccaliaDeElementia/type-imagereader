@@ -15,9 +15,9 @@ interface FakeContainer {
 
 const VIEWPORT_WIDTH = 800
 const VIEWPORT_HEIGHT = 600
-// One step keeps a tenth of the previous screenful visible.
-const VERTICAL_STEP = 540
-const HORIZONTAL_STEP = 720
+const STEP_FRACTION = 0.9
+const VERTICAL_STEP = VIEWPORT_HEIGHT * STEP_FRACTION
+const HORIZONTAL_STEP = VIEWPORT_WIDTH * STEP_FRACTION
 
 const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => {
   const container: FakeContainer = {

@@ -62,8 +62,6 @@ describe('public/app/imageViewport applyEntryScroll()', () => {
     })
   })
 
-  // Walking back into a picture should put the reader where they would have
-  // been when they last left it going forward: the far corner.
   describe('arriving at the end', () => {
     beforeEach(() => {
       Viewport.arrival = 'resumeFromEnd'
@@ -96,8 +94,6 @@ describe('public/app/imageViewport applyEntryScroll()', () => {
       applyEntryScroll()
       expect(container.scrollTop).toBe(0)
     })
-    // Otherwise a reload of the same picture — a size mode toggle, say — would
-    // send the reader to the far corner again.
     it('should consume the arrival so the next picture starts at the top', () => {
       applyEntryScroll()
       expect(Viewport.arrival).toBe('freshStart')

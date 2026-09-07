@@ -49,8 +49,6 @@ describe('public/app/pubsub startDeferred()', () => {
     startDeferred()
     expect(PubSub.timer).toBe(6413287)
   })
-  // A second timer would run every deferred and interval callback twice as
-  // often, and the first handle would be overwritten and so never clearable.
   it('should not start a second timer while one is running', () => {
     startDeferred()
     startDeferred()

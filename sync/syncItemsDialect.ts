@@ -9,9 +9,9 @@ import type { DirEntryItem, SyncItem, SyncItemRows } from './helpers.js'
 
 const ZERO = 0
 const ONE = 1
-const DEFAULT_CHUNK_SIZE = 5000
-const LOGGING_INTERVAL = 100
-const COPY_SQL = 'COPY syncitems (folder, path, "isFile", "sortKey", "pathHash") FROM STDIN WITH (FORMAT csv)'
+export const DEFAULT_CHUNK_SIZE = 5000
+export const LOGGING_INTERVAL = 100
+export const COPY_SQL = 'COPY syncitems (folder, path, "isFile", "sortKey", "pathHash") FROM STDIN WITH (FORMAT csv)'
 
 // PG can absorb a 5000-row bulk insert in a single round-trip; SQLite caps
 // SQLITE_LIMIT_COMPOUND_SELECT at 500, so knex's UNION ALL bulk-insert form
@@ -19,7 +19,7 @@ const COPY_SQL = 'COPY syncitems (folder, path, "isFile", "sortKey", "pathHash")
 // for whereIn() patterns with multi-column rows) while keeping per-load
 // round-trip count manageable.
 const PG_DB_CHUNK_SIZE = 5000
-const SQLITE_DB_CHUNK_SIZE = 200
+export const SQLITE_DB_CHUNK_SIZE = 200
 
 interface SyncItemCounts {
   files: number

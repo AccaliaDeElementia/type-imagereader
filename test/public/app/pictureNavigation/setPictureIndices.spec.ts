@@ -16,14 +16,12 @@ describe('public/app/pictures setPictureIndices()', () => {
     Pictures.pictures = []
   })
 
-  // Sub-gap A: empty array must be a no-op
   it('should not throw when Pictures.pictures is empty', () => {
     Pictures.pictures = []
     Internals.setPictureIndices()
     expect(Pictures.pictures).toHaveLength(0)
   })
 
-  // Sub-gap C: function contract — operates directly on Pictures.pictures state
   it('should assign index 0 to only picture in single-element array', () => {
     Pictures.pictures = [makePicture('only.png')]
     Internals.setPictureIndices()
@@ -71,7 +69,6 @@ describe('public/app/pictures setPictureIndices()', () => {
     expect(Pictures.pictures).toBe(pics)
   })
 
-  // Sub-gap B: pre-existing index values must be overwritten
   it('should overwrite pre-existing index on first picture', () => {
     Pictures.pictures = [makePicture('a.png', { index: 99 }), makePicture('b.png', { index: 100 })]
     Internals.setPictureIndices()

@@ -62,8 +62,6 @@ describe('public/app/pictures refreshImage()', () => {
     await refreshImage()
     expect(Pictures.mainImage?.getAttribute('src')).toBe('/images/original/some/path/1250.png-image.webp')
   })
-  // The prefetched next image was fetched at the previous size, so it has to be
-  // primed again for the newly selected one.
   it('should prime the next image prefetch again', async () => {
     await refreshImage()
     expect(loadNextImageStub.mock.calls.length).toBe(1)
@@ -72,8 +70,6 @@ describe('public/app/pictures refreshImage()', () => {
     loadNextImageStub.mockRejectedValue(new Error('OOPS'))
     await expect(refreshImage()).resolves.toBeUndefined()
   })
-  // A refresh re-renders what is already on screen; it must not re-report the
-  // picture as freshly viewed.
   it('should not report the picture as newly viewed', async () => {
     await refreshImage()
     expect(postJSONStub.mock.calls.length).toBe(0)

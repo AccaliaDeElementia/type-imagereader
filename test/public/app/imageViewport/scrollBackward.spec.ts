@@ -15,8 +15,9 @@ interface FakeContainer {
 
 const VIEWPORT_WIDTH = 800
 const VIEWPORT_HEIGHT = 600
-const VERTICAL_STEP = 540
-const HORIZONTAL_STEP = 720
+const STEP_FRACTION = 0.9
+const VERTICAL_STEP = VIEWPORT_HEIGHT * STEP_FRACTION
+const HORIZONTAL_STEP = VIEWPORT_WIDTH * STEP_FRACTION
 
 const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer => {
   const container: FakeContainer = {
@@ -127,8 +128,6 @@ describe('public/app/imageViewport scrollBackward()', () => {
       scrollBackward()
       expect(container.scrollLeft).toBe(0)
     })
-    // Reversing the forward walk means arriving at the foot of the previous
-    // column, not its head.
     it('should land at the bottom of the previous column', () => {
       scrollBackward()
       expect(container.scrollTop).toBe(1200)
