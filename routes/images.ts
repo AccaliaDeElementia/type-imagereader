@@ -76,11 +76,8 @@ export class ImageData {
     }
   }
 
-  // Transcode at the stored resolution. Applies the same EXIF rotation and webp
-  // encoding as rescale() so an unscaled view matches the scaled one in
-  // orientation and colour, without resampling the pixels. An image the webp
-  // encoder can't handle (over 16383px on a side) leaves data and extension
-  // untouched, falling back to serving the original bytes.
+  // webp cannot encode over 16383px on a side; such an image keeps its original
+  // bytes and extension.
   async convert(animated: boolean): Promise<void> {
     if (this.error !== null) {
       return
@@ -119,8 +116,6 @@ export class ImageCache {
   public items: CacheItem[] = []
   public static cacheSize = CACHE_SIZE
   public cacheFunction: CacheCreator
-  // Per-instance override of the shared size limit, resolved on every fetch so
-  // that changes to the shared default still apply to instances without one.
   public maxItems: number | undefined
 
   constructor(cacheFn: CacheCreator, maxItems?: number) {
@@ -138,7 +133,7 @@ export class ImageCache {
         image: this.cacheFunction(path, width, height),
       }
     } else {
-      this.items = this.items.filter((entry) => entry !== item) // remove from current position before promoting to front
+      this.items = this.items.filter((entry) => entry !== item)
     }
     this.items.unshift(item)
     const sizeLimit = this.maxItems ?? ImageCache.cacheSize
@@ -146,7 +141,6 @@ export class ImageCache {
       this.items = this.items.filter((_, i) => i < sizeLimit)
     }
     const result = await item.image
-    // Don't poison the cache with errors — let subsequent requests retry from disk.
     if (result.error !== null) {
       this.items = this.items.filter((entry) => entry !== item)
     }
@@ -191,8 +185,6 @@ export async function readAndRescaleImage(
   return image
 }
 
-// Matches the CacheCreator contract so the original cache can share ImageCache;
-// the bounding box is meaningless for an unscaled image and is ignored.
 export async function readAndConvertImage(
   path: string,
   _width: number,
@@ -216,10 +208,11 @@ export function sendImage(image: ImageData, res: Response): void {
     .send(image.data)
 }
 
-const uninitializedCacheError: CacheCreator = async (path) => {
-  await Promise.resolve() // async required by CacheCreator contract
-  return ImageData.fromError('INTERNAL_SERVER_ERROR', StatusCodes.INTERNAL_SERVER_ERROR, 'CACHE_NOT_INITIALIZED', path)
-}
+// eslint-disable-next-line @typescript-eslint/promise-function-async -- CacheCreator returns a promise; there is nothing here to await
+const uninitializedCacheError: CacheCreator = (path) =>
+  Promise.resolve(
+    ImageData.fromError('INTERNAL_SERVER_ERROR', StatusCodes.INTERNAL_SERVER_ERROR, 'CACHE_NOT_INITIALIZED', path),
+  )
 
 export const CacheStorage = {
   kioskCache: new ImageCache(uninitializedCacheError),
@@ -227,6 +220,7 @@ export const CacheStorage = {
   originalCache: new ImageCache(uninitializedCacheError, ORIGINAL_CACHE_SIZE),
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await -- getRouter's contract is async; this router has nothing to await
 export async function getRouter(_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
 
@@ -327,7 +321,6 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     }),
   )
 
-  await Promise.resolve() // async required by getRouter signature
   return router
 }
 

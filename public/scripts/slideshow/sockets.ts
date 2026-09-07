@@ -22,9 +22,9 @@ function handleKeys(event: KeyboardEvent, socket: WebSocket | undefined): void {
   }
 }
 
-function handleClick(event: MouseEvent, socket: WebSocket | undefined, initialScale: number): void {
+function handleClick(event: MouseEvent, socket: WebSocket | undefined, scaleAtConnect: number): void {
   if (!hasValue(socket)) return
-  if (hasValue(window.visualViewport) && window.visualViewport.scale > initialScale) {
+  if (hasValue(window.visualViewport) && window.visualViewport.scale > scaleAtConnect) {
     return
   }
   const pageWidth = window.innerWidth
@@ -88,19 +88,13 @@ function uninitializedLocationReload(): void {
 export const WebSockets = {
   socket: undefined as WebSocket | undefined,
   launchId: undefined as unknown,
-  // Captured at connect time: handleClick compares it against the live viewport
-  // scale to tell a tap from the end of a pinch-zoom.
-  initialScale: DEFAULT_ZOOM,
+  scaleAtConnect: DEFAULT_ZOOM,
   locationAssign: uninitializedLocationAssign,
   locationReload: uninitializedLocationReload,
 }
 
-// Named handlers reading current state rather than closures over it, so that
-// connect can bind them idempotently and disconnect can take them off again.
-// Fresh closures could neither be removed nor deduplicated, leaving a
-// reconnect sending two socket emits for every tap.
 function onBodyClick(event: MouseEvent): void {
-  Internals.handleClick(event, WebSockets.socket, WebSockets.initialScale)
+  Internals.handleClick(event, WebSockets.socket, WebSockets.scaleAtConnect)
 }
 
 function onBodyKeyUp(event: KeyboardEvent): void {
@@ -118,7 +112,7 @@ export function connect(): void {
     WebSockets.socket?.emit(SocketEvents.GetLaunchId, Internals.handleGetLaunchId)
   })
   WebSockets.socket.on(SocketEvents.ImageChanged, Internals.showBackingImageByType)
-  WebSockets.initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
+  WebSockets.scaleAtConnect = hasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
   document.body.addEventListener('click', onBodyClick)
   document.body.addEventListener('keyup', onBodyKeyUp)
 }

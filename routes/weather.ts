@@ -10,11 +10,24 @@ import { stringishHasValue } from '#utils/helpers.js'
 
 const KELVIN_TO_CELCIUS_OFFSET = -273.15
 const SECONDS_TO_MILLISECONDS_MULTIPLE = 1000
-const UPDATE_INTERVAL = 600_000 // Ten Minutes in Milliseconds
-const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
-export const DEFAULT_ICON_TTL_MS = 86_400_000 // 24 hours
-export const MAX_ICON_TTL_MS = 604_800_000 // 7 days
-export const BROWSER_ICON_CACHE_SECONDS = 21_600 // 6 hours
+const SECONDS_PER_MINUTE = 60
+const MINUTES_PER_HOUR = 60
+const HOURS_PER_DAY = 24
+const DAYS_PER_WEEK = 7
+const MS_PER_MINUTE = SECONDS_PER_MINUTE * SECONDS_TO_MILLISECONDS_MULTIPLE
+const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+const MS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY * SECONDS_TO_MILLISECONDS_MULTIPLE
+
+const UPDATE_INTERVAL_MINUTES = 10
+const FETCH_TIMEOUT_MINUTES = 1
+const DEFAULT_ICON_TTL_DAYS = 1
+const BROWSER_ICON_CACHE_HOURS = 6
+
+const UPDATE_INTERVAL_MS = UPDATE_INTERVAL_MINUTES * MS_PER_MINUTE
+const FETCH_TIMEOUT_MS = FETCH_TIMEOUT_MINUTES * MS_PER_MINUTE
+export const DEFAULT_ICON_TTL_MS = DEFAULT_ICON_TTL_DAYS * MS_PER_DAY
+export const MAX_ICON_TTL_MS = DAYS_PER_WEEK * MS_PER_DAY
+export const BROWSER_ICON_CACHE_SECONDS = BROWSER_ICON_CACHE_HOURS * SECONDS_PER_HOUR
 const ICON_CODE_PATTERN = /^\d{2}[dn]$/v
 const PASSTHROUGH_UPSTREAM_STATUSES: ReadonlySet<number> = new Set([StatusCodes.FORBIDDEN, StatusCodes.NOT_FOUND])
 
@@ -276,6 +289,7 @@ const findMissingWeatherConfigVar = (): string | undefined => {
   return undefined
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await -- getRouter's contract is async; this router has nothing to await
 export async function getRouter(_app: Application, _server: Server, _sockets: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
 
@@ -291,13 +305,12 @@ export async function getRouter(_app: Application, _server: Server, _sockets: We
   if (missingVar === undefined) {
     setInterval(() => {
       void Internals.updateWeather()
-    }, UPDATE_INTERVAL)
+    }, UPDATE_INTERVAL_MS)
     void Internals.updateWeather()
   } else {
     Imports.logger('weather updates disabled: %s is not configured', missingVar)
   }
 
-  await Promise.resolve() // async required by getRouter signature
   return router
 }
 

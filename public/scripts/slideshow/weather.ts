@@ -7,7 +7,9 @@ import { hasValue, stringishHasValue } from '#utils/helpers.js'
 type HTMLElementish = HTMLElement | null | undefined
 type HTMLImageElementish = HTMLImageElement | null | undefined
 type Stringish = string | null | undefined
-const FETCH_TIMEOUT_MS = 60_000 // standard "long-but-bounded" web request timeout
+const MS_PER_SECOND = 1000
+const FETCH_TIMEOUT_SECONDS = 60
+const FETCH_TIMEOUT_MS = FETCH_TIMEOUT_SECONDS * MS_PER_SECOND
 
 async function fetchWeather(uri: string | URL): Promise<WeatherResults> {
   const response = await window.fetch(uri, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
@@ -26,11 +28,6 @@ function showData(container: HTMLElementish, element: HTMLElementish, text: Stri
   element.replaceChildren(text)
 }
 
-// Icon elements outlive every update: showIcon only ever re-points the same
-// persistent <img> at a new source. The updaters call it on each poll — once a
-// second for local weather — so the handlers are bound the first time an element
-// is seen and left in place. Binding per call would stack up a pair per poll for
-// the lifetime of the page, which on an always-on kiosk never stops growing.
 const boundIcons = new WeakSet<HTMLImageElement>()
 
 function bindIconHandlers(element: HTMLImageElement): void {
@@ -75,8 +72,8 @@ export interface SunTimes {
   sunset: number
 }
 
-const UNSET_SUNRISE = -Infinity // Math.max identity: any real timestamp wins
-const UNSET_SUNSET = Infinity // Math.min identity: any real timestamp wins
+const UNSET_SUNRISE = -Infinity
+const UNSET_SUNSET = Infinity
 
 const almanac: SunTimes = {
   sunrise: UNSET_SUNRISE,

@@ -7,7 +7,7 @@ import { overlayUpdater } from './overlay.js'
 import { weatherUpdater, localWeatherUpdater } from './weather.js'
 import { add as _cyclicManagerAdd, start as _cyclicManagerStart } from './updater.js'
 
-const UPDATE_INTERVAL = 100 // ms
+const UPDATE_INTERVAL_MS = 100
 
 export const Imports = {
   cyclicManagerAdd: _cyclicManagerAdd,
@@ -17,6 +17,6 @@ export const Imports = {
 
 export function bootstrap(): void {
   Imports.cyclicManagerAdd(timeUpdater, overlayUpdater, weatherUpdater, localWeatherUpdater)
-  Imports.cyclicManagerStart(UPDATE_INTERVAL)
+  Imports.cyclicManagerStart(UPDATE_INTERVAL_MS)
   Imports.socketsConnect()
 }

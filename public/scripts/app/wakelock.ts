@@ -13,14 +13,18 @@ export interface WakeLockSentinel {
 }
 
 const RELEASED_TIMEOUT = 0
-const LOCK_HOLD_TIME = 120_000 // two minutes
-const LOCK_RELEASE_CHECK_INTERVAL = 30_000 //thirty seconds
+const MS_PER_SECOND = 1000
+const SECONDS_PER_MINUTE = 60
+const LOCK_HOLD_MINUTES = 2
+const LOCK_RELEASE_CHECK_SECONDS = 30
+const LOCK_HOLD_MS = LOCK_HOLD_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND
+const LOCK_RELEASE_CHECK_INTERVAL_MS = LOCK_RELEASE_CHECK_SECONDS * MS_PER_SECOND
 
 export const WakeLock = {
   sentinel: null as WakeLockSentinel | null,
   pending: null as Promise<WakeLockSentinel> | null,
   timeout: RELEASED_TIMEOUT,
-  wakeTime: LOCK_HOLD_TIME,
+  wakeTime: LOCK_HOLD_MS,
   initialized: false,
 }
 
@@ -35,7 +39,7 @@ export function init(): void {
     () => {
       Internals.releaseLock().catch(() => null)
     },
-    LOCK_RELEASE_CHECK_INTERVAL,
+    LOCK_RELEASE_CHECK_INTERVAL_MS,
   )
 }
 

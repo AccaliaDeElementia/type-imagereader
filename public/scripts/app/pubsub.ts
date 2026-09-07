@@ -15,7 +15,7 @@ interface IntervalMethod {
   intervalCycles: number
 }
 
-const PUBLISH_CYCLE_TIME = 10 // ms
+const PUBLISH_CYCLE_TIME_MS = 10
 const MINIMUM_CYCLE_COUNT = 1
 const CYCLES_DUE_THRESHOLD = 0
 const INCREMENT_CYCLES = 1
@@ -25,7 +25,7 @@ export const PubSub = {
   deferred: [] as DeferredMethod[],
   intervals: ((): Record<string, DeferredMethod & IntervalMethod> => ({}))(),
   timer: undefined as NodeJS.Timeout | string | number | undefined,
-  cycleTime: PUBLISH_CYCLE_TIME,
+  cycleTime: PUBLISH_CYCLE_TIME_MS,
   guardCallback: undefined as ((op: string) => void) | undefined,
 }
 
@@ -142,9 +142,6 @@ function executeInterval(): void {
 }
 
 export function startDeferred(): void {
-  // PubSub.timer holds the only handle stopDeferred can clear, so starting a
-  // second timer would both run every deferred and interval callback at twice
-  // the intended rate and orphan the first timer beyond any way of stopping it.
   if (PubSub.timer !== undefined) return
   PubSub.timer = window.setInterval((): void => {
     Internals.executeInterval()

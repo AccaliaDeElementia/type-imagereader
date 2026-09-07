@@ -162,11 +162,7 @@ export function init(): void {
     if (!(await Imports.show('Mark all images in this folder as seen?', 'Mark All Seen'))) return
     await Imports.postJSON('/api/mark/read', { path: Navigation.current.path }, acceptAnyResponse)
       .then(async () => {
-        try {
-          await Internals.loadData(true)
-        } catch {
-          // intentionally swallow: loadData failures are non-fatal here
-        }
+        await Internals.reloadIgnoringFailure()
       })
       .catch((err: unknown) => {
         Imports.publish('Loading:Error', err)
@@ -176,11 +172,7 @@ export function init(): void {
     if (!(await Imports.show('Mark all images in this folder as unseen?', 'Mark All Unseen'))) return
     await Imports.postJSON('/api/mark/unread', { path: Navigation.current.path }, acceptAnyResponse)
       .then(async () => {
-        try {
-          await Internals.loadData(true)
-        } catch {
-          // intentionally swallow: loadData failures are non-fatal here
-        }
+        await Internals.reloadIgnoringFailure()
       })
       .catch((err: unknown) => {
         Imports.publish('Loading:Error', err)
@@ -243,7 +235,14 @@ function onFullscreenError(event: Event): void {
   Imports.publish('Fullscreen:Error', event)
 }
 
+async function reloadIgnoringFailure(): Promise<void> {
+  try {
+    await Internals.loadData(true)
+  } catch {}
+}
+
 export const Internals = {
+  reloadIgnoringFailure,
   getBaseUrl,
   getFolderPath,
   isSuppressMenu,

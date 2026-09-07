@@ -56,14 +56,19 @@ const logger = debug('type-imagereader:slideshow')
 
 const DEFAULT_LAUNCH_ID = -1
 const DEFAULT_MEMORY_SIZE = 100
-const DEFAULT_COUNTDOWN_DURATION = 60 // ticks (1 tick = 1 second at TICK_COUNTDOWN_INTERVAL)
-const ABANDONED_ROOM_PRUNE_THRESHOLD = 3_600 // ticks (3600 = 1 hour)
-const COUNTDOWN_TICK = -1 // countdown decrements by 1 each interval
-const TICK_COUNTDOWN_INTERVAL = 1000 // one second in Millis
+const MS_PER_SECOND = 1000
+const SECONDS_PER_MINUTE = 60
+const MINUTES_PER_HOUR = 60
+const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+const TICK_INTERVAL_MS = MS_PER_SECOND
+const SECONDS_PER_TICK = TICK_INTERVAL_MS / MS_PER_SECOND
+const DEFAULT_COUNTDOWN_TICKS = SECONDS_PER_MINUTE / SECONDS_PER_TICK
+const ABANDONED_ROOM_PRUNE_TICKS = SECONDS_PER_HOUR / SECONDS_PER_TICK
+const COUNTDOWN_DECREMENT = -1
 
 export const Config = {
   rooms: ((): Record<string, SlideshowRoom> => ({}))(),
-  countdownDuration: DEFAULT_COUNTDOWN_DURATION,
+  countdownDuration: DEFAULT_COUNTDOWN_TICKS,
   memorySize: DEFAULT_MEMORY_SIZE,
   launchId: DEFAULT_LAUNCH_ID,
 }
@@ -125,9 +130,6 @@ export async function getCounts(
   let resultPage = currentPage ?? Math.floor(Math.random() * pages)
   if (unreadcount > ZERO_COUNT) {
     pages = Math.ceil(unreadcount / Config.memorySize)
-    // Always anchor to page 0 for unread images. As images are viewed they are
-    // marked seen and drop out of the unread ordering, shifting remaining unseen
-    // images toward page 0. Applying a page mutator here would skip those images.
     resultPage = ZERO_COUNT
   } else if (currentPage !== undefined) {
     resultPage = mutator(currentPage)
@@ -151,7 +153,7 @@ export async function getImages(knex: Knex, path: string, page: number, count: n
       .select('path')
       .where('path', 'like', `${escapeLikeWildcards(path)}%`)
       .orderBy('seen')
-      .orderBy('pathHash') // pseudo-random but stable order across pages and restarts
+      .orderBy('pathHash')
       .offset(page * count)
       .limit(count)
   ).map((img: ImageWithPath) => img.path)
@@ -196,15 +198,13 @@ export async function getRoomAndIncrementImage(
   } else {
     room.index += increment
     if (room.images.length === ZERO_COUNT) {
-      room.index = ZERO_COUNT // no images on this page — stay at zero
+      room.index = ZERO_COUNT
     } else if (room.index < ZERO_COUNT) {
-      // stepped before first image — load previous page and land on its last image
       const result = await advancePage(room.pages.page, room.pages.unread, STEP.BACK)
       room.pages = result.pages
       room.images = result.images
       room.index = Math.max(room.images.length + STEP.BACK, ZERO_COUNT)
     } else if (room.index >= room.images.length) {
-      // stepped past last image — load next page and land on its first image
       const result = await advancePage(room.pages.page, room.pages.unread, STEP.FORWARD)
       room.pages = result.pages
       room.images = result.images
@@ -227,9 +227,9 @@ export async function tickCountdown(knex: Knex, io: WebSocketServer): Promise<vo
     const roomsToUpdate: SlideshowRoom[] = []
     const newRooms: Record<string, SlideshowRoom> = {}
     for (const room of Object.values(Config.rooms)) {
-      room.countdown += COUNTDOWN_TICK
-      if (room.countdown <= -ABANDONED_ROOM_PRUNE_THRESHOLD) {
-        Imports.logger('slideshow room pruned: %s (idle %ds)', room.path, ABANDONED_ROOM_PRUNE_THRESHOLD)
+      room.countdown += COUNTDOWN_DECREMENT
+      if (room.countdown <= -ABANDONED_ROOM_PRUNE_TICKS) {
+        Imports.logger('slideshow room pruned: %s (idle %ds)', room.path, ABANDONED_ROOM_PRUNE_TICKS)
         continue
       }
       newRooms[room.path] = room
@@ -399,7 +399,7 @@ export async function getRouter(_: Application, __: Server, io: WebSocketServer)
   })
   setInterval(() => {
     void Internals.tickCountdown(knex, io)
-  }, TICK_COUNTDOWN_INTERVAL)
+  }, TICK_INTERVAL_MS)
 
   return router
 }
