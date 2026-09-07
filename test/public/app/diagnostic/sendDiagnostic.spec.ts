@@ -83,6 +83,11 @@ describe('public/app/diagnostic sendDiagnostic()', () => {
     postJSONStub.mockRejectedValue(new Error('boom'))
     await expect(sendDiagnostic('Topic', {})).resolves.toBeUndefined()
   })
+  it('should not report a failed diagnostic as a further diagnostic, which would recurse', async () => {
+    postJSONStub.mockRejectedValue(new Error('boom'))
+    await sendDiagnostic('Topic', {})
+    expect(postJSONStub.mock.calls.length).toBe(1)
+  })
 })
 
 describe('public/app/diagnostic Diagnostic.clientId', () => {

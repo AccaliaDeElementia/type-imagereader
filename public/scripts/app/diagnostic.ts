@@ -10,6 +10,8 @@ export const Diagnostic = {
   clientId: globalThis.crypto.randomUUID(),
 }
 
+const REPORTING_A_DIAGNOSTIC_FAILURE_WOULD_RECURSE = undefined
+
 export async function sendDiagnostic(topic: string, data: unknown): Promise<void> {
   try {
     await Imports.postJSON(
@@ -24,6 +26,6 @@ export async function sendDiagnostic(topic: string, data: unknown): Promise<void
       acceptAnyResponse,
     )
   } catch {
-    // swallow: diagnostic transport failures must not loop back into the diagnostic pipeline
+    return REPORTING_A_DIAGNOSTIC_FAILURE_WOULD_RECURSE
   }
 }

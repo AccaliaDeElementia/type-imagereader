@@ -30,4 +30,7 @@ describe('sync/helpers parseFolderPath()', () => {
   it('should compose lowercase and padding on mixed alphanumeric basename', () => {
     expect(parseFolderPath('/Foo123/').sortKey).toBe('foo00000000000000000123')
   })
+  it('should reject the root path because the root has no parent folder', () => {
+    expect(() => parseFolderPath('/')).toThrow(/root/v)
+  })
 })

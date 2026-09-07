@@ -137,8 +137,7 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
       if (table === 'pictures') return picturesAggregateQuery
       if (table === 'folders') {
         foldersCallCount += 1
-        // First N calls are upsert chunks, last is prune
-        return foldersCallCount <= upsertCallExpectation ? foldersUpsertQuery : foldersPruneQuery
+        return foldersCallCount <= upsertChunkCallCount ? foldersUpsertQuery : foldersPruneQuery
       }
       throw new Error(`Unexpected knex table: ${table}`)
     })
@@ -146,18 +145,18 @@ describe('sync/incrementalsync incrementalUpdateFolders()', () => {
     knexFnFake = stubToKnex(knexFnStub)
   }
 
-  let upsertCallExpectation = 1
+  let upsertChunkCallCount = 1
 
   beforeEach(() => {
     aggregateRowsForReturn = []
     pruneDeletedRows = 0
-    upsertCallExpectation = 1
+    upsertChunkCallCount = 1
     setup()
   })
 
   describe('with no affected folders', () => {
     beforeEach(() => {
-      upsertCallExpectation = 0
+      upsertChunkCallCount = 0
       setup()
     })
     it('should not run the aggregate picture query', async () => {

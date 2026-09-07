@@ -65,6 +65,10 @@ export async function takeLock(): Promise<void> {
   }
 }
 
+function clearSentinelUnlessReplacedDuringRelease(released: WakeLockSentinel): void {
+  if (WakeLock.sentinel === released) WakeLock.sentinel = null
+}
+
 export async function releaseLock(): Promise<void> {
   if (WakeLock.timeout > Date.now()) return
   WakeLock.timeout = RELEASED_TIMEOUT
@@ -75,8 +79,7 @@ export async function releaseLock(): Promise<void> {
       await sentinel.release()
     }
   } catch {}
-  // Only clear if a concurrent takeLock hasn't already installed a fresh sentinel
-  if (WakeLock.sentinel === sentinel) WakeLock.sentinel = null
+  clearSentinelUnlessReplacedDuringRelease(sentinel)
 }
 
 export const Internals = {

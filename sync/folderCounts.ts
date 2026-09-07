@@ -46,8 +46,7 @@ export async function getFolderInfosWithPictures(knex: Knex): Promise<FolderInfo
     .count('* as totalCount')
     .sum({ seenCount: knex.raw('CASE WHEN seen THEN 1 ELSE 0 END') })
     .groupBy('folder')
-  // Knex's PostgreSQL driver returns aggregate results (COUNT, SUM) as strings
-  // to avoid precision loss — coerce them to numbers explicitly
+  // Knex's PostgreSQL driver returns COUNT/SUM as strings to avoid precision loss.
   for (const info of folderInfos) {
     info.totalCount = Number.parseInt(`${info.totalCount}`, 10)
     info.seenCount = Number.parseInt(`${info.seenCount}`, 10)
@@ -55,16 +54,24 @@ export async function getFolderInfosWithPictures(knex: Knex): Promise<FolderInfo
   return folderInfos
 }
 
+const SEGMENTS_REMAINING_AT_ROOT = ONE
+
+export function selfAndAncestorPaths(folderPath: string): string[] {
+  const parts = folderPath.split('/')
+  const paths: string[] = []
+  while (parts.length > SEGMENTS_REMAINING_AT_ROOT) {
+    parts.pop()
+    paths.push(`${parts.join('/')}/`)
+  }
+  return paths
+}
+
 export function calculateFolderInfos(allFolders: Record<string, FolderInfo>, folders: FolderInfo[]): FolderInfo[] {
   const allData: Record<string, FolderInfo> = Object.fromEntries(
     Object.entries(allFolders).map(([key, val]) => [key, { ...val }]),
   )
   for (const folder of folders) {
-    const parts = folder.path.split('/')
-    while (parts.length > ONE) {
-      // don't loop all the way to zero to avoid double counting the root
-      parts.pop()
-      const parentPath = `${parts.join('/')}/`
+    for (const parentPath of selfAndAncestorPaths(folder.path)) {
       let { [parentPath]: parent } = allData
       if (parent === undefined) {
         parent = {

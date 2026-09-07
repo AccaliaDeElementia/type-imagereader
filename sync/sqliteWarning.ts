@@ -5,11 +5,8 @@ import type { Knex } from 'knex'
 
 import { isPostgres as _isPostgres } from './syncItemsDialect.js'
 
-// SQLite degrades steadily as the library grows: chunked-INSERT bulk loads, the
-// whole-DB write lock, and disk page cache pressure all scale unfavourably.
-// Above the soft limit performance is noticeably worse than PostgreSQL; above
-// the firm limit the initial-sync and 24h re-sync experience is poor enough
-// that PostgreSQL is strongly recommended. See README for details.
+// SQLite's whole-DB write lock, chunked-INSERT bulk loads and page cache
+// pressure all scale unfavourably as row count grows. See README for details.
 const SQLITE_PICTURES_SOFT_LIMIT = 100_000
 const SQLITE_PICTURES_FIRM_LIMIT = 250_000
 const WARNING_BANNER = '================================================================'
@@ -18,8 +15,6 @@ export const Imports = {
   isPostgres: _isPostgres,
 }
 
-// Once-per-process flag so the warning fires on startup but not on every
-// recurring scheduled re-sync. Tests reset this between runs.
 export const SqliteWarning = { sqliteSizeWarningEmitted: false }
 
 export function emitSqliteSizeWarning(logger: Debugger, knex: Knex, pictureCount: number): void {

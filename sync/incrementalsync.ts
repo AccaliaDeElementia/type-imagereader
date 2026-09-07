@@ -77,10 +77,6 @@ export async function incrementalRemoveFolder(logger: Debugger, knex: Knex, dirP
   logger(`Incremental remove folder: ${dirPath} (${deletedPics} pictures, ${deletedFolders} folders)`)
 }
 
-// Returns every folder path the scan touched -- the scanned root plus all
-// descendants discovered on disk. Callers must fold these into the affected set
-// so their counts get recalculated; a folder inserted here with no count of its
-// own is pruned as empty by incrementalUpdateFolders.
 export async function incrementalScanFolder(
   logger: Debugger,
   knex: Knex,
@@ -189,9 +185,6 @@ export async function incrementalUpdateFolders(
       await knex('folders').insert(chunk).onConflict('path').merge(['totalCount', 'seenCount'])
     })
   }
-  // Prune only folders whose counts were just recalculated. An unscoped prune
-  // would delete any folder still sitting at its default count of zero -- rows
-  // inserted by a directory scan die before they are ever counted.
   const prunedPerChunk: number[] = []
   await execChunksSynchronously(chunk(folderList, Imports.getDbChunkSize(knex)), async (chunk: string[]) => {
     prunedPerChunk.push(

@@ -12,6 +12,8 @@ interface InsertedRow {
   sortKey: string
 }
 
+const EXISTENCE_LOOKUP_CALL = 1
+
 describe('sync/folders syncMissingAncestorFolders()', () => {
   let { stub: loggerStub, fake: loggerFake } = stubInjectedLogger()
 
@@ -80,9 +82,7 @@ describe('sync/folders syncMissingAncestorFolders()', () => {
       if (table === 'pictures') return picturesQuery
       if (table === 'folders') {
         foldersCallCount += 1
-        // first folders call is the existence lookup, subsequent calls are inserts
-        // both readers and writers may interleave across chunks, so fall back to type detection
-        return foldersCallCount === 1 ? foldersSelectQuery : foldersInsertQuery
+        return foldersCallCount === EXISTENCE_LOOKUP_CALL ? foldersSelectQuery : foldersInsertQuery
       }
       throw new Error(`Unexpected knex table: ${table}`)
     })

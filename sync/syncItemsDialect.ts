@@ -44,12 +44,8 @@ export interface CopyHelpers extends SharedHelpers {
   releaseCopyConnection: (knex: Knex, client: PoolClient) => Promise<void>
 }
 
-// Knex's published types declare `Knex.client` as `any`, which leaves the
-// internal client shape opaque. `knexClient()` is the project-local typed
-// lens for the properties sync code touches: `config.client` (universal,
-// for dialect detection) and the pg-pool methods `acquireConnection` /
-// `releaseConnection` (used only inside `isPostgres`-guarded branches in
-// findItems.ts). The single `as` cast lives here so call sites stay clean.
+// Knex's published types declare `Knex.client` as `any`, leaving the internal
+// client shape opaque.
 export interface KnexClientShape {
   config: { client: string }
   acquireConnection: () => Promise<PoolClient>
@@ -72,7 +68,6 @@ export function getDbChunkSize(knex: Knex): number {
   return isPostgres(knex) ? PG_DB_CHUNK_SIZE : SQLITE_DB_CHUNK_SIZE
 }
 
-// Resolves on the stream's 'finish' event, rejects on 'error'.
 export async function awaitCopyStreamCompletion(stream: CopyStreamQuery): Promise<void> {
   const { promise, resolve, reject } = Promise.withResolvers<undefined>()
   stream.on('finish', () => {
@@ -84,8 +79,6 @@ export async function awaitCopyStreamCompletion(stream: CopyStreamQuery): Promis
   await promise
 }
 
-// Tracks per-walk progress and decides when to log. Each iteration is a single
-// `advance()` call; when the walk completes, `toCounts()` returns the totals.
 export class InsertState {
   files = ZERO
   dirs = ZERO
@@ -132,14 +125,12 @@ export class InsertState {
   }
 }
 
-// Like InsertState but also owns the CSV row buffer and the flush-chain
-// promise that serialises stream.write() calls behind a single in-flight flush.
 export class CopyState {
   files = ZERO
   dirs = ZERO
   counter = ZERO
   readonly buffer: string[] = []
-  chain: Promise<void> = Promise.resolve()
+  flushChain: Promise<void> = Promise.resolve()
 
   addCounts(cf: number, cd: number): void {
     this.files += cf
@@ -154,8 +145,6 @@ export class CopyState {
     return this.buffer.length >= DEFAULT_CHUNK_SIZE
   }
 
-  // Drains the buffer into the stream as a single payload, awaiting a 'drain'
-  // event when the stream signals backpressure. No-op for empty buffers.
   async flushBuffer(stream: CopyStreamQuery): Promise<void> {
     if (this.buffer.length === ZERO) return
     const payload = this.buffer.splice(ZERO).join('')
@@ -169,10 +158,10 @@ export class CopyState {
   }
 
   async scheduleFlush(stream: CopyStreamQuery): Promise<void> {
-    this.chain = this.chain.then(async () => {
+    this.flushChain = this.flushChain.then(async () => {
       await this.flushBuffer(stream)
     })
-    await this.chain
+    await this.flushChain
   }
 
   shouldLog(): boolean {
@@ -235,7 +224,7 @@ export async function findSyncItemsViaCopy(
       await helpers.fsWalker(helpers.getDataDir(), async (items, pending) => {
         await state.advance({ stream, helpers, logger, items, pending })
       })
-      await state.chain
+      await state.flushChain
       await state.scheduleFlush(stream)
       stream.end()
       await awaitCopyStreamCompletion(stream)

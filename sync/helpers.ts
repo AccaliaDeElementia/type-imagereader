@@ -59,10 +59,8 @@ export function toSortKey(key: string): string {
   )
 }
 
-// Parse a folder-style path (with trailing slash, never the root sentinel) into
-// its parent folder path and a sortKey derived from its basename. Callers must
-// pre-filter root paths; see addFolderAndAncestors for an example.
 export function parseFolderPath(folderPath: string): { folder: string; sortKey: string } {
+  if (folderPath === posix.sep) throw new Error('parseFolderPath: the root path has no parent folder')
   const withoutSlash = folderPath.slice(ZERO, TRAILING_SLASH_OFFSET)
   return {
     folder: toFolderPath(posix.dirname(withoutSlash)),
