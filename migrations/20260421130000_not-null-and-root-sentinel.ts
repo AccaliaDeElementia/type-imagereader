@@ -9,11 +9,22 @@ const PAD_LENGTH = 20
 const TRAILING_SLASH_OFFSET = -1
 const PATH_START = 0
 
-// Simplified sortKey generator inlined so this migration is self-contained
-// and not coupled to the current app's sort-key implementation (which may
-// evolve). The heal step is expected to find zero rows in a healthy database;
-// any rows it does fix up get a "good enough" sortKey that preserves ordering.
-function toSortKeyFallback(key: string): string {
+const NOT_NULL_COLUMNS: Array<[string, string]> = [
+  ['folders', 'folder'],
+  ['folders', 'path'],
+  ['folders', 'sortKey'],
+  ['pictures', 'folder'],
+  ['pictures', 'path'],
+  ['pictures', 'sortKey'],
+  ['pictures', 'pathHash'],
+  ['syncitems', 'folder'],
+  ['syncitems', 'path'],
+  ['syncitems', 'sortKey'],
+  ['syncitems', 'pathHash'],
+  ['bookmarks', 'path'],
+]
+
+function sortKeyAsOfThisMigration(key: string): string {
   const zeroes = '0'.repeat(PAD_LENGTH)
   return key
     .toLowerCase()
@@ -32,25 +43,22 @@ function basenameOf(path: string): string {
   return posix.basename(path.slice(PATH_START, TRAILING_SLASH_OFFSET))
 }
 
-export async function up(knex: Knex): Promise<void> {
-  // -------------------------------------------------------------------------
-  // Step 1 — Heal data so every ALTER COLUMN … SET NOT NULL succeeds.
-  //
-  // syncitems is UNLOGGED and rebuilt from scratch on every full sync —
-  // simpler and safer to truncate than to heal.
-  // -------------------------------------------------------------------------
+async function truncateRebuildableSyncItems(knex: Knex): Promise<void> {
   await knex('syncitems').truncate()
+}
 
-  // Rows missing their primary identifier can't be meaningfully healed.
+async function deleteRowsMissingTheirPrimaryIdentifier(knex: Knex): Promise<void> {
   await knex('bookmarks').whereNull('path').delete()
   await knex('folders').whereNull('path').delete()
   await knex('pictures').whereNull('path').delete()
   await knex('pictures').whereNull('folder').delete()
+}
 
-  // Root folder: legacy NULL → '' sentinel.
+async function adoptEmptyStringSentinelForRootFolder(knex: Knex): Promise<void> {
   await knex('folders').where({ path: posix.sep }).whereNull('folder').update({ folder: '' })
+}
 
-  // Non-root folder rows with a null folder column: reconstruct parent path.
+async function reconstructMissingFolderParents(knex: Knex): Promise<void> {
   const brokenFolders = await knex('folders')
     .select<Array<{ path: string }>>('path')
     .whereNull('folder')
@@ -61,28 +69,31 @@ export async function up(knex: Knex): Promise<void> {
       .where({ path: row.path })
       .update({ folder: parentOf(row.path) })
   }
+}
 
-  // Folder rows with a null sortKey: reconstruct from basename.
+async function reconstructMissingFolderSortKeys(knex: Knex): Promise<void> {
   const noSortKeyFolders = await knex('folders').select<Array<{ path: string }>>('path').whereNull('sortKey')
   for (const row of noSortKeyFolders) {
     // eslint-disable-next-line no-await-in-loop -- one-time migration
     await knex('folders')
       .where({ path: row.path })
-      .update({ sortKey: toSortKeyFallback(basenameOf(row.path)) })
+      .update({ sortKey: sortKeyAsOfThisMigration(basenameOf(row.path)) })
   }
+}
 
-  // Picture rows with a null sortKey: reconstruct from basename.
+async function reconstructMissingPictureSortKeys(knex: Knex): Promise<void> {
   const noSortKeyPics = await knex('pictures').select<Array<{ path: string }>>('path').whereNull('sortKey')
   for (const row of noSortKeyPics) {
     // eslint-disable-next-line no-await-in-loop -- one-time migration
     await knex('pictures')
       .where({ path: row.path })
       .update({
-        sortKey: toSortKeyFallback(posix.basename(row.path)),
+        sortKey: sortKeyAsOfThisMigration(posix.basename(row.path)),
       })
   }
+}
 
-  // Picture rows with a null pathHash: recompute.
+async function recomputeMissingPictureHashes(knex: Knex): Promise<void> {
   const noHashPics = await knex('pictures').select<Array<{ path: string }>>('path').whereNull('pathHash')
   for (const row of noHashPics) {
     // eslint-disable-next-line no-await-in-loop -- one-time migration
@@ -90,37 +101,35 @@ export async function up(knex: Knex): Promise<void> {
       .where({ path: row.path })
       .update({ pathHash: createHash('sha512').update(row.path).digest('base64') })
   }
+}
 
-  // -------------------------------------------------------------------------
-  // Step 2 — Add NOT NULL constraints via raw SQL (keeps existing column
-  // types and lengths; knex's .string(...).alter() would default to
-  // varchar(255) and truncate longer data).
-  // -------------------------------------------------------------------------
-  const notNullColumns: Array<[string, string]> = [
-    ['folders', 'folder'],
-    ['folders', 'path'],
-    ['folders', 'sortKey'],
-    ['pictures', 'folder'],
-    ['pictures', 'path'],
-    ['pictures', 'sortKey'],
-    ['pictures', 'pathHash'],
-    ['syncitems', 'folder'],
-    ['syncitems', 'path'],
-    ['syncitems', 'sortKey'],
-    ['syncitems', 'pathHash'],
-    ['bookmarks', 'path'],
-  ]
-  for (const [table, column] of notNullColumns) {
+async function healRowsThatWouldViolateNotNull(knex: Knex): Promise<void> {
+  await truncateRebuildableSyncItems(knex)
+  await deleteRowsMissingTheirPrimaryIdentifier(knex)
+  await adoptEmptyStringSentinelForRootFolder(knex)
+  await reconstructMissingFolderParents(knex)
+  await reconstructMissingFolderSortKeys(knex)
+  await reconstructMissingPictureSortKeys(knex)
+  await recomputeMissingPictureHashes(knex)
+}
+
+// knex's .string(...).alter() rewrites a column as varchar(255) and truncates
+// longer values, so these are raw SQL.
+async function addNotNullConstraints(knex: Knex): Promise<void> {
+  for (const [table, column] of NOT_NULL_COLUMNS) {
     // eslint-disable-next-line no-await-in-loop -- serial DDL during migration
     await knex.raw('ALTER TABLE ?? ALTER COLUMN ?? SET NOT NULL', [table, column])
   }
+}
 
-  // -------------------------------------------------------------------------
-  // Step 3 — CHECK constraint enforcing the biconditional: a row's folder
-  // column is the empty-string sentinel IFF its path is the filesystem root.
-  // This catches the other direction of corruption that NOT NULL alone
-  // doesn't: a non-root row set to '', or a root row set to a real path.
-  // -------------------------------------------------------------------------
+async function dropNotNullConstraints(knex: Knex): Promise<void> {
+  for (const [table, column] of NOT_NULL_COLUMNS) {
+    // eslint-disable-next-line no-await-in-loop -- serial DDL during migration
+    await knex.raw('ALTER TABLE ?? ALTER COLUMN ?? DROP NOT NULL', [table, column])
+  }
+}
+
+async function addRootSentinelCheckConstraints(knex: Knex): Promise<void> {
   await knex.raw("ALTER TABLE ?? ADD CONSTRAINT folders_root_sentinel_check CHECK ((?? = '') = (?? = '/'))", [
     'folders',
     'folder',
@@ -133,33 +142,25 @@ export async function up(knex: Knex): Promise<void> {
   ])
 }
 
-export async function down(knex: Knex): Promise<void> {
-  // SQLite has no DROP CONSTRAINT; the constraints are rebuilt away when the table is rebuilt
-  // by the column-NOT-NULL operations below. PostgreSQL needs the explicit drop.
-  if (isPostgres(knex)) {
-    await knex.raw('ALTER TABLE ?? DROP CONSTRAINT IF EXISTS folders_root_sentinel_check', ['folders'])
-    await knex.raw('ALTER TABLE ?? DROP CONSTRAINT IF EXISTS syncitems_root_sentinel_check', ['syncitems'])
-  }
+async function dropRootSentinelCheckConstraints(knex: Knex): Promise<void> {
+  // SQLite parses DROP CONSTRAINT as a syntax error.
+  if (!isPostgres(knex)) return
+  await knex.raw('ALTER TABLE ?? DROP CONSTRAINT IF EXISTS folders_root_sentinel_check', ['folders'])
+  await knex.raw('ALTER TABLE ?? DROP CONSTRAINT IF EXISTS syncitems_root_sentinel_check', ['syncitems'])
+}
 
-  const notNullColumns: Array<[string, string]> = [
-    ['folders', 'folder'],
-    ['folders', 'path'],
-    ['folders', 'sortKey'],
-    ['pictures', 'folder'],
-    ['pictures', 'path'],
-    ['pictures', 'sortKey'],
-    ['pictures', 'pathHash'],
-    ['syncitems', 'folder'],
-    ['syncitems', 'path'],
-    ['syncitems', 'sortKey'],
-    ['syncitems', 'pathHash'],
-    ['bookmarks', 'path'],
-  ]
-  for (const [table, column] of notNullColumns) {
-    // eslint-disable-next-line no-await-in-loop -- serial DDL during migration
-    await knex.raw('ALTER TABLE ?? ALTER COLUMN ?? DROP NOT NULL', [table, column])
-  }
-
-  // Restore the pre-migration convention of NULL in the root folder row.
+async function restorePreMigrationNullRootFolder(knex: Knex): Promise<void> {
   await knex('folders').where({ path: posix.sep }).update({ folder: null })
+}
+
+export async function up(knex: Knex): Promise<void> {
+  await healRowsThatWouldViolateNotNull(knex)
+  await addNotNullConstraints(knex)
+  await addRootSentinelCheckConstraints(knex)
+}
+
+export async function down(knex: Knex): Promise<void> {
+  await dropRootSentinelCheckConstraints(knex)
+  await dropNotNullConstraints(knex)
+  await restorePreMigrationNullRootFolder(knex)
 }

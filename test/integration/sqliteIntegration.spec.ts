@@ -168,6 +168,22 @@ describe(
       expect(remaining).not.toContain('20260421130000_not-null-and-root-sentinel.ts')
     })
 
+    it('should drop NOT NULL on rollback so a pre-migration null sortKey inserts again', async () => {
+      assertDb(db)
+      await db.migrate.down()
+      await db('folders').insert({ path: '/x/', folder: '/', sortKey: null })
+      const rows = await db('folders').select<Array<{ path: string }>>('path').where({ path: '/x/' })
+      expect(rows.length).toBe(1)
+    })
+
+    it('should leave the root sentinel CHECK constraint in place after rollback because sqlite cannot drop it', async () => {
+      assertDb(db)
+      await db.migrate.down()
+      await expect(db('folders').insert({ path: '/x/', folder: '', sortKey: 'x' })).rejects.toThrow(
+        /CHECK constraint failed/v,
+      )
+    })
+
     it('should bulk-insert past the SQLITE_LIMIT_COMPOUND_SELECT cap (1000 rows)', async () => {
       assertDb(db)
       const ROW_COUNT = 1000
