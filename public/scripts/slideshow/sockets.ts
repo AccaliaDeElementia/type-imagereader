@@ -88,8 +88,23 @@ function uninitializedLocationReload(): void {
 export const WebSockets = {
   socket: undefined as WebSocket | undefined,
   launchId: undefined as unknown,
+  // Captured at connect time: handleClick compares it against the live viewport
+  // scale to tell a tap from the end of a pinch-zoom.
+  initialScale: DEFAULT_ZOOM,
   locationAssign: uninitializedLocationAssign,
   locationReload: uninitializedLocationReload,
+}
+
+// Named handlers reading current state rather than closures over it, so that
+// connect can bind them idempotently and disconnect can take them off again.
+// Fresh closures could neither be removed nor deduplicated, leaving a
+// reconnect sending two socket emits for every tap.
+function onBodyClick(event: MouseEvent): void {
+  Internals.handleClick(event, WebSockets.socket, WebSockets.initialScale)
+}
+
+function onBodyKeyUp(event: KeyboardEvent): void {
+  Internals.handleKeys(event, WebSockets.socket)
 }
 
 export function connect(): void {
@@ -103,16 +118,14 @@ export function connect(): void {
     WebSockets.socket?.emit(SocketEvents.GetLaunchId, Internals.handleGetLaunchId)
   })
   WebSockets.socket.on(SocketEvents.ImageChanged, Internals.showBackingImageByType)
-  const initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
-  document.body.addEventListener('click', (event) => {
-    Internals.handleClick(event, WebSockets.socket, initialScale)
-  })
-  document.body.addEventListener('keyup', (event) => {
-    Internals.handleKeys(event, WebSockets.socket)
-  })
+  WebSockets.initialScale = hasValue(window.visualViewport) ? window.visualViewport.scale : DEFAULT_ZOOM
+  document.body.addEventListener('click', onBodyClick)
+  document.body.addEventListener('keyup', onBodyKeyUp)
 }
 
 export function disconnect(): void {
+  document.body.removeEventListener('click', onBodyClick)
+  document.body.removeEventListener('keyup', onBodyKeyUp)
   WebSockets.socket?.disconnect()
   WebSockets.socket = undefined
   WebSockets.launchId = undefined

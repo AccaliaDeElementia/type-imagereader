@@ -206,4 +206,55 @@ describe('public/slideshow/sockets connect()', () => {
     cast<(_: unknown) => void>(fakeAddEventListener?.mock.calls.find((c) => c[0] === 'keyup')?.[1])(undefined)
     expect(fakeHandleKeys?.mock.calls[0]?.[1]).toBe(fakeSocket)
   })
+
+  // These run against the real document.body rather than a stubbed
+  // addEventListener, because what matters is how many handlers end up attached
+  // to the element and whether disconnect takes them off again.
+  describe('body handler lifecycle', () => {
+    const click = (): void => {
+      dom.window.document.body.dispatchEvent(new dom.window.MouseEvent('click'))
+    }
+    const keyup = (): void => {
+      dom.window.document.body.dispatchEvent(new dom.window.KeyboardEvent('keyup'))
+    }
+    beforeEach(() => {
+      fakeAddEventListener?.mockRestore()
+      disconnect()
+    })
+    afterEach(() => {
+      disconnect()
+    })
+    it('should handle a click once after a single connect', () => {
+      connect()
+      click()
+      expect(fakeHandleClick?.mock.calls.length).toBe(1)
+    })
+    // Reconnecting must not double every tap into two socket emits.
+    it('should handle a click once after reconnecting', () => {
+      connect()
+      disconnect()
+      connect()
+      click()
+      expect(fakeHandleClick?.mock.calls.length).toBe(1)
+    })
+    it('should handle a keyup once after reconnecting', () => {
+      connect()
+      disconnect()
+      connect()
+      keyup()
+      expect(fakeHandleKeys?.mock.calls.length).toBe(1)
+    })
+    it('should stop handling clicks after disconnect', () => {
+      connect()
+      disconnect()
+      click()
+      expect(fakeHandleClick?.mock.calls.length).toBe(0)
+    })
+    it('should stop handling keyups after disconnect', () => {
+      connect()
+      disconnect()
+      keyup()
+      expect(fakeHandleKeys?.mock.calls.length).toBe(0)
+    })
+  })
 })

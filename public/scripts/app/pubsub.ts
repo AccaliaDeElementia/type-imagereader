@@ -142,6 +142,10 @@ function executeInterval(): void {
 }
 
 export function startDeferred(): void {
+  // PubSub.timer holds the only handle stopDeferred can clear, so starting a
+  // second timer would both run every deferred and interval callback at twice
+  // the intended rate and orphan the first timer beyond any way of stopping it.
+  if (PubSub.timer !== undefined) return
   PubSub.timer = window.setInterval((): void => {
     Internals.executeInterval()
   }, PubSub.cycleTime)
