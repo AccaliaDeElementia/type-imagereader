@@ -26,8 +26,8 @@ const makeRows = (count: number): Array<{ path: string; marker: number }> =>
 const makeStream = (): StreamFake => cast<StreamFake>(createCopyStreamFake({ emitOnEnd: 'finish' }).ee)
 
 const scheduleEmit = (target: EventEmitter, event: string, arg?: unknown): void => {
-  if (arg === undefined) scheduleEmitOn(target, event)
-  else scheduleEmitOn(target, event, arg)
+  if (arg === undefined) void scheduleEmitOn(target, event)
+  else void scheduleEmitOn(target, event, arg)
 }
 
 describe('sync/findItems findSyncItems()', () => {

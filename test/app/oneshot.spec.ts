@@ -22,9 +22,10 @@ describe('app.ts ONESHOT mode tests', (): void => {
     SynchronizeStub = vi.spyOn(ImageReader, 'synchronize').mockResolvedValue(undefined)
     vi.useFakeTimers()
     LoggerStub = vi.spyOn(Imports, 'logger')
-    StartWatcherStub = vi
-      .spyOn(Imports, 'startWatcher')
-      .mockResolvedValue({ unsubscribe: vi.fn().mockResolvedValue(undefined) })
+    StartWatcherStub = vi.spyOn(Imports, 'startWatcher').mockResolvedValue({
+      unsubscribe: vi.fn().mockResolvedValue(undefined),
+      whenFlushed: vi.fn().mockResolvedValue(undefined),
+    })
     vi.spyOn(Imports, 'stat').mockResolvedValue(cast<Stats>({ isDirectory: () => true }))
     DestroyStub = vi.fn().mockResolvedValue(undefined)
     vi.spyOn(Imports, 'initialize').mockResolvedValue(cast({ destroy: DestroyStub }))

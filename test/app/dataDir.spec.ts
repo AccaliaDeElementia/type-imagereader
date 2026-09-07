@@ -30,9 +30,10 @@ describe('app.ts DATA_DIR handling', (): void => {
     SynchronizeStub = vi.spyOn(ImageReader, 'synchronize').mockResolvedValue(undefined)
     vi.useFakeTimers()
     LoggerStub = vi.spyOn(Imports, 'logger')
-    StartWatcherStub = vi
-      .spyOn(Imports, 'startWatcher')
-      .mockResolvedValue({ unsubscribe: vi.fn().mockResolvedValue(undefined) })
+    StartWatcherStub = vi.spyOn(Imports, 'startWatcher').mockResolvedValue({
+      unsubscribe: vi.fn().mockResolvedValue(undefined),
+      whenFlushed: vi.fn().mockResolvedValue(undefined),
+    })
     StatStub = vi.spyOn(Imports, 'stat').mockResolvedValue(fakeDirStats())
     InitializeStub = vi.spyOn(Imports, 'initialize').mockResolvedValue(cast({}))
     IncrementalSyncStub = vi.spyOn(Imports.IncrementalSyncFunctions, 'incrementalSync').mockResolvedValue(undefined)

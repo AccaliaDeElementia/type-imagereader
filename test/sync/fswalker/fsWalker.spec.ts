@@ -1,7 +1,6 @@
 'use sanity'
 
 import { fsWalker, Imports, Fswalker } from '#sync/fswalker.js'
-import { flushMicrotasks } from '#testutils/microtasks.js'
 import type { MockInstance } from 'vitest'
 
 describe('sync/fswalker fsWalker()', () => {
@@ -172,12 +171,16 @@ describe('sync/fswalker fsWalker()', () => {
     const release: Array<() => void> = []
     let drain = false
     const subdirs = ['a', 'b', 'c', 'd', 'e'].map((name) => ({ name, isDirectory: () => true }))
+    const saturated = Promise.withResolvers<undefined>()
     readdirSpy.mockImplementation(async (path: string) => {
       if (path === '/root/') {
         return subdirs
       }
       inFlight.count += 1
       inFlight.peak = Math.max(inFlight.peak, inFlight.count)
+      if (inFlight.count === Fswalker.concurrency) {
+        saturated.resolve(undefined)
+      }
       if (!drain) {
         const { promise, resolve } = Promise.withResolvers<undefined>()
         release.push(() => {
@@ -189,10 +192,7 @@ describe('sync/fswalker fsWalker()', () => {
       return []
     })
     const walk = fsWalker('/root', vi.fn().mockResolvedValue(undefined))
-    while (inFlight.count < 3) {
-      // eslint-disable-next-line no-await-in-loop -- waiting for workers to saturate
-      await flushMicrotasks()
-    }
+    await saturated.promise
     drain = true
     while (release.length > 0) release.shift()?.()
     await walk

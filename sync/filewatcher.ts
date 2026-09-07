@@ -17,6 +17,7 @@ export type FlushCallback = (changeset: Changeset) => Promise<void>
 
 export interface WatcherSubscription {
   unsubscribe: () => Promise<void>
+  whenFlushed: () => Promise<void>
 }
 
 export interface WatcherEvent {
@@ -75,6 +76,7 @@ export async function start(dataDir: string, onFlush: FlushCallback): Promise<Wa
   const changeset: Changeset = new Map()
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   let flushInProgress = false
+  let inFlight: Promise<void> = Promise.resolve()
   const flush = async (): Promise<void> => {
     debounceTimer = null
     flushInProgress = true
@@ -102,7 +104,7 @@ export async function start(dataDir: string, onFlush: FlushCallback): Promise<Wa
       Imports.clearTimeout(debounceTimer)
     }
     debounceTimer = Imports.setTimeout(() => {
-      Imports.catchLog(flush(), logger, 'flush error')
+      inFlight = Imports.catchLog(flush(), logger, 'flush error')
     }, Filewatcher.debounceMs)
   }
 
@@ -112,14 +114,14 @@ export async function start(dataDir: string, onFlush: FlushCallback): Promise<Wa
         Imports.clearTimeout(debounceTimer)
         debounceTimer = null
       }
-      Imports.catchLog(flush(), logger, 'flush error')
+      inFlight = Imports.catchLog(flush(), logger, 'flush error')
       return
     }
     if (debounceTimer !== null) {
       Imports.clearTimeout(debounceTimer)
     }
     debounceTimer = Imports.setTimeout(() => {
-      Imports.catchLog(flush(), logger, 'flush error')
+      inFlight = Imports.catchLog(flush(), logger, 'flush error')
     }, Filewatcher.debounceMs)
   }
 
@@ -135,5 +137,13 @@ export async function start(dataDir: string, onFlush: FlushCallback): Promise<Wa
   })
 
   logger('File watcher started on', dataDir)
-  return subscription
+  return {
+    whenFlushed: async (): Promise<void> => {
+      await inFlight
+    },
+    unsubscribe: async (): Promise<void> => {
+      await inFlight
+      await subscription.unsubscribe()
+    },
+  }
 }

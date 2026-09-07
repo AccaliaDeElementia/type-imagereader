@@ -3,7 +3,6 @@
 import { EventEmitter } from 'node:events'
 import { createCopyStreamFake, scheduleEmit } from '#testutils/copyStream.js'
 import { voidFn } from '#testutils/mocks.js'
-import { flushMicrotasks } from '#testutils/microtasks.js'
 
 describe('testutils createCopyStreamFake()', () => {
   it('should return an object exposing the typed stream', () => {
@@ -41,28 +40,28 @@ describe('testutils createCopyStreamFake()', () => {
     expect(destroySpy.mock.calls.length).toBe(1)
   })
   it('should not auto-emit anything on end() by default', async () => {
-    const { stream, ee } = createCopyStreamFake()
+    const { stream, ee, endEmitted } = createCopyStreamFake()
     const finishSpy = voidFn()
     ee.on('finish', finishSpy)
     stream.end()
-    await flushMicrotasks()
+    await endEmitted()
     expect(finishSpy.mock.calls.length).toBe(0)
   })
   it('should emit "finish" on the next microtask when emitOnEnd is "finish"', async () => {
-    const { stream, ee } = createCopyStreamFake({ emitOnEnd: 'finish' })
+    const { stream, ee, endEmitted } = createCopyStreamFake({ emitOnEnd: 'finish' })
     const finishSpy = voidFn()
     ee.once('finish', finishSpy)
     stream.end()
-    await flushMicrotasks()
+    await endEmitted()
     expect(finishSpy.mock.calls.length).toBe(1)
   })
   it('should emit "error" with the supplied error when emitOnEnd is { error }', async () => {
     const err = new Error('boom')
-    const { stream, ee } = createCopyStreamFake({ emitOnEnd: { error: err } })
+    const { stream, ee, endEmitted } = createCopyStreamFake({ emitOnEnd: { error: err } })
     const errorSpy = voidFn()
     ee.once('error', errorSpy)
     stream.end()
-    await flushMicrotasks()
+    await endEmitted()
     expect(errorSpy.mock.calls[0]?.[0]).toBe(err)
   })
 })
@@ -72,16 +71,14 @@ describe('testutils scheduleEmit()', () => {
     const ee = new EventEmitter()
     const drainSpy = voidFn()
     ee.once('drain', drainSpy)
-    scheduleEmit(ee, 'drain')
-    await flushMicrotasks()
+    await scheduleEmit(ee, 'drain')
     expect(drainSpy.mock.calls.length).toBe(1)
   })
   it('should pass extra arguments through to the listener', async () => {
     const ee = new EventEmitter()
     const payloadSpy = voidFn()
     ee.once('payload', payloadSpy)
-    scheduleEmit(ee, 'payload', 'first', 42)
-    await flushMicrotasks()
+    await scheduleEmit(ee, 'payload', 'first', 42)
     expect(payloadSpy.mock.calls[0]).toEqual(['first', 42])
   })
 })

@@ -305,25 +305,31 @@ export async function gotoImage(callback: SocketCallback, state: SlideshowSocket
   callback(folder)
 }
 
+async function respondWithGotoImage(callback: SocketCallback, state: SlideshowSocketState, knex: Knex): Promise<void> {
+  try {
+    await Internals.gotoImage(callback, state, knex)
+  } catch (err: unknown) {
+    Imports.logger('gotoImage error', err)
+    callback(null)
+  }
+}
+
 export function handleSocket(knex: Knex, io: WebSocketServer, socket: Socket): SlideshowSocketState {
   const state = new SlideshowSocketState()
   socket.on(SocketEvents.GetLaunchId, (callback: SocketCallback) => {
     Internals.getLaunchId(callback)
   })
   socket.on(SocketEvents.JoinSlideshow, (roomName?: string) => {
-    Imports.catchLog(Internals.joinSlideshow(roomName, state, socket, knex), Imports.logger, 'joinSlideshow error')
+    void Imports.catchLog(Internals.joinSlideshow(roomName, state, socket, knex), Imports.logger, 'joinSlideshow error')
   })
   socket.on(SocketEvents.PrevImage, () => {
-    Imports.catchLog(Internals.prevImage(state, io, knex), Imports.logger, 'prevImage error')
+    void Imports.catchLog(Internals.prevImage(state, io, knex), Imports.logger, 'prevImage error')
   })
   socket.on(SocketEvents.NextImage, () => {
-    Imports.catchLog(Internals.nextImage(state, io, knex), Imports.logger, 'nextImage error')
+    void Imports.catchLog(Internals.nextImage(state, io, knex), Imports.logger, 'nextImage error')
   })
   socket.on(SocketEvents.GotoImage, (callback: SocketCallback) => {
-    Internals.gotoImage(callback, state, knex).catch((err: unknown) => {
-      Imports.logger('gotoImage error', err)
-      callback(null)
-    })
+    void Internals.respondWithGotoImage(callback, state, knex)
   })
   return state
 }
@@ -411,6 +417,7 @@ export const Internals = {
   prevImage,
   nextImage,
   gotoImage,
+  respondWithGotoImage,
   handleSocket,
   rootRoute,
 }

@@ -5,7 +5,6 @@ import { voidFn } from '#testutils/mocks.js'
 import assert from 'node:assert'
 import { handleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
-import { flushMicrotasks } from '#testutils/microtasks.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/slideshow handleSocket()', () => {
@@ -14,13 +13,11 @@ describe('routes/slideshow handleSocket()', () => {
   let socketStub = { on: vi.fn() }
   let socketFake = cast<Socket>(socketStub)
   let socketStubs: Array<[string, MockInstance]> = []
-  let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
     knexFake = stubToKnex({})
     serverFake = cast<WebSocketServer>({})
     socketStub = { on: vi.fn() }
     socketFake = cast<Socket>(socketStub)
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
     socketStubs = [
       ['get-launchId', vi.spyOn(Internals, 'getLaunchId').mockImplementation((..._args: unknown[]) => undefined)],
       ['join-slideshow', vi.spyOn(Internals, 'joinSlideshow').mockResolvedValue(undefined)],
@@ -54,37 +51,33 @@ describe('routes/slideshow handleSocket()', () => {
       expect(stub[1].mock.calls.length).toBe(1)
     })
   })
-  const asyncEndpoints: Array<[string, string]> = [
-    ['join-slideshow', 'joinSlideshow'],
-    ['prev-image', 'prevImage'],
-    ['next-image', 'nextImage'],
-    ['goto-image', 'gotoImage'],
+  const catchLogEndpoints: Array<[string, string]> = [
+    ['join-slideshow', 'joinSlideshow error'],
+    ['prev-image', 'prevImage error'],
+    ['next-image', 'nextImage error'],
   ]
-  asyncEndpoints.forEach(([endpoint, handlerName]) => {
-    it(`should log the error when ${endpoint} handler rejects`, async () => {
-      const stub = socketStubs.find(([name]) => name === endpoint)
-      assert(stub !== undefined)
-      const err = new Error(`boom-${handlerName}`)
-      stub[1].mockRejectedValue(err)
+  catchLogEndpoints.forEach(([endpoint, message]) => {
+    it(`should route ${endpoint} failures through catchLog`, () => {
+      const catchLogStub = vi.spyOn(Imports, 'catchLog').mockResolvedValue(undefined)
       handleSocket(knexFake, serverFake, socketFake)
-      const fn = cast<(cb?: () => void) => void>(getCallback(endpoint))
-      fn(() => undefined)
-      await flushMicrotasks()
-      const matching = loggerStub.mock.calls.find((call) => call[1] === err)
-      assert(matching !== undefined, `expected logger to be called with the ${handlerName} error`)
+      cast<(cb?: () => void) => void>(getCallback(endpoint))(() => undefined)
+      expect(catchLogStub.mock.calls.length).toBe(1)
+    })
+    it(`should label ${endpoint} failures with its own message`, () => {
+      const catchLogStub = vi.spyOn(Imports, 'catchLog').mockResolvedValue(undefined)
+      handleSocket(knexFake, serverFake, socketFake)
+      cast<(cb?: () => void) => void>(getCallback(endpoint))(() => undefined)
+      expect(catchLogStub.mock.calls[0]?.[2]).toBe(message)
     })
   })
-  it('should invoke the client callback with null when goto-image rejects', async () => {
-    const stub = socketStubs.find(([name]) => name === 'goto-image')
-    assert(stub !== undefined)
-    stub[1].mockRejectedValue(new Error('goto failed'))
+  it('should route goto-image through respondWithGotoImage', () => {
+    const respondStub = vi.spyOn(Internals, 'respondWithGotoImage').mockResolvedValue(undefined)
     handleSocket(knexFake, serverFake, socketFake)
-    const fn = cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))
     const callbackStub = voidFn()
-    fn(callbackStub)
-    await flushMicrotasks()
-    expect(callbackStub.mock.calls[0]).toEqual([null])
+    cast<(cb: (arg: unknown) => void) => void>(getCallback('goto-image'))(callbackStub)
+    expect(respondStub.mock.calls.length).toBe(1)
   })
+
   it('should return an object for state storage', () => {
     const state = handleSocket(knexFake, serverFake, socketFake)
     expect(state).toBeTypeOf('object')

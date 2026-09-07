@@ -2,9 +2,9 @@
 
 import { Imports, Filewatcher, start } from '#sync/filewatcher.js'
 import type { FlushCallback, WatcherSubscription } from '#sync/filewatcher.js'
+import type { AsyncSubscription } from '@parcel/watcher'
 import { cast } from '#testutils/typeGuards.js'
 import { stubLoggerFactory } from '#testutils/debug.js'
-import { flushMicrotasks } from '#testutils/microtasks.js'
 import type { MockInstance } from 'vitest'
 
 type SubscriberCallback = (err: Error | null, events: Array<{ type: string; path: string }>) => unknown
@@ -13,10 +13,11 @@ describe('sync/filewatcher start()', () => {
   let loggerStub: MockInstance = vi.fn()
   let debugStub: MockInstance = vi.fn()
   let subscribeStub: MockInstance = vi.fn()
+  let watcher = cast<WatcherSubscription>({})
   let setTimeoutStub: MockInstance = vi.fn()
   let clearTimeoutStub: MockInstance = vi.fn()
   let flushCallback: FlushCallback = vi.fn().mockResolvedValue(undefined)
-  let fakeSubscription: WatcherSubscription = { unsubscribe: vi.fn().mockResolvedValue(undefined) }
+  let fakeSubscription: AsyncSubscription = { unsubscribe: vi.fn().mockResolvedValue(undefined) }
   let subscriberCallback: SubscriberCallback = vi.fn()
 
   beforeEach(() => {
@@ -35,72 +36,101 @@ describe('sync/filewatcher start()', () => {
   })
 
   it('should create a debug logger', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     expect(debugStub.mock.calls.length).toBe(1)
   })
 
   it('should call subscribe with the data directory', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     expect(subscribeStub.mock.calls[0]?.[0]).toBe('/data')
   })
 
-  it('should return the subscription', async () => {
-    const result = await start('/data', flushCallback)
-    expect(result).toBe(fakeSubscription)
+  it('should delegate unsubscribe to the watcher subscription', async () => {
+    const unsubscribeStub = vi.fn().mockResolvedValue(undefined)
+    fakeSubscription = { unsubscribe: unsubscribeStub }
+    watcher = await start('/data', flushCallback)
+    await watcher.unsubscribe()
+    expect(unsubscribeStub.mock.calls.length).toBe(1)
+  })
+
+  it('should wait for an in-flight flush before unsubscribing', async () => {
+    const { promise, resolve: resolveFlush } = Promise.withResolvers<undefined>()
+    const flushStarted = Promise.withResolvers<undefined>()
+    const order: string[] = []
+    setTimeoutStub.mockImplementation((fn: () => void) => {
+      fn()
+      return 42
+    })
+    watcher = await start(
+      '/data',
+      cast<FlushCallback>(async () => {
+        flushStarted.resolve(undefined)
+        await promise
+        order.push('flush')
+      }),
+    )
+    subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
+    await flushStarted.promise
+    const teardown = watcher.unsubscribe().then((): void => {
+      order.push('unsubscribe')
+    })
+    resolveFlush(undefined)
+    await teardown
+    expect(order).toEqual(['flush', 'unsubscribe'])
   })
 
   it('should log watcher started message', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     expect(loggerStub.mock.calls[0]?.[0]).toBe('File watcher started on')
   })
 
   it('should log data directory in startup message', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     expect(loggerStub.mock.calls[0]?.[1]).toBe('/data')
   })
 
   it('should schedule flush when create events arrive', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.mock.calls.length).toBe(1)
   })
 
   it('should schedule flush with debounceMs delay', async () => {
     Filewatcher.debounceMs = 7000
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.mock.calls[0]?.[1]).toBe(7000)
   })
 
   it('should not schedule flush when no qualifying events arrive', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'update', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.mock.calls.length).toBe(0)
   })
 
   it('should call clearTimeout once when new events arrive', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     expect(clearTimeoutStub.mock.calls.length).toBe(1)
   })
 
   it('should pass timer id to clearTimeout when new events arrive', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     expect(clearTimeoutStub.mock.calls[0]?.[0]).toBe(42)
   })
 
   it('should log error when watcher reports error', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     const error = new Error('watch failed')
     subscriberCallback(error, [])
     expect(loggerStub).toHaveBeenCalledWith('watcher error', error)
   })
 
   it('should not schedule flush when watcher reports error', async () => {
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(new Error('watch failed'), [])
     expect(setTimeoutStub.mock.calls.length).toBe(0)
   })
@@ -110,9 +140,9 @@ describe('sync/filewatcher start()', () => {
       fn()
       return 42
     })
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(cast<MockInstance>(flushCallback).mock.calls.length).toBe(1)
   })
 
@@ -121,9 +151,9 @@ describe('sync/filewatcher start()', () => {
       fn()
       return 42
     })
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     const changeset = cast<Map<string, string>>(cast<MockInstance>(flushCallback).mock.calls[0]?.[0])
     expect(changeset.get('/foo.jpg')).toBe('create')
   })
@@ -134,11 +164,11 @@ describe('sync/filewatcher start()', () => {
       flushFn = fn
       return 42
     })
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = cast<() => void>(flushFn)
     callFlush()
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     // Fire again with no new events - should not call flush again since changeset is empty
     subscriberCallback(null, [{ type: 'update', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.mock.calls.length).toBe(1)
@@ -151,11 +181,11 @@ describe('sync/filewatcher start()', () => {
       flushFn = fn
       return 42
     })
-    await start('/data', rejectingFlush)
+    watcher = await start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = cast<() => void>(flushFn)
     callFlush()
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     // Should have scheduled a retry
     expect(setTimeoutStub.mock.calls.length).toBeGreaterThan(1)
   })
@@ -166,17 +196,17 @@ describe('sync/filewatcher start()', () => {
       flushFn = fn
       return 42
     })
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     // First flush — processes the changeset
     const callFirstFlush = cast<() => void>(flushFn)
     callFirstFlush()
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(cast<MockInstance>(flushCallback).mock.calls.length).toBe(1)
     // Second flush — changeset is now empty, should not call onFlush again
     const callSecondFlush = cast<() => void>(flushFn)
     callSecondFlush()
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(cast<MockInstance>(flushCallback).mock.calls.length).toBe(1)
   })
 
@@ -195,27 +225,27 @@ describe('sync/filewatcher start()', () => {
       }
       return 42
     })
-    await start('/data', rejectingFlush)
+    watcher = await start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     const hasFlushError = loggerStub.mock.calls.some((c) => c[0] === 'flush error')
     expect(hasFlushError).toBe(true)
   })
 
   it('should flush immediately when changeset reaches maxPendingChanges', async () => {
     Filewatcher.maxPendingChanges = 2
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [
       { type: 'create', path: '/data/foo.jpg' },
       { type: 'create', path: '/data/bar.jpg' },
     ])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(cast<MockInstance>(flushCallback).mock.calls.length).toBe(1)
   })
 
   it('should not schedule a timer when force-flushing at threshold', async () => {
     Filewatcher.maxPendingChanges = 2
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [
       { type: 'create', path: '/data/foo.jpg' },
       { type: 'create', path: '/data/bar.jpg' },
@@ -225,7 +255,7 @@ describe('sync/filewatcher start()', () => {
 
   it('should clear existing timer when force-flushing at threshold', async () => {
     Filewatcher.maxPendingChanges = 2
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     // First event: below threshold, schedules a timer
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.mock.calls.length).toBe(1)
@@ -236,14 +266,14 @@ describe('sync/filewatcher start()', () => {
 
   it('should schedule a timer below maxPendingChanges', async () => {
     Filewatcher.maxPendingChanges = 10
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.mock.calls.length).toBe(1)
   })
 
   it('should not call flush callback immediately below maxPendingChanges', async () => {
     Filewatcher.maxPendingChanges = 10
-    await start('/data', flushCallback)
+    watcher = await start('/data', flushCallback)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(cast<MockInstance>(flushCallback).mock.calls.length).toBe(0)
   })
@@ -258,7 +288,7 @@ describe('sync/filewatcher start()', () => {
       flushFn = fn
       return 42
     })
-    await start('/data', delayedReject)
+    watcher = await start('/data', delayedReject)
     // Event arrives, scheduleFlush sets debounce timer
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = cast<() => void>(flushFn)
@@ -267,7 +297,7 @@ describe('sync/filewatcher start()', () => {
     // While onFlush is pending, new events arrive — scheduleFlush sets a new timer
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     // onFlush rejects on next microtick — flush catch calls scheduleRetry with timer active
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     // scheduleRetry should have cleared the timer set during the pending flush
     expect(clearTimeoutStub.mock.calls.length).toBe(1)
   })
@@ -278,9 +308,9 @@ describe('sync/filewatcher start()', () => {
     setTimeoutStub.mockImplementation(() => {
       throw new Error('setTimeout broke')
     })
-    await start('/data', rejectingFlush)
+    watcher = await start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     const hasFlushError = loggerStub.mock.calls.some((c) => c[0] === 'flush error')
     expect(hasFlushError).toBe(true)
   })
@@ -298,9 +328,9 @@ describe('sync/filewatcher start()', () => {
       }
       return 42
     })
-    await start('/data', rejectingFlush)
+    watcher = await start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     const flushErrors = loggerStub.mock.calls.filter((c) => c[0] === 'flush error')
     expect(flushErrors.length).toBeGreaterThan(0)
   })
@@ -310,7 +340,7 @@ describe('sync/filewatcher start()', () => {
     const delayedFlush: FlushCallback = vi.fn().mockImplementation(async () => {
       await Promise.resolve()
     })
-    await start('/data', delayedFlush)
+    watcher = await start('/data', delayedFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     expect(setTimeoutStub.mock.calls.length).toBe(0)
   })
@@ -320,7 +350,7 @@ describe('sync/filewatcher start()', () => {
     const delayedFlush: FlushCallback = vi.fn().mockImplementation(async () => {
       await Promise.resolve()
     })
-    await start('/data', delayedFlush)
+    watcher = await start('/data', delayedFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
     expect(setTimeoutStub.mock.calls.length).toBe(1)
@@ -331,10 +361,10 @@ describe('sync/filewatcher start()', () => {
     const delayedFlush: FlushCallback = vi.fn().mockImplementation(async () => {
       await Promise.resolve()
     })
-    await start('/data', delayedFlush)
+    watcher = await start('/data', delayedFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(cast<MockInstance>(delayedFlush).mock.calls.length).toBe(1)
   })
 
@@ -345,15 +375,15 @@ describe('sync/filewatcher start()', () => {
       flushCount += 1
       await Promise.resolve()
     })
-    await start('/data', delayedFlush)
+    watcher = await start('/data', delayedFlush)
     // First event triggers force-flush
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     // Let force-flush complete
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(flushCount).toBe(1)
     // Second event should trigger a new force-flush since the first completed
     subscriberCallback(null, [{ type: 'create', path: '/data/baz.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(flushCount).toBe(2)
   })
 
@@ -368,22 +398,22 @@ describe('sync/filewatcher start()', () => {
       .mockImplementationOnce(async () => {
         await Promise.resolve()
       })
-    await start('/data', rejectOnce)
+    watcher = await start('/data', rejectOnce)
     // First event triggers force-flush which will reject
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     // Rejection schedules a debounced retry; fire new events to trigger force-flush again
     subscriberCallback(null, [{ type: 'create', path: '/data/bar.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(cast<MockInstance>(rejectOnce).mock.calls.length).toBe(2)
   })
 
   it('should log retry message when immediate force-flush fails', async () => {
     Filewatcher.maxPendingChanges = 1
     const rejectingFlush: FlushCallback = vi.fn().mockRejectedValue(new Error('flush failed'))
-    await start('/data', rejectingFlush)
+    watcher = await start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     const hasRetryLog = loggerStub.mock.calls.some((c) => c[0] === 'Flush deferred, will retry')
     expect(hasRetryLog).toBe(true)
   })
@@ -396,18 +426,20 @@ describe('sync/filewatcher start()', () => {
       return 42
     })
     const rejectingFlush: FlushCallback = vi.fn().mockRejectedValue(flushErr)
-    await start('/data', rejectingFlush)
+    watcher = await start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     const callFlush = cast<() => void>(flushFn)
     callFlush()
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     const retryCall = loggerStub.mock.calls.find((c) => c[0] === 'Flush deferred, will retry')
     expect(retryCall?.[1]).toBe(flushErr)
   })
 
   const runFlushRaceScenario = async (): Promise<MockInstance> => {
     const { promise, resolve: resolveFlush } = Promise.withResolvers<undefined>()
+    const flushStarted = Promise.withResolvers<undefined>()
     const delayedFlush = vi.fn().mockImplementation(async () => {
+      flushStarted.resolve(undefined)
       await promise
     })
     let flushFn: (() => void) | undefined = undefined
@@ -415,15 +447,15 @@ describe('sync/filewatcher start()', () => {
       flushFn = fn
       return 42
     })
-    await start('/data', cast<FlushCallback>(delayedFlush))
+    watcher = await start('/data', cast<FlushCallback>(delayedFlush))
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
     cast<() => void>(flushFn)()
-    await flushMicrotasks()
+    await flushStarted.promise
     subscriberCallback(null, [{ type: 'delete', path: '/data/foo.jpg' }])
     resolveFlush(undefined)
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     cast<() => void>(flushFn)()
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     return delayedFlush
   }
 
@@ -440,9 +472,9 @@ describe('sync/filewatcher start()', () => {
   it('should schedule one debounce timer when immediate force-flush fails', async () => {
     Filewatcher.maxPendingChanges = 1
     const rejectingFlush: FlushCallback = vi.fn().mockRejectedValue(new Error('flush failed'))
-    await start('/data', rejectingFlush)
+    watcher = await start('/data', rejectingFlush)
     subscriberCallback(null, [{ type: 'create', path: '/data/foo.jpg' }])
-    await flushMicrotasks()
+    await watcher.whenFlushed()
     expect(setTimeoutStub.mock.calls.length).toBe(1)
   })
 })

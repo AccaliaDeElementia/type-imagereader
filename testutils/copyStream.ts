@@ -12,6 +12,7 @@ export interface CopyStreamFake {
   writeSpy: Mock
   endSpy: Mock
   destroySpy: Mock
+  endEmitted: () => Promise<void>
 }
 
 export interface CopyStreamFakeOptions {
@@ -25,20 +26,30 @@ export function createCopyStreamFake(opts: CopyStreamFakeOptions = {}): CopyStre
   const destroySpy = vi.fn()
   const endSpy = vi.fn()
   const onEnd = opts.emitOnEnd
+  let pendingEmit: Promise<void> = Promise.resolve()
   if (onEnd !== undefined) {
     endSpy.mockImplementation(() => {
-      queueMicrotask(() => {
-        if (onEnd === 'finish') ee.emit('finish')
-        else ee.emit('error', onEnd.error)
-      })
+      pendingEmit = onEnd === 'finish' ? scheduleEmit(ee, 'finish') : scheduleEmit(ee, 'error', onEnd.error)
     })
   }
   Object.assign(ee, { write: writeSpy, end: endSpy, destroy: destroySpy })
-  return { stream: cast<CopyStreamQuery>(ee), ee, writeSpy, endSpy, destroySpy }
+  return {
+    stream: cast<CopyStreamQuery>(ee),
+    ee,
+    writeSpy,
+    endSpy,
+    destroySpy,
+    endEmitted: async (): Promise<void> => {
+      await pendingEmit
+    },
+  }
 }
 
-export function scheduleEmit(ee: EventEmitter, event: string, ...args: unknown[]): void {
+export async function scheduleEmit(ee: EventEmitter, event: string, ...args: unknown[]): Promise<void> {
+  const { promise, resolve } = Promise.withResolvers<undefined>()
   queueMicrotask(() => {
     ee.emit(event, ...args)
+    resolve(undefined)
   })
+  await promise
 }

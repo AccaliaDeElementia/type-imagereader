@@ -6,7 +6,6 @@ import { CopyState, awaitCopyStreamCompletion, type CopyHelpers } from '#sync/sy
 import { cast } from '#testutils/typeGuards.js'
 import { createCopyStreamFake, scheduleEmit } from '#testutils/copyStream.js'
 import { noopLogger } from '#testutils/debug.js'
-import { flushMicrotasks } from '#testutils/microtasks.js'
 import type { Debugger } from 'debug'
 import type { CopyStreamQuery } from 'pg-copy-streams'
 import type { PoolClient } from 'pg'
@@ -102,7 +101,7 @@ describe('sync/syncItemsDialect CopyState', () => {
       const state = new CopyState()
       state.pushRow('a')
       const flushPromise = state.flushBuffer(handles.stream)
-      scheduleEmit(handles.ee, 'drain')
+      void scheduleEmit(handles.ee, 'drain')
       await flushPromise
       expect(handles.writeSpy.mock.calls.length).toBe(1)
     })
@@ -274,10 +273,8 @@ describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
     const ee = new EventEmitter()
     const stream = cast<CopyStreamQuery>(ee)
     const promise = awaitCopyStreamCompletion(stream)
-    scheduleEmit(ee, 'finish')
-    await promise
-    await flushMicrotasks()
-    expect(true).toBe(true)
+    void scheduleEmit(ee, 'finish')
+    await expect(promise).resolves.toBeUndefined()
   })
 
   it("should reject with the emitted error when the stream emits 'error'", async () => {
@@ -285,7 +282,7 @@ describe('sync/syncItemsDialect awaitCopyStreamCompletion()', () => {
     const stream = cast<CopyStreamQuery>(ee)
     const streamErr = new Error('blew up')
     const promise = awaitCopyStreamCompletion(stream)
-    scheduleEmit(ee, 'error', streamErr)
+    void scheduleEmit(ee, 'error', streamErr)
     await expect(promise).rejects.toBe(streamErr)
   })
 })
