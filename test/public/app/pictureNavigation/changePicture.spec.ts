@@ -12,33 +12,33 @@ describe('public/app/pictures changePicture()', () => {
   let publishStub: MockInstance = vi.fn()
   let isLoadingSpy: MockInstance = vi.fn()
   let loadImageSpy: MockInstance = vi.fn()
-  let setEntryCornerStub: MockInstance = vi.fn()
+  let setArrivalStub: MockInstance = vi.fn()
   beforeEach(() => {
     Pictures.current = null
     Viewer.history = { prev: [], next: [] }
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     isLoadingSpy = vi.spyOn(Imports, 'isLoading').mockReturnValue(false)
     loadImageSpy = vi.spyOn(Internals, 'loadImage').mockResolvedValue(undefined)
-    setEntryCornerStub = vi.spyOn(Imports, 'setEntryCorner').mockImplementation((..._args: unknown[]) => undefined)
+    setArrivalStub = vi.spyOn(Imports, 'setArrival').mockImplementation((..._args: unknown[]) => undefined)
   })
   it('should arrive at the start of the picture by default', async () => {
     await changePicture({ name: '', path: '/foo.png', seen: false })
-    expect(setEntryCornerStub.mock.calls).toEqual([['start']])
+    expect(setArrivalStub.mock.calls).toEqual([['freshStart']])
   })
   it('should arrive at the requested corner of the picture', async () => {
-    await changePicture({ name: '', path: '/foo.png', seen: false }, 'end')
-    expect(setEntryCornerStub.mock.calls).toEqual([['end']])
+    await changePicture({ name: '', path: '/foo.png', seen: false }, 'resumeFromEnd')
+    expect(setArrivalStub.mock.calls).toEqual([['resumeFromEnd']])
   })
   // A refused navigation must not leave an arrival pending for whichever
   // picture happens to load next.
   it('should not record an arrival if image is currently loading', async () => {
     isLoadingSpy.mockReturnValue(true)
-    await changePicture({ name: '', path: '/foo.png', seen: false }, 'end')
-    expect(setEntryCornerStub.mock.calls.length).toBe(0)
+    await changePicture({ name: '', path: '/foo.png', seen: false }, 'resumeFromEnd')
+    expect(setArrivalStub.mock.calls.length).toBe(0)
   })
   it('should not record an arrival when changing to empty picture', async () => {
-    await changePicture(undefined, 'end')
-    expect(setEntryCornerStub.mock.calls.length).toBe(0)
+    await changePicture(undefined, 'resumeFromEnd')
+    expect(setArrivalStub.mock.calls.length).toBe(0)
   })
   it('should not set current picture if image is currently loading', async () => {
     isLoadingSpy.mockReturnValue(true)

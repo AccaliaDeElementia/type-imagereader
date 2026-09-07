@@ -17,11 +17,7 @@ import { handleErrors as _handleErrors, sendError } from '#utils/express.js'
 import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
 
 const CACHE_SIZE = 25
-// Original resolution images are an order of magnitude larger than the
-// viewport-scaled ones, so their cache is held to far fewer entries.
 const ORIGINAL_CACHE_SIZE = 5
-// The original route serves the image at its stored resolution, so it has no
-// bounding box to key the cache on.
 const ORIGINAL_UNBOUNDED = 0
 const ONE_MONTH_MS = 2_592_000_000
 const PREVIEW_WIDTH = 240

@@ -18,7 +18,7 @@ import {
   nudgeUp as _nudgeUp,
   scrollBackward as _scrollBackward,
   scrollForward as _scrollForward,
-  type EntryCorner,
+  type Arrival,
 } from './imageViewport.js'
 import { publish as _publish, subscribe as _subscribe } from './pubsub.js'
 
@@ -45,9 +45,7 @@ const LEFT_THIRD = 0.3333333333333333
 const RIGHT_THIRD = 0.6666666666666666
 
 const PRIMARY_BUTTON = 0
-// Far enough that a shaky click is still a click, close enough that a
-// deliberate drag never turns the page.
-const DRAG_THRESHOLD = 5
+const TAP_JITTER_TOLERANCE_PX = 5
 const NO_OFFSET = 0
 
 export const Panning = {
@@ -82,8 +80,8 @@ export function initActions(): void {
   // Only a step back to the previous picture resumes it at its far corner; the
   // jumps to either end of the folder are fresh starts, not a continuation.
   const changeTo = async (direction: NavigateTo): Promise<void> => {
-    const entry: EntryCorner = direction === NavigateTo.Previous ? 'end' : 'start'
-    await Imports.changePicture(Imports.getPicture(direction), entry)
+    const arrival: Arrival = direction === NavigateTo.Previous ? 'resumeFromEnd' : 'freshStart'
+    await Imports.changePicture(Imports.getPicture(direction), arrival)
   }
 
   // Previous and Next are the ambiguous inputs — arrows, taps and the gamepad
@@ -191,7 +189,7 @@ function updatePan(evt: MouseEvent): void {
   if (target === null) return
   const deltaX = evt.clientX - Panning.originX
   const deltaY = evt.clientY - Panning.originY
-  if (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD) {
+  if (Math.abs(deltaX) > TAP_JITTER_TOLERANCE_PX || Math.abs(deltaY) > TAP_JITTER_TOLERANCE_PX) {
     Panning.moved = true
   }
   target.scrollLeft = Panning.scrollLeft - deltaX

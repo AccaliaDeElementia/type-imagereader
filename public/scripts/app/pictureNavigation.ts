@@ -5,7 +5,7 @@ import { Pictures } from './pictureState.js'
 import { makeTab as _makeTab, resetMarkup as _resetMarkup, selectPage as _selectPage } from './pictureMarkup.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
 import { getShowOriginalSize as _getShowOriginalSize } from './sizeFilter.js'
-import { setEntryCorner as _setEntryCorner, viewportSize as _viewportSize, type EntryCorner } from './imageViewport.js'
+import { setArrival as _setArrival, viewportSize as _viewportSize, type Arrival } from './imageViewport.js'
 import { getFirst, hasValues, indexPercentToText, indexToText } from '#utils/helpers.js'
 import { isLoading as _isLoading } from './loading.js'
 import { postJSON as _postJSON } from './net.js'
@@ -15,7 +15,7 @@ export const Imports = {
   getShowUnreadOnly: _getShowUnreadOnly,
   getShowOriginalSize: _getShowOriginalSize,
   viewportSize: _viewportSize,
-  setEntryCorner: _setEntryCorner,
+  setArrival: _setArrival,
   makeTab: _makeTab,
   resetMarkup: _resetMarkup,
   selectPage: _selectPage,
@@ -117,7 +117,7 @@ function setTextContent(selector: string, content: string): void {
 
 // The entry corner is recorded only once the move is certain to happen, so a
 // navigation refused above leaves no arrival pending for the next picture.
-export async function changePicture(pic: Picture | undefined, entry: EntryCorner = 'start'): Promise<void> {
+export async function changePicture(pic: Picture | undefined, arrival: Arrival = 'freshStart'): Promise<void> {
   if (Imports.isLoading()) {
     return
   }
@@ -125,7 +125,7 @@ export async function changePicture(pic: Picture | undefined, entry: EntryCorner
     Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
-  Imports.setEntryCorner(entry)
+  Imports.setArrival(arrival)
   recordFreshView()
   Pictures.current = pic
   await Internals.loadImage().catch(() => null)
@@ -147,7 +147,7 @@ export async function navigateUnreadBack(): Promise<void> {
     Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
-  Imports.setEntryCorner('end')
+  Imports.setArrival('resumeFromEnd')
   pushToNextHistory()
   Pictures.current = target
   await Internals.loadImage().catch(() => null)
@@ -164,7 +164,7 @@ export async function navigateUnreadForward(): Promise<void> {
     Imports.publish('Loading:Error', 'Change Picture called with No Picture to change to')
     return
   }
-  Imports.setEntryCorner('start')
+  Imports.setArrival('freshStart')
   pushToPrevHistory()
   Pictures.current = target
   await Internals.loadImage().catch(() => null)

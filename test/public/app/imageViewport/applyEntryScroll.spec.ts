@@ -34,11 +34,11 @@ describe('public/app/imageViewport applyEntryScroll()', () => {
   }
   beforeEach(() => {
     mount(makeContainer(2400, 1800))
-    Viewport.entry = 'start'
+    Viewport.arrival = 'freshStart'
   })
   afterEach(() => {
     Viewport.container = null
-    Viewport.entry = 'start'
+    Viewport.arrival = 'freshStart'
   })
 
   it('should tolerate a missing container', () => {
@@ -63,7 +63,7 @@ describe('public/app/imageViewport applyEntryScroll()', () => {
   // been when they last left it going forward: the far corner.
   describe('arriving at the end', () => {
     beforeEach(() => {
-      Viewport.entry = 'end'
+      Viewport.arrival = 'resumeFromEnd'
     })
     it('should land at the right edge', () => {
       applyEntryScroll()
@@ -97,7 +97,7 @@ describe('public/app/imageViewport applyEntryScroll()', () => {
     // send the reader to the far corner again.
     it('should consume the arrival so the next picture starts at the top', () => {
       applyEntryScroll()
-      expect(Viewport.entry).toBe('start')
+      expect(Viewport.arrival).toBe('freshStart')
     })
   })
 })

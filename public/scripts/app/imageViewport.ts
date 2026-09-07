@@ -8,15 +8,13 @@ export const Imports = {
   subscribe: _subscribe,
 }
 
-// A stepped scroll leaves a tenth of the previous screenful in view so there is
-// some overlap to read across rather than a jump to wholly new content.
-const STEP_FRACTION = 0.9
-// A nudge is the fine adjustment for when a full step left a panel straddling
-// the edge of the screen.
+const SCREENFUL = 1
+const STEP_OVERLAP = 0.1
+const STEP_FRACTION = SCREENFUL - STEP_OVERLAP
 const NUDGE_FRACTION = 0.2
-// Scroll offsets are fractional on a zoomed or fractionally scaled display, so
-// testing for an edge needs slack or the last step moves nothing at all.
-const EDGE_TOLERANCE = 1
+// Browsers report fractional scroll offsets under page zoom and fractional
+// display scaling.
+const SUBPIXEL_TOLERANCE_PX = 1
 const SCROLL_ORIGIN = 0
 
 export interface ViewportSize {
@@ -24,14 +22,11 @@ export interface ViewportSize {
   height: number
 }
 
-// Which corner of the next picture the reader should arrive at. Moving forward
-// they arrive at the start; stepping back they arrive at the end, so a picture
-// resumes where they left it rather than restarting from the top.
-export type EntryCorner = 'start' | 'end'
+export type Arrival = 'freshStart' | 'resumeFromEnd'
 
 export const Viewport = {
   container: null as HTMLElement | null,
-  entry: 'start' as EntryCorner,
+  arrival: 'freshStart' as Arrival,
 }
 
 export function init(): void {
@@ -61,8 +56,8 @@ export function resetScroll(): void {
   Viewport.container.scrollTop = SCROLL_ORIGIN
 }
 
-export function setEntryCorner(corner: EntryCorner): void {
-  Viewport.entry = corner
+export function setArrival(arrival: Arrival): void {
+  Viewport.arrival = arrival
 }
 
 export function viewportSize(): ViewportSize {
@@ -88,29 +83,27 @@ function maxScrollLeft(element: HTMLElement): number {
 }
 
 function canScrollDown(element: HTMLElement): boolean {
-  return element.scrollTop < maxScrollTop(element) - EDGE_TOLERANCE
+  return element.scrollTop < maxScrollTop(element) - SUBPIXEL_TOLERANCE_PX
 }
 
 function canScrollUp(element: HTMLElement): boolean {
-  return element.scrollTop > SCROLL_ORIGIN + EDGE_TOLERANCE
+  return element.scrollTop > SCROLL_ORIGIN + SUBPIXEL_TOLERANCE_PX
 }
 
 function canScrollRight(element: HTMLElement): boolean {
-  return element.scrollLeft < maxScrollLeft(element) - EDGE_TOLERANCE
+  return element.scrollLeft < maxScrollLeft(element) - SUBPIXEL_TOLERANCE_PX
 }
 
 function canScrollLeft(element: HTMLElement): boolean {
-  return element.scrollLeft > SCROLL_ORIGIN + EDGE_TOLERANCE
+  return element.scrollLeft > SCROLL_ORIGIN + SUBPIXEL_TOLERANCE_PX
 }
 
-// Offsets are clamped here rather than left to the browser so the arithmetic
-// holds however the caller sizes its move.
-function verticalOffset(element: HTMLElement, fraction: number): number {
+function clampedVerticalOffset(element: HTMLElement, fraction: number): number {
   const distance = element.clientHeight * fraction
   return Math.min(Math.max(element.scrollTop + distance, SCROLL_ORIGIN), maxScrollTop(element))
 }
 
-function horizontalOffset(element: HTMLElement, fraction: number): number {
+function clampedHorizontalOffset(element: HTMLElement, fraction: number): number {
   const distance = element.clientWidth * fraction
   return Math.min(Math.max(element.scrollLeft + distance, SCROLL_ORIGIN), maxScrollLeft(element))
 }
@@ -124,11 +117,11 @@ export function scrollForward(): boolean {
   const element = getPanTarget()
   if (element === null) return false
   if (canScrollDown(element)) {
-    element.scrollTop = verticalOffset(element, STEP_FRACTION)
+    element.scrollTop = clampedVerticalOffset(element, STEP_FRACTION)
     return true
   }
   if (canScrollRight(element)) {
-    element.scrollLeft = horizontalOffset(element, STEP_FRACTION)
+    element.scrollLeft = clampedHorizontalOffset(element, STEP_FRACTION)
     element.scrollTop = SCROLL_ORIGIN
     return true
   }
@@ -141,11 +134,11 @@ export function scrollBackward(): boolean {
   const element = getPanTarget()
   if (element === null) return false
   if (canScrollUp(element)) {
-    element.scrollTop = verticalOffset(element, -STEP_FRACTION)
+    element.scrollTop = clampedVerticalOffset(element, -STEP_FRACTION)
     return true
   }
   if (canScrollLeft(element)) {
-    element.scrollLeft = horizontalOffset(element, -STEP_FRACTION)
+    element.scrollLeft = clampedHorizontalOffset(element, -STEP_FRACTION)
     element.scrollTop = maxScrollTop(element)
     return true
   }
@@ -160,7 +153,7 @@ export function nudgeUp(): boolean {
   const element = getPanTarget()
   if (element === null) return false
   if (!canScrollUp(element)) return false
-  element.scrollTop = verticalOffset(element, -NUDGE_FRACTION)
+  element.scrollTop = clampedVerticalOffset(element, -NUDGE_FRACTION)
   return true
 }
 
@@ -168,7 +161,7 @@ export function nudgeDown(): boolean {
   const element = getPanTarget()
   if (element === null) return false
   if (!canScrollDown(element)) return false
-  element.scrollTop = verticalOffset(element, NUDGE_FRACTION)
+  element.scrollTop = clampedVerticalOffset(element, NUDGE_FRACTION)
   return true
 }
 
@@ -181,14 +174,14 @@ export function nudgeDown(): boolean {
 export function applyEntryScroll(): void {
   const element = Viewport.container
   if (element === null) return
-  if (Viewport.entry === 'end') {
+  if (Viewport.arrival === 'resumeFromEnd') {
     element.scrollLeft = maxScrollLeft(element)
     element.scrollTop = maxScrollTop(element)
   } else {
     element.scrollLeft = SCROLL_ORIGIN
     element.scrollTop = SCROLL_ORIGIN
   }
-  Viewport.entry = 'start'
+  Viewport.arrival = 'freshStart'
 }
 
 export const Internals = {

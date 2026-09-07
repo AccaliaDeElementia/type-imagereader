@@ -5,7 +5,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { initActions, Imports } from '#public/scripts/app/pictureInput.js'
 import { NavigateTo } from '#public/scripts/app/pictureNavigation.js'
-import type { EntryCorner } from '#public/scripts/app/imageViewport.js'
+import type { Arrival } from '#public/scripts/app/imageViewport.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
 import { cast } from '#testutils/typeGuards.js'
@@ -68,11 +68,11 @@ describe('public/app/pictures initActions()', () => {
   ]
   // Stepping back a picture resumes it at its far corner; every other move,
   // including the jumps to either end of the folder, starts at the top.
-  const changeToSubscribers: Array<[string, NavigateTo, EntryCorner]> = [
-    ['Action:Execute:First', NavigateTo.First, 'start'],
-    ['Action:Execute:PreviousImage', NavigateTo.Previous, 'end'],
-    ['Action:Execute:NextImage', NavigateTo.Next, 'start'],
-    ['Action:Execute:Last', NavigateTo.Last, 'start'],
+  const changeToSubscribers: Array<[string, NavigateTo, Arrival]> = [
+    ['Action:Execute:First', NavigateTo.First, 'freshStart'],
+    ['Action:Execute:PreviousImage', NavigateTo.Previous, 'resumeFromEnd'],
+    ['Action:Execute:NextImage', NavigateTo.Next, 'freshStart'],
+    ['Action:Execute:Last', NavigateTo.Last, 'freshStart'],
   ]
   const subscribers = [
     ...noMenuSubscribers.map((v) => v[0]),
