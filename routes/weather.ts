@@ -276,7 +276,6 @@ const findMissingWeatherConfigVar = (): string | undefined => {
   return undefined
 }
 
-// Export the base-router
 export async function getRouter(_app: Application, _server: Server, _sockets: WebSocketServer): Promise<Router> {
   const router = Imports.Router()
 

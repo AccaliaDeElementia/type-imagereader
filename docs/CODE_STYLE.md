@@ -38,6 +38,34 @@ live — an external constraint that cannot be rediscovered by reading this
 repository, and the reason a lint rule is suppressed. Those are listed in
 [CLAUDE.md](../CLAUDE.md); everything below is about moving the rest into code.
 
+## When the rule actually gets broken
+
+Not while cleaning up old code — while writing new code. Every comment removed by
+the cleanups below was easy to spot in review and easy to justify deleting. The
+ones that keep getting _added_ arrive at the moment a function, type, or interface
+member is introduced, because that is when the author holds context nobody else
+has and feels the pull to write it down. It is also the only moment the name is
+still free to change.
+
+Three comments were added during the workstream that removed forty. All three
+were attached to brand-new API, and all three dissolved into a rename or were
+already covered by a test:
+
+| Added                                                                                                                             | Fixed by                                                                                               |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `settled` — "resolves once any in-flight flush has finished, so a caller can tear the watcher down without cutting a flush short" | Renaming to `whenFlushed()`; the teardown rationale was already encoded by `unsubscribe()` awaiting it |
+| `catchLog` — "resolves once the rejection has been logged"                                                                        | Already stated by the `async … Promise<void>` signature and pinned by its own spec                     |
+| a spec comment restating the delegation                                                                                           | Already stated by the test name three lines below                                                      |
+
+So the working question when adding a comment to something you are creating is
+not "is this comment accurate?" but "what would I have to rename for this comment
+to be redundant?" — and then doing that instead.
+
+Meeting an existing comment while editing is the mirror image: outside the two
+carveouts it is a defect report about the code beneath it. Move the information
+into the code, then delete the comment because it has become redundant. Deleting
+it on its own throws the information away.
+
 ## The categories
 
 | Category                              | Verdict                          |

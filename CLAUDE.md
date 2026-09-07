@@ -77,9 +77,13 @@ Leave ESLint rules in place when practical. Override them inline (with a `--` re
 
 Default to encoding the information in the code rather than writing a comment. In order of preference: a name, a type, a smaller function, an enforced test — and only when none of those can carry it, a comment.
 
+**This binds hardest at the moment of authoring.** The urge to explain peaks exactly when you are introducing a function, a type, or an interface member — which is also the only moment the name is still free. Writing the comment there spends the explanation on prose instead of on the identifier, and the identifier is what every later reader sees first. Before adding a comment to something you are creating, rename the thing until the comment is redundant. This applies to any new API, whether the surface is exported or not.
+
+**An existing comment outside the two carveouts is a defect report about the code beneath it.** When you meet one while editing, treat it as a marker that the structure is under-encoded rather than as text to tidy. Deleting it alone loses information; the fix is to move the information into the code first — a rename, a result type, an extracted function, a test that names the invariant — and delete the comment because it has become redundant. If the information turns out to be already enforced by an existing test, the comment was pure duplication and can simply go.
+
 A comment is warranted in exactly two cases:
 
-- **Lint-suppression reasons.** Required in the `--` form (see Lint rule exceptions above).
+- **Tooling-suppression reasons.** Required in the `--` form — ESLint disables (see Lint rule exceptions above) and `istanbul ignore` pragmas alike.
 - **External-system facts** — a constraint that lives outside this repository and cannot be rediscovered by reading it. Engine limits (`SQLITE_LIMIT_COMPOUND_SELECT` is 500; webp cannot encode over 16383px), library typing gaps (knex types `client` as `any`), spec behaviour (`addEventListener` ignores a duplicate registration of the same function), cross-engine differences (PostgreSQL returns `boolean` where SQLite returns `0`/`1`).
 
 Anything else you are tempted to write is a signal that the code is under-encoded:

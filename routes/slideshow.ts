@@ -80,7 +80,6 @@ export const Imports = {
   catchLog: _catchLog,
 }
 
-/** Per-socket bookkeeping for slideshow connections (joined room name). */
 export class SlideshowSocketState {
   roomName: string | null
   constructor() {

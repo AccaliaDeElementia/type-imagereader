@@ -4,7 +4,10 @@ import type { Request, Response, RequestHandler } from 'express'
 import type { Debugger } from 'debug'
 import { StatusCodes } from 'http-status-codes'
 
-export function handleErrors(logger: Debugger, action: (req: Request, res: Response) => Promise<void>): RequestHandler {
+export function handleErrors(
+  logger: Debugger,
+  action: (req: Request, res: Response) => Promise<void> | void,
+): RequestHandler {
   return async (req: Request, res: Response) => {
     try {
       await action(req, res)

@@ -63,15 +63,13 @@ export function readBody(req: unknown): BodyData {
   return req.body
 }
 
-// Export the base-router
 export async function getRouter(_app: Application, _server: Server, _socket: WebSocketServer): Promise<Router> {
   const knex = await Imports.initialize()
-  // init router and path
   const router = Imports.Router()
 
   const logger = Imports.debug('type-imagereader:api')
   const diagnosticLogger = Imports.debug('type-imagereader:diagnostic')
-  const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
+  const handleErrors = (action: (req: Request, res: Response) => Promise<void> | void): RequestHandler =>
     Imports.handleErrors(logger, action)
 
   const parsePath = (path: string, res: Response): string | null => {
@@ -89,17 +87,15 @@ export async function getRouter(_app: Application, _server: Server, _socket: Web
 
   router.get(
     '/',
-    handleErrors(async (_, res) => {
+    handleErrors((_, res) => {
       res.status(StatusCodes.OK).json({ title: 'API' })
-      await Promise.resolve() // async required by handleErrors contract
     }),
   )
 
   router.get(
     '/healthcheck',
-    handleErrors(async (_, res) => {
+    handleErrors((_, res) => {
       res.status(StatusCodes.OK).send('OK')
-      await Promise.resolve() // async required by handleErrors contract
     }),
   )
 

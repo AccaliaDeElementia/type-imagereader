@@ -65,14 +65,13 @@ function pushToNextHistory(): void {
   }
 }
 
-// Append the currently-displayed picture to the back-history stack and discard
-// any pending forward-redo entries. Called from changePicture for every fresh
-// view (grid click, First/Last/Previous/Next, listing cover-selection). Walks
-// driven by navigateUnreadBack/Forward bypass this — they move existing entries
-// between the two stacks instead of appending.
+function discardRedoHistory(): void {
+  Viewer.history.next = []
+}
+
 function recordFreshView(): void {
   pushToPrevHistory()
-  Viewer.history.next = []
+  discardRedoHistory()
 }
 
 export function resetViewerState(): void {
@@ -86,11 +85,6 @@ export function setModCount(modCount: number): void {
   Viewer.modCount = modCount
 }
 
-// In original-size mode the image renders at its own dimensions inside a scroll
-// container, so there is no bounding box to ask the server for. Scaled requests
-// measure the container rather than the image element: in actual size mode that
-// element is as large as the picture, and reading it would ask for a scaled
-// image the size of the original on the way back to fit-screen mode.
 function makeURI(img: Picture): string {
   if (Imports.getShowOriginalSize()) {
     return `/images/original${img.path}-image.webp`
@@ -115,8 +109,6 @@ function setTextContent(selector: string, content: string): void {
   document.querySelector(selector)?.replaceChildren(document.createTextNode(content))
 }
 
-// The entry corner is recorded only once the move is certain to happen, so a
-// navigation refused above leaves no arrival pending for the next picture.
 export async function changePicture(pic: Picture | undefined, arrival: Arrival = 'freshStart'): Promise<void> {
   if (Imports.isLoading()) {
     return
@@ -132,14 +124,6 @@ export async function changePicture(pic: Picture | undefined, arrival: Arrival =
   Imports.publish('Menu:Hide')
 }
 
-// In Show-Unread-Only mode, a just-viewed picture is `seen=true` and would be
-// invisible to the index-based PreviousUnread search. navigateUnreadBack first
-// walks the history.prev stack so the user can return to recently-viewed
-// pictures. When history is empty it falls back to the existing index search
-// but treats that fall-through as a continuation of the back-walk — pushes
-// current to history.next so the redo chain is preserved, NOT as a fresh view.
-// (Treating it as a fresh view would truncate history.next, breaking the
-// "press forward to return to the just-seen image" expectation.)
 export async function navigateUnreadBack(): Promise<void> {
   if (Imports.isLoading()) return
   const target = Viewer.history.prev.pop() ?? Internals.getPicture(NavigateTo.PreviousUnread)
@@ -154,9 +138,6 @@ export async function navigateUnreadBack(): Promise<void> {
   Imports.publish('Menu:Hide')
 }
 
-// Symmetric counterpart: redo through history.next first, then fall back to the
-// next-unread index search, treating the fall-through as a continuation of the
-// forward-walk (push current to history.prev).
 export async function navigateUnreadForward(): Promise<void> {
   if (Imports.isLoading()) return
   const target = Viewer.history.next.pop() ?? Internals.getPicture(NavigateTo.NextUnread)
@@ -209,9 +190,6 @@ export async function loadImage(): Promise<void> {
   }
 }
 
-// Re-request the picture already on screen at the currently selected size. It
-// deliberately skips the seen-marking and modCount round trip that loadImage
-// performs: nothing has been navigated to, only re-rendered.
 export async function refreshImage(): Promise<void> {
   if (Pictures.current === null) return
   if (Pictures.current.path === '') return

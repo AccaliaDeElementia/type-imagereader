@@ -57,7 +57,7 @@ export class ImageData {
 
   async rescale(width: number, height: number, animated: boolean): Promise<void> {
     if (this.error !== null) {
-      return // Image already has an error
+      return
     }
     try {
       this.data = await Imports.Sharp(this.data, { animated })
@@ -83,7 +83,7 @@ export class ImageData {
   // untouched, falling back to serving the original bytes.
   async convert(animated: boolean): Promise<void> {
     if (this.error !== null) {
-      return // Image already has an error
+      return
     }
     try {
       this.data = await Imports.Sharp(this.data, { animated }).rotate().webp().toBuffer()
@@ -221,23 +221,20 @@ const uninitializedCacheError: CacheCreator = async (path) => {
   return ImageData.fromError('INTERNAL_SERVER_ERROR', StatusCodes.INTERNAL_SERVER_ERROR, 'CACHE_NOT_INITIALIZED', path)
 }
 
-// Placeholder caches that return errors until getRouter() initializes them
 export const CacheStorage = {
   kioskCache: new ImageCache(uninitializedCacheError),
   scaledCache: new ImageCache(uninitializedCacheError),
   originalCache: new ImageCache(uninitializedCacheError, ORIGINAL_CACHE_SIZE),
 }
 
-// Export the base-router
 export async function getRouter(_app: Application, _serve: Server, _socket: WebSocketServer): Promise<Router> {
-  // init router and path
   const router = Imports.Router()
 
   CacheStorage.kioskCache = new ImageCache(readAndRescaleImage)
   CacheStorage.scaledCache = new ImageCache(readAndRescaleImage)
   CacheStorage.originalCache = new ImageCache(readAndConvertImage, ORIGINAL_CACHE_SIZE)
 
-  const handleErrors = (action: (req: Request, res: Response) => Promise<void>): RequestHandler =>
+  const handleErrors = (action: (req: Request, res: Response) => Promise<void> | void): RequestHandler =>
     Imports.handleErrors(Imports.logger, action)
 
   router.get(
