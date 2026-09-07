@@ -219,6 +219,9 @@ describe('testutils/PubSub shouldGuard()', () => {
   it('should not guard the pubsub testutil spec', () => {
     expect(shouldGuard('/work/test/testutils/pubSub.spec.ts')).toBe(false)
   })
+  it('should not guard the template contract integration spec', () => {
+    expect(shouldGuard('/work/test/integration/templateContract.spec.ts')).toBe(false)
+  })
   it('should guard server-side specs by default (no exclusion match)', () => {
     expect(shouldGuard('/work/test/sync/findItems/findSyncItems.spec.ts')).toBe(true)
   })
