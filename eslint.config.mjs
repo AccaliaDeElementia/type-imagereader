@@ -34,20 +34,17 @@ const noMethodStubOutsideHook = {
     },
   },
   create(context) {
-    // Stack of booleans: true = current lexical position executes at describe-body
-    // evaluation time (module scope, or directly inside a describe/context callback).
-    // false = inside some other function (hook, test body, helper, iteration callback)
-    // which only runs when invoked, so the per-test restore cleans up between tests.
-    const executesAtDescribeTime = [true]
+    const MODULE_SCOPE_EXECUTES_AT_DESCRIBE_TIME = true
+    const executesAtDescribeTimeByScope = [MODULE_SCOPE_EXECUTES_AT_DESCRIBE_TIME]
     return {
       ':function'(node) {
-        executesAtDescribeTime.push(isDescribeCallback(node))
+        executesAtDescribeTimeByScope.push(isDescribeCallback(node))
       },
       ':function:exit'() {
-        executesAtDescribeTime.pop()
+        executesAtDescribeTimeByScope.pop()
       },
       CallExpression(node) {
-        if (!executesAtDescribeTime[executesAtDescribeTime.length - 1]) return
+        if (!executesAtDescribeTimeByScope[executesAtDescribeTimeByScope.length - 1]) return
         if (
           node.callee.type === 'MemberExpression' &&
           node.callee.property.type === 'Identifier' &&
@@ -223,12 +220,6 @@ export default [
     },
   },
   {
-    // Files allowed to import `PubSub` directly. Keep in sync with
-    // `GUARD_EXCLUDED_PATHS` in `testutils/pubsub.ts` (the runtime mountPubSub
-    // guard exclusions). The two lists differ: runtime applies only to test
-    // execution and uses substring matching on filesystem paths; this list
-    // uses ESLint globs and also includes the source-side `testutils/pubsub.ts`
-    // which the runtime guard never sees.
     files: [
       'testutils/pubsub.ts',
       'test/public/app/pubsub/**',

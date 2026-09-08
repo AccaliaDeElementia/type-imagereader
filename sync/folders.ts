@@ -13,6 +13,7 @@ import {
   parseFolderPath,
 } from './helpers.js'
 import { getDbChunkSize as _getDbChunkSize } from './syncItemsDialect.js'
+import { NO_COVER_IMAGE } from '#utils/helpers.js'
 
 const ZERO = 0
 
@@ -83,7 +84,7 @@ export async function syncMissingCoverImages(logger: Debugger, knex: Knex): Prom
       this.select('*').from('pictures').whereRaw('pictures.path = folders.current')
     })
     .whereRaw("folders.current <> ''")
-    .update({ current: '' })
+    .update({ current: NO_COVER_IMAGE })
   logger(`Removed ${removedCoverImages} missing cover images`)
 }
 

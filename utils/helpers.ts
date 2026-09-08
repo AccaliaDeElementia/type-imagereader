@@ -33,6 +33,12 @@ export function stringishHasValue(str: string | null | undefined): str is string
   return str !== null && str !== undefined && str.length > ZERO_LENGTH
 }
 
+export const NO_COVER_IMAGE = ''
+
+export function hasCoverImage(current: string | null | undefined): current is string {
+  return current !== null && current !== undefined && current !== NO_COVER_IMAGE
+}
+
 export function hasValue<T>(obj: T | null | undefined): obj is T {
   return obj !== null && obj !== undefined
 }

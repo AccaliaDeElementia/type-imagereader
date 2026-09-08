@@ -162,4 +162,14 @@ describe('public/slideshow/updater CyclicUpdater', () => {
       })
     })
   })
+  it('should not start a second update while one is already in flight', async () => {
+    const { promise, resolve } = Promise.withResolvers<undefined>()
+    const updateFn = vi.fn().mockReturnValue(promise)
+    const test = new CyclicUpdater(updateFn, 1000)
+    const first = test.trigger(1000)
+    await test.trigger(Number.MAX_SAFE_INTEGER)
+    resolve(undefined)
+    await first
+    expect(updateFn.mock.calls.length).toBe(1)
+  })
 })

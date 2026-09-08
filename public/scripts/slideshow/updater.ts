@@ -15,7 +15,7 @@ const MINIMUM_COUNTDOWN = 0
 const RESET_FAIL_COUNT = 0
 const MAX_FAIL_COUNT = 10
 const UPDATER_BACKOFF_MULTIPLE = 2
-const UPDATE_IN_PROGRESS = Infinity // Infinity - elapsed = Infinity: prevents re-entrancy via the existing countdown check
+const UPDATE_IN_PROGRESS = Infinity
 
 export class CyclicUpdater {
   _countdown = DEFAULT_COUNTDOWN_VALUE

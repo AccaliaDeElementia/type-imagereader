@@ -5,7 +5,7 @@ import { normalize, basename, dirname, extname, sep } from 'node:path'
 import type { Knex } from 'knex'
 import _debug from 'debug'
 import type { Debugger } from 'debug'
-import { escapeLikeWildcards, stringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
+import { escapeLikeWildcards, hasCoverImage, stringishHasValue, ZERO_COUNT } from '#utils/helpers.js'
 import { getParentFolders as _getParentFolders } from '#utils/path.js'
 
 export const Imports: { getParentFolders: typeof _getParentFolders; logger: Debugger } = {
@@ -147,8 +147,7 @@ interface DbBookmark {
 }
 
 function getCoverPath(folder: { current: string | null; firstPicture: string | null }): string | null {
-  // syncMissingCoverImages writes '' as a "no valid cover" sentinel, so treat empty-string the same as null
-  return stringishHasValue(folder.current) ? folder.current : folder.firstPicture
+  return hasCoverImage(folder.current) ? folder.current : folder.firstPicture
 }
 
 export interface SiblingFolderSearch {
@@ -344,10 +343,10 @@ export async function setLatestPicture(knex: Knex, path: string): Promise<string
 }
 
 export async function markFolderSeen(knex: Knex, path: string, markAsSeen: boolean): Promise<void> {
-  const currentSeenState = !markAsSeen // only rows not already in target state need updating
+  const seenStateNotYetInTarget = !markAsSeen
   const updates = await knex('pictures')
     .update({ seen: markAsSeen })
-    .where({ seen: currentSeenState })
+    .where({ seen: seenStateNotYetInTarget })
     .andWhere('folder', 'like', `${escapeLikeWildcards(path)}%`)
   if (updates <= ZERO_COUNT) {
     Imports.logger('markFolderSeen: no rows updated for %s (markAsSeen=%s)', path, markAsSeen)

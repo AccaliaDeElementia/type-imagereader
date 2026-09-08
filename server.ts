@@ -103,13 +103,8 @@ export function configureLogging(app: Express): void {
   }
 }
 
-// Distinguish "bogus app route" from "missing static asset" from "unknown api
-// endpoint." Express static is mounted at /, so unknown asset paths (e.g.
-// /scripts/x.js, /scripts/foo) fall through to here alongside unknown app
-// routes (e.g. /wat) and unknown api routes (e.g. /api/wat).
-//   - /api/* → JSON 404 (preserves the api contract)
-//   - asset-shaped URLs → bare 404 (matches express.static default)
-//   - everything else → styled error page
+// express.static is mounted at /, so unknown asset paths reach this handler
+// rather than being rejected by the static middleware.
 const API_PREFIX = /^\/api(?:\/|$)/v
 const ASSET_PREFIXES = /^\/(?:fonts|images|scripts|stylesheets|public)(?:\/|$)/v
 const ASSET_EXTENSIONS = /\.(?:css|js|map|png|webp|ico|svg|jpe?g|gif|woff2?|ttf|eot)$/v
@@ -168,12 +163,12 @@ export async function start(port: number): Promise<{ app: Express; server: HttpS
   const [app, server, websockets] = Internals.createApp()
 
   Internals.configureBaseApp(app)
-  Internals.configureLogging(app) // helmet/morgan must run before routers so headers/logs apply to handled responses
-  app.use(Internals.setClacksOverhead) // header on every response, not just 404s
+  Internals.configureLogging(app)
+  app.use(Internals.setClacksOverhead)
   Internals.registerViewsAndMiddleware(app)
   await Internals.registerRouters(app, server, websockets)
-  Internals.configureNotFound(app) // catch-all for unknown routes (must follow all routers)
-  Internals.configureErrorHandler(app) // Express error-handling middleware must be registered last
+  Internals.configureNotFound(app)
+  Internals.configureErrorHandler(app)
 
   Internals.listenOnPort(server, port)
 

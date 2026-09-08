@@ -57,6 +57,11 @@ describe('testutils stubLoggerFactory()', () => {
     const { loggerStub } = stubLoggerFactory(target)
     expect(target.debug('any:prefix')).toBe(loggerStub)
   })
+  it('should return the same loggerStub whichever prefix the subject passes to debug()', () => {
+    const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
+    stubLoggerFactory(target)
+    expect(target.debug('one:prefix')).toBe(target.debug('another:prefix'))
+  })
   it('should record calls to target.debug on debugStub', () => {
     const target = { debug: cast<(n: string) => Debugger>(() => undefined) }
     const { debugStub } = stubLoggerFactory(target)

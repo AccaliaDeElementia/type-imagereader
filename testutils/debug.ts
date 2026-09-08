@@ -12,7 +12,6 @@ export function stubInjectedLogger(): { stub: Mock; fake: Debugger } {
   return { stub, fake: cast<Debugger>(stub) }
 }
 
-// The same loggerStub comes back whichever prefix the subject passes to debug().
 export function stubLoggerFactory(target: { debug: (namespace: string) => Debugger }): {
   debugStub: MockInstance
   loggerStub: MockInstance

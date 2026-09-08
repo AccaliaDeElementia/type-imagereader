@@ -83,8 +83,12 @@ Default to encoding the information in the code rather than writing a comment. I
 
 A comment is warranted in exactly two cases:
 
-- **Tooling-suppression reasons.** Required in the `--` form — ESLint disables (see Lint rule exceptions above) and `istanbul ignore` pragmas alike.
+- **Tooling-suppression reasons.** Required in the `--` form — ESLint disables (see Lint rule exceptions above) and `istanbul ignore` pragmas alike. Tool configs (`eslint.config.mjs`, `vitest.config.ts`) carry the same rationale for the rules and exclusions they set; the `--` form does not exist there, so a comment is the only place it can go.
 - **External-system facts** — a constraint that lives outside this repository and cannot be rediscovered by reading it. Engine limits (`SQLITE_LIMIT_COMPOUND_SELECT` is 500; webp cannot encode over 16383px), library typing gaps (knex types `client` as `any`), spec behaviour (`addEventListener` ignores a duplicate registration of the same function), cross-engine differences (PostgreSQL returns `boolean` where SQLite returns `0`/`1`).
+
+`tools/` is the one place a file-header comment stating a script's purpose is allowed: these are standalone CLI entry points whose rationale (why the check exists, what breakage it prevents) is about the development environment rather than about behaviour a test could assert. Keep it to the header — the code inside follows the normal rule.
+
+A fact about **another module in this repository** is not an external-system fact. Two modules agreeing on a sentinel value, a call order, or a wire shape is a coupling to encode — a shared exported constant, a predicate both sides call, or a test asserting the two sides agree — not a comment on one side describing the other.
 
 Anything else you are tempted to write is a signal that the code is under-encoded:
 

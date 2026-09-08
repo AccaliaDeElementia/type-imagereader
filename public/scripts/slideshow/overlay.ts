@@ -25,13 +25,21 @@ function showHideKiosk(overlay: HTMLElement, isKioskMode: boolean): void {
   }
 }
 
+function msUntilSunrise(sunrise: number, now: number): number {
+  return sunrise - now
+}
+
+function msSinceSunset(sunset: number, now: number): number {
+  return now - sunset
+}
+
 function calculateDarknessMs(): number {
   const times = getAlmanac()
   const now = Date.now()
   if (now < times.sunrise) {
-    return times.sunrise - now // pre-dawn: counts down as morning approaches
+    return msUntilSunrise(times.sunrise, now)
   } else if (now > times.sunset) {
-    return now - times.sunset // post-dusk: counts up as night deepens
+    return msSinceSunset(times.sunset, now)
   }
   return MIN_OFFSET
 }

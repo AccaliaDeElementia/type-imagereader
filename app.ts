@@ -1,7 +1,6 @@
 'use sanity'
 
-// force reading from .env before any imports fire
-import 'dotenv/config'
+import '#utils/loadEnvBeforeImports.js'
 
 import debug from 'debug'
 import { stat } from 'node:fs/promises'
@@ -186,17 +185,17 @@ export const ImageReader = {
   },
 }
 
-// Match argv[1] against either this file or its directory: `tsx ./app.ts` sets
-// argv[1] to the file path, while `tsx .` sets it to the directory and lets Node
-// resolve the entry. Both should trigger startup; tests that import this module
-// (e.g., `#app.js`) leave argv[1] pointing at the test runner, so the guard stays
-// false there and Run() does not fire.
+export function isProcessEntryPoint(invokedAs: string | undefined, entryFile: string, entryDir: string): boolean {
+  if (invokedAs === undefined) return false
+  return [entryFile, entryDir].includes(resolve(invokedAs))
+}
+
 const entryFile = fileURLToPath(import.meta.url)
 const entryDir = dirname(entryFile)
 const invokedAs = process.argv[ENTRY_ARGV_INDEX]
 /* istanbul ignore next -- entry-guard branch only fires when this file is the
    process entry, never under tests (which always invoke via the test runner) */
-if (invokedAs !== undefined && [entryFile, entryDir].includes(resolve(invokedAs))) {
+if (isProcessEntryPoint(invokedAs, entryFile, entryDir)) {
   ImageReader.run().catch((err: unknown) => {
     Imports.logger('startup failed', err)
     process.exitCode = EXIT_FAILURE
