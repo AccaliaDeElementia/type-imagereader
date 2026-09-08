@@ -90,9 +90,9 @@ Narration that restates the algorithm is the most common offender, and function
 names absorb almost all of it.
 
 ```ts
-// Walk the picture the way it is read: down the current column, then across to
-// the top of the next one. An image that only overflows vertically never
-// reaches the sideways step... Reports whether the input was consumed; false
+// Walk the picture the way it is read: across the current row, then down to the
+// left edge of the next one. An image that only overflows horizontally never
+// reaches the downward step... Reports whether the input was consumed; false
 // means the picture is exhausted and the caller should navigate.
 export function scrollForward(): boolean {
 ```
@@ -103,8 +103,8 @@ export type InputDisposition = 'consumed' | 'exhausted'
 export function scrollForward(): InputDisposition {
   const element = getPanTarget()
   if (element === null) return 'exhausted'
-  if (canStepDownColumn(element)) return stepDownColumn(element)
-  if (canStepToNextColumn(element)) return stepToNextColumnTop(element)
+  if (canScrollRight(element)) return stepAlongRow(element)
+  if (canScrollDown(element)) return stepToNextRowStart(element)
   return 'exhausted'
 }
 ```

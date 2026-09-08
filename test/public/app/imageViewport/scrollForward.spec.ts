@@ -126,22 +126,22 @@ describe('public/app/imageViewport scrollForward()', () => {
     beforeEach(() => {
       mount(makeContainer(2400, 1800))
     })
-    it('should work down the column before moving across', () => {
-      scrollForward()
-      expect(container.scrollLeft).toBe(0)
-    })
-    it('should step across once the column bottoms out', () => {
-      container.scrollTop = 1200
-      scrollForward()
-      expect(container.scrollLeft).toBe(HORIZONTAL_STEP)
-    })
-    it('should return to the top of the next column', () => {
-      container.scrollTop = 1200
+    it('should work across the row before moving down', () => {
       scrollForward()
       expect(container.scrollTop).toBe(0)
     })
-    it('should consume the input when stepping across', () => {
-      container.scrollTop = 1200
+    it('should step down once the row runs out', () => {
+      container.scrollLeft = 1600
+      scrollForward()
+      expect(container.scrollTop).toBe(VERTICAL_STEP)
+    })
+    it('should return to the left edge of the next row', () => {
+      container.scrollLeft = 1600
+      scrollForward()
+      expect(container.scrollLeft).toBe(0)
+    })
+    it('should consume the input when stepping down', () => {
+      container.scrollLeft = 1600
       expect(scrollForward()).toBe('consumed')
     })
     it('should hand the input on at the far corner', () => {

@@ -121,24 +121,24 @@ describe('public/app/imageViewport scrollBackward()', () => {
   describe('when the image exceeds the viewport in both directions', () => {
     beforeEach(() => {
       mount(makeContainer(2400, 1800))
-      container.scrollLeft = HORIZONTAL_STEP
-      container.scrollTop = 0
+      container.scrollLeft = 0
+      container.scrollTop = VERTICAL_STEP
     })
-    it('should step back across once the column tops out', () => {
+    it('should step back up once the row runs out', () => {
       scrollBackward()
-      expect(container.scrollLeft).toBe(0)
+      expect(container.scrollTop).toBe(0)
     })
-    it('should land at the bottom of the previous column', () => {
+    it('should land at the right end of the previous row', () => {
       scrollBackward()
-      expect(container.scrollTop).toBe(1200)
+      expect(container.scrollLeft).toBe(1600)
     })
-    it('should consume the input when stepping across', () => {
+    it('should consume the input when stepping up', () => {
       expect(scrollBackward()).toBe('consumed')
     })
-    it('should work up the column before moving across', () => {
-      container.scrollTop = 1200
+    it('should work back across the row before moving up', () => {
+      container.scrollLeft = HORIZONTAL_STEP
       scrollBackward()
-      expect(container.scrollLeft).toBe(HORIZONTAL_STEP)
+      expect(container.scrollTop).toBe(VERTICAL_STEP)
     })
     it('should hand the input on at the near corner', () => {
       container.scrollLeft = 0

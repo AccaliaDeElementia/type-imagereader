@@ -119,38 +119,42 @@ function clampedHorizontalOffset(element: HTMLElement, fraction: number): number
   return Math.min(Math.max(element.scrollLeft + distance, SCROLL_ORIGIN), maxScrollLeft(element))
 }
 
-function downColumn(element: HTMLElement, fraction: number): ScrollPosition {
+function alongRow(element: HTMLElement, fraction: number): ScrollPosition {
+  return { left: clampedHorizontalOffset(element, fraction), top: element.scrollTop }
+}
+
+function alongColumn(element: HTMLElement, fraction: number): ScrollPosition {
   return { left: element.scrollLeft, top: clampedVerticalOffset(element, fraction) }
 }
 
-function nextColumnHead(element: HTMLElement): ScrollPosition {
-  return { left: clampedHorizontalOffset(element, STEP_FRACTION), top: SCROLL_ORIGIN }
+function nextRowStart(element: HTMLElement): ScrollPosition {
+  return { left: SCROLL_ORIGIN, top: clampedVerticalOffset(element, STEP_FRACTION) }
 }
 
-function previousColumnFoot(element: HTMLElement): ScrollPosition {
-  return { left: clampedHorizontalOffset(element, -STEP_FRACTION), top: maxScrollTop(element) }
+function previousRowEnd(element: HTMLElement): ScrollPosition {
+  return { left: maxScrollLeft(element), top: clampedVerticalOffset(element, -STEP_FRACTION) }
 }
 
 type PanPolicy = (element: HTMLElement) => ScrollPosition | null
 
 function nextForwardPosition(element: HTMLElement): ScrollPosition | null {
-  if (canScrollDown(element)) return downColumn(element, STEP_FRACTION)
-  if (canScrollRight(element)) return nextColumnHead(element)
+  if (canScrollRight(element)) return alongRow(element, STEP_FRACTION)
+  if (canScrollDown(element)) return nextRowStart(element)
   return null
 }
 
 function nextBackwardPosition(element: HTMLElement): ScrollPosition | null {
-  if (canScrollUp(element)) return downColumn(element, -STEP_FRACTION)
-  if (canScrollLeft(element)) return previousColumnFoot(element)
+  if (canScrollLeft(element)) return alongRow(element, -STEP_FRACTION)
+  if (canScrollUp(element)) return previousRowEnd(element)
   return null
 }
 
 function nudgedUpPosition(element: HTMLElement): ScrollPosition | null {
-  return canScrollUp(element) ? downColumn(element, -NUDGE_FRACTION) : null
+  return canScrollUp(element) ? alongColumn(element, -NUDGE_FRACTION) : null
 }
 
 function nudgedDownPosition(element: HTMLElement): ScrollPosition | null {
-  return canScrollDown(element) ? downColumn(element, NUDGE_FRACTION) : null
+  return canScrollDown(element) ? alongColumn(element, NUDGE_FRACTION) : null
 }
 
 function panBy(choosePosition: PanPolicy): InputDisposition {

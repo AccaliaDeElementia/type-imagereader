@@ -64,7 +64,7 @@ describe('public/app/imageViewport resume position matches the forward walk', ()
         Viewport.arrival = 'resumeFromEnd'
         applyEntryScroll()
       })
-      it('should resume at the column the walk ended in', () => {
+      it('should resume at the horizontal offset the walk ended at', () => {
         expect(container.scrollLeft).toBe(walkedToLeft)
       })
       it('should resume at the height the walk ended at', () => {
