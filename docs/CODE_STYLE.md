@@ -35,8 +35,10 @@ making it impossible to merge a change where two do.
 
 What survives the rule is the information that genuinely has nowhere better to
 live — an external constraint that cannot be rediscovered by reading this
-repository, and the reason a lint rule is suppressed. Those are listed in
-[CLAUDE.md](../CLAUDE.md); everything below is about moving the rest into code.
+repository, the reason a piece of tooling is suppressed or configured the way it
+is, and the header on a standalone `tools/` script. Those three carveouts are
+listed in [CLAUDE.md](../CLAUDE.md), which is normative; everything below is about
+moving the rest into code.
 
 ## When the rule actually gets broken
 
@@ -47,9 +49,9 @@ member is introduced, because that is when the author holds context nobody else
 has and feels the pull to write it down. It is also the only moment the name is
 still free to change.
 
-Three comments were added during the workstream that removed forty. All three
-were attached to brand-new API, and all three dissolved into a rename or were
-already covered by a test:
+Three comments were added during a single stage of the cleanup — a stage whose
+entire purpose was removing them. All three were attached to brand-new API, and
+all three dissolved into a rename or were already covered by a test:
 
 | Added                                                                                                                             | Fixed by                                                                                               |
 | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -61,22 +63,26 @@ So the working question when adding a comment to something you are creating is
 not "is this comment accurate?" but "what would I have to rename for this comment
 to be redundant?" — and then doing that instead.
 
-Meeting an existing comment while editing is the mirror image: outside the two
+Meeting an existing comment while editing is the mirror image: outside the three
 carveouts it is a defect report about the code beneath it. Move the information
 into the code, then delete the comment because it has become redundant. Deleting
 it on its own throws the information away.
 
 ## The categories
 
-| Category                              | Verdict                          |
-| ------------------------------------- | -------------------------------- |
-| External-system facts                 | Keep                             |
-| Lint-suppression rationale            | Keep — required by the `--` form |
-| Magic-number rationale                | Encode — derive the value        |
-| Behavioural narration                 | Encode — extract and name        |
-| Call-order / cross-module coupling    | Encode — make it structural      |
-| Counterfactual ("X, not Y, because…") | Convert to a regression test     |
-| Concurrency guarantees                | Encode — name, type, and test    |
+| Category                                 | Verdict                                   |
+| ---------------------------------------- | ----------------------------------------- |
+| External-system facts                    | Keep                                      |
+| Tooling-suppression rationale            | Keep — required by the `--` form          |
+| Tool-config rule and exclusion rationale | Keep — the `--` form does not exist there |
+| `tools/` script-purpose header           | Keep — header only                        |
+| Anything already enforced by a test      | Delete — the test is the record           |
+| Magic-number rationale                   | Encode — derive the value                 |
+| Behavioural narration                    | Encode — extract and name                 |
+| Call order within a module               | Encode — one function, both steps         |
+| Cross-module coupling                    | Encode — share the constant or predicate  |
+| Counterfactual ("X, not Y, because…")    | Convert to a regression test              |
+| Concurrency guarantees                   | Encode — name, type, and test             |
 
 ## Encoding narration as structure
 
@@ -141,6 +147,41 @@ export type Arrival = 'freshStart' | 'resumeFromEnd'
 
 `setArrival('resumeFromEnd')` inside `navigateUnreadBack` now reads as the comment
 did, at the call site where it matters.
+
+## Encoding cross-module couplings
+
+A comment describing what a _different_ module does is the most drift-prone shape
+there is: the code it describes is not on screen when someone edits it, so nothing
+connects the change to the prose.
+
+```ts
+// routes/apiFunctions.ts
+function getCoverPath(folder: { current: string | null; firstPicture: string | null }): string | null {
+  // syncMissingCoverImages writes '' as a "no valid cover" sentinel, so treat empty-string the same as null
+  return stringishHasValue(folder.current) ? folder.current : folder.firstPicture
+}
+```
+
+The reader and the writer agreed on `''` by convention, and the only record of
+the agreement lived as prose on the reading side.
+
+```ts
+// utils/helpers.ts — one definition both sides import
+export const NO_COVER_IMAGE = ''
+
+export function hasCoverImage(current: string | null | undefined): current is string {
+  return current !== null && current !== undefined && current !== NO_COVER_IMAGE
+}
+```
+
+`sync/folders.ts` now writes `{ current: NO_COVER_IMAGE }` and
+`routes/apiFunctions.ts` asks `hasCoverImage(folder.current)`. The coupling is a
+reference the compiler follows rather than a claim one side makes about the other.
+
+Where a shared definition genuinely is not possible — two lists that must agree but
+live in different languages or toolchains, such as an ESLint allowlist and the
+runtime guard it mirrors — the fallback is a test that reads both and asserts they
+match. That is still enforcement; a "keep in sync with…" comment is not.
 
 ## Encoding invariants as tests
 
