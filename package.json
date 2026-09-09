@@ -76,7 +76,7 @@
     "words-to-numbers": "^1.5.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
+    "@eslint/js": "^10.0.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/debug": "^4.1.12",
     "@types/express": "^5.0.6",
@@ -88,9 +88,10 @@
     "@types/serve-favicon": "^2.5.7",
     "@vitest/coverage-istanbul": "^4.1.11",
     "esbuild": "^0.28.2",
-    "eslint": "^9.39.2",
-    "eslint-config-love": "^154.0.0",
+    "eslint": "^10.10.0",
+    "eslint-config-love": "^156.0.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import-x": "^4.17.1",
     "globals": "^17.6.0",
     "jsdom": "^30.0.1",
     "npm-run-all2": "^9.0.3",

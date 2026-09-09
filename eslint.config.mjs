@@ -3,6 +3,7 @@ import pluginJs from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import love from 'eslint-config-love'
 import eslintConfigPrettier from 'eslint-config-prettier'
+import importX from 'eslint-plugin-import-x'
 
 const INTERNALS_IMPORTS_MESSAGE =
   "`Internals` and `Imports` are stub seams scoped to their defining module. Production code should import the named function directly; if you need a stub seam in this file, add it to this file's own `Imports` object."
@@ -82,6 +83,26 @@ export default [
   },
   {
     ...eslintConfigPrettier,
+  },
+  {
+    // eslint-config-love dropped its eslint-plugin-import dependency in v156, which
+    // silently disables the seven import-hygiene rules it used to enable. Upstream
+    // eslint-plugin-import has no ESLint 10 support (it peers `<=^9`), so the rules are
+    // restored here from eslint-plugin-import-x, its ESLint 10-compatible successor.
+    // import-x carries six of the seven; it has no equivalent of
+    // `import/enforce-node-protocol-usage`, so eslint-plugin-n's `prefer-node-protocol`
+    // (same enforcement, plugin already present via love) stands in for that one.
+    files: ['**/*.ts'],
+    plugins: { 'import-x': importX },
+    rules: {
+      'import-x/export': 'error',
+      'import-x/first': 'error',
+      'import-x/no-absolute-path': ['error', { esmodule: true, commonjs: true, amd: false }],
+      'import-x/no-duplicates': 'error',
+      'import-x/no-named-default': 'error',
+      'import-x/no-webpack-loader-syntax': 'error',
+      'n/prefer-node-protocol': 'error',
+    },
   },
   {
     rules: {
