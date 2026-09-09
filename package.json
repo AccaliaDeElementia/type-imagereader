@@ -73,7 +73,7 @@
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "words-to-numbers": "^1.5.1"
   },
   "devDependencies": {
