@@ -108,7 +108,7 @@ Worked before/after examples and the full category breakdown: [docs/CODE_STYLE.m
 
 - Spy with `vi.spyOn`; restoration is global via the `afterEach` in `testutils/restoreMocksSetup.ts`, so specs need no teardown of their own.
 - Fake timers are the exception to that automatic restoration: `vi.restoreAllMocks()` does not undo `vi.useFakeTimers()`. A spec that installs them must call `vi.useRealTimers()` in its own `afterEach` — enforced at test execution time by `testutils/timerGuardSetup.ts`, which fails any test that finishes with fake timers still installed.
-- `vi.spyOn` calls only inside hooks (`beforeEach`/`it`), never at describe scope (enforced by `local/no-method-stub-outside-hook`).
+- `vi.spyOn` calls only inside per-test hooks (`beforeEach`/`afterEach`/`it`) — never at describe scope, where the spy is gone before the first test runs, and never in `beforeAll`, whose recorded calls are cleared before any test can read `mock.calls`. Both are enforced by `local/no-method-stub-outside-hook`, which reports them separately.
 - Single assertion per `it()` block.
 - Each spec file should target one module: at most one `Imports`/`Internals` import path per spec.
 - An invariant that would otherwise be explained in a comment gets a test whose **name states the invariant** — `should request the wake lock only once when takeLock is called concurrently`. The test enforces it across future edits; a comment only asks nicely.

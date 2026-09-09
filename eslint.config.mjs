@@ -11,50 +11,62 @@ const PUBSUB_MESSAGE =
   'Direct `PubSub` access leaks pubsub internals. Use `Imports.subscribe`/`publish`/`forward`/`defer`/`addInterval`/`removeInterval` on the SUT module and the pubsub testutils (resetPubSub, mountPubSub, capturedSubscriber, publishedData, capturedInterval, capturedDeferred) for state inspection. Keep the allowlist in sync with `GUARD_EXCLUDED_PATHS` in `testutils/pubsub.ts`.'
 
 const describeLikeNames = new Set(['describe', 'context'])
-const isDescribeCallback = (fn) => {
+const oncePerFileHookNames = new Set(['beforeAll'])
+
+const RESTORED_BEFORE_ANY_TEST_RUNS = 'restoredBeforeAnyTestRuns'
+const CALL_HISTORY_CLEARED_EACH_TEST = 'callHistoryClearedEachTest'
+
+const enclosingCallName = (fn) => {
   const parent = fn.parent
-  if (!parent || parent.type !== 'CallExpression') return false
+  if (!parent || parent.type !== 'CallExpression') return null
   const callee = parent.callee
-  if (callee.type === 'Identifier') return describeLikeNames.has(callee.name)
-  if (
-    callee.type === 'MemberExpression' &&
-    callee.object.type === 'Identifier' &&
-    describeLikeNames.has(callee.object.name)
-  ) {
-    return true
-  }
-  return false
+  if (callee.type === 'Identifier') return callee.name
+  if (callee.type === 'MemberExpression' && callee.object.type === 'Identifier') return callee.object.name
+  return null
 }
+
+const spyHazardOf = (fn) => {
+  const name = enclosingCallName(fn)
+  if (name === null) return null
+  if (describeLikeNames.has(name)) return RESTORED_BEFORE_ANY_TEST_RUNS
+  if (oncePerFileHookNames.has(name)) return CALL_HISTORY_CLEARED_EACH_TEST
+  return null
+}
+
+const isMethodReplacingSpyOn = (node) =>
+  node.callee.type === 'MemberExpression' &&
+  node.callee.property.type === 'Identifier' &&
+  node.callee.property.name === 'spyOn' &&
+  node.arguments.length >= 2 &&
+  node.arguments[1].type === 'Literal' &&
+  typeof node.arguments[1].value === 'string'
 
 const noMethodStubOutsideHook = {
   meta: {
     type: 'problem',
     schema: [],
     messages: {
-      leak: "Method-replacing spyOn() must be inside a test hook or helper function (beforeEach/it/before/after or any function called from a test). At describe or module scope the spy is applied once at describe registration, and the per-test vi.restoreAllMocks() removes it again before this block's tests run — so every test here silently exercises the unpatched method.",
+      [RESTORED_BEFORE_ANY_TEST_RUNS]:
+        "Method-replacing spyOn() must be inside a test hook or helper function (beforeEach/it/before/after or any function called from a test). At describe or module scope the spy is applied once at describe registration, and the per-test vi.restoreAllMocks() removes it again before this block's tests run — so every test here silently exercises the unpatched method.",
+      [CALL_HISTORY_CLEARED_EACH_TEST]:
+        'Method-replacing spyOn() in beforeAll runs once for the whole file, but vitest clears every mock call history before each test, so calls recorded during beforeAll are gone by the time any test reads mock.calls. The stubbed behaviour survives; only the evidence that it ran does not, which fails silently as an empty history rather than as a missing stub. Move the spyOn — and whatever invocation of the subject you assert calls on — into beforeEach.',
     },
   },
   create(context) {
-    const MODULE_SCOPE_EXECUTES_AT_DESCRIBE_TIME = true
-    const executesAtDescribeTimeByScope = [MODULE_SCOPE_EXECUTES_AT_DESCRIBE_TIME]
+    const MODULE_SCOPE_HAZARD = RESTORED_BEFORE_ANY_TEST_RUNS
+    const spyHazardByScope = [MODULE_SCOPE_HAZARD]
     return {
       ':function'(node) {
-        executesAtDescribeTimeByScope.push(isDescribeCallback(node))
+        spyHazardByScope.push(spyHazardOf(node))
       },
       ':function:exit'() {
-        executesAtDescribeTimeByScope.pop()
+        spyHazardByScope.pop()
       },
       CallExpression(node) {
-        if (!executesAtDescribeTimeByScope[executesAtDescribeTimeByScope.length - 1]) return
-        if (
-          node.callee.type === 'MemberExpression' &&
-          node.callee.property.type === 'Identifier' &&
-          node.callee.property.name === 'spyOn' &&
-          node.arguments.length >= 2 &&
-          node.arguments[1].type === 'Literal' &&
-          typeof node.arguments[1].value === 'string'
-        ) {
-          context.report({ node, messageId: 'leak' })
+        const hazard = spyHazardByScope[spyHazardByScope.length - 1]
+        if (hazard === null) return
+        if (isMethodReplacingSpyOn(node)) {
+          context.report({ node, messageId: hazard })
         }
       },
     }

@@ -14,7 +14,7 @@ describe('public/app/bootstrap', () => {
   let navigationInitSpy: MockInstance = vi.fn()
   let pubsubDeferredSpy: MockInstance = vi.fn()
   let wakeLockInitSpy: MockInstance = vi.fn()
-  beforeAll(() => {
+  beforeEach(() => {
     loadingInitSpy = vi.spyOn(Imports, 'LoadingInit').mockImplementation((..._args: unknown[]) => undefined)
     confirmInitSpy = vi.spyOn(Imports, 'ConfirmInit').mockImplementation((..._args: unknown[]) => undefined)
     actionsInitSpy = vi.spyOn(Imports, 'ActionsInit').mockImplementation((..._args: unknown[]) => undefined)
