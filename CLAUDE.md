@@ -107,6 +107,7 @@ Worked before/after examples and the full category breakdown: [docs/CODE_STYLE.m
 ## Testing conventions
 
 - Spy with `vi.spyOn`; restoration is global via the `afterEach` in `testutils/restoreMocksSetup.ts`, so specs need no teardown of their own.
+- Fake timers are the exception to that automatic restoration: `vi.restoreAllMocks()` does not undo `vi.useFakeTimers()`. A spec that installs them must call `vi.useRealTimers()` in its own `afterEach` — enforced at test execution time by `testutils/timerGuardSetup.ts`, which fails any test that finishes with fake timers still installed.
 - `vi.spyOn` calls only inside hooks (`beforeEach`/`it`), never at describe scope (enforced by `local/no-method-stub-outside-hook`).
 - Single assertion per `it()` block.
 - Each spec file should target one module: at most one `Imports`/`Internals` import path per spec.
