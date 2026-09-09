@@ -1,12 +1,15 @@
 'use sanity'
 
 // Asserts that the Node and npm versions running this process match the exact
-// versions pinned in `package.json` engines, and that the Dockerfile's
-// NODE_VERSION ARG default matches engines.node. Catches:
+// versions pinned in `package.json` engines, that the Dockerfile's NODE_VERSION
+// ARG default matches engines.node, and that the declared @types/node major
+// matches it too. Catches:
 //  - the dev container drifting ahead of the production container (cryptic
 //    `npm ci` lockfile errors at deploy time);
 //  - someone editing the Dockerfile's NODE_VERSION without updating engines.node
-//    (or vice versa).
+//    (or vice versa);
+//  - @types/node describing a different Node major than the one that runs,
+//    which type-checks clean while silently modelling the wrong runtime.
 //
 // `.npmrc engine-strict=true` enforces engines on installed *dependencies* only;
 // this script is the strict gate for the project's *own* engines field.
@@ -23,6 +26,7 @@ interface PkgEngines {
 }
 interface Pkg {
   engines?: Partial<PkgEngines>
+  devDependencies?: Record<string, string>
 }
 
 // Range characters per node-semver. An "exact" pin is just `MAJOR.MINOR.PATCH`
@@ -31,6 +35,10 @@ interface Pkg {
 const RANGE_CHARS = /[\^~*<>=\s\|x]/v
 
 const DOCKERFILE_NODE_ARG = /^ARG\s+NODE_VERSION=(?<version>\S+)\s*$/mv
+
+const NODE_TYPES_PACKAGE = '@types/node'
+
+const LEADING_MAJOR_VERSION = /^\D*(?<major>\d+)\./v
 
 export interface CheckEnvInput {
   pkg: Pkg
@@ -72,12 +80,35 @@ function compareDockerfile(dockerfile: string | null, requiredNode: string): rea
   return []
 }
 
+function majorVersionOf(version: string): string | null {
+  const match = LEADING_MAJOR_VERSION.exec(version)
+  if (match === null) return null
+  /* istanbul ignore next -- the regex has a named `major` group so this can't fire in practice; TS just can't prove it. */
+  return match.groups?.major ?? null
+}
+
+function compareNodeTypes(declaredRange: string | undefined, requiredNode: string): readonly string[] {
+  if (declaredRange === undefined) return []
+  const declaredMajor = majorVersionOf(declaredRange)
+  if (declaredMajor === null) {
+    return [`  ${NODE_TYPES_PACKAGE}: cannot read a major version from "${declaredRange}"`]
+  }
+  const requiredMajor = majorVersionOf(requiredNode)
+  if (declaredMajor !== requiredMajor) {
+    return [
+      `  ${NODE_TYPES_PACKAGE}: major ${declaredMajor} does not match engines.node major ${requiredMajor} (${requiredNode})`,
+    ]
+  }
+  return []
+}
+
 export function checkEnv(input: CheckEnvInput): CheckEnvResult {
   const enginesResult = validateEngines(input.pkg.engines)
   if (!enginesResult.ok) return { problems: [enginesResult.problem] }
   const runtimeProblems = compareRuntime({ node: input.actualNode, npm: input.actualNpm }, enginesResult.pinned)
   const dockerfileProblems = compareDockerfile(input.dockerfile, enginesResult.pinned.node)
-  return { problems: [...runtimeProblems, ...dockerfileProblems] }
+  const nodeTypesProblems = compareNodeTypes(input.pkg.devDependencies?.[NODE_TYPES_PACKAGE], enginesResult.pinned.node)
+  return { problems: [...runtimeProblems, ...dockerfileProblems, ...nodeTypesProblems] }
 }
 
 /* istanbul ignore next -- helper for the CLI wrapper. */
@@ -107,8 +138,8 @@ export function main(): void {
     console.error('check:env: tooling version mismatch:')
     for (const line of problems) console.error(line)
     console.error('')
-    console.error('Update either package.json engines or the Dockerfile so they agree, and')
-    console.error('install the matching local toolchain.')
+    console.error('Update package.json engines, the Dockerfile, or the @types/node range so they')
+    console.error('all agree, and install the matching local toolchain.')
     process.exit(INVALID_ARG_EXIT_CODE)
   }
 }

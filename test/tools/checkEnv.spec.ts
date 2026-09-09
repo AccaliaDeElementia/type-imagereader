@@ -3,7 +3,7 @@
 import { checkEnv, type CheckEnvInput } from '#tools/checkEnv.js'
 
 const matching: CheckEnvInput = {
-  pkg: { engines: { node: '24.12.0', npm: '11.6.2' } },
+  pkg: { engines: { node: '24.12.0', npm: '11.6.2' }, devDependencies: { '@types/node': '^24.5.0' } },
   dockerfile: 'ARG NODE_VERSION=24.12.0\n',
   actualNode: '24.12.0',
   actualNpm: '11.6.2',
@@ -76,6 +76,45 @@ describe('tools/checkEnv', () => {
     }
     const matchedProblems = checkEnv(input).problems.filter((p) => p.includes('Dockerfile'))
     expect(matchedProblems).toEqual([])
+  })
+
+  it('should report drift when the @types/node major is behind engines.node', () => {
+    const input: CheckEnvInput = {
+      ...matching,
+      pkg: { engines: { node: '26.1.0', npm: '11.6.2' }, devDependencies: { '@types/node': '^25.7.0' } },
+      dockerfile: 'ARG NODE_VERSION=26.1.0\n',
+      actualNode: '26.1.0',
+    }
+    expect(checkEnv(input).problems).toContain('  @types/node: major 25 does not match engines.node major 26 (26.1.0)')
+  })
+
+  it('should report drift when the @types/node major is ahead of engines.node', () => {
+    const input: CheckEnvInput = {
+      ...matching,
+      pkg: { engines: { node: '24.12.0', npm: '11.6.2' }, devDependencies: { '@types/node': '^25.0.0' } },
+    }
+    expect(checkEnv(input).problems).toContain('  @types/node: major 25 does not match engines.node major 24 (24.12.0)')
+  })
+
+  it('should accept a tilde-ranged @types/node whose major matches engines.node', () => {
+    const input: CheckEnvInput = {
+      ...matching,
+      pkg: { engines: { node: '24.12.0', npm: '11.6.2' }, devDependencies: { '@types/node': '~24.0.1' } },
+    }
+    expect(checkEnv(input).problems).toEqual([])
+  })
+
+  it('should not report @types/node when it is absent from devDependencies', () => {
+    const input: CheckEnvInput = { ...matching, pkg: { engines: { node: '24.12.0', npm: '11.6.2' } } }
+    expect(checkEnv(input).problems).toEqual([])
+  })
+
+  it('should report an @types/node range with no readable major version', () => {
+    const input: CheckEnvInput = {
+      ...matching,
+      pkg: { engines: { node: '24.12.0', npm: '11.6.2' }, devDependencies: { '@types/node': 'latest' } },
+    }
+    expect(checkEnv(input).problems).toContain('  @types/node: cannot read a major version from "latest"')
   })
 
   it('should report multiple problems when several conditions fail at once', () => {
