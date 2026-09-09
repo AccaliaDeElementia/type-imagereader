@@ -14,7 +14,7 @@ A self-hosted web app for browsing large local collections of images and comics.
 
 ## Stack
 
-Node.js 24+, TypeScript, Express 5, Pug, Socket.IO, Knex + PostgreSQL, Sharp, `@parcel/watcher`. Client bundle built with esbuild; styles compiled with Sass. Tests run on Mocha + Chai + Sinon under c8 (100% coverage gate).
+Node.js 24+, TypeScript, Express 5, Pug, Socket.IO, Knex + PostgreSQL, Sharp, `@parcel/watcher`. Client bundle built with esbuild; styles compiled with Sass. Tests run on Vitest with istanbul coverage (100% coverage gate).
 
 ## Requirements
 

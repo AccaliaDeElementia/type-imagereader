@@ -4,9 +4,9 @@
 // 124 (matching GNU timeout convention) if the wall-clock expires before the
 // child finishes.
 //
-// Guards against test-runner hang-on-exit failure modes — e.g. the sinon 21.1.x
-// samsam leak that completed tests but never returned the process. Use on
-// non-interactive test/build scripts.
+// Guards against test-runner hang-on-exit failure modes: a runner that finishes
+// every test but never returns the process, which would otherwise wedge a
+// non-interactive test/build script until the CI job itself times out.
 //
 // Configurable via TEST_WATCHDOG_MS env var (default 120000 = 120s). Set to a
 // large value to effectively disable for debugging (e.g. TEST_WATCHDOG_MS=86400000).

@@ -21,6 +21,9 @@ describe('public/app/WakeLock releaseLock()', () => {
       released: false,
     }
   })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
   it('should reset timeout when sentinel is null and timeout has expired', async () => {
     WakeLock.sentinel = null
     WakeLock.timeout = 1154

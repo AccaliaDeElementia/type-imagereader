@@ -48,6 +48,7 @@ describe('public/app/WakeLock takeLock()', () => {
       configurable: true,
       get: () => existingNavigator,
     })
+    vi.useRealTimers()
   })
   it('should take lock if sentinel is null', async () => {
     await takeLock()

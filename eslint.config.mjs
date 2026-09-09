@@ -30,7 +30,7 @@ const noMethodStubOutsideHook = {
     type: 'problem',
     schema: [],
     messages: {
-      leak: 'Method-replacing spyOn() must be inside a test hook or helper function (beforeEach/it/before/after or any function called from a test). At describe or module scope the spy runs once at describe registration, and the per-test vi.restoreAllMocks() unrestores the method after the first test — later tests then run against the unpatched method.',
+      leak: "Method-replacing spyOn() must be inside a test hook or helper function (beforeEach/it/before/after or any function called from a test). At describe or module scope the spy is applied once at describe registration, and the per-test vi.restoreAllMocks() removes it again before this block's tests run — so every test here silently exercises the unpatched method.",
     },
   },
   create(context) {
@@ -200,11 +200,6 @@ export default [
       ],
       'no-restricted-syntax': [
         'error',
-        {
-          selector: "CallExpression[callee.object.name='Sinon'][callee.property.name='stub']",
-          message:
-            'Do not use Sinon.stub() — it registers into the default sandbox and leaks across the full test run. Use sandbox.stub() via a per-describe sandbox (const sandbox = Sinon.createSandbox(), plus sandbox.restore() in afterEach).',
-        },
         {
           selector: 'ImportNamespaceSpecifier',
           message:
