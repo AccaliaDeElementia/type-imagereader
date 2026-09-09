@@ -79,13 +79,11 @@ describe('public/app/pictures makePicturesPage()', () => {
     expect(pic.page).toBe(undefined)
   })
   it('should add all cards to built page', () => {
-    const pics = Array.from({ length: 50 }).map(
-      (_, i): Picture => ({
-        name: `${i}`,
-        path: `${i}`,
-        seen: false,
-      }),
-    )
+    const pics = Array.from({ length: 50 }).map((_, i): Picture => ({
+      name: `${i}`,
+      path: `${i}`,
+      seen: false,
+    }))
     const page = Internals.makePicturesPage(1, pics)
     expect(page.children).toHaveLength(50)
   })

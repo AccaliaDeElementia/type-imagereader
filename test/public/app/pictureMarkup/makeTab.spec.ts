@@ -38,13 +38,11 @@ describe('public/app/pictures makeTab()', () => {
       retval.classList.add('paginator')
       return retval
     })
-    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE }).map(
-      (_: unknown, i: number): Picture => ({
-        path: `/some/path/${i}.png`,
-        name: `${i}.png`,
-        seen: false,
-      }),
-    )
+    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE }).map((_: unknown, i: number): Picture => ({
+      path: `/some/path/${i}.png`,
+      name: `${i}.png`,
+      seen: false,
+    }))
     resetPubSub()
     tab = dom.window.document.querySelector('#tabImages')
   })
@@ -60,30 +58,38 @@ describe('public/app/pictures makeTab()', () => {
     expect(tab?.querySelector('.page')).toBeInstanceOf(dom.window.HTMLElement)
   })
   it('should call makePicturesPage once per page', () => {
-    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 4 }).map(
-      (_: unknown, i: number): Picture => ({ path: `/p/${i}`, name: `${i}`, seen: false }),
-    )
+    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 4 }).map((_: unknown, i: number): Picture => ({
+      path: `/p/${i}`,
+      name: `${i}`,
+      seen: false,
+    }))
     makeTab()
     expect(makePicturesPageSpy.mock.calls.length).toBe(4)
   })
   it('should make pages according to PICTURES_PER_PAGE', () => {
-    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 4 }).map(
-      (_: unknown, i: number): Picture => ({ path: `/p/${i}`, name: `${i}`, seen: false }),
-    )
+    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 4 }).map((_: unknown, i: number): Picture => ({
+      path: `/p/${i}`,
+      name: `${i}`,
+      seen: false,
+    }))
     makeTab()
     expect(tab?.querySelectorAll('.page')).toHaveLength(4)
   })
   it('should round up partial trailing pages', () => {
-    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 3 + 1 }).map(
-      (_: unknown, i: number): Picture => ({ path: `/p/${i}`, name: `${i}`, seen: false }),
-    )
+    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 3 + 1 }).map((_: unknown, i: number): Picture => ({
+      path: `/p/${i}`,
+      name: `${i}`,
+      seen: false,
+    }))
     makeTab()
     expect(makePicturesPageSpy.mock.calls.length).toBe(4)
   })
   it('should make pages with image subsets for each page', () => {
-    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 4 }).map(
-      (_: unknown, i: number): Picture => ({ path: `/p/${i}`, name: `${i}`, seen: false }),
-    )
+    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 4 }).map((_: unknown, i: number): Picture => ({
+      path: `/p/${i}`,
+      name: `${i}`,
+      seen: false,
+    }))
     makeTab()
     for (let i = 0; i < 4; i += 1) {
       const call = makePicturesPageSpy.mock.calls[i]
@@ -101,16 +107,20 @@ describe('public/app/pictures makeTab()', () => {
     expect(tab?.querySelector('.paginator')).toBeInstanceOf(dom.window.HTMLElement)
   })
   it('should make paginator for calculated page count', () => {
-    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 8 }).map(
-      (_: unknown, i: number): Picture => ({ path: `/p/${i}`, name: `${i}`, seen: false }),
-    )
+    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 8 }).map((_: unknown, i: number): Picture => ({
+      path: `/p/${i}`,
+      name: `${i}`,
+      seen: false,
+    }))
     makeTab()
     expect(makePaginatorSpy.mock.calls[0]).toEqual([8])
   })
   it('should add paginator to tab for calculated page count', () => {
-    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 8 }).map(
-      (_: unknown, i: number): Picture => ({ path: `/p/${i}`, name: `${i}`, seen: false }),
-    )
+    Pictures.pictures = Array.from({ length: PICTURES_PER_PAGE * 8 }).map((_: unknown, i: number): Picture => ({
+      path: `/p/${i}`,
+      name: `${i}`,
+      seen: false,
+    }))
     makeTab()
     expect(tab?.querySelector('.paginator')).toBeInstanceOf(dom.window.HTMLElement)
   })

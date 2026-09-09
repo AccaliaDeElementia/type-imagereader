@@ -51,13 +51,11 @@ describe('public/app/pictures loadImage()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    Pictures.pictures = Array.from({ length: totalCount }).map(
-      (_: unknown, i: number): Picture => ({
-        path: `/some/path/${i}.png`,
-        name: `${i}.png`,
-        seen: false,
-      }),
-    )
+    Pictures.pictures = Array.from({ length: totalCount }).map((_: unknown, i: number): Picture => ({
+      path: `/some/path/${i}.png`,
+      name: `${i}.png`,
+      seen: false,
+    }))
     current = Pictures.pictures[1250] ?? {
       path: '',
       name: '',
