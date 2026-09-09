@@ -1,7 +1,7 @@
 'use sanity'
 
 import { Imports, convertImage, ImageData } from '#routes/images.js'
-import type Sharp from 'sharp'
+import type { Sharp } from 'sharp'
 import { cast } from '#testutils/typeGuards.js'
 import type { MockInstance } from 'vitest'
 
@@ -21,7 +21,7 @@ describe('routes/images convertImage()', () => {
   let sharpStub: MockInstance = vi.fn()
   let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
-    sharpStub = vi.spyOn(Imports, 'Sharp').mockReturnValue(cast<Sharp.Sharp>(sharpInstanceStub))
+    sharpStub = vi.spyOn(Imports, 'Sharp').mockReturnValue(cast<Sharp>(sharpInstanceStub))
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {

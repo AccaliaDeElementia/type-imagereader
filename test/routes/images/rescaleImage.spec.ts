@@ -2,6 +2,7 @@
 
 import { Imports, rescaleImage, ImageData } from '#routes/images.js'
 import Sharp from 'sharp'
+import type { Sharp as SharpInstance } from 'sharp'
 import { cast } from '#testutils/typeGuards.js'
 import type { MockInstance } from 'vitest'
 
@@ -21,7 +22,7 @@ describe('routes/images rescaleImage()', () => {
   let sharpStub: MockInstance = vi.fn()
   let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
-    sharpStub = vi.spyOn(Imports, 'Sharp').mockReturnValue(cast<Sharp.Sharp>(sharpInstanceStub))
+    sharpStub = vi.spyOn(Imports, 'Sharp').mockReturnValue(cast<SharpInstance>(sharpInstanceStub))
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
