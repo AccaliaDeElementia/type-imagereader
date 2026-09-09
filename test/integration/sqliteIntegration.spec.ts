@@ -81,8 +81,8 @@ describe(
 
     it('should insert a row through the chunked-INSERT fallback path', async () => {
       assertDb(db)
-      const fakeWalker = async (_root: string, callback: WalkerCallback): Promise<void> => {
-        await callback(
+      const fakeWalker = async (_root: string, visitBatch: WalkerCallback): Promise<void> => {
+        await visitBatch(
           [
             { path: '/comics/page1.jpg', isFile: true },
             { path: '/comics/page2.jpg', isFile: true },
@@ -103,8 +103,8 @@ describe(
 
     it('should round-trip rows inserted by the fallback path', async () => {
       assertDb(db)
-      const fakeWalker = async (_root: string, callback: WalkerCallback): Promise<void> => {
-        await callback([{ path: '/comics/page1.jpg', isFile: true }], 0)
+      const fakeWalker = async (_root: string, visitBatch: WalkerCallback): Promise<void> => {
+        await visitBatch([{ path: '/comics/page1.jpg', isFile: true }], 0)
       }
       await findSyncItemsViaInsert(db, noopLogger, {
         fsWalker: fakeWalker,
@@ -187,12 +187,12 @@ describe(
     it('should bulk-insert past the SQLITE_LIMIT_COMPOUND_SELECT cap (1000 rows)', async () => {
       assertDb(db)
       const ROW_COUNT = 1000
-      const fakeWalker = async (_root: string, callback: WalkerCallback): Promise<void> => {
+      const fakeWalker = async (_root: string, visitBatch: WalkerCallback): Promise<void> => {
         const items = Array.from({ length: ROW_COUNT }, (_, i) => ({
           path: `/comics/page${i.toString().padStart(4, '0')}.jpg`,
           isFile: true,
         }))
-        await callback(items, 0)
+        await visitBatch(items, 0)
       }
       const counts = await findSyncItemsViaInsert(db, noopLogger, {
         fsWalker: fakeWalker,

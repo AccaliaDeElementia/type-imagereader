@@ -12,7 +12,7 @@ import type { MockInstance } from 'vitest'
 
 const FLUSH_THRESHOLD = 5000
 
-type Callback = (items: Array<{ path: string; isFile: boolean }>, pending: number) => Promise<void>
+type WalkerCallback = (items: Array<{ path: string; isFile: boolean }>, pending: number) => Promise<void>
 
 interface StreamFake extends EventEmitter {
   write: MockInstance
@@ -175,41 +175,41 @@ describe('sync/findItems findSyncItems()', () => {
     })
     it('should pass walker items through buildSyncItemRows', async () => {
       await findSyncItems(knexFnFake)
-      const callback = cast<Callback>(fsWalkerStub.mock.calls[0]?.[1])
+      const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
-      await callback(items, 0)
+      await visitBatch(items, 0)
       expect(buildSyncItemRowsStub.mock.calls.some((c) => c[0] === items)).toBe(true)
     })
     it('should format each row through formatSyncItemCsv', async () => {
       const row = { folder: '/', path: '/f.jpg', isFile: true, sortKey: 'f', pathHash: 'h' }
       buildSyncItemRowsStub.mockReturnValue({ files: 1, dirs: 0, rows: [row] })
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
-        await callback([{ path: '/f.jpg', isFile: true }], 0)
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
+        await visitBatch([{ path: '/f.jpg', isFile: true }], 0)
       })
       await findSyncItems(knexFnFake)
       expect(formatSyncItemCsvStub.mock.calls.some((c) => c[0] === row)).toBe(true)
     })
     it('should write buffered rows to the stream when the threshold is reached', async () => {
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         buildSyncItemRowsStub.mockReturnValue({ files: 0, dirs: 0, rows: makeRows(FLUSH_THRESHOLD) })
-        await callback([], 0)
+        await visitBatch([], 0)
       })
       await findSyncItems(knexFnFake)
       const writes = streamFake.write.mock.calls.filter((c) => typeof c[0] === 'string' && c[0].length > 0)
       expect(writes.length).toBeGreaterThanOrEqual(1)
     })
     it('should issue a single write call when only the tail flush produces a batch', async () => {
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         buildSyncItemRowsStub.mockReturnValue({ files: 0, dirs: 0, rows: makeRows(500) })
-        await callback([], 0)
+        await visitBatch([], 0)
       })
       await findSyncItems(knexFnFake)
       expect(streamFake.write.mock.calls.length).toBe(1)
     })
     it('should flush the tail buffer via stream.write before ending', async () => {
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         buildSyncItemRowsStub.mockReturnValue({ files: 0, dirs: 0, rows: makeRows(500) })
-        await callback([], 0)
+        await visitBatch([], 0)
       })
       await findSyncItems(knexFnFake)
       expect(streamFake.write.mock.calls.length).toBeGreaterThanOrEqual(1)
@@ -220,9 +220,9 @@ describe('sync/findItems findSyncItems()', () => {
         return false
       })
       streamFake.write.mockReturnValue(true)
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         buildSyncItemRowsStub.mockReturnValue({ files: 0, dirs: 0, rows: makeRows(FLUSH_THRESHOLD) })
-        await callback([], 0)
+        await visitBatch([], 0)
       })
       await findSyncItems(knexFnFake)
       expect(streamFake.end.mock.calls.length).toBe(1)
@@ -232,9 +232,9 @@ describe('sync/findItems findSyncItems()', () => {
       streamFake.end.mockImplementation(() => {
         scheduleEmit(streamFake, 'error', err)
       })
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         buildSyncItemRowsStub.mockReturnValue({ files: 0, dirs: 0, rows: [] })
-        await callback([], 0)
+        await visitBatch([], 0)
       })
       let caught: unknown = null
       try {
@@ -246,64 +246,72 @@ describe('sync/findItems findSyncItems()', () => {
     })
     it('should log status on first loop', async () => {
       await findSyncItems(knexFnFake)
-      const callback = cast<Callback>(fsWalkerStub.mock.calls[0]?.[1])
+      const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
       buildSyncItemRowsStub.mockReturnValue({ files: 3, dirs: 9, rows: [] })
-      await callback(items, 6)
+      await visitBatch(items, 6)
       expect(loggerStub.mock.calls.some((c) => c[0] === 'Found 9 dirs (6 pending) and 3 files')).toBe(true)
     })
     it('should log twice by the 101st loop', async () => {
       await findSyncItems(knexFnFake)
       loggerStub.mockClear()
-      const callback = cast<Callback>(fsWalkerStub.mock.calls[0]?.[1])
+      const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
       const invocations: Array<Promise<void>> = []
-      for (let i = 0; i < 100; i += 1) invocations.push(callback(items, 0))
+      for (let i = 0; i < 100; i += 1) invocations.push(visitBatch(items, 0))
       await Promise.all(invocations)
       buildSyncItemRowsStub.mockReturnValue({ files: 3, dirs: 9, rows: [] })
-      await callback(items, 6)
+      await visitBatch(items, 6)
       expect(loggerStub.mock.calls.length).toBe(2)
     })
     it('should log status on 101st loop', async () => {
       await findSyncItems(knexFnFake)
       loggerStub.mockClear()
-      const callback = cast<Callback>(fsWalkerStub.mock.calls[0]?.[1])
+      const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
       const invocations: Array<Promise<void>> = []
-      for (let i = 0; i < 100; i += 1) invocations.push(callback(items, 0))
+      for (let i = 0; i < 100; i += 1) invocations.push(visitBatch(items, 0))
       await Promise.all(invocations)
       buildSyncItemRowsStub.mockReturnValue({ files: 3, dirs: 9, rows: [] })
-      await callback(items, 6)
+      await visitBatch(items, 6)
       expect(loggerStub.mock.calls.some((c) => c[0] === 'Found 9 dirs (6 pending) and 3 files')).toBe(true)
     })
-    const ChainableFileCounter = async (prev: Promise<void>, callback: Callback, files: number): Promise<void> => {
+    const ChainableFileCounter = async (
+      prev: Promise<void>,
+      visitBatch: WalkerCallback,
+      files: number,
+    ): Promise<void> => {
       const items = [{ path: '/foo', isFile: false }]
       buildSyncItemRowsStub.mockReturnValue({ files, dirs: 0, rows: [] })
-      await callback(items, 0)
+      await visitBatch(items, 0)
       await prev
     }
     it('should count all files in loop', async () => {
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         let chain = Promise.resolve()
         for (let i = 1; i <= 100; i += 1) {
-          chain = ChainableFileCounter(chain, callback, i)
+          chain = ChainableFileCounter(chain, visitBatch, i)
         }
         await chain
       })
       await findSyncItems(knexFnFake)
       expect(loggerStub.mock.calls.some((c) => c[0] === 'Found all 0 dirs and 5050 files')).toBe(true)
     })
-    const ChainableDirCounter = async (prev: Promise<void>, callback: Callback, dirs: number): Promise<void> => {
+    const ChainableDirCounter = async (
+      prev: Promise<void>,
+      visitBatch: WalkerCallback,
+      dirs: number,
+    ): Promise<void> => {
       const items = [{ path: '/foo', isFile: false }]
       buildSyncItemRowsStub.mockReturnValue({ files: 0, dirs, rows: [] })
-      await callback(items, 0)
+      await visitBatch(items, 0)
       await prev
     }
     it('should count all dirs in loop', async () => {
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         let chain = Promise.resolve()
         for (let i = 1; i <= 100; i += 1) {
-          chain = ChainableDirCounter(chain, callback, i)
+          chain = ChainableDirCounter(chain, visitBatch, i)
         }
         await chain
       })
@@ -311,10 +319,10 @@ describe('sync/findItems findSyncItems()', () => {
       expect(loggerStub.mock.calls.some((c) => c[0] === 'Found all 5050 dirs and 0 files')).toBe(true)
     })
     it('should return count of files', async () => {
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         let chain = Promise.resolve()
         for (let i = 1; i <= 100; i += 1) {
-          chain = ChainableFileCounter(chain, callback, i)
+          chain = ChainableFileCounter(chain, visitBatch, i)
         }
         await chain
       })
@@ -370,17 +378,17 @@ describe('sync/findItems findSyncItems()', () => {
 
     it('should pass walker items through buildSyncItemRows', async () => {
       await findSyncItems(knexFnFake)
-      const callback = cast<Callback>(fsWalkerStub.mock.calls[0]?.[1])
+      const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
-      await callback(items, 0)
+      await visitBatch(items, 0)
       expect(buildSyncItemRowsStub.mock.calls.some((c) => c[0] === items)).toBe(true)
     })
 
     it('should not invoke formatSyncItemCsv', async () => {
       const row = { folder: '/', path: '/f.jpg', isFile: true, sortKey: 'f', pathHash: 'h' }
       buildSyncItemRowsStub.mockReturnValue({ files: 1, dirs: 0, rows: [row] })
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
-        await callback([{ path: '/f.jpg', isFile: true }], 0)
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
+        await visitBatch([{ path: '/f.jpg', isFile: true }], 0)
       })
       await findSyncItems(knexFnFake)
       expect(formatSyncItemCsvStub.mock.calls.length > 0).toBe(false)
@@ -389,8 +397,8 @@ describe('sync/findItems findSyncItems()', () => {
     it('should insert each chunk via knex when rows are produced', async () => {
       const row = { folder: '/', path: '/f.jpg', isFile: true, sortKey: 'f', pathHash: 'h' }
       buildSyncItemRowsStub.mockReturnValue({ files: 1, dirs: 0, rows: [row] })
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
-        await callback([{ path: '/f.jpg', isFile: true }], 0)
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
+        await visitBatch([{ path: '/f.jpg', isFile: true }], 0)
       })
       await findSyncItems(knexFnFake)
       expect(knexInstanceStub.insert.mock.calls.length).toBe(2)
@@ -399,17 +407,17 @@ describe('sync/findItems findSyncItems()', () => {
     it('should pass chunk rows to insert', async () => {
       const row = { folder: '/', path: '/f.jpg', isFile: true, sortKey: 'f', pathHash: 'h' }
       buildSyncItemRowsStub.mockReturnValue({ files: 1, dirs: 0, rows: [row] })
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
-        await callback([{ path: '/f.jpg', isFile: true }], 0)
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
+        await visitBatch([{ path: '/f.jpg', isFile: true }], 0)
       })
       await findSyncItems(knexFnFake)
       expect(knexInstanceStub.insert.mock.calls[1]?.[0]).toEqual([row])
     })
 
-    it('should not insert when a callback yields zero rows', async () => {
+    it('should not insert when a visitBatch yields zero rows', async () => {
       buildSyncItemRowsStub.mockReturnValue({ files: 0, dirs: 0, rows: [] })
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
-        await callback([], 0)
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
+        await visitBatch([], 0)
       })
       await findSyncItems(knexFnFake)
       expect(knexInstanceStub.insert.mock.calls.length).toBe(1)
@@ -417,38 +425,42 @@ describe('sync/findItems findSyncItems()', () => {
 
     it('should log status on first loop', async () => {
       await findSyncItems(knexFnFake)
-      const callback = cast<Callback>(fsWalkerStub.mock.calls[0]?.[1])
+      const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
       buildSyncItemRowsStub.mockReturnValue({ files: 3, dirs: 9, rows: [] })
-      await callback(items, 6)
+      await visitBatch(items, 6)
       expect(loggerStub.mock.calls.some((c) => c[0] === 'Found 9 dirs (6 pending) and 3 files')).toBe(true)
     })
 
     it('should log status on 101st loop', async () => {
       await findSyncItems(knexFnFake)
       loggerStub.mockClear()
-      const callback = cast<Callback>(fsWalkerStub.mock.calls[0]?.[1])
+      const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
       const invocations: Array<Promise<void>> = []
-      for (let i = 0; i < 100; i += 1) invocations.push(callback(items, 0))
+      for (let i = 0; i < 100; i += 1) invocations.push(visitBatch(items, 0))
       await Promise.all(invocations)
       buildSyncItemRowsStub.mockReturnValue({ files: 3, dirs: 9, rows: [] })
-      await callback(items, 6)
+      await visitBatch(items, 6)
       expect(loggerStub.mock.calls.some((c) => c[0] === 'Found 9 dirs (6 pending) and 3 files')).toBe(true)
     })
 
-    const ChainableFileCounter = async (prev: Promise<void>, callback: Callback, files: number): Promise<void> => {
+    const ChainableFileCounter = async (
+      prev: Promise<void>,
+      visitBatch: WalkerCallback,
+      files: number,
+    ): Promise<void> => {
       const items = [{ path: '/foo', isFile: false }]
       buildSyncItemRowsStub.mockReturnValue({ files, dirs: 0, rows: [] })
-      await callback(items, 0)
+      await visitBatch(items, 0)
       await prev
     }
 
     it('should count all files across the walk', async () => {
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         let chain = Promise.resolve()
         for (let i = 1; i <= 100; i += 1) {
-          chain = ChainableFileCounter(chain, callback, i)
+          chain = ChainableFileCounter(chain, visitBatch, i)
         }
         await chain
       })
@@ -457,10 +469,10 @@ describe('sync/findItems findSyncItems()', () => {
     })
 
     it('should return count of files', async () => {
-      fsWalkerStub.mockImplementation(async (_: string, callback: Callback) => {
+      fsWalkerStub.mockImplementation(async (_: string, visitBatch: WalkerCallback) => {
         let chain = Promise.resolve()
         for (let i = 1; i <= 100; i += 1) {
-          chain = ChainableFileCounter(chain, callback, i)
+          chain = ChainableFileCounter(chain, visitBatch, i)
         }
         await chain
       })

@@ -16,8 +16,8 @@ const DIR_COUNT = 3
 const sampleRow = { folder: '', path: '/x', sortKey: 'x', isFile: true, pathHash: 'h' }
 
 const buildHelpers = (overrides: Partial<InsertFallbackHelpers> = {}): InsertFallbackHelpers => ({
-  fsWalker: async (_root, cb) => {
-    await cb([], 0)
+  fsWalker: async (_root, visitBatch) => {
+    await visitBatch([], 0)
   },
   buildSyncItemRows: () => ({ files: FILE_COUNT, dirs: DIR_COUNT, rows: [] }),
   chunk: (arr) => [arr],
@@ -64,8 +64,8 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
       knex,
       noopLogger,
       buildHelpers({
-        fsWalker: async (_root, cb) => {
-          await cb(items, 0)
+        fsWalker: async (_root, visitBatch) => {
+          await visitBatch(items, 0)
         },
         buildSyncItemRows: buildRowsSpy,
       }),
@@ -103,9 +103,9 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
       knex,
       noopLogger,
       buildHelpers({
-        fsWalker: async (_root, cb) => {
-          await cb([], 0)
-          await cb([], 0)
+        fsWalker: async (_root, visitBatch) => {
+          await visitBatch([], 0)
+          await visitBatch([], 0)
         },
       }),
     )
@@ -135,8 +135,8 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
-        fsWalker: async (_root, cb) => {
-          await cb([], PENDING)
+        fsWalker: async (_root, visitBatch) => {
+          await visitBatch([], PENDING)
         },
       }),
     )
@@ -150,9 +150,9 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
-        fsWalker: async (_root, cb) => {
-          await cb([], 0)
-          await cb([], 0)
+        fsWalker: async (_root, visitBatch) => {
+          await visitBatch([], 0)
+          await visitBatch([], 0)
         },
       }),
     )
@@ -168,11 +168,11 @@ describe('sync/syncItemsDialect findSyncItemsViaInsert()', () => {
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
-        fsWalker: async (_root, cb) => {
+        fsWalker: async (_root, visitBatch) => {
           let chain = Promise.resolve()
           for (let i = 0; i < ITERATIONS; i += 1) {
             chain = chain.then(async () => {
-              await cb([], 0)
+              await visitBatch([], 0)
             })
           }
           await chain

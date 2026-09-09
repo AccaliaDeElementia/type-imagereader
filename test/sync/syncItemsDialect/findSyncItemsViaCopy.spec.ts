@@ -20,8 +20,8 @@ const buildStreamHandles = (opts: { endError?: Error } = {}): ReturnType<typeof 
   })
 
 const buildHelpers = (overrides: Partial<CopyHelpers> = {}): CopyHelpers => ({
-  fsWalker: async (_root, cb) => {
-    await cb([], 0)
+  fsWalker: async (_root, visitBatch) => {
+    await visitBatch([], 0)
   },
   buildSyncItemRows: () => ({
     files: FILE_COUNT,
@@ -88,8 +88,8 @@ describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
       knex,
       noopLogger,
       buildHelpers({
-        fsWalker: async (_root, cb) => {
-          await cb(items, 0)
+        fsWalker: async (_root, visitBatch) => {
+          await visitBatch(items, 0)
         },
         buildSyncItemRows: buildRowsSpy,
       }),
@@ -185,9 +185,9 @@ describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
       knex,
       noopLogger,
       buildHelpers({
-        fsWalker: async (_root, cb) => {
-          await cb([], 0)
-          await cb([], 0)
+        fsWalker: async (_root, visitBatch) => {
+          await visitBatch([], 0)
+          await visitBatch([], 0)
         },
       }),
     )
@@ -202,8 +202,8 @@ describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
-        fsWalker: async (_root, cb) => {
-          await cb([], PENDING)
+        fsWalker: async (_root, visitBatch) => {
+          await visitBatch([], PENDING)
         },
       }),
     )
@@ -217,9 +217,9 @@ describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
-        fsWalker: async (_root, cb) => {
-          await cb([], 0)
-          await cb([], 0)
+        fsWalker: async (_root, visitBatch) => {
+          await visitBatch([], 0)
+          await visitBatch([], 0)
         },
       }),
     )
@@ -235,11 +235,11 @@ describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
       knex,
       cast<Debugger>(loggerSpy),
       buildHelpers({
-        fsWalker: async (_root, cb) => {
+        fsWalker: async (_root, visitBatch) => {
           let chain = Promise.resolve()
           for (let i = 0; i < ITERATIONS; i += 1) {
             chain = chain.then(async () => {
-              await cb([], 0)
+              await visitBatch([], 0)
             })
           }
           await chain
@@ -260,11 +260,11 @@ describe('sync/syncItemsDialect findSyncItemsViaCopy()', () => {
       buildHelpers({
         copyFrom: () => handles.stream,
         buildSyncItemRows: () => ({ files: DEFAULT_CHUNK_SIZE, dirs: 0, rows }),
-        fsWalker: async (_root, cb) => {
+        fsWalker: async (_root, visitBatch) => {
           let chain = Promise.resolve()
           for (let i = 0; i < ITERATIONS; i += 1) {
             chain = chain.then(async () => {
-              await cb([], 0)
+              await visitBatch([], 0)
             })
           }
           await chain

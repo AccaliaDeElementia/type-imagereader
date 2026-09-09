@@ -34,8 +34,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should call incrementalAddPicturesBulk exactly once', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([
           { path: '/page1.jpg', isFile: true },
           { path: '/page2.png', isFile: true },
         ])
@@ -47,8 +47,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should pass all collected picture paths in one bulk call', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([
           { path: '/page1.jpg', isFile: true },
           { path: '/page2.png', isFile: true },
         ])
@@ -63,8 +63,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should call incrementalEnsureFoldersBulk exactly once', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([{ path: '/sub', isFile: false }])
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([{ path: '/sub', isFile: false }])
       },
     )
     await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
@@ -73,8 +73,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should include the root scanned directory in the bulk folder ensure', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([])
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([])
       },
     )
     await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
@@ -84,8 +84,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should include each discovered subdirectory in the bulk folder ensure', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([
           { path: '/sub1', isFile: false },
           { path: '/sub2', isFile: false },
         ])
@@ -98,8 +98,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should not include files in the bulk folder ensure', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([{ path: '/page.jpg', isFile: true }])
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([{ path: '/page.jpg', isFile: true }])
       },
     )
     await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
@@ -109,8 +109,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should not pass directory items as picture paths', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([
           { path: '/sub', isFile: false },
           { path: '/page.jpg', isFile: true },
         ])
@@ -123,8 +123,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should handle empty directory by sending empty paths to bulk add', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([])
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([])
       },
     )
     await incrementalScanFolder(loggerFake, knexFnFake, '/comics/empty/', '/data')
@@ -133,8 +133,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should return the scanned root folder path', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([])
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([])
       },
     )
     const scanned = await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
@@ -143,8 +143,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should return each discovered subdirectory so the caller can recount it', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([
           { path: '/chapter1', isFile: false },
           { path: '/chapter1/pages', isFile: false },
         ])
@@ -156,8 +156,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should not return discovered picture paths', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([{ path: '/page.jpg', isFile: true }])
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([{ path: '/page.jpg', isFile: true }])
       },
     )
     const scanned = await incrementalScanFolder(loggerFake, knexFnFake, '/comics/new/', '/data')
@@ -166,8 +166,8 @@ describe('sync/incrementalsync incrementalScanFolder()', () => {
 
   it('should log summary with added count', async () => {
     fsWalkerStub.mockImplementation(
-      async (_root: string, cb: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
-        await cb([
+      async (_root: string, visitBatch: (items: Array<{ path: string; isFile: boolean }>) => Promise<void>) => {
+        await visitBatch([
           { path: '/page1.jpg', isFile: true },
           { path: '/page2.jpg', isFile: true },
         ])
