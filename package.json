@@ -73,7 +73,6 @@
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.3",
     "words-to-numbers": "^1.5.1"
   },
   "devDependencies": {
@@ -97,6 +96,7 @@
     "npm-run-all2": "^8.0.4",
     "prettier": "^3.8.3",
     "sass": "^1.99.0",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.3",
     "vitest": "^4.1.6"
   },
