@@ -87,6 +87,7 @@
     "@types/pug": "^2.0.10",
     "@types/serve-favicon": "^2.5.7",
     "@vitest/coverage-istanbul": "^5.0.0",
+    "better-sqlite3": "^13.0.3",
     "esbuild": "^0.28.2",
     "eslint": "^10.10.0",
     "eslint-config-love": "^156.0.0",
@@ -100,8 +101,5 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.3",
     "vitest": "^5.0.0"
-  },
-  "optionalDependencies": {
-    "better-sqlite3": "^13.0.3"
   }
 }

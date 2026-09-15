@@ -5,6 +5,8 @@ import { checkEnv, type CheckEnvInput } from '#tools/checkEnv.js'
 const matching: CheckEnvInput = {
   pkg: { engines: { node: '24.12.0', npm: '11.6.2' }, devDependencies: { '@types/node': '^24.5.0' } },
   dockerfile: 'ARG NODE_VERSION=24.12.0\n',
+  knexfile: { sqlite: { client: 'better-sqlite3' } },
+  canResolveModule: () => true,
   actualNode: '24.12.0',
   actualNpm: '11.6.2',
 }
@@ -125,5 +127,39 @@ describe('tools/checkEnv', () => {
       dockerfile: 'ARG NODE_VERSION=25.0.0\n',
     }
     expect(checkEnv(input).problems.length).toBe(3)
+  })
+
+  it('should return no problems when knexfile is absent', () => {
+    expect(checkEnv({ ...matching, knexfile: null }).problems).toEqual([])
+  })
+
+  it('should report the sqlite client when the module does not resolve', () => {
+    const input: CheckEnvInput = { ...matching, canResolveModule: () => false }
+    expect(checkEnv(input).problems).toEqual([
+      '  better-sqlite3: knexfile.json names it as the sqlite client but it does not resolve',
+    ])
+  })
+
+  it('should ask only about the client named in knexfile', () => {
+    const asked: string[] = []
+    checkEnv({
+      ...matching,
+      knexfile: { sqlite: { client: 'some-other-driver' } },
+      canResolveModule: (name) => {
+        asked.push(name)
+        return true
+      },
+    })
+    expect(asked).toEqual(['some-other-driver'])
+  })
+
+  it('should report an unset sqlite client', () => {
+    const input: CheckEnvInput = { ...matching, knexfile: { sqlite: {} } }
+    expect(checkEnv(input).problems).toEqual(['  knexfile.json: sqlite.client is not set'])
+  })
+
+  it('should report a missing sqlite section', () => {
+    const input: CheckEnvInput = { ...matching, knexfile: {} }
+    expect(checkEnv(input).problems).toEqual(['  knexfile.json: sqlite.client is not set'])
   })
 })

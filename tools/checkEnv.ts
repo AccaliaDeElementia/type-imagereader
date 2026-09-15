@@ -2,20 +2,25 @@
 
 // Asserts that the Node and npm versions running this process match the exact
 // versions pinned in `package.json` engines, that the Dockerfile's NODE_VERSION
-// ARG default matches engines.node, and that the declared @types/node major
-// matches it too. Catches:
+// ARG default matches engines.node, that the declared @types/node major matches
+// it too, and that the sqlite client named in knexfile.json is actually
+// installed. Catches:
 //  - the dev container drifting ahead of the production container (cryptic
 //    `npm ci` lockfile errors at deploy time);
 //  - someone editing the Dockerfile's NODE_VERSION without updating engines.node
 //    (or vice versa);
 //  - @types/node describing a different Node major than the one that runs,
-//    which type-checks clean while silently modelling the wrong runtime.
+//    which type-checks clean while silently modelling the wrong runtime;
+//  - the sqlite driver missing from node_modules, which otherwise surfaces as a
+//    wall of failures inside the sqlite integration and startup-smoke specs
+//    long after `npm ci` reported success.
 //
 // `.npmrc engine-strict=true` enforces engines on installed *dependencies* only;
 // this script is the strict gate for the project's *own* engines field.
 
 import { readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
+import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
 const INVALID_ARG_EXIT_CODE = 2
@@ -27,6 +32,10 @@ interface PkgEngines {
 interface Pkg {
   engines?: Partial<PkgEngines>
   devDependencies?: Record<string, string>
+}
+
+interface Knexfile {
+  sqlite?: { client?: string }
 }
 
 // Range characters per node-semver. An "exact" pin is just `MAJOR.MINOR.PATCH`
@@ -43,6 +52,8 @@ const LEADING_MAJOR_VERSION = /^\D*(?<major>\d+)\./v
 export interface CheckEnvInput {
   pkg: Pkg
   dockerfile: string | null
+  knexfile: Knexfile | null
+  canResolveModule: (moduleName: string) => boolean
   actualNode: string
   actualNpm: string
 }
@@ -102,13 +113,27 @@ function compareNodeTypes(declaredRange: string | undefined, requiredNode: strin
   return []
 }
 
+function checkSqliteDriver(
+  knexfile: Knexfile | null,
+  canResolveModule: (moduleName: string) => boolean,
+): readonly string[] {
+  if (knexfile === null) return []
+  const client = knexfile.sqlite?.client
+  if (client === undefined) return ['  knexfile.json: sqlite.client is not set']
+  if (!canResolveModule(client)) {
+    return [`  ${client}: knexfile.json names it as the sqlite client but it does not resolve`]
+  }
+  return []
+}
+
 export function checkEnv(input: CheckEnvInput): CheckEnvResult {
   const enginesResult = validateEngines(input.pkg.engines)
   if (!enginesResult.ok) return { problems: [enginesResult.problem] }
   const runtimeProblems = compareRuntime({ node: input.actualNode, npm: input.actualNpm }, enginesResult.pinned)
   const dockerfileProblems = compareDockerfile(input.dockerfile, enginesResult.pinned.node)
   const nodeTypesProblems = compareNodeTypes(input.pkg.devDependencies?.[NODE_TYPES_PACKAGE], enginesResult.pinned.node)
-  return { problems: [...runtimeProblems, ...dockerfileProblems, ...nodeTypesProblems] }
+  const sqliteProblems = checkSqliteDriver(input.knexfile, input.canResolveModule)
+  return { problems: [...runtimeProblems, ...dockerfileProblems, ...nodeTypesProblems, ...sqliteProblems] }
 }
 
 /* istanbul ignore next -- helper for the CLI wrapper. */
@@ -126,20 +151,43 @@ function readDockerfileIfPresent(): string | null {
   }
 }
 
+/* istanbul ignore next -- helper for the CLI wrapper; does real fs IO. */
+function readKnexfileIfPresent(): Knexfile | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- reading our own knexfile; runtime validation isn't worth it.
+    return JSON.parse(readFileSync(new URL('../knexfile.json', import.meta.url), 'utf8')) as Knexfile
+  } catch (err) {
+    if (isENOENT(err)) return null
+    throw err
+  }
+}
+
+/* istanbul ignore next -- helper for the CLI wrapper; probes the real module graph. */
+function canResolveModule(moduleName: string): boolean {
+  try {
+    createRequire(import.meta.url).resolve(moduleName)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /* istanbul ignore next -- CLI wrapper around the unit-tested `checkEnv()` function; does real fs/process IO. */
 export function main(): void {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- reading our own package.json; runtime validation isn't worth it.
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as Pkg
   const dockerfile = readDockerfileIfPresent()
+  const knexfile = readKnexfileIfPresent()
   const actualNode = process.version.replace(/^v/v, '')
   const actualNpm = execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim()
-  const { problems } = checkEnv({ pkg, dockerfile, actualNode, actualNpm })
+  const { problems } = checkEnv({ pkg, dockerfile, knexfile, canResolveModule, actualNode, actualNpm })
   if (problems.length > 0) {
-    console.error('check:env: tooling version mismatch:')
+    console.error('check:env: environment does not match the pinned toolchain:')
     for (const line of problems) console.error(line)
     console.error('')
     console.error('Update package.json engines, the Dockerfile, or the @types/node range so they')
-    console.error('all agree, and install the matching local toolchain.')
+    console.error('all agree, and install the matching local toolchain. A driver that does not')
+    console.error('resolve usually means `npm ci` ran without devDependencies.')
     process.exit(INVALID_ARG_EXIT_CODE)
   }
 }
