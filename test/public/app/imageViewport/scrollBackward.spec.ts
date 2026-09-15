@@ -32,7 +32,7 @@ const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer
 }
 
 describe('public/app/imageViewport scrollBackward()', () => {
-  let getShowOriginalSizeStub: MockInstance = vi.fn()
+  let getSizeModeStub: MockInstance = vi.fn()
   let container = makeContainer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT)
   const mount = (built: FakeContainer): FakeContainer => {
     container = built
@@ -40,7 +40,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
     return container
   }
   beforeEach(() => {
-    getShowOriginalSizeStub = vi.spyOn(Imports, 'getShowOriginalSize').mockReturnValue(true)
+    getSizeModeStub = vi.spyOn(Imports, 'getSizeMode').mockReturnValue('actualSize')
     mount(makeContainer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT))
   })
   afterEach(() => {
@@ -59,7 +59,7 @@ describe('public/app/imageViewport scrollBackward()', () => {
 
   describe('when actual size mode is off', () => {
     beforeEach(() => {
-      getShowOriginalSizeStub.mockReturnValue(false)
+      getSizeModeStub.mockReturnValue('fitScreen')
       mount(makeContainer(2400, 1800))
       container.scrollTop = 1200
     })

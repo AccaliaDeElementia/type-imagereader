@@ -15,6 +15,7 @@ import type { Debugger } from 'debug'
 import { reqParamToString, getDataDir as _getDataDir } from '#utils/helpers.js'
 import { handleErrors as _handleErrors, sendError } from '#utils/express.js'
 import { isBlockedTraversal as _isBlockedTraversal } from '#utils/path.js'
+import { parseRequestedDimension as _parseRequestedDimension, UNBOUNDED } from '#contracts/scaledImage.js'
 
 const CACHE_SIZE = 25
 const ORIGINAL_CACHE_SIZE = 5
@@ -31,6 +32,10 @@ export interface ImageError {
   code: string
   statusCode: number
   message: string
+}
+
+function omitIfUnbounded(dimension: number): number | undefined {
+  return dimension === UNBOUNDED ? undefined : dimension
 }
 
 export class ImageData {
@@ -63,8 +68,8 @@ export class ImageData {
       this.data = await Imports.Sharp(this.data, { animated })
         .rotate()
         .resize({
-          width,
-          height,
+          width: omitIfUnbounded(width),
+          height: omitIfUnbounded(height),
           fit: Sharp.fit.inside,
           withoutEnlargement: true,
         })
@@ -101,6 +106,7 @@ export const Imports = {
   handleErrors: _handleErrors,
   isBlockedTraversal: _isBlockedTraversal,
   getDataDir: _getDataDir,
+  parseRequestedDimension: _parseRequestedDimension,
 }
 
 export interface CacheItem {
@@ -111,6 +117,11 @@ export interface CacheItem {
 }
 
 type CacheCreator = (path: string, width: number, height: number) => Promise<ImageData>
+
+function cachedAxisCovers(cached: number, requested: number): boolean {
+  if (requested === UNBOUNDED) return cached === UNBOUNDED
+  return cached !== UNBOUNDED && cached >= requested
+}
 
 export class ImageCache {
   public items: CacheItem[] = []
@@ -124,7 +135,9 @@ export class ImageCache {
   }
 
   public async fetch(path: string, width: number, height: number): Promise<ImageData> {
-    let item = this.items.find((entry) => entry.path === path && entry.width >= width && entry.height >= height)
+    let item = this.items.find(
+      (entry) => entry.path === path && cachedAxisCovers(entry.width, width) && cachedAxisCovers(entry.height, height),
+    )
     if (item === undefined) {
       item = {
         path,
@@ -241,11 +254,6 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
     }),
   )
 
-  const parseNumberParam = (val: string): number | undefined => {
-    if (!/^[1-9]\d*$/v.test(val)) return undefined
-    return Number.parseInt(val, 10)
-  }
-
   router.get(
     '/scaled/:width/:height/*path-image.webp',
     handleErrors(async (req, res) => {
@@ -258,12 +266,12 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         })
         return
       }
-      const width = parseNumberParam(reqParamToString(req.params.width))
+      const width = Imports.parseRequestedDimension(reqParamToString(req.params.width))
       if (width === undefined) {
         sendError(res, {
           code: 'E_BAD_REQUEST',
           statusCode: StatusCodes.BAD_REQUEST,
-          message: 'width parameter must be positive integer',
+          message: 'width parameter must be a positive integer or auto',
         })
         return
       }
@@ -275,12 +283,20 @@ export async function getRouter(_app: Application, _serve: Server, _socket: WebS
         })
         return
       }
-      const height = parseNumberParam(reqParamToString(req.params.height))
+      const height = Imports.parseRequestedDimension(reqParamToString(req.params.height))
       if (height === undefined) {
         sendError(res, {
           code: 'E_BAD_REQUEST',
           statusCode: StatusCodes.BAD_REQUEST,
-          message: 'height parameter must be positive integer',
+          message: 'height parameter must be a positive integer or auto',
+        })
+        return
+      }
+      if (width === UNBOUNDED && height === UNBOUNDED) {
+        sendError(res, {
+          code: 'E_BAD_REQUEST',
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: 'at least one of width and height must be bounded; use /images/original for neither',
         })
         return
       }

@@ -1,6 +1,7 @@
 'use sanity'
 
 import { type CacheItem, ImageCache, ImageData } from '#routes/images.js'
+import { UNBOUNDED } from '#contracts/scaledImage.js'
 describe('routes/images ImageData', () => {
   const defaultCacheSize = ImageCache.cacheSize
   let createSpy = vi.fn()
@@ -138,6 +139,46 @@ describe('routes/images ImageData', () => {
         image: Promise.resolve(img),
       })
       expect(await imageCache.fetch('/foo.jpg', 45, 45)).toBe(img)
+    })
+    it('should not serve an unbounded entry to a bounded request', async () => {
+      imageCache.items.push({
+        path: '/foo.jpg',
+        width: 50,
+        height: UNBOUNDED,
+        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
+      })
+      await imageCache.fetch('/foo.jpg', 50, 45)
+      expect(createSpy.mock.calls.length).toBe(1)
+    })
+    it('should not serve a bounded entry to an unbounded request', async () => {
+      imageCache.items.push({
+        path: '/foo.jpg',
+        width: 50,
+        height: 50,
+        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
+      })
+      await imageCache.fetch('/foo.jpg', 50, UNBOUNDED)
+      expect(createSpy.mock.calls.length).toBe(1)
+    })
+    it('should serve an unbounded entry to a matching unbounded request', async () => {
+      const img = ImageData.fromImage(Buffer.from(''), '', '')
+      imageCache.items.push({
+        path: '/foo.jpg',
+        width: 50,
+        height: UNBOUNDED,
+        image: Promise.resolve(img),
+      })
+      expect(await imageCache.fetch('/foo.jpg', 45, UNBOUNDED)).toBe(img)
+    })
+    it('should not serve a narrower unbounded entry to a wider unbounded request', async () => {
+      imageCache.items.push({
+        path: '/foo.jpg',
+        width: 50,
+        height: UNBOUNDED,
+        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
+      })
+      await imageCache.fetch('/foo.jpg', 60, UNBOUNDED)
+      expect(createSpy.mock.calls.length).toBe(1)
     })
     it('should move existing item to head of the cache queue on retrieval', async () => {
       for (let i = 0; i < 10; i += 1) {

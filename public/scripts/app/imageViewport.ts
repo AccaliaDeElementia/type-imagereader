@@ -1,10 +1,10 @@
 'use sanity'
 
-import { getShowOriginalSize as _getShowOriginalSize } from './sizeFilter.js'
+import { getSizeMode as _getSizeMode, type SizeMode } from './sizeMode.js'
 import { subscribe as _subscribe } from './pubsub.js'
 
 export const Imports = {
-  getShowOriginalSize: _getShowOriginalSize,
+  getSizeMode: _getSizeMode,
   subscribe: _subscribe,
 }
 
@@ -31,7 +31,20 @@ export type Arrival = 'freshStart' | 'resumeFromEnd'
 
 export type InputDisposition = 'consumed' | 'exhausted'
 
-const ACTUAL_SIZE_CLASS = 'actualSize'
+const NO_MODE_CLASS = null
+
+const MODE_CLASS: Record<SizeMode, string | typeof NO_MODE_CLASS> = {
+  fitScreen: NO_MODE_CLASS,
+  fitWidth: 'fitWidth',
+  fitHeight: 'fitHeight',
+  actualSize: 'actualSize',
+}
+
+const EVERY_MODE_CLASS = Object.values(MODE_CLASS).filter((name) => name !== NO_MODE_CLASS)
+
+function isScrollingMode(mode: SizeMode): boolean {
+  return MODE_CLASS[mode] !== NO_MODE_CLASS
+}
 
 export const Viewport = {
   container: null as HTMLElement | null,
@@ -48,12 +61,11 @@ export function init(): void {
 }
 
 function applySizeMode(): void {
-  if (Imports.getShowOriginalSize()) {
-    Viewport.container?.classList.add(ACTUAL_SIZE_CLASS)
-    return
-  }
-  Viewport.container?.classList.remove(ACTUAL_SIZE_CLASS)
-  Internals.resetScroll()
+  const mode = Imports.getSizeMode()
+  Viewport.container?.classList.remove(...EVERY_MODE_CLASS)
+  const modeClass = MODE_CLASS[mode]
+  if (modeClass !== NO_MODE_CLASS) Viewport.container?.classList.add(modeClass)
+  if (mode !== 'actualSize') Internals.resetScroll()
 }
 
 const ORIGIN: ScrollPosition = { left: SCROLL_ORIGIN, top: SCROLL_ORIGIN }
@@ -81,7 +93,7 @@ export function viewportSize(): ViewportSize {
 }
 
 export function getPanTarget(): HTMLElement | null {
-  if (!Imports.getShowOriginalSize()) return null
+  if (!isScrollingMode(Imports.getSizeMode())) return null
   return Viewport.container
 }
 

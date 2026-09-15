@@ -11,16 +11,6 @@ html
       h1
         a.navbar-brand(href='/') Comic Reader
       div.expando
-      div.selectScaledOriginal
-        div
-          span.scaled Fit Screen
-          span.original Actual Size
-      div(style="display:inline-block;width: 0.5rem;")
-      div.selectUnreadAll
-        div
-          span.all Show All
-          span.unread Show Unread
-      div(style="display:inline-block;width: 0.5rem;")
       div.menuButton
         i.material-icons menu
     div#bigImage
@@ -37,6 +27,15 @@ html
               a(href="#tabImages") Images
             li
               a(href="#tabBookmarks") Bookmarks
+        div.menuOptions
+          div.optionGroup.selectUnreadAll
+            button(data-value="all") Show All
+            button(data-value="unread") Show Unread
+          div.optionGroup.selectSizeMode
+            button(data-value="fitScreen") Fit Screen
+            button(data-value="fitWidth") Fit Width
+            button(data-value="fitHeight") Fit Height
+            button(data-value="actualSize") Actual Size
         div.tab-content
           div#tabActions
           div#tabFolders

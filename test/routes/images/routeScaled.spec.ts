@@ -5,6 +5,7 @@ import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
 import { CacheStorage, Internals, getRouter, ImageData, Imports } from '#routes/images.js'
+import { UNBOUNDED } from '#contracts/scaledImage.js'
 import { cast } from '#testutils/typeGuards.js'
 import { createResponseFake } from '#testutils/express.js'
 import type { MockInstance } from 'vitest'
@@ -131,10 +132,53 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     })
   })
 
+  describe.each([
+    ['width', { path: 'full/image/test.png', width: 'auto', height: '456' }, UNBOUNDED, 456],
+    ['height', { path: 'full/image/test.png', width: '123', height: 'auto' }, 123, UNBOUNDED],
+  ])('when %s is auto', (_axis, params, expectedWidth, expectedHeight) => {
+    beforeEach(async () => {
+      fetchImageStub.mockResolvedValue(new ImageData())
+      requestStub.params = params
+      await router(requestFake, responseFake)
+    })
+    it('should fetch with the bounded dimension', () => {
+      expect(fetchImageStub.mock.calls[0]?.[1]).toBe(expectedWidth)
+    })
+    it('should fetch with the unbounded dimension', () => {
+      expect(fetchImageStub.mock.calls[0]?.[2]).toBe(expectedHeight)
+    })
+    it('should send the image', () => {
+      expect(sendImageStub.mock.calls.length).toBe(1)
+    })
+  })
+
+  describe('when both dimensions are auto', () => {
+    beforeEach(async () => {
+      requestStub.params = { path: 'full/image/test.png', width: 'auto', height: 'auto' }
+      await router(requestFake, responseFake)
+    })
+    it('should not fetch image', () => {
+      expect(fetchImageStub.mock.calls.length).toBe(0)
+    })
+    it('should send BAD_REQUEST status code', () => {
+      expect(responseStub.status.mock.calls[0]).toEqual([400])
+    })
+    it('should name /images/original as the route for an unbounded image', () => {
+      expect(responseStub.json.mock.calls[0]).toEqual([
+        {
+          error: {
+            code: 'E_BAD_REQUEST',
+            message: 'at least one of width and height must be bounded; use /images/original for neither',
+          },
+        },
+      ])
+    })
+  })
+
   const eWidthMissing = 'width parameter must be provided'
-  const eWidthBad = 'width parameter must be positive integer'
+  const eWidthBad = 'width parameter must be a positive integer or auto'
   const eHeightMissing = 'height parameter must be provided'
-  const eHeightBad = 'height parameter must be positive integer'
+  const eHeightBad = 'height parameter must be a positive integer or auto'
   const validationErrors: Array<[string, ReqParams, string]> = [
     ['missing width', { path: '', height: '10' }, eWidthMissing],
     ['null width', { path: '', width: null, height: '10' }, eWidthBad],

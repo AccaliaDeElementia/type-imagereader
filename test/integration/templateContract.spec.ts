@@ -12,6 +12,7 @@ import { Loading, init as loadingInit } from '#public/scripts/app/loading.js'
 import { Pictures, Imports as PicturesImports } from '#public/scripts/app/pictureState.js'
 import { Grid } from '#public/scripts/app/pictureMarkup.js'
 import { Tabs, init as tabsInit } from '#public/scripts/app/tabs.js'
+import { isSizeMode, SIZE_MODES } from '#public/scripts/app/sizeMode.js'
 
 describe('client template contract', () => {
   describe('app.pug', () => {
@@ -113,7 +114,7 @@ describe('client template contract', () => {
     const stubEverythingExceptResetMarkup = (): void => {
       vi.spyOn(PicturesImports, 'initActions')
       vi.spyOn(PicturesImports, 'initMouse')
-      vi.spyOn(PicturesImports, 'initUnreadSelectorSlider')
+      vi.spyOn(PicturesImports, 'initUnreadSelector')
     }
 
     describe('pictures init', () => {
@@ -153,10 +154,9 @@ describe('client template contract', () => {
         ['#mainMenu (navigation.ts)', '#mainMenu'],
         ['#bigImage scroll container (imageViewport.ts)', '#bigImage'],
         ['.menuButton (navigation.ts)', '.menuButton'],
+        ['.menuOptions between the tab list and tab content (app.pug)', '.tab-list ~ .menuOptions ~ .tab-content'],
         ['.selectUnreadAll (unreadFilter.ts)', '.selectUnreadAll'],
-        ['.selectUnreadAll > div (unreadFilter.ts)', '.selectUnreadAll > div'],
-        ['.selectScaledOriginal (sizeFilter.ts)', '.selectScaledOriginal'],
-        ['.selectScaledOriginal > div (sizeFilter.ts)', '.selectScaledOriginal > div'],
+        ['.selectSizeMode (sizeMode.ts)', '.selectSizeMode'],
         ['#confirmDialog .confirm button (confirm.ts)', '#confirmDialog .confirm'],
         ['#confirmDialog .cancel button (confirm.ts)', '#confirmDialog .cancel'],
         ['a.navbar-brand (navigation.ts)', 'a.navbar-brand'],
@@ -176,6 +176,32 @@ describe('client template contract', () => {
       targets.forEach(([label, selector]) => {
         it(`provides ${label}`, () => {
           expect(document.querySelector(selector)).not.toBe(null)
+        })
+      })
+    })
+
+    describe('menu options', () => {
+      SIZE_MODES.forEach((mode) => {
+        it(`offers a button for the ${mode} size mode`, () => {
+          expect(document.querySelector(`.selectSizeMode button[data-value="${mode}"]`)).not.toBe(null)
+        })
+      })
+      it('offers no size mode button the code cannot name', () => {
+        const values = Array.from(document.querySelectorAll('.selectSizeMode button')).map((b) =>
+          b.getAttribute('data-value'),
+        )
+        expect(values.filter((value) => !isSizeMode(value))).toEqual([])
+      })
+      const unreadValues = ['all', 'unread']
+      unreadValues.forEach((value) => {
+        it(`offers a button for the ${value} unread filter (unreadFilter.ts)`, () => {
+          expect(document.querySelector(`.selectUnreadAll button[data-value="${value}"]`)).not.toBe(null)
+        })
+      })
+      const groups = ['.selectUnreadAll', '.selectSizeMode']
+      groups.forEach((group) => {
+        it(`renders ${group} exactly once so every tab shares one control`, () => {
+          expect(document.querySelectorAll(group)).toHaveLength(1)
         })
       })
     })

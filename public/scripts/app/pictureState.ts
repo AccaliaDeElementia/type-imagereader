@@ -10,8 +10,8 @@ import {
   resetViewerState as _resetViewerState,
 } from './pictureNavigation.js'
 import { initActions as _initActions, initMouse as _initMouse } from './pictureInput.js'
-import { initUnreadSelectorSlider as _initUnreadSelectorSlider } from './unreadFilter.js'
-import { initSizeSelectorSlider as _initSizeSelectorSlider } from './sizeFilter.js'
+import { initUnreadSelector as _initUnreadSelector } from './unreadFilter.js'
+import { initSizeSelector as _initSizeSelector } from './sizeMode.js'
 import { init as _initImageViewport } from './imageViewport.js'
 import { subscribe as _subscribe } from './pubsub.js'
 
@@ -23,8 +23,8 @@ export const Imports = {
   refreshImage: _refreshImage,
   initActions: _initActions,
   initMouse: _initMouse,
-  initUnreadSelectorSlider: _initUnreadSelectorSlider,
-  initSizeSelectorSlider: _initSizeSelectorSlider,
+  initUnreadSelector: _initUnreadSelector,
+  initSizeSelector: _initSizeSelector,
   initImageViewport: _initImageViewport,
   subscribe: _subscribe,
 }
@@ -58,8 +58,8 @@ function init(): void {
   })
   Imports.initActions()
   Imports.initMouse()
-  Imports.initUnreadSelectorSlider()
-  Imports.initSizeSelectorSlider()
+  Imports.initUnreadSelector()
+  Imports.initSizeSelector()
   Imports.initImageViewport()
 }
 

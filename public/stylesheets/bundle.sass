@@ -10,11 +10,6 @@ $color-accent-green-active: #00efb2
 $color-accent-blue: #375a7f
 $color-accent-red: #e74c3c
 
-// Sizing
-// Two toggle sliders share the navbar, so each is sized to the longest label it
-// carries rather than to a comfortable margin.
-$slider-width: 6.5rem
-
 @font-face
   font-family: 'Material Icons'
   font-style: normal
@@ -59,8 +54,6 @@ body
 
 #navbar
   display: flex
-  // The bar is a fixed 2.5rem tall, so anything that wraps is clipped. With two
-  // toggle sliders competing for width the brand truncates instead.
   flex-wrap: nowrap
   align-items: center
   justify-content: space-between
@@ -96,19 +89,60 @@ body
     max-height: 100%
     object-fit: contain
 
-// Actual size mode turns the viewer into a scroll container holding the picture
-// at its own dimensions. `safe center` is what makes one rule cover every shape:
-// on each axis the picture is centred while it fits and pinned to the start edge
-// once it overflows, so a tall picture starts at its top, a wide one at its left,
-// and one that overflows both at its top-left corner — always fully reachable.
-// Plain `center` would push the overflow outside the scrollable region instead.
+// The three scrolling modes turn the viewer into a scroll container holding the
+// picture at whatever size the server sent. `safe` centring is what makes one
+// rule cover every shape: on each axis the picture is centred while it fits and
+// pinned to the start edge once it overflows, so a tall picture starts at its
+// top, a wide one at its left, and one that overflows both at its top-left
+// corner — always fully reachable. Plain `center` would push the overflow
+// outside the scrollable region instead.
+#bigImage.fitWidth, #bigImage.fitHeight, #bigImage.actualSize
+  overscroll-behavior: contain
+  scrollbar-color: $color-border transparent
+  cursor: grab
+
+// Fit width and fit height size the picture with a percentage, which only
+// resolves against a definite container dimension — hence flex rather than the
+// content-sized grid tracks `place-content` would create. Clamping the free
+// axis to `hidden` keeps sub-pixel rounding from raising a second scrollbar.
+// `object-fit: contain` is what lets the bitmap grow past its intrinsic size to
+// the box the percentage sized; `none` would pin it to its own pixels instead,
+// leaving a source narrower than the viewport unscaled.
+#bigImage.fitWidth
+  overflow-x: hidden
+  overflow-y: auto
+  scrollbar-gutter: stable
+  display: flex
+  flex-direction: column
+  justify-content: safe center
+  img
+    flex: none
+    width: 100%
+    max-width: 100%
+    height: auto
+    max-height: none
+    object-fit: contain
+
+#bigImage.fitHeight
+  overflow-x: auto
+  overflow-y: hidden
+  display: flex
+  justify-content: safe center
+  align-items: safe center
+  img
+    flex: none
+    width: auto
+    max-width: none
+    height: 100%
+    max-height: 100%
+    object-fit: contain
+
+// Actual size is the one mode that wants the bitmap at its own pixels, so it is
+// the only one that overrides `object-fit`.
 #bigImage.actualSize
   overflow: auto
   display: grid
   place-content: safe center
-  overscroll-behavior: contain
-  scrollbar-color: $color-border transparent
-  cursor: grab
   img
     width: auto
     max-width: none
@@ -116,7 +150,7 @@ body
     max-height: none
     object-fit: none
 
-#bigImage.actualSize.panning
+#bigImage.panning
   cursor: grabbing
 
 .menuButton
@@ -126,39 +160,23 @@ body
   border-radius: 0.25rem
   cursor: pointer
 
-.selectUnreadAll, .selectScaledOriginal
-  display: inline-block
-  padding: 0
-  width: $slider-width
-  height: 2.1rem
-  position: relative
-  overflow: hidden
+.optionGroup
+  display: inline-flex
+  flex-wrap: nowrap
   border-radius: 0.25rem
-  cursor: pointer
-  flex-shrink: 0
-  div.unread, div.original
-    left: -$slider-width
-    transition: left 0.5s ease-in-out
-  div.all, div.scaled
-    left: 0
-    transition: left 0.5s ease-in-out
-  div
-    width: 200%
-    position: absolute
-    top: 0
-    bottom: 0
-    left: 0
-    span
-      display: inline-block
-      padding: 0.5rem 0.25rem
-      margin: 0
-      width: $slider-width
-      text-align: center
-      white-space: nowrap
-    .all, .scaled
-      background-color: $color-accent-green
-    .unread, .original
-      background-color: $color-accent-blue
+  overflow: hidden
+  button
+    display: inline-block
+    margin: 0
+    padding: 0.5rem 0.75rem
+    border: 0
+    color: $color-text
+    background-color: $color-accent-blue
+    font: inherit
+    white-space: nowrap
+    cursor: pointer
+  button.active
+    background-color: $color-accent-green
 
 #mainMenu
   position: absolute
@@ -173,11 +191,11 @@ body
     height: 100%
     margin: auto
     background-color: $color-bg-medium
+    display: flex
+    flex-direction: column
   .tab-list
-    position: fixed
+    flex: 0 0 auto
     height: 2.5rem
-    max-width: 1400px
-    width: 80%
     border-bottom: 1px solid $color-border
     background-color: $color-bg-medium
     z-index: 100
@@ -199,10 +217,24 @@ body
         background-color: $color-bg-card
         border: 1px solid $color-border
         border-bottom: 0
+  .menuOptions
+    flex: 0 0 auto
+    display: flex
+    flex-wrap: wrap
+    // `safe` so a group too wide for a narrow screen pins to the start edge;
+    // plain `center` would push its left end off the panel where it cannot be
+    // reached or read.
+    justify-content: safe center
+    // Buttons inside a group are flush so each group reads as one control; the
+    // gap between groups has to be wide enough to out-weigh that, or the two
+    // groups read as one long row of buttons. Row gap stays small for the
+    // wrapped narrow-screen case.
+    gap: 0.75rem 1.5rem
+    padding: 0.5rem
+    border-bottom: 1px solid $color-border
   .tab-content
-    height: 100%
+    flex: 1 1 auto
     width: 100%
-    padding-top: 2.7rem
     overflow-y: auto
 
 #screenText

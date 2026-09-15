@@ -4,6 +4,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { Imports, Internals, Viewport } from '#public/scripts/app/imageViewport.js'
+import type { SizeMode } from '#public/scripts/app/sizeMode.js'
 import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
@@ -14,11 +15,18 @@ html
       img.hidden
 `
 
+const MODE_CLASSES = ['fitWidth', 'fitHeight', 'actualSize']
+
 describe('public/app/imageViewport applySizeMode()', () => {
   let dom = new JSDOM(render(markup), {})
   let container: HTMLElement | null = null
-  let getShowOriginalSizeStub: MockInstance = vi.fn()
+  let getSizeModeStub: MockInstance = vi.fn()
   let resetScrollSpy: MockInstance = vi.fn()
+  const classesOn = (): string[] => {
+    assert(container !== null)
+    const { classList } = container
+    return MODE_CLASSES.filter((name) => classList.contains(name))
+  }
   beforeEach(() => {
     dom = new JSDOM(render(markup), {
       url: 'http://127.0.0.1:2999',
@@ -26,7 +34,7 @@ describe('public/app/imageViewport applySizeMode()', () => {
     mountDom(dom)
     container = dom.window.document.querySelector<HTMLElement>('#bigImage')
     Viewport.container = container
-    getShowOriginalSizeStub = vi.spyOn(Imports, 'getShowOriginalSize').mockReturnValue(false)
+    getSizeModeStub = vi.spyOn(Imports, 'getSizeMode').mockReturnValue('fitScreen')
     resetScrollSpy = vi.spyOn(Internals, 'resetScroll').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterEach(() => {
@@ -39,27 +47,39 @@ describe('public/app/imageViewport applySizeMode()', () => {
       Internals.applySizeMode()
     }).not.toThrow()
   })
-  it('should mark the container as actual size when the preference is set', () => {
-    getShowOriginalSizeStub.mockReturnValue(true)
-    Internals.applySizeMode()
-    assert(container !== null)
-    expect(container.classList.contains('actualSize')).toBe(true)
+
+  const expectedClasses: Array<[SizeMode, string[], string]> = [
+    ['fitScreen', [], 'with no mode class'],
+    ['fitWidth', ['fitWidth'], 'as fitWidth'],
+    ['fitHeight', ['fitHeight'], 'as fitHeight'],
+    ['actualSize', ['actualSize'], 'as actualSize'],
+  ]
+  expectedClasses.forEach(([mode, classes, description]) => {
+    it(`should mark the container ${description} in ${mode}`, () => {
+      getSizeModeStub.mockReturnValue(mode)
+      Internals.applySizeMode()
+      expect(classesOn()).toEqual(classes)
+    })
+    it(`should clear a stale mode class when switching to ${mode}`, () => {
+      assert(container !== null)
+      for (const name of MODE_CLASSES) container.classList.add(name)
+      getSizeModeStub.mockReturnValue(mode)
+      Internals.applySizeMode()
+      expect(classesOn()).toEqual(classes)
+    })
   })
+
   it('should not reset scroll when entering actual size mode', () => {
-    getShowOriginalSizeStub.mockReturnValue(true)
+    getSizeModeStub.mockReturnValue('actualSize')
     Internals.applySizeMode()
     expect(resetScrollSpy.mock.calls.length).toBe(0)
   })
-  it('should unmark the container when the preference is unset', () => {
-    assert(container !== null)
-    container.classList.add('actualSize')
-    getShowOriginalSizeStub.mockReturnValue(false)
-    Internals.applySizeMode()
-    expect(container.classList.contains('actualSize')).toBe(false)
-  })
-  it('should reset scroll when leaving actual size mode', () => {
-    getShowOriginalSizeStub.mockReturnValue(false)
-    Internals.applySizeMode()
-    expect(resetScrollSpy.mock.calls.length).toBe(1)
+  const resetting: SizeMode[] = ['fitScreen', 'fitWidth', 'fitHeight']
+  resetting.forEach((mode) => {
+    it(`should reset scroll when entering ${mode}`, () => {
+      getSizeModeStub.mockReturnValue(mode)
+      Internals.applySizeMode()
+      expect(resetScrollSpy.mock.calls.length).toBe(1)
+    })
   })
 })

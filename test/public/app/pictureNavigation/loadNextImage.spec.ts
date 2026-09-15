@@ -39,7 +39,7 @@ describe('public/app/pictures loadNextImage()', () => {
     fetchStub.mockResolvedValue(undefined)
     getPictureStub = vi.spyOn(Internals, 'getPicture').mockReturnValue(next)
     getShowUnreadOnlyStub = vi.spyOn(Imports, 'getShowUnreadOnly').mockReturnValue(false)
-    vi.spyOn(Imports, 'getShowOriginalSize').mockReturnValue(false)
+    vi.spyOn(Imports, 'getSizeMode').mockReturnValue('fitScreen')
     viewport.width = 1024
     viewport.height = 768
     vi.spyOn(Imports, 'viewportSize').mockImplementation(() => ({ ...viewport }))

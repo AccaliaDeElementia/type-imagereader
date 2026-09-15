@@ -1,6 +1,7 @@
 'use sanity'
 
 import { Imports, rescaleImage, ImageData } from '#routes/images.js'
+import { UNBOUNDED } from '#contracts/scaledImage.js'
 import Sharp from 'sharp'
 import type { Sharp as SharpInstance } from 'sharp'
 import { cast } from '#testutils/typeGuards.js'
@@ -117,6 +118,18 @@ describe('routes/images rescaleImage()', () => {
     })
     it('should convert to buffer with defaults', () => {
       expect(sharpInstanceStub.toBuffer.mock.calls[0]).toEqual([])
+    })
+  })
+
+  describe('on an unbounded dimension', () => {
+    beforeEach(async () => {
+      await rescaleImage(new ImageData(), 1280, UNBOUNDED)
+    })
+    it('should leave the bounded dimension as a pixel count', () => {
+      expect(getSharpArgs().width).toBe(1280)
+    })
+    it('should omit the unbounded dimension so sharp leaves that axis unconstrained', () => {
+      expect(getSharpArgs().height).toBe(undefined)
     })
   })
 

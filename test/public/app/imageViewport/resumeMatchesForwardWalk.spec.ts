@@ -37,7 +37,7 @@ function walkForwardToExhaustion(): void {
 describe('public/app/imageViewport resume position matches the forward walk', () => {
   let container = makeContainer(OVERFLOWING_WIDTH, OVERFLOWING_HEIGHT)
   beforeEach(() => {
-    vi.spyOn(Imports, 'getShowOriginalSize').mockReturnValue(true)
+    vi.spyOn(Imports, 'getSizeMode').mockReturnValue('actualSize')
   })
   afterEach(() => {
     Viewport.container = null

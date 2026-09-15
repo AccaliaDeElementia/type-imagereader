@@ -32,14 +32,14 @@ const makeContainer = (scrollWidth: number, scrollHeight: number): FakeContainer
 }
 
 describe('public/app/imageViewport nudgeUp()', () => {
-  let getShowOriginalSizeStub: MockInstance = vi.fn()
+  let getSizeModeStub: MockInstance = vi.fn()
   let container = makeContainer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT)
   const mount = (built: FakeContainer): void => {
     container = built
     Viewport.container = cast<HTMLElement>(container)
   }
   beforeEach(() => {
-    getShowOriginalSizeStub = vi.spyOn(Imports, 'getShowOriginalSize').mockReturnValue(true)
+    getSizeModeStub = vi.spyOn(Imports, 'getSizeMode').mockReturnValue('actualSize')
     mount(makeContainer(VIEWPORT_WIDTH, 1800))
     container.scrollTop = MAX_SCROLL_TOP
   })
@@ -72,11 +72,11 @@ describe('public/app/imageViewport nudgeUp()', () => {
     expect(nudgeUp()).toBe('exhausted')
   })
   it('should hand the input on when actual size mode is off', () => {
-    getShowOriginalSizeStub.mockReturnValue(false)
+    getSizeModeStub.mockReturnValue('fitScreen')
     expect(nudgeUp()).toBe('exhausted')
   })
   it('should not move when actual size mode is off', () => {
-    getShowOriginalSizeStub.mockReturnValue(false)
+    getSizeModeStub.mockReturnValue('fitScreen')
     nudgeUp()
     expect(container.scrollTop).toBe(MAX_SCROLL_TOP)
   })

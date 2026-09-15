@@ -12,14 +12,12 @@ import type { MockInstance } from 'vitest'
 const markup = `
 html
   body
-    div.selectUnreadAll
-      div
-        span.all show All
-        span.unread show Unread
-    div.selectScaledOriginal
-      div
-        span.scaled Fit Screen
-        span.original Actual Size
+    div.optionGroup.selectUnreadAll
+      button(data-value="all") Show All
+      button(data-value="unread") Show Unread
+    div.optionGroup.selectSizeMode
+      button(data-value="fitScreen") Fit Screen
+      button(data-value="actualSize") Actual Size
     div#mainMenu
     div#bigImage
       img.hidden
@@ -55,8 +53,8 @@ describe('public/app/pictures init()', () => {
   let resetMarkupSpy: MockInstance = vi.fn()
   let initActionsSpy: MockInstance = vi.fn()
   let initMouseSpy: MockInstance = vi.fn()
-  let initUnreadSliderSpy: MockInstance = vi.fn()
-  let initSizeSliderSpy: MockInstance = vi.fn()
+  let initUnreadSelectorSpy: MockInstance = vi.fn()
+  let initSizeSelectorSpy: MockInstance = vi.fn()
   let initImageViewportSpy: MockInstance = vi.fn()
   let loadDataSpy: MockInstance = vi.fn()
   let changePictureSpy: MockInstance = vi.fn()
@@ -72,12 +70,10 @@ describe('public/app/pictures init()', () => {
     resetMarkupSpy = vi.spyOn(Imports, 'resetMarkup').mockImplementation((..._args: unknown[]) => undefined)
     initActionsSpy = vi.spyOn(Imports, 'initActions').mockImplementation((..._args: unknown[]) => undefined)
     initMouseSpy = vi.spyOn(Imports, 'initMouse').mockImplementation((..._args: unknown[]) => undefined)
-    initUnreadSliderSpy = vi
-      .spyOn(Imports, 'initUnreadSelectorSlider')
+    initUnreadSelectorSpy = vi
+      .spyOn(Imports, 'initUnreadSelector')
       .mockImplementation((..._args: unknown[]) => undefined)
-    initSizeSliderSpy = vi
-      .spyOn(Imports, 'initSizeSelectorSlider')
-      .mockImplementation((..._args: unknown[]) => undefined)
+    initSizeSelectorSpy = vi.spyOn(Imports, 'initSizeSelector').mockImplementation((..._args: unknown[]) => undefined)
     initImageViewportSpy = vi.spyOn(Imports, 'initImageViewport').mockImplementation((..._args: unknown[]) => undefined)
     loadDataSpy = vi.spyOn(Imports, 'loadData').mockResolvedValue(undefined)
     changePictureSpy = vi.spyOn(Imports, 'changePicture').mockResolvedValue(undefined)
@@ -118,15 +114,15 @@ describe('public/app/pictures init()', () => {
     Pictures.init()
     expect(initMouseSpy.mock.calls.length > 0).toBe(true)
   })
-  it('should init unread slider on main init', () => {
-    expect(initUnreadSliderSpy.mock.calls.length > 0).toBe(false)
+  it('should init unread selector on main init', () => {
+    expect(initUnreadSelectorSpy.mock.calls.length > 0).toBe(false)
     Pictures.init()
-    expect(initUnreadSliderSpy.mock.calls.length > 0).toBe(true)
+    expect(initUnreadSelectorSpy.mock.calls.length > 0).toBe(true)
   })
-  it('should init size slider on main init', () => {
-    expect(initSizeSliderSpy.mock.calls.length > 0).toBe(false)
+  it('should init size selector on main init', () => {
+    expect(initSizeSelectorSpy.mock.calls.length > 0).toBe(false)
     Pictures.init()
-    expect(initSizeSliderSpy.mock.calls.length > 0).toBe(true)
+    expect(initSizeSelectorSpy.mock.calls.length > 0).toBe(true)
   })
   it('should init image viewport on main init', () => {
     expect(initImageViewportSpy.mock.calls.length > 0).toBe(false)

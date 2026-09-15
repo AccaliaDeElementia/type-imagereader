@@ -4,8 +4,14 @@ import type { Listing, Picture } from '#contracts/listing.js'
 import { Pictures } from './pictureState.js'
 import { makeTab as _makeTab, resetMarkup as _resetMarkup, selectPage as _selectPage } from './pictureMarkup.js'
 import { getShowUnreadOnly as _getShowUnreadOnly } from './unreadFilter.js'
-import { getShowOriginalSize as _getShowOriginalSize } from './sizeFilter.js'
-import { setArrival as _setArrival, viewportSize as _viewportSize, type Arrival } from './imageViewport.js'
+import { getSizeMode as _getSizeMode, type SizeMode } from './sizeMode.js'
+import {
+  setArrival as _setArrival,
+  viewportSize as _viewportSize,
+  type Arrival,
+  type ViewportSize,
+} from './imageViewport.js'
+import { AUTO_DIMENSION, type RequestedDimension, scaledImagePath as _scaledImagePath } from '#contracts/scaledImage.js'
 import { getFirst, hasValues, indexPercentToText, indexToText } from '#utils/helpers.js'
 import { isLoading as _isLoading } from './loading.js'
 import { postJSON as _postJSON } from './net.js'
@@ -13,7 +19,8 @@ import { publish as _publish } from './pubsub.js'
 
 export const Imports = {
   getShowUnreadOnly: _getShowUnreadOnly,
-  getShowOriginalSize: _getShowOriginalSize,
+  getSizeMode: _getSizeMode,
+  scaledImagePath: _scaledImagePath,
   viewportSize: _viewportSize,
   setArrival: _setArrival,
   makeTab: _makeTab,
@@ -85,12 +92,24 @@ export function setModCount(modCount: number): void {
   Viewer.modCount = modCount
 }
 
+interface RequestedBox {
+  width: RequestedDimension
+  height: RequestedDimension
+}
+
+const SCALED_BOX: Record<Exclude<SizeMode, 'actualSize'>, (viewport: ViewportSize) => RequestedBox> = {
+  fitScreen: ({ width, height }) => ({ width, height }),
+  fitWidth: ({ width }) => ({ width, height: AUTO_DIMENSION }),
+  fitHeight: ({ height }) => ({ width: AUTO_DIMENSION, height }),
+}
+
 function makeURI(img: Picture): string {
-  if (Imports.getShowOriginalSize()) {
+  const mode = Imports.getSizeMode()
+  if (mode === 'actualSize') {
     return `/images/original${img.path}-image.webp`
   }
-  const { width, height } = Imports.viewportSize()
-  return `/images/scaled/${width}/${height}${img.path}-image.webp`
+  const { width, height } = SCALED_BOX[mode](Imports.viewportSize())
+  return Imports.scaledImagePath(img.path, width, height)
 }
 
 const NO_SUCH_INDEX = -1

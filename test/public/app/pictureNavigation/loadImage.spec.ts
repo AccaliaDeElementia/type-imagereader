@@ -39,7 +39,7 @@ describe('public/app/pictures loadImage()', () => {
   let loadNextImageSpy: MockInstance = vi.fn()
   let publishStub: MockInstance = vi.fn()
   let viewportSizeStub: MockInstance = vi.fn()
-  let getShowOriginalSizeStub: MockInstance = vi.fn()
+  let getSizeModeStub: MockInstance = vi.fn()
   let bottomLeftText: HTMLElement | null = null
   let bottomCenterText: HTMLElement | null = null
   let bottomRightText: HTMLElement | null = null
@@ -74,7 +74,7 @@ describe('public/app/pictures loadImage()', () => {
     loadNextImageSpy = vi.spyOn(Internals, 'loadNextImage').mockResolvedValue(undefined)
     publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
     viewportSizeStub = vi.spyOn(Imports, 'viewportSize').mockReturnValue({ width: 0, height: 0 })
-    getShowOriginalSizeStub = vi.spyOn(Imports, 'getShowOriginalSize').mockReturnValue(false)
+    getSizeModeStub = vi.spyOn(Imports, 'getSizeMode').mockReturnValue('fitScreen')
 
     bottomCenterText = dom.window.document.querySelector('.statusBar.bottom .center')
     bottomLeftText = dom.window.document.querySelector('.statusBar.bottom .left')
@@ -267,7 +267,7 @@ describe('public/app/pictures loadImage()', () => {
   })
   it('should request the original resolution image in actual size mode', async () => {
     assert(Pictures.mainImage !== null)
-    getShowOriginalSizeStub.mockReturnValue(true)
+    getSizeModeStub.mockReturnValue('actualSize')
     await loadImage()
     expect(Pictures.mainImage.getAttribute('src')).toBe('/images/original/some/path/1250.png-image.webp')
   })
