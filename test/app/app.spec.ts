@@ -1,6 +1,5 @@
 'use sanity'
 
-import assert from 'node:assert'
 import { cast } from '#testutils/typeGuards.js'
 import type { Stats } from 'node:fs'
 import type { Changeset, FlushCallback } from '#sync/filewatcher.js'
@@ -170,13 +169,15 @@ describe('/app.ts tests', (): void => {
     expect(ImageReader.syncLock._locked).toBe(false)
   })
 
-  it('should tolerate Synchronization rejects in interval', async () => {
+  it('should still run Synchronization on the next tick after an interval sync rejects', async () => {
     process.env.SYNC_INTERVAL = '100'
     await ImageReader.run()
     SynchronizeStub?.mockRejectedValue(new Error('FOO!'))
-    vi.advanceTimersByTime(105)
-    await Promise.resolve()
-    assert(true, 'should not throw or reject because inner promise rejects')
+    await vi.advanceTimersByTimeAsync(101)
+    SynchronizeStub?.mockClear()
+    SynchronizeStub?.mockResolvedValue(undefined)
+    await vi.advanceTimersByTimeAsync(101)
+    expect(SynchronizeStub).toHaveBeenCalledTimes(1)
   })
 
   const syncLogCalls = (): unknown[][] =>
