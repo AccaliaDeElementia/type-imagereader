@@ -98,32 +98,31 @@ describe('routes/root route /show', () => {
     await routeFn(requestFake, responseFake)
     expect(folderExistsStub.mock.calls[0]?.[1]).toBe('/')
   })
-  const successPaths: Array<string | string[] | undefined> = [
-    undefined,
-    '',
-    'foo/~bar',
-    'this/is/a/valid/path',
-    ['this', 'is', 'also', 'a', 'valid', 'path'],
+  const successPaths: Array<[string | string[] | undefined, string]> = [
+    [undefined, '/'],
+    ['', '/'],
+    ['foo/~bar', '/foo/~bar/'],
+    ['this/is/a/valid/path', '/this/is/a/valid/path/'],
+    [['this', 'is', 'also', 'a', 'valid', 'path'], '/this/is/also/a/valid/path/'],
   ]
-  successPaths.forEach((path) => {
+  successPaths.forEach(([path, expectedFolderPath]) => {
+    it(`should resolve ${JSON.stringify(path)} to the folder path '${expectedFolderPath}'`, async () => {
+      requestStub.params.path = path
+      await routeFn(requestFake, responseFake)
+      expect(folderExistsStub.mock.calls[0]?.[1]).toBe(expectedFolderPath)
+    })
     it(`should render for '${JSON.stringify(path)}'`, async () => {
-      if (path === undefined) {
-        requestStub.params.path = path
-      }
+      requestStub.params.path = path
       await routeFn(requestFake, responseFake)
       expect(resposeStub.render.mock.calls.length).toBe(1)
     })
     it(`should render app for '${JSON.stringify(path)}'`, async () => {
-      if (path === undefined) {
-        requestStub.params.path = path
-      }
+      requestStub.params.path = path
       await routeFn(requestFake, responseFake)
       expect(resposeStub.render.mock.calls[0]).toEqual(['app'])
     })
     it(`should not set explicit status '${JSON.stringify(path)}'`, async () => {
-      if (path === undefined) {
-        requestStub.params.path = path
-      }
+      requestStub.params.path = path
       await routeFn(requestFake, responseFake)
       expect(resposeStub.status.mock.calls.length).toBe(0)
     })
