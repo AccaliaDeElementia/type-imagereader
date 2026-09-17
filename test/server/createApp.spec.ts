@@ -7,14 +7,16 @@ import { cast } from '#testutils/typeGuards.js'
 import { createApp, Imports } from '#server.js'
 
 describe('Server createApp', () => {
-  let serverFake = cast<Server>({})
+  let listenStub = vi.fn()
+  let serverFake = cast<Server>({ listen: listenStub })
   let socketsFake = cast<WebSocketServer>({})
   let socketsServerStub = vi.fn()
   let appFake = cast<Express>({})
   let expressStub = vi.fn().mockReturnValue(appFake)
   let createServerStub = vi.fn().mockReturnValue(serverFake)
   beforeEach(() => {
-    serverFake = cast<Server>({})
+    listenStub = vi.fn()
+    serverFake = cast<Server>({ listen: listenStub })
     socketsFake = cast<WebSocketServer>({})
     appFake = cast<Express>({})
     expressStub = vi.spyOn(Imports, 'express').mockReturnValue(appFake)
@@ -51,7 +53,7 @@ describe('Server createApp', () => {
   })
   it('should not start listening from createApp', () => {
     createApp()
-    expect(serverFake).not.toHaveProperty('listen')
+    expect(listenStub.mock.calls.length).toBe(0)
   })
   it('should create websocket server', () => {
     createApp()
