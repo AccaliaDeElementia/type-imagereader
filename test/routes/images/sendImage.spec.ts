@@ -2,10 +2,17 @@
 
 import { sendImage, ImageData } from '#routes/images.js'
 import { createResponseFake } from '#testutils/express.js'
+const FROZEN_NOW = Date.UTC(2026, 0, 15, 12, 0, 0)
+
 describe('routes/images sendImage()', () => {
   let { stub: responseStub, fake: responseFake } = createResponseFake()
   beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(FROZEN_NOW)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
+  })
+  afterEach(() => {
+    vi.useRealTimers()
   })
   it('should set content-type for valid image', () => {
     const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
@@ -21,7 +28,7 @@ describe('routes/images sendImage()', () => {
     const aMonth = 1000 * 60 * 60 * 24 * 30
     const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
     sendImage(img, responseFake)
-    expect(responseStub.set).toHaveBeenCalledWith('Expires', new Date(Date.now() + aMonth).toUTCString())
+    expect(responseStub.set).toHaveBeenCalledWith('Expires', new Date(FROZEN_NOW + aMonth).toUTCString())
   })
   it('should call send once for valid image', () => {
     const data = Buffer.from('Image Data')

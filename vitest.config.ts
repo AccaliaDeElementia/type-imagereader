@@ -15,7 +15,6 @@ import { defineConfig } from 'vitest/config'
 const FULL_COVERAGE = 100
 const TEST_TIMEOUT_MS = 1000
 const SLOW_TEST_THRESHOLD_MS = 75
-const FLAKY_RETRY_COUNT = 1
 
 export default defineConfig({
   test: {
@@ -26,7 +25,6 @@ export default defineConfig({
       './testutils/pubsubGuardSetup.ts',
       './testutils/timerGuardSetup.ts',
     ],
-    retry: FLAKY_RETRY_COUNT,
     testTimeout: TEST_TIMEOUT_MS,
     slowTestThreshold: SLOW_TEST_THRESHOLD_MS,
     coverage: {
