@@ -31,20 +31,18 @@ describe('routes/apiFunctions ModCount functions', () => {
     modCountInternals.reset()
     expect(mathFloorSpy.mock.calls[0]).toHaveLength(1)
   })
-  it('reset() should extend start location to (0, 1e10] using Math.floor', () => {
-    modCountInternals.reset()
-    const value = 1e10 * mathRandomSpy.mock.results[0]?.value
-    expect(mathFloorSpy.mock.calls[0]?.[0]).toBe(value)
+  it('reset() should scale Math.random() by 1e10 to pick the new modcount', () => {
+    mathRandomSpy.mockReturnValue(0.123456789)
+    expect(modCountInternals.reset()).toBe(1234567890)
   })
-  it('reset() should return floored integer value', () => {
-    const result = modCountInternals.reset()
-    const value = mathFloorSpy.mock.results[0]?.value as unknown
-    expect(result).toBe(value)
+  it('reset() should floor the scaled value so the modcount stays below 1e10', () => {
+    mathRandomSpy.mockReturnValue(0.99999999999)
+    expect(modCountInternals.reset()).toBe(9999999999)
   })
-  it('reset() should store floored integer value in modCount', () => {
+  it('reset() should store the new modcount rather than only returning it', () => {
+    mathRandomSpy.mockReturnValue(0.5)
     modCountInternals.reset()
-    const value = mathFloorSpy.mock.results[0]?.value as unknown
-    expect(modCountInternals.modCount).toBe(value)
+    expect(modCountInternals.modCount).toBe(5000000000)
   })
   it('reset() should log the new modcount value', () => {
     modCountInternals.reset()
