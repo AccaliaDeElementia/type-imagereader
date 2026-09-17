@@ -265,7 +265,7 @@ describe('routes/apiFunctions getDirectionFolder', () => {
         expect(filter).toEqual(['totalCount', '>', rawQuery])
       })
       it('should call raw with seenCount', () => {
-        expect(rawStub.mock.calls.every((c) => c[0] === '"seenCount"')).toBe(true)
+        expect(rawStub.mock.calls).toEqual([['"seenCount"'], ['"seenCount"']])
       })
     })
     describe('second query (different sortkey)', () => {
@@ -308,7 +308,7 @@ describe('routes/apiFunctions getDirectionFolder', () => {
         expect(filter).toEqual(['totalCount', '>', rawQuery])
       })
       it('should call raw with seenCount', () => {
-        expect(rawStub.mock.calls.every((c) => c[0] === '"seenCount"')).toBe(true)
+        expect(rawStub.mock.calls).toEqual([['"seenCount"'], ['"seenCount"']])
       })
     })
     describe('second query (different sortkey)', () => {
