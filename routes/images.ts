@@ -20,7 +20,9 @@ import { parseRequestedDimension as _parseRequestedDimension, UNBOUNDED } from '
 const CACHE_SIZE = 25
 const ORIGINAL_CACHE_SIZE = 5
 const ORIGINAL_UNBOUNDED = 0
-const ONE_MONTH_MS = 2_592_000_000
+const SECONDS_TO_MILLISECONDS_MULTIPLE = 1000
+const ONE_MONTH_SECONDS = 2_592_000
+const ONE_MONTH_MS = ONE_MONTH_SECONDS * SECONDS_TO_MILLISECONDS_MULTIPLE
 const PREVIEW_WIDTH = 240
 const PREVIEW_HEIGHT = 320
 const KIOSK_WIDTH = 1280
@@ -216,7 +218,7 @@ export function sendImage(image: ImageData, res: Response): void {
   }
   res
     .set('Content-Type', `image/${image.extension}`)
-    .set('Cache-Control', `public, max-age=${ONE_MONTH_MS}`)
+    .set('Cache-Control', `public, max-age=${ONE_MONTH_SECONDS}`)
     .set('Expires', new Date(Date.now() + ONE_MONTH_MS).toUTCString())
     .send(image.data)
 }

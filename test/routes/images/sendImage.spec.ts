@@ -22,13 +22,21 @@ describe('routes/images sendImage()', () => {
   it('should set cacheControl for valid image', () => {
     const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
     sendImage(img, responseFake)
-    expect(responseStub.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=2592000000')
+    expect(responseStub.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=2592000')
   })
   it('should set Expires for valid image', () => {
     const aMonth = 1000 * 60 * 60 * 24 * 30
     const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
     sendImage(img, responseFake)
     expect(responseStub.set).toHaveBeenCalledWith('Expires', new Date(FROZEN_NOW + aMonth).toUTCString())
+  })
+  it('should set Expires to the same instant that Cache-Control max-age describes', () => {
+    const headerValue = (name: string): string =>
+      String(responseStub.set.mock.calls.find((call) => call[0] === name)?.[1])
+    const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
+    sendImage(img, responseFake)
+    const maxAgeSeconds = Number(/max-age=(?<seconds>\d+)/v.exec(headerValue('Cache-Control'))?.groups?.seconds)
+    expect(Date.parse(headerValue('Expires'))).toBe(FROZEN_NOW + maxAgeSeconds * 1000)
   })
   it('should call send once for valid image', () => {
     const data = Buffer.from('Image Data')
