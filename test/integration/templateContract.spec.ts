@@ -112,9 +112,13 @@ describe('client template contract', () => {
     })
 
     const stubEverythingExceptResetMarkup = (): void => {
-      vi.spyOn(PicturesImports, 'initActions')
-      vi.spyOn(PicturesImports, 'initMouse')
-      vi.spyOn(PicturesImports, 'initUnreadSelector')
+      vi.spyOn(PicturesImports, 'resetViewerState').mockImplementation(() => undefined)
+      vi.spyOn(PicturesImports, 'subscribe').mockImplementation(() => undefined)
+      vi.spyOn(PicturesImports, 'initActions').mockImplementation(() => undefined)
+      vi.spyOn(PicturesImports, 'initMouse').mockImplementation(() => undefined)
+      vi.spyOn(PicturesImports, 'initUnreadSelector').mockImplementation(() => undefined)
+      vi.spyOn(PicturesImports, 'initSizeSelector').mockImplementation(() => undefined)
+      vi.spyOn(PicturesImports, 'initImageViewport').mockImplementation(() => undefined)
     }
 
     describe('pictures init', () => {
