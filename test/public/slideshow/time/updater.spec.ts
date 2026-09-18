@@ -5,7 +5,6 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 import { CyclicUpdater } from '#public/scripts/slideshow/updater.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 const markup = `
@@ -55,17 +54,18 @@ describe('public/slideshow/time Updater()', () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
     expect(elem?.innerHTML).toBe('I am time')
   })
-  it('should tolerate a missing .time target node', async () => {
-    const elem = dom.window.document.querySelector<HTMLElement>('.time')
-    elem?.remove()
-    await Updater.updateFn()
-    assert(true, 'should pass without throwing')
-  })
   it('should not format time for missing target node', async () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
     elem?.remove()
     await Updater.updateFn()
     expect(fakeFormatTime?.mock.calls.length).toBe(0)
+  })
+  it('should still update .date when the .time target node is missing', async () => {
+    fakeFormatDate?.mockReturnValue('I am date')
+    dom.window.document.querySelector<HTMLElement>('.time')?.remove()
+    await Updater.updateFn()
+    const elem = dom.window.document.querySelector<HTMLElement>('.date')
+    expect(elem?.innerHTML).toBe('I am date')
   })
   it('should format date for display', async () => {
     await Updater.updateFn()
@@ -81,16 +81,17 @@ describe('public/slideshow/time Updater()', () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
     expect(elem?.innerHTML).toBe('I am date')
   })
-  it('should tolerate a missing .date target node', async () => {
-    const elem = dom.window.document.querySelector<HTMLElement>('.date')
-    elem?.remove()
-    await Updater.updateFn()
-    assert(true, 'should pass without throwing')
-  })
   it('should not format date for missing target node', async () => {
     const elem = dom.window.document.querySelector<HTMLElement>('.date')
     elem?.remove()
     await Updater.updateFn()
     expect(fakeFormatDate?.mock.calls.length).toBe(0)
+  })
+  it('should still update .time when the .date target node is missing', async () => {
+    fakeFormatTime?.mockReturnValue('I am time')
+    dom.window.document.querySelector<HTMLElement>('.date')?.remove()
+    await Updater.updateFn()
+    const elem = dom.window.document.querySelector<HTMLElement>('.time')
+    expect(elem?.innerHTML).toBe('I am time')
   })
 })

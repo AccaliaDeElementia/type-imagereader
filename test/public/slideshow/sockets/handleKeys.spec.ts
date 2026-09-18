@@ -4,7 +4,6 @@ import { Internals, type WebSocket } from '#public/scripts/slideshow/sockets.js'
 import { cast } from '#testutils/typeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import assert from 'node:assert'
 describe('public/slideshow/sockets handleKeys()', () => {
   const fakeEmit = vi.fn()
   const fakeSocket = cast<WebSocket>({ emit: fakeEmit })
@@ -18,15 +17,15 @@ describe('public/slideshow/sockets handleKeys()', () => {
   beforeEach(() => {
     fakeEmit.mockClear()
   })
-  it('should not break if socket is null', () => {
-    const evt = new global.window.KeyboardEvent('keyup', { key: 'a' })
-    Internals.handleKeys(evt, cast<WebSocket>(null))
-    assert(true, 'should not throw when null socket provided')
-  })
-  it('should not break if socket is undefined', () => {
-    const evt = new global.window.KeyboardEvent('keyup', { key: 'a' })
-    Internals.handleKeys(evt, undefined)
-    assert(true, 'should not throw when undefined socket provided')
+  const missingSockets: Array<[string, WebSocket | undefined]> = [
+    ['null', cast<WebSocket>(null)],
+    ['undefined', undefined],
+  ]
+  it.each(missingSockets)('should not throw on an emitting key when the socket is %s', (_title, socket) => {
+    const evt = new global.window.KeyboardEvent('keyup', { key: 'arrowright' })
+    expect(() => {
+      Internals.handleKeys(evt, socket)
+    }).not.toThrow()
   })
   const ignoredKeys = ['a', 'A', 'ARROW', 'Left', 'right', 'f1', 'F23, ENTER']
   ignoredKeys.forEach((key) => {

@@ -34,9 +34,10 @@ describe('public/slideshow/weather showIcon()', () => {
     ['undefined base element', undefined],
   ]
   acceptBaseTests.forEach(([title, base]) => {
-    it(`should accept ${title}`, () => {
-      Internals.showIcon(base, 'FOO')
-      assert(true, 'We expect the call to return without failing on null input')
+    it(`should not throw when the ${title} is given a valid icon`, () => {
+      expect(() => {
+        Internals.showIcon(base, 'FOO')
+      }).not.toThrow()
     })
   })
 

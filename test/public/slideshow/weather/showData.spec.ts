@@ -5,8 +5,6 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
 
-import assert from 'node:assert'
-
 const markup = `
 html
   body
@@ -29,29 +27,18 @@ describe('public/slideshow/weather showData()', () => {
     unmountDom()
   })
 
-  it('should accept null base element', () => {
-    const element = dom.window.document.querySelector<HTMLElement>('.weather .temp')
-    Internals.showData(null, element, 'FOO')
-    assert(true, 'We expect the call to return without failing on null input')
-  })
-
-  it('should accept undefined base element', () => {
-    const element = dom.window.document.querySelector<HTMLElement>('.weather .temp')
-    Internals.showData(undefined, element, 'FOO')
-    assert(true, 'We expect the call to return without failing on null input')
-  })
-
-  it('should accept null element', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    Internals.showData(base, null, 'FOO')
-    assert(true, 'We expect the call to return without failing on null input')
-  })
-
-  it('should accept undefined element', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    Internals.showData(base, null, 'FOO')
-    assert(true, 'We expect the call to return without failing on null input')
-  })
+  const missingContainers: Array<[string, null | undefined]> = [
+    ['null', null],
+    ['undefined', undefined],
+  ]
+  it.each(missingContainers)(
+    'should not write the text into the element when the container is %s',
+    (_title, container) => {
+      const element = dom.window.document.querySelector<HTMLElement>('.weather .temp')
+      Internals.showData(container, element, 'FOO')
+      expect(element?.innerHTML).toBe('')
+    },
+  )
 
   const noDisplayTests: Array<[string, null | undefined]> = [
     ['null element', null],

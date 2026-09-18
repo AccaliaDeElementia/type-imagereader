@@ -4,7 +4,6 @@ import { Internals, WebSockets, type WebSocket } from '#public/scripts/slideshow
 import { cast } from '#testutils/typeGuards.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 describe('public/slideshow/sockets handleClick()', () => {
   const fakeEmit = vi.fn()
@@ -27,21 +26,18 @@ describe('public/slideshow/sockets handleClick()', () => {
       url: `http://127.0.0.1:2999/slideshow?`,
     })
   })
-  it('should not break if socket is null', () => {
+  const missingSockets: Array<[string, WebSocket | undefined]> = [
+    ['null', cast<WebSocket>(null)],
+    ['undefined', undefined],
+  ]
+  it.each(missingSockets)('should not throw on an emitting click when the socket is %s', (_title, socket) => {
     const event = new global.window.MouseEvent('click', {
       clientX: global.window.innerWidth * (1 / 6),
       clientY: global.window.innerHeight / 2,
     })
-    Internals.handleClick(event, cast<WebSocket>(null), 1)
-    assert(true, 'should not throw when null socket provided')
-  })
-  it('should not break if socket is undefined', () => {
-    const event = new global.window.MouseEvent('click', {
-      clientX: global.window.innerWidth * (1 / 6),
-      clientY: global.window.innerHeight / 2,
-    })
-    Internals.handleClick(event, undefined, 1)
-    assert(true, 'should not throw when undefined socket provided')
+    expect(() => {
+      Internals.handleClick(event, socket, 1)
+    }).not.toThrow()
   })
   const emitCases: Array<[string, number, number, string]> = [
     ['', 0, 0, 'prev-image'],

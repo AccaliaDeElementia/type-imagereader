@@ -5,7 +5,6 @@ import { cast } from '#testutils/typeGuards.js'
 import { voidFn } from '#testutils/mocks.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import assert from 'node:assert'
 
 describe('public/slideshow/sockets disconnect()', () => {
   const fakeDisconnect = vi.fn()
@@ -18,10 +17,10 @@ describe('public/slideshow/sockets disconnect()', () => {
   afterEach(() => {
     unmountDom()
   })
-  it('should allow disconnect without socket', () => {
+  it('should not disconnect a socket that was already cleared', () => {
     WebSockets.socket = undefined
     disconnect()
-    assert(true, 'Should not explode because important object is missing')
+    expect(fakeDisconnect.mock.calls.length).toBe(0)
   })
   it('should disconnect with socket', () => {
     disconnect()

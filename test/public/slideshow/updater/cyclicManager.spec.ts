@@ -2,7 +2,6 @@
 
 import { add, CyclicManager, CyclicUpdater, Internals, start, stop } from '#public/scripts/slideshow/updater.js'
 import { cast } from '#testutils/typeGuards.js'
-import { assert } from 'node:console'
 import type { MockInstance } from 'vitest'
 
 describe('public/slideshow/updater CyclicManager', () => {
@@ -15,9 +14,8 @@ describe('public/slideshow/updater CyclicManager', () => {
     fakeClearInterval = vi.spyOn(global, 'clearInterval').mockImplementation((..._args: unknown[]) => undefined)
   })
   describe('__triggerUpdaters()', () => {
-    it('should handle updating zero updaters', async () => {
-      await Internals.triggerUpdaters(10)
-      assert(true, 'previous call should resolve successfully')
+    it('should resolve when there are no updaters to trigger', async () => {
+      await expect(Internals.triggerUpdaters(10)).resolves.toBeUndefined()
     })
     it('should trigger one updaters', async () => {
       const updater = new CyclicUpdater()
@@ -145,17 +143,14 @@ describe('public/slideshow/updater CyclicManager', () => {
       fn()
       expect(fakeTrigger?.mock.calls[0]).toEqual([ival])
     })
-    it('should tolerate trigger rejecting', async () => {
-      let a = Promise.resolve()
-      fakeTrigger?.mockImplementation(async () => {
-        a = Promise.resolve()
-        return await Promise.reject(new Error('this should get swallowed!'))
-      })
+    it('should keep firing the interval after triggerUpdaters rejects', async () => {
+      fakeTrigger?.mockRejectedValue(new Error('this should get swallowed!'))
       start(1000)
       const fn = cast<() => void>(fakeSetInterval?.mock.calls[0]?.[0])
       fn()
-      await a
-      assert(true, 'the error should have been thrown aweay and not treated as uncaught error')
+      await Promise.resolve()
+      fn()
+      expect(fakeTrigger?.mock.calls.length).toBe(2)
     })
     it('should not call setInterval when a timer is already running', () => {
       CyclicManager.__timer = 42
