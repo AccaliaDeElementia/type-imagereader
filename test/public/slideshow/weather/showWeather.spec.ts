@@ -141,17 +141,10 @@ describe('public/slideshow/weather showWeather()', () => {
     expect(showDataStub.mock.calls[1]?.[1]).toBe(expected)
   })
 
-  it('should show description with undefined text for missing data', () => {
+  it('should show description with undefined text when the weather carries no description', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[1]?.[2]).toBe(undefined)
-  })
-
-  it('should show description with undefined text for undefined data', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    weather.description = undefined
-    Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[1]?.[2]).toBe(undefined)
+    expect(showDataStub.mock.calls[1]).toEqual([expect.anything(), expect.anything(), undefined])
   })
 
   it('should show description with provided data', () => {
@@ -168,17 +161,10 @@ describe('public/slideshow/weather showWeather()', () => {
     expect(showIconStub.mock.calls[0]?.[0]).toBe(expected)
   })
 
-  it('should show icon with undefined src for missing data', () => {
+  it('should show icon with undefined src when the weather carries no icon', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
     Internals.showWeather(base, weather)
-    expect(showIconStub.mock.calls[0]?.[1]).toBe(undefined)
-  })
-
-  it('should show icon with undefined src for undefined icon data', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    weather.icon = undefined
-    Internals.showWeather(base, weather)
-    expect(showIconStub.mock.calls[0]?.[1]).toBe(undefined)
+    expect(showIconStub.mock.calls[0]).toEqual([expect.anything(), undefined])
   })
 
   it('should show icon with provided icon data', () => {
