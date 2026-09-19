@@ -18,6 +18,9 @@ describe('Contracts: IsWeatherResults()', () => {
     ['string temp', { temp: 'foo' }, false],
     ['boolean temp', { temp: false }, false],
     ['number temp', { temp: 42 }, true],
+    ['NaN temp', { temp: Number.NaN }, false],
+    ['Infinity temp', { temp: Number.POSITIVE_INFINITY }, false],
+    ['negative Infinity temp', { temp: Number.NEGATIVE_INFINITY }, false],
     [
       'missing temp',
       {
@@ -113,6 +116,8 @@ describe('Contracts: IsWeatherResults()', () => {
     ['string sunrise', { sunrise: 'foo' }, false],
     ['boolean sunrise', { sunrise: false }, false],
     ['number sunrise', { sunrise: 42 }, true],
+    ['NaN sunrise', { sunrise: Number.NaN }, false],
+    ['Infinity sunrise', { sunrise: Number.POSITIVE_INFINITY }, false],
     [
       'missing sunrise',
       {
@@ -132,6 +137,8 @@ describe('Contracts: IsWeatherResults()', () => {
     ['string sunset', { sunset: 'foo' }, false],
     ['boolean sunset', { sunset: false }, false],
     ['number sunset', { sunset: 42 }, true],
+    ['NaN sunset', { sunset: Number.NaN }, false],
+    ['Infinity sunset', { sunset: Number.POSITIVE_INFINITY }, false],
     [
       'missing sunset',
       {

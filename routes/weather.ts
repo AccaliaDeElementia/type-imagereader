@@ -99,8 +99,8 @@ function isWeatherValid(data: object): boolean {
 
 function isSysValid(data: object): boolean {
   if (!('sys' in data) || typeof data.sys !== 'object' || data.sys === null) return false
-  if (!('sunrise' in data.sys) || typeof data.sys.sunrise !== 'number') return false
-  if (!('sunset' in data.sys) || typeof data.sys.sunset !== 'number') return false
+  if (!('sunrise' in data.sys) || !Number.isFinite(data.sys.sunrise)) return false
+  if (!('sunset' in data.sys) || !Number.isFinite(data.sys.sunset)) return false
   return true
 }
 

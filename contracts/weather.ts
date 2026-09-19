@@ -12,13 +12,12 @@ export interface WeatherResults {
   sunset?: number | undefined
 }
 
-const isNumber = (v: unknown): boolean => typeof v === 'number'
 const isString = (v: unknown): boolean => typeof v === 'string'
 
 function isValidTemps(obj: object): boolean {
-  if (!hasOptionalKey(obj, 'temp', isNumber)) return false
-  if (!hasOptionalKey(obj, 'pressure', isNumber)) return false
-  if (!hasOptionalKey(obj, 'humidity', isNumber)) return false
+  if (!hasOptionalKey(obj, 'temp', Number.isFinite)) return false
+  if (!hasOptionalKey(obj, 'pressure', Number.isFinite)) return false
+  if (!hasOptionalKey(obj, 'humidity', Number.isFinite)) return false
   return true
 }
 
@@ -29,8 +28,8 @@ function isValidDescriptions(obj: object): boolean {
 }
 
 function isValidSunData(obj: object): boolean {
-  if (!hasOptionalKey(obj, 'sunrise', isNumber)) return false
-  if (!hasOptionalKey(obj, 'sunset', isNumber)) return false
+  if (!hasOptionalKey(obj, 'sunrise', Number.isFinite)) return false
+  if (!hasOptionalKey(obj, 'sunset', Number.isFinite)) return false
   return true
 }
 

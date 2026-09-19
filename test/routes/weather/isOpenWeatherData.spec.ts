@@ -242,7 +242,7 @@ describe('routes/weather isOpenWeatherData', () => {
         weather: [],
         sys: { sunrise: Number.NaN, sunset: 0 },
       },
-      true,
+      false,
     ],
     [
       'positive sunrise',
@@ -287,7 +287,7 @@ describe('routes/weather isOpenWeatherData', () => {
         weather: [],
         sys: { sunrise: 0, sunset: Number.NaN },
       },
-      true,
+      false,
     ],
     [
       'positive sunset',
