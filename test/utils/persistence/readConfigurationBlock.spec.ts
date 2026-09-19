@@ -31,7 +31,7 @@ describe('utils/persistence readConfigurationBlock()', () => {
       .spyOn(Imports, 'readFile')
       .mockImplementation(async () => await Promise.resolve(JSON.stringify(configContent)))
   })
-  it('should resolve to object', async () => {
+  it('should resolve to the configuration block named by getEnvironmentName', async () => {
     const result = await readConfigurationBlock()
     expect(result).toEqual(configContent.testtest)
   })

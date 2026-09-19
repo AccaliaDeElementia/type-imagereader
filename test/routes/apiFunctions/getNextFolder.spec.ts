@@ -17,7 +17,7 @@ describe('routes/apiFunctions getNextFolder', () => {
     await getNextFolder(knexFake, '/foo', 'foo')
     expect(getDirectionFolderStub.mock.calls.length).toBe(1)
   })
-  it('should call pass knex parameter to do actual query', async () => {
+  it('should pass the knex parameter to the actual query', async () => {
     await getNextFolder(knexFake, '/foo', 'foo')
     expect(getDirectionFolderStub.mock.calls[0]?.[0]).toBe(knexFake)
   })
@@ -28,7 +28,7 @@ describe('routes/apiFunctions getNextFolder', () => {
     ['type parameter', 'foo', 'type', 'all'],
   ]
   paramTests.forEach(([title, sortKey, prop, expected]) => {
-    it(`should call pass ${title} to do actual query`, async () => {
+    it(`should pass the ${title} to the actual query`, async () => {
       await getNextFolder(knexFake, '/foo', sortKey)
       const param = cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.mock.calls[0]?.[1])
       assert(param !== undefined)

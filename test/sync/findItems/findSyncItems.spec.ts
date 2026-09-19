@@ -244,7 +244,7 @@ describe('sync/findItems findSyncItems()', () => {
       }
       expect(caught).toBe(err)
     })
-    it('should log status on first loop', async () => {
+    it('should log progress on the first batch', async () => {
       await findSyncItems(knexFnFake)
       const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
@@ -252,7 +252,7 @@ describe('sync/findItems findSyncItems()', () => {
       await visitBatch(items, 6)
       expect(loggerStub.mock.calls.some((c) => c[0] === 'Found 9 dirs (6 pending) and 3 files')).toBe(true)
     })
-    it('should log twice by the 101st loop', async () => {
+    it('should log progress only once per 100 batches', async () => {
       await findSyncItems(knexFnFake)
       loggerStub.mockClear()
       const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
@@ -264,7 +264,7 @@ describe('sync/findItems findSyncItems()', () => {
       await visitBatch(items, 6)
       expect(loggerStub.mock.calls.length).toBe(2)
     })
-    it('should log status on 101st loop', async () => {
+    it('should log the running counts on the 101st batch', async () => {
       await findSyncItems(knexFnFake)
       loggerStub.mockClear()
       const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
@@ -423,7 +423,7 @@ describe('sync/findItems findSyncItems()', () => {
       expect(knexInstanceStub.insert.mock.calls.length).toBe(1)
     })
 
-    it('should log status on first loop', async () => {
+    it('should log progress on the first batch', async () => {
       await findSyncItems(knexFnFake)
       const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])
       const items = [{ path: '/foo', isFile: false }]
@@ -432,7 +432,7 @@ describe('sync/findItems findSyncItems()', () => {
       expect(loggerStub.mock.calls.some((c) => c[0] === 'Found 9 dirs (6 pending) and 3 files')).toBe(true)
     })
 
-    it('should log status on 101st loop', async () => {
+    it('should log the running counts on the 101st batch', async () => {
       await findSyncItems(knexFnFake)
       loggerStub.mockClear()
       const visitBatch = cast<WalkerCallback>(fsWalkerStub.mock.calls[0]?.[1])

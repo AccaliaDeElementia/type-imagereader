@@ -42,7 +42,7 @@ describe('tools/withTimeout', () => {
     beforeAll(async () => {
       result = await runWrapper([NODE_BIN, '-e', 'process.exit(0)'])
     }, SPAWN_TIMEOUT_MS)
-    it('should exit 0', () => {
+    it("should propagate the child's zero exit code", () => {
       expect(result.exit).toBe(0)
     })
   })
@@ -52,7 +52,7 @@ describe('tools/withTimeout', () => {
     beforeAll(async () => {
       result = await runWrapper([NODE_BIN, '-e', 'process.exit(42)'])
     }, SPAWN_TIMEOUT_MS)
-    it('should propagate the child exit code', () => {
+    it("should propagate the child's non-zero exit code", () => {
       expect(result.exit).toBe(42)
     })
   })
@@ -64,7 +64,7 @@ describe('tools/withTimeout', () => {
         TEST_WATCHDOG_MS: '200',
       })
     }, SPAWN_TIMEOUT_MS)
-    it('should exit 124', () => {
+    it('should exit with the timeout code', () => {
       expect(result.exit).toBe(124)
     })
     it('should mention the configured timeout in stderr', () => {
@@ -80,7 +80,7 @@ describe('tools/withTimeout', () => {
     beforeAll(async () => {
       result = await runWrapper([NODE_BIN, '-e', 'process.exit(0)'], { TEST_WATCHDOG_MS: 'abc' })
     }, SPAWN_TIMEOUT_MS)
-    it('should exit 2', () => {
+    it('should exit with the invalid-argument code', () => {
       expect(result.exit).toBe(2)
     })
     it('should name the bad value in stderr', () => {
@@ -93,7 +93,7 @@ describe('tools/withTimeout', () => {
     beforeAll(async () => {
       result = await runWrapper([NODE_BIN, '-e', 'process.exit(0)'], { TEST_WATCHDOG_MS: '0' })
     }, SPAWN_TIMEOUT_MS)
-    it('should exit 2', () => {
+    it('should exit with the invalid-argument code', () => {
       expect(result.exit).toBe(2)
     })
   })
@@ -103,7 +103,7 @@ describe('tools/withTimeout', () => {
     beforeAll(async () => {
       result = await runWrapper([])
     }, SPAWN_TIMEOUT_MS)
-    it('should exit 2', () => {
+    it('should exit with the invalid-argument code', () => {
       expect(result.exit).toBe(2)
     })
     it('should print usage in stderr', () => {
@@ -116,7 +116,7 @@ describe('tools/withTimeout', () => {
     beforeAll(async () => {
       result = await runWrapper(['no-such-binary-xyz-spec'])
     }, SPAWN_TIMEOUT_MS)
-    it('should exit 2', () => {
+    it('should exit with the invalid-argument code', () => {
       expect(result.exit).toBe(2)
     })
     it('should report the spawn failure in stderr', () => {

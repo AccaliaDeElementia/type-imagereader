@@ -3,14 +3,14 @@
 import { calculateFolderInfos } from '#sync/folderCounts.js'
 
 describe('sync/folderCounts calculateFolderInfos()', () => {
-  it('should handle empty input map gracefully', () => {
+  it('should return no folder infos when both inputs are empty', () => {
     expect(calculateFolderInfos({}, [])).toEqual([])
   })
-  it('should handle empty input map with input list gracefully', () => {
+  it('should return the listed folder when the map is empty', () => {
     const folders = [{ path: '/', totalCount: 5, seenCount: 0 }]
     expect(calculateFolderInfos({}, folders)).toEqual([{ path: '/', totalCount: 5, seenCount: 0 }])
   })
-  it('should handle empty input list gracefully', () => {
+  it('should return the mapped folder when the list is empty', () => {
     const allFolders = {
       '/': { path: '/', totalCount: 5, seenCount: 0 },
     }
