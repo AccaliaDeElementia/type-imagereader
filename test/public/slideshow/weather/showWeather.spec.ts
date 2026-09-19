@@ -79,15 +79,8 @@ describe('public/slideshow/weather showWeather()', () => {
     expect(showDataStub.mock.calls[0]?.[1]).toBe(expected)
   })
 
-  it('should show temp with null text for missing data', () => {
+  it('should show temp with null text when the weather carries no temperature', () => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[0]?.[2]).toBe(null)
-  })
-
-  it('should show temp with null text for undefined data', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    weather.temp = undefined
     Internals.showWeather(base, weather)
     expect(showDataStub.mock.calls[0]?.[2]).toBe(null)
   })

@@ -83,12 +83,6 @@ describe('routes/slideshow getRouter', () => {
       it('should respond with json', () => {
         expect(responseStub.json.mock.calls.length).toBe(1)
       })
-      it('should respond with obj', () => {
-        expect(getArgs(responseStub.json)[0]).toBeInstanceOf(Object)
-      })
-      it('should respond with keys', () => {
-        expect(Object.keys(cast<object>(getArgs(responseStub.json)[0]))).toEqual(['launchId'])
-      })
       it('should send launchId', () => {
         expect(getArgs(responseStub.json)[0]).toEqual({ launchId: 3141592 })
       })

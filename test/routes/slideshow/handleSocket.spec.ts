@@ -34,14 +34,6 @@ describe('routes/slideshow handleSocket()', () => {
   const getCallback = (endpoint: string): unknown =>
     socketStub.on.mock.calls.filter((call) => call[0] === endpoint).map((call) => call[1] as unknown)[0]
   endpoints.forEach((endpoint) => {
-    it(`should handle socket message '${endpoint}'`, () => {
-      handleSocket(knexFake, serverFake, socketFake)
-      expect(socketStub.on).toHaveBeenCalledWith(endpoint, expect.anything())
-    })
-    it(`should register a callback for '${endpoint}'`, () => {
-      handleSocket(knexFake, serverFake, socketFake)
-      expect(getCallback(endpoint)).toBeTypeOf('function')
-    })
     it(`should forward call for ${endpoint}`, () => {
       handleSocket(knexFake, serverFake, socketFake)
       const fn = cast<() => void>(getCallback(endpoint))
@@ -78,10 +70,6 @@ describe('routes/slideshow handleSocket()', () => {
     expect(respondStub.mock.calls.length).toBe(1)
   })
 
-  it('should return an object for state storage', () => {
-    const state = handleSocket(knexFake, serverFake, socketFake)
-    expect(state).toBeTypeOf('object')
-  })
   it('should return state object', () => {
     const state = handleSocket(knexFake, serverFake, socketFake)
     expect(Object.keys(state)).toEqual(['roomName'])

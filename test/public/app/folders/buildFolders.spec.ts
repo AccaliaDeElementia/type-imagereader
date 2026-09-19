@@ -62,25 +62,13 @@ describe('public/app/folders buildFolders()', () => {
     Internals.buildFolders(cast<Listing>(data))
     expect(buildAllCardsStub.mock.calls[0]?.[0]).toBe(data)
   })
-  it('should call hideTab when data has no children', () => {
-    Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(hideTabStub.mock.calls.length > 0).toBe(true)
-  })
   it('should hide folder tab when data has no children', () => {
     Internals.buildFolders(cast<Listing>({ children: [] }))
     expect(hideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
   })
-  it('should call hideTab when data has undefined children', () => {
-    Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(hideTabStub.mock.calls.length > 0).toBe(true)
-  })
   it('should hide folder tab when data has undefined children', () => {
     Internals.buildFolders(cast<Listing>({ children: undefined }))
     expect(hideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
-  })
-  it('should call hideTab when data has missing children', () => {
-    Internals.buildFolders(cast<Listing>({}))
-    expect(hideTabStub.mock.calls.length > 0).toBe(true)
   })
   it('should hide folder tab when data has missing children', () => {
     Internals.buildFolders(cast<Listing>({}))
@@ -141,10 +129,6 @@ describe('public/app/folders buildFolders()', () => {
   it('should not hide folder tab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
     expect(hideTabStub.mock.calls.length > 0).toBe(false)
-  })
-  it('should call unhideTab when data has children', () => {
-    Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(unhideTabStub.mock.calls.length > 0).toBe(true)
   })
   it('should unhide folder tab when data has children', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))

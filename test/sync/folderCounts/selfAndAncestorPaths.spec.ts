@@ -3,14 +3,8 @@
 import { selfAndAncestorPaths } from '#sync/folderCounts.js'
 
 describe('sync/folderCounts selfAndAncestorPaths()', () => {
-  it('should yield the folder itself first', () => {
-    expect(selfAndAncestorPaths('/a/b/')[0]).toBe('/a/b/')
-  })
-  it('should yield each intermediate ancestor', () => {
-    expect(selfAndAncestorPaths('/a/b/')).toContain('/a/')
-  })
-  it('should yield the root path', () => {
-    expect(selfAndAncestorPaths('/a/b/')).toContain('/')
+  it('should yield the folder and every ancestor, nearest first', () => {
+    expect(selfAndAncestorPaths('/a/b/')).toEqual(['/a/b/', '/a/', '/'])
   })
   it('should yield the root exactly once so root counts are not doubled', () => {
     expect(selfAndAncestorPaths('/a/b/c/').filter((p) => p === '/').length).toBe(1)
