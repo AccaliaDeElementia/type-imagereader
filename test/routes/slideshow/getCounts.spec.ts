@@ -62,13 +62,13 @@ describe('routes/slideshow getCounts()', () => {
     await getCounts(knexFake, 'foo', 7, spy)
     expect(spy.mock.calls.length).toBe(0)
   })
-  it('should not get randomization from unread when unread images exist', async () => {
+  it('should set page count from unread when unread images exist', async () => {
     getImageCountStub.mockResolvedValueOnce(99)
     getImageCountStub.mockResolvedValueOnce(999)
     const result = await getCounts(knexFake, 'foo', 7)
     expect(result.pages).toBe(10)
   })
-  it('should set page count from unread when unread images exist', async () => {
+  it('should not get randomization from unread when unread images exist', async () => {
     getImageCountStub.mockResolvedValueOnce(99)
     getImageCountStub.mockResolvedValueOnce(999)
     await getCounts(knexFake, 'foo', 7)

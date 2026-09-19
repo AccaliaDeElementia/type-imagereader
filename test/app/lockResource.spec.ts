@@ -44,13 +44,13 @@ describe('LockResource', () => {
       expect(lock.take()).toBe(true)
     })
 
-    it('should not set _locked to false when lock is already free', () => {
+    it('should leave the lock free when releasing a lock that was never taken', () => {
       const lock = new LockResource()
       lock.release()
       expect(lock._locked).toBe(false)
     })
 
-    it('should not set _locked to false when lock was already released', () => {
+    it('should leave the lock free when release is called twice', () => {
       const lock = new LockResource()
       lock.take()
       lock.release()

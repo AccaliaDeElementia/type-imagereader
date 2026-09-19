@@ -37,7 +37,7 @@ describe('Server registerRouters', () => {
   })
   it('should app.set() all views options', () => {
     registerViewsAndMiddleware(appFake)
-    expect(appStub.use.mock.calls.length).toBe(1)
+    expect(appStub.set.mock.calls.length).toBe(2)
   })
   it('should set views flag', () => {
     registerViewsAndMiddleware(appFake)

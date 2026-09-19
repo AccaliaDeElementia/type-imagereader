@@ -69,10 +69,6 @@ describe('public/app/actions readGamepad()', () => {
       }).not.toThrow()
     })
   })
-  it('should accept a valid gamepad', () => {
-    Internals.readGamepad()
-    expect(publishStub.mock.calls.length > 0).toBe(false)
-  })
   it('should not read when hidden', () => {
     documentHidden = true
     Internals.readGamepad()
@@ -125,7 +121,7 @@ describe('public/app/actions readGamepad()', () => {
     Internals.readGamepad()
     expect(publishStub).toHaveBeenCalledWith('Action:Gamepad:AQZ')
   })
-  it('should not publish publish any buttons when read detects no buttons with no history', () => {
+  it('should not publish any buttons when read detects no buttons with no history', () => {
     Internals.readGamepad()
     expect(publishStub.mock.calls.length > 0).toBe(false)
   })

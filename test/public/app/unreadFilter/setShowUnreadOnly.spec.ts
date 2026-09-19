@@ -19,7 +19,7 @@ describe('public/app/pictures setShowUnreadOnly()', () => {
     Internals.setShowUnreadOnly(true)
     expect(dom.window.localStorage.getItem('ShowUnreadOnly')).toBe('true')
   })
-  it('should store true when disabling function', () => {
+  it('should store false when disabling function', () => {
     Internals.setShowUnreadOnly(false)
     expect(dom.window.localStorage.getItem('ShowUnreadOnly')).toBe('false')
   })

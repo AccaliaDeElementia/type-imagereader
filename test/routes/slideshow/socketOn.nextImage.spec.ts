@@ -42,7 +42,7 @@ describe('routes/slideshow socket next-image', () => {
       socketState.roomName = null
       await nextImage(socketState, serverFake, knexFake)
     })
-    it('should not decrement image', () => {
+    it('should not increment image', () => {
       expect(getRoomStub.mock.calls.length).toBe(0)
     })
     it('should not broadcast message', () => {
@@ -58,13 +58,13 @@ describe('routes/slideshow socket next-image', () => {
       socketState.roomName = '/foo'
       await nextImage(socketState, serverFake, knexFake)
     })
-    it('should decrement image once', () => {
+    it('should increment image once', () => {
       expect(getRoomStub.mock.calls.length).toBe(1)
     })
-    it('should decrement image with knex', () => {
+    it('should increment image with knex', () => {
       expect(getRoomStub.mock.calls[0]?.[0]).toBe(knexFake)
     })
-    it('should decrement image with room name', () => {
+    it('should increment image with room name', () => {
       expect(getRoomStub.mock.calls[0]?.[1]).toBe('/foo')
     })
     it('should increment image by exactly one image', () => {

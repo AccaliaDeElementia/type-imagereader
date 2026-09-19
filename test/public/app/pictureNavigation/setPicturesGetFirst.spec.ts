@@ -84,7 +84,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
     })
     expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:show').length).toBe(1)
   })
-  it('should hide mainImage when listing has null pictures', () => {
+  it('should return null when listing has null pictures', () => {
     const result = Internals.setPicturesGetFirst({
       name: '',
       path: '',
@@ -132,7 +132,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
     })
     expect(publishStub.mock.calls.filter((c) => c[0] === 'Menu:show').length).toBe(1)
   })
-  it('should hide mainImage when listing has empty pictures', () => {
+  it('should return null when listing has empty pictures', () => {
     const result = Internals.setPicturesGetFirst({
       name: '',
       path: '',

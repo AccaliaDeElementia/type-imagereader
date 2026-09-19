@@ -65,7 +65,7 @@ describe('Server configureBaseApp', () => {
     configureBaseApp(appFake)
     expect(cookieParserStub.mock.calls.length).toBe(1)
   })
-  it('should configure cookieParser with custom config', () => {
+  it('should configure cookieParser with no options', () => {
     configureBaseApp(appFake)
     expect(cookieParserStub.mock.calls[0]).toHaveLength(0)
   })
@@ -83,7 +83,7 @@ describe('Server configureBaseApp', () => {
     configureBaseApp(appFake)
     expect(faviconStub.mock.calls[0]).toHaveLength(1)
   })
-  it('should configure favicon with extended encodings', () => {
+  it('should configure favicon with the dist favicon path', () => {
     configureBaseApp(appFake)
     expect(faviconStub.mock.calls[0]?.[0]).toBe(`${Imports.dirname}/dist/images/favicon.ico`)
   })
