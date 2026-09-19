@@ -21,20 +21,16 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation/messageHandlers Action:Execute:MarkAllUnseen handler', () => {
-  let loadDataStub: MockInstance = vi.fn()
-  beforeEach(() => {
-    const dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })
-    mountDom(dom)
-    resetPubSub()
-    loadDataStub = vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
-    Navigation.current = { path: '/', name: '', parent: '' }
-  })
-  afterAll(() => {
-    unmountDom()
-    vi.restoreAllMocks()
-  })
-  describe('Action:Execute:MarkAllUnseen Message Handler', () => {
+
+const markAllHandlers: Array<[string, string, string]> = [
+  ['Action:Execute:MarkAllSeen', '/api/mark/read', 'read'],
+  ['Action:Execute:MarkAllUnseen', '/api/mark/unread', 'unread'],
+]
+
+describe.each(markAllHandlers)(
+  'public/app/navigation/messageHandlers %s handler',
+  (topic: string, endpoint: string, verb: string) => {
+    let loadDataStub: MockInstance = vi.fn()
     let postJSONSpy = vi.fn().mockResolvedValue(undefined)
     let publishStub: MockInstance = vi.fn()
     let subscribeStub: MockInstance = vi.fn()
@@ -43,25 +39,35 @@ describe('public/app/navigation/messageHandlers Action:Execute:MarkAllUnseen han
       await Promise.resolve()
     }
     beforeEach(() => {
+      const dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })
+      mountDom(dom)
+      resetPubSub()
+      loadDataStub = vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
+      Navigation.current = { path: '/', name: '', parent: '' }
       postJSONSpy = vi.spyOn(Imports, 'postJSON').mockResolvedValue(undefined)
       confirmShowStub = vi.spyOn(Imports, 'show').mockResolvedValue(true)
-      subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
-      vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
+      subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
+      vi.spyOn(Imports, 'forward').mockReturnValue(undefined)
       init()
       loadDataStub.mockClear()
-      handler = capturedSubscriber(subscribeStub, 'Action:Execute:MarkAllUnseen')
-      publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      handler = capturedSubscriber(subscribeStub, topic)
+      publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     })
-    it('should post to mark unread API endpoint', async () => {
+    afterAll(() => {
+      unmountDom()
+    })
+
+    it(`should post to the mark ${verb} API endpoint`, async () => {
       await handler()
-      expect(postJSONSpy.mock.calls[0]?.[0]).toBe('/api/mark/unread')
+      expect(postJSONSpy.mock.calls[0]?.[0]).toBe(endpoint)
     })
-    it('should post expected payload to mark unread API endpoint', async () => {
+    it(`should post the current path to the mark ${verb} API endpoint`, async () => {
       const path = `/foo/bar/${Math.random()}`
       Navigation.current.path = path
       await handler()
       expect(postJSONSpy.mock.calls[0]?.[1]).toEqual({ path })
     })
+
     const payloadTests: Array<[string, unknown]> = [
       ['null', null],
       ['undefined', undefined],
@@ -88,6 +94,7 @@ describe('public/app/navigation/messageHandlers Action:Execute:MarkAllUnseen han
         expect(fn(data)).toBe(true)
       })
     })
+
     it('should call loadData once after postJSON resolves', async () => {
       await handler()
       expect(loadDataStub.mock.calls.length).toBe(1)
@@ -156,5 +163,5 @@ describe('public/app/navigation/messageHandlers Action:Execute:MarkAllUnseen han
       await handler()
       expect(postJSONSpy.mock.calls.length).toBe(1)
     })
-  })
-})
+  },
+)
