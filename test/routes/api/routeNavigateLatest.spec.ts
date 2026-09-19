@@ -76,8 +76,17 @@ describe('routes/api route POST /navigate/latest', () => {
     await routeHandler(requestFake, responseFake)
     expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.BAD_REQUEST])
   })
-  it('should accept missing modcount and handle as invalid modcount', async () => {
+  it('should present a missing modcount to claimAndIncrement as NaN', async () => {
     claimAndIncrementStub.mockReturnValue({ claimed: false })
+    const bodyWithoutModCount: { modCount?: number; path: string } = requestStub.body
+    delete bodyWithoutModCount.modCount
+    await routeHandler(requestFake, responseFake)
+    expect(claimAndIncrementStub.mock.calls[0]).toEqual([Number.NaN])
+  })
+  it('should reject a missing modcount as an invalid modcount', async () => {
+    claimAndIncrementStub.mockReturnValue({ claimed: false })
+    const bodyWithoutModCount: { modCount?: number; path: string } = requestStub.body
+    delete bodyWithoutModCount.modCount
     await routeHandler(requestFake, responseFake)
     expect(responseStub.send.mock.calls[0]).toEqual(['-1'])
   })

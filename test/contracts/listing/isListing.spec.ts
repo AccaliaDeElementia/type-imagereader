@@ -43,7 +43,7 @@ describe('Contracts: isListing()', () => {
     ['invalid modCount', oneExtraKey('modCount', '15'), false],
     ['valid modCount', oneExtraKey('modCount', 99), true],
     ['null noMenu', oneExtraKey('noMenu', null), false],
-    ['undefined name', oneExtraKey('noMenu', undefined), true],
+    ['undefined noMenu', oneExtraKey('noMenu', undefined), true],
     ['invalid noMenu', oneExtraKey('noMenu', 'no menu~!'), false],
     ['valid noMenu', oneExtraKey('noMenu', true), true],
     ['null next', oneExtraKey('next', null), true],

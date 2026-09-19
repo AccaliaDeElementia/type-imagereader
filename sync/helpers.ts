@@ -9,7 +9,7 @@ import { toFolderPath } from '#utils/path.js'
 const ZERO = 0
 const ONE = 1
 const NUMBER_PAD_LENGTH = 20
-const DEFAULT_CHUNK_SIZE = 5000
+export const DEFAULT_CHUNK_SIZE = 5000
 const TRAILING_SLASH_OFFSET = -1
 
 export interface DirEntryItem {

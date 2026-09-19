@@ -38,7 +38,7 @@ describe('utils/persistence isConnectionValid()', () => {
     ],
     [
       'missing connection.filename element',
-      { host: 'host', database: 'database', user: 'user', password: 'password', filename: 'filename' },
+      { host: 'host', database: 'database', user: 'user', password: 'password' },
       true,
     ],
     ['undefined connection.host element', { host: undefined }, false],

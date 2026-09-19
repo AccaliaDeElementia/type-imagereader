@@ -1,6 +1,6 @@
 'use sanity'
 
-import { chunk, Helpers } from '#sync/helpers.js'
+import { chunk, DEFAULT_CHUNK_SIZE, Helpers } from '#sync/helpers.js'
 
 describe('sync/helpers chunk()', () => {
   beforeEach(() => {
@@ -24,7 +24,10 @@ describe('sync/helpers chunk()', () => {
       expect(chunk(value, spread)).toEqual(expected)
     })
   })
-  it('should default to DEFAULT_CHUNK_SIZE (5000) when no size argument is provided', () => {
-    expect(chunk([1, 2, 3])).toEqual([[1, 2, 3]])
+  it('should keep exactly DEFAULT_CHUNK_SIZE entries in a single chunk when no size argument is provided', () => {
+    expect(chunk(Array.from({ length: DEFAULT_CHUNK_SIZE }))).toHaveLength(1)
+  })
+  it('should split one entry past DEFAULT_CHUNK_SIZE into two chunks when no size argument is provided', () => {
+    expect(chunk(Array.from({ length: DEFAULT_CHUNK_SIZE + 1 }))).toHaveLength(2)
   })
 })
