@@ -75,11 +75,11 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
     await Updater.updateFn()
     expect(fakeCalculateDarknessMs?.mock.calls.length).toBe(1)
   })
-  it('should call getOpacity to turn offset into opacity valie', async () => {
+  it('should call getOpacity to turn offset into an opacity value', async () => {
     await Updater.updateFn()
     expect(fakeGetOpacity?.mock.calls.length).toBe(1)
   })
-  it('should call getOpacity with offset valueto turn offset into opacity valie', async () => {
+  it('should call getOpacity with the offset value to turn it into an opacity value', async () => {
     const value = Math.random()
     fakeCalculateDarknessMs?.mockReturnValue(value)
     await Updater.updateFn()

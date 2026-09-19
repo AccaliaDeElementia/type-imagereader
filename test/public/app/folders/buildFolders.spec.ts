@@ -57,7 +57,7 @@ describe('public/app/folders buildFolders()', () => {
     Internals.buildFolders(cast<Listing>(data))
     expect(buildAllCardsStub.mock.calls[0]).toHaveLength(1)
   })
-  it('should pass data to BuilAllCards', () => {
+  it('should pass data to buildAllCards', () => {
     const data = { a: 42 }
     Internals.buildFolders(cast<Listing>(data))
     expect(buildAllCardsStub.mock.calls[0]?.[0]).toBe(data)

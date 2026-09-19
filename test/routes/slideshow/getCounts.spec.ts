@@ -74,7 +74,7 @@ describe('routes/slideshow getCounts()', () => {
     await getCounts(knexFake, 'foo', 7)
     expect(randomStub.mock.calls.length).toBe(0)
   })
-  it('should pick page randomStubly when no unread images exist and current page is unset', async () => {
+  it('should pick page randomly when no unread images exist and current page is unset', async () => {
     getImageCountStub.mockResolvedValueOnce(0).mockResolvedValueOnce(999)
     Config.memorySize = 10
     const result = await getCounts(knexFake, 'foo', undefined)

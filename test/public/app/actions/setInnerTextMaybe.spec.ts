@@ -23,7 +23,7 @@ describe('public/app/actions setInnerTextMaybe', () => {
   afterEach(() => {
     unmountDom()
   })
-  it('should handle no mathcing node to set text', () => {
+  it('should handle no matching node to set text', () => {
     expect(() => {
       Internals.setInnerTextMaybe(divNode, '.xyzzy', 'foo')
     }).not.toThrow()

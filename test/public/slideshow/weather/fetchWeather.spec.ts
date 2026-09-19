@@ -82,7 +82,7 @@ describe('public/slideshow/weather fetchWeather()', () => {
     await expect(Internals.fetchWeather('FOO')).rejects.toBe(err)
   })
 
-  it('should reject when fetch resolves invalid WeatherResultsjects', async () => {
+  it('should reject when fetch resolves invalid WeatherResults objects', async () => {
     fetchStub.mockResolvedValue({ json: vi.fn().mockResolvedValue(42) })
     await expect(Internals.fetchWeather('FOO')).rejects.toHaveProperty('message', 'Invalid WeatherResponse Retrieved')
   })

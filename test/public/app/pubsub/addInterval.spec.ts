@@ -29,7 +29,7 @@ describe('public/app/pubsub addInterval()', () => {
     addInterval('FOOBAR', voidFn(), 0)
     expect(PubSub.intervals.FOOBAR).not.toBe(ival)
   })
-  it('should add method with a zero delay cycles valuu', () => {
+  it('should add method with a zero delay cycles value', () => {
     const spy = voidFn()
     addInterval('FOOBAR', spy, 65535)
     expect(PubSub.intervals.FOOBAR?.delayCycles).toBe(0)

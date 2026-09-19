@@ -84,7 +84,7 @@ describe('public/slideshow/sockets connect()', () => {
     ['https://comicreader.example.org/foo/bar/baz', 'https://comicreader.example.org'],
   ]
   uris.forEach(([url, result]) => {
-    it(`should construct socket.io clinet for: ${url}`, () => {
+    it(`should construct socket.io client for: ${url}`, () => {
       dom.reconfigure({ url })
       connect()
       expect(fakeIO?.mock.calls[0]).toEqual([result])
@@ -161,20 +161,20 @@ describe('public/slideshow/sockets connect()', () => {
     cast<(_: unknown) => void>(fakeAddEventListener?.mock.calls.find((c) => c[0] === 'click')?.[1])(undefined)
     expect(fakeHandleClick?.mock.calls[0]?.[1]).toBe(fakeSocket)
   })
-  it('should pass inisial scale factor to handler when processing click event', () => {
+  it('should pass initial scale factor to handler when processing click event', () => {
     fakeViewport.scale = 1.2373
     connect()
     cast<(_: unknown) => void>(fakeAddEventListener?.mock.calls.find((c) => c[0] === 'click')?.[1])(undefined)
     expect(fakeHandleClick?.mock.calls[0]?.[2]).toBe(1.2373)
   })
-  it('should pass original sale factor even if changed when processing click event', () => {
+  it('should pass original scale factor even if changed when processing click event', () => {
     fakeViewport.scale = 0.63
     connect()
     fakeViewport.scale = 99.72
     cast<(_: unknown) => void>(fakeAddEventListener?.mock.calls.find((c) => c[0] === 'click')?.[1])(undefined)
     expect(fakeHandleClick?.mock.calls[0]?.[2]).toBe(0.63)
   })
-  it('should pass default scale factor when no fiewport defined for processing click event', () => {
+  it('should pass default scale factor when no viewport defined for processing click event', () => {
     global.window.visualViewport = null
     connect()
     cast<(_: unknown) => void>(fakeAddEventListener?.mock.calls.find((c) => c[0] === 'click')?.[1])(undefined)

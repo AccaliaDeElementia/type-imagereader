@@ -48,7 +48,7 @@ describe('public/slideshow/time Updater()', () => {
     await Updater.updateFn()
     expect(fakeFormatTime?.mock.calls[0]).toEqual([now])
   })
-  it('should place formated data into .time', async () => {
+  it('should place formatted data into .time', async () => {
     fakeFormatTime?.mockReturnValue('I am time')
     await Updater.updateFn()
     const elem = dom.window.document.querySelector<HTMLElement>('.time')
@@ -75,7 +75,7 @@ describe('public/slideshow/time Updater()', () => {
     await Updater.updateFn()
     expect(fakeFormatDate?.mock.calls[0]).toEqual([now])
   })
-  it('should place formated data into .date', async () => {
+  it('should place formatted data into .date', async () => {
     fakeFormatDate?.mockReturnValue('I am date')
     await Updater.updateFn()
     const elem = dom.window.document.querySelector<HTMLElement>('.date')

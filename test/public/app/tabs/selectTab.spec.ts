@@ -152,7 +152,7 @@ describe('public/app/tabs selectTab()', () => {
     Internals.selectTab(Tabs.tabNames[1])
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).toBe(false)
   })
-  it('should remove active css class from null hrwf tab', () => {
+  it('should remove active css class from null href tab', () => {
     Tabs.tabs[2]?.parentElement?.classList.add('active')
     Tabs.tabs[2]?.removeAttribute('href')
     expect(Tabs.tabs[2]?.parentElement?.classList.contains('active')).toBe(true)

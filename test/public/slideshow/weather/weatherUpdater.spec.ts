@@ -42,7 +42,7 @@ describe('public/slideshow/weather weatherUpdater', () => {
     unmountDom()
   })
 
-  it('should be an CyclicUpdater', () => {
+  it('should be a CyclicUpdater', () => {
     expect(weatherUpdater).toBeInstanceOf(CyclicUpdater)
   })
 
