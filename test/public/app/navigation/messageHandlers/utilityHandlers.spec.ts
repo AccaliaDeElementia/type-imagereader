@@ -19,7 +19,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation/messageHandlers init()', () => {
+describe('public/app/navigation/messageHandlers action-to-topic forwarding handlers', () => {
   let dom = new JSDOM('', {})
   let subscribeStub: MockInstance = vi.fn()
   let forwardStub: MockInstance = vi.fn()

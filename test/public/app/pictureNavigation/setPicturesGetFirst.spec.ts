@@ -19,7 +19,7 @@ html
       a(href="#tabImages") Pictures
 `
 
-describe('public/app/pictures setPicturesGetFirst()', () => {
+describe('public/app/pictureNavigation setPicturesGetFirst()', () => {
   let dom = new JSDOM('<html></html>', {})
 
   let element: HTMLElement | null = null
@@ -251,7 +251,7 @@ describe('public/app/pictures setPicturesGetFirst()', () => {
     })
     expect(Viewer.modCount).toBe(-1)
   })
-  it('should return first pciture when listing has pictures', () => {
+  it('should return first picture when listing has pictures', () => {
     const pics = Array.from({ length: 17 }).map((_, i) => ({
       name: `foo ${i}.gif`,
       path: `/foo ${i}.gif`,

@@ -4,7 +4,7 @@ import { cast } from '#testutils/typeGuards.js'
 
 import { releaseLock, WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
 
-describe('public/app/WakeLock releaseLock()', () => {
+describe('public/app/wakelock releaseLock()', () => {
   let sentinelRelease = vi.fn().mockResolvedValue(undefined)
   let sentinel: WakeLockSentinel = {
     release: sentinelRelease,

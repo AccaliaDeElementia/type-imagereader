@@ -15,7 +15,7 @@ html
     div#tabImages
 `
 
-describe('public/app/pictures makeTab()', () => {
+describe('public/app/pictureMarkup makeTab()', () => {
   let dom = new JSDOM('<html></html>', {})
   let makePicturesPageSpy: MockInstance = vi.fn()
   let makePaginatorSpy: MockInstance = vi.fn()

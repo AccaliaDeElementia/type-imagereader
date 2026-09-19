@@ -7,7 +7,7 @@ import { capturedInterval, capturedSubscriber, resetPubSub } from '#testutils/pu
 import { init, Imports, Internals, WakeLock } from '#public/scripts/app/wakelock.js'
 import type { MockInstance } from 'vitest'
 
-describe('public/app/WakeLock init()', () => {
+describe('public/app/wakelock init()', () => {
   let dom = new JSDOM('<html></html>', {})
   let takeLockSpy: MockInstance = vi.fn()
   let releaseLockSpy: MockInstance = vi.fn()

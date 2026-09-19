@@ -14,7 +14,7 @@ interface AppStub {
   locals: AppLocals
 }
 
-describe('Server registerRouters', () => {
+describe('Server registerViewsAndMiddleware', () => {
   let staticStub: MockInstance = vi.fn()
   let buildAssetVersionsStub: MockInstance = vi.fn()
   let assetUrlStub: MockInstance = vi.fn()

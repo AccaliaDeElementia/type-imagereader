@@ -7,7 +7,7 @@ import { Imports, selectPage } from '#public/scripts/app/pictureMarkup.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import type { MockInstance } from 'vitest'
 
-describe('public/app/pictures selectPage()', () => {
+describe('public/app/pictureMarkup selectPage()', () => {
   let dom = new JSDOM('<html></html>', {})
   let publishStub: MockInstance = vi.fn()
   beforeEach(() => {

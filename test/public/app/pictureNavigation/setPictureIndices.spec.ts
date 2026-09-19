@@ -11,7 +11,7 @@ const makePicture = (name: string, overrides: Partial<Picture> = {}): Picture =>
   ...overrides,
 })
 
-describe('public/app/pictures setPictureIndices()', () => {
+describe('public/app/pictureNavigation setPictureIndices()', () => {
   beforeEach(() => {
     Pictures.pictures = []
   })

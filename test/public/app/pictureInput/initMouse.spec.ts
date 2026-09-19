@@ -13,7 +13,7 @@ interface TestVisualViewport {
   scale: number
 }
 
-describe('public/app/pictures initMouse()', () => {
+describe('public/app/pictureInput initMouse()', () => {
   let dom = new JSDOM('<html><body><div id="bigImage"><img class="hidden"/></div></body></html>', {})
   let publishStub: MockInstance = vi.fn()
   let visualViewport: TestVisualViewport = { scale: 1 }

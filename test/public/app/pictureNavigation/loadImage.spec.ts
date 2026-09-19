@@ -24,7 +24,7 @@ html
         div.right
 `
 
-describe('public/app/pictures loadImage()', () => {
+describe('public/app/pictureNavigation loadImage()', () => {
   let dom = new JSDOM('<html></html>', {})
   const totalCount = 1500
   let current: Picture = {
@@ -301,7 +301,7 @@ describe('public/app/pictures loadImage()', () => {
     await loadImage()
     expect(bottomLeftText?.innerHTML).toBe('(1/1,500)')
   })
-  it('should select page of currnet image', async () => {
+  it('should select page of current image', async () => {
     await loadImage()
     expect(selectPageSpy).toHaveBeenCalledWith(40)
   })

@@ -19,7 +19,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation/messageHandlers init()', () => {
+describe('public/app/navigation/messageHandlers Navigate:Load, Navigate:Data and Navigate:Reload handlers', () => {
   let dom = new JSDOM('', {})
   let loadDataStub: MockInstance = vi.fn()
   let subscribeStub: MockInstance = vi.fn()

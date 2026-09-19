@@ -4,7 +4,7 @@ import { Imports, Internals } from '#public/scripts/app/pictureNavigation.js'
 import type { Picture } from '#contracts/listing.js'
 import type { MockInstance } from 'vitest'
 
-describe('public/app/pictures makeURI()', () => {
+describe('public/app/pictureNavigation makeURI()', () => {
   const picture: Picture = {
     name: 'foobar.png',
     path: '/some/path/foobar.png',

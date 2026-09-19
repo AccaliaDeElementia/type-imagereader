@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/unreadFilter.js'
 
-describe('public/app/pictures setShowUnreadOnly()', () => {
+describe('public/app/unreadFilter setShowUnreadOnly()', () => {
   let dom = new JSDOM('<html></html>')
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {

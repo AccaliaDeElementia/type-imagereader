@@ -3,7 +3,7 @@
 import type { Picture } from '#contracts/listing.js'
 import { Viewer, resetViewerState } from '#public/scripts/app/pictureNavigation.js'
 
-describe('public/app/pictures resetViewerState()', () => {
+describe('public/app/pictureNavigation resetViewerState()', () => {
   it('should reset modCount to the uninitialized sentinel', () => {
     Viewer.modCount = 99
     resetViewerState()

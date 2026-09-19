@@ -21,7 +21,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation/messageHandlers init()', () => {
+describe('public/app/navigation/messageHandlers Action:Execute:MarkAllUnseen handler', () => {
   let loadDataStub: MockInstance = vi.fn()
   beforeEach(() => {
     const dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })

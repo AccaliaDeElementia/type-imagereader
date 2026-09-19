@@ -22,7 +22,7 @@ const PAGE_COUNT = 7
 const NEXT_PAGE_CALL_INDEX = PREV_BUTTON_CALLS + PAGE_COUNT
 const MIDDLE_PAGE_CALL_INDEX = 3
 
-describe('public/app/pictures makePaginator()', () => {
+describe('public/app/pictureMarkup makePaginator()', () => {
   let dom = new JSDOM('<html></html>', {})
   let makePageItemSpy: MockInstance = vi.fn()
   let getCurrentPageSpy: MockInstance = vi.fn()

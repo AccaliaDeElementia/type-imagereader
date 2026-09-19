@@ -15,7 +15,7 @@ html
     div#tabImages
 `
 
-describe('public/app/pictures loadNextImage()', () => {
+describe('public/app/pictureNavigation loadNextImage()', () => {
   let dom = new JSDOM('<html></html>', {})
   const fetchStub = vi.fn()
   let getPictureStub: MockInstance = vi.fn()

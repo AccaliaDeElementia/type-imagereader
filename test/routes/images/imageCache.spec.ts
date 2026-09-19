@@ -2,7 +2,7 @@
 
 import { type CacheItem, ImageCache, ImageData } from '#routes/images.js'
 import { UNBOUNDED } from '#contracts/scaledImage.js'
-describe('routes/images ImageData', () => {
+describe('routes/images ImageCache', () => {
   const defaultCacheSize = ImageCache.cacheSize
   let createSpy = vi.fn()
   let imageCache = new ImageCache(createSpy)

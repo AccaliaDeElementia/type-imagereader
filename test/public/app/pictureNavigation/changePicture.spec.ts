@@ -8,7 +8,7 @@ import type { MockInstance } from 'vitest'
 
 const HISTORY_SIZE = 10
 
-describe('public/app/pictures changePicture()', () => {
+describe('public/app/pictureNavigation changePicture()', () => {
   let publishStub: MockInstance = vi.fn()
   let isLoadingSpy: MockInstance = vi.fn()
   let loadImageSpy: MockInstance = vi.fn()

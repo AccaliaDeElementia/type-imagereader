@@ -5,7 +5,7 @@ import { mountDom, unmountDom } from '#testutils/dom.js'
 import { Internals } from '#public/scripts/app/pictureMarkup.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
-describe('public/app/pictures makePaginatorItem()', () => {
+describe('public/app/pictureMarkup makePaginatorItem()', () => {
   let dom = new JSDOM('<html></html>', {})
   let selectPageSpy = vi.fn().mockResolvedValue(undefined)
   beforeEach(() => {

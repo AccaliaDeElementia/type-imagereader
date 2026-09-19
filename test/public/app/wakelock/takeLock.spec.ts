@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom'
 
 import { takeLock, WakeLock, type WakeLockSentinel } from '#public/scripts/app/wakelock.js'
 
-describe('public/app/WakeLock takeLock()', () => {
+describe('public/app/wakelock takeLock()', () => {
   const existingNavigator = global.navigator
   let wakelockRequest = vi.fn()
   let sentinel: WakeLockSentinel = {

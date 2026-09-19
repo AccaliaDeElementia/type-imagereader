@@ -48,7 +48,7 @@ html
         ul.pagination
 `
 
-describe('public/app/pictures init()', () => {
+describe('public/app/pictureState init()', () => {
   let dom = new JSDOM(render(markup), {})
   let resetMarkupSpy: MockInstance = vi.fn()
   let initActionsSpy: MockInstance = vi.fn()

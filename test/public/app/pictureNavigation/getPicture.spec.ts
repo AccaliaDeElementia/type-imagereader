@@ -5,7 +5,7 @@ import { getPicture, Internals, NavigateTo } from '#public/scripts/app/pictureNa
 import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
-describe('public/app/pictures getPicture()', () => {
+describe('public/app/pictureNavigation getPicture()', () => {
   let choosePictureIndexSpy: MockInstance = vi.fn()
   beforeEach(() => {
     Pictures.pictures = Array.from({ length: 64 }).map((_, i) => ({
@@ -113,7 +113,7 @@ describe('public/app/pictures getPicture()', () => {
       const result = getPicture(navi)
       expect(result).toBe(undefined)
     })
-    it(`${title}: should return undefiend for out of bounds index`, () => {
+    it(`${title}: should return undefined for out of bounds index`, () => {
       choosePictureIndexSpy.mockReturnValue(65535)
       const result = getPicture(navi)
       expect(result).toBe(undefined)

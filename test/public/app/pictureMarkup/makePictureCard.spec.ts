@@ -7,7 +7,7 @@ import { cast } from '#testutils/typeGuards.js'
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 import type { MockInstance } from 'vitest'
 
-describe('public/app/pictures makePictureCard()', () => {
+describe('public/app/pictureMarkup makePictureCard()', () => {
   let dom = new JSDOM('<html></html>', {})
   let publishStub: MockInstance = vi.fn()
   beforeEach(() => {

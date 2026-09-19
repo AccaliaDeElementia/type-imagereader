@@ -20,7 +20,7 @@ html
     div#mainMenu
       div.innerTarget
 `
-describe('public/app/navigation/messageHandlers init()', () => {
+describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers', () => {
   let dom = new JSDOM('', {})
   let subscribeStub: MockInstance = vi.fn()
   beforeEach(() => {

@@ -15,7 +15,7 @@ html
     div#tabImages
 `
 
-describe('public/app/pictures refreshImage()', () => {
+describe('public/app/pictureNavigation refreshImage()', () => {
   let dom = new JSDOM('<html></html>', {})
   const current: Picture = {
     name: '1250.png',

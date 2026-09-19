@@ -11,7 +11,7 @@ import type { Picture } from '#contracts/listing.js'
 import { cast } from '#testutils/typeGuards.js'
 import type { MockInstance } from 'vitest'
 
-describe('public/app/pictures initActions()', () => {
+describe('public/app/pictureInput initActions()', () => {
   let dom = new JSDOM('<html></html>', {})
   let isMenuActiveSpy: MockInstance = vi.fn()
   let getShowUnreadOnly: MockInstance = vi.fn()

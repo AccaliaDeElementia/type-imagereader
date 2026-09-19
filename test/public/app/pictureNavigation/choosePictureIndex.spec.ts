@@ -2,7 +2,7 @@
 
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { Internals, NavigateTo } from '#public/scripts/app/pictureNavigation.js'
-describe('public/app/pictures choosePictureIndex()', () => {
+describe('public/app/pictureNavigation choosePictureIndex()', () => {
   beforeEach(() => {
     Pictures.pictures = Array.from({ length: 64 }).map((_, i) => ({
       path: `/some/path/${i}.png`,

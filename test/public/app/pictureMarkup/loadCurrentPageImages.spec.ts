@@ -6,7 +6,7 @@ import { Pictures } from '#public/scripts/app/pictureState.js'
 import { loadCurrentPageImages } from '#public/scripts/app/pictureMarkup.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 
-describe('public/app/pictures loadCurrentPageImages()', () => {
+describe('public/app/pictureMarkup loadCurrentPageImages()', () => {
   let dom = new JSDOM('<html></html>', {})
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {

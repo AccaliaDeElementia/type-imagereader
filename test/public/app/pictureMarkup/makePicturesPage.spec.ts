@@ -7,7 +7,7 @@ import { resetPubSub } from '#testutils/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
 import type { MockInstance } from 'vitest'
 
-describe('public/app/pictures makePicturesPage()', () => {
+describe('public/app/pictureMarkup makePicturesPage()', () => {
   let dom = new JSDOM('<html></html>', {})
   let makePictureCardSpy: MockInstance = vi.fn()
   beforeEach(() => {

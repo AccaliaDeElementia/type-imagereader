@@ -7,7 +7,7 @@ import { resetPubSub } from '#testutils/pubsub.js'
 import type { Picture } from '#contracts/listing.js'
 import type { MockInstance } from 'vitest'
 
-describe('public/app/pictures loadData()', () => {
+describe('public/app/pictureNavigation loadData()', () => {
   let resetMarkupSpy: MockInstance = vi.fn()
   let setPicturesSpy: MockInstance = vi.fn()
   let makeTabSpy: MockInstance = vi.fn()
