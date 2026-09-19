@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 import type { Knex } from 'knex'
 import knex from 'knex'
-import { stringishHasValue, stringIsNullOrEmpty } from './helpers.js'
+import { stringishHasValue } from './helpers.js'
 import { isDictionary, hasOptionalKey, hasRequiredKey } from './typeGuards.js'
 
 const moduleDir = dirname(fileURLToPath(import.meta.url))
@@ -76,7 +76,7 @@ export function getEnvironmentName(): string {
 
 export async function readConfigurationBlock(): Promise<KnexOptions> {
   const content = await Imports.readFile(join(moduleDir, '../knexfile.json'), { encoding: 'utf-8' })
-  if (stringIsNullOrEmpty(content)) throw new Error('Invalid Configuration Detected!')
+  if (!stringishHasValue(content)) throw new Error('Invalid Configuration Detected!')
   const data = JSON.parse(content) as unknown
   if (!isDictionary(data)) throw new Error('Invalid Configuration Detected!')
   const name = Internals.getEnvironmentName()

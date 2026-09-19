@@ -9,10 +9,6 @@ export enum STEP {
 export const ZERO_LENGTH = 0
 export const ZERO_COUNT = 0
 
-export function stringIsNullOrEmpty(str: string | null | undefined): boolean {
-  return str === null || str === undefined || str.length === ZERO_LENGTH
-}
-
 export function getDataDir(): string {
   const raw = process.env.DATA_DIR
   if (!stringishHasValue(raw)) return '/data'

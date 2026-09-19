@@ -13,7 +13,7 @@ import { start as startWatcher } from '#sync/filewatcher.js'
 import type { Changeset, WatcherSubscription } from '#sync/filewatcher.js'
 import { initialize as _initialize } from '#utils/persistence.js'
 import { start } from '#server.js'
-import { stringIsNullOrEmpty, getDataDir } from '#utils/helpers.js'
+import { stringishHasValue, getDataDir } from '#utils/helpers.js'
 
 const IncrementalSyncFunctions = { incrementalSync: _incrementalSync }
 
@@ -97,7 +97,7 @@ const isSuppressed = (skipVar: string): boolean => {
 
 const parseSyncInterval = (): number | undefined => {
   const raw = process.env.SYNC_INTERVAL
-  if (stringIsNullOrEmpty(raw)) return undefined
+  if (!stringishHasValue(raw)) return undefined
   const parsed = Number(raw)
   if (Number.isNaN(parsed) || !Number.isFinite(parsed) || parsed <= ZERO) return undefined
   return parsed
@@ -118,7 +118,7 @@ export const ImageReader = {
     Imports.logger('using data directory: %s', dataDir)
     await Internals.validateDataDir(dataDir)
     await runIfNotSuppressed('SKIP_SERVE', async () => {
-      const port = Number(stringIsNullOrEmpty(process.env.PORT) ? DEFAULT_PORT : process.env.PORT)
+      const port = Number(stringishHasValue(process.env.PORT) ? process.env.PORT : DEFAULT_PORT)
       if (Number.isNaN(port)) {
         throw new Error(`Port ${port} (from env: ${process.env.PORT}) is not a number. Valid ports must be a number.`)
       }
