@@ -44,13 +44,13 @@ describe('public/app/net postJSON()', () => {
     const req = cast<TestRequest>(fetchStub.mock.calls[0]?.[1])
     expect(Object.keys(req.headers).sort()).toEqual(['Content-Type', 'Accept-Encoding', 'Accept'].sort())
   })
-  const headerTests: Array<[string, string, string]> = [
-    ['Accept-Encoding', 'Accept-Encoding', 'gzip, deflate, br'],
-    ['Accept', 'Accept', 'application/json'],
-    ['Content-Type', 'Content-Type', 'application/json'],
+  const headerTests: Array<[string, string]> = [
+    ['Accept-Encoding', 'gzip, deflate, br'],
+    ['Accept', 'application/json'],
+    ['Content-Type', 'application/json'],
   ]
-  headerTests.forEach(([title, header, expected]) => {
-    it(`should set ${title} header`, async () => {
+  headerTests.forEach(([header, expected]) => {
+    it(`should set ${header} header`, async () => {
       await postJSON('/foo', {}, isUnknown)
       const req = cast<TestRequest>(fetchStub.mock.calls[0]?.[1])
       expect(req.headers[header]).toBe(expected)
