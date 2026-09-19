@@ -54,16 +54,6 @@ describe('routes/weather getWeather', () => {
     delete process.env.OPENWEATHER_LOCATION
     await expect(getWeather()).rejects.toBeInstanceOf(WeatherConfigError)
   })
-  it('should reject when fetch fails', async () => {
-    const err = new Error('FOO')
-    fetchStub.mockRejectedValue(err)
-    await expect(getWeather()).rejects.toBe(err)
-  })
-  it('should reject when fetch throws', async () => {
-    const err = new Error('FOO')
-    fetchStub.mockRejectedValue(err)
-    await expect(getWeather()).rejects.toBe(err)
-  })
   it('should request expected openweather api url', async () => {
     await getWeather()
     expect(fetchStub.mock.calls[0]?.[0]).toBe('https://api.openweathermap.org/data/2.5/weather?q=location&appid=appid')

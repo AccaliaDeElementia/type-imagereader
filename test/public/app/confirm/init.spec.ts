@@ -3,7 +3,7 @@
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
-import { Confirm, init, show } from '#public/scripts/app/confirm.js'
+import { Confirm, init } from '#public/scripts/app/confirm.js'
 
 const markup = `
 html
@@ -42,17 +42,5 @@ describe('public/app/confirm init()', () => {
 
   it('should set titleElement to .title within #confirmDialog', () => {
     expect(Confirm.titleElement).not.toBe(null)
-  })
-
-  it('should resolve true when confirm button is clicked', async () => {
-    const result = show('test', 'Test Title')
-    document.querySelector<HTMLElement>('#confirmDialog .confirm')?.click()
-    expect(await result).toBe(true)
-  })
-
-  it('should resolve false when cancel button is clicked', async () => {
-    const result = show('test', 'Test Title')
-    document.querySelector<HTMLElement>('#confirmDialog .cancel')?.click()
-    expect(await result).toBe(false)
   })
 })

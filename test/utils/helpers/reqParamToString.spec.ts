@@ -4,16 +4,16 @@ import { reqParamToString } from '#utils/helpers.js'
 
 describe('utils/helpers reqParamToString()', () => {
   describe('null and undefined input', () => {
-    it('should return default value for null', () => {
+    it('should fall back to the empty default for null', () => {
       expect(reqParamToString(null)).toBe('')
     })
-    it('should return default value for undefined', () => {
+    it('should fall back to the empty default for undefined', () => {
       expect(reqParamToString(undefined)).toBe('')
     })
-    it('should return provided default value for null', () => {
+    it('should fall back to the provided default for null', () => {
       expect(reqParamToString(null, 'fallback')).toBe('fallback')
     })
-    it('should return provided default value for undefined', () => {
+    it('should fall back to the provided default for undefined', () => {
       expect(reqParamToString(undefined, 'fallback')).toBe('fallback')
     })
   })
@@ -22,14 +22,17 @@ describe('utils/helpers reqParamToString()', () => {
     it('should return the string when non-empty', () => {
       expect(reqParamToString('foo')).toBe('foo')
     })
-    it('should return default value for empty string', () => {
+    it('should return the string unchanged when it contains slashes', () => {
+      expect(reqParamToString('foo/bar')).toBe('foo/bar')
+    })
+    it('should return the string in preference to the provided default', () => {
+      expect(reqParamToString('foo', 'fallback')).toBe('foo')
+    })
+    it('should fall back to the empty default for an empty string', () => {
       expect(reqParamToString('')).toBe('')
     })
-    it('should return provided default value for empty string', () => {
+    it('should fall back to the provided default for an empty string', () => {
       expect(reqParamToString('', 'fallback')).toBe('fallback')
-    })
-    it('should return string unchanged when it contains slashes', () => {
-      expect(reqParamToString('foo/bar')).toBe('foo/bar')
     })
   })
 
@@ -37,35 +40,23 @@ describe('utils/helpers reqParamToString()', () => {
     it('should join array elements with slash', () => {
       expect(reqParamToString(['foo', 'bar'])).toBe('foo/bar')
     })
-    it('should return single element array as string', () => {
-      expect(reqParamToString(['foo'])).toBe('foo')
-    })
-    it('should return default value for empty array', () => {
-      expect(reqParamToString([])).toBe('')
-    })
-    it('should return provided default value for empty array', () => {
-      expect(reqParamToString([], 'fallback')).toBe('fallback')
-    })
-    it('should join array of empty strings as slash-separated result', () => {
-      expect(reqParamToString(['', ''])).toBe('/')
-    })
-    it('should preserve path segments when joining array', () => {
+    it('should preserve every path segment when joining', () => {
       expect(reqParamToString(['foo', 'bar', 'baz'])).toBe('foo/bar/baz')
     })
-  })
-
-  describe('defaultValue parameter', () => {
-    it('should use empty string as default value when not provided', () => {
-      expect(reqParamToString(null)).toBe('')
+    it('should return a single element array as that string', () => {
+      expect(reqParamToString(['foo'])).toBe('foo')
     })
-    it('should use provided default value when input resolves to empty', () => {
-      expect(reqParamToString('', '/default/path')).toBe('/default/path')
+    it('should join an array of empty strings rather than treating it as empty', () => {
+      expect(reqParamToString(['', ''])).toBe('/')
     })
-    it('should not use default value when string input is non-empty', () => {
-      expect(reqParamToString('foo', 'fallback')).toBe('foo')
-    })
-    it('should not use default value when array input is non-empty', () => {
+    it('should return the joined value in preference to the provided default', () => {
       expect(reqParamToString(['foo', 'bar'], 'fallback')).toBe('foo/bar')
+    })
+    it('should fall back to the empty default for an empty array', () => {
+      expect(reqParamToString([])).toBe('')
+    })
+    it('should fall back to the provided default for an empty array', () => {
+      expect(reqParamToString([], 'fallback')).toBe('fallback')
     })
   })
 })

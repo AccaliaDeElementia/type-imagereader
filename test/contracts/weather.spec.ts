@@ -21,18 +21,6 @@ describe('Contracts: IsWeatherResults()', () => {
     ['NaN temp', { temp: Number.NaN }, false],
     ['Infinity temp', { temp: Number.POSITIVE_INFINITY }, false],
     ['negative Infinity temp', { temp: Number.NEGATIVE_INFINITY }, false],
-    [
-      'missing temp',
-      {
-        pressure: 0,
-        humidity: 0,
-        description: '',
-        icon: '',
-        sunrise: 0,
-        sunset: 0,
-      },
-      true,
-    ],
     ['object pressure', { pressure: {} }, false],
     ['array pressure', { pressure: [] }, false],
     ['null pressure', { pressure: null }, false],
@@ -40,18 +28,6 @@ describe('Contracts: IsWeatherResults()', () => {
     ['string pressure', { pressure: 'foo' }, false],
     ['boolean pressure', { pressure: false }, false],
     ['number pressure', { pressure: 42 }, true],
-    [
-      'missing pressure',
-      {
-        temp: 0,
-        humidity: 0,
-        description: '',
-        icon: '',
-        sunrise: 0,
-        sunset: 0,
-      },
-      true,
-    ],
     ['object humidity', { humidity: {} }, false],
     ['array humidity', { humidity: [] }, false],
     ['null humidity', { humidity: null }, false],
@@ -59,18 +35,6 @@ describe('Contracts: IsWeatherResults()', () => {
     ['string humidity', { humidity: 'foo' }, false],
     ['boolean humidity', { humidity: false }, false],
     ['number humidity', { humidity: 42 }, true],
-    [
-      'missing humidity',
-      {
-        temp: 0,
-        pressure: 0,
-        description: '',
-        icon: '',
-        sunrise: 0,
-        sunset: 0,
-      },
-      true,
-    ],
     ['object description', { description: {} }, false],
     ['array description', { description: [] }, false],
     ['null description', { description: null }, false],
@@ -78,18 +42,6 @@ describe('Contracts: IsWeatherResults()', () => {
     ['string description', { description: 'foo' }, true],
     ['boolean description', { description: false }, false],
     ['number description', { description: 42 }, false],
-    [
-      'missing description',
-      {
-        temp: 0,
-        pressure: 0,
-        humidity: 0,
-        icon: '',
-        sunrise: 0,
-        sunset: 0,
-      },
-      true,
-    ],
     ['object icon', { icon: {} }, false],
     ['array icon', { icon: [] }, false],
     ['null icon', { icon: null }, false],
@@ -97,18 +49,6 @@ describe('Contracts: IsWeatherResults()', () => {
     ['string icon', { icon: 'foo' }, true],
     ['boolean icon', { icon: false }, false],
     ['number icon', { icon: 42 }, false],
-    [
-      'missing icon',
-      {
-        temp: 0,
-        pressure: 0,
-        humidity: 0,
-        description: '',
-        sunrise: 0,
-        sunset: 0,
-      },
-      true,
-    ],
     ['object sunrise', { sunrise: {} }, false],
     ['array sunrise', { sunrise: [] }, false],
     ['null sunrise', { sunrise: null }, false],
@@ -118,18 +58,6 @@ describe('Contracts: IsWeatherResults()', () => {
     ['number sunrise', { sunrise: 42 }, true],
     ['NaN sunrise', { sunrise: Number.NaN }, false],
     ['Infinity sunrise', { sunrise: Number.POSITIVE_INFINITY }, false],
-    [
-      'missing sunrise',
-      {
-        temp: 0,
-        humidity: 0,
-        pressure: 0,
-        description: '',
-        icon: '',
-        sunset: 0,
-      },
-      true,
-    ],
     ['object sunset', { sunset: {} }, false],
     ['array sunset', { sunset: [] }, false],
     ['null sunset', { sunset: null }, false],
@@ -139,24 +67,31 @@ describe('Contracts: IsWeatherResults()', () => {
     ['number sunset', { sunset: 42 }, true],
     ['NaN sunset', { sunset: Number.NaN }, false],
     ['Infinity sunset', { sunset: Number.POSITIVE_INFINITY }, false],
-    [
-      'missing sunset',
-      {
-        temp: 0,
-        humidity: 0,
-        pressure: 0,
-        description: '',
-        icon: '',
-        sunrise: 0,
-      },
-      true,
-    ],
   ]
   testCases.forEach(([name, value, expected]) => {
     it(`should ${expected ? 'accept' : 'reject'} ${name} object`, () => {
       expect(isWeatherResults(value)).toBe(expected)
     })
   })
+  const COMPLETE_PAYLOAD = {
+    temp: 0,
+    pressure: 0,
+    humidity: 0,
+    description: '',
+    icon: '',
+    sunrise: 0,
+    sunset: 0,
+  }
+  const withoutKey = (omit: string): Record<string, unknown> =>
+    Object.fromEntries(Object.entries(COMPLETE_PAYLOAD).filter(([key]) => key !== omit))
+
+  it('should accept a payload carrying every field', () => {
+    expect(isWeatherResults(COMPLETE_PAYLOAD)).toBe(true)
+  })
+  it.each(Object.keys(COMPLETE_PAYLOAD))('should accept a populated payload with %s absent', (omitted) => {
+    expect(isWeatherResults(withoutKey(omitted))).toBe(true)
+  })
+
   it('should accept weather from local env service', () => {
     const data = {
       sun: {

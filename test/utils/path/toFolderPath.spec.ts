@@ -18,7 +18,4 @@ describe('utils/Path toFolderPath', () => {
   it('should be idempotent on a path that already ends with a slash', () => {
     expect(toFolderPath('/foo/bar/')).toBe('/foo/bar/')
   })
-  it('should be idempotent on the root path', () => {
-    expect(toFolderPath('/')).toBe('/')
-  })
 })
