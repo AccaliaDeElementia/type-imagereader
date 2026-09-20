@@ -10,8 +10,10 @@ import { createResponseFake } from '#testutils/express.js'
 import type { MockInstance } from 'vitest'
 
 describe('routes/images route /preview/*-image.webp', () => {
-  const defaultKioskCache = CacheStorage.kioskCache
-  const defaultScaledCache = CacheStorage.scaledCache
+  const imageCachesAtLoad = { ...CacheStorage }
+  afterAll(() => {
+    Object.assign(CacheStorage, imageCachesAtLoad)
+  })
   let applicationFake = cast<Application>({})
   let serverFake = cast<Server>({})
   let websocketsFake = cast<WebSocketServer>({})
@@ -59,10 +61,6 @@ describe('routes/images route /preview/*-image.webp', () => {
     }
     requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
-  })
-  afterAll(() => {
-    CacheStorage.kioskCache = defaultKioskCache
-    CacheStorage.scaledCache = defaultScaledCache
   })
 
   const pathVariants: Array<[string, string | string[]]> = [

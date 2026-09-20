@@ -25,6 +25,10 @@ const cachedRoutes: CachedRouteCase[] = [
 describe.each(cachedRoutes)(
   'routes/images route /$kind/*-image.webp',
   ({ kind, cache, width, height }: CachedRouteCase) => {
+    const imageCachesAtLoad = { ...CacheStorage }
+    afterAll(() => {
+      Object.assign(CacheStorage, imageCachesAtLoad)
+    })
     let requestStub = {
       params: { path: undefined as string | string[] | undefined },
       body: '',

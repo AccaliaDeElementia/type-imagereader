@@ -23,8 +23,10 @@ interface Req {
 }
 
 describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
-  const defaultKioskCache = CacheStorage.kioskCache
-  const defaultScaledCache = CacheStorage.scaledCache
+  const imageCachesAtLoad = { ...CacheStorage }
+  afterAll(() => {
+    Object.assign(CacheStorage, imageCachesAtLoad)
+  })
   let applicationFake = cast<Application>({})
   let serverFake = cast<Server>({})
   let websocketsFake = cast<WebSocketServer>({})
@@ -74,10 +76,6 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
     }
     requestFake = cast<Request>(requestStub)
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
-  })
-  afterAll(() => {
-    CacheStorage.kioskCache = defaultKioskCache
-    CacheStorage.scaledCache = defaultScaledCache
   })
 
   describe('on successful response', () => {
