@@ -10,8 +10,8 @@ import type { MockInstance } from 'vitest'
 describe('Server start', () => {
   let appStub = { use: vi.fn() }
   let appFake = cast<Express>(appStub)
-  let serverFake = cast<HttpServer>({})
-  let socketsFake = cast<WebSocketServer>({})
+  let serverFake = cast<HttpServer>({ httpServer: true })
+  let socketsFake = cast<WebSocketServer>({ websocketServer: true })
   let createAppStub: MockInstance = vi.fn()
   let configureBaseAppStub: MockInstance = vi.fn()
   let configureLoggingStub: MockInstance = vi.fn()
@@ -23,8 +23,8 @@ describe('Server start', () => {
   beforeEach(() => {
     appStub = { use: vi.fn() }
     appFake = cast<Express>(appStub)
-    serverFake = cast<HttpServer>({})
-    socketsFake = cast<WebSocketServer>({})
+    serverFake = cast<HttpServer>({ httpServer: true })
+    socketsFake = cast<WebSocketServer>({ websocketServer: true })
     createAppStub = vi.spyOn(Internals, 'createApp').mockReturnValue([appFake, serverFake, socketsFake])
     configureBaseAppStub = vi.spyOn(Internals, 'configureBaseApp').mockImplementation(() => undefined)
     configureLoggingStub = vi.spyOn(Internals, 'configureLogging').mockImplementation(() => undefined)
@@ -39,104 +39,31 @@ describe('Server start', () => {
       await start(65535)
     })
 
-    describe('createApp', () => {
-      it('should be called once', () => {
-        expect(createAppStub.mock.calls.length).toBe(1)
-      })
-      it('should be called with no arguments', () => {
-        expect(createAppStub.mock.calls[0]).toHaveLength(0)
-      })
-    })
-
-    describe('configureBaseApp', () => {
-      it('should be called once', () => {
-        expect(configureBaseAppStub.mock.calls.length).toBe(1)
-      })
-      it('should be called with one argument', () => {
-        expect(configureBaseAppStub.mock.calls[0]).toHaveLength(1)
-      })
-      it('should be called with the app', () => {
-        expect(configureBaseAppStub.mock.calls[0]?.[0]).toBe(appFake)
-      })
-    })
-
-    describe('configureLogging', () => {
-      it('should be called once', () => {
-        expect(configureLoggingStub.mock.calls.length).toBe(1)
-      })
-      it('should be called with one argument', () => {
-        expect(configureLoggingStub.mock.calls[0]).toHaveLength(1)
-      })
-      it('should be called with the app', () => {
-        expect(configureLoggingStub.mock.calls[0]?.[0]).toBe(appFake)
-      })
-    })
-
-    describe('registerRouters', () => {
-      it('should be called once', () => {
-        expect(registerRoutersStub.mock.calls.length).toBe(1)
-      })
-      it('should be called with three arguments', () => {
-        expect(registerRoutersStub.mock.calls[0]).toHaveLength(3)
-      })
-      it('should be called with the app', () => {
-        expect(registerRoutersStub.mock.calls[0]?.[0]).toBe(appFake)
-      })
-      it('should be called with the http server', () => {
-        expect(registerRoutersStub.mock.calls[0]?.[1]).toBe(serverFake)
-      })
-      it('should be called with the websockets server', () => {
-        expect(registerRoutersStub.mock.calls[0]?.[2]).toBe(socketsFake)
-      })
-    })
-
-    describe('configureErrorHandler', () => {
-      it('should be called once', () => {
-        expect(configureErrorHandlerStub.mock.calls.length).toBe(1)
-      })
-      it('should be called with one argument', () => {
-        expect(configureErrorHandlerStub.mock.calls[0]).toHaveLength(1)
-      })
-      it('should be called with the app', () => {
-        expect(configureErrorHandlerStub.mock.calls[0]?.[0]).toBe(appFake)
-      })
-    })
-
-    describe('configureNotFound', () => {
-      it('should be called once', () => {
-        expect(configureNotFoundStub.mock.calls.length).toBe(1)
-      })
-      it('should be called with one argument', () => {
-        expect(configureNotFoundStub.mock.calls[0]).toHaveLength(1)
-      })
-      it('should be called with the app', () => {
-        expect(configureNotFoundStub.mock.calls[0]?.[0]).toBe(appFake)
-      })
-    })
-
-    describe('registerViewsAndMiddleware', () => {
-      it('should be called once', () => {
-        expect(registerViewsStub.mock.calls.length).toBe(1)
-      })
-      it('should be called with one argument', () => {
-        expect(registerViewsStub.mock.calls[0]).toHaveLength(1)
-      })
-      it('should be called with the app', () => {
-        expect(registerViewsStub.mock.calls[0]?.[0]).toBe(appFake)
-      })
-    })
-
-    describe('listenOnPort', () => {
-      it('should be called once', () => {
-        expect(listenOnPortStub.mock.calls.length).toBe(1)
-      })
-      it('should be called with the http server', () => {
-        expect(listenOnPortStub.mock.calls[0]?.[0]).toBe(serverFake)
-      })
-      it('should be called with the provided port', () => {
-        expect(listenOnPortStub.mock.calls[0]?.[1]).toBe(65535)
-      })
-    })
+    interface StartStep {
+      name: string
+      stub: () => MockInstance
+      expectedArgs: () => unknown[]
+    }
+    const startSteps: StartStep[] = [
+      { name: 'createApp', stub: () => createAppStub, expectedArgs: () => [] },
+      { name: 'configureBaseApp', stub: () => configureBaseAppStub, expectedArgs: () => [appFake] },
+      { name: 'configureLogging', stub: () => configureLoggingStub, expectedArgs: () => [appFake] },
+      { name: 'registerViewsAndMiddleware', stub: () => registerViewsStub, expectedArgs: () => [appFake] },
+      {
+        name: 'registerRouters',
+        stub: () => registerRoutersStub,
+        expectedArgs: () => [appFake, serverFake, socketsFake],
+      },
+      { name: 'configureNotFound', stub: () => configureNotFoundStub, expectedArgs: () => [appFake] },
+      { name: 'configureErrorHandler', stub: () => configureErrorHandlerStub, expectedArgs: () => [appFake] },
+      { name: 'listenOnPort', stub: () => listenOnPortStub, expectedArgs: () => [serverFake, 65535] },
+    ]
+    it.each(startSteps)(
+      'should call $name exactly once with its expected arguments',
+      ({ stub, expectedArgs }: StartStep) => {
+        expect(stub().mock.calls).toEqual([expectedArgs()])
+      },
+    )
 
     describe('X-Clacks-Overhead middleware', () => {
       it('should be registered via app.use', () => {
