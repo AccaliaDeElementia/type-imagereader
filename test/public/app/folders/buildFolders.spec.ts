@@ -47,91 +47,49 @@ describe('public/app/folders buildFolders()', () => {
     Internals.buildFolders(cast<Listing>({}))
     expect(tabFolders?.children).toHaveLength(0)
   })
-  it('should call buildAllCards once', () => {
-    const data = { a: 42 }
-    Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.mock.calls.length).toBe(1)
+  it('should build all cards for the listing exactly once', () => {
+    const data = cast<Listing>({ a: 42 })
+    Internals.buildFolders(data)
+    expect(buildAllCardsStub.mock.calls).toEqual([[data]])
   })
-  it('should call buildAllCards with one argument', () => {
-    const data = { a: 42 }
-    Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.mock.calls[0]).toHaveLength(1)
+  const childlessListings: Array<[string, object]> = [
+    ['an empty array', { children: [] }],
+    ['undefined', { children: undefined }],
+    ['absent', {}],
+  ]
+  childlessListings.forEach(([shape, listing]) => {
+    it(`should hide the folders tab exactly once when children is ${shape}`, () => {
+      Internals.buildFolders(cast<Listing>(listing))
+      expect(hideTabStub.mock.calls).toEqual([['a[href="#tabFolders"]']])
+    })
+    it(`should neither unhide nor select the folders tab when children is ${shape}`, () => {
+      Internals.buildFolders(cast<Listing>(listing))
+      expect({
+        unhidden: unhideTabStub.mock.calls.length,
+        published: publishStub.mock.calls.length,
+      }).toEqual({ unhidden: 0, published: 0 })
+    })
   })
-  it('should pass data to buildAllCards', () => {
-    const data = { a: 42 }
-    Internals.buildFolders(cast<Listing>(data))
-    expect(buildAllCardsStub.mock.calls[0]?.[0]).toBe(data)
-  })
-  it('should hide folder tab when data has no children', () => {
-    Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(hideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
-  })
-  it('should hide folder tab when data has undefined children', () => {
-    Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(hideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
-  })
-  it('should hide folder tab when data has missing children', () => {
-    Internals.buildFolders(cast<Listing>({}))
-    expect(hideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
-  })
-  it('should not unhide folder tab when data has no children', () => {
-    Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(unhideTabStub.mock.calls.length > 0).toBe(false)
-  })
-  it('should not unhide folder tab when data has undefined children', () => {
-    Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(unhideTabStub.mock.calls.length > 0).toBe(false)
-  })
-  it('should not unhide folder tab when data has missing children', () => {
-    Internals.buildFolders(cast<Listing>({}))
-    expect(unhideTabStub.mock.calls.length > 0).toBe(false)
-  })
-  it('should not publish tab select when data has no children', () => {
-    Internals.buildFolders(cast<Listing>({ children: [] }))
-    expect(publishStub.mock.calls.length > 0).toBe(false)
-  })
-  it('should not publish tab select when data has undefined children', () => {
-    Internals.buildFolders(cast<Listing>({ children: undefined }))
-    expect(publishStub.mock.calls.length > 0).toBe(false)
-  })
-  it('should not publish tab select when data has missing children', () => {
-    Internals.buildFolders(cast<Listing>({}))
-    expect(publishStub.mock.calls.length > 0).toBe(false)
-  })
-  it('should not publish tab select when data has children and pictures', () => {
+  it('should not select the folders tab when the listing has both children and pictures', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [{}] }))
-    expect(publishStub.mock.calls.length > 0).toBe(false)
+    expect(publishStub.mock.calls).toEqual([])
   })
-  it('should publish tab select once when data has children and empty pictures', () => {
-    Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [] }))
-    expect(publishStub.mock.calls.length).toBe(1)
+  const pictureless: Array<[string, object]> = [
+    ['an empty array', { children: [{}], pictures: [] }],
+    ['undefined', { children: [{}], pictures: undefined }],
+    ['absent', { children: [{}] }],
+  ]
+  pictureless.forEach(([shape, listing]) => {
+    it(`should select the folders tab exactly once when children exist and pictures is ${shape}`, () => {
+      Internals.buildFolders(cast<Listing>(listing))
+      expect(publishStub.mock.calls).toEqual([['Tab:Select', 'Folders']])
+    })
   })
-  it('should publish tab select with expected args when data has children and empty pictures', () => {
-    Internals.buildFolders(cast<Listing>({ children: [{}], pictures: [] }))
-    expect(publishStub).toHaveBeenCalledWith('Tab:Select', 'Folders')
-  })
-  it('should publish tab select once when data has children and undefined pictures', () => {
-    Internals.buildFolders(cast<Listing>({ children: [{}], pictures: undefined }))
-    expect(publishStub.mock.calls.length).toBe(1)
-  })
-  it('should publish tab select with expected args when data has children and undefined pictures', () => {
-    Internals.buildFolders(cast<Listing>({ children: [{}], pictures: undefined }))
-    expect(publishStub).toHaveBeenCalledWith('Tab:Select', 'Folders')
-  })
-  it('should publish tab select once when data has children and missing pictures', () => {
+  it('should unhide rather than hide the folders tab when children exist', () => {
     Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(publishStub.mock.calls.length).toBe(1)
-  })
-  it('should publish tab select with expected args when data has children and missing pictures', () => {
-    Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(publishStub).toHaveBeenCalledWith('Tab:Select', 'Folders')
-  })
-  it('should not hide folder tab when data has children', () => {
-    Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(hideTabStub.mock.calls.length > 0).toBe(false)
-  })
-  it('should unhide folder tab when data has children', () => {
-    Internals.buildFolders(cast<Listing>({ children: [{}] }))
-    expect(unhideTabStub).toHaveBeenCalledWith('a[href="#tabFolders"]')
+    expect({ hidden: hideTabStub.mock.calls, unhidden: unhideTabStub.mock.calls }).toEqual({
+      hidden: [],
+      unhidden: [['a[href="#tabFolders"]']],
+    })
   })
 })
