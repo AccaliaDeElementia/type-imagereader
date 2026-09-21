@@ -5,7 +5,7 @@ import type { MockInstance } from 'vitest'
 describe('public/slideshow/sockets handleGetLaunchId()', () => {
   let fakeReload: MockInstance | undefined = undefined
   beforeEach(() => {
-    fakeReload = vi.spyOn(WebSockets, 'locationReload').mockImplementation((..._args: unknown[]) => undefined)
+    fakeReload = vi.spyOn(WebSockets, 'locationReload').mockReturnValue(undefined)
     WebSockets.launchId = undefined
   })
   it('should save launchId on call', () => {

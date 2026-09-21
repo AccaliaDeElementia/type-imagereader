@@ -179,7 +179,7 @@ describe('routes/slideshow getImageCount()', () => {
         fake: knexFake,
       } = createKnexChainFake(['count'] as const, ['where'] as const))
       knexInstanceStub.where.mockRejectedValue(new Error('db exploded'))
-      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+      loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
     })
     it('should still resolve to ZERO_COUNT as a safe fallback', async () => {
       const actual = await getImageCount(knexFake, '/foo')

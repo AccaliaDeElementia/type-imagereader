@@ -126,7 +126,7 @@ describe('routes/weather getRouter()', () => {
   describe('with missing weather config', () => {
     let loggerStub: MockInstance = vi.fn()
     beforeEach(() => {
-      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+      loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
     })
 
     it('should not register interval when OPENWEATHER_APPID is missing', async () => {

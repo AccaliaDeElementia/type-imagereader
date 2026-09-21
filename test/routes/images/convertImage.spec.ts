@@ -22,7 +22,7 @@ describe('routes/images convertImage()', () => {
   let loggerStub: MockInstance = vi.fn()
   beforeEach(() => {
     sharpStub = vi.spyOn(Imports, 'Sharp').mockReturnValue(cast<Sharp>(sharpInstanceStub))
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
   })
   afterEach(() => {
     sharpInstanceStub = {

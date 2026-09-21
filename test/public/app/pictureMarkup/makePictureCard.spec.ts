@@ -16,7 +16,7 @@ describe('public/app/pictureMarkup makePictureCard()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     const template = dom.window.document.createElement('div')
     template.innerHTML =
       '<template id="ImageCard><div class="card"><div class="card-body"><h5>placeholder</h5></div></div></template>'

@@ -35,9 +35,7 @@ describe('sync/synchronize synchronize()', () => {
     syncAllFoldersStub = vi.spyOn(Imports, 'syncAllFolders').mockResolvedValue(undefined)
     updateFolderPictureCountsStub = vi.spyOn(Imports, 'updateFolderPictureCounts').mockResolvedValue(undefined)
     pruneEmptyFoldersStub = vi.spyOn(Imports, 'pruneEmptyFolders').mockResolvedValue(undefined)
-    emitSqliteSizeWarningStub = vi
-      .spyOn(Imports, 'emitSqliteSizeWarning')
-      .mockImplementation((..._args: unknown[]) => undefined)
+    emitSqliteSizeWarningStub = vi.spyOn(Imports, 'emitSqliteSizeWarning').mockReturnValue(undefined)
   })
   it('should call debug once at start of process', async () => {
     await synchronize()

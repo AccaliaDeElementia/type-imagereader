@@ -43,7 +43,7 @@ describe('routes/images route /full/*', () => {
       }),
     }
     vi.spyOn(Imports, 'Router').mockReturnValue(cast<Router>(routerFake))
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
     vi.spyOn(Imports, 'handleErrors').mockImplementation((_logger, action) => cast<RequestHandler>(action))
     await getRouter(applicationFake, serverFake, websocketsFake)
     const [fn] = routerFake.get.mock.calls.filter((call) => call[0] === '/full/*path').map((call) => call[1] as unknown)

@@ -33,7 +33,7 @@ describe('public/app/pictureMarkup makePaginator()', () => {
     mountDom(dom)
     makePageItemSpy = vi
       .spyOn(Internals, 'makePaginatorItem')
-      .mockImplementation((..._args: unknown[]) => undefined)
+      .mockReturnValue(undefined)
       .mockImplementation(() => dom.window.document.createElement('li'))
     getCurrentPageSpy = vi.spyOn(Internals, 'getCurrentPage').mockReturnValue(0)
     resetPubSub()

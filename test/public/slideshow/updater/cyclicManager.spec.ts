@@ -11,7 +11,7 @@ describe('public/slideshow/updater CyclicManager', () => {
     CyclicManager.__updaters = []
     CyclicManager.__timer = undefined
     fakeSetInterval = vi.spyOn(global, 'setInterval').mockReturnValue(cast(1))
-    fakeClearInterval = vi.spyOn(global, 'clearInterval').mockImplementation((..._args: unknown[]) => undefined)
+    fakeClearInterval = vi.spyOn(global, 'clearInterval').mockReturnValue(undefined)
   })
   describe('__triggerUpdaters()', () => {
     it('should resolve when there are no updaters to trigger', async () => {

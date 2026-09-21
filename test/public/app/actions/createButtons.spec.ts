@@ -97,10 +97,10 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
-    const spy = vi.spyOn(event, 'preventDefault').mockImplementation((..._args: unknown[]) => undefined)
+    const spy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined)
     button?.dispatchEvent(event)
     expect(spy.mock.calls.length > 0).toBe(true)
   })
@@ -111,7 +111,7 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     button?.dispatchEvent(event)
@@ -124,7 +124,7 @@ describe('public/app/actions createButtons()', () => {
         image: 'icon',
       },
     ])
-    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     const [button] = container.children
     const event = new dom.window.MouseEvent('click')
     button?.dispatchEvent(event)

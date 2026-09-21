@@ -17,7 +17,7 @@ describe('routes/apiFunctions getBookmarks', () => {
       stub: knexStub,
       fake: knexFake,
     } = createKnexChainFake(['select', 'join'] as const, ['orderBy'] as const))
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
   })
   it('should select results from bookmarks once', async () => {
     await getBookmarks(knexFake)

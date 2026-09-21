@@ -17,7 +17,7 @@ describe('routes/images readImage()', () => {
     fromImageStub = vi.spyOn(ImageData, 'fromImage').mockImplementation(cast(() => undefined))
     readFileStub = vi.spyOn(Imports, 'readFile').mockResolvedValue(cast<string>(undefined))
     isBlockedTraversalStub = vi.spyOn(Imports, 'isBlockedTraversal').mockReturnValue(false)
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
   })
   const configureReadFile = (stub: MockInstance, result: Promise<unknown> | Error): void => {
     if (result instanceof Error) {

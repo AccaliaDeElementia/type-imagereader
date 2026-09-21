@@ -254,7 +254,7 @@ describe('public/app/folders buildCard()', () => {
       totalCount: 100,
       seenCount: 101,
     })
-    const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     required(result, 'the built card').dispatchEvent(evt)
     expect(publishStub).toHaveBeenCalledWith('Navigate:Load', '/path/foo')
   })

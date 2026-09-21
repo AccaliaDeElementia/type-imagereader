@@ -28,15 +28,11 @@ describe('public/app/sizeMode initSizeSelector()', () => {
   beforeEach(() => {
     dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })
     mountDom(dom)
-    adoptLegacySpy = vi
-      .spyOn(Internals, 'adoptLegacySizePreference')
-      .mockImplementation((..._args: unknown[]) => undefined)
-    setSizeModeSpy = vi.spyOn(Internals, 'setSizeMode').mockImplementation((..._args: unknown[]) => undefined)
-    showActiveSizeOptionSpy = vi
-      .spyOn(Internals, 'showActiveSizeOption')
-      .mockImplementation((..._args: unknown[]) => undefined)
-    bindOptionGroupSpy = vi.spyOn(Imports, 'bindOptionGroup').mockImplementation((..._args: unknown[]) => undefined)
-    publishSpy = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    adoptLegacySpy = vi.spyOn(Internals, 'adoptLegacySizePreference').mockReturnValue(undefined)
+    setSizeModeSpy = vi.spyOn(Internals, 'setSizeMode').mockReturnValue(undefined)
+    showActiveSizeOptionSpy = vi.spyOn(Internals, 'showActiveSizeOption').mockReturnValue(undefined)
+    bindOptionGroupSpy = vi.spyOn(Imports, 'bindOptionGroup').mockReturnValue(undefined)
+    publishSpy = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

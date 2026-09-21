@@ -26,13 +26,9 @@ describe('public/app/unreadFilter initUnreadSelector()', () => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
     vi.spyOn(Internals, 'getShowUnreadOnly').mockReturnValue(false)
-    setShowUnreadOnlySpy = vi
-      .spyOn(Internals, 'setShowUnreadOnly')
-      .mockImplementation((..._args: unknown[]) => undefined)
-    showActiveUnreadOptionSpy = vi
-      .spyOn(Internals, 'showActiveUnreadOption')
-      .mockImplementation((..._args: unknown[]) => undefined)
-    bindOptionGroupSpy = vi.spyOn(Imports, 'bindOptionGroup').mockImplementation((..._args: unknown[]) => undefined)
+    setShowUnreadOnlySpy = vi.spyOn(Internals, 'setShowUnreadOnly').mockReturnValue(undefined)
+    showActiveUnreadOptionSpy = vi.spyOn(Internals, 'showActiveUnreadOption').mockReturnValue(undefined)
+    bindOptionGroupSpy = vi.spyOn(Imports, 'bindOptionGroup').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

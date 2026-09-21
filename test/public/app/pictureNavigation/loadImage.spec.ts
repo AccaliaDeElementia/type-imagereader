@@ -70,9 +70,9 @@ describe('public/app/pictureNavigation loadImage()', () => {
     current.index = 1250
     postJSONSpy = vi.spyOn(Imports, 'postJSON').mockResolvedValue(50)
     vi.spyOn(Internals, 'getPicture').mockReturnValue(undefined)
-    selectPageSpy = vi.spyOn(Imports, 'selectPage').mockImplementation((..._args: unknown[]) => undefined)
+    selectPageSpy = vi.spyOn(Imports, 'selectPage').mockReturnValue(undefined)
     loadNextImageSpy = vi.spyOn(Internals, 'loadNextImage').mockResolvedValue(undefined)
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     viewportSizeStub = vi.spyOn(Imports, 'viewportSize').mockReturnValue({ width: 0, height: 0 })
     getSizeModeStub = vi.spyOn(Imports, 'getSizeMode').mockReturnValue('fitScreen')
 

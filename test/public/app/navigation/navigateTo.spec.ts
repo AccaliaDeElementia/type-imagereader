@@ -10,7 +10,7 @@ describe('public/app/navigation navigateTo()', () => {
   let publishStub: MockInstance = vi.fn()
   let loadDataSpy: MockInstance = vi.fn()
   beforeEach(() => {
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     loadDataSpy = vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
   })
   const invalidPaths: Array<[string, string | undefined]> = [

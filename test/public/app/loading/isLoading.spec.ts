@@ -13,7 +13,7 @@ html
     div#loadingScreen
 `
 const absorbInitSubscriptions = (): void => {
-  vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+  vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
 }
 
 describe('public/app/loading isLoading()', () => {

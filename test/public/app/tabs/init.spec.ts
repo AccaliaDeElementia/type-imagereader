@@ -40,8 +40,8 @@ describe('public/app/tabs init()', () => {
       url: 'https://127.1.1.1:5050/',
     })
     mountDom(dom)
-    selectTabSpy = vi.spyOn(Internals, 'selectTab').mockImplementation((..._args: unknown[]) => undefined)
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    selectTabSpy = vi.spyOn(Internals, 'selectTab').mockReturnValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
     resetPubSub()
     Tabs.tabs = []
     Tabs.tabNames = []
@@ -98,7 +98,7 @@ describe('public/app/tabs init()', () => {
     it(`should call addEventListener once on tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
       assert(hasValue(elem))
-      const spy = vi.spyOn(elem, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+      const spy = vi.spyOn(elem, 'addEventListener').mockReturnValue(undefined)
       try {
         init()
         expect(spy.mock.calls.length).toBe(1)
@@ -109,7 +109,7 @@ describe('public/app/tabs init()', () => {
     it(`should add click handler with two args to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
       assert(hasValue(elem))
-      const spy = vi.spyOn(elem, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+      const spy = vi.spyOn(elem, 'addEventListener').mockReturnValue(undefined)
       try {
         init()
         expect(spy.mock.calls[0]).toHaveLength(2)
@@ -120,7 +120,7 @@ describe('public/app/tabs init()', () => {
     it(`should add click handler to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
       assert(hasValue(elem))
-      const spy = vi.spyOn(elem, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+      const spy = vi.spyOn(elem, 'addEventListener').mockReturnValue(undefined)
       try {
         init()
         expect(spy.mock.calls[0]?.[0]).toBe('click')

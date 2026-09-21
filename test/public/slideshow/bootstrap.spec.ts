@@ -12,9 +12,9 @@ describe('public/slideshow/bootstrap', () => {
   let fakeCyclicStart: MockInstance | undefined = undefined
   let fakeSocketConnect: MockInstance | undefined = undefined
   beforeEach(() => {
-    fakeCyclicAdd = vi.spyOn(Imports, 'cyclicManagerAdd').mockImplementation((..._args: unknown[]) => undefined)
-    fakeCyclicStart = vi.spyOn(Imports, 'cyclicManagerStart').mockImplementation((..._args: unknown[]) => undefined)
-    fakeSocketConnect = vi.spyOn(Imports, 'socketsConnect').mockImplementation((..._args: unknown[]) => undefined)
+    fakeCyclicAdd = vi.spyOn(Imports, 'cyclicManagerAdd').mockReturnValue(undefined)
+    fakeCyclicStart = vi.spyOn(Imports, 'cyclicManagerStart').mockReturnValue(undefined)
+    fakeSocketConnect = vi.spyOn(Imports, 'socketsConnect').mockReturnValue(undefined)
     bootstrap()
   })
   it('should add cyclic updaters on initial load', () => {

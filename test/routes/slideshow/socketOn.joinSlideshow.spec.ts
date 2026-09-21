@@ -95,7 +95,7 @@ describe('routes/slideshow socket join-slideshow()', () => {
   describe('logging', () => {
     let loggerStub: MockInstance = vi.fn()
     beforeEach(() => {
-      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+      loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
       cast<{ id: string }>(socketStub).id = 'socket-id-123'
     })
 

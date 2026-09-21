@@ -24,7 +24,7 @@ describe('public/app/loading init()', () => {
     resetPubSub()
     Loading.overlay = null
     Loading.navbar = null
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
     init()
   })
   afterEach(() => {

@@ -29,9 +29,9 @@ describe('public/app/actions readGamepad()', () => {
   beforeEach(() => {
     mountDom(dom)
     resetPubSub()
-    vi.spyOn(Internals, 'buildActions').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Internals, 'buildActions').mockReturnValue(undefined)
     Actions.gamepads.reset()
-    GamepadResetSpy = vi.spyOn(Actions.gamepads, 'reset').mockImplementation((..._args: unknown[]) => undefined)
+    GamepadResetSpy = vi.spyOn(Actions.gamepads, 'reset').mockReturnValue(undefined)
     documentHidden = false
     existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
@@ -46,7 +46,7 @@ describe('public/app/actions readGamepad()', () => {
     })
     getTestGamepads.mockReturnValue([testGamePad])
     gamepadsReadStub = vi.spyOn(Actions.gamepads, 'read').mockReturnValue(false)
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
   })
   afterEach(() => {
     Actions.gamepads.reset()

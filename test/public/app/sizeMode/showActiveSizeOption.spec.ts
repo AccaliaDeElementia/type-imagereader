@@ -19,7 +19,7 @@ describe('public/app/sizeMode showActiveSizeOption()', () => {
     dom = new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' })
     mountDom(dom)
     vi.spyOn(Internals, 'getSizeMode').mockReturnValue('fitHeight')
-    selectOptionSpy = vi.spyOn(Imports, 'selectOption').mockImplementation((..._args: unknown[]) => undefined)
+    selectOptionSpy = vi.spyOn(Imports, 'selectOption').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

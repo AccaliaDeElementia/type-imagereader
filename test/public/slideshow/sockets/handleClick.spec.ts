@@ -19,7 +19,7 @@ describe('public/slideshow/sockets handleClick()', () => {
     unmountDom()
   })
   beforeEach(() => {
-    fakeAssign = vi.spyOn(WebSockets, 'locationAssign').mockImplementation((..._args: unknown[]) => undefined)
+    fakeAssign = vi.spyOn(WebSockets, 'locationAssign').mockReturnValue(undefined)
     fakeViewport.scale = 1
     fakeEmit.mockClear()
     dom.reconfigure({

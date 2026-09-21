@@ -35,7 +35,7 @@ describe('routes/apiFunctions getListing', () => {
     getChildFoldersStub = vi.spyOn(Internals, 'getChildFolders').mockResolvedValue([])
     getPicturesStub = vi.spyOn(Internals, 'getPictures').mockResolvedValue([])
     getBookmarksStub = vi.spyOn(Internals, 'getBookmarks').mockResolvedValue([])
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
   })
   describe('getFolder() interface', () => {
     it('should call getFolder() once', async () => {

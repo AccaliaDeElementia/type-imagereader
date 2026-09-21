@@ -35,7 +35,7 @@ describe('public/app/imageViewport applySizeMode()', () => {
     container = dom.window.document.querySelector<HTMLElement>('#bigImage')
     Viewport.container = container
     getSizeModeStub = vi.spyOn(Imports, 'getSizeMode').mockReturnValue('fitScreen')
-    resetScrollSpy = vi.spyOn(Internals, 'resetScroll').mockImplementation((..._args: unknown[]) => undefined)
+    resetScrollSpy = vi.spyOn(Internals, 'resetScroll').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

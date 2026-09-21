@@ -38,13 +38,13 @@ describe('public/app/bookmarks init Navigate:Data', () => {
     mountDom(dom)
 
     resetPubSub()
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = vi.spyOn(Internals, 'buildBookmarks').mockImplementation((..._args: unknown[]) => undefined)
+    BuildBookmarksSpy = vi.spyOn(Internals, 'buildBookmarks').mockReturnValue(undefined)
 
     init()
   })

@@ -20,7 +20,7 @@ describe('public/app/unreadFilter showActiveUnreadOption()', () => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
     getShowUnreadOnlySpy = vi.spyOn(Internals, 'getShowUnreadOnly').mockReturnValue(false)
-    selectOptionSpy = vi.spyOn(Imports, 'selectOption').mockImplementation((..._args: unknown[]) => undefined)
+    selectOptionSpy = vi.spyOn(Imports, 'selectOption').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

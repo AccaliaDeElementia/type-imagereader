@@ -46,7 +46,7 @@ describe('routes/apiFunctions setLatestPicture', () => {
     knexStub = vi.fn().mockImplementation(() => stubToKnex(makeKnexInstance()))
     knexFake = stubToKnex(knexStub)
     claimUnseenPictureStub = vi.spyOn(Internals, 'claimUnseenPicture').mockResolvedValue(undefined)
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
   })
   const setupExistingPicture = (): KnexStub => {
     const searcher = makeKnexInstance()

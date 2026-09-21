@@ -39,9 +39,9 @@ describe('public/app/folders init()', () => {
     mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
 
     resetPubSub()
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
     Folders.folderCard = null
-    buildFoldersSpy = vi.spyOn(Internals, 'buildFolders').mockImplementation((..._args: unknown[]) => undefined)
+    buildFoldersSpy = vi.spyOn(Internals, 'buildFolders').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

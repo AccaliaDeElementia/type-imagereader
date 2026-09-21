@@ -28,10 +28,10 @@ describe('public/app/folders buildFolders()', () => {
   beforeEach(() => {
     dom = mountDom(new JSDOM(render(markup), { url: 'http://127.0.0.1:2999' }))
     tabFolders = dom.window.document.querySelector('#tabFolders')
-    hideTabStub = vi.spyOn(Internals, 'hideTab').mockImplementation((..._args: unknown[]) => undefined)
-    unhideTabStub = vi.spyOn(Internals, 'unhideTab').mockImplementation((..._args: unknown[]) => undefined)
-    buildAllCardsStub = vi.spyOn(Internals, 'buildAllCards').mockImplementation((..._args: unknown[]) => undefined)
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    hideTabStub = vi.spyOn(Internals, 'hideTab').mockReturnValue(undefined)
+    unhideTabStub = vi.spyOn(Internals, 'unhideTab').mockReturnValue(undefined)
+    buildAllCardsStub = vi.spyOn(Internals, 'buildAllCards').mockReturnValue(undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
   })
   afterEach(() => {
     resetPubSub()

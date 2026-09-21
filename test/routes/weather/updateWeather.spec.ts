@@ -224,7 +224,7 @@ describe('routes/weather updateWeather', () => {
   describe('logging when getWeather rejects', () => {
     let loggerStub: MockInstance = vi.fn()
     beforeEach(() => {
-      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+      loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
     })
     it('should log the weather-update failure', async () => {
       getWeatherStub.mockRejectedValue(new Error('openweather down'))

@@ -44,16 +44,16 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
     mountDom(dom)
 
     resetPubSub()
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
 
     Bookmarks.bookmarkCard = undefined
     Bookmarks.bookmarkFolder = undefined
     Bookmarks.bookmarksTab = null
 
-    BuildBookmarksSpy = vi.spyOn(Internals, 'buildBookmarks').mockImplementation((..._args: unknown[]) => undefined)
+    BuildBookmarksSpy = vi.spyOn(Internals, 'buildBookmarks').mockReturnValue(undefined)
     getJSONSpy = vi.spyOn(Imports, 'getJSON').mockResolvedValue(undefined)
     init()
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

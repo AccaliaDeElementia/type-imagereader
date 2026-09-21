@@ -19,7 +19,7 @@ describe('public/slideshow/overlay CyclicUpdater()', () => {
   let fakeGetOpacity: MockInstance | undefined = undefined
   let dom = new JSDOM()
   beforeEach(() => {
-    fakeShowHide = vi.spyOn(Internals, 'showHideKiosk').mockImplementation((..._args: unknown[]) => undefined)
+    fakeShowHide = vi.spyOn(Internals, 'showHideKiosk').mockReturnValue(undefined)
     fakeCalculateDarknessMs = vi.spyOn(Internals, 'calculateDarknessMs').mockReturnValue(0)
     fakeGetOpacity = vi.spyOn(Internals, 'getOpacity').mockReturnValue(0)
     dom = new JSDOM(render(markup), {

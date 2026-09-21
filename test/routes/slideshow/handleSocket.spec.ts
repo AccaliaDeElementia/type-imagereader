@@ -19,7 +19,7 @@ describe('routes/slideshow handleSocket()', () => {
     socketStub = { on: vi.fn() }
     socketFake = cast<Socket>(socketStub)
     socketStubs = [
-      ['get-launchId', vi.spyOn(Internals, 'getLaunchId').mockImplementation((..._args: unknown[]) => undefined)],
+      ['get-launchId', vi.spyOn(Internals, 'getLaunchId').mockReturnValue(undefined)],
       ['join-slideshow', vi.spyOn(Internals, 'joinSlideshow').mockResolvedValue(undefined)],
       ['prev-image', vi.spyOn(Internals, 'prevImage').mockResolvedValue(undefined)],
       ['next-image', vi.spyOn(Internals, 'nextImage').mockResolvedValue(undefined)],

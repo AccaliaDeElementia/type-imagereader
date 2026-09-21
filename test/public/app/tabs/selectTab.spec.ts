@@ -32,7 +32,7 @@ html
 `
 
 const absorbInitSubscriptions = (): void => {
-  vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+  vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
 }
 
 describe('public/app/tabs selectTab()', () => {
@@ -45,7 +45,7 @@ describe('public/app/tabs selectTab()', () => {
   beforeEach(() => {
     dom = new JSDOM(render(markup), {})
     mountDom(dom)
-    vi.spyOn(global.window.console, 'error').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(global.window.console, 'error').mockReturnValue(undefined)
     const actions = dom.window.document.getElementById('tabActions')
     assert(actions !== null)
     actions.scroll = actionsScroll
@@ -62,13 +62,13 @@ describe('public/app/tabs selectTab()', () => {
     absorbInitSubscriptions()
     Tabs.tabs = []
     Tabs.tabNames = []
-    const selectTabStub = vi.spyOn(Internals, 'selectTab').mockImplementation((..._args: unknown[]) => undefined)
+    const selectTabStub = vi.spyOn(Internals, 'selectTab').mockReturnValue(undefined)
     try {
       init()
     } finally {
       selectTabStub.mockRestore()
     }
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
   })
   afterEach(() => {
     actionsScroll.mockReset()

@@ -18,7 +18,7 @@ describe('public/app/pictureMarkup makePicturesPage()', () => {
     resetPubSub()
     makePictureCardSpy = vi
       .spyOn(Internals, 'makePictureCard')
-      .mockImplementation((..._args: unknown[]) => undefined)
+      .mockReturnValue(undefined)
       .mockImplementation(() => dom.window.document.createElement('div'))
   })
   afterEach(() => {

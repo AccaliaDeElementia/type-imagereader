@@ -30,8 +30,8 @@ describe('public/slideshow/weather showWeather()', () => {
     })
     weather = {}
     mountDom(dom)
-    showDataStub = vi.spyOn(Internals, 'showData').mockImplementation((..._args: unknown[]) => undefined)
-    showIconStub = vi.spyOn(Internals, 'showIcon').mockImplementation((..._args: unknown[]) => undefined)
+    showDataStub = vi.spyOn(Internals, 'showData').mockReturnValue(undefined)
+    showIconStub = vi.spyOn(Internals, 'showIcon').mockReturnValue(undefined)
   })
 
   afterEach(() => {

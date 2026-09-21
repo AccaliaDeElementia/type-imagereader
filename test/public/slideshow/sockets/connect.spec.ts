@@ -29,14 +29,12 @@ describe('public/slideshow/sockets connect()', () => {
     fakeViewport.scale = 1
     fakeEmit.mockClear()
     fakeOn.mockClear()
-    fakeHandleClick = vi.spyOn(Internals, 'handleClick').mockImplementation((..._args: unknown[]) => undefined)
-    fakeHandleKeys = vi.spyOn(Internals, 'handleKeys').mockImplementation((..._args: unknown[]) => undefined)
+    fakeHandleClick = vi.spyOn(Internals, 'handleClick').mockReturnValue(undefined)
+    fakeHandleKeys = vi.spyOn(Internals, 'handleKeys').mockReturnValue(undefined)
     fakeParseRoom = vi.spyOn(Internals, 'parseRoomName').mockReturnValue('')
     fakeIO = vi.spyOn(Imports, 'io').mockReturnValue(fakeSocket)
     mountDom(dom)
-    fakeAddEventListener = vi
-      .spyOn(dom.window.document.body, 'addEventListener')
-      .mockImplementation((..._args: unknown[]) => undefined)
+    fakeAddEventListener = vi.spyOn(dom.window.document.body, 'addEventListener').mockReturnValue(undefined)
     dom.reconfigure({
       url: `http://127.0.0.1:2999/slideshow?`,
     })

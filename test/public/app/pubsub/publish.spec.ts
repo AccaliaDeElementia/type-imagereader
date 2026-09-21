@@ -59,8 +59,8 @@ describe('public/app/pubsub publishAsync()', () => {
   beforeEach(() => {
     dom = new JSDOM('<html></html')
     mountDom(dom)
-    consoleWarn = vi.spyOn(global.window.console, 'warn').mockImplementation((..._args: unknown[]) => undefined)
-    consoleError = vi.spyOn(global.window.console, 'error').mockImplementation((..._args: unknown[]) => undefined)
+    consoleWarn = vi.spyOn(global.window.console, 'warn').mockReturnValue(undefined)
+    consoleError = vi.spyOn(global.window.console, 'error').mockReturnValue(undefined)
 
     subscriber = vi.fn().mockResolvedValue(undefined)
     resetPubSub()

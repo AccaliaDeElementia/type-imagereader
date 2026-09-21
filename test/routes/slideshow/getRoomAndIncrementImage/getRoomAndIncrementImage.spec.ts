@@ -205,7 +205,7 @@ describe('routes/slideshow/getRoomAndIncrementImage getRoomAndIncrementImage()',
       const ROOM_CREATED_FORMAT = 'slideshow room created: %s (pages=%d unread=%d)'
       const isRoomCreatedCall = (c: readonly unknown[]): boolean => c[0] === ROOM_CREATED_FORMAT
       beforeEach(() => {
-        loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+        loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
       })
 
       it('should log room-created format when creating a new room', async () => {

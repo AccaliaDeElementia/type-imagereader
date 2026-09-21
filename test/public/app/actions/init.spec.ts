@@ -20,11 +20,11 @@ describe('public/app/actions init()', () => {
   beforeEach(() => {
     mountDom(dom)
     resetPubSub()
-    BuildActionsSpy = vi.spyOn(Internals, 'buildActions').mockImplementation((..._args: unknown[]) => undefined)
-    GamepadResetSpy = vi.spyOn(Actions.gamepads, 'reset').mockImplementation((..._args: unknown[]) => undefined)
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
-    addIntervalStub = vi.spyOn(Imports, 'addInterval').mockImplementation((..._args: unknown[]) => undefined)
-    removeIntervalStub = vi.spyOn(Imports, 'removeInterval').mockImplementation((..._args: unknown[]) => undefined)
+    BuildActionsSpy = vi.spyOn(Internals, 'buildActions').mockReturnValue(undefined)
+    GamepadResetSpy = vi.spyOn(Actions.gamepads, 'reset').mockReturnValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
+    addIntervalStub = vi.spyOn(Imports, 'addInterval').mockReturnValue(undefined)
+    removeIntervalStub = vi.spyOn(Imports, 'removeInterval').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()
@@ -156,7 +156,7 @@ describe('public/app/actions init()', () => {
     const doNavigate = async (): Promise<MockInstance> => {
       init()
       const handler = capturedSubscriber(subscribeStub, 'Navigate:Data')
-      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       await handler(listing)
       return publishStub
     }
@@ -172,7 +172,7 @@ describe('public/app/actions init()', () => {
     }
   })
   it('should add exactly one keyup event listener to document', () => {
-    const spy = vi.spyOn(document, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+    const spy = vi.spyOn(document, 'addEventListener').mockReturnValue(undefined)
     try {
       init()
       expect(spy.mock.calls.length).toBe(1)
@@ -181,7 +181,7 @@ describe('public/app/actions init()', () => {
     }
   })
   it('should add keyup event listener to document', () => {
-    const spy = vi.spyOn(document, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+    const spy = vi.spyOn(document, 'addEventListener').mockReturnValue(undefined)
     try {
       init()
       expect(spy.mock.calls[0]?.[0]).toBe('keyup')
@@ -201,8 +201,8 @@ describe('public/app/actions init()', () => {
   ]
   keyUpTestCases.forEach(([event, expected]) => {
     const doKeypress = (): MockInstance => {
-      const documentSpy = vi.spyOn(document, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
-      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      const documentSpy = vi.spyOn(document, 'addEventListener').mockReturnValue(undefined)
+      const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       let handler: (o: unknown) => void = (_) => {
         expect.fail('Base Function should not be called!')
       }
@@ -226,7 +226,7 @@ describe('public/app/actions init()', () => {
   })
 
   it('should add exactly two event listeners to window', () => {
-    const spy = vi.spyOn(window, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+    const spy = vi.spyOn(window, 'addEventListener').mockReturnValue(undefined)
     try {
       init()
       expect(spy.mock.calls.length).toBe(2)
@@ -235,7 +235,7 @@ describe('public/app/actions init()', () => {
     }
   })
   it('should add gamepadconnected event listener to window', () => {
-    const spy = vi.spyOn(window, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+    const spy = vi.spyOn(window, 'addEventListener').mockReturnValue(undefined)
     try {
       init()
       expect(spy.mock.calls[0]?.[0]).toBe('gamepadconnected')
@@ -245,7 +245,7 @@ describe('public/app/actions init()', () => {
   })
 
   it('should add readGamepad interval when gamepadConnected event fires', () => {
-    const spy = vi.spyOn(window, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+    const spy = vi.spyOn(window, 'addEventListener').mockReturnValue(undefined)
     try {
       init()
       cast<() => void>(spy.mock.calls[0]?.[1])()
@@ -256,8 +256,8 @@ describe('public/app/actions init()', () => {
   })
 
   it('should readGamepad() when readGamepad interval fires', () => {
-    const spy = vi.spyOn(window, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
-    const readspy = vi.spyOn(Internals, 'readGamepad').mockImplementation((..._args: unknown[]) => undefined)
+    const spy = vi.spyOn(window, 'addEventListener').mockReturnValue(undefined)
+    const readspy = vi.spyOn(Internals, 'readGamepad').mockReturnValue(undefined)
     try {
       init()
       cast<() => void>(spy.mock.calls[0]?.[1])()
@@ -269,7 +269,7 @@ describe('public/app/actions init()', () => {
     }
   })
   it('should add gamepaddisconnected event listener to window', () => {
-    const spy = vi.spyOn(window, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+    const spy = vi.spyOn(window, 'addEventListener').mockReturnValue(undefined)
     try {
       init()
       expect(spy.mock.calls[1]?.[0]).toBe('gamepaddisconnected')
@@ -278,7 +278,7 @@ describe('public/app/actions init()', () => {
     }
   })
   it('should remove readGamepad interval when gamepaddisconnected fires and no gamepads remain', () => {
-    const addSpy = vi.spyOn(window, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+    const addSpy = vi.spyOn(window, 'addEventListener').mockReturnValue(undefined)
     const existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
       configurable: true,
@@ -296,7 +296,7 @@ describe('public/app/actions init()', () => {
     }
   })
   it('should keep readGamepad interval when gamepaddisconnected fires but other gamepads remain', () => {
-    const addSpy = vi.spyOn(window, 'addEventListener').mockImplementation((..._args: unknown[]) => undefined)
+    const addSpy = vi.spyOn(window, 'addEventListener').mockReturnValue(undefined)
     const existingNavigator = global.navigator
     Object.defineProperty(global, 'navigator', {
       configurable: true,

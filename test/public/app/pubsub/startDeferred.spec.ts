@@ -20,7 +20,7 @@ describe('public/app/pubsub startDeferred()', () => {
     setIntervalSpy = vi.spyOn(global.window, 'setInterval').mockReturnValue(cast(1))
     PubSub.cycleTime = 17
     resetPubSub()
-    executeIntervalSpy = vi.spyOn(Internals, 'executeInterval').mockImplementation((..._args: unknown[]) => undefined)
+    executeIntervalSpy = vi.spyOn(Internals, 'executeInterval').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

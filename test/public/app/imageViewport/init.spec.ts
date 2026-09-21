@@ -25,8 +25,8 @@ describe('public/app/imageViewport init()', () => {
     })
     mountDom(dom)
     Viewport.container = null
-    applySizeModeSpy = vi.spyOn(Internals, 'applySizeMode').mockImplementation((..._args: unknown[]) => undefined)
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    applySizeModeSpy = vi.spyOn(Internals, 'applySizeMode').mockReturnValue(undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

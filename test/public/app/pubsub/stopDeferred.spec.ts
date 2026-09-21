@@ -13,11 +13,11 @@ describe('public/app/pubsub stopDeferred()', () => {
   beforeEach(() => {
     dom = new JSDOM('<html></html>', {})
     mountDom(dom)
-    clearIntervalSpy = vi.spyOn(global.window, 'clearInterval').mockImplementation((..._args: unknown[]) => undefined)
+    clearIntervalSpy = vi.spyOn(global.window, 'clearInterval').mockReturnValue(undefined)
     PubSub.cycleTime = 17
     resetPubSub()
     PubSub.timer = 12
-    vi.spyOn(Internals, 'executeInterval').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Internals, 'executeInterval').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

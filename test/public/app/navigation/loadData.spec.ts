@@ -45,10 +45,10 @@ describe('public/app/navigation loadData()', () => {
     assert(titleElement !== null)
     brandElement = dom.window.document.querySelector('a.navbar-brand')
     assert(brandElement !== null)
-    historySpy = vi.spyOn(dom.window.history, 'pushState').mockImplementation((..._args: unknown[]) => undefined)
+    historySpy = vi.spyOn(dom.window.history, 'pushState').mockReturnValue(undefined)
 
     resetPubSub()
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     Navigation.current = {
       path: '/',
       name: '',

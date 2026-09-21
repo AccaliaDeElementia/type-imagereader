@@ -31,8 +31,8 @@ describe('public/app/navigation/messageHandlers Navigate:Load, Navigate:Data and
 
     resetPubSub()
     loadDataStub = vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
-    vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
+    vi.spyOn(Imports, 'forward').mockReturnValue(undefined)
     Navigation.current = {
       path: '/',
       name: '',
@@ -224,7 +224,7 @@ describe('public/app/navigation/messageHandlers Navigate:Load, Navigate:Data and
   describe('Navigate:Data Message Handler', () => {
     let consoleLogSpy: MockInstance = vi.fn()
     beforeEach(() => {
-      consoleLogSpy = vi.spyOn(global.window.console, 'log').mockImplementation((..._args: unknown[]) => undefined)
+      consoleLogSpy = vi.spyOn(global.window.console, 'log').mockReturnValue(undefined)
     })
     const testCases: Array<[string, unknown, boolean]> = [
       ['null', null, false],

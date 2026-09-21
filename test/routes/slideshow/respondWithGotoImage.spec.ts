@@ -12,7 +12,7 @@ describe('routes/slideshow respondWithGotoImage()', () => {
   let gotoImageStub: MockInstance = vi.fn()
   beforeEach(() => {
     state = new SlideshowSocketState()
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
     gotoImageStub = vi.spyOn(Internals, 'gotoImage').mockResolvedValue(undefined)
   })
   it('should delegate to gotoImage once', async () => {

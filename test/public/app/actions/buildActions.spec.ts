@@ -34,7 +34,7 @@ describe('public/app/actions buildActions()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    vi.spyOn(Actions.gamepads, 'reset').mockImplementation((..._args: unknown[]) => undefined)
+    vi.spyOn(Actions.gamepads, 'reset').mockReturnValue(undefined)
   })
   afterEach(() => {
     unmountDom()

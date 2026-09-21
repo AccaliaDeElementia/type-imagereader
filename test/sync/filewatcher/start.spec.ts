@@ -31,7 +31,7 @@ describe('sync/filewatcher start()', () => {
       return await Promise.resolve(fakeSubscription)
     })
     setTimeoutStub = vi.spyOn(Imports, 'setTimeout').mockReturnValue(TIMER_ID)
-    clearTimeoutStub = vi.spyOn(Imports, 'clearTimeout').mockImplementation((..._args: unknown[]) => undefined)
+    clearTimeoutStub = vi.spyOn(Imports, 'clearTimeout').mockReturnValue(undefined)
     flushCallback = vi.fn().mockResolvedValue(undefined)
     Filewatcher.debounceMs = 5000
     Filewatcher.maxPendingChanges = 500

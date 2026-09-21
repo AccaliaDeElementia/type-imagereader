@@ -133,7 +133,7 @@ describe('routes/root route /show', () => {
     const TRAVERSAL_FORMAT = 'path traversal blocked: %s'
     const isTraversalCall = (c: readonly unknown[]): boolean => c[0] === TRAVERSAL_FORMAT
     beforeEach(() => {
-      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+      loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
     })
 
     it('should log GET-format on rootRoute invocation', async () => {

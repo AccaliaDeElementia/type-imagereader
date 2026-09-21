@@ -28,7 +28,7 @@ describe('public/app/pictureNavigation setPicturesGetFirst()', () => {
     dom = new JSDOM(render(markup))
     mountDom(dom)
     resetPubSub()
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     Pictures.mainImage = dom.window.document.createElement('img')
     element = dom.window.document.querySelector('div#ImageLink')
     Pictures.pictures = []

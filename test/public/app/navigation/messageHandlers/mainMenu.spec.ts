@@ -31,8 +31,8 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
 
     resetPubSub()
     vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
-    vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
+    vi.spyOn(Imports, 'forward').mockReturnValue(undefined)
     Navigation.current = {
       path: '/',
       name: '',
@@ -126,7 +126,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
           seen: false,
         },
       ]
-      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('.innerTarget')
       assert(target !== null, 'target must exist')
       Navigation.current.pictures = [{ name: '', path: '', seen: false }]
@@ -143,7 +143,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
           seen: false,
         },
       ]
-      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('.navbar-brand')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
@@ -153,7 +153,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
     it('should ignore click event will missing pictures list', () => {
       init()
       Navigation.current.pictures = undefined
-      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
@@ -163,7 +163,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
     it('should ignore click event will empty pictures list', () => {
       init()
       Navigation.current.pictures = []
-      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
@@ -179,7 +179,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
           seen: true,
         },
       ]
-      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('#mainMenu')
       assert(target !== null, 'target must exist')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
@@ -190,7 +190,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
   describe('.menuButton click handler', () => {
     it('should publish Menu:show', () => {
       init()
-      const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('.menuButton')
       assert(target !== null, 'target must exist')
       Navigation.current.pictures = [{ name: '', path: '', seen: true }]

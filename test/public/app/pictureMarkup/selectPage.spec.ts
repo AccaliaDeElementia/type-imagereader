@@ -16,7 +16,7 @@ describe('public/app/pictureMarkup selectPage()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     Pictures.mainImage = null
   })
   afterEach(() => {

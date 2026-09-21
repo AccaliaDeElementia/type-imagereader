@@ -31,8 +31,8 @@ describe('public/app/navigation/messageHandlers action-to-topic forwarding handl
 
     resetPubSub()
     vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
-    forwardStub = vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
+    forwardStub = vi.spyOn(Imports, 'forward').mockReturnValue(undefined)
     Navigation.current = {
       path: '/',
       name: '',
@@ -83,7 +83,7 @@ describe('public/app/navigation/messageHandlers action-to-topic forwarding handl
       dom.window.document.body.requestFullscreen = requestFullscreenStub
       dom.window.document.exitFullscreen = exitFullscreenStub
       handler = capturedSubscriber(subscribeStub, 'Action:Execute:FullScreen')
-      publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     })
     afterEach(() => {
       requestFullscreenStub.mockReset()
@@ -201,9 +201,7 @@ describe('public/app/navigation/messageHandlers action-to-topic forwarding handl
       expect(addEventListenerSpy.mock.calls.some((c) => c[0] === 'fullscreenerror')).toBe(true)
     })
     it('should dispatch fullscreenchange to Internals.onFullscreenChange', () => {
-      const onFullscreenChangeSpy = vi
-        .spyOn(Internals, 'onFullscreenChange')
-        .mockImplementation((..._args: unknown[]) => undefined)
+      const onFullscreenChangeSpy = vi.spyOn(Internals, 'onFullscreenChange').mockReturnValue(undefined)
       const change = cast<(event: Event) => void>(
         addEventListenerSpy.mock.calls.find((c) => c[0] === 'fullscreenchange')?.[1],
       )
@@ -211,9 +209,7 @@ describe('public/app/navigation/messageHandlers action-to-topic forwarding handl
       expect(onFullscreenChangeSpy.mock.calls.length).toBe(1)
     })
     it('should dispatch fullscreenerror to Internals.onFullscreenError', () => {
-      const onFullscreenErrorSpy = vi
-        .spyOn(Internals, 'onFullscreenError')
-        .mockImplementation((..._args: unknown[]) => undefined)
+      const onFullscreenErrorSpy = vi.spyOn(Internals, 'onFullscreenError').mockReturnValue(undefined)
       const fail = cast<(event: Event) => void>(
         addEventListenerSpy.mock.calls.find((c) => c[0] === 'fullscreenerror')?.[1],
       )
@@ -226,7 +222,7 @@ describe('public/app/navigation/messageHandlers action-to-topic forwarding handl
     let publishStub: MockInstance = vi.fn()
     beforeEach(() => {
       init()
-      publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       Navigation.fullscreenIntent = 'none'
     })
     it('should publish Fullscreen:Change on transition', () => {
@@ -294,7 +290,7 @@ describe('public/app/navigation/messageHandlers action-to-topic forwarding handl
     let publishStub: MockInstance = vi.fn()
     beforeEach(() => {
       init()
-      publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+      publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     })
     it('should publish Fullscreen:Error', () => {
       Internals.onFullscreenError(cast<Event>({ type: 'fullscreenerror' }))

@@ -20,7 +20,7 @@ describe('routes/apiFunctions markFolderSeen', () => {
     knexRawStub = vi.fn()
     knexFake.raw = cast<Knex.RawBuilder<Record<string, never>, unknown>>(knexRawStub)
     getParentFoldersStub = vi.spyOn(Imports, 'getParentFolders').mockReturnValue([])
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
   })
   describe('with markAsSeen = true', () => {
     it('should update pictures table once to set pictures read', async () => {

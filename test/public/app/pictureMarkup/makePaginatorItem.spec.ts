@@ -13,7 +13,7 @@ describe('public/app/pictureMarkup makePaginatorItem()', () => {
       url: 'http://127.0.0.1:2999',
     })
     mountDom(dom)
-    selectPageSpy = vi.spyOn(Internals, 'selectPage').mockImplementation((..._args: unknown[]) => undefined)
+    selectPageSpy = vi.spyOn(Internals, 'selectPage').mockReturnValue(undefined)
     resetPubSub()
     const holder = dom.window.document.createElement('div')
     holder.innerHTML =

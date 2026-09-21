@@ -130,7 +130,7 @@ describe('routes/slideshow socket goto-image', () => {
   describe('logging', () => {
     let loggerStub: MockInstance = voidFn()
     beforeEach(() => {
-      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+      loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
     })
 
     it('should log gotoImage format on valid invocation', async () => {

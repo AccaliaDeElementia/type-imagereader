@@ -42,7 +42,7 @@ describe('routes/images export getRouter()', () => {
       }),
     }
     getRouterStub = vi.spyOn(Imports, 'Router').mockReturnValue(cast<Router>(routerFake))
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
   })
   afterAll(() => {
     Object.assign(CacheStorage, cachesAtLoad)

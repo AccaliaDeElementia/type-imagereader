@@ -23,7 +23,7 @@ describe('public/app/loading subscriber "Loading:show" and "Loading:Hide"', () =
     })
     mountDom(dom)
     resetPubSub()
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
     Loading.overlay = null
     Loading.navbar = null
     init()

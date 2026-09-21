@@ -31,8 +31,8 @@ describe('public/app/navigation/messageHandlers folder navigation handlers', () 
 
     resetPubSub()
     vi.spyOn(Internals, 'loadData').mockResolvedValue(undefined)
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
-    vi.spyOn(Imports, 'forward').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
+    vi.spyOn(Imports, 'forward').mockReturnValue(undefined)
     Navigation.current = {
       path: '/',
       name: '',

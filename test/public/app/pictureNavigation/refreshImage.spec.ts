@@ -34,7 +34,7 @@ describe('public/app/pictureNavigation refreshImage()', () => {
     Pictures.mainImage = dom.window.document.createElement('img')
     makeURIStub = vi.spyOn(Internals, 'makeURI').mockReturnValue('/images/original/some/path/1250.png-image.webp')
     loadNextImageStub = vi.spyOn(Internals, 'loadNextImage').mockResolvedValue(undefined)
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     postJSONStub = vi.spyOn(Imports, 'postJSON').mockResolvedValue(50)
   })
   afterEach(() => {

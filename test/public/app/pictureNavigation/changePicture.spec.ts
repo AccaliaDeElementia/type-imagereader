@@ -16,10 +16,10 @@ describe('public/app/pictureNavigation changePicture()', () => {
   beforeEach(() => {
     Pictures.current = null
     Viewer.history = { prev: [], next: [] }
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     isLoadingSpy = vi.spyOn(Imports, 'isLoading').mockReturnValue(false)
     loadImageSpy = vi.spyOn(Internals, 'loadImage').mockResolvedValue(undefined)
-    setArrivalStub = vi.spyOn(Imports, 'setArrival').mockImplementation((..._args: unknown[]) => undefined)
+    setArrivalStub = vi.spyOn(Imports, 'setArrival').mockReturnValue(undefined)
   })
   it('should arrive at the start of the picture by default', async () => {
     await changePicture({ name: '', path: '/foo.png', seen: false })

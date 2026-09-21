@@ -18,8 +18,8 @@ describe('public/app/wakelock init()', () => {
     mountDom(dom)
     takeLockSpy = vi.spyOn(Internals, 'takeLock').mockResolvedValue(undefined)
     releaseLockSpy = vi.spyOn(Internals, 'releaseLock').mockResolvedValue(undefined)
-    subscribeStub = vi.spyOn(Imports, 'subscribe').mockImplementation((..._args: unknown[]) => undefined)
-    addIntervalStub = vi.spyOn(Imports, 'addInterval').mockImplementation((..._args: unknown[]) => undefined)
+    subscribeStub = vi.spyOn(Imports, 'subscribe').mockReturnValue(undefined)
+    addIntervalStub = vi.spyOn(Imports, 'addInterval').mockReturnValue(undefined)
     resetPubSub()
     WakeLock.initialized = false
   })

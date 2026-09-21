@@ -185,7 +185,7 @@ describe('routes/slideshow rootRoute', () => {
   describe('logging', () => {
     let loggerStub: MockInstance = vi.fn()
     beforeEach(() => {
-      loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+      loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
     })
 
     it('should log GET-format on rootRoute invocation', async () => {

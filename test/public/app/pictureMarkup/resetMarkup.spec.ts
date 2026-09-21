@@ -41,8 +41,8 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
     })
     mountDom(dom)
     resetPubSub()
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
-    applyEntryScrollStub = vi.spyOn(Imports, 'applyEntryScroll').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
+    applyEntryScrollStub = vi.spyOn(Imports, 'applyEntryScroll').mockReturnValue(undefined)
     Pictures.mainImage = null
     Pictures.current = null
     Grid.imageCard = null

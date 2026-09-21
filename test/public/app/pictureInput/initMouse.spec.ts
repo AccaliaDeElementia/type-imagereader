@@ -49,7 +49,7 @@ describe('public/app/pictureInput initMouse()', () => {
     const tgt = Pictures.mainImage?.parentElement
     assert(hasValue(tgt))
     vi.spyOn(tgt, 'getBoundingClientRect').mockImplementation(() => cast<DOMRect>(boundingRect))
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     vi.spyOn(Imports, 'getPanTarget').mockReturnValue(null)
     Panning.target = null
     Panning.moved = false

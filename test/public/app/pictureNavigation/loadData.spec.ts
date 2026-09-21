@@ -15,7 +15,7 @@ describe('public/app/pictureNavigation loadData()', () => {
   let publishStub: MockInstance = vi.fn()
   beforeEach(() => {
     resetPubSub()
-    publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
+    publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     Pictures.pictures = Array.from({ length: 64 }).map((_, i) => ({
       path: `/some/path/${i}.png`,
       name: `${i}.png`,
@@ -24,9 +24,9 @@ describe('public/app/pictureNavigation loadData()', () => {
     }))
     Pictures.current = null
     Viewer.history = { prev: [], next: [] }
-    resetMarkupSpy = vi.spyOn(Imports, 'resetMarkup').mockImplementation((..._args: unknown[]) => undefined)
+    resetMarkupSpy = vi.spyOn(Imports, 'resetMarkup').mockReturnValue(undefined)
     setPicturesSpy = vi.spyOn(Internals, 'setPicturesGetFirst').mockImplementation((data) => data.pictures?.[0] ?? null)
-    makeTabSpy = vi.spyOn(Imports, 'makeTab').mockImplementation((..._args: unknown[]) => undefined)
+    makeTabSpy = vi.spyOn(Imports, 'makeTab').mockReturnValue(undefined)
     loadImageSpy = vi.spyOn(Internals, 'loadImage').mockResolvedValue(undefined)
   })
   it('should reset markup on load', async () => {

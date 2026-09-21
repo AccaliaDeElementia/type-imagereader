@@ -76,7 +76,7 @@ describe('routes/slideshow tickCountdown()', () => {
     Config.rooms = {}
     Config.countdownDuration = 60
     getRoomStub = vi.spyOn(Internals, 'getRoomAndIncrementImage').mockResolvedValue(cast(undefined))
-    loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
+    loggerStub = vi.spyOn(Imports, 'logger').mockReturnValue(undefined)
   })
   describe('with empty room list', () => {
     beforeEach(async () => {
