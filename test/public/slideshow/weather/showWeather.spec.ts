@@ -38,20 +38,13 @@ describe('public/slideshow/weather showWeather()', () => {
     unmountDom()
   })
 
-  it('should return input weather when null base provided', () => {
-    const result = Internals.showWeather(null, weather)
-    expect(result).toBe(weather)
-  })
-
-  it('should return input weather when undefined base provided', () => {
-    const result = Internals.showWeather(undefined, weather)
-    expect(result).toBe(weather)
-  })
-
-  it('should return input weather when valid base provided', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    const result = Internals.showWeather(base, weather)
-    expect(result).toBe(weather)
+  const baseElements: Array<[string, () => HTMLElement | null | undefined]> = [
+    ['null', () => null],
+    ['undefined', () => undefined],
+    ['a valid element', () => dom.window.document.querySelector<HTMLElement>('.weather')],
+  ]
+  it.each(baseElements)('should return the input weather when the base is %s', (_label, baseOf) => {
+    expect(Internals.showWeather(baseOf(), weather)).toBe(weather)
   })
 
   it('should call showData() twice when valid base provided', () => {
@@ -79,45 +72,24 @@ describe('public/slideshow/weather showWeather()', () => {
     expect(showDataStub.mock.calls[0]?.[1]).toBe(expected)
   })
 
-  it('should show temp with null text when the weather carries no temperature', () => {
+  interface TemperatureCase {
+    given: string
+    temp: number | undefined
+    expected: string | null
+  }
+  const temperatures: TemperatureCase[] = [
+    { given: 'no temperature at all', temp: undefined, expected: null },
+    { given: 'an excessively precise temperature', temp: 98.9972, expected: '99.0°C' },
+    { given: 'NaN', temp: Number.NaN, expected: null },
+    { given: 'Infinity', temp: Number.POSITIVE_INFINITY, expected: null },
+    { given: 'negative Infinity', temp: Number.NEGATIVE_INFINITY, expected: null },
+    { given: 'zero degrees', temp: 0, expected: '0.0°C' },
+  ]
+  it.each(temperatures)('should show temp as $expected given $given', ({ temp, expected }: TemperatureCase) => {
     const base = dom.window.document.querySelector<HTMLElement>('.weather')
+    weather.temp = temp
     Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[0]?.[2]).toBe(null)
-  })
-
-  it('should show temp with rounded text for excessive decimal data', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    weather.temp = 98.9972
-    Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[0]?.[2]).toBe('99.0°C')
-  })
-
-  it('should show temp with null text for NaN data', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    weather.temp = NaN
-    Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[0]?.[2]).toBe(null)
-  })
-
-  it('should show temp with null text for Infinity data', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    weather.temp = Infinity
-    Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[0]?.[2]).toBe(null)
-  })
-
-  it('should show temp with null text for negative Infinity data', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    weather.temp = -Infinity
-    Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[0]?.[2]).toBe(null)
-  })
-
-  it('should show temp with formatted text for zero degrees', () => {
-    const base = dom.window.document.querySelector<HTMLElement>('.weather')
-    weather.temp = 0
-    Internals.showWeather(base, weather)
-    expect(showDataStub.mock.calls[0]?.[2]).toBe('0.0°C')
+    expect(showDataStub.mock.calls[0]?.[2]).toBe(expected)
   })
 
   it('should show description with expected base element', () => {
