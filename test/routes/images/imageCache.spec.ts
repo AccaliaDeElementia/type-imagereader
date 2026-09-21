@@ -2,428 +2,234 @@
 
 import { type CacheItem, ImageCache, ImageData } from '#routes/images.js'
 import { UNBOUNDED } from '#contracts/scaledImage.js'
+
+const CACHED_PATH = '/foo.jpg'
+const NEW_PATH = '/new.png'
+const SHARED_CACHE_SIZE = 5
+const EVICTION_CACHE_SIZE = 3
+const ITEM_SIZE = 100
+
+const makeImage = (path = ''): ImageData => ImageData.fromImage(Buffer.from(''), '', path)
+
+const dimension = (value: number): string => (value === UNBOUNDED ? 'auto' : String(value))
+
+interface MatchCase {
+  storedWidth: number
+  storedHeight: number
+  requestedWidth: number
+  requestedHeight: number
+  servedFromCache: boolean
+}
+
+const matchCases: MatchCase[] = [
+  { storedWidth: 50, storedHeight: 50, requestedWidth: 50, requestedHeight: 50, servedFromCache: true },
+  { storedWidth: 50, storedHeight: 50, requestedWidth: 45, requestedHeight: 50, servedFromCache: true },
+  { storedWidth: 50, storedHeight: 50, requestedWidth: 50, requestedHeight: 45, servedFromCache: true },
+  { storedWidth: 50, storedHeight: 50, requestedWidth: 45, requestedHeight: 45, servedFromCache: true },
+  { storedWidth: 50, storedHeight: 40, requestedWidth: 45, requestedHeight: 50, servedFromCache: false },
+  { storedWidth: 40, storedHeight: 50, requestedWidth: 50, requestedHeight: 45, servedFromCache: false },
+  { storedWidth: 50, storedHeight: UNBOUNDED, requestedWidth: 50, requestedHeight: 45, servedFromCache: false },
+  { storedWidth: 50, storedHeight: 50, requestedWidth: 50, requestedHeight: UNBOUNDED, servedFromCache: false },
+  { storedWidth: 50, storedHeight: UNBOUNDED, requestedWidth: 45, requestedHeight: UNBOUNDED, servedFromCache: true },
+  { storedWidth: 50, storedHeight: UNBOUNDED, requestedWidth: 60, requestedHeight: UNBOUNDED, servedFromCache: false },
+]
+
+interface RetentionCase {
+  outcome: string
+  path: string
+  image: () => ImageData
+  retained: boolean
+}
+
+const retentionCases: RetentionCase[] = [
+  {
+    outcome: 'an error',
+    path: '/missing.jpg',
+    image: () => ImageData.fromError('NOT_FOUND', 404, 'oops', '/missing.jpg'),
+    retained: false,
+  },
+  {
+    outcome: 'a successful',
+    path: '/ok.jpg',
+    image: () => ImageData.fromImage(Buffer.from(''), 'jpg', '/ok.jpg'),
+    retained: true,
+  },
+]
+
+interface EvictionCase {
+  scenario: string
+  accesses: string[]
+  expectedPaths: string[]
+}
+
+const evictionCases: EvictionCase[] = [
+  { scenario: 'no intervening access', accesses: [], expectedPaths: [NEW_PATH, '/a.png', '/b.png'] },
+  {
+    scenario: 'the tail item accessed first',
+    accesses: ['/c.png'],
+    expectedPaths: [NEW_PATH, '/c.png', '/a.png'],
+  },
+  {
+    scenario: 'the two tail items accessed first',
+    accesses: ['/c.png', '/b.png'],
+    expectedPaths: [NEW_PATH, '/b.png', '/c.png'],
+  },
+]
+
 describe('routes/images ImageCache', () => {
   const defaultCacheSize = ImageCache.cacheSize
   let createSpy = vi.fn()
   let imageCache = new ImageCache(createSpy)
   beforeEach(() => {
-    ImageCache.cacheSize = 5
-    createSpy = vi.fn().mockResolvedValue(ImageData.fromImage(Buffer.from(''), '', ''))
+    ImageCache.cacheSize = SHARED_CACHE_SIZE
+    createSpy = vi.fn().mockResolvedValue(makeImage())
     imageCache = new ImageCache(createSpy)
   })
   afterAll(() => {
     ImageCache.cacheSize = defaultCacheSize
   })
+
+  const pushItem = (path: string, width: number, height: number, image: ImageData): void => {
+    imageCache.items.push({ path, width, height, image: Promise.resolve(image) })
+  }
+  const fillWithStaleItems = (count: number): void => {
+    for (let i = 0; i < count; i += 1) {
+      pushItem(`/item_${i}.png`, ITEM_SIZE + i, ITEM_SIZE + i, ImageData.fromError('foo', 600, 'bar', `/item_${i}.png`))
+    }
+  }
+  const cachedPaths = (): string[] => imageCache.items.map((item: CacheItem) => item.path)
+
   describe('ctor', () => {
-    it('should store cache item creation function', () => {
+    it('should start with the given cache function, no items and no size limit', () => {
       const spy = vi.fn().mockResolvedValue(undefined)
       const cache = new ImageCache(spy)
-      expect(cache.cacheFunction).toBe(spy)
-    })
-    it('should create cache with empty cache', () => {
-      const cache = new ImageCache(vi.fn())
-      expect(cache.items).toHaveLength(0)
-    })
-    it('should leave maxItems unset when no size limit is provided', () => {
-      const cache = new ImageCache(vi.fn())
-      expect(cache.maxItems).toBe(undefined)
+      expect({ cacheFunction: cache.cacheFunction, items: cache.items, maxItems: cache.maxItems }).toEqual({
+        cacheFunction: spy,
+        items: [],
+        maxItems: undefined,
+      })
     })
     it('should store an explicit size limit', () => {
       const cache = new ImageCache(vi.fn(), 3)
       expect(cache.maxItems).toBe(3)
     })
   })
+
   describe('per instance size limit', () => {
-    it('should evict down to the instance limit when it is smaller than the shared default', async () => {
+    it('should evict down to the instance limit, keeping the most recently fetched items', async () => {
       const cache = new ImageCache(createSpy, 2)
-      await cache.fetch('/a.png', 100, 100)
-      await cache.fetch('/b.png', 100, 100)
-      await cache.fetch('/c.png', 100, 100)
-      expect(cache.items).toHaveLength(2)
-    })
-    it('should retain the most recently fetched item within the instance limit', async () => {
-      const cache = new ImageCache(createSpy, 2)
-      await cache.fetch('/a.png', 100, 100)
-      await cache.fetch('/b.png', 100, 100)
-      await cache.fetch('/c.png', 100, 100)
-      expect(cache.items.map((item) => item.path)).toContain('/c.png')
+      await cache.fetch('/a.png', ITEM_SIZE, ITEM_SIZE)
+      await cache.fetch('/b.png', ITEM_SIZE, ITEM_SIZE)
+      await cache.fetch('/c.png', ITEM_SIZE, ITEM_SIZE)
+      expect(cache.items.map((item: CacheItem) => item.path)).toEqual(['/c.png', '/b.png'])
     })
     it('should ignore later changes to the shared default when an instance limit is set', async () => {
       const cache = new ImageCache(createSpy, 2)
       ImageCache.cacheSize = 100
-      await cache.fetch('/a.png', 100, 100)
-      await cache.fetch('/b.png', 100, 100)
-      await cache.fetch('/c.png', 100, 100)
+      await cache.fetch('/a.png', ITEM_SIZE, ITEM_SIZE)
+      await cache.fetch('/b.png', ITEM_SIZE, ITEM_SIZE)
+      await cache.fetch('/c.png', ITEM_SIZE, ITEM_SIZE)
       expect(cache.items).toHaveLength(2)
     })
   })
+
   describe('fetch()', () => {
-    it('should fetch existing exact match item', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(img),
-      })
-      expect(await imageCache.fetch('/foo.jpg', 50, 50)).toBe(img)
-    })
-    it('should fetch existing match item with larger width', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(img),
-      })
-      expect(await imageCache.fetch('/foo.jpg', 45, 50)).toBe(img)
-    })
-    it('should not create new cache item with existing match', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(img),
-      })
-      await imageCache.fetch('/foo.jpg', 45, 50)
-      expect(imageCache.items).toHaveLength(1)
-    })
-    it('should not call cache item creator function with existing match', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(img),
-      })
-      await imageCache.fetch('/foo.jpg', 45, 50)
-      expect(createSpy.mock.calls.length).toBe(0)
-    })
-    it('should fetch existing match item with larger height', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(img),
-      })
-      expect(await imageCache.fetch('/foo.jpg', 50, 45)).toBe(img)
-    })
-    it('should not match cache item when stored height is less than requested', async () => {
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 40,
-        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
-      })
-      await imageCache.fetch('/foo.jpg', 45, 50)
-      expect(createSpy.mock.calls.length).toBe(1)
-    })
-    it('should not match cache item when stored width is less than requested', async () => {
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 40,
-        height: 50,
-        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
-      })
-      await imageCache.fetch('/foo.jpg', 50, 45)
-      expect(createSpy.mock.calls.length).toBe(1)
-    })
-    it('should fetch existing match item with larger width and height', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(img),
-      })
-      expect(await imageCache.fetch('/foo.jpg', 45, 45)).toBe(img)
-    })
-    it('should not serve an unbounded entry to a bounded request', async () => {
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: UNBOUNDED,
-        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
-      })
-      await imageCache.fetch('/foo.jpg', 50, 45)
-      expect(createSpy.mock.calls.length).toBe(1)
-    })
-    it('should not serve a bounded entry to an unbounded request', async () => {
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
-      })
-      await imageCache.fetch('/foo.jpg', 50, UNBOUNDED)
-      expect(createSpy.mock.calls.length).toBe(1)
-    })
-    it('should serve an unbounded entry to a matching unbounded request', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: UNBOUNDED,
-        image: Promise.resolve(img),
-      })
-      expect(await imageCache.fetch('/foo.jpg', 45, UNBOUNDED)).toBe(img)
-    })
-    it('should not serve a narrower unbounded entry to a wider unbounded request', async () => {
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: UNBOUNDED,
-        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), '', '')),
-      })
-      await imageCache.fetch('/foo.jpg', 60, UNBOUNDED)
-      expect(createSpy.mock.calls.length).toBe(1)
-    })
-    it('should move existing item to head of the cache queue on retrieval', async () => {
-      for (let i = 0; i < 10; i += 1) {
-        imageCache.items.push({
-          path: `/item_${i}.png`,
-          width: 100 + i,
-          height: 200 + i,
-          image: Promise.resolve(ImageData.fromError('foo', 600, 'bar', `/item_${i}.png`)),
+    matchCases.forEach(
+      ({ storedWidth, storedHeight, requestedWidth, requestedHeight, servedFromCache }: MatchCase): void => {
+        const stored = `${dimension(storedWidth)}x${dimension(storedHeight)}`
+        const requested = `${dimension(requestedWidth)}x${dimension(requestedHeight)}`
+        it(`should ${servedFromCache ? 'serve' : 'refuse'} a ${stored} entry for a ${requested} request`, async () => {
+          const cached = makeImage()
+          pushItem(CACHED_PATH, storedWidth, storedHeight, cached)
+          const result = await imageCache.fetch(CACHED_PATH, requestedWidth, requestedHeight)
+          expect({
+            servedFromCache: result === cached,
+            created: createSpy.mock.calls.length,
+            items: imageCache.items.length,
+          }).toEqual({
+            servedFromCache,
+            created: servedFromCache ? 0 : 1,
+            items: servedFromCache ? 1 : 2,
+          })
         })
-      }
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      imageCache.items.push({
-        path: '/foo.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(img),
-      })
-      await imageCache.fetch('/foo.jpg', 45, 45)
-      const extractPath = (i: CacheItem): string => i.path
-      const paths = imageCache.items.map(extractPath)
-      expect(paths).toEqual(['/foo.jpg', '/item_0.png', '/item_1.png', '/item_2.png', '/item_3.png'])
+      },
+    )
+
+    it('should call the cache function once with the requested path and dimensions on a miss', async () => {
+      await imageCache.fetch(CACHED_PATH, 45, 54)
+      expect(createSpy.mock.calls).toEqual([[CACHED_PATH, 45, 54]])
     })
-    it('should create new cache item when query not found', async () => {
-      await imageCache.fetch('/foo.jpg', 45, 45)
-      expect(createSpy.mock.calls.length).toBe(1)
-    })
-    it('should provide expected parameters to create function when entry not found', async () => {
-      await imageCache.fetch('/foo.jpg', 45, 54)
-      expect(createSpy.mock.calls[0]).toEqual(['/foo.jpg', 45, 54])
-    })
-    it('should insert new cache item at beginning of queue', async () => {
-      for (let i = 0; i < 10; i += 1) {
-        imageCache.items.push({
-          path: `/item_${i}.png`,
-          width: 100 + i,
-          height: 200 + i,
-          image: Promise.resolve(ImageData.fromError('foo', 600, 'bar', `/item_${i}.png`)),
-        })
-      }
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
+    it('should store the requested path, dimensions and image at the head on a miss', async () => {
+      const img = makeImage()
       createSpy.mockResolvedValue(img)
-      await imageCache.fetch('/foo.jpg', 45, 54)
-      expect(imageCache.items[0]?.path).toBe('/foo.jpg')
-    })
-    it('should store requested width in new cache item', async () => {
-      for (let i = 0; i < 10; i += 1) {
-        imageCache.items.push({
-          path: `/item_${i}.png`,
-          width: 100 + i,
-          height: 200 + i,
-          image: Promise.resolve(ImageData.fromError('foo', 600, 'bar', `/item_${i}.png`)),
-        })
-      }
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      createSpy.mockResolvedValue(img)
-      await imageCache.fetch('/foo.jpg', 45, 54)
-      expect(imageCache.items[0]?.width).toBe(45)
-    })
-    it('should store requested height in new cache item', async () => {
-      for (let i = 0; i < 10; i += 1) {
-        imageCache.items.push({
-          path: `/item_${i}.png`,
-          width: 100 + i,
-          height: 200 + i,
-          image: Promise.resolve(ImageData.fromError('foo', 600, 'bar', `/item_${i}.png`)),
-        })
-      }
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      createSpy.mockResolvedValue(img)
-      await imageCache.fetch('/foo.jpg', 45, 54)
-      expect(imageCache.items[0]?.height).toBe(54)
-    })
-    it('should store promise resolving to requested image in new cache item', async () => {
-      for (let i = 0; i < 10; i += 1) {
-        imageCache.items.push({
-          path: `/item_${i}.png`,
-          width: 100 + i,
-          height: 200 + i,
-          image: Promise.resolve(ImageData.fromError('foo', 600, 'bar', `/item_${i}.png`)),
-        })
-      }
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      createSpy.mockResolvedValue(img)
-      await imageCache.fetch('/foo.jpg', 45, 54)
-      const result = await imageCache.items[0]?.image
-      expect(result).toBe(img)
-    })
-    it('should call cacheFunction only once for concurrent requests to same uncached path', async () => {
-      const { promise, resolve } = Promise.withResolvers<ImageData>()
-      createSpy.mockImplementation(async () => await promise)
-
-      const fetch1 = imageCache.fetch('/foo.jpg', 50, 50)
-      const fetch2 = imageCache.fetch('/foo.jpg', 50, 50)
-      resolve(ImageData.fromImage(Buffer.from(''), '', ''))
-      await Promise.all([fetch1, fetch2])
-
-      expect(createSpy.mock.calls.length).toBe(1)
-    })
-    it('should return expected result to first concurrent request', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      const { promise, resolve } = Promise.withResolvers<ImageData>()
-      createSpy.mockImplementation(async () => await promise)
-
-      const fetch1 = imageCache.fetch('/foo.jpg', 50, 50)
-      const fetch2 = imageCache.fetch('/foo.jpg', 50, 50)
-      resolve(img)
-      const [result1] = await Promise.all([fetch1, fetch2])
-
-      expect(result1).toBe(img)
-    })
-    it('should return expected result to second concurrent request', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), '', '')
-      const { promise, resolve } = Promise.withResolvers<ImageData>()
-      createSpy.mockImplementation(async () => await promise)
-
-      const fetch1 = imageCache.fetch('/foo.jpg', 50, 50)
-      const fetch2 = imageCache.fetch('/foo.jpg', 50, 50)
-      resolve(img)
-      const [, result2] = await Promise.all([fetch1, fetch2])
-
-      expect(result2).toBe(img)
-    })
-    it('should store only one item for concurrent requests to same uncached path', async () => {
-      const { promise, resolve } = Promise.withResolvers<ImageData>()
-      createSpy.mockImplementation(async () => await promise)
-
-      const fetch1 = imageCache.fetch('/foo.jpg', 50, 50)
-      const fetch2 = imageCache.fetch('/foo.jpg', 50, 50)
-      resolve(ImageData.fromImage(Buffer.from(''), '', ''))
-      await Promise.all([fetch1, fetch2])
-
-      expect(imageCache.items).toHaveLength(1)
-    })
-    it('should remove a cache item from the cache after fetch returns an error result', async () => {
-      const errorImg = ImageData.fromError('NOT_FOUND', 404, 'oops', '/missing.jpg')
-      imageCache.items.push({
-        path: '/missing.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(errorImg),
+      fillWithStaleItems(10)
+      await imageCache.fetch(CACHED_PATH, 45, 54)
+      const [head] = imageCache.items
+      expect({ path: head?.path, width: head?.width, height: head?.height, image: await head?.image }).toEqual({
+        path: CACHED_PATH,
+        width: 45,
+        height: 54,
+        image: img,
       })
-      await imageCache.fetch('/missing.jpg', 50, 50)
-      expect(imageCache.items.find((i) => i.path === '/missing.jpg')).toBe(undefined)
     })
-    it('should keep a cache item in the cache after fetch returns a successful result', async () => {
-      const img = ImageData.fromImage(Buffer.from(''), 'jpg', '/ok.jpg')
-      imageCache.items.push({
-        path: '/ok.jpg',
-        width: 50,
-        height: 50,
-        image: Promise.resolve(img),
+    it('should move an existing item to the head of the cache queue on retrieval', async () => {
+      fillWithStaleItems(10)
+      pushItem(CACHED_PATH, 50, 50, makeImage())
+      await imageCache.fetch(CACHED_PATH, 45, 45)
+      expect(cachedPaths()).toEqual([CACHED_PATH, '/item_0.png', '/item_1.png', '/item_2.png', '/item_3.png'])
+    })
+    it('should prune older unused cache items when a new item overflows a full cache', async () => {
+      fillWithStaleItems(10)
+      await imageCache.fetch(CACHED_PATH, 45, 45)
+      expect(cachedPaths()).toEqual([CACHED_PATH, '/item_0.png', '/item_1.png', '/item_2.png', '/item_3.png'])
+    })
+
+    describe('concurrent requests for the same uncached path', () => {
+      let img = makeImage()
+      let results: ImageData[] = []
+      beforeEach(async () => {
+        img = makeImage()
+        const { promise, resolve } = Promise.withResolvers<ImageData>()
+        createSpy.mockImplementation(async () => await promise)
+        const first = imageCache.fetch(CACHED_PATH, 50, 50)
+        const second = imageCache.fetch(CACHED_PATH, 50, 50)
+        resolve(img)
+        results = await Promise.all([first, second])
       })
-      await imageCache.fetch('/ok.jpg', 50, 50)
-      expect(imageCache.items.find((i) => i.path === '/ok.jpg')).not.toBe(undefined)
+      it('should call the cache function once and store a single item', () => {
+        expect({ calls: createSpy.mock.calls.length, items: imageCache.items.length }).toEqual({ calls: 1, items: 1 })
+      })
+      it('should resolve every concurrent request with the one created image', () => {
+        expect(results.map((result: ImageData) => result === img)).toEqual([true, true])
+      })
     })
-    it('should prune older unused cache items when cache is full and new item is added', async () => {
-      for (let i = 0; i < 10; i += 1) {
-        imageCache.items.push({
-          path: `/item_${i}.png`,
-          width: 100 + i,
-          height: 200 + i,
-          image: Promise.resolve(ImageData.fromError('foo', 600, 'bar', `/item_${i}.png`)),
-        })
-      }
-      await imageCache.fetch('/foo.jpg', 45, 45)
-      const extractPath = (i: CacheItem): string => i.path
-      const paths = imageCache.items.map(extractPath)
-      expect(paths).toEqual(['/foo.jpg', '/item_0.png', '/item_1.png', '/item_2.png', '/item_3.png'])
+
+    retentionCases.forEach(({ outcome, path, image, retained }: RetentionCase): void => {
+      it(`should ${retained ? 'keep' : 'remove'} a cache item after fetch returns ${outcome} result`, async () => {
+        pushItem(path, 50, 50, image())
+        await imageCache.fetch(path, 50, 50)
+        expect(cachedPaths()).toEqual(retained ? [path] : [])
+      })
     })
 
     describe('LRU eviction order', () => {
-      const ITEM_WIDTH = 100
-      const ITEM_HEIGHT = 100
-      const makeCacheItem = (path: string): CacheItem => ({
-        path,
-        width: ITEM_WIDTH,
-        height: ITEM_HEIGHT,
-        image: Promise.resolve(ImageData.fromImage(Buffer.from(''), 'jpg', path)),
-      })
-
-      const fillCacheHeadToTail = (...paths: string[]): void => {
-        for (const path of paths) imageCache.items.push(makeCacheItem(path))
-      }
-      const accessItem = async (path: string): Promise<void> => {
-        await imageCache.fetch(path, ITEM_WIDTH, ITEM_HEIGHT)
-      }
-      const addNewItem = async (): Promise<void> => {
-        await accessItem('/new.png')
-      }
-      const cachedPaths = (): string[] => imageCache.items.map((i: CacheItem) => i.path)
-
       beforeEach(() => {
-        ImageCache.cacheSize = 3
+        ImageCache.cacheSize = EVICTION_CACHE_SIZE
       })
 
-      it('should evict the least recently used item when a new item is added to a full cache', async () => {
-        fillCacheHeadToTail('/a.png', '/b.png', '/c.png')
-        await addNewItem()
-        expect(cachedPaths()).not.toContain('/c.png')
-      })
-
-      it('should retain the most recently used item /a.png when cache overflows', async () => {
-        fillCacheHeadToTail('/a.png', '/b.png', '/c.png')
-        await addNewItem()
-        expect(cachedPaths()).toContain('/a.png')
-      })
-      it('should retain the most recently used item /b.png when cache overflows', async () => {
-        fillCacheHeadToTail('/a.png', '/b.png', '/c.png')
-        await addNewItem()
-        expect(cachedPaths()).toContain('/b.png')
-      })
-
-      it('should retain a recently accessed item that would otherwise have been evicted', async () => {
-        fillCacheHeadToTail('/a.png', '/b.png', '/c.png')
-        await accessItem('/c.png')
-        await addNewItem()
-        expect(cachedPaths()).toContain('/c.png')
-      })
-      it('should evict the item that became LRU after a recent access', async () => {
-        fillCacheHeadToTail('/a.png', '/b.png', '/c.png')
-        await accessItem('/c.png')
-        await addNewItem()
-        expect(cachedPaths()).not.toContain('/b.png')
-      })
-
-      it('should evict the item that was least recently accessed, not the one added longest ago', async () => {
-        fillCacheHeadToTail('/a.png', '/b.png', '/c.png')
-        await accessItem('/c.png')
-        await accessItem('/b.png')
-        await addNewItem()
-        expect(cachedPaths()).not.toContain('/a.png')
-      })
-      it('should retain /b.png when it was accessed more recently than the evicted item', async () => {
-        fillCacheHeadToTail('/a.png', '/b.png', '/c.png')
-        await accessItem('/c.png')
-        await accessItem('/b.png')
-        await addNewItem()
-        expect(cachedPaths()).toContain('/b.png')
-      })
-      it('should retain /c.png when it was accessed more recently than the evicted item', async () => {
-        fillCacheHeadToTail('/a.png', '/b.png', '/c.png')
-        await accessItem('/c.png')
-        await accessItem('/b.png')
-        await addNewItem()
-        expect(cachedPaths()).toContain('/c.png')
+      evictionCases.forEach(({ scenario, accesses, expectedPaths }: EvictionCase): void => {
+        it(`should hold ${expectedPaths.join(', ')} after overflowing a full cache with ${scenario}`, async () => {
+          for (const path of ['/a.png', '/b.png', '/c.png']) {
+            pushItem(path, ITEM_SIZE, ITEM_SIZE, makeImage(path))
+          }
+          /* eslint-disable no-await-in-loop -- access order is the invariant under test, so the fetches must be serial */
+          for (const path of accesses) {
+            await imageCache.fetch(path, ITEM_SIZE, ITEM_SIZE)
+          }
+          /* eslint-enable no-await-in-loop */
+          await imageCache.fetch(NEW_PATH, ITEM_SIZE, ITEM_SIZE)
+          expect(cachedPaths()).toEqual(expectedPaths)
+        })
       })
     })
   })

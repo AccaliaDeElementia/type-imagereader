@@ -2,7 +2,22 @@
 
 import { sendImage, ImageData } from '#routes/images.js'
 import { createResponseFake } from '#testutils/express.js'
+
 const FROZEN_NOW = Date.UTC(2026, 0, 15, 12, 0, 0)
+const ONE_MONTH_MS = 1000 * 60 * 60 * 24 * 30
+const MILLISECONDS_PER_SECOND = 1000
+
+const IMAGE_PATH = '/image.png'
+const IMAGE_EXTENSION = 'webp'
+const ERROR_CODE = 'E_TEST_ERROR'
+const ERROR_STATUS = 418
+const ERROR_MESSAGE = 'A Test Error'
+
+const expectedHeaders = [
+  ['Content-Type', `image/${IMAGE_EXTENSION}`],
+  ['Cache-Control', 'public, max-age=2592000'],
+  ['Expires', new Date(FROZEN_NOW + ONE_MONTH_MS).toUTCString()],
+]
 
 describe('routes/images sendImage()', () => {
   let { stub: responseStub, fake: responseFake } = createResponseFake()
@@ -14,86 +29,54 @@ describe('routes/images sendImage()', () => {
   afterEach(() => {
     vi.useRealTimers()
   })
-  it('should set content-type for valid image', () => {
-    const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
-    sendImage(img, responseFake)
-    expect(responseStub.set).toHaveBeenCalledWith('Content-Type', 'image/webp')
+
+  const sendValidImage = (data: Buffer = Buffer.from('')): void => {
+    sendImage(ImageData.fromImage(data, IMAGE_EXTENSION, IMAGE_PATH), responseFake)
+  }
+  const sendErroredImage = (): void => {
+    sendImage(ImageData.fromError(ERROR_CODE, ERROR_STATUS, ERROR_MESSAGE, IMAGE_PATH), responseFake)
+  }
+
+  describe('for a valid image', () => {
+    it('should set the content-type, cache-control and expires headers', () => {
+      sendValidImage()
+      expect(responseStub.set.mock.calls).toEqual(expectedHeaders)
+    })
+    it('should set Expires to the same instant that Cache-Control max-age describes', () => {
+      const headerValue = (name: string): string =>
+        String(responseStub.set.mock.calls.find((call) => call[0] === name)?.[1])
+      sendValidImage()
+      const maxAgeSeconds = Number(/max-age=(?<seconds>\d+)/v.exec(headerValue('Cache-Control'))?.groups?.seconds)
+      expect(Date.parse(headerValue('Expires'))).toBe(FROZEN_NOW + maxAgeSeconds * MILLISECONDS_PER_SECOND)
+    })
+    it('should send the image bytes exactly once', () => {
+      const data = Buffer.from('Image Data')
+      sendValidImage(data)
+      expect(responseStub.send.mock.calls).toEqual([[data]])
+    })
+    it('should neither set a status nor send json', () => {
+      sendValidImage()
+      expect({ status: responseStub.status.mock.calls, json: responseStub.json.mock.calls }).toEqual({
+        status: [],
+        json: [],
+      })
+    })
   })
-  it('should set cacheControl for valid image', () => {
-    const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
-    sendImage(img, responseFake)
-    expect(responseStub.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=2592000')
-  })
-  it('should set Expires for valid image', () => {
-    const aMonth = 1000 * 60 * 60 * 24 * 30
-    const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
-    sendImage(img, responseFake)
-    expect(responseStub.set).toHaveBeenCalledWith('Expires', new Date(FROZEN_NOW + aMonth).toUTCString())
-  })
-  it('should set Expires to the same instant that Cache-Control max-age describes', () => {
-    const headerValue = (name: string): string =>
-      String(responseStub.set.mock.calls.find((call) => call[0] === name)?.[1])
-    const img = ImageData.fromImage(Buffer.from(''), 'webp', '/image.png')
-    sendImage(img, responseFake)
-    const maxAgeSeconds = Number(/max-age=(?<seconds>\d+)/v.exec(headerValue('Cache-Control'))?.groups?.seconds)
-    expect(Date.parse(headerValue('Expires'))).toBe(FROZEN_NOW + maxAgeSeconds * 1000)
-  })
-  it('should call send once for valid image', () => {
-    const data = Buffer.from('Image Data')
-    const img = ImageData.fromImage(data, 'webp', '/image.png')
-    sendImage(img, responseFake)
-    expect(responseStub.send.mock.calls.length).toBe(1)
-  })
-  it('should send image data with one argument for valid image', () => {
-    const data = Buffer.from('Image Data')
-    const img = ImageData.fromImage(data, 'webp', '/image.png')
-    sendImage(img, responseFake)
-    expect(responseStub.send.mock.calls[0]).toHaveLength(1)
-  })
-  it('should send image data for valid image', () => {
-    const data = Buffer.from('Image Data')
-    const img = ImageData.fromImage(data, 'webp', '/image.png')
-    sendImage(img, responseFake)
-    expect(responseStub.send.mock.calls[0]?.[0]).toBe(data)
-  })
-  it('should not set status code explicitly', () => {
-    sendImage(ImageData.fromImage(Buffer.from(''), 'webp', '/image.png'), responseFake)
-    expect(responseStub.status.mock.calls.length).toBe(0)
-  })
-  it('should not send json data', () => {
-    sendImage(ImageData.fromImage(Buffer.from(''), 'webp', '/image.png'), responseFake)
-    expect(responseStub.json.mock.calls.length).toBe(0)
-  })
-  it('should not set headers for invalid image', () => {
-    sendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
-    expect(responseStub.set.mock.calls.length).toBe(0)
-  })
-  it('should not send data for invalid image', () => {
-    sendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
-    expect(responseStub.send.mock.calls.length).toBe(0)
-  })
-  it('should call status once for invalid image', () => {
-    sendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
-    expect(responseStub.status.mock.calls.length).toBe(1)
-  })
-  it('should set http status for invalid image', () => {
-    sendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
-    expect(responseStub.status.mock.calls[0]).toEqual([418])
-  })
-  it('should call json once for invalid image', () => {
-    sendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
-    expect(responseStub.json.mock.calls.length).toBe(1)
-  })
-  it('should send json data for invalid image', () => {
-    sendImage(ImageData.fromError('E_TEST_ERROR', 418, 'A Test Error', '/image.png'), responseFake)
-    expect(responseStub.json.mock.calls[0]).toEqual([
-      {
-        error: {
-          code: 'E_TEST_ERROR',
-          message: 'A Test Error',
-          path: '/image.png',
-        },
-      },
-    ])
+
+  describe('for an invalid image', () => {
+    it('should neither set headers nor send bytes', () => {
+      sendErroredImage()
+      expect({ set: responseStub.set.mock.calls, send: responseStub.send.mock.calls }).toEqual({ set: [], send: [] })
+    })
+    it("should set the error's http status exactly once", () => {
+      sendErroredImage()
+      expect(responseStub.status.mock.calls).toEqual([[ERROR_STATUS]])
+    })
+    it('should send the error body as json exactly once', () => {
+      sendErroredImage()
+      expect(responseStub.json.mock.calls).toEqual([
+        [{ error: { code: ERROR_CODE, message: ERROR_MESSAGE, path: IMAGE_PATH } }],
+      ])
+    })
   })
 })
