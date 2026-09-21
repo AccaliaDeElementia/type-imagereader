@@ -3,7 +3,6 @@
 import { GamepadButtons } from '#public/scripts/app/actions.js'
 
 import { cast } from '#testutils/typeGuards.js'
-import assert from 'node:assert'
 
 interface TestGamepadButton {
   pressed: boolean
@@ -15,6 +14,18 @@ interface TestGamepad {
   axes: Array<number | undefined>
   buttons: TestGamepadButton[]
 }
+
+interface ReadOutcome {
+  result: boolean
+  pressingNow: boolean
+  pressedButtons: string[]
+}
+
+const PRE_EXISTING_BUTTON = 'Q'
+const ABSENT_BUTTON_INDEX = 777
+const TEST_BUTTON_INDEX = 7
+const AXIS_X = 0
+const AXIS_Y = 1
 
 describe('public/app/actions GamepadButtons', () => {
   let testGamePad: TestGamepad = {
@@ -38,34 +49,46 @@ describe('public/app/actions GamepadButtons', () => {
     buttons.reset()
   })
 
-  describe('reset()', () => {
-    it('should clear pressedButtons on reset', () => {
-      buttons.pressedButtons.push('Q')
-      buttons.reset()
-      expect(buttons.pressedButtons).toEqual([])
-    })
+  const setButtonPressed = (index: number, pressed: boolean): void => {
+    const button = testGamePad.buttons[index]
+    if (button === undefined) {
+      throw new Error(`test fixture has no gamepad button at index ${index}`)
+    }
+    button.pressed = pressed
+  }
 
-    it('should not set pressingNow with no buttons or axis defined', () => {
-      buttons.read(gamePad)
-      expect(buttons.pressingNow).toBe(false)
+  const readOutcome = (): ReadOutcome => {
+    const result = buttons.read(gamePad)
+    return { result, pressingNow: buttons.pressingNow, pressedButtons: buttons.pressedButtons }
+  }
+
+  describe('reset()', () => {
+    it('should clear both pressedButtons and pressingNow on reset', () => {
+      buttons.pressedButtons.push(PRE_EXISTING_BUTTON)
+      buttons.pressingNow = true
+      buttons.reset()
+      expect({ pressedButtons: buttons.pressedButtons, pressingNow: buttons.pressingNow }).toEqual({
+        pressedButtons: [],
+        pressingNow: false,
+      })
     })
   })
 
   describe('isPressed()', () => {
     it('should return false when requested button is not pressed', () => {
-      assert(testGamePad.buttons[7] !== undefined)
-      testGamePad.buttons[7].pressed = false
-      expect(GamepadButtons.isPressed(gamePad, 7)).toBe(false)
+      setButtonPressed(TEST_BUTTON_INDEX, false)
+      expect(GamepadButtons.isPressed(gamePad, TEST_BUTTON_INDEX)).toBe(false)
     })
     it('should return false when requested button is not extant', () => {
-      assert(testGamePad.buttons[777] === undefined)
-      expect(GamepadButtons.isPressed(gamePad, 777)).toBe(false)
+      expect({
+        extant: testGamePad.buttons[ABSENT_BUTTON_INDEX] !== undefined,
+        pressed: GamepadButtons.isPressed(gamePad, ABSENT_BUTTON_INDEX),
+      }).toEqual({ extant: false, pressed: false })
     })
 
     it('should return true when requested button is pressed', () => {
-      assert(testGamePad.buttons[7] !== undefined)
-      testGamePad.buttons[7].pressed = true
-      expect(GamepadButtons.isPressed(gamePad, 7)).toBe(true)
+      setButtonPressed(TEST_BUTTON_INDEX, true)
+      expect(GamepadButtons.isPressed(gamePad, TEST_BUTTON_INDEX)).toBe(true)
     })
   })
 
@@ -82,144 +105,84 @@ describe('public/app/actions GamepadButtons', () => {
       ['Up', 12],
       ['Down', 13],
     ]
-    validButtons.forEach(([btn, id]: [string, number]): void => {
-      it(`should return true when ${btn} is pressed`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        expect(buttons.read(gamePad)).toBe(true)
-      })
-      it(`should set pressingNow when ${btn} is pressed`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.read(gamePad)
-        expect(buttons.pressingNow).toBe(true)
-      })
-      it(`should add ${btn} to pressedButtons when ${btn} is pressed`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.read(gamePad)
-        expect(buttons.pressedButtons).toEqual([btn])
-      })
-
-      it(`should return true when ${btn} is already tracked and pressed again`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.pressedButtons.push(btn)
-        expect(buttons.read(gamePad)).toBe(true)
-      })
-      it(`should set pressingNow when ${btn} is already tracked and pressed again`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.pressedButtons.push(btn)
-        buttons.read(gamePad)
-        expect(buttons.pressingNow).toBe(true)
-      })
-      it(`should not duplicate ${btn} in pressedButtons when already tracked`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.pressedButtons.push(btn)
-        buttons.read(gamePad)
-        expect(buttons.pressedButtons).toEqual([btn])
-      })
-
-      it(`should return true when ${btn} is pressed alongside pre-existing button`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.pressedButtons.push('Q')
-        expect(buttons.read(gamePad)).toBe(true)
-      })
-      it(`should set pressingNow when ${btn} is pressed alongside pre-existing button`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.pressedButtons.push('Q')
-        buttons.read(gamePad)
-        expect(buttons.pressingNow).toBe(true)
-      })
-      it(`should keep pre-existing button and add ${btn} to pressedButtons`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = true
-        buttons.pressedButtons.push('Q')
-        buttons.read(gamePad)
-        expect(buttons.pressedButtons).toEqual(['Q', btn])
-      })
-
-      it(`should return false when ${btn} is not pressed`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = false
-        expect(buttons.read(gamePad)).toBe(false)
-      })
-      it(`should not set pressingNow when ${btn} is not pressed`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = false
-        buttons.read(gamePad)
-        expect(buttons.pressingNow).toBe(false)
-      })
-      it(`should leave pressedButtons empty when ${btn} is not pressed`, () => {
-        assert(testGamePad.buttons[id] !== undefined)
-        testGamePad.buttons[id].pressed = false
-        buttons.read(gamePad)
-        expect(buttons.pressedButtons).toEqual([])
+    interface ReadScenario {
+      scenario: string
+      pressed: boolean
+      alreadyTracked: (button: string) => string[]
+      expectedTracked: (button: string) => string[]
+    }
+    const readScenarios: ReadScenario[] = [
+      {
+        scenario: 'is pressed',
+        pressed: true,
+        alreadyTracked: () => [],
+        expectedTracked: (button) => [button],
+      },
+      {
+        scenario: 'is pressed while already tracked',
+        pressed: true,
+        alreadyTracked: (button) => [button],
+        expectedTracked: (button) => [button],
+      },
+      {
+        scenario: `is pressed alongside the pre-existing ${PRE_EXISTING_BUTTON}`,
+        pressed: true,
+        alreadyTracked: () => [PRE_EXISTING_BUTTON],
+        expectedTracked: (button) => [PRE_EXISTING_BUTTON, button],
+      },
+      {
+        scenario: 'is not pressed',
+        pressed: false,
+        alreadyTracked: () => [],
+        expectedTracked: () => [],
+      },
+    ]
+    validButtons.forEach(([button, index]: [string, number]): void => {
+      readScenarios.forEach(({ scenario, pressed, alreadyTracked, expectedTracked }: ReadScenario): void => {
+        const tracked = expectedTracked(button)
+        it(`should report ${String(pressed)} and track ${JSON.stringify(tracked)} when ${button} ${scenario}`, () => {
+          setButtonPressed(index, pressed)
+          buttons.pressedButtons.push(...alreadyTracked(button))
+          expect(readOutcome()).toEqual({ result: pressed, pressingNow: pressed, pressedButtons: tracked })
+        })
       })
     })
   }
 
   const ReadAxisTests = (): void => {
-    const validAxis: Array<[string, Array<number | undefined>, boolean]> = [
-      ['Left', [-10, 0], true],
-      ['Left', [-1.5, 0], true],
-      ['Left', [-1, 0], true],
-      ['Left', [-0.66, 0], true],
-      ['Left', [-0.5000000000001, 0], true],
-      ['Left', [-0.5, 0], false],
-      ['Left', [-0.49999, 0], false],
-      ['Left', [-0.33, 0], false],
-      ['Left', [-0, 0], false],
-      ['Left', [undefined, 0], false],
-      ['Right', [10, 0], true],
-      ['Right', [1.5, 0], true],
-      ['Right', [1, 0], true],
-      ['Right', [0.66, 0], true],
-      ['Right', [0.5000000000001, 0], true],
-      ['Right', [0.5, 0], false],
-      ['Right', [0.49999, 0], false],
-      ['Right', [0.33, 0], false],
-      ['Right', [0, 0], false],
-      ['Right', [undefined, 0], false],
-      ['Up', [0, -10], true],
-      ['Up', [0, -1.5], true],
-      ['Up', [0, -1], true],
-      ['Up', [0, -0.66], true],
-      ['Up', [0, -0.5000000000001], true],
-      ['Up', [0, -0.5], false],
-      ['Up', [0, -0.49099], false],
-      ['Up', [0, -0.33], false],
-      ['Up', [0, undefined], false],
-      ['Down', [0, 10], true],
-      ['Down', [0, 1.5], true],
-      ['Down', [0, 1], true],
-      ['Down', [0, 0.66], true],
-      ['Down', [0, 0.5000000000001], true],
-      ['Down', [0, 0.5], false],
-      ['Down', [0, 0.49999], false],
-      ['Down', [0, 0.33], false],
-      ['Down', [0, 0], false],
-      ['Down', [0, undefined], false],
+    interface AxisDirection {
+      direction: string
+      index: number
+      sign: number
+    }
+    const axisDirections: AxisDirection[] = [
+      { direction: 'Left', index: AXIS_X, sign: -1 },
+      { direction: 'Right', index: AXIS_X, sign: 1 },
+      { direction: 'Up', index: AXIS_Y, sign: -1 },
+      { direction: 'Down', index: AXIS_Y, sign: 1 },
     ]
-    validAxis.forEach(([axis, values, expected]: [string, Array<number | undefined>, boolean]): void => {
-      const pressed = expected ? [axis] : []
-      it(`should return ${String(expected)} for ${axis} axis ${JSON.stringify(values)}`, () => {
-        testGamePad.axes = values
-        expect(buttons.read(gamePad)).toBe(expected)
-      })
-      it(`should set pressingNow to ${String(expected)} for ${axis} axis ${JSON.stringify(values)}`, () => {
-        testGamePad.axes = values
-        buttons.read(gamePad)
-        expect(buttons.pressingNow).toBe(expected)
-      })
-      it(`should set pressedButtons to ${JSON.stringify(pressed)} for ${axis} axis ${JSON.stringify(values)}`, () => {
-        testGamePad.axes = values
-        buttons.read(gamePad)
-        expect(buttons.pressedButtons).toEqual(pressed)
+    const axisMagnitudes: Array<[number | undefined, boolean]> = [
+      [10, true],
+      [1.5, true],
+      [1, true],
+      [0.66, true],
+      [0.5000000000001, true],
+      [0.5, false],
+      [0.49999, false],
+      [0.33, false],
+      [0, false],
+      [undefined, false],
+    ]
+    axisDirections.forEach(({ direction, index, sign }: AxisDirection): void => {
+      axisMagnitudes.forEach(([magnitude, expected]: [number | undefined, boolean]): void => {
+        const axes: Array<number | undefined> = [0, 0]
+        axes[index] = magnitude === undefined ? undefined : sign * magnitude
+        const tracked = expected ? [direction] : []
+        const reading = String(axes[index])
+        it(`should report ${String(expected)} and track ${JSON.stringify(tracked)} when the ${direction} axis reads ${reading}`, () => {
+          testGamePad.axes = axes
+          expect(readOutcome()).toEqual({ result: expected, pressingNow: expected, pressedButtons: tracked })
+        })
       })
     })
   }
