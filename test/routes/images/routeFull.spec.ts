@@ -59,9 +59,13 @@ describe('routes/images route /full/*', () => {
     ;({ stub: responseStub, fake: responseFake } = createResponseFake())
   })
 
-  const testPaths = ['', 'foo/bar.png']
-  testPaths.forEach((path) => {
-    describe(`for path '${path}'`, () => {
+  const testPaths: Array<[string, string | string[], string]> = [
+    ['empty string', '', '/'],
+    ['string', 'foo/bar.png', '/foo/bar.png'],
+    ['string array', ['foo', 'bar.png'], '/foo/bar.png'],
+  ]
+  testPaths.forEach(([label, path, expectedFilename]) => {
+    describe(`when path is provided by ${label}`, () => {
       let img: ImageData = new ImageData()
       beforeEach(async () => {
         requestStub.params.path = path
@@ -82,13 +86,13 @@ describe('routes/images route /full/*', () => {
         expect(loggerStub.mock.calls[0]?.[0]).toBe('GET /images/full %s')
       })
       it('should log invocation with filename', () => {
-        expect(loggerStub.mock.calls[0]?.[1]).toBe(`/${path}`)
+        expect(loggerStub.mock.calls[0]?.[1]).toBe(expectedFilename)
       })
       it('should read image using readImage()', () => {
         expect(readImageStub.mock.calls.length).toBe(1)
       })
       it('should read image with filename', () => {
-        expect(readImageStub.mock.calls[0]).toEqual([`/${path}`])
+        expect(readImageStub.mock.calls[0]).toEqual([expectedFilename])
       })
       it('should send retrieved image with sendImage()', () => {
         expect(sendImageStub.mock.calls.length).toBe(1)
