@@ -4,8 +4,8 @@ import { timeUpdater } from '#public/scripts/slideshow/time.js'
 import { overlayUpdater } from '#public/scripts/slideshow/overlay.js'
 import { weatherUpdater, localWeatherUpdater } from '#public/scripts/slideshow/weather.js'
 import { Imports, bootstrap } from '#public/scripts/slideshow/bootstrap.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
+import { requirePresent } from '#testutils/preconditions.js'
 
 describe('public/slideshow/bootstrap', () => {
   let fakeCyclicAdd: MockInstance | undefined = undefined
@@ -36,7 +36,7 @@ describe('public/slideshow/bootstrap', () => {
     expect(fakeCyclicAdd?.mock.calls[0]).toContain(localWeatherUpdater)
   })
   it('should start CyclicManager after adding Cyclic Updaters', () => {
-    assert(fakeCyclicAdd !== undefined)
+    requirePresent(fakeCyclicAdd, 'the CyclicManager.addUpdaters spy')
     expect((fakeCyclicStart?.mock.invocationCallOrder[0] ?? 0) > (fakeCyclicAdd.mock.invocationCallOrder[0] ?? 0)).toBe(
       true,
     )
@@ -51,7 +51,7 @@ describe('public/slideshow/bootstrap', () => {
     expect(fakeSocketConnect?.mock.calls.length).toBe(1)
   })
   it('should connect to Websockets after starting Cyclic Manager', () => {
-    assert(fakeCyclicStart !== undefined)
+    requirePresent(fakeCyclicStart, 'the CyclicManager.start spy')
     expect(
       (fakeSocketConnect?.mock.invocationCallOrder[0] ?? 0) > (fakeCyclicStart.mock.invocationCallOrder[0] ?? 0),
     ).toBe(true)

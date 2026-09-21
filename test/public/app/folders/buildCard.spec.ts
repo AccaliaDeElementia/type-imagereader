@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-import { required } from '#testutils/preconditions.js'
+import { requirePresent } from '#testutils/preconditions.js'
 
 import { Folders, Imports, Internals } from '#public/scripts/app/folders.js'
 const markup = `
@@ -38,10 +38,9 @@ describe('public/app/folders buildCard()', () => {
 
     resetPubSub()
     Folders.folderCard = null
-    folderCard = required(
-      document.querySelector<HTMLTemplateElement>('#folderCard'),
-      'the #folderCard template',
-    ).content
+    const template = document.querySelector<HTMLTemplateElement>('#folderCard')
+    requirePresent(template, 'the #folderCard template')
+    folderCard = template.content
     Folders.folderCard = folderCard
   })
   afterEach(() => {
@@ -255,7 +254,8 @@ describe('public/app/folders buildCard()', () => {
       seenCount: 101,
     })
     const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
-    required(result, 'the built card').dispatchEvent(evt)
+    requirePresent(result, 'the built card')
+    result.dispatchEvent(evt)
     expect(publishStub).toHaveBeenCalledWith('Navigate:Load', '/path/foo')
   })
 })

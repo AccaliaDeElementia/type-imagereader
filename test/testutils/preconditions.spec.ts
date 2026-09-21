@@ -1,6 +1,6 @@
 'use sanity'
 
-import { required } from '#testutils/preconditions.js'
+import { requirePresent } from '#testutils/preconditions.js'
 
 interface PresentValue {
   label: string
@@ -25,15 +25,19 @@ const absentValues: AbsentValue[] = [
   { label: 'undefined', value: undefined },
 ]
 
-describe('testutils/preconditions required()', () => {
+describe('testutils/preconditions requirePresent()', () => {
   presentValues.forEach(({ label, value }: PresentValue): void => {
-    it(`should return ${label} unchanged because it is present`, () => {
-      expect(required(value, 'the subject')).toBe(value)
+    it(`should accept ${label} because it is present`, () => {
+      expect(() => {
+        requirePresent(value, 'the subject')
+      }).not.toThrow()
     })
   })
   absentValues.forEach(({ label, value }: AbsentValue): void => {
     it(`should throw naming the subject and ${label}`, () => {
-      expect(() => required(value, 'the subject')).toThrow(`test precondition failed: the subject was ${label}`)
+      expect(() => {
+        requirePresent(value, 'the subject')
+      }).toThrow(`test precondition failed: the subject was ${label}`)
     })
   })
 })

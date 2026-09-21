@@ -9,9 +9,9 @@ import {
   type WebSocket,
 } from '#public/scripts/slideshow/sockets.js'
 import { cast } from '#testutils/typeGuards.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 describe('public/slideshow/sockets connect()', () => {
@@ -131,7 +131,7 @@ describe('public/slideshow/sockets connect()', () => {
   it('should handle image-changed message with Internals.showBackingImageByType()', () => {
     connect()
     const call = fakeOn.mock.calls.find((c) => c[0] === 'image-changed')
-    assert(call !== undefined)
+    requirePresent(call, "the 'image-changed' registration")
     expect(call[1]).toBe(Internals.showBackingImageByType)
   })
   it('should add a document level onclick event handler', () => {

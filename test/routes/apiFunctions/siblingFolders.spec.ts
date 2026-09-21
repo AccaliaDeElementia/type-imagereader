@@ -2,8 +2,8 @@
 
 import { getNextFolder, getPreviousFolder, Internals, type SiblingFolderSearch } from '#routes/apiFunctions.js'
 import { cast } from '#testutils/typeGuards.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { createKnexChainFake } from '#testutils/knex.js'
-import assert from 'node:assert'
 import type { Knex } from 'knex'
 import type { Folder } from '#contracts/listing.js'
 import type { MockInstance } from 'vitest'
@@ -44,7 +44,7 @@ describe.each(siblings)('routes/apiFunctions $name', ({ getFolder, direction }: 
     it(`should pass the ${title} to the actual query`, async () => {
       await getFolder(knexFake, '/foo', sortKey)
       const param = cast<SiblingFolderSearch | undefined>(getDirectionFolderStub.mock.calls[0]?.[1])
-      assert(param !== undefined)
+      requirePresent(param, 'the bound query parameter')
       expect(param[prop]).toBe(expected)
     })
   })

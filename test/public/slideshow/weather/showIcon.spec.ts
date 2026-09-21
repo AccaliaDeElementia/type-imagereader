@@ -3,9 +3,8 @@
 import { Internals } from '#public/scripts/slideshow/weather.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
-
-import assert from 'node:assert'
 
 const markup = `
 html
@@ -84,7 +83,7 @@ describe('public/slideshow/weather showIcon()', () => {
 
   it('should not stack load handlers across repeated updates', () => {
     const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
-    assert(element !== null)
+    requirePresent(element, 'the weather icon element')
     Internals.showIcon(element, '01d')
     Internals.showIcon(element, '01n')
     Internals.showIcon(element, '02d')
@@ -94,7 +93,7 @@ describe('public/slideshow/weather showIcon()', () => {
   })
   it('should not stack error handlers across repeated updates', () => {
     const element = dom.window.document.querySelector<HTMLImageElement>('.weather .icon')
-    assert(element !== null)
+    requirePresent(element, 'the weather icon element')
     Internals.showIcon(element, '01d')
     Internals.showIcon(element, '01n')
     Internals.showIcon(element, '02d')

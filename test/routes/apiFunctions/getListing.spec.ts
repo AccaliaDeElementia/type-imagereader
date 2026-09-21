@@ -2,8 +2,8 @@
 
 import { getListing, Internals, Imports, ModCount, type ModCountInternals } from '#routes/apiFunctions.js'
 import { cast } from '#testutils/typeGuards.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { createKnexChainFake } from '#testutils/knex.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 const modCountInternals = cast<ModCountInternals>(ModCount)
 const folderFixture = {
@@ -217,22 +217,22 @@ describe('routes/apiFunctions getListing', () => {
     })
     it('should resolve folder name', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.name).toBe('bar<=>')
     })
     it('should resolve folder path', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.path).toBe('/fop/bat/')
     })
     it('should resolve folder parent', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.parent).toBe('/foo/')
     })
     it('should resolve folder cover', async () => {
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.cover).toBe('/foo/bar/image.png')
     })
   })
@@ -245,35 +245,35 @@ describe('routes/apiFunctions getListing', () => {
       const data = { data: Math.random() }
       getNextFolderStub.mockResolvedValue(data)
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.next).toBe(data)
     })
     it('should set prev from getPreviousFolder()', async () => {
       const data = { data: Math.random() }
       getPreviousFolderStub.mockResolvedValue(data)
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.prev).toBe(data)
     })
     it('should set children from getChildFolders()', async () => {
       const data = { data: Math.random() }
       getChildFoldersStub.mockResolvedValue(data)
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.children).toBe(data)
     })
     it('should set pictures from getPictures()', async () => {
       const data = { data: Math.random() }
       getPicturesStub.mockResolvedValue(data)
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.pictures).toBe(data)
     })
     it('should set bookmarks from getBookmarks()', async () => {
       const data = { data: Math.random() }
       getBookmarksStub.mockResolvedValue(data)
       const result = await getListing(knexFake, '/foo/bar/')
-      assert(result !== null)
+      requirePresent(result, 'the listing')
       expect(result.bookmarks).toBe(data)
     })
   })
@@ -282,7 +282,7 @@ describe('routes/apiFunctions getListing', () => {
     getFolderStub.mockResolvedValue({})
     modCountInternals.modCount = 9090
     const result = await getListing(knexFake, '/foo/bar/')
-    assert(result !== null)
+    requirePresent(result, 'the listing')
     expect(result.modCount).toBe(9090)
   })
 })

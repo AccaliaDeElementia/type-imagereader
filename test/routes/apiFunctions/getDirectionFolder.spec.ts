@@ -2,7 +2,7 @@
 
 import { getDirectionFolder, type SiblingFolderSearch } from '#routes/apiFunctions.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
-import assert from 'node:assert'
+import { requirePresent } from '#testutils/preconditions.js'
 
 describe('routes/apiFunctions getDirectionFolder', () => {
   let knexFirstCall = {
@@ -115,7 +115,7 @@ describe('routes/apiFunctions getDirectionFolder', () => {
   const filterOn = (call: QueryChain, column: string): unknown[] => {
     const applied = [...call.where.mock.calls, ...call.andWhere.mock.calls]
     const filter = applied.find((args) => args[0] === column)
-    assert(filter !== undefined)
+    requirePresent(filter, 'a matching filter')
     return filter
   }
 
@@ -255,14 +255,14 @@ describe('routes/apiFunctions getDirectionFolder', () => {
       knexFirstCall.limit.mockResolvedValue([{ path: '100' }])
       knexSecondCall.limit.mockResolvedValue([{ path: '200' }])
       const result = await getDirectionFolder(knexFake, spec)
-      assert(result !== null)
+      requirePresent(result, 'the resolved sibling folder')
       expect(result.path).toBe('100')
     })
     it('should fall back to second query result when first query returns empty', async () => {
       knexFirstCall.limit.mockResolvedValue([])
       knexSecondCall.limit.mockResolvedValue([{ path: '200' }])
       const result = await getDirectionFolder(knexFake, spec)
-      assert(result !== null)
+      requirePresent(result, 'the resolved sibling folder')
       expect(result.path).toBe('200')
     })
   })
@@ -284,19 +284,19 @@ describe('routes/apiFunctions getDirectionFolder', () => {
         result = await getDirectionFolder(knexFake, spec)
       })
       it('should resolve name from path segment', () => {
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.name).toBe('abcde0')
       })
       it('should resolve path', () => {
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.path).toBe('/foo/abcde0')
       })
       it('should resolve cover from current image', () => {
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.cover).toBe('/foo/abcde0/image.png')
       })
       it('should resolve exactly three properties', () => {
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(Object.keys(result)).toHaveLength(3)
       })
     })
@@ -311,15 +311,15 @@ describe('routes/apiFunctions getDirectionFolder', () => {
         result = await getDirectionFolder(knexFake, spec)
       })
       it('should preserve raw name with special characters', () => {
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.name).toBe('abcde<0>')
       })
       it('should uri-encode path', () => {
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.path).toBe('/foo/abcde%3C0%3E')
       })
       it('should uri-encode cover', () => {
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.cover).toBe('/foo/abcde%3C0%3E/image.png')
       })
     })
@@ -331,7 +331,7 @@ describe('routes/apiFunctions getDirectionFolder', () => {
           { path: '/foo/abcde0', current: '/foo/abcde0/image.png', firstPicture: '/foo/abcde0/otherImage.png' },
         ])
         const result = await getDirectionFolder(knexFake, spec)
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.cover).toBe('/foo/abcde0/image.png')
       })
       it('should resolve with firstPicture as cover when current image not set', async () => {
@@ -339,13 +339,13 @@ describe('routes/apiFunctions getDirectionFolder', () => {
           { path: '/foo/abcde0', current: null, firstPicture: '/foo/abcde0/otherImage.png' },
         ])
         const result = await getDirectionFolder(knexFake, spec)
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.cover).toBe('/foo/abcde0/otherImage.png')
       })
       it('should resolve with null cover when both current and firstPicture are null', async () => {
         knexFirstCall.limit.mockResolvedValue([{ path: '/foo/abcde0', current: null, firstPicture: null }])
         const result = await getDirectionFolder(knexFake, spec)
-        assert(result !== null)
+        requirePresent(result, 'the resolved sibling folder')
         expect(result.cover).toBe(null)
       })
     })

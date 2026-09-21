@@ -2,7 +2,7 @@
 
 import { getBookmarks, Imports } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/knex.js'
-import assert from 'node:assert'
+import { requirePresent } from '#testutils/preconditions.js'
 import type { MockInstance } from 'vitest'
 describe('routes/apiFunctions getBookmarks', () => {
   let {
@@ -50,7 +50,7 @@ describe('routes/apiFunctions getBookmarks', () => {
   it('should join pictures to bookmarks with expected args', async () => {
     await getBookmarks(knexFake)
     const call = knexInstance.join.mock.calls.find((call) => call[0] === 'pictures')
-    assert(call !== undefined)
+    requirePresent(call, 'the join call')
     expect(call).toEqual(['pictures', 'pictures.path', 'bookmarks.path'])
   })
   it('should join folders to bookmarks at least once', async () => {
@@ -60,7 +60,7 @@ describe('routes/apiFunctions getBookmarks', () => {
   it('should join folders to bookmarks with expected args', async () => {
     await getBookmarks(knexFake)
     const call = knexInstance.join.mock.calls.find((call) => call[0] === 'folders')
-    assert(call !== undefined)
+    requirePresent(call, 'the join call')
     expect(call).toEqual(['folders', 'folders.path', 'pictures.folder'])
   })
   it('should order strictly by folder then picture once', async () => {

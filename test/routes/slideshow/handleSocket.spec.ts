@@ -1,8 +1,8 @@
 'use sanity'
 
 import { cast, stubToKnex } from '#testutils/typeGuards.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { voidFn } from '#testutils/mocks.js'
-import assert from 'node:assert'
 import { handleSocket, Internals, Imports } from '#routes/slideshow.js'
 import type { Server as WebSocketServer, Socket } from 'socket.io'
 import type { MockInstance } from 'vitest'
@@ -39,7 +39,7 @@ describe('routes/slideshow handleSocket()', () => {
       const fn = cast<() => void>(getCallback(endpoint))
       fn()
       const stub = socketStubs.find(([name]) => name === endpoint)
-      assert(stub !== undefined)
+      requirePresent(stub, 'the registered socket handler')
       expect(stub[1].mock.calls.length).toBe(1)
     })
   })

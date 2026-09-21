@@ -5,7 +5,7 @@ import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 import { getRouter, Imports } from '#routes/api.js'
 import { cast } from '#testutils/typeGuards.js'
-import assert from 'node:assert'
+import { requirePresent } from '#testutils/preconditions.js'
 
 describe('routes/api getRouter()', () => {
   let applicationFake = cast<Application>({ App: Math.random() })
@@ -58,8 +58,8 @@ describe('routes/api getRouter()', () => {
       await getRouter(applicationFake, serverFake, socketServerFake)
       const fn1 = routerStub.get.mock.calls.find((call) => call[0] === base)?.[1] as unknown
       const fn2 = routerStub.get.mock.calls.find((call) => call[0] === wildcard)?.[1] as unknown
-      assert(fn1 !== undefined)
-      assert(fn2 !== undefined)
+      requirePresent(fn1, 'the first registered handler')
+      requirePresent(fn2, 'the second registered handler')
       expect(fn1).toBe(fn2)
     })
   })
