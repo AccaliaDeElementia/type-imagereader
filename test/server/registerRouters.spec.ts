@@ -28,7 +28,7 @@ describe('Server registerRouters', () => {
     serverFake = cast<HttpServer>({})
     socketsFake = cast<WebSocketServer>({})
   })
-  const tests: Array<[string, string, () => MockInstance]> = [
+  const mounts: Array<[string, string, () => MockInstance]> = [
     ['Root', '/', () => getRootRouter],
     ['Api', '/api', () => getApiRouter],
     ['Images', '/images', () => getImagesRouter],
@@ -36,44 +36,24 @@ describe('Server registerRouters', () => {
     ['Weather', '/weather', () => getWeatherRouter],
   ]
 
-  it('should register expected number of routers', async () => {
+  it('should mount every router in declared order', async () => {
     await registerRouters(appFake, serverFake, socketsFake)
-    expect(appStub.use.mock.calls.length).toBe(tests.length)
+    expect(appStub.use.mock.calls.map((call: unknown[]) => call[0])).toEqual(mounts.map(([, url]) => url))
   })
 
-  tests.forEach(([title, url, getStub]) => {
+  mounts.forEach(([title, url, getStub]: [string, string, () => MockInstance]): void => {
     describe(`for ${title} router`, () => {
-      let expected: object = {}
+      let expected = { router: title }
       beforeEach(async () => {
-        expected = {}
+        expected = { router: title }
         getStub().mockResolvedValue(expected)
         await registerRouters(appFake, serverFake, socketsFake)
       })
-      it(`should register at url '${url}'`, () => {
-        expect(appStub.use).toHaveBeenCalledWith(url, expect.anything())
+      it('should build the router once from the app, http server and websockets', () => {
+        expect(getStub().mock.calls).toEqual([[appFake, serverFake, socketsFake]])
       })
-      it('should register with two parameters', () => {
-        const args = appStub.use.mock.calls.find((call) => call[0] === url)
-        expect(args).toHaveLength(2)
-      })
-      it('should register the created router', () => {
-        const router = appStub.use.mock.calls.find((call) => call[0] === url)?.[1] as unknown
-        expect(router).toBe(expected)
-      })
-      it('should create the router once', () => {
-        expect(getStub().mock.calls.length).toBe(1)
-      })
-      it('should create with three arguments', () => {
-        expect(getStub().mock.calls[0]).toHaveLength(3)
-      })
-      it('should create with express app', () => {
-        expect(getStub().mock.calls[0]?.[0]).toBe(appFake)
-      })
-      it('should create with http server', () => {
-        expect(getStub().mock.calls[0]?.[1]).toBe(serverFake)
-      })
-      it('should create with websocket server', () => {
-        expect(getStub().mock.calls[0]?.[2]).toBe(socketsFake)
+      it(`should mount the built router at '${url}' exactly once`, () => {
+        expect(appStub.use.mock.calls.filter((call: unknown[]) => call[0] === url)).toEqual([[url, expected]])
       })
     })
   })
