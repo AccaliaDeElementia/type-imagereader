@@ -142,91 +142,36 @@ describe('public/app/pictureInput initActions()', () => {
       expect(publishStub.mock.calls.length).toBe(0)
     })
   })
+  const dispatch = async (action: string): Promise<void> => {
+    initActions()
+    await capturedSubscriber(subscribeStub, action)(undefined)
+  }
   changeToSubscribers.forEach(([action, direction, corner]) => {
-    it(`should call getPicture once for ${action}`, async () => {
-      initActions()
-      const fn = capturedSubscriber(subscribeStub, action)
-      await fn(undefined)
-      expect(getPictureSpy.mock.calls.length).toBe(1)
+    it(`should fetch the ${direction} picture for ${action}`, async () => {
+      await dispatch(action)
+      expect(getPictureSpy.mock.calls).toEqual([[direction]])
     })
-    it(`should navigate in expected direction for ${action}`, async () => {
-      initActions()
-      const fn = capturedSubscriber(subscribeStub, action)
-      await fn(undefined)
-      expect(getPictureSpy.mock.calls[0]).toEqual([direction])
-    })
-    it(`should call changePicture once for ${action}`, async () => {
-      initActions()
-      const fn = capturedSubscriber(subscribeStub, action)
-      await fn(undefined)
-      expect(changePictureSpy.mock.calls.length).toBe(1)
-    })
-    it(`should call changePicture with two arguments for ${action}`, async () => {
-      initActions()
-      const fn = capturedSubscriber(subscribeStub, action)
-      await fn(undefined)
-      expect(changePictureSpy.mock.calls[0]).toHaveLength(2)
-    })
-    it(`should change to fetched picture for ${action}`, async () => {
-      initActions()
-      const fn = capturedSubscriber(subscribeStub, action)
-      await fn(undefined)
-      expect(changePictureSpy.mock.calls[0]?.[0]).toBe(getPictureFake)
-    })
-    it(`should arrive at the ${corner} of the picture for ${action}`, async () => {
-      initActions()
-      const fn = capturedSubscriber(subscribeStub, action)
-      await fn(undefined)
-      expect(changePictureSpy.mock.calls[0]?.[1]).toBe(corner)
+    it(`should change to the fetched picture arriving at its ${corner} for ${action}`, async () => {
+      await dispatch(action)
+      expect(changePictureSpy.mock.calls).toEqual([[getPictureFake, corner]])
     })
   })
-  it('should call navigateUnreadBack once for Action:Execute:PreviousUnseen', async () => {
-    initActions()
-    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousUnseen')
-    await fn(undefined)
-    expect(navigateUnreadBackSpy.mock.calls.length).toBe(1)
-  })
-  it('should call navigateUnreadBack with no args for Action:Execute:PreviousUnseen', async () => {
-    initActions()
-    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousUnseen')
-    await fn(undefined)
-    expect(navigateUnreadBackSpy.mock.calls[0]).toHaveLength(0)
-  })
-  it('should not call changePicture for Action:Execute:PreviousUnseen', async () => {
-    initActions()
-    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousUnseen')
-    await fn(undefined)
-    expect(changePictureSpy.mock.calls.length).toBe(0)
-  })
-  it('should not call getPicture for Action:Execute:PreviousUnseen', async () => {
-    initActions()
-    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:PreviousUnseen')
-    await fn(undefined)
-    expect(getPictureSpy.mock.calls.length).toBe(0)
-  })
-  it('should call navigateUnreadForward once for Action:Execute:NextUnseen', async () => {
-    initActions()
-    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextUnseen')
-    await fn(undefined)
-    expect(navigateUnreadForwardSpy.mock.calls.length).toBe(1)
-  })
-  it('should call navigateUnreadForward with no args for Action:Execute:NextUnseen', async () => {
-    initActions()
-    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextUnseen')
-    await fn(undefined)
-    expect(navigateUnreadForwardSpy.mock.calls[0]).toHaveLength(0)
-  })
-  it('should not call changePicture for Action:Execute:NextUnseen', async () => {
-    initActions()
-    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextUnseen')
-    await fn(undefined)
-    expect(changePictureSpy.mock.calls.length).toBe(0)
-  })
-  it('should not call getPicture for Action:Execute:NextUnseen', async () => {
-    initActions()
-    const fn = capturedSubscriber(subscribeStub, 'Action:Execute:NextUnseen')
-    await fn(undefined)
-    expect(getPictureSpy.mock.calls.length).toBe(0)
+  const unseenSubscribers: Array<[string, string, () => MockInstance]> = [
+    ['Action:Execute:PreviousUnseen', 'navigateUnreadBack', () => navigateUnreadBackSpy],
+    ['Action:Execute:NextUnseen', 'navigateUnreadForward', () => navigateUnreadForwardSpy],
+  ]
+  unseenSubscribers.forEach(([action, navigator, spyOf]) => {
+    it(`should call ${navigator} once with no arguments for ${action}`, async () => {
+      await dispatch(action)
+      expect(spyOf().mock.calls).toEqual([[]])
+    })
+    it(`should bypass the getPicture/changePicture path for ${action}`, async () => {
+      await dispatch(action)
+      expect({
+        fetched: getPictureSpy.mock.calls.length,
+        changed: changePictureSpy.mock.calls.length,
+      }).toEqual({ fetched: 0, changed: 0 })
+    })
   })
   it('should translate Action:Execute:Previous as PreviousUnseen when ShowUnreadOnly is set', async () => {
     initActions()
