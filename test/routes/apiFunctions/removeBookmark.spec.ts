@@ -2,6 +2,9 @@
 
 import { removeBookmark } from '#routes/apiFunctions.js'
 import { createKnexChainFake } from '#testutils/knex.js'
+import type { MockInstance } from 'vitest'
+
+const BOOKMARK_PATH = '/foo/bar/baz.png'
 
 describe('routes/apiFunctions removeBookmark', () => {
   let {
@@ -9,35 +12,23 @@ describe('routes/apiFunctions removeBookmark', () => {
     stub: knexStub,
     fake: knexFake,
   } = createKnexChainFake(['where', 'delete'] as const, [] as const)
-  beforeEach(() => {
+  beforeEach(async () => {
     ;({
       instance: knexInstance,
       stub: knexStub,
       fake: knexFake,
     } = createKnexChainFake(['where', 'delete'] as const, [] as const))
+    await removeBookmark(knexFake, BOOKMARK_PATH)
   })
-  it('should query bookmarks table once to remove bookmark', async () => {
-    await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexStub.mock.calls.length).toBe(1)
-  })
-  it('should query bookmarks table with expected args to remove bookmark', async () => {
-    await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexStub.mock.calls[0]).toEqual(['bookmarks'])
-  })
-  it('should filter on provided path once to remove bookmark', async () => {
-    await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.where.mock.calls.length).toBe(1)
-  })
-  it('should filter on provided path with expected args to remove bookmark', async () => {
-    await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.where.mock.calls[0]).toEqual([{ path: '/foo/bar/baz.png' }])
-  })
-  it('should delete matched bookmarks once to remove bookmark', async () => {
-    await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.delete.mock.calls.length).toBe(1)
-  })
-  it('should delete matched bookmarks with expected args to remove bookmark', async () => {
-    await removeBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.delete.mock.calls[0]).toEqual([])
+
+  const expectedCalls: Array<[string, () => MockInstance, unknown[]]> = [
+    ['target the bookmarks table', () => knexStub, ['bookmarks']],
+    ['filter on the requested path', () => knexInstance.where, [{ path: BOOKMARK_PATH }]],
+    ['delete the matched bookmarks', () => knexInstance.delete, []],
+  ]
+  expectedCalls.forEach(([label, stub, args]: [string, () => MockInstance, unknown[]]): void => {
+    it(`should ${label} exactly once`, () => {
+      expect(stub().mock.calls).toEqual([args])
+    })
   })
 })

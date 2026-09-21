@@ -3,6 +3,7 @@
 import { setLatestPicture, Imports, Internals } from '#routes/apiFunctions.js'
 import { stubToKnex } from '#testutils/typeGuards.js'
 import type { MockInstance } from 'vitest'
+
 interface KnexStub {
   select: MockInstance
   increment: MockInstance
@@ -12,6 +13,10 @@ interface KnexStub {
   where: MockInstance
   limit: MockInstance
 }
+
+const PICTURE_PATH = '/foo/bar/image.pdf'
+const PARENT_FOLDER = '/foo/bar/'
+
 const makeKnexInstance = (): KnexStub => {
   const inst: KnexStub = {
     select: vi.fn().mockImplementation(function (this: object): unknown {
@@ -31,6 +36,7 @@ const makeKnexInstance = (): KnexStub => {
   inst.where.mockImplementation(() => inst)
   return inst
 }
+
 describe('routes/apiFunctions setLatestPicture', () => {
   let knexStub: MockInstance = vi.fn()
   let knexFake = stubToKnex(knexStub)
@@ -44,113 +50,68 @@ describe('routes/apiFunctions setLatestPicture', () => {
   })
   const setupExistingPicture = (): KnexStub => {
     const searcher = makeKnexInstance()
-    searcher.limit.mockResolvedValue([{ path: '/foo/bar/image.pdf' }])
+    searcher.limit.mockResolvedValue([{ path: PICTURE_PATH }])
     knexStub.mockReturnValueOnce(searcher)
     return searcher
   }
 
   describe('the existence check', () => {
-    it('should call knex with the pictures table when checking existence', async () => {
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
+    let instance = makeKnexInstance()
+    beforeEach(async () => {
+      instance = makeKnexInstance()
+      knexStub.mockReturnValueOnce(instance)
+      await setLatestPicture(knexFake, PICTURE_PATH)
+    })
+    it('should query the pictures table', () => {
       expect(knexStub.mock.calls[0]).toEqual(['pictures'])
     })
-    it('should call select once when checking picture existence', async () => {
-      const instance = makeKnexInstance()
-      knexStub.mockReturnValueOnce(instance)
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(instance.select.mock.calls.length).toBe(1)
-    })
-    it('should select path column when checking picture existence', async () => {
-      const instance = makeKnexInstance()
-      knexStub.mockReturnValueOnce(instance)
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(instance.select.mock.calls[0]).toEqual(['path'])
-    })
-    it('should call where once when filtering existence-check by path', async () => {
-      const instance = makeKnexInstance()
-      knexStub.mockReturnValueOnce(instance)
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(instance.where.mock.calls.length).toBe(1)
-    })
-    it('should filter existence-check by provided path', async () => {
-      const instance = makeKnexInstance()
-      knexStub.mockReturnValueOnce(instance)
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(instance.where.mock.calls[0]).toEqual([{ path: '/foo/bar/image.pdf' }])
-    })
-    it('should call limit when checking picture existence', async () => {
-      const instance = makeKnexInstance()
-      knexStub.mockReturnValueOnce(instance)
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(instance.limit.mock.calls.length).toBe(1)
-    })
-    it('should limit existence check to a single record', async () => {
-      const instance = makeKnexInstance()
-      knexStub.mockReturnValueOnce(instance)
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(instance.limit.mock.calls[0]).toEqual([1])
+    const expectedCalls: Array<[string, keyof KnexStub, unknown[]]> = [
+      ['select the path column', 'select', ['path']],
+      ['filter by the requested path', 'where', [{ path: PICTURE_PATH }]],
+      ['limit the lookup to a single record', 'limit', [1]],
+    ]
+    expectedCalls.forEach(([label, method, args]: [string, keyof KnexStub, unknown[]]): void => {
+      it(`should ${label} exactly once`, () => {
+        expect(instance[method].mock.calls).toEqual([args])
+      })
     })
   })
 
   describe('when the picture is not found', () => {
-    it('should resolve to null when path is not found', async () => {
-      const result = await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(result).toBe(null)
+    it('should resolve to null without issuing a further query', async () => {
+      const result = await setLatestPicture(knexFake, PICTURE_PATH)
+      expect({ result, queries: knexStub.mock.calls.length }).toEqual({ result: null, queries: 1 })
     })
-    it('should make no additional knex calls when picture not found', async () => {
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(knexStub.mock.calls.length).toBe(1)
-    })
-    it('should log when picture is not found', async () => {
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
+    it('should log that the picture was not found', async () => {
+      await setLatestPicture(knexFake, PICTURE_PATH)
       const matched = loggerStub.mock.calls.some((c) => String(c[0]).includes('setLatestPicture: picture not found'))
       expect(matched).toBe(true)
     })
-  })
-
-  describe('claiming the picture', () => {
-    it('should claim the picture once when it exists', async () => {
-      setupExistingPicture()
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(claimUnseenPictureStub.mock.calls.length).toBe(1)
-    })
-    it('should claim the picture with the provided knex and path', async () => {
-      setupExistingPicture()
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(claimUnseenPictureStub.mock.calls[0]).toEqual([knexFake, '/foo/bar/image.pdf'])
-    })
-    it('should not claim the picture when it is not found', async () => {
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
+    it('should not claim the picture', async () => {
+      await setLatestPicture(knexFake, PICTURE_PATH)
       expect(claimUnseenPictureStub.mock.calls.length).toBe(0)
     })
   })
 
-  describe('the folders.current update', () => {
-    const setupUpdater = (): KnexStub => {
+  describe('when the picture exists', () => {
+    let updater = makeKnexInstance()
+    beforeEach(async () => {
       setupExistingPicture()
-      const updater = makeKnexInstance()
+      updater = makeKnexInstance()
       knexStub.mockReturnValueOnce(updater)
-      return updater
-    }
-    it('should query folders to update current cover', async () => {
-      setupExistingPicture()
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
+      await setLatestPicture(knexFake, PICTURE_PATH)
+    })
+    it('should claim the picture once with the provided knex and path', () => {
+      expect(claimUnseenPictureStub.mock.calls).toEqual([[knexFake, PICTURE_PATH]])
+    })
+    it('should query the folders table to update the current cover', () => {
       expect(knexStub.mock.calls[1]).toEqual(['folders'])
     })
-    it('should call update once on folders.current', async () => {
-      const updater = setupUpdater()
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(updater.update.mock.calls.length).toBe(1)
+    it('should set folders.current to the picture path exactly once', () => {
+      expect(updater.update.mock.calls).toEqual([[{ current: PICTURE_PATH }]])
     })
-    it('should set folders.current to the picture path', async () => {
-      const updater = setupUpdater()
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(updater.update.mock.calls[0]).toEqual([{ current: '/foo/bar/image.pdf' }])
-    })
-    it('should filter folders.current update by parent folder path', async () => {
-      const updater = setupUpdater()
-      await setLatestPicture(knexFake, '/foo/bar/image.pdf')
-      expect(updater.where.mock.calls[0]).toEqual([{ path: '/foo/bar/' }])
+    it('should filter the folders update by the parent folder path', () => {
+      expect(updater.where.mock.calls[0]).toEqual([{ path: PARENT_FOLDER }])
     })
   })
 })

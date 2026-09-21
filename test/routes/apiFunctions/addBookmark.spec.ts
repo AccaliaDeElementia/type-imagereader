@@ -8,45 +8,28 @@ import type { MockInstance } from 'vitest'
 const chainMethods = ['insert', 'onConflict', 'ignore'] as const
 const terminalMethods = [] as const
 
+const BOOKMARK_PATH = '/foo/bar/baz.png'
+
 describe('routes/apiFunctions addBookmark', () => {
   let knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
   let knexStub: MockInstance = vi.fn()
   let knexFake = stubToKnex(knexStub)
-  beforeEach(() => {
+  beforeEach(async () => {
     knexInstance = createKnexChainFake(chainMethods, terminalMethods).instance
     knexStub = vi.fn().mockReturnValue(knexInstance)
     knexFake = stubToKnex(knexStub)
+    await addBookmark(knexFake, BOOKMARK_PATH)
   })
-  it('should query bookmarks table once to set bookmark', async () => {
-    await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexStub.mock.calls.length).toBe(1)
-  })
-  it('should query bookmarks table with expected args to set bookmark', async () => {
-    await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexStub.mock.calls[0]).toEqual(['bookmarks'])
-  })
-  it('should insert provided path once to set bookmark', async () => {
-    await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.insert.mock.calls.length).toBe(1)
-  })
-  it('should insert provided path with expected args to set bookmark', async () => {
-    await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.insert.mock.calls[0]).toEqual([{ path: '/foo/bar/baz.png' }])
-  })
-  it('should resolve conflicts once when path already exists', async () => {
-    await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.onConflict.mock.calls.length).toBe(1)
-  })
-  it('should resolve conflicts with expected args when path already exists', async () => {
-    await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.onConflict.mock.calls[0]).toEqual(['path'])
-  })
-  it('should ignore conflicts once on insert to set bookmark', async () => {
-    await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.ignore.mock.calls.length).toBe(1)
-  })
-  it('should ignore conflicts with expected args on insert to set bookmark', async () => {
-    await addBookmark(knexFake, '/foo/bar/baz.png')
-    expect(knexInstance.ignore.mock.calls[0]).toEqual([])
+
+  const expectedCalls: Array<[string, () => MockInstance, unknown[]]> = [
+    ['target the bookmarks table', () => knexStub, ['bookmarks']],
+    ['insert the requested path', () => knexInstance.insert, [{ path: BOOKMARK_PATH }]],
+    ['resolve conflicts on the path column', () => knexInstance.onConflict, ['path']],
+    ['ignore a conflicting insert', () => knexInstance.ignore, []],
+  ]
+  expectedCalls.forEach(([label, stub, args]: [string, () => MockInstance, unknown[]]): void => {
+    it(`should ${label} exactly once`, () => {
+      expect(stub().mock.calls).toEqual([args])
+    })
   })
 })
