@@ -120,99 +120,52 @@ describe('routes/apiFunctions getListing', () => {
     })
   })
 
-  describe('getNextFolder() invocation', () => {
-    beforeEach(() => {
-      getFolderStub.mockResolvedValue(folderResolvingToADifferentPathThanRequested)
-    })
-    it('should be called with three arguments', async () => {
+  interface DependencyCall {
+    name: string
+    resolvedFolder: unknown
+    stub: () => MockInstance
+    expectedArgs: () => unknown[]
+  }
+  const dependencyCalls: DependencyCall[] = [
+    {
+      name: 'getNextFolder',
+      resolvedFolder: folderResolvingToADifferentPathThanRequested,
+      stub: () => getNextFolderStub,
+      expectedArgs: () => [knexFake, '/foo/bar/', 'bar>-<'],
+    },
+    {
+      name: 'getPreviousFolder',
+      resolvedFolder: folderFixture,
+      stub: () => getPreviousFolderStub,
+      expectedArgs: () => [knexFake, '/foo/bar/', 'bar>-<'],
+    },
+    {
+      name: 'getChildFolders',
+      resolvedFolder: folderFixture,
+      stub: () => getChildFoldersStub,
+      expectedArgs: () => [knexFake, '/foo/bar/'],
+    },
+    {
+      name: 'getPictures',
+      resolvedFolder: folderFixture,
+      stub: () => getPicturesStub,
+      expectedArgs: () => [knexFake, '/foo/bar/'],
+    },
+    {
+      name: 'getBookmarks',
+      resolvedFolder: folderFixture,
+      stub: () => getBookmarksStub,
+      expectedArgs: () => [knexFake],
+    },
+  ]
+  it.each(dependencyCalls)(
+    'should call $name exactly once with its expected arguments',
+    async ({ resolvedFolder, stub, expectedArgs }: DependencyCall) => {
+      getFolderStub.mockResolvedValue(resolvedFolder)
       await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.mock.calls[0]).toHaveLength(3)
-    })
-    it('should be called with knex', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.mock.calls[0]?.[0]).toBe(knexFake)
-    })
-    it('should be called with path', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.mock.calls[0]?.[1]).toBe('/foo/bar/')
-    })
-    it('should be called with sortKey', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getNextFolderStub.mock.calls[0]?.[2]).toBe('bar>-<')
-    })
-  })
-
-  describe('getPreviousFolder() invocation', () => {
-    beforeEach(() => {
-      getFolderStub.mockResolvedValue(folderFixture)
-    })
-    it('should be called with three arguments', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.mock.calls[0]).toHaveLength(3)
-    })
-    it('should be called with knex', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.mock.calls[0]?.[0]).toBe(knexFake)
-    })
-    it('should be called with path', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.mock.calls[0]?.[1]).toBe('/foo/bar/')
-    })
-    it('should be called with sortKey', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getPreviousFolderStub.mock.calls[0]?.[2]).toBe('bar>-<')
-    })
-  })
-
-  describe('getChildFolders() invocation', () => {
-    beforeEach(() => {
-      getFolderStub.mockResolvedValue(folderFixture)
-    })
-    it('should be called with two arguments', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getChildFoldersStub.mock.calls[0]).toHaveLength(2)
-    })
-    it('should be called with knex', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getChildFoldersStub.mock.calls[0]?.[0]).toBe(knexFake)
-    })
-    it('should be called with path', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getChildFoldersStub.mock.calls[0]?.[1]).toBe('/foo/bar/')
-    })
-  })
-
-  describe('getPictures() invocation', () => {
-    beforeEach(() => {
-      getFolderStub.mockResolvedValue(folderFixture)
-    })
-    it('should be called with two arguments', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getPicturesStub.mock.calls[0]).toHaveLength(2)
-    })
-    it('should be called with knex', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getPicturesStub.mock.calls[0]?.[0]).toBe(knexFake)
-    })
-    it('should be called with path', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getPicturesStub.mock.calls[0]?.[1]).toBe('/foo/bar/')
-    })
-  })
-
-  describe('getBookmarks() invocation', () => {
-    beforeEach(() => {
-      getFolderStub.mockResolvedValue(folderFixture)
-    })
-    it('should be called with one argument', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getBookmarksStub.mock.calls[0]).toHaveLength(1)
-    })
-    it('should be called with knex', async () => {
-      await getListing(knexFake, '/foo/bar/')
-      expect(getBookmarksStub.mock.calls[0]?.[0]).toBe(knexFake)
-    })
-  })
+      expect(stub().mock.calls).toEqual([expectedArgs()])
+    },
+  )
 
   describe('getDirectionFolder() calls', () => {
     beforeEach(() => {
