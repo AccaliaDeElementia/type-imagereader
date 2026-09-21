@@ -36,91 +36,112 @@ async function runWrapper(args: readonly string[], env: Record<string, string> =
   return { exit: code ?? -1, signal, stdout, stderr }
 }
 
+const WATCHDOG_MS = 200
+const CHILD_EXIT_CODE = 42
+const SUCCESS_EXIT_CODE = 0
+const TIMEOUT_EXIT_CODE = 124
+const INVALID_ARG_EXIT_CODE = 2
+
+interface ExpectedExit {
+  label: string
+  code: number
+}
+
+interface WrapperScenario {
+  scenario: string
+  args: readonly string[]
+  env: Record<string, string>
+  expectedExit: ExpectedExit
+  stderrFragments: string[]
+}
+
+const propagated = (code: number): ExpectedExit => ({ label: `the child's own exit code`, code })
+const timedOut: ExpectedExit = { label: 'the timeout code', code: TIMEOUT_EXIT_CODE }
+const invalidArgument: ExpectedExit = { label: 'the invalid-argument code', code: INVALID_ARG_EXIT_CODE }
+
+const nodeScript = (source: string): readonly string[] => [NODE_BIN, '-e', source]
+
+const scenarios: WrapperScenario[] = [
+  {
+    scenario: 'when the child exits cleanly',
+    args: nodeScript(`process.exit(${SUCCESS_EXIT_CODE})`),
+    env: {},
+    expectedExit: propagated(SUCCESS_EXIT_CODE),
+    stderrFragments: [],
+  },
+  {
+    scenario: 'when the child exits with a non-zero code',
+    args: nodeScript(`process.exit(${CHILD_EXIT_CODE})`),
+    env: {},
+    expectedExit: propagated(CHILD_EXIT_CODE),
+    stderrFragments: [],
+  },
+  {
+    scenario: 'when the watchdog fires against a hung child',
+    args: nodeScript('setInterval(() => undefined, 1000)'),
+    env: { TEST_WATCHDOG_MS: String(WATCHDOG_MS) },
+    expectedExit: timedOut,
+    stderrFragments: [`${WATCHDOG_MS}ms`, 'SIGKILL'],
+  },
+  {
+    scenario: 'when the child kills itself with SIGTERM',
+    args: nodeScript(`process.kill(process.pid, 'SIGTERM')`),
+    env: {},
+    expectedExit: timedOut,
+    stderrFragments: [],
+  },
+  {
+    scenario: 'when TEST_WATCHDOG_MS is not a number',
+    args: nodeScript(`process.exit(${SUCCESS_EXIT_CODE})`),
+    env: { TEST_WATCHDOG_MS: 'abc' },
+    expectedExit: invalidArgument,
+    stderrFragments: ['TEST_WATCHDOG_MS'],
+  },
+  {
+    scenario: 'when TEST_WATCHDOG_MS is zero',
+    args: nodeScript(`process.exit(${SUCCESS_EXIT_CODE})`),
+    env: { TEST_WATCHDOG_MS: '0' },
+    expectedExit: invalidArgument,
+    stderrFragments: [],
+  },
+  {
+    scenario: 'when TEST_WATCHDOG_MS is negative',
+    args: nodeScript(`process.exit(${SUCCESS_EXIT_CODE})`),
+    env: { TEST_WATCHDOG_MS: String(-WATCHDOG_MS) },
+    expectedExit: invalidArgument,
+    stderrFragments: ['TEST_WATCHDOG_MS'],
+  },
+  {
+    scenario: 'when no command is provided',
+    args: [],
+    env: {},
+    expectedExit: invalidArgument,
+    stderrFragments: ['Usage:'],
+  },
+  {
+    scenario: 'when the binary cannot be spawned',
+    args: ['no-such-binary-xyz-spec'],
+    env: {},
+    expectedExit: invalidArgument,
+    stderrFragments: ['failed to spawn child'],
+  },
+]
+
 describe('tools/withTimeout', () => {
-  describe('when the child exits cleanly', () => {
-    let result: RunResult = emptyResult
-    beforeAll(async () => {
-      result = await runWrapper([NODE_BIN, '-e', 'process.exit(0)'])
-    }, SPAWN_TIMEOUT_MS)
-    it("should propagate the child's zero exit code", () => {
-      expect(result.exit).toBe(0)
-    })
-  })
-
-  describe('when the child exits with a non-zero code', () => {
-    let result: RunResult = emptyResult
-    beforeAll(async () => {
-      result = await runWrapper([NODE_BIN, '-e', 'process.exit(42)'])
-    }, SPAWN_TIMEOUT_MS)
-    it("should propagate the child's non-zero exit code", () => {
-      expect(result.exit).toBe(42)
-    })
-  })
-
-  describe('when the watchdog fires against a hung child', () => {
-    let result: RunResult = emptyResult
-    beforeAll(async () => {
-      result = await runWrapper([NODE_BIN, '-e', 'setInterval(() => undefined, 1000)'], {
-        TEST_WATCHDOG_MS: '200',
+  scenarios.forEach(({ scenario, args, env, expectedExit, stderrFragments }: WrapperScenario): void => {
+    describe(scenario, () => {
+      let result: RunResult = emptyResult
+      beforeAll(async () => {
+        result = await runWrapper(args, env)
+      }, SPAWN_TIMEOUT_MS)
+      it(`should exit with ${expectedExit.label}`, () => {
+        expect(result.exit).toBe(expectedExit.code)
       })
-    }, SPAWN_TIMEOUT_MS)
-    it('should exit with the timeout code', () => {
-      expect(result.exit).toBe(124)
-    })
-    it('should mention the configured timeout in stderr', () => {
-      expect(result.stderr).toContain('200ms')
-    })
-    it('should mention SIGKILL in stderr', () => {
-      expect(result.stderr).toContain('SIGKILL')
-    })
-  })
-
-  describe('when TEST_WATCHDOG_MS is not a number', () => {
-    let result: RunResult = emptyResult
-    beforeAll(async () => {
-      result = await runWrapper([NODE_BIN, '-e', 'process.exit(0)'], { TEST_WATCHDOG_MS: 'abc' })
-    }, SPAWN_TIMEOUT_MS)
-    it('should exit with the invalid-argument code', () => {
-      expect(result.exit).toBe(2)
-    })
-    it('should name the bad value in stderr', () => {
-      expect(result.stderr).toContain('TEST_WATCHDOG_MS')
-    })
-  })
-
-  describe('when TEST_WATCHDOG_MS is zero', () => {
-    let result: RunResult = emptyResult
-    beforeAll(async () => {
-      result = await runWrapper([NODE_BIN, '-e', 'process.exit(0)'], { TEST_WATCHDOG_MS: '0' })
-    }, SPAWN_TIMEOUT_MS)
-    it('should exit with the invalid-argument code', () => {
-      expect(result.exit).toBe(2)
-    })
-  })
-
-  describe('when no command is provided', () => {
-    let result: RunResult = emptyResult
-    beforeAll(async () => {
-      result = await runWrapper([])
-    }, SPAWN_TIMEOUT_MS)
-    it('should exit with the invalid-argument code', () => {
-      expect(result.exit).toBe(2)
-    })
-    it('should print usage in stderr', () => {
-      expect(result.stderr).toContain('Usage:')
-    })
-  })
-
-  describe('when the binary cannot be spawned', () => {
-    let result: RunResult = emptyResult
-    beforeAll(async () => {
-      result = await runWrapper(['no-such-binary-xyz-spec'])
-    }, SPAWN_TIMEOUT_MS)
-    it('should exit with the invalid-argument code', () => {
-      expect(result.exit).toBe(2)
-    })
-    it('should report the spawn failure in stderr', () => {
-      expect(result.stderr).toContain('failed to spawn child')
+      stderrFragments.forEach((fragment: string): void => {
+        it(`should report ${JSON.stringify(fragment)} in stderr`, () => {
+          expect(result.stderr).toContain(fragment)
+        })
+      })
     })
   })
 })
