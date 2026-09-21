@@ -5,13 +5,23 @@ import type { Server } from 'node:http'
 import type { Server as WebSocketServer } from 'socket.io'
 
 import { CacheStorage, readAndConvertImage, readAndRescaleImage, getRouter, Imports } from '#routes/images.js'
+import type { ImageCache } from '#routes/images.js'
 import { cast } from '#testutils/typeGuards.js'
 import type { MockInstance } from 'vitest'
 
+const ORIGINAL_CACHE_SIZE = 5
+const DISTINCT_CACHE_COUNT = 3
+
+interface ReplacedCache {
+  name: string
+  read: () => ImageCache
+  backedBy: string
+  cacheFunction: ImageCache['cacheFunction']
+  maxItems: number | undefined
+}
+
 describe('routes/images export getRouter()', () => {
-  const defaultKioskCache = CacheStorage.kioskCache
-  const defaultScaledCache = CacheStorage.scaledCache
-  const defaultOriginalCache = CacheStorage.originalCache
+  const cachesAtLoad = { ...CacheStorage }
   let applicationFake = cast<Application>({})
   let serverFake = cast<Server>({})
   let websocketsFake = cast<WebSocketServer>({})
@@ -35,58 +45,65 @@ describe('routes/images export getRouter()', () => {
     loggerStub = vi.spyOn(Imports, 'logger').mockImplementation((..._args: unknown[]) => undefined)
   })
   afterAll(() => {
-    CacheStorage.kioskCache = defaultKioskCache
-    CacheStorage.scaledCache = defaultScaledCache
-    CacheStorage.originalCache = defaultOriginalCache
+    Object.assign(CacheStorage, cachesAtLoad)
   })
-  it('should use router import to construct router', async () => {
+
+  const buildRouter = async (): Promise<void> => {
     await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(getRouterStub.mock.calls.length).toBe(1)
-  })
-  it('should call router import with no arguments', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(getRouterStub.mock.calls[0]).toEqual([])
+  }
+
+  it('should construct the router exactly once with no arguments', async () => {
+    await buildRouter()
+    expect(getRouterStub.mock.calls).toEqual([[]])
   })
   it('should not generate logging messages on construction', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
+    await buildRouter()
     expect(loggerStub.mock.calls.length).toBe(0)
   })
-  it('should create new kiosk mode image cache', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.kioskCache).not.toBe(defaultKioskCache)
+
+  const replacedCaches: ReplacedCache[] = [
+    {
+      name: 'kiosk',
+      read: () => CacheStorage.kioskCache,
+      backedBy: 'readAndRescaleImage',
+      cacheFunction: readAndRescaleImage,
+      maxItems: undefined,
+    },
+    {
+      name: 'scaled',
+      read: () => CacheStorage.scaledCache,
+      backedBy: 'readAndRescaleImage',
+      cacheFunction: readAndRescaleImage,
+      maxItems: undefined,
+    },
+    {
+      name: 'original',
+      read: () => CacheStorage.originalCache,
+      backedBy: 'readAndConvertImage',
+      cacheFunction: readAndConvertImage,
+      maxItems: ORIGINAL_CACHE_SIZE,
+    },
+  ]
+  replacedCaches.forEach(({ name, read, backedBy, cacheFunction, maxItems }: ReplacedCache): void => {
+    it(`should replace the ${name} cache with a fresh one backed by ${backedBy}`, async () => {
+      const cacheAtLoad = read()
+      await buildRouter()
+      const cache = read()
+      expect({ replaced: cache !== cacheAtLoad, cacheFunction: cache.cacheFunction, maxItems: cache.maxItems }).toEqual(
+        {
+          replaced: true,
+          cacheFunction,
+          maxItems,
+        },
+      )
+    })
   })
-  it('should use readAndRescaleImage() to fill kiosk mode image cache', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.kioskCache.cacheFunction).toBe(readAndRescaleImage)
+  it('should give the kiosk, scaled and original caches separate instances', async () => {
+    await buildRouter()
+    const instances = new Set([CacheStorage.kioskCache, CacheStorage.scaledCache, CacheStorage.originalCache])
+    expect(instances.size).toBe(DISTINCT_CACHE_COUNT)
   })
-  it('should create new scaled mode image cache', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.scaledCache).not.toBe(defaultScaledCache)
-  })
-  it('should use readAndRescaleImage() to fill scaled mode image cache', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.scaledCache.cacheFunction).toBe(readAndRescaleImage)
-  })
-  it('should create separate kiosk and scaled mode image caches', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.kioskCache).not.toBe(CacheStorage.scaledCache)
-  })
-  it('should create new original mode image cache', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.originalCache).not.toBe(defaultOriginalCache)
-  })
-  it('should use readAndConvertImage() to fill original mode image cache', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.originalCache.cacheFunction).toBe(readAndConvertImage)
-  })
-  it('should bound the original mode image cache below the shared default', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.originalCache.maxItems).toBe(5)
-  })
-  it('should create separate scaled and original mode image caches', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(CacheStorage.originalCache).not.toBe(CacheStorage.scaledCache)
-  })
+
   const routes = [
     '/full/*path',
     '/scaled/:width/:height/*path-image.webp',
@@ -94,14 +111,8 @@ describe('routes/images export getRouter()', () => {
     '/preview/*path-image.webp',
     '/kiosk/*path-image.webp',
   ]
-  it('should register only expected router count', async () => {
-    await getRouter(applicationFake, serverFake, websocketsFake)
-    expect(routerFake.get.mock.calls.length).toBe(routes.length)
-  })
-  routes.forEach((route) => {
-    it(`should register expected router: ${route}`, async () => {
-      await getRouter(applicationFake, serverFake, websocketsFake)
-      expect(routerFake.get).toHaveBeenCalledWith(route, expect.anything())
-    })
+  it('should register every image route in declared order', async () => {
+    await buildRouter()
+    expect(routerFake.get.mock.calls.map((call: unknown[]) => call[0])).toEqual(routes)
   })
 })

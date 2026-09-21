@@ -1,53 +1,34 @@
 'use sanity'
 
 import { CacheStorage } from '#routes/images.js'
+import type { ImageCache } from '#routes/images.js'
+
+const REQUESTED_PATH = '/foo.png'
+const KIOSK_WIDTH = 1280
+const KIOSK_HEIGHT = 800
+const UNBOUNDED = 0
+
+interface DefaultCache {
+  name: string
+  read: () => ImageCache
+  width: number
+  height: number
+}
+
+const defaultCaches: DefaultCache[] = [
+  { name: 'kiosk', read: () => CacheStorage.kioskCache, width: KIOSK_WIDTH, height: KIOSK_HEIGHT },
+  { name: 'scaled', read: () => CacheStorage.scaledCache, width: KIOSK_WIDTH, height: KIOSK_HEIGHT },
+  { name: 'original', read: () => CacheStorage.originalCache, width: UNBOUNDED, height: UNBOUNDED },
+]
+
 describe('routes/images export CacheStorage()', () => {
-  it('should have default Kiosk Cache report error code', async () => {
-    const image = await CacheStorage.kioskCache.fetch('/foo.png', 1280, 800)
-    expect(image.error?.code).toBe('INTERNAL_SERVER_ERROR')
-  })
-  it('should have default Kiosk Cache report error statusCode', async () => {
-    const image = await CacheStorage.kioskCache.fetch('/foo.png', 1280, 800)
-    expect(image.error?.statusCode).toBe(500)
-  })
-  it('should have default Kiosk Cache report error message', async () => {
-    const image = await CacheStorage.kioskCache.fetch('/foo.png', 1280, 800)
-    expect(image.error?.message).toBe('CACHE_NOT_INITIALIZED')
-  })
-  it('should have default Kiosk Cache resolve to requested path', async () => {
-    const image = await CacheStorage.kioskCache.fetch('/foo.png', 1280, 800)
-    expect(image.path).toBe('/foo.png')
-  })
-  it('should have default scaled Cache report error code', async () => {
-    const image = await CacheStorage.scaledCache.fetch('/foo.png', 1280, 800)
-    expect(image.error?.code).toBe('INTERNAL_SERVER_ERROR')
-  })
-  it('should have default scaled Cache report error status code', async () => {
-    const image = await CacheStorage.scaledCache.fetch('/foo.png', 1280, 800)
-    expect(image.error?.statusCode).toBe(500)
-  })
-  it('should have default scaled Cache report error message', async () => {
-    const image = await CacheStorage.scaledCache.fetch('/foo.png', 1280, 800)
-    expect(image.error?.message).toBe('CACHE_NOT_INITIALIZED')
-  })
-  it('should have default scaled Cache resolve to requested path', async () => {
-    const image = await CacheStorage.scaledCache.fetch('/foo.png', 1280, 800)
-    expect(image.path).toBe('/foo.png')
-  })
-  it('should have default original Cache report error code', async () => {
-    const image = await CacheStorage.originalCache.fetch('/foo.png', 0, 0)
-    expect(image.error?.code).toBe('INTERNAL_SERVER_ERROR')
-  })
-  it('should have default original Cache report error status code', async () => {
-    const image = await CacheStorage.originalCache.fetch('/foo.png', 0, 0)
-    expect(image.error?.statusCode).toBe(500)
-  })
-  it('should have default original Cache report error message', async () => {
-    const image = await CacheStorage.originalCache.fetch('/foo.png', 0, 0)
-    expect(image.error?.message).toBe('CACHE_NOT_INITIALIZED')
-  })
-  it('should have default original Cache resolve to requested path', async () => {
-    const image = await CacheStorage.originalCache.fetch('/foo.png', 0, 0)
-    expect(image.path).toBe('/foo.png')
+  defaultCaches.forEach(({ name, read, width, height }: DefaultCache): void => {
+    it(`should report the uninitialized-cache error from the default ${name} cache`, async () => {
+      const image = await read().fetch(REQUESTED_PATH, width, height)
+      expect({ error: image.error, path: image.path }).toEqual({
+        error: { code: 'INTERNAL_SERVER_ERROR', statusCode: 500, message: 'CACHE_NOT_INITIALIZED' },
+        path: REQUESTED_PATH,
+      })
+    })
   })
 })
