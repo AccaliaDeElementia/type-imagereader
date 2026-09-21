@@ -57,11 +57,9 @@ describe('Server configureNotFound', () => {
       it('should not render the error template', () => {
         expect(responseStub.render.mock.calls.length).toBe(0)
       })
-      it('should send JSON', () => {
-        expect(responseStub.json.mock.calls.length).toBe(1)
-      })
-      it('should send an E_NOT_FOUND error payload', () => {
-        expect(responseStub.json.mock.calls[0]?.[0]).toHaveProperty('error.code', 'E_NOT_FOUND')
+      it('should send exactly one E_NOT_FOUND json error', () => {
+        const codes = responseStub.json.mock.calls.map((c) => cast<{ error: { code: string } }>(c[0]).error.code)
+        expect(codes).toEqual(['E_NOT_FOUND'])
       })
       it('should include the URL in the message', () => {
         const data = cast<{ error: { message: string } }>(responseStub.json.mock.calls[0]?.[0])
@@ -79,57 +77,36 @@ describe('Server configureNotFound', () => {
     })
   })
 
-  const assetUrlsByExtension = [
-    '/scripts/app.js',
-    '/scripts/app.js.map',
-    '/stylesheets/bundle.css',
-    '/notreally/anywhere/file.png',
-    '/fonts/font.woff2',
+  const assetUrls: Array<[string, string]> = [
+    ['by prefix only', '/scripts/noextension'],
+    ['by prefix only', '/stylesheets/something/nested'],
+    ['by prefix only', '/fonts/raw'],
+    ['by prefix only', '/images/missing'],
+    ['by prefix only', '/public/anything'],
+    ['by prefix only', '/public/nested/path'],
+    ['by extension only', '/notreally/anywhere/file.png'],
+    ['by extension only', '/some/where/logo.svg'],
+    ['by extension only', '/deep/nested/webfont.woff2'],
+    ['by extension only', '/a/b/favicon.ico'],
+    ['by prefix and extension', '/scripts/app.js'],
+    ['by prefix and extension', '/scripts/app.js.map'],
+    ['by prefix and extension', '/stylesheets/bundle.css'],
+    ['by prefix and extension', '/fonts/font.woff2'],
   ]
-  assetUrlsByExtension.forEach((url) => {
-    describe(`for asset URL by extension '${url}'`, () => {
+  assetUrls.forEach(([kind, url]) => {
+    describe(`for asset URL ${kind} '${url}'`, () => {
       beforeEach(() => {
         invoke(url)
       })
       it('should set 404 status', () => {
         expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.NOT_FOUND])
       })
-      it('should not render the error template', () => {
-        expect(responseStub.render.mock.calls.length).toBe(0)
-      })
-      it('should not send JSON', () => {
-        expect(responseStub.json.mock.calls.length).toBe(0)
-      })
-      it('should call res.end without a body', () => {
-        expect(responseStub.end.mock.calls.length).toBe(1)
-      })
-    })
-  })
-
-  const assetUrlsByPrefix = [
-    '/scripts/noextension',
-    '/stylesheets/something/nested',
-    '/fonts/raw',
-    '/images/missing',
-    '/public/anything',
-    '/public/nested/path',
-  ]
-  assetUrlsByPrefix.forEach((url) => {
-    describe(`for asset URL by prefix '${url}'`, () => {
-      beforeEach(() => {
-        invoke(url)
-      })
-      it('should set 404 status', () => {
-        expect(responseStub.status.mock.calls[0]).toEqual([StatusCodes.NOT_FOUND])
-      })
-      it('should not render the error template', () => {
-        expect(responseStub.render.mock.calls.length).toBe(0)
-      })
-      it('should not send JSON', () => {
-        expect(responseStub.json.mock.calls.length).toBe(0)
-      })
-      it('should call res.end without a body', () => {
-        expect(responseStub.end.mock.calls.length).toBe(1)
+      it('should respond with a bare 404 carrying no body', () => {
+        expect({
+          rendered: responseStub.render.mock.calls.length,
+          jsoned: responseStub.json.mock.calls.length,
+          ended: responseStub.end.mock.calls.length,
+        }).toEqual({ rendered: 0, jsoned: 0, ended: 1 })
       })
     })
   })
