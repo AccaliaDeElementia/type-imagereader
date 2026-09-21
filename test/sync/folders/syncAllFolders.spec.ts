@@ -23,66 +23,36 @@ describe('sync/folders syncAllFolders()', () => {
     syncFolderFirstImagesStub = vi.spyOn(Internals, 'syncFolderFirstImages').mockResolvedValue(undefined)
     knexFake = stubToKnex({ id: Math.random() })
   })
-  it('should call debug once when constructing logger', async () => {
+
+  const pipeline: Array<[string, () => MockInstance]> = [
+    ['syncNewFolders', () => syncNewFoldersStub],
+    ['syncRemovedFolders', () => syncRemovedFoldersStub],
+    ['syncMissingAncestorFolders', () => syncMissingAncestorFoldersStub],
+    ['syncMissingCoverImages', () => syncMissingCoverImagesStub],
+    ['syncFolderFirstImages', () => syncFolderFirstImagesStub],
+  ]
+
+  it('should construct the module logger exactly once', async () => {
     await syncAllFolders(knexFake)
-    expect(debugStub.mock.calls.length).toBe(1)
+    expect(debugStub.mock.calls).toEqual([[LOG_PREFIX]])
   })
-  it('should construct logger with the module prefix', async () => {
-    await syncAllFolders(knexFake)
-    expect(debugStub.mock.calls[0]?.[0]).toBe(LOG_PREFIX)
+
+  pipeline.forEach(([step, stub]: [string, () => MockInstance]): void => {
+    it(`should run ${step} exactly once with the module logger and knex`, async () => {
+      await syncAllFolders(knexFake)
+      expect(stub().mock.calls).toEqual([[loggerStub, knexFake]])
+    })
   })
-  it('should call syncNewFolders once', async () => {
+
+  it('should run every sync step in declared pipeline order', async () => {
     await syncAllFolders(knexFake)
-    expect(syncNewFoldersStub.mock.calls.length).toBe(1)
-  })
-  it('should call syncNewFolders with expected args', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncNewFoldersStub.mock.calls[0]).toEqual([loggerStub, knexFake])
-  })
-  it('should call syncRemovedFolders once', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncRemovedFoldersStub.mock.calls.length).toBe(1)
-  })
-  it('should call syncRemovedFolders with expected args', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncRemovedFoldersStub.mock.calls[0]).toEqual([loggerStub, knexFake])
-  })
-  it('should call syncMissingAncestorFolders once', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncMissingAncestorFoldersStub.mock.calls.length).toBe(1)
-  })
-  it('should call syncMissingAncestorFolders with expected args', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncMissingAncestorFoldersStub.mock.calls[0]).toEqual([loggerStub, knexFake])
-  })
-  it('should call syncMissingAncestorFolders after syncRemovedFolders', async () => {
-    await syncAllFolders(knexFake)
-    expect(
-      (syncMissingAncestorFoldersStub.mock.invocationCallOrder[0] ?? 0) >
-        (syncRemovedFoldersStub.mock.invocationCallOrder[0] ?? 0),
-    ).toBe(true)
-  })
-  it('should call syncMissingAncestorFolders before syncFolderFirstImages', async () => {
-    await syncAllFolders(knexFake)
-    expect(
-      (syncMissingAncestorFoldersStub.mock.invocationCallOrder[0] ?? 0) <
-        (syncFolderFirstImagesStub.mock.invocationCallOrder[0] ?? 0),
-    ).toBe(true)
-  })
-  it('should call syncMissingCoverImages once', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncMissingCoverImagesStub.mock.calls.length).toBe(1)
-  })
-  it('should call syncMissingCoverImages with expected args', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncMissingCoverImagesStub.mock.calls[0]).toEqual([loggerStub, knexFake])
-  })
-  it('should call syncFolderFirstImages once', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncFolderFirstImagesStub.mock.calls.length).toBe(1)
-  })
-  it('should call syncFolderFirstImages with expected args', async () => {
-    await syncAllFolders(knexFake)
-    expect(syncFolderFirstImagesStub.mock.calls[0]).toEqual([loggerStub, knexFake])
+    const invoked = pipeline
+      .map(([step, stub]: [string, () => MockInstance]) => ({
+        step,
+        order: stub().mock.invocationCallOrder[0] ?? 0,
+      }))
+      .sort((a, b) => a.order - b.order)
+      .map(({ step }) => step)
+    expect(invoked).toEqual(pipeline.map(([step]) => step))
   })
 })

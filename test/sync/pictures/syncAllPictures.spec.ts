@@ -19,36 +19,34 @@ describe('sync/pictures syncAllPictures()', () => {
     syncRemovedPicturesStub = vi.spyOn(Internals, 'syncRemovedPictures').mockResolvedValue(undefined)
     syncRemovedBookmarksStub = vi.spyOn(Internals, 'syncRemovedBookmarks').mockResolvedValue(undefined)
   })
-  it('should call debug once when constructing logger', async () => {
+
+  const pipeline: Array<[string, () => MockInstance]> = [
+    ['syncNewPictures', () => syncNewPicturesStub],
+    ['syncRemovedPictures', () => syncRemovedPicturesStub],
+    ['syncRemovedBookmarks', () => syncRemovedBookmarksStub],
+  ]
+
+  it('should construct the module logger exactly once', async () => {
     await syncAllPictures(knexFake)
-    expect(debugStub.mock.calls.length).toBe(1)
+    expect(debugStub.mock.calls).toEqual([[LOG_PREFIX]])
   })
-  it('should construct logger with the module prefix', async () => {
-    await syncAllPictures(knexFake)
-    expect(debugStub.mock.calls[0]?.[0]).toBe(LOG_PREFIX)
+
+  pipeline.forEach(([step, stub]: [string, () => MockInstance]): void => {
+    it(`should run ${step} exactly once with the module logger and knex`, async () => {
+      await syncAllPictures(knexFake)
+      expect(stub().mock.calls).toEqual([[loggerStub, knexFake]])
+    })
   })
-  it('should call syncNewPictures once', async () => {
+
+  it('should run every sync step in declared pipeline order', async () => {
     await syncAllPictures(knexFake)
-    expect(syncNewPicturesStub.mock.calls.length).toBe(1)
-  })
-  it('should call syncNewPictures with expected args', async () => {
-    await syncAllPictures(knexFake)
-    expect(syncNewPicturesStub.mock.calls[0]).toEqual([loggerStub, knexFake])
-  })
-  it('should call syncRemovedPictures once', async () => {
-    await syncAllPictures(knexFake)
-    expect(syncRemovedPicturesStub.mock.calls.length).toBe(1)
-  })
-  it('should call syncRemovedPictures with expected args', async () => {
-    await syncAllPictures(knexFake)
-    expect(syncRemovedPicturesStub.mock.calls[0]).toEqual([loggerStub, knexFake])
-  })
-  it('should call syncRemovedBookmarks once', async () => {
-    await syncAllPictures(knexFake)
-    expect(syncRemovedBookmarksStub.mock.calls.length).toBe(1)
-  })
-  it('should call syncRemovedBookmarks with expected args', async () => {
-    await syncAllPictures(knexFake)
-    expect(syncRemovedBookmarksStub.mock.calls[0]).toEqual([loggerStub, knexFake])
+    const invoked = pipeline
+      .map(([step, stub]: [string, () => MockInstance]) => ({
+        step,
+        order: stub().mock.invocationCallOrder[0] ?? 0,
+      }))
+      .sort((a, b) => a.order - b.order)
+      .map(({ step }) => step)
+    expect(invoked).toEqual(pipeline.map(([step]) => step))
   })
 })
