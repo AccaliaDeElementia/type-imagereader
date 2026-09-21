@@ -208,26 +208,18 @@ describe('routes/images route /scaled/:width/:height/*-image.webp', () => {
         requestStub.body = 'REQUEST BODY'
         await router(requestFake, responseFake)
       })
-      it('should not fetch image', () => {
-        expect(fetchImageStub.mock.calls.length).toBe(0)
+      it('should respond BAD_REQUEST exactly once', () => {
+        expect(responseStub.status.mock.calls).toEqual([[400]])
       })
-      it('should not send image', () => {
-        expect(sendImageStub.mock.calls.length).toBe(0)
+      it(`should report '${message}' as the json error`, () => {
+        expect(responseStub.json.mock.calls).toEqual([[{ error: { code: 'E_BAD_REQUEST', message } }]])
       })
-      it('should not log message', () => {
-        expect(loggerStub.mock.calls.length).toBe(0)
-      })
-      it('should set response status', () => {
-        expect(responseStub.status.mock.calls.length).toBe(1)
-      })
-      it('should send BAD_REQUEST status code', () => {
-        expect(responseStub.status.mock.calls[0]).toEqual([400])
-      })
-      it('should send json response', () => {
-        expect(responseStub.json.mock.calls.length).toBe(1)
-      })
-      it('should send error message in json response', () => {
-        expect(responseStub.json.mock.calls[0]).toEqual([{ error: { code: 'E_BAD_REQUEST', message } }])
+      it('should return before doing any work', () => {
+        expect({
+          fetched: fetchImageStub.mock.calls.length,
+          sent: sendImageStub.mock.calls.length,
+          logged: loggerStub.mock.calls.length,
+        }).toEqual({ fetched: 0, sent: 0, logged: 0 })
       })
     })
   })
