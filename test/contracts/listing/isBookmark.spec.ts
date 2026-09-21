@@ -1,16 +1,11 @@
 'use sanity'
 
 import { isBookmark } from '#contracts/listing.js'
+import { REJECTED_BY_ALL_LISTING_GUARDS, type ListingGuardCase } from '#testutils/listingGuardCases.js'
 
 describe('Contracts: isBookmark()', () => {
-  const cases: Array<[string, unknown, boolean]> = [
-    ['null', null, false],
-    ['undefined', undefined, false],
-    ['empty array', [], false],
-    ['array', [{}], false],
-    ['number', 4.71, false],
-    ['string', 'foo!', false],
-    ['empty object', {}, false],
+  const cases: ListingGuardCase[] = REJECTED_BY_ALL_LISTING_GUARDS.concat([
+    ['array carrying every bookmark field', Object.assign([], { name: 'foo!', path: 'bar!', folder: 'baz!' }), false],
     [
       'missing name',
       {
@@ -179,7 +174,7 @@ describe('Contracts: isBookmark()', () => {
       },
       true,
     ],
-  ]
+  ])
   cases.forEach(([title, obj, expected]) => {
     it(`should return ${expected} for ${title}`, () => {
       expect(isBookmark(obj)).toBe(expected)

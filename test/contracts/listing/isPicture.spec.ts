@@ -3,6 +3,11 @@
 import { JSDOM } from 'jsdom'
 import { isPicture } from '#contracts/listing.js'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import {
+  REJECTED_BY_ALL_LISTING_GUARDS,
+  deferCases,
+  type DeferredListingGuardCase,
+} from '#testutils/listingGuardCases.js'
 
 const dom = new JSDOM('<html></html>')
 
@@ -14,14 +19,7 @@ describe('Contracts: isPicture()', () => {
     unmountDom()
   })
 
-  const cases: Array<[string, () => unknown, boolean]> = [
-    ['null', () => null, false],
-    ['undefined', () => undefined, false],
-    ['empty array', () => [], false],
-    ['array', () => [{}], false],
-    ['number', () => 4.71, false],
-    ['string', () => 'foo!', false],
-    ['empty object', () => ({}), false],
+  const cases: DeferredListingGuardCase[] = deferCases(REJECTED_BY_ALL_LISTING_GUARDS).concat([
     [
       'null path',
       () => ({
@@ -325,7 +323,7 @@ describe('Contracts: isPicture()', () => {
       }),
       true,
     ],
-  ]
+  ])
   cases.forEach(([title, build, expected]) => {
     it(`should return ${expected} for ${title}`, () => {
       expect(isPicture(build())).toBe(expected)

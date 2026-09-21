@@ -1,16 +1,10 @@
 'use sanity'
 
 import { isFolder, isFolderWithCounts } from '#contracts/listing.js'
+import { REJECTED_BY_ALL_LISTING_GUARDS, type ListingGuardCase } from '#testutils/listingGuardCases.js'
 
 describe('Contracts: isFolder(), isFolderWithCounts()', () => {
-  const commonCases: Array<[string, unknown, boolean]> = [
-    ['null', null, false],
-    ['undefined', undefined, false],
-    ['empty array', [], false],
-    ['array', [{}], false],
-    ['number', 4.71, false],
-    ['string', 'foo!', false],
-    ['empty object', {}, false],
+  const commonCases: ListingGuardCase[] = REJECTED_BY_ALL_LISTING_GUARDS.concat([
     [
       'missing name',
       {
@@ -107,7 +101,7 @@ describe('Contracts: isFolder(), isFolderWithCounts()', () => {
       },
       false,
     ],
-  ]
+  ])
   const foldersTests: Array<[string, unknown, boolean]> = [
     [
       'null cover',

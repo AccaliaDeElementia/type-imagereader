@@ -1,6 +1,7 @@
 'use sanity'
 
 import { isBookmarkFolder } from '#contracts/listing.js'
+import { REJECTED_BY_ALL_LISTING_GUARDS, type ListingGuardCase } from '#testutils/listingGuardCases.js'
 
 describe('Contracts: isBookmarkFolder()', () => {
   const bookmark = {
@@ -8,14 +9,7 @@ describe('Contracts: isBookmarkFolder()', () => {
     path: 'bar!',
     folder: 'baz!',
   }
-  const cases: Array<[string, unknown, boolean]> = [
-    ['null', null, false],
-    ['undefined', undefined, false],
-    ['empty array', [], false],
-    ['array', [{}], false],
-    ['number', 4.71, false],
-    ['string', 'foo!', false],
-    ['empty object', {}, false],
+  const cases: ListingGuardCase[] = REJECTED_BY_ALL_LISTING_GUARDS.concat([
     [
       'missing name',
       {
@@ -157,7 +151,7 @@ describe('Contracts: isBookmarkFolder()', () => {
       },
       true,
     ],
-  ]
+  ])
 
   cases.forEach(([title, obj, expected]) => {
     it(`should return ${expected} for ${title}`, () => {

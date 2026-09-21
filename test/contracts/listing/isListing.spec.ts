@@ -1,6 +1,7 @@
 'use sanity'
 
 import { isListing } from '#contracts/listing.js'
+import { REJECTED_BY_ALL_LISTING_GUARDS, type ListingGuardCase } from '#testutils/listingGuardCases.js'
 
 describe('Contracts: isListing()', () => {
   const threeValueObject = (name: unknown, path: unknown, parent: unknown): unknown => ({
@@ -13,14 +14,7 @@ describe('Contracts: isListing()', () => {
     res[name] = value
     return res
   }
-  const cases: Array<[string, unknown, boolean]> = [
-    ['null', null, false],
-    ['undefined', undefined, false],
-    ['empty array', [], false],
-    ['array', [{}], false],
-    ['number', 4.71, false],
-    ['string', 'foo!', false],
-    ['empty object', {}, false],
+  const cases: ListingGuardCase[] = REJECTED_BY_ALL_LISTING_GUARDS.concat([
     ['missing name', { path: 'bar!', parent: 'baz!' }, false],
     ['null name', threeValueObject(null, 'bar!', 'baz!'), false],
     ['undefined name', threeValueObject(undefined, 'bar!', 'baz!'), false],
@@ -82,7 +76,7 @@ describe('Contracts: isListing()', () => {
     ['empty bookmarks', oneExtraKey('bookmarks', []), true],
     ['invalid bookmark in  bookmarks', oneExtraKey('bookmarks', [{}]), false],
     ['non empty bookmarks', oneExtraKey('bookmarks', [{ name: 'foo!', path: 'bar!', bookmarks: [] }]), true],
-  ]
+  ])
   cases.forEach(([title, obj, expected]) => {
     it(`should return ${expected} for ${title}`, () => {
       expect(isListing(obj)).toBe(expected)
