@@ -1,98 +1,73 @@
 'use sanity'
 
 import { getKnexConfig, Internals } from '#utils/persistence.js'
+import type { KnexOptions } from '#utils/persistence.js'
 import type { MockInstance } from 'vitest'
 
+type ConnectionField = keyof KnexOptions['connection']
+
+interface EnvOverride {
+  field: ConnectionField
+  envVar: string
+}
+
+const envOverrides: EnvOverride[] = [
+  { field: 'host', envVar: 'DB_HOST' },
+  { field: 'database', envVar: 'DB_DATABASE' },
+  { field: 'user', envVar: 'DB_USER' },
+  { field: 'password', envVar: 'DB_PASSWORD' },
+  { field: 'filename', envVar: 'DB_FILENAME' },
+]
+
+const OVERRIDE_VALUE = 'foobar'
+
+const configuredConnection = (): KnexOptions['connection'] => {
+  const connection: KnexOptions['connection'] = {}
+  envOverrides.forEach(({ field }: EnvOverride): void => {
+    connection[field] = `configured ${field}`
+  })
+  return connection
+}
+
 describe('utils/persistence getKnexConfig()', () => {
-  let configBlock = {
-    client: '',
-    connection: {
-      host: '' as string | undefined,
-      database: '' as string | undefined,
-      user: '' as string | undefined,
-      password: '' as string | undefined,
-      filename: '' as string | undefined,
-    },
-    migrations: { tableName: '' },
-  }
+  const envAtLoad = new Map(envOverrides.map(({ envVar }: EnvOverride) => [envVar, process.env[envVar]]))
+  let configBlock: KnexOptions = { client: '', connection: {}, migrations: { tableName: '' } }
   let readConfigurationBlockStub: MockInstance = vi.fn()
   beforeEach(() => {
-    delete process.env.DB_HOST
-    delete process.env.DB_DATABASE
-    delete process.env.DB_USER
-    delete process.env.DB_PASSWORD
-    delete process.env.DB_FILENAME
-    configBlock = {
-      client: '',
-      connection: {
-        host: '',
-        database: '',
-        user: '',
-        password: '',
-        filename: '',
-      },
-      migrations: { tableName: '' },
-    }
+    envOverrides.forEach(({ envVar }: EnvOverride): void => {
+      Reflect.deleteProperty(process.env, envVar)
+    })
+    configBlock = { client: '', connection: configuredConnection(), migrations: { tableName: '' } }
     readConfigurationBlockStub = vi.spyOn(Internals, 'readConfigurationBlock').mockResolvedValue(configBlock)
+  })
+  afterEach(() => {
+    envAtLoad.forEach((value: string | undefined, envVar: string): void => {
+      if (value === undefined) {
+        Reflect.deleteProperty(process.env, envVar)
+      } else {
+        process.env[envVar] = value
+      }
+    })
   })
 
   it('should reject when readConfig rejects', async () => {
     readConfigurationBlockStub.mockRejectedValue(new Error('FOO I FAIL'))
     await expect(getKnexConfig()).rejects.toHaveProperty('message', 'FOO I FAIL')
   })
-  it('should not alter host when env is not set', async () => {
-    configBlock.connection.host = 'one two three four'
+  it('should leave every connection field as configured when no DB_ env var is set', async () => {
     const conn = await getKnexConfig()
-    expect(conn.connection.host).toBe('one two three four')
+    expect(conn.connection).toEqual(configuredConnection())
   })
-  it('should alter host when env is set', async () => {
-    configBlock.connection.host = 'one two three four'
-    process.env.DB_HOST = 'foobar'
-    const conn = await getKnexConfig()
-    expect(conn.connection.host).toBe('foobar')
+  envOverrides.forEach(({ field, envVar }: EnvOverride): void => {
+    it(`should override only ${field} when ${envVar} is set`, async () => {
+      process.env[envVar] = OVERRIDE_VALUE
+      const conn = await getKnexConfig()
+      expect(conn.connection).toEqual({ ...configuredConnection(), [field]: OVERRIDE_VALUE })
+    })
   })
-  it('should not alter database when env is not set', async () => {
-    configBlock.connection.database = 'one two three four'
+  it('should override with an empty string when the env var is set but empty', async () => {
+    process.env.DB_PASSWORD = ''
     const conn = await getKnexConfig()
-    expect(conn.connection.database).toBe('one two three four')
-  })
-  it('should alter database when env is set', async () => {
-    configBlock.connection.database = 'one two three four'
-    process.env.DB_DATABASE = 'foobar'
-    const conn = await getKnexConfig()
-    expect(conn.connection.database).toBe('foobar')
-  })
-  it('should not alter user when env is not set', async () => {
-    configBlock.connection.user = 'one two three four'
-    const conn = await getKnexConfig()
-    expect(conn.connection.user).toBe('one two three four')
-  })
-  it('should alter user when env is set', async () => {
-    configBlock.connection.user = 'one two three four'
-    process.env.DB_USER = 'foobar'
-    const conn = await getKnexConfig()
-    expect(conn.connection.user).toBe('foobar')
-  })
-  it('should not alter password when env is not set', async () => {
-    configBlock.connection.password = 'one two three four'
-    const conn = await getKnexConfig()
-    expect(conn.connection.password).toBe('one two three four')
-  })
-  it('should alter password when env is set', async () => {
-    configBlock.connection.password = 'one two three four'
-    process.env.DB_PASSWORD = 'foobar'
-    const conn = await getKnexConfig()
-    expect(conn.connection.password).toBe('foobar')
-  })
-  it('should not alter filename when env is not set', async () => {
-    configBlock.connection.filename = 'one two three four'
-    const conn = await getKnexConfig()
-    expect(conn.connection.filename).toBe('one two three four')
-  })
-  it('should alter filename when env is set', async () => {
-    configBlock.connection.filename = 'one two three four'
-    process.env.DB_FILENAME = 'foobar'
-    const conn = await getKnexConfig()
-    expect(conn.connection.filename).toBe('foobar')
+    expect(conn.connection).toEqual({ ...configuredConnection(), password: '' })
   })
 })
