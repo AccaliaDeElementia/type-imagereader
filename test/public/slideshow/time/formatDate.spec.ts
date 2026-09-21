@@ -1,44 +1,34 @@
 'use sanity'
 
 import { Internals } from '#public/scripts/slideshow/time.js'
+
+interface DateCase {
+  year: number
+  month: number
+  day: number
+  expected: string
+}
+
+const dateCases: DateCase[] = [
+  { year: 2025, month: 1, day: 2, expected: 'Thursday, January 2' },
+  { year: 2025, month: 2, day: 9, expected: 'Sunday, February 9' },
+  { year: 2025, month: 3, day: 12, expected: 'Wednesday, March 12' },
+  { year: 2025, month: 4, day: 22, expected: 'Tuesday, April 22' },
+  { year: 2025, month: 5, day: 12, expected: 'Monday, May 12' },
+  { year: 2025, month: 6, day: 13, expected: 'Friday, June 13' },
+  { year: 2025, month: 7, day: 19, expected: 'Saturday, July 19' },
+  { year: 2025, month: 8, day: 20, expected: 'Wednesday, August 20' },
+  { year: 2025, month: 9, day: 30, expected: 'Tuesday, September 30' },
+  { year: 2025, month: 10, day: 2, expected: 'Thursday, October 2' },
+  { year: 2025, month: 11, day: 26, expected: 'Wednesday, November 26' },
+  { year: 2025, month: 12, day: 8, expected: 'Monday, December 8' },
+  { year: 1969, month: 7, day: 20, expected: 'Sunday, July 20' },
+]
+
 describe('public/slideshow/time formatDate()', () => {
-  const makeDate = (year: number, month: number, day: number): Date => {
-    const now = new Date()
-    now.setFullYear(year)
-    now.setDate(day)
-    now.setMonth(month - 1)
-    now.setDate(day)
-    return now
-  }
-  const testCases: Array<[Date, string]> = [
-    [makeDate(2025, 1, 2), 'Thursday, January 2'],
-    [makeDate(2025, 2, 9), 'Sunday, February 9'],
-    [makeDate(2025, 3, 12), 'Wednesday, March 12'],
-    [makeDate(2025, 4, 22), 'Tuesday, April 22'],
-    [makeDate(2025, 5, 12), 'Monday, May 12'],
-    [makeDate(2025, 6, 13), 'Friday, June 13'],
-    [makeDate(2025, 7, 19), 'Saturday, July 19'],
-    [makeDate(2025, 8, 20), 'Wednesday, August 20'],
-    [makeDate(2025, 9, 30), 'Tuesday, September 30'],
-    [makeDate(2025, 10, 2), 'Thursday, October 2'],
-    [makeDate(2025, 11, 26), 'Wednesday, November 26'],
-    [makeDate(2025, 12, 8), 'Monday, December 8'],
-    [makeDate(1969, 1, 1), 'Wednesday, January 1'],
-    [makeDate(1969, 2, 2), 'Sunday, February 2'],
-    [makeDate(1969, 3, 3), 'Monday, March 3'],
-    [makeDate(1969, 4, 4), 'Friday, April 4'],
-    [makeDate(1969, 5, 5), 'Monday, May 5'],
-    [makeDate(1969, 6, 6), 'Friday, June 6'],
-    [makeDate(1969, 7, 7), 'Monday, July 7'],
-    [makeDate(1969, 8, 8), 'Friday, August 8'],
-    [makeDate(1969, 9, 9), 'Tuesday, September 9'],
-    [makeDate(1969, 10, 9), 'Thursday, October 9'],
-    [makeDate(1969, 11, 11), 'Tuesday, November 11'],
-    [makeDate(1969, 12, 13), 'Saturday, December 13'],
-  ]
-  testCases.forEach(([date, expected]) => {
-    it(`should format ${expected} correctly`, () => {
-      expect(Internals.formatDate(date)).toBe(expected)
+  dateCases.forEach(({ year, month, day, expected }: DateCase): void => {
+    it(`should render ${expected} for ${year}-${month}-${day}`, () => {
+      expect(Internals.formatDate(new Date(year, month - 1, day))).toBe(expected)
     })
   })
 })

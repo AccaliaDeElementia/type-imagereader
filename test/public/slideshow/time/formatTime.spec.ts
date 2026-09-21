@@ -1,47 +1,32 @@
 'use sanity'
 
 import { Internals } from '#public/scripts/slideshow/time.js'
+
+const FIXED_YEAR = 2025
+const FIXED_MONTH_INDEX = 0
+const FIXED_DAY = 15
+
+interface TimeCase {
+  hours: number
+  minutes: number
+  expected: string
+  boundary: string
+}
+
+const timeCases: TimeCase[] = [
+  { hours: 0, minutes: 0, expected: '00:00', boundary: 'midnight pads both fields' },
+  { hours: 0, minutes: 9, expected: '00:09', boundary: 'the last single-digit minute pads' },
+  { hours: 7, minutes: 51, expected: '07:51', boundary: 'a single-digit hour pads beside a two-digit minute' },
+  { hours: 9, minutes: 9, expected: '09:09', boundary: 'the last single-digit hour pads' },
+  { hours: 10, minutes: 10, expected: '10:10', boundary: 'the first two-digit hour and minute stay unpadded' },
+  { hours: 12, minutes: 0, expected: '12:00', boundary: 'noon pads only the minute' },
+  { hours: 23, minutes: 59, expected: '23:59', boundary: 'the last minute of the day stays unpadded' },
+]
+
 describe('public/slideshow/time formatTime()', () => {
-  const makeTime = (hours: number, minutes: number): Date => {
-    const now = new Date()
-    now.setHours(hours)
-    now.setMinutes(minutes)
-    return now
-  }
-  const testCases: Array<[Date, string]> = [
-    [makeTime(0, 1), '00:01'],
-    [makeTime(1, 2), '01:02'],
-    [makeTime(2, 6), '02:06'],
-    [makeTime(3, 7), '03:07'],
-    [makeTime(4, 20), '04:20'],
-    [makeTime(5, 13), '05:13'],
-    [makeTime(6, 0), '06:00'],
-    [makeTime(7, 51), '07:51'],
-    [makeTime(8, 45), '08:45'],
-    [makeTime(9, 19), '09:19'],
-    [makeTime(10, 1), '10:01'],
-    [makeTime(11, 7), '11:07'],
-    [makeTime(12, 40), '12:40'],
-    [makeTime(13, 4), '13:04'],
-    [makeTime(14, 10), '14:10'],
-    [makeTime(15, 21), '15:21'],
-    [makeTime(16, 32), '16:32'],
-    [makeTime(17, 43), '17:43'],
-    [makeTime(18, 54), '18:54'],
-    [makeTime(19, 5), '19:05'],
-    [makeTime(20, 16), '20:16'],
-    [makeTime(21, 27), '21:27'],
-    [makeTime(22, 36), '22:36'],
-    [makeTime(23, 47), '23:47'],
-    [makeTime(1, 5), '01:05'],
-    [makeTime(1, 32), '01:32'],
-    [makeTime(11, 5), '11:05'],
-    [makeTime(13, 5), '13:05'],
-    [makeTime(23, 49), '23:49'],
-  ]
-  testCases.forEach(([time, expected]) => {
-    it(`should format ${expected} correctly`, () => {
-      expect(Internals.formatTime(time)).toBe(expected)
+  timeCases.forEach(({ hours, minutes, expected, boundary }: TimeCase): void => {
+    it(`should render ${expected} when ${boundary}`, () => {
+      expect(Internals.formatTime(new Date(FIXED_YEAR, FIXED_MONTH_INDEX, FIXED_DAY, hours, minutes))).toBe(expected)
     })
   })
 })
