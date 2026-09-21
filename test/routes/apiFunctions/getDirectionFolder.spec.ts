@@ -108,9 +108,29 @@ describe('routes/apiFunctions getDirectionFolder', () => {
     })
   })
 
-  describe('with direction=asc, type=all', () => {
+  interface QueryChain {
+    where: { mock: { calls: unknown[][] } }
+    andWhere: { mock: { calls: unknown[][] } }
+  }
+  const filterOn = (call: QueryChain, column: string): unknown[] => {
+    const applied = [...call.where.mock.calls, ...call.andWhere.mock.calls]
+    const filter = applied.find((args) => args[0] === column)
+    assert(filter !== undefined)
+    return filter
+  }
+
+  interface DirectionCase {
+    direction: 'asc' | 'desc'
+    comparer: string
+  }
+  const directions: DirectionCase[] = [
+    { direction: 'asc', comparer: '>' },
+    { direction: 'desc', comparer: '<' },
+  ]
+
+  describe.each(directions)('with direction=$direction, type=all', ({ direction, comparer }: DirectionCase) => {
     beforeEach(async () => {
-      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'all' }
+      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction, type: 'all' }
       await getDirectionFolder(knexFake, spec)
     })
     describe('first query (same sortkey)', () => {
@@ -121,34 +141,13 @@ describe('routes/apiFunctions getDirectionFolder', () => {
         expect(knexFirstCall.andWhere.mock.calls.length).toBe(2)
       })
       it('should filter by folder', () => {
-        const queries = [
-          knexFirstCall.where.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[1],
-        ]
-        const folderFilter = queries.find((arg) => arg?.[0] === 'folder') as string[] | undefined
-        assert(folderFilter !== undefined)
-        expect(folderFilter).toEqual(['folder', '=', '/foo/'])
+        expect(filterOn(knexFirstCall, 'folder')).toEqual(['folder', '=', '/foo/'])
       })
       it('should filter by sortKey', () => {
-        const queries = [
-          knexFirstCall.where.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[1],
-        ]
-        const sortKeyFilter = queries.find((arg) => arg?.[0] === 'sortKey') as string[] | undefined
-        assert(sortKeyFilter !== undefined)
-        expect(sortKeyFilter).toEqual(['sortKey', '=', 'foo69420'])
+        expect(filterOn(knexFirstCall, 'sortKey')).toEqual(['sortKey', '=', 'foo69420'])
       })
-      it('should filter by path with > operator', () => {
-        const queries = [
-          knexFirstCall.where.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[1],
-        ]
-        const pathFilter = queries.find((arg) => arg?.[0] === 'path') as string[] | undefined
-        assert(pathFilter !== undefined)
-        expect(pathFilter).toEqual(['path', '>', '/foo/bar'])
+      it(`should filter by path with ${comparer} operator`, () => {
+        expect(filterOn(knexFirstCall, 'path')).toEqual(['path', comparer, '/foo/bar'])
       })
     })
     describe('second query (different sortkey)', () => {
@@ -159,89 +158,18 @@ describe('routes/apiFunctions getDirectionFolder', () => {
         expect(knexSecondCall.andWhere.mock.calls.length).toBe(1)
       })
       it('should filter by folder', () => {
-        const queries = [knexSecondCall.where.mock.calls[0], knexSecondCall.andWhere.mock.calls[0]]
-        const folderFilter = queries.find((arg) => arg?.[0] === 'folder') as string[] | undefined
-        assert(folderFilter !== undefined)
-        expect(folderFilter).toEqual(['folder', '=', '/foo/'])
+        expect(filterOn(knexSecondCall, 'folder')).toEqual(['folder', '=', '/foo/'])
       })
-      it('should filter by sortKey with > operator', () => {
-        const queries = [knexSecondCall.where.mock.calls[0], knexSecondCall.andWhere.mock.calls[0]]
-        const sortKeyFilter = queries.find((arg) => arg?.[0] === 'sortKey') as string[] | undefined
-        assert(sortKeyFilter !== undefined)
-        expect(sortKeyFilter).toEqual(['sortKey', '>', 'foo69420'])
+      it(`should filter by sortKey with ${comparer} operator`, () => {
+        expect(filterOn(knexSecondCall, 'sortKey')).toEqual(['sortKey', comparer, 'foo69420'])
       })
     })
   })
 
-  describe('with direction=desc, type=all', () => {
-    beforeEach(async () => {
-      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'all' }
-      await getDirectionFolder(knexFake, spec)
-    })
-    describe('first query (same sortkey)', () => {
-      it('should call where once', () => {
-        expect(knexFirstCall.where.mock.calls.length).toBe(1)
-      })
-      it('should call andWhere twice', () => {
-        expect(knexFirstCall.andWhere.mock.calls.length).toBe(2)
-      })
-      it('should filter by folder', () => {
-        const queries = [
-          knexFirstCall.where.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[1],
-        ]
-        const folderFilter = queries.find((arg) => arg?.[0] === 'folder') as string[] | undefined
-        assert(folderFilter !== undefined)
-        expect(folderFilter).toEqual(['folder', '=', '/foo/'])
-      })
-      it('should filter by sortKey', () => {
-        const queries = [
-          knexFirstCall.where.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[1],
-        ]
-        const sortKeyFilter = queries.find((arg) => arg?.[0] === 'sortKey') as string[] | undefined
-        assert(sortKeyFilter !== undefined)
-        expect(sortKeyFilter).toEqual(['sortKey', '=', 'foo69420'])
-      })
-      it('should filter by path with < operator', () => {
-        const queries = [
-          knexFirstCall.where.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[1],
-        ]
-        const pathFilter = queries.find((arg) => arg?.[0] === 'path') as string[] | undefined
-        assert(pathFilter !== undefined)
-        expect(pathFilter).toEqual(['path', '<', '/foo/bar'])
-      })
-    })
-    describe('second query (different sortkey)', () => {
-      it('should call where once', () => {
-        expect(knexSecondCall.where.mock.calls.length).toBe(1)
-      })
-      it('should call andWhere once', () => {
-        expect(knexSecondCall.andWhere.mock.calls.length).toBe(1)
-      })
-      it('should filter by folder', () => {
-        const queries = [knexSecondCall.where.mock.calls[0], knexSecondCall.andWhere.mock.calls[0]]
-        const folderFilter = queries.find((arg) => arg?.[0] === 'folder') as string[] | undefined
-        assert(folderFilter !== undefined)
-        expect(folderFilter).toEqual(['folder', '=', '/foo/'])
-      })
-      it('should filter by sortKey with < operator', () => {
-        const queries = [knexSecondCall.where.mock.calls[0], knexSecondCall.andWhere.mock.calls[0]]
-        const sortKeyFilter = queries.find((arg) => arg?.[0] === 'sortKey') as string[] | undefined
-        assert(sortKeyFilter !== undefined)
-        expect(sortKeyFilter).toEqual(['sortKey', '<', 'foo69420'])
-      })
-    })
-  })
-
-  describe('with direction=asc, type=unread', () => {
+  describe.each(directions)('with direction=$direction, type=unread', ({ direction }: DirectionCase) => {
     let rawQuery = { raw: 0 }
     beforeEach(async () => {
-      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'asc', type: 'unread' }
+      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction, type: 'unread' }
       rawQuery = { raw: Math.random() }
       rawStub.mockReturnValue(rawQuery)
       await getDirectionFolder(knexFake, spec)
@@ -254,15 +182,7 @@ describe('routes/apiFunctions getDirectionFolder', () => {
         expect(knexFirstCall.andWhere.mock.calls.length).toBe(3)
       })
       it('should filter totalCount greater than seenCount', () => {
-        const queries = [
-          knexFirstCall.where.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[1],
-          knexFirstCall.andWhere.mock.calls[2],
-        ]
-        const filter = queries.find((arg) => arg?.[0] === 'totalCount') as string[] | undefined
-        assert(filter !== undefined)
-        expect(filter).toEqual(['totalCount', '>', rawQuery])
+        expect(filterOn(knexFirstCall, 'totalCount')).toEqual(['totalCount', '>', rawQuery])
       })
       it('should call raw with seenCount', () => {
         expect(rawStub.mock.calls).toEqual([['"seenCount"'], ['"seenCount"']])
@@ -273,53 +193,7 @@ describe('routes/apiFunctions getDirectionFolder', () => {
         expect(knexSecondCall.andWhere.mock.calls.length).toBe(2)
       })
       it('should filter totalCount greater than seenCount', () => {
-        const queries = [knexSecondCall.andWhere.mock.calls[0], knexSecondCall.andWhere.mock.calls[1]]
-        const filter = queries.find((arg) => arg?.[0] === 'totalCount') as string[] | undefined
-        assert(filter !== undefined)
-        expect(filter).toEqual(['totalCount', '>', rawQuery])
-      })
-    })
-  })
-
-  describe('with direction=desc, type=unread', () => {
-    let rawQuery = { raw: 0 }
-    beforeEach(async () => {
-      const spec: SiblingFolderSearch = { path: '/foo/bar', sortKey: 'foo69420', direction: 'desc', type: 'unread' }
-      rawQuery = { raw: Math.random() }
-      rawStub.mockReturnValue(rawQuery)
-      await getDirectionFolder(knexFake, spec)
-    })
-    describe('first query (same sortkey)', () => {
-      it('should call where once', () => {
-        expect(knexFirstCall.where.mock.calls.length).toBe(1)
-      })
-      it('should call andWhere three times', () => {
-        expect(knexFirstCall.andWhere.mock.calls.length).toBe(3)
-      })
-      it('should filter totalCount greater than seenCount', () => {
-        const queries = [
-          knexFirstCall.where.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[0],
-          knexFirstCall.andWhere.mock.calls[1],
-          knexFirstCall.andWhere.mock.calls[2],
-        ]
-        const filter = queries.find((arg) => arg?.[0] === 'totalCount') as string[] | undefined
-        assert(filter !== undefined)
-        expect(filter).toEqual(['totalCount', '>', rawQuery])
-      })
-      it('should call raw with seenCount', () => {
-        expect(rawStub.mock.calls).toEqual([['"seenCount"'], ['"seenCount"']])
-      })
-    })
-    describe('second query (different sortkey)', () => {
-      it('should call andWhere twice', () => {
-        expect(knexSecondCall.andWhere.mock.calls.length).toBe(2)
-      })
-      it('should filter totalCount greater than seenCount', () => {
-        const queries = [knexSecondCall.andWhere.mock.calls[0], knexSecondCall.andWhere.mock.calls[1]]
-        const filter = queries.find((arg) => arg?.[0] === 'totalCount') as string[] | undefined
-        assert(filter !== undefined)
-        expect(filter).toEqual(['totalCount', '>', rawQuery])
+        expect(filterOn(knexSecondCall, 'totalCount')).toEqual(['totalCount', '>', rawQuery])
       })
     })
   })
