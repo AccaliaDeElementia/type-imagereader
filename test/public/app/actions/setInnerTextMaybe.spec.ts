@@ -1,10 +1,10 @@
 'use sanity'
 
-import assert from 'node:assert'
 import { Internals } from '#public/scripts/app/actions.js'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { cast } from '#testutils/typeGuards.js'
+import { required } from '#testutils/preconditions.js'
 
 describe('public/app/actions setInnerTextMaybe', () => {
   const dom: JSDOM = new JSDOM('<html><body><div><span class="foo"></span></div></div></html>', {})
@@ -13,12 +13,8 @@ describe('public/app/actions setInnerTextMaybe', () => {
   let spanNode = cast<HTMLSpanElement>(null)
   beforeEach(() => {
     mountDom(dom)
-    const div = dom.window.document.querySelector('div')
-    assert(div !== null)
-    divNode = div
-    const span = dom.window.document.querySelector('span')
-    assert(span !== null)
-    spanNode = span
+    divNode = required(dom.window.document.querySelector('div'), 'the div node')
+    spanNode = required(dom.window.document.querySelector('span'), 'the span node')
   })
   afterEach(() => {
     unmountDom()

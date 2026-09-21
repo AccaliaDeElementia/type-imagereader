@@ -4,9 +4,9 @@ import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { resetPubSub } from '#testutils/pubsub.js'
+import { required } from '#testutils/preconditions.js'
 
 import { Folders, Imports, Internals } from '#public/scripts/app/folders.js'
-import assert from 'node:assert'
 const markup = `
 html
   head
@@ -38,9 +38,10 @@ describe('public/app/folders buildCard()', () => {
 
     resetPubSub()
     Folders.folderCard = null
-    const template = document.querySelector<HTMLTemplateElement>('#folderCard')
-    assert(template !== null)
-    folderCard = template.content
+    folderCard = required(
+      document.querySelector<HTMLTemplateElement>('#folderCard'),
+      'the #folderCard template',
+    ).content
     Folders.folderCard = folderCard
   })
   afterEach(() => {
@@ -254,8 +255,7 @@ describe('public/app/folders buildCard()', () => {
       seenCount: 101,
     })
     const publishStub = vi.spyOn(Imports, 'publish').mockImplementation((..._args: unknown[]) => undefined)
-    assert(result !== null, 'result is required for valid test')
-    result.dispatchEvent(evt)
+    required(result, 'the built card').dispatchEvent(evt)
     expect(publishStub).toHaveBeenCalledWith('Navigate:Load', '/path/foo')
   })
 })
