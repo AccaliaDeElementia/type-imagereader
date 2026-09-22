@@ -1,8 +1,8 @@
 'use sanity'
 
-import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { cast } from '#testutils/typeGuards.js'
@@ -290,40 +290,40 @@ describe('public/app/navigation/messageHandlers folder navigation handlers', () 
       expect(navigateToStub.mock.calls[0]).toEqual([undefined, 'FirstUnfinished'])
     })
     it('should call navigateTo once when navigating to unfinished child folder', async () => {
-      assert(children[10] !== undefined)
+      requirePresent(children[10], 'children[10]')
       children[10].totalCount = 100
       children[10].seenCount = 10
       await handler()
       expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to unfinished child folder', async () => {
-      assert(children[10] !== undefined)
+      requirePresent(children[10], 'children[10]')
       children[10].totalCount = 100
       children[10].seenCount = 10
       await handler()
       expect(navigateToStub.mock.calls[0]).toEqual([children[10].path, 'FirstUnfinished'])
     })
     it('should call navigateTo once when navigating to first unfinished child folder', async () => {
-      assert(children[10] !== undefined)
+      requirePresent(children[10], 'children[10]')
       children[10].totalCount = 100
       children[10].seenCount = 10
-      assert(children[11] !== undefined)
+      requirePresent(children[11], 'children[11]')
       children[11].totalCount = 100
       children[11].seenCount = 10
-      assert(children[19] !== undefined)
+      requirePresent(children[19], 'children[19]')
       children[19].totalCount = 100
       children[19].seenCount = 10
       await handler()
       expect(navigateToStub.mock.calls.length).toBe(1)
     })
     it('should navigate to first unfinished child folder', async () => {
-      assert(children[10] !== undefined)
+      requirePresent(children[10], 'children[10]')
       children[10].totalCount = 100
       children[10].seenCount = 10
-      assert(children[11] !== undefined)
+      requirePresent(children[11], 'children[11]')
       children[11].totalCount = 100
       children[11].seenCount = 10
-      assert(children[19] !== undefined)
+      requirePresent(children[19], 'children[19]')
       children[19].totalCount = 100
       children[19].seenCount = 10
       await handler()

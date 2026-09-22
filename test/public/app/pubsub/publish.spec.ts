@@ -2,11 +2,11 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { PubSub, publish, Internals } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import { cast } from '#testutils/typeGuards.js'
 import { voidFn } from '#testutils/mocks.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 describe('public/app/pubsub publish()', () => {
@@ -116,7 +116,7 @@ describe('public/app/pubsub publishAsync()', () => {
     expect(subscriber.mock.calls[0]).toEqual(['Quux', 'FOO:BAR:BAZ:XYZZY'])
   })
   it('should call all subscribers when publishing', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
+    requirePresent(PubSub.subscribers['FOO:BAR'], "PubSub.subscribers['FOO:BAR']")
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(vi.fn().mockResolvedValue(undefined))
     }
@@ -128,7 +128,7 @@ describe('public/app/pubsub publishAsync()', () => {
     }
   })
   it('should publish to all subscribers in order', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
+    requirePresent(PubSub.subscribers['FOO:BAR'], "PubSub.subscribers['FOO:BAR']")
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(vi.fn().mockResolvedValue(undefined))
     }
@@ -246,7 +246,7 @@ describe('public/app/pubsub publishAsync()', () => {
     expect((abcde.mock.invocationCallOrder[0] ?? 0) > (abcd.mock.invocationCallOrder[0] ?? 0)).toBe(true)
   })
   it('should still call all subscribers when one rejects', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
+    requirePresent(PubSub.subscribers['FOO:BAR'], "PubSub.subscribers['FOO:BAR']")
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(vi.fn().mockResolvedValue(undefined))
     }
@@ -258,7 +258,7 @@ describe('public/app/pubsub publishAsync()', () => {
     }
   })
   it('should log error once when one subscriber rejects', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
+    requirePresent(PubSub.subscribers['FOO:BAR'], "PubSub.subscribers['FOO:BAR']")
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(vi.fn().mockResolvedValue(undefined))
     }
@@ -267,7 +267,7 @@ describe('public/app/pubsub publishAsync()', () => {
     expect(consoleError.mock.calls.length).toBe(1)
   })
   it('should log expected message when one subscriber rejects', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
+    requirePresent(PubSub.subscribers['FOO:BAR'], "PubSub.subscribers['FOO:BAR']")
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(vi.fn().mockResolvedValue(undefined))
     }
@@ -276,7 +276,7 @@ describe('public/app/pubsub publishAsync()', () => {
     expect(consoleError.mock.calls[0]?.[0]).toBe('Subscriber for FOO:BAR rejected with error:')
   })
   it('should still call all subscribers when one throws', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
+    requirePresent(PubSub.subscribers['FOO:BAR'], "PubSub.subscribers['FOO:BAR']")
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(vi.fn().mockResolvedValue(undefined))
     }
@@ -290,7 +290,7 @@ describe('public/app/pubsub publishAsync()', () => {
     }
   })
   it('should log error once when one subscriber throws', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
+    requirePresent(PubSub.subscribers['FOO:BAR'], "PubSub.subscribers['FOO:BAR']")
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(vi.fn().mockResolvedValue(undefined))
     }
@@ -301,7 +301,7 @@ describe('public/app/pubsub publishAsync()', () => {
     expect(consoleError.mock.calls.length).toBe(1)
   })
   it('should log expected message when one subscriber throws', async () => {
-    assert(PubSub.subscribers['FOO:BAR'] !== undefined)
+    requirePresent(PubSub.subscribers['FOO:BAR'], "PubSub.subscribers['FOO:BAR']")
     for (let i = 1; i <= 10; i += 1) {
       PubSub.subscribers['FOO:BAR'].push(vi.fn().mockResolvedValue(undefined))
     }

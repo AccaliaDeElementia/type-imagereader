@@ -2,13 +2,13 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, init } from '#public/scripts/app/bookmarks.js'
 
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 const markup = `
@@ -82,7 +82,7 @@ describe.each(bookmarkTopics)('public/app/bookmarks init %s', (topic: string, en
     it(`should accept ${title} data from network`, async () => {
       await handler('FOO!')
       const acceptor = postJSONSpy.mock.calls[0]?.[2] as unknown
-      assert(acceptor !== undefined)
+      requirePresent(acceptor, 'the subscriber callback')
       const result = cast<(o: unknown) => boolean>(acceptor)(data)
       expect(result).toBe(true)
     })

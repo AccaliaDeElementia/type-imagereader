@@ -2,11 +2,11 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 
 import { resetPubSub } from '#testutils/pubsub.js'
 import { voidFn } from '#testutils/mocks.js'
-import assert from 'node:assert'
 import { Imports, init, Internals, Tabs } from '#public/scripts/app/tabs.js'
 import type { MockInstance } from 'vitest'
 
@@ -47,16 +47,16 @@ describe('public/app/tabs selectTab()', () => {
     mountDom(dom)
     vi.spyOn(global.window.console, 'error').mockReturnValue(undefined)
     const actions = dom.window.document.getElementById('tabActions')
-    assert(actions !== null)
+    requirePresent(actions, 'the tabActions element')
     actions.scroll = actionsScroll
     const folders = dom.window.document.getElementById('tabFolders')
-    assert(folders !== null)
+    requirePresent(folders, 'the tabFolders element')
     folders.scroll = foldersScroll
     const images = dom.window.document.getElementById('tabImages')
-    assert(images !== null)
+    requirePresent(images, 'the tabImages element')
     images.scroll = imagesScroll
     const bookmarks = dom.window.document.getElementById('tabBookmarks')
-    assert(bookmarks !== null)
+    requirePresent(bookmarks, 'the tabBookmarks element')
     bookmarks.scroll = bookmarksScroll
     resetPubSub()
     absorbInitSubscriptions()
@@ -161,14 +161,14 @@ describe('public/app/tabs selectTab()', () => {
   })
   it('should display connected content on tab select', () => {
     const elem = dom.window.document.getElementById('tabImages')
-    assert(elem !== null)
+    requirePresent(elem, 'the tabImages element')
     elem.style.display = 'none'
     Internals.selectTab('Images')
     expect(elem.style.getPropertyValue('display')).toBe('block')
   })
   it('should hide other content on tab select', () => {
     const elem = dom.window.document.getElementById('tabFolders')
-    assert(elem !== null)
+    requirePresent(elem, 'the tabFolders element')
     elem.style.display = 'block'
     Internals.selectTab('Images')
     expect(elem.style.getPropertyValue('display')).toBe('none')

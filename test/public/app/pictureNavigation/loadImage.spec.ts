@@ -2,6 +2,7 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { Imports, Internals, Viewer, loadImage } from '#public/scripts/app/pictureNavigation.js'
 import { cast } from '#testutils/typeGuards.js'
@@ -9,7 +10,6 @@ import { render } from 'pug'
 import type { Picture } from '#contracts/listing.js'
 import { resetPubSub } from '#testutils/pubsub.js'
 import { setTimeout as delay } from 'node:timers/promises'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 const markup = `
@@ -90,26 +90,26 @@ describe('public/app/pictureNavigation loadImage()', () => {
     expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:show').length > 0).toBe(false)
   })
   it('should be noop when current image path is empty', async () => {
-    assert(Pictures.current !== null)
+    requirePresent(Pictures.current, 'Pictures.current')
     Pictures.current.path = ''
     Viewer.nextPending = true
     await loadImage()
     expect(publishStub.mock.calls.filter((c) => c[0] === 'Loading:show').length > 0).toBe(false)
   })
   it('should not call postJSON when current image path is empty', async () => {
-    assert(Pictures.current !== null)
+    requirePresent(Pictures.current, 'Pictures.current')
     Pictures.current.path = ''
     await loadImage()
     expect(postJSONSpy.mock.calls.length).toBe(0)
   })
   it('should not update image src when current image path is empty', async () => {
-    assert(Pictures.current !== null)
+    requirePresent(Pictures.current, 'Pictures.current')
     Pictures.current.path = ''
     await loadImage()
     expect(Pictures.mainImage?.getAttribute('src')).toBe(null)
   })
   it('should not publish LoadNew when current image path is empty', async () => {
-    assert(Pictures.current !== null)
+    requirePresent(Pictures.current, 'Pictures.current')
     Pictures.current.path = ''
     await loadImage()
     expect(publishStub.mock.calls.filter((c) => c[0] === 'Picture:LoadNew').length).toBe(0)
@@ -254,19 +254,19 @@ describe('public/app/pictureNavigation loadImage()', () => {
     expect(Pictures.mainImage?.getAttribute('src')).toBe('/images/scaled/0/0/some/path/1250.png-image.webp')
   })
   it('should set src height on image', async () => {
-    assert(Pictures.mainImage !== null)
+    requirePresent(Pictures.mainImage, 'Pictures.mainImage')
     viewportSizeStub.mockReturnValue({ width: 0, height: 512 })
     await loadImage()
     expect(Pictures.mainImage.getAttribute('src')).toBe('/images/scaled/0/512/some/path/1250.png-image.webp')
   })
   it('should set src width on image', async () => {
-    assert(Pictures.mainImage !== null)
+    requirePresent(Pictures.mainImage, 'Pictures.mainImage')
     viewportSizeStub.mockReturnValue({ width: 1024, height: 0 })
     await loadImage()
     expect(Pictures.mainImage.getAttribute('src')).toBe('/images/scaled/1024/0/some/path/1250.png-image.webp')
   })
   it('should request the original resolution image in actual size mode', async () => {
-    assert(Pictures.mainImage !== null)
+    requirePresent(Pictures.mainImage, 'Pictures.mainImage')
     getSizeModeStub.mockReturnValue('actualSize')
     await loadImage()
     expect(Pictures.mainImage.getAttribute('src')).toBe('/images/original/some/path/1250.png-image.webp')
@@ -284,19 +284,19 @@ describe('public/app/pictureNavigation loadImage()', () => {
     expect(bottomLeftText?.innerHTML).toBe('(1,251/1,500)')
   })
   it('should default to first image name on missing index', async () => {
-    assert(Pictures.current !== null, 'Current Image must be set for valid test')
+    requirePresent(Pictures.current, 'Pictures.current')
     Pictures.current.index = undefined
     await loadImage()
     expect(bottomCenterText?.innerHTML).toBe('1250.png')
   })
   it('should default to first image percentname on missing index', async () => {
-    assert(Pictures.current !== null, 'Current Image must be set for valid test')
+    requirePresent(Pictures.current, 'Pictures.current')
     Pictures.current.index = undefined
     await loadImage()
     expect(bottomRightText?.innerHTML).toBe('(0%)')
   })
   it('should default to first image position on missing index', async () => {
-    assert(Pictures.current !== null, 'Current Image must be set for valid test')
+    requirePresent(Pictures.current, 'Pictures.current')
     Pictures.current.index = undefined
     await loadImage()
     expect(bottomLeftText?.innerHTML).toBe('(1/1,500)')
@@ -306,7 +306,7 @@ describe('public/app/pictureNavigation loadImage()', () => {
     expect(selectPageSpy).toHaveBeenCalledWith(40)
   })
   it('should select default page when current image omits page marker', async () => {
-    assert(Pictures.current !== null, 'Current Image must be set for valid test')
+    requirePresent(Pictures.current, 'Pictures.current')
     Pictures.current.page = undefined
     await loadImage()
     expect(selectPageSpy).toHaveBeenCalledWith(1)

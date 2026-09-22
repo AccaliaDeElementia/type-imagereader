@@ -1,6 +1,5 @@
 'use sanity'
 
-import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 import { render } from 'pug'
@@ -68,6 +67,7 @@ describe.each(markAllHandlers)(
       expect(postJSONSpy.mock.calls[0]?.[1]).toEqual({ path })
     })
 
+    const aFunctionValue = (): void => undefined
     const payloadTests: Array<[string, unknown]> = [
       ['null', null],
       ['undefined', undefined],
@@ -79,7 +79,7 @@ describe.each(markAllHandlers)(
       ['empty object', {}],
       ['object', { a: 1 }],
       ['empty array', []],
-      ['array', ['a', 5, assert, {}]],
+      ['array', ['a', 5, aFunctionValue, {}]],
       ['Listing', { name: 'foo', path: '/foo', parent: '/' }],
     ]
     payloadTests.forEach(([name, data]) => {

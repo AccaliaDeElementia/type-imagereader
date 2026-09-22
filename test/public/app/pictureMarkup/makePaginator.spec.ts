@@ -2,10 +2,10 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { Internals } from '#public/scripts/app/pictureMarkup.js'
 import { cast } from '#testutils/typeGuards.js'
 import { render } from 'pug'
-import assert from 'node:assert'
 import { resetPubSub } from '#testutils/pubsub.js'
 import type { MockInstance } from 'vitest'
 
@@ -97,28 +97,28 @@ describe('public/app/pictureMarkup makePaginator()', () => {
     getCurrentPageSpy.mockReturnValue(5)
     Internals.makePaginator(7)
     const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[0]?.[1])
-    assert(fn !== undefined)
+    requirePresent(fn, 'the paginator click handler')
     expect(fn()).toBe(4)
   })
   it('should select previous page for previous page selector when on huge page', () => {
     getCurrentPageSpy.mockReturnValue(50)
     Internals.makePaginator(7)
     const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[0]?.[1])
-    assert(fn !== undefined)
+    requirePresent(fn, 'the paginator click handler')
     expect(fn()).toBe(49)
   })
   it('should select first page for previous page selector when on first page', () => {
     getCurrentPageSpy.mockReturnValue(1)
     Internals.makePaginator(7)
     const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[0]?.[1])
-    assert(fn !== undefined)
+    requirePresent(fn, 'the paginator click handler')
     expect(fn()).toBe(1)
   })
   it('should select first page for previous page selector when on negative page', () => {
     getCurrentPageSpy.mockReturnValue(-5)
     Internals.makePaginator(7)
     const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[0]?.[1])
-    assert(fn !== undefined)
+    requirePresent(fn, 'the paginator click handler')
     expect(fn()).toBe(1)
   })
   it('should create nextPage element last', () => {
@@ -140,28 +140,28 @@ describe('public/app/pictureMarkup makePaginator()', () => {
     getCurrentPageSpy.mockReturnValue(5)
     Internals.makePaginator(7)
     const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[8]?.[1])
-    assert(fn !== undefined)
+    requirePresent(fn, 'the paginator click handler')
     expect(fn()).toBe(6)
   })
   it('should select last page for next page selector when on huge page', () => {
     getCurrentPageSpy.mockReturnValue(50)
     Internals.makePaginator(7)
     const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[8]?.[1])
-    assert(fn !== undefined)
+    requirePresent(fn, 'the paginator click handler')
     expect(fn()).toBe(7)
   })
   it('should select last page for next page selector when on last page', () => {
     getCurrentPageSpy.mockReturnValue(7)
     Internals.makePaginator(7)
     const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[8]?.[1])
-    assert(fn !== undefined)
+    requirePresent(fn, 'the paginator click handler')
     expect(fn()).toBe(7)
   })
   it('should select next page for next page selector when on negative page', () => {
     getCurrentPageSpy.mockReturnValue(-5)
     Internals.makePaginator(7)
     const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[8]?.[1])
-    assert(fn !== undefined)
+    requirePresent(fn, 'the paginator click handler')
     expect(fn()).toBe(-4)
   })
   it('should create specific page elements with correct labels', () => {
@@ -185,7 +185,7 @@ describe('public/app/pictureMarkup makePaginator()', () => {
     Internals.makePaginator(7)
     for (let i = 1; i <= 7; i += 1) {
       const fn = cast<(() => number) | undefined>(makePageItemSpy.mock.calls[i]?.[1])
-      assert(fn !== undefined)
+      requirePresent(fn, 'the paginator click handler')
       expect(fn()).toBe(i)
     }
   })

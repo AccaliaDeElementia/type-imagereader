@@ -2,12 +2,12 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, Internals } from '#public/scripts/app/bookmarks.js'
-import assert from 'node:assert'
 import type { Bookmark } from '#contracts/listing.js'
 import { isListing } from '#contracts/listing.js'
 import type { MockInstance } from 'vitest'
@@ -100,7 +100,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
   })
   const ClickRemoveAndWait = async (data: Bookmark): Promise<HTMLElement> => {
     const result = Internals.buildBookmark(data)
-    assert(result !== null)
+    requirePresent(result, 'the built bookmark')
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
     vi.spyOn(evt, 'stopPropagation').mockImplementation(() => {
@@ -108,7 +108,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
     })
     const button = result.querySelector('button')
     button?.dispatchEvent(evt)
-    assert(awaiter !== null)
+    requirePresent(awaiter, 'the awaited promise')
     await awaiter
     return result
   }
@@ -130,7 +130,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
   })
   it('should stop propagation of event after handling button click', async () => {
     const result = Internals.buildBookmark({ name: '', path: '/path/to/foo/folder/foo', folder: 'bar' })
-    assert(result !== null)
+    requirePresent(result, 'the built bookmark')
     let stopPropagationCalled = false
     const evt = new dom.window.MouseEvent('click')
     vi.spyOn(evt, 'stopPropagation').mockImplementation(() => {
@@ -142,7 +142,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
   })
   const ClickBookmarkAndWait = async (data: Bookmark): Promise<HTMLElement> => {
     const result = Internals.buildBookmark(data)
-    assert(result !== null)
+    requirePresent(result, 'the built bookmark')
     let awaiter = ((): Promise<void> | null => null)()
     const evt = new dom.window.MouseEvent('click')
     vi.spyOn(evt, 'stopPropagation').mockImplementation(() => {
@@ -150,7 +150,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
     })
     result.dispatchEvent(evt)
     await Promise.resolve()
-    assert(awaiter !== null)
+    requirePresent(awaiter, 'the awaited promise')
     await awaiter
     return result
   }
@@ -200,7 +200,7 @@ describe('public/app/bookmarks buildBookmark()', () => {
         folder: 'bar',
       })
       const acceptor = postJSONSpy.mock.calls[0]?.[2] as unknown
-      assert(acceptor !== undefined)
+      requirePresent(acceptor, 'the subscriber callback')
       const result = cast<(o: unknown) => boolean>(acceptor)(obj)
       expect(result).toBe(true)
     })

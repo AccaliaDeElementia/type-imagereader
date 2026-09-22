@@ -2,6 +2,7 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 import type { Listing } from '#contracts/listing.js'
@@ -9,7 +10,6 @@ import type { Listing } from '#contracts/listing.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Imports, init, Internals } from '#public/scripts/app/bookmarks.js'
 
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 const markup = `
@@ -84,7 +84,7 @@ describe('public/app/bookmarks init Bookmarks:Load', () => {
       const fn = capturedSubscriber(subscribeStub, 'Bookmarks:Load')
       await fn(undefined)
       const acceptor = getJSONSpy.mock.calls[0]?.[1] as unknown
-      assert(acceptor !== undefined)
+      requirePresent(acceptor, 'the subscriber callback')
       const result = cast<(o: unknown) => boolean>(acceptor)
       expect(result(obj)).toBe(expected)
     })

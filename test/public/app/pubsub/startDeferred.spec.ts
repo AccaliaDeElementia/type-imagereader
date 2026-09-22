@@ -2,12 +2,11 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 
 import { Internals, PubSub, startDeferred } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
-import assert from 'node:assert'
 import { cast } from '#testutils/typeGuards.js'
-import { hasValue } from '#utils/helpers.js'
 import type { MockInstance } from 'vitest'
 
 describe('public/app/pubsub startDeferred()', () => {
@@ -32,7 +31,7 @@ describe('public/app/pubsub startDeferred()', () => {
   it('should call executeInterval with interval fn', () => {
     startDeferred()
     const fn = setIntervalSpy.mock.calls[0]?.[0] as unknown
-    assert(hasValue(fn))
+    requirePresent(fn, 'the deferred function')
     cast<() => void>(fn)()
     expect(executeIntervalSpy.mock.calls.length).toBe(1)
   })

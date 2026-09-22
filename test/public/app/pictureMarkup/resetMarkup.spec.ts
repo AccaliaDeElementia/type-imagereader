@@ -2,11 +2,11 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { Grid, Imports, resetMarkup } from '#public/scripts/app/pictureMarkup.js'
-import assert from 'node:assert'
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
 import type { MockInstance } from 'vitest'
 
@@ -57,7 +57,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should tolerate missing mainImage node', () => {
     const node = dom.window.document.querySelector('#bigImage')
-    assert(node !== null)
+    requirePresent(node, 'the #bigImage element')
     node.parentElement?.removeChild(node)
     resetMarkup()
     expect(Pictures.mainImage).toBe(null)
@@ -68,14 +68,14 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should tolerate missing imageCard node', () => {
     const node = dom.window.document.querySelector('#ImageCard')
-    assert(node !== null)
+    requirePresent(node, 'the #ImageCard element')
     node.parentElement?.removeChild(node)
     resetMarkup()
     expect(Grid.imageCard).toBe(null)
   })
   it('should remove existing .pages from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab !== null)
+    requirePresent(tab, 'the #tabImages element')
     for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('pages')
@@ -86,7 +86,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should remove existing .page nodes from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab !== null)
+    requirePresent(tab, 'the #tabImages element')
     for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('page')
@@ -97,7 +97,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should preserve existing non .page nodes from #tabImages', () => {
     const tab = dom.window.document.querySelector('#tabImages')
-    assert(tab !== null)
+    requirePresent(tab, 'the #tabImages element')
     for (let i = 0; i < 15; i += 1) {
       const node = dom.window.document.createElement('div')
       node.classList.add('foo')
@@ -117,7 +117,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   positions.forEach(([x, y]) => {
     it(`should clear ${x} ${y} status bar label`, () => {
       const node = dom.window.document.querySelector(`.statusBar.${x} .${y}`)
-      assert(node !== null)
+      requirePresent(node, `the .statusBar.${x} .${y} label`)
       node.innerHTML = '<span>FOO</span>'
       resetMarkup()
       expect(node.innerHTML).toBe('')
@@ -125,14 +125,14 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should clear src of mainImage', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     img.src = 'https://127.0.0.1:42069/blaze.gif'
     resetMarkup()
     expect(img.src).toBe('http://127.0.0.1:2999/') // not blank due to how jsdom handles URIs
   })
   it('should publish Loading:Hide on mainImage load event', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     const evt = new dom.window.Event('load')
     resetMarkup()
     expect(publishStub.mock.calls.some((c) => c[0] === 'Loading:Hide')).toBe(false)
@@ -141,7 +141,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should position the viewport on mainImage load event', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     resetMarkup()
     img.dispatchEvent(new dom.window.Event('load'))
     expect(applyEntryScrollStub.mock.calls.length).toBe(1)
@@ -152,7 +152,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should not stack load handlers across resets', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     resetMarkup()
     resetMarkup()
     img.dispatchEvent(new dom.window.Event('load'))
@@ -160,7 +160,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should not stack error handlers across resets', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     resetMarkup()
     resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
@@ -169,7 +169,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should publish Loading:Error on mainImage error event with src set', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     const evt = new dom.window.ErrorEvent('error')
     resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
@@ -179,7 +179,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should not publish Loading:Error on mainImage error event with src empty', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     const evt = new dom.window.ErrorEvent('error')
     resetMarkup()
     img.setAttribute('src', '')
@@ -188,7 +188,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should publish expected error message when load fails and no current image', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     const evt = new dom.window.ErrorEvent('error')
     resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
@@ -198,7 +198,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should publish expected error message when load fails and invalid current image', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     const evt = new dom.window.ErrorEvent('error')
     resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')
@@ -208,7 +208,7 @@ describe('public/app/pictureMarkup resetMarkup()', () => {
   })
   it('should publish expected error message when load fails', () => {
     const img = dom.window.document.querySelector<HTMLImageElement>('#bigImage img')
-    assert(img !== null)
+    requirePresent(img, 'the #bigImage img element')
     const evt = new dom.window.ErrorEvent('error')
     resetMarkup()
     img.setAttribute('src', 'https://127.0.0.1:42069/blaze.gif')

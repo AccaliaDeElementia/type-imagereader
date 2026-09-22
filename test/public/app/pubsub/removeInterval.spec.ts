@@ -1,8 +1,8 @@
 'use sanity'
 
 import { PubSub, removeInterval } from '#public/scripts/app/pubsub.js'
-import assert from 'node:assert'
 import { cast } from '#testutils/typeGuards.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { voidFn } from '#testutils/mocks.js'
 import type { MockInstance } from 'vitest'
 
@@ -50,7 +50,7 @@ describe('public/app/pubsub removeInterval()', () => {
     expect(Object.keys(PubSub.intervals)).toContain('QUUX')
   })
   it('should not call method on removing interval even if the interval is expired', () => {
-    assert(PubSub.intervals.FOOBAR !== undefined)
+    requirePresent(PubSub.intervals.FOOBAR, 'PubSub.intervals.FOOBAR')
     PubSub.intervals.FOOBAR.delayCycles = -1
     const spy = cast<MockInstance>(PubSub.intervals.FOOBAR.method)
     removeInterval('FOOBAR')

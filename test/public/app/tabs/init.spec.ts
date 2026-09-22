@@ -2,12 +2,11 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
 import { Imports, init, Internals, Tabs } from '#public/scripts/app/tabs.js'
-import assert from 'node:assert'
-import { hasValue } from '#utils/helpers.js'
 import type { MockInstance } from 'vitest'
 
 const markup = `
@@ -97,7 +96,7 @@ describe('public/app/tabs init()', () => {
     })
     it(`should call addEventListener once on tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
-      assert(hasValue(elem))
+      requirePresent(elem, `the tab parent element for ${link}`)
       const spy = vi.spyOn(elem, 'addEventListener').mockReturnValue(undefined)
       try {
         init()
@@ -108,7 +107,7 @@ describe('public/app/tabs init()', () => {
     })
     it(`should add click handler with two args to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
-      assert(hasValue(elem))
+      requirePresent(elem, `the tab parent element for ${link}`)
       const spy = vi.spyOn(elem, 'addEventListener').mockReturnValue(undefined)
       try {
         init()
@@ -119,7 +118,7 @@ describe('public/app/tabs init()', () => {
     })
     it(`should add click handler to tab parent element for ${link}`, () => {
       const elem = dom.window.document.querySelector(`a[href="${link}"]`)?.parentElement
-      assert(hasValue(elem))
+      requirePresent(elem, `the tab parent element for ${link}`)
       const spy = vi.spyOn(elem, 'addEventListener').mockReturnValue(undefined)
       try {
         init()

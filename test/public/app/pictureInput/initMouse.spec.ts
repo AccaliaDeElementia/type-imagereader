@@ -2,11 +2,10 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { Imports, initMouse, Panning } from '#public/scripts/app/pictureInput.js'
-import assert from 'node:assert'
 import { cast } from '#testutils/typeGuards.js'
-import { hasValue } from '#utils/helpers.js'
 import type { MockInstance } from 'vitest'
 
 interface TestVisualViewport {
@@ -47,14 +46,14 @@ describe('public/app/pictureInput initMouse()', () => {
       right: 0,
     }
     const tgt = Pictures.mainImage?.parentElement
-    assert(hasValue(tgt))
+    requirePresent(tgt, 'the main image parent element')
     vi.spyOn(tgt, 'getBoundingClientRect').mockImplementation(() => cast<DOMRect>(boundingRect))
     publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
     vi.spyOn(Imports, 'getPanTarget').mockReturnValue(null)
     Panning.target = null
     Panning.moved = false
 
-    assert(Pictures.mainImage !== null)
+    requirePresent(Pictures.mainImage, 'Pictures.mainImage')
   })
   afterEach(() => {
     unmountDom()

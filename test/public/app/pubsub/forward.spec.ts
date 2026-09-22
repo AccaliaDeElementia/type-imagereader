@@ -1,8 +1,8 @@
 'use sanity'
 
-import assert from 'node:assert'
 import { PubSub, forward } from '#public/scripts/app/pubsub.js'
 import { resetPubSub } from '#testutils/pubsub.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { voidFn } from '#testutils/mocks.js'
 
 describe('public/app/pubsub forward()', () => {
@@ -23,7 +23,7 @@ describe('public/app/pubsub forward()', () => {
     const targetSpy = vi.fn().mockResolvedValue(undefined)
     PubSub.subscribers['BAZ:QUX'] = [targetSpy]
     const handler = PubSub.subscribers['FOO:BAR']?.[0]
-    assert(handler !== undefined)
+    requirePresent(handler, 'the forwarded handler')
     await handler(undefined)
     expect(targetSpy.mock.calls.length).toBe(1)
   })

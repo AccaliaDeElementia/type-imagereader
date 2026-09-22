@@ -2,11 +2,11 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 
 import { resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Internals } from '#public/scripts/app/bookmarks.js'
-import assert from 'node:assert'
 
 const markup = `
 html
@@ -59,13 +59,13 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
   it('should store the folder path on creation', () => {
     Internals.getOrCreateFolderElement('', { name: '/foo', path: '/foo/', bookmarks: [] })
     const folder = Bookmarks.bookmarkFolders.pop()
-    assert(folder !== undefined, 'Folder should exist')
+    requirePresent(folder, 'the bookmark folder')
     expect(folder.path).toBe('/foo/')
   })
   it('should store the folder element on creation', () => {
     const result = Internals.getOrCreateFolderElement('', { name: '/foo', path: '/foo/bar.jpg', bookmarks: [] })
     const folder = Bookmarks.bookmarkFolders.pop()
-    assert(folder !== undefined, 'Folder should exist')
+    requirePresent(folder, 'the bookmark folder')
     expect(result).toBe(folder.element)
   })
   it('should return existing folder element for matching path', () => {
@@ -151,9 +151,9 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       bookmarks: [],
     })
     const [folder] = Bookmarks.bookmarkFolders
-    assert(folder !== undefined, 'must have folder to be valid test')
+    requirePresent(folder, 'the bookmark folder')
     const title = result?.querySelector<HTMLElement>('.title')
-    assert(title !== null && title !== undefined, 'must get a result to issue event to')
+    requirePresent(title, 'the title element')
     const evt = new dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
     expect(folder.element.classList.contains('closed')).toBe(false)
@@ -167,9 +167,9 @@ describe('public/app/bookmarks getOrCreateFolderElement()', () => {
       })
     }
     const folder = Bookmarks.bookmarkFolders.find((_, i) => i === 25)
-    assert(folder !== undefined, 'must have folder to be valid test')
+    requirePresent(folder, 'the bookmark folder')
     const title = folder.element.querySelector<HTMLElement>('.title')
-    assert(title !== null, 'must get a result to issue event to')
+    requirePresent(title, 'the title element')
     const evt = new dom.window.MouseEvent('click')
     title.dispatchEvent(evt)
     for (let i = 0; i < Bookmarks.bookmarkFolders.length; i += 1) {

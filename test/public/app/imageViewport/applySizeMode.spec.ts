@@ -2,10 +2,10 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 import { Imports, Internals, Viewport } from '#public/scripts/app/imageViewport.js'
 import type { SizeMode } from '#public/scripts/app/sizeMode.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 const markup = `
@@ -23,7 +23,7 @@ describe('public/app/imageViewport applySizeMode()', () => {
   let getSizeModeStub: MockInstance = vi.fn()
   let resetScrollSpy: MockInstance = vi.fn()
   const classesOn = (): string[] => {
-    assert(container !== null)
+    requirePresent(container, 'the image viewport container')
     const { classList } = container
     return MODE_CLASSES.filter((name) => classList.contains(name))
   }
@@ -61,7 +61,7 @@ describe('public/app/imageViewport applySizeMode()', () => {
       expect(classesOn()).toEqual(classes)
     })
     it(`should clear a stale mode class when switching to ${mode}`, () => {
-      assert(container !== null)
+      requirePresent(container, 'the image viewport container')
       for (const name of MODE_CLASSES) container.classList.add(name)
       getSizeModeStub.mockReturnValue(mode)
       Internals.applySizeMode()

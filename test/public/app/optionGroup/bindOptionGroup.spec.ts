@@ -2,8 +2,8 @@
 
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
-import assert from 'node:assert'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { bindOptionGroup } from '#public/scripts/app/optionGroup.js'
 
 const markup = `html
@@ -21,7 +21,7 @@ describe('public/app/optionGroup bindOptionGroup()', () => {
   let chooseSpy = vi.fn<(value: string) => void>()
   const clickButton = (group: string, value: string): void => {
     const button = dom.window.document.querySelector(`${group} [data-value="${value}"]`)
-    assert(button !== null)
+    requirePresent(button, `the ${group} option button for ${value}`)
     button.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, cancelable: true }))
   }
   beforeEach(() => {
@@ -55,7 +55,7 @@ describe('public/app/optionGroup bindOptionGroup()', () => {
   it('should suppress the default action of the click', () => {
     bindOptionGroup('.selectThing', chooseSpy)
     const button = dom.window.document.querySelector('.selectThing [data-value="alpha"]')
-    assert(button !== null)
+    requirePresent(button, 'the .selectThing [data-value="alpha"] element')
     const evt = new dom.window.MouseEvent('click', { bubbles: true, cancelable: true })
     button.dispatchEvent(evt)
     expect(evt.defaultPrevented).toBe(true)
@@ -63,7 +63,7 @@ describe('public/app/optionGroup bindOptionGroup()', () => {
   it('should report nothing for a button that carries no value', () => {
     bindOptionGroup('.selectThing', chooseSpy)
     const button = dom.window.document.querySelector('.selectThing .unlabelled')
-    assert(button !== null)
+    requirePresent(button, 'the .selectThing .unlabelled element')
     button.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, cancelable: true }))
     expect(chooseSpy.mock.calls).toHaveLength(0)
   })

@@ -3,10 +3,10 @@
 import { JSDOM } from 'jsdom'
 import { render } from 'pug'
 import { cast } from '#testutils/typeGuards.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { mountDom, unmountDom } from '#testutils/dom.js'
 
 import { Folders, Internals } from '#public/scripts/app/folders.js'
-import assert from 'node:assert'
 import type { Listing } from '#contracts/listing.js'
 import type { MockInstance } from 'vitest'
 
@@ -44,7 +44,7 @@ describe('public/app/folders buildAllCards()', () => {
     tabFolders = dom.window.document.querySelector('#tabFolders')
     Folders.folderCard = null
     const template = document.querySelector<HTMLTemplateElement>('#FolderCard')
-    assert(template !== null)
+    requirePresent(template, 'the #FolderCard element')
     folderCard = template.content
     Folders.folderCard = folderCard
     buildCardStub = vi.spyOn(Internals, 'buildCard').mockReturnValue(null)

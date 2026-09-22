@@ -2,8 +2,8 @@
 
 import { Pictures } from '#public/scripts/app/pictureState.js'
 import { Imports, Internals, Viewer, loadData } from '#public/scripts/app/pictureNavigation.js'
-import assert from 'node:assert'
 import { resetPubSub } from '#testutils/pubsub.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import type { Picture } from '#contracts/listing.js'
 import type { MockInstance } from 'vitest'
 
@@ -173,7 +173,7 @@ describe('public/app/pictureNavigation loadData()', () => {
       pic.seen = true
     }
     const pic = Pictures.pictures.find((_, i) => i === 63)
-    assert(pic !== undefined, 'Test image must exist')
+    requirePresent(pic, 'the test picture')
     pic.seen = false
     await loadData({
       name: '',
@@ -188,7 +188,7 @@ describe('public/app/pictureNavigation loadData()', () => {
       pic.seen = true
     }
     const pic = Pictures.pictures.find((_, i) => i === 63)
-    assert(pic !== undefined, 'Test image must exist')
+    requirePresent(pic, 'the test picture')
     pic.seen = false
     await loadData({
       name: '',

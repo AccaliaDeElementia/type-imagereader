@@ -1,8 +1,8 @@
 'use sanity'
 
-import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 import { Imports, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { publishedData, resetPubSub } from '#testutils/pubsub.js'
@@ -42,9 +42,9 @@ describe('public/app/navigation loadData()', () => {
     })
     mountDom(dom)
     titleElement = dom.window.document.querySelector('head title')
-    assert(titleElement !== null)
+    requirePresent(titleElement, 'the head title element')
     brandElement = dom.window.document.querySelector('a.navbar-brand')
-    assert(brandElement !== null)
+    requirePresent(brandElement, 'the a.navbar-brand element')
     historySpy = vi.spyOn(dom.window.history, 'pushState').mockReturnValue(undefined)
 
     resetPubSub()

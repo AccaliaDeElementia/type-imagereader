@@ -2,11 +2,11 @@
 
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 
 import { resetPubSub } from '#testutils/pubsub.js'
 import { Bookmarks, Internals } from '#public/scripts/app/bookmarks.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 const markup = `
@@ -383,7 +383,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
         Bookmarks.bookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
       }
     })
-    assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
+    requirePresent(Bookmarks.bookmarksTab, 'Bookmarks.bookmarksTab')
     const appendChildSpy = vi.spyOn(Bookmarks.bookmarksTab, 'appendChild').mockImplementation((node: Node) => node)
     Internals.buildBookmarks({
       name: '',
@@ -400,7 +400,7 @@ describe('public/app/bookmarks buildBookmarks()', () => {
         Bookmarks.bookmarkFolders.push({ path: `Z${101 - i}`, element: dom.window.document.createElement('details') })
       }
     })
-    assert(Bookmarks.bookmarksTab !== null, 'tab must exist')
+    requirePresent(Bookmarks.bookmarksTab, 'Bookmarks.bookmarksTab')
     const appendChildSpy = vi.spyOn(Bookmarks.bookmarksTab, 'appendChild').mockImplementation((node: Node) => node)
     Internals.buildBookmarks({
       name: '',

@@ -1,8 +1,8 @@
 'use sanity'
 
-import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
 import { mountDom, unmountDom } from '#testutils/dom.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { render } from 'pug'
 import { Imports, init, Internals, Navigation } from '#public/scripts/app/navigation.js'
 import { capturedSubscriber, resetPubSub } from '#testutils/pubsub.js'
@@ -128,7 +128,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
       ]
       const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('.innerTarget')
-      assert(target !== null, 'target must exist')
+      requirePresent(target, 'the menu target element')
       Navigation.current.pictures = [{ name: '', path: '', seen: false }]
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
@@ -145,7 +145,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
       ]
       const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('.navbar-brand')
-      assert(target !== null, 'target must exist')
+      requirePresent(target, 'the menu target element')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
       expect(publishStub.mock.calls.length).toBe(0)
@@ -155,7 +155,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
       Navigation.current.pictures = undefined
       const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('#mainMenu')
-      assert(target !== null, 'target must exist')
+      requirePresent(target, 'the menu target element')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
       expect(publishStub.mock.calls.length).toBe(0)
@@ -165,7 +165,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
       Navigation.current.pictures = []
       const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('#mainMenu')
-      assert(target !== null, 'target must exist')
+      requirePresent(target, 'the menu target element')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
       expect(publishStub.mock.calls.length).toBe(0)
@@ -181,7 +181,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
       ]
       const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('#mainMenu')
-      assert(target !== null, 'target must exist')
+      requirePresent(target, 'the menu target element')
       const event = new dom.window.MouseEvent('click', { bubbles: true })
       target.dispatchEvent(event)
       expect(publishStub.mock.calls.length).toBe(1)
@@ -192,7 +192,7 @@ describe('public/app/navigation/messageHandlers Menu:show and Menu:Hide handlers
       init()
       const publishStub = vi.spyOn(Imports, 'publish').mockReturnValue(undefined)
       const target = dom.window.document.querySelector('.menuButton')
-      assert(target !== null, 'target must exist')
+      requirePresent(target, 'the menu target element')
       Navigation.current.pictures = [{ name: '', path: '', seen: true }]
       const event = new dom.window.MouseEvent('click')
       target.dispatchEvent(event)

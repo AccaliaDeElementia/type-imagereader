@@ -1,8 +1,8 @@
 'use sanity'
 
 import { Pictures } from '#public/scripts/app/pictureState.js'
+import { requirePresent } from '#testutils/preconditions.js'
 import { getPicture, Internals, NavigateTo } from '#public/scripts/app/pictureNavigation.js'
-import assert from 'node:assert'
 import type { MockInstance } from 'vitest'
 
 describe('public/app/pictureNavigation getPicture()', () => {
@@ -58,7 +58,7 @@ describe('public/app/pictureNavigation getPicture()', () => {
       expect(choosePictureIndexSpy.mock.calls[0]?.[0]).toBe(navi)
     })
     it(`${title}: should pass current index to choosePictureIndex`, () => {
-      assert(Pictures.current !== null)
+      requirePresent(Pictures.current, 'Pictures.current')
       Pictures.current.index = 77
       getPicture(navi)
       expect(choosePictureIndexSpy.mock.calls[0]?.[1]).toBe(77)
@@ -71,21 +71,21 @@ describe('public/app/pictureNavigation getPicture()', () => {
       expect(choosePictureIndexSpy.mock.calls[0]?.[2]).toEqual([])
     })
     it(`${title}: should pass expected unread array to choosePictureIndex when current before all unread`, () => {
-      assert(Pictures.current !== null)
+      requirePresent(Pictures.current, 'Pictures.current')
       Pictures.current.index = 3
       getPicture(navi)
       const pics = Pictures.pictures.slice(16, 32)
       expect(choosePictureIndexSpy.mock.calls[0]?.[2]).toEqual(pics)
     })
     it(`${title}: should pass expected unread array to choosePictureIndex when current after all unread`, () => {
-      assert(Pictures.current !== null)
+      requirePresent(Pictures.current, 'Pictures.current')
       Pictures.current.index = 45
       getPicture(navi)
       const pics = Pictures.pictures.slice(16, 32)
       expect(choosePictureIndexSpy.mock.calls[0]?.[2]).toEqual(pics)
     })
     it(`${title}: should pass expected unread array to choosePictureIndex when current between all unread`, () => {
-      assert(Pictures.current !== null)
+      requirePresent(Pictures.current, 'Pictures.current')
       for (const pic of Pictures.pictures) {
         pic.seen = !pic.seen
       }
@@ -95,7 +95,7 @@ describe('public/app/pictureNavigation getPicture()', () => {
       expect(choosePictureIndexSpy.mock.calls[0]?.[2]).toEqual(pics)
     })
     it(`${title}: should pass expected unread array to choosePictureIndex when current inside unread chunk`, () => {
-      assert(Pictures.current !== null)
+      requirePresent(Pictures.current, 'Pictures.current')
       Pictures.current.index = 24
       getPicture(navi)
       const pics = [...Pictures.pictures.slice(25, 32), ...Pictures.pictures.slice(16, 24)]
@@ -103,7 +103,7 @@ describe('public/app/pictureNavigation getPicture()', () => {
     })
     it(`${title}: should return selected index picture`, () => {
       const [, , , , , pic] = Pictures.pictures
-      assert(pic !== undefined)
+      requirePresent(pic, 'the requested picture')
       choosePictureIndexSpy.mockReturnValue(5)
       const result = getPicture(navi)
       expect(result).toEqual(pic)
