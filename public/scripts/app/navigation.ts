@@ -21,6 +21,7 @@ export const Imports = {
 
 const INITIAL_LOAD_TOKEN = 0
 const TOKEN_STEP = 1
+const ZERO_SCROLL_TOP = 0
 
 export const Navigation = {
   locationAssign: undefined as undefined | ((url: string | URL) => void),
@@ -121,6 +122,10 @@ export function init(): void {
   Imports.subscribe('Navigate:Data', async (data: unknown) => {
     if (hasValue(data) && data !== '') {
       window.console.log(data)
+    }
+    const tabContent = document.querySelector('.tab-content')
+    if (tabContent !== null) {
+      tabContent.scrollTop = ZERO_SCROLL_TOP
     }
     await Promise.resolve()
   })
