@@ -13,6 +13,7 @@ const STARTUP_TIMEOUT_MS = 15_000
 const HEALTHCHECK_DEADLINE_MS = 12_000
 const HEALTHCHECK_POLL_INTERVAL_MS = 100
 const SHUTDOWN_GRACE_MS = 2_000
+const DEVELOPER_ENV_THAT_DISABLES_SERVING = { SKIP_SERVE: '1', ONESHOT: '1' }
 
 const signalIgnoringAlreadyExited = (groupPid: number, signal: NodeJS.Signals): void => {
   try {
@@ -58,6 +59,7 @@ describe(
     let stderr = ''
 
     beforeAll(async () => {
+      Object.assign(process.env, DEVELOPER_ENV_THAT_DISABLES_SERVING)
       dataDir = mkdtempSync(join(tmpdir(), 'imagereader-smoke-'))
       const port = await pickFreePort()
       // `detached: true` puts the child into its own process group so a single
@@ -72,7 +74,7 @@ describe(
       // self-contained, no need for a real server (or even a file).
       child = spawn('npx', ['tsx', '.'], {
         env: {
-          ...process.env,
+          PATH: process.env.PATH,
           SKIP_SYNC: '1',
           DATA_DIR: dataDir,
           PORT: String(port),
@@ -108,6 +110,10 @@ describe(
         }
       }
       if (dataDir !== '') rmSync(dataDir, { recursive: true, force: true })
+    })
+
+    it('should serve regardless of app control variables set in the developer environment', () => {
+      expect(healthStatus).toBe(200)
     })
 
     it('should respond 200 to /api/healthcheck', () => {

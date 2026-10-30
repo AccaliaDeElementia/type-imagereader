@@ -19,11 +19,17 @@ const SLOW_TEST_THRESHOLD_MS = 75
 export default defineConfig({
   test: {
     globals: true,
+    // Spec files share each worker's module graph instead of re-evaluating it
+    // per file (roughly halves the run). The setup files below reset the
+    // per-test state that sharing would otherwise leak: mocks, fake timers,
+    // and process.env.
+    isolate: false,
     include: ['test/**/*.spec.ts'],
     setupFiles: [
       './testutils/restoreMocksSetup.ts',
       './testutils/pubsubGuardSetup.ts',
       './testutils/timerGuardSetup.ts',
+      './testutils/envGuardSetup.ts',
     ],
     testTimeout: TEST_TIMEOUT_MS,
     slowTestThreshold: SLOW_TEST_THRESHOLD_MS,
